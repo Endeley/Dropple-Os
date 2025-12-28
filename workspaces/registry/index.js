@@ -1,0 +1,2 @@
+// Workspace registry entrypoint.
+export {};

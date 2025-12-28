@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Dropple OS
 
-## Getting Started
+Creative Intelligence Platform (CIP)
 
-First, run the development server:
+This repository contains the core operating system for Dropple:
+- deterministic engines
+- workspace contracts
+- event-driven runtime
+- AI as an amplifier, not the OS
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Phase 0: Spine bootstrap.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Core
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+OS-level primitives:
+- contracts
+- events
+- reducers
+- history
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+No UI.  
+No state libraries.  
+No side effects.
 
-## Learn More
+## Engine
 
-To learn more about Next.js, take a look at the following resources:
+Pure deterministic logic.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Rules:
+- no React
+- no Zustand
+- no Convex
+- no AI
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Input → Output only.
 
-## Deploy on Vercel
+## Runtime
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Live project state.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Contains:
+- Zustand stores (later)
+- sync layers
+- registries
+
+No rendering logic.
+
+## Workspaces
+
+Workspace modules.
+
+Each workspace:
+- declares engines
+- declares tools
+- declares panels
+- does NOT own core logic.
+
+## AI Layer
+
+AI is an amplifier.
+
+It:
+- suggests
+- plans
+- critiques
+- generates blueprints
+
+It NEVER mutates state directly.
+
+## UI
+
+All React UI lives here.
+
+Shells, panels, canvas UI, tools.
+
+## App
+
+Next.js routing layer.
+
+Thin shells only.

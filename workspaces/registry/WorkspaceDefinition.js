@@ -1,0 +1,2 @@
+// Workspace definition contract.
+export {};
