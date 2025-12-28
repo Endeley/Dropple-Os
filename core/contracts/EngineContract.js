@@ -1,2 +1,5 @@
-// Placeholder for engine-level contract definitions.
-export {};
+export const EngineContract = {
+  id: "",
+  init: () => {},
+  destroy: () => {},
+};

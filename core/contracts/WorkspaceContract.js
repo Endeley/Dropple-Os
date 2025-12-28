@@ -1,2 +1,7 @@
-// Placeholder for workspace contract definitions.
-export {};
+export const WorkspaceContract = {
+  id: "",
+  label: "",
+  engines: [],
+  tools: [],
+  panels: [],
+};

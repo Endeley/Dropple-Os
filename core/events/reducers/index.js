@@ -1,2 +1,15 @@
-// Aggregate event reducers.
-export const reducers = {};
+// core/events/reducers/index.js
+
+import { nodeReducers } from "./nodeReducers.js";
+import { treeReducers } from "./treeReducers.js";
+import { layoutReducers } from "./layoutReducers.js";
+import { styleReducers } from "./styleReducers.js";
+
+export function rootReducer(state, event) {
+  let next = state;
+  next = nodeReducers(next, event);
+  next = treeReducers(next, event);
+  next = layoutReducers(next, event);
+  next = styleReducers(next, event);
+  return next;
+}

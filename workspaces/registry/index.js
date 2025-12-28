@@ -1,2 +1,1 @@
-// Workspace registry entrypoint.
-export {};
+export const WorkspaceRegistry = {};
