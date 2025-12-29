@@ -1,8 +1,8 @@
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
 import { useNodeDrag } from './hooks/useNodeDrag.js';
 
 export function NodeRenderer({ nodeId }) {
-    const node = useRuntimeStore((s) => s.nodes[nodeId]);
+    const node = useAnimatedRuntimeStore((s) => s.nodes[nodeId]);
     const drag = useNodeDrag(nodeId);
 
     if (!node) return null;

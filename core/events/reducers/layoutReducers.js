@@ -7,7 +7,7 @@ export function layoutReducers(state, event) {
 
     switch (type) {
         case EventTypes.NODE_MOVE: {
-            const { id, x, y } = payload;
+            const { id, xDelta, yDelta } = payload;
             const node = state.nodes[id];
             if (!node) return state;
 
@@ -17,8 +17,8 @@ export function layoutReducers(state, event) {
                     ...state.nodes,
                     [id]: {
                         ...node,
-                        x,
-                        y,
+                        x: (node.x ?? 0) + xDelta,
+                        y: (node.y ?? 0) + yDelta,
                     },
                 },
             };

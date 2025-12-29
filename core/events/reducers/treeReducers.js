@@ -7,52 +7,62 @@ export function treeReducers(state, event) {
 
   switch (type) {
       case EventTypes.NODE_ATTACH: {
-          const { parentId, childId } = payload;
+          const { parentId, childId, childIds, index } = payload;
+          const ids = childIds || (childId ? [childId] : []);
           const parent = state.nodes[parentId];
-          const child = state.nodes[childId];
-          if (!parent || !child) return state;
+          if (!parent || !ids.length) return state;
 
-          const parentChildren = parent.children || [];
-          const nextChildren = parentChildren.includes(childId) ? parentChildren : [...parentChildren, childId];
+          const existing = parent.children || [];
+          const filtered = existing.filter((id) => !ids.includes(id));
+          const clampedIndex = typeof index === 'number' ? Math.max(0, Math.min(index, filtered.length)) : filtered.length;
+          const nextChildren = [
+              ...filtered.slice(0, clampedIndex),
+              ...ids,
+              ...filtered.slice(clampedIndex),
+          ];
+
+          const nextNodes = { ...state.nodes, [parentId]: { ...parent, children: nextChildren } };
+
+          ids.forEach((id) => {
+              const child = state.nodes[id];
+              if (!child) return;
+              nextNodes[id] = { ...child, parentId };
+          });
 
           return {
               ...state,
-              nodes: {
-                  ...state.nodes,
-                  [parentId]: {
-                      ...parent,
-                      children: nextChildren,
-                  },
-                  [childId]: {
-                      ...child,
-                      parentId,
-                  },
-              },
-              rootIds: state.rootIds.filter((id) => id !== childId),
+              nodes: nextNodes,
+              rootIds: state.rootIds.filter((id) => !ids.includes(id)),
           };
       }
 
-      case EventTypes.NODE_ATTACH: {
-          const { parentId, childId } = payload;
-          const parent = state.nodes[parentId];
-          const child = state.nodes[childId];
-          if (!parent || !child) return state;
-          if (child.parentId === parentId) return state;
+      case EventTypes.NODE_REORDER: {
+          const { containerId, nodeIds, index } = payload;
+          const container = state.nodes[containerId];
+          if (!container) return state;
+
+          const existing = container.children || [];
+
+          const moving = existing.filter((id) => nodeIds.includes(id));
+          const remaining = existing.filter((id) => !nodeIds.includes(id));
+
+          const clampedIndex = Math.max(0, Math.min(index, remaining.length));
+
+          const nextChildren = [
+              ...remaining.slice(0, clampedIndex),
+              ...moving,
+              ...remaining.slice(clampedIndex),
+          ];
 
           return {
               ...state,
               nodes: {
                   ...state.nodes,
-                  [parent.id]: {
-                      ...parent,
-                      children: (parent.children || []).filter((id) => id !== childId),
-                  },
-                  [childId]: {
-                      ...child,
-                      parentId: null,
+                  [containerId]: {
+                      ...container,
+                      children: nextChildren,
                   },
               },
-              rootIds: state.rootIds.includes(childId) ? state.rootIds : [...state.rootIds, childId],
           };
       }
 

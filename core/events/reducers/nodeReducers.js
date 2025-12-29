@@ -2,15 +2,34 @@
 
 import { EventTypes } from "../eventTypes.js";
 
+const defaultLayout = Object.freeze({
+  mode: "none",
+  gap: 0,
+  padding: 0,
+  align: "start",
+});
+
+const defaultLayoutChild = Object.freeze({
+  grow: 0,
+  align: "start",
+  size: "fixed", // 'fixed' | 'fill' | 'hug'
+});
+
 export function nodeReducers(state, event) {
   const { type, payload } = event;
 
   switch (type) {
     case EventTypes.NODE_CREATE: {
       const { node } = payload;
-      const nextNode = {
+      const baseNode = {
         children: [],
         ...node,
+      };
+
+      const nextNode = {
+        ...baseNode,
+        layout: { ...defaultLayout, ...(baseNode.layout || {}) },
+        layoutChild: { ...defaultLayoutChild, ...(baseNode.layoutChild || {}) },
       };
 
       const nextRootIds = state.rootIds.includes(node.id)
@@ -36,7 +55,12 @@ export function nodeReducers(state, event) {
         ...state,
         nodes: {
           ...state.nodes,
-          [id]: { ...prev, ...patch },
+          [id]: {
+            ...prev,
+            ...patch,
+            layout: { ...defaultLayout, ...(prev.layout || {}), ...(patch.layout || {}) },
+            layoutChild: { ...defaultLayoutChild, ...(prev.layoutChild || {}), ...(patch.layoutChild || {}) },
+          },
         },
       };
     }

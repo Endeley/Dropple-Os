@@ -78,3 +78,35 @@ Shells, panels, canvas UI, tools.
 Next.js routing layer.
 
 Thin shells only.
+
+
+📌 What we have officially completed (for the record)
+
+
+✔ Phase 1 — Core OS Spine
+
+Deterministic event system
+
+Reducers only mutate state
+
+MessageBus → Dispatcher → Runtime
+
+Undo / Redo via history stack
+
+✔ Phase 2 — Runtime ↔ Zustand Bridge
+
+Runtime is the source of truth
+
+Zustand is a read mirror
+
+No direct mutations from UI
+
+✔ Phase 3 — Canvas → Event Emission
+
+Canvas emits events only
+
+Pointer math isolated with useRef
+
+No illegal React mutations
+
+Drag → NODE_MOVE event flow verified

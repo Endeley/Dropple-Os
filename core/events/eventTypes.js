@@ -13,6 +13,7 @@ export const EventTypes = Object.freeze({
     // Layout & transform
     NODE_MOVE: 'node/move',
     NODE_RESIZE: 'node/resize',
+    NODE_REORDER: 'node/reorder',
 
     // Selection (stateful but deterministic)
     SELECTION_SET: 'selection/set',
