@@ -21,6 +21,10 @@ export default function CanvasHost({ children, selectedNodeIds = [] }) {
     const activePointerRef = useRef(null);
 
     useEffect(() => {
+        console.count('Canvas render');
+    });
+
+    useEffect(() => {
         const el = canvasRef.current;
         if (!el) return;
 

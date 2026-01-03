@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid';
 import { applyResizeConstraints } from '@/engine/constraints/resizeConstraintEngine';
 import { computeSelectionBounds } from '@/engine/constraints/selectionBounds';
+import { perfStart, perfEnd } from '@/perf/perfTracker';
 
 /**
  * Constraint-aware resize intent session.
@@ -37,6 +38,7 @@ export class ResizeSession {
     }
 
     update(event) {
+        perfStart('resize.update');
         const x = event.clientX;
         const y = event.clientY;
 
@@ -61,6 +63,7 @@ export class ResizeSession {
         this.resize = result.resize;
         this.delta = result.delta; // position shift if resizing from left/top
         this.guides = result.guides ?? [];
+        perfEnd('resize.update');
     }
 
     getPreview() {

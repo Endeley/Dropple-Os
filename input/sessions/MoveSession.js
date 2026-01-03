@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid';
 import { applyMoveConstraints } from '@/engine/constraints/constraintEngine';
 import { computeReorderIndex } from '@/engine/layout/computeReorderIndex';
 import { findDropTarget } from '@/engine/layout/findDropTarget';
+import { perfStart, perfEnd } from '@/perf/perfTracker';
 
 export class MoveSession {
     constructor({ nodeIds, nodes = [], startPointer, siblings = [], canvas = null, options = {}, context = {} }) {
@@ -34,6 +35,7 @@ export class MoveSession {
     }
 
     update(event) {
+        perfStart('move.update');
         const x = event.clientX;
         const y = event.clientY;
 
@@ -54,6 +56,7 @@ export class MoveSession {
                       children: this.context.dropTargetChildren || [],
                   })
                 : null;
+            perfEnd('move.update');
             return;
         }
 
@@ -67,6 +70,7 @@ export class MoveSession {
 
             this.reorderIndex = index;
             this.reorderOrder = this.computeReorderOrder();
+            perfEnd('move.update');
             return;
         }
 
@@ -84,6 +88,7 @@ export class MoveSession {
         if (this.context?.isAutoLayoutChild) {
             this.reorderOrder = this.computeReorderOrder();
         }
+        perfEnd('move.update');
     }
 
     getPreview() {
