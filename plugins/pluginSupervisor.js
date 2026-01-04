@@ -2,7 +2,7 @@ import { createWorkerSandbox } from './workerSandbox';
 import { createCapabilities } from './capabilityFactory';
 import { createSecurePluginAPI } from './securePluginAPI';
 import { withExecutionGuards } from './executionGuards';
-import { perfStart, perfEnd } from '@/perf/perfTracker';
+import { perfStart, perfEnd } from '@/perf/perfTracker.js';
 
 /**
  * Activates a plugin inside an isolated worker sandbox with derived capabilities only.

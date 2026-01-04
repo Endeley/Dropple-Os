@@ -8,10 +8,11 @@ import { easeOutCubic } from '../animation/easing.js';
 import { useAnimatedRuntimeStore } from '../stores/useAnimatedRuntimeStore.js';
 import { syncRuntimeToZustand } from '../bridge/zustandBridge.js';
 import { createHistory } from './history.js';
-import { getRuntimeState, resetRuntimeState, setRuntimeState } from '../state/runtimeState.js';
-import { perfStart, perfEnd } from '@/perf/perfTracker';
+import { getRuntimeState, resetRuntimeState, setRuntimeState, ensureDefaultTimeline } from '../state/runtimeState.js';
+import { perfStart, perfEnd } from '@/perf/perfTracker.js';
+import { applyTimelineGuard } from '../guards/timelineGuard.js';
 
-export function createEventDispatcher({ maxHistory = 100 } = {}) {
+export function createEventDispatcher({ maxHistory = 100, workspaceId = null } = {}) {
     const history = createHistory(maxHistory);
     const animationController = createAnimationController({
         duration: 220,
@@ -49,8 +50,15 @@ export function createEventDispatcher({ maxHistory = 100 } = {}) {
 
     function dispatch(event) {
         perfStart('dispatch');
+        const guarded = applyTimelineGuard(event);
+        if (!guarded) {
+            perfEnd('dispatch');
+            return getRuntimeState();
+        }
+
         const prev = getRuntimeState();
-        let next = applyEvent(prev, event);
+        let next = applyEvent(prev, guarded);
+        next = ensureDefaultTimeline(next);
 
         if (next === prev) return next;
 

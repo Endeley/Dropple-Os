@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
 import { applyResizeConstraints } from '@/engine/constraints/resizeConstraintEngine';
 import { computeSelectionBounds } from '@/engine/constraints/selectionBounds';
-import { perfStart, perfEnd } from '@/perf/perfTracker';
+import { perfStart, perfEnd } from '@/perf/perfTracker.js';
 
 /**
  * Constraint-aware resize intent session.

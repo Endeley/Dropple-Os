@@ -1,5 +1,5 @@
 import { EventTypes } from '@/core/events/eventTypes';
-import { bus } from '@/canvas/canvasBus';
+import { canvasBus } from '@/ui/canvasBus.js';
 import { createEventDispatcher } from '@/runtime/dispatcher/dispatch';
 import { isAutoLayoutChild } from '@/engine/layout/isAutoLayoutChild';
 
@@ -10,6 +10,7 @@ import { isAutoLayoutChild } from '@/engine/layout/isAutoLayoutChild';
 export function attachSessionCommitBridge() {
     const dispatcher = createEventDispatcher();
     const getState = dispatcher.getState;
+    const bus = canvasBus;
 
     function onCommit(event) {
         const { sessionType, payload } = event;
@@ -38,6 +39,27 @@ export function attachSessionCommitBridge() {
                     childIds: payload.nodeIds,
                     index: payload.index,
                 },
+            });
+
+            return;
+        }
+
+        if (payload?.type === 'timeline-keyframe') {
+            const { nodeIds, time, trackId, properties } = payload;
+
+            nodeIds.forEach((id) => {
+                Object.entries(properties).forEach(([prop, value]) => {
+                    dispatcher.dispatch({
+                        type: EventTypes.TIMELINE_KEYFRAME_ADD,
+                        payload: {
+                            nodeId: id,
+                            trackId,
+                            time,
+                            property: prop,
+                            value,
+                        },
+                    });
+                });
             });
 
             return;

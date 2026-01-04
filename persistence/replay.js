@@ -1,4 +1,4 @@
-import { perfStart, perfEnd } from '@/perf/perfTracker';
+import { perfStart, perfEnd } from '@/perf/perfTracker.js';
 
 export function replayBranch(branch, applyEvent, initialState) {
     perfStart('replay');

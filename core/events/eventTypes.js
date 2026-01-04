@@ -17,4 +17,7 @@ export const EventTypes = Object.freeze({
 
     // Selection (stateful but deterministic)
     SELECTION_SET: 'selection/set',
+
+    // Timeline
+    TIMELINE_KEYFRAME_ADD: 'timeline/keyframe/add',
 });

@@ -2,7 +2,7 @@ import { nanoid } from 'nanoid';
 import { applyMoveConstraints } from '@/engine/constraints/constraintEngine';
 import { computeReorderIndex } from '@/engine/layout/computeReorderIndex';
 import { findDropTarget } from '@/engine/layout/findDropTarget';
-import { perfStart, perfEnd } from '@/perf/perfTracker';
+import { perfStart, perfEnd } from '@/perf/perfTracker.js';
 
 export class MoveSession {
     constructor({ nodeIds, nodes = [], startPointer, siblings = [], canvas = null, options = {}, context = {} }) {
@@ -116,6 +116,20 @@ export class MoveSession {
                 containerId: this.context.container?.id,
                 nodeIds: this.nodeIds,
                 index: this.reorderIndex,
+            };
+        }
+
+        // Timeline-aware move emits keyframe intent
+        if (this.context?.timelineEnabled) {
+            return {
+                type: 'timeline-keyframe',
+                nodeIds: this.nodeIds,
+                time: this.context.currentTime,
+                trackId: this.context.trackId,
+                properties: {
+                    x: this.delta.x,
+                    y: this.delta.y,
+                },
             };
         }
 

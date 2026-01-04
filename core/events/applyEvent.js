@@ -5,8 +5,10 @@ import { rootReducer } from "./reducers/index.js";
 const initialState = Object.freeze({
     nodes: Object.freeze({}),
     rootIds: Object.freeze([]),
+    timeline: Object.freeze({
+        timelines: {},
+    }),
 });
-;
 
 export function applyEvent(state = initialState, event) {
   if (!event?.type) {

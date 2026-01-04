@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { bus } from './canvasBus';
+import { canvasBus } from '@/ui/canvasBus.js';
 import CanvasSnapGuides from './CanvasSnapGuides';
 import { GhostNode } from './GhostNode';
 import InsertionLine from './InsertionLine';
@@ -24,14 +24,14 @@ export default function CanvasGhostLayer() {
             setPreview(null);
         }
 
-        bus.on('session.update', onUpdate);
-        bus.on('session.commit', clear);
-        bus.on('session.cancel', clear);
+        canvasBus.on('session.update', onUpdate);
+        canvasBus.on('session.commit', clear);
+        canvasBus.on('session.cancel', clear);
 
         return () => {
-            bus.off('session.update', onUpdate);
-            bus.off('session.commit', clear);
-            bus.off('session.cancel', clear);
+            canvasBus.off('session.update', onUpdate);
+            canvasBus.off('session.commit', clear);
+            canvasBus.off('session.cancel', clear);
         };
     }, []);
 

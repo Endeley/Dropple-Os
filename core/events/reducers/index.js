@@ -4,6 +4,7 @@ import { nodeReducers } from "./nodeReducers.js";
 import { treeReducers } from "./treeReducers.js";
 import { layoutReducers } from "./layoutReducers.js";
 import { styleReducers } from "./styleReducers.js";
+import { timelineReducers } from "./timelineReducers.js";
 
 export function rootReducer(state, event) {
   let next = state;
@@ -11,5 +12,6 @@ export function rootReducer(state, event) {
   next = treeReducers(next, event);
   next = layoutReducers(next, event);
   next = styleReducers(next, event);
+  next = timelineReducers(next, event);
   return next;
 }

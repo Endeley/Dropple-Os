@@ -1,11 +1,23 @@
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
-import { useNodeDrag } from './hooks/useNodeDrag.js';
+import { useTimelinePreviewStore } from '@/runtime/stores/useTimelinePreviewStore.js';
+import { canvasBus } from '@/ui/canvasBus.js';
+import { MoveSession } from '@/input/sessions/MoveSession.js';
 
 export function NodeRenderer({ nodeId }) {
-    const node = useAnimatedRuntimeStore((s) => s.nodes[nodeId]);
-    const drag = useNodeDrag(nodeId);
+    const preview = useTimelinePreviewStore((s) => ({ active: s.active, nodes: s.nodes }));
+    const runtimeNode = useAnimatedRuntimeStore((s) => s.nodes[nodeId]);
+    const node = preview.active ? preview.nodes[nodeId] : runtimeNode;
 
     if (!node) return null;
+
+    function onPointerDown(e) {
+        e.preventDefault();
+        const session = new MoveSession({
+            nodeIds: [node.id],
+            startPointer: { x: e.clientX, y: e.clientY },
+        });
+        canvasBus.emit('pointer.down', { session, event: e });
+    }
 
     return (
         <div
@@ -16,10 +28,9 @@ export function NodeRenderer({ nodeId }) {
                 width: node.width ?? 100,
                 height: node.height ?? 100,
             }}
-            onPointerDown={drag.onPointerDown}
-            onPointerMove={(e) => drag.onPointerMove(e, node)}
-            onPointerUp={drag.onPointerUp}>
-            {node.type}
+            onPointerDown={onPointerDown}
+        >
+            {node.type ?? nodeId}
         </div>
     );
 }
