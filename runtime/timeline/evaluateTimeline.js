@@ -13,16 +13,16 @@ import { easingPresets } from './easingPresets.js';
 export function evaluateTimeline(timeline, time, baseState) {
     if (!timeline || !baseState) return baseState;
 
-    const t = clamp(time, 0, timeline.duration);
+    const t = clamp(time, 0, timeline.duration ?? time);
     const nextState = {
         ...baseState,
         nodes: { ...baseState.nodes },
     };
 
-    timeline.tracks.forEach((track) => {
-        const { targetId, property, keyframes, easing = 'linear' } = track;
+    (timeline.tracks || []).forEach((track) => {
+        const { targetId, property, keyframes = [], easing = 'linear' } = track;
         const node = nextState.nodes[targetId];
-        if (!node || !keyframes || keyframes.length === 0) return;
+        if (!node || keyframes.length === 0) return;
 
         const value = interpolateKeyframes(keyframes, t, easing);
         if (value === undefined) return;

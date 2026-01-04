@@ -1,12 +1,9 @@
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
-import { useTimelinePreviewStore } from '@/runtime/stores/useTimelinePreviewStore.js';
 import { canvasBus } from '@/ui/canvasBus.js';
 import { MoveSession } from '@/input/sessions/MoveSession.js';
 
 export function NodeRenderer({ nodeId }) {
-    const preview = useTimelinePreviewStore((s) => ({ active: s.active, nodes: s.nodes }));
-    const runtimeNode = useAnimatedRuntimeStore((s) => s.nodes[nodeId]);
-    const node = preview.active ? preview.nodes[nodeId] : runtimeNode;
+    const node = useAnimatedRuntimeStore((s) => s.nodes[nodeId]);
 
     if (!node) return null;
 

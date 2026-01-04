@@ -1,3 +1,5 @@
+import { createTimelineCapability } from "./timelineCapability.js";
+
 /**
  * Animation Workspace
  *
@@ -8,52 +10,28 @@
  */
 export const animationWorkspace = {
     id: "animation",
-    label: "Animation & Motion",
+    label: "Animation / Motion",
     status: "active",
 
-    /**
-     * Required engine systems
-     */
-    engines: ["nodeTree", "layout", "constraints", "timeline", "motion"],
+    engines: ["nodeTree", "layout", "timeline"],
+    tools: ["select", "move", "keyframe", "path"],
+    panels: ["layers", "timeline", "properties"],
 
-    /**
-     * Tools exposed to the user
-     */
-    tools: ["select", "move", "resize", "draw-path", "keyframe", "easing"],
-
-    /**
-     * Inspector panels
-     */
-    panels: ["layers", "properties", "timeline", "motion"],
-
-    /**
-     * Timeline is FIRST-CLASS here
-     */
-    timeline: {
-        enabled: true,
-        primary: true,
-
-        tracks: ["transform", "opacity", "motion-path", "effects"],
-    },
-
-    /**
-     * Declares what kind of intent this workspace emits
-     */
-    ir: {
-        design: true,
-        layout: true,
-        motion: true,
-
-        semantic: false,
+    capabilities: {
+        canvas: true,
+        timeline: true,
+        animation: true,
         audio: false,
         video: false,
-        code: false,
+        codegen: false,
     },
 
-    /**
-     * Export formats enabled for animation
-     */
+    timeline: createTimelineCapability({
+        readOnly: false,
+        allowedProperties: ["x", "y", "scale", "rotation", "opacity"],
+    }),
+
     export: {
-        formats: ["mp4", "gif", "lottie", "svg-motion"],
+        formats: ["mp4", "gif", "lottie"],
     },
 };

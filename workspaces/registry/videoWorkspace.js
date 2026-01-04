@@ -1,34 +1,29 @@
+import { createTimelineCapability } from "./timelineCapability.js";
+
 export const videoWorkspace = {
     id: "video",
     label: "Video Editor",
     status: "active",
 
-    engines: ["timeline", "media", "constraints"],
+    engines: ["timeline", "media"],
+    tools: ["cut", "trim", "overlay", "text"],
+    panels: ["timeline", "layers", "export"],
 
-    ir: {
-        design: false,
-        layout: false,
-        interaction: false,
-        state: false,
-        motion: true,
+    capabilities: {
+        canvas: false,
+        timeline: true,
+        animation: false,
         audio: true,
         video: true,
-        semantic: false,
-        code: false,
+        codegen: false,
     },
 
-    timeline: {
-        enabled: true,
-        primary: true,
-        tracks: ["video", "audio", "overlay"],
-    },
-
-    nodes: ["video", "audio", "text", "image"],
-
-    tools: ["cut", "trim", "transition", "caption"],
-    panels: ["timeline", "media", "properties"],
+    timeline: createTimelineCapability({
+        readOnly: false,
+        allowedProperties: ["x", "y", "opacity", "volume"],
+    }),
 
     export: {
-        formats: ["mp4", "mov", "webm"],
+        formats: ["mp4"],
     },
 };

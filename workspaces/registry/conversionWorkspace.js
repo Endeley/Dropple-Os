@@ -1,35 +1,25 @@
 export const conversionWorkspace = {
     id: "conversion",
-    label: "Design to Code",
+    label: "Design → Code",
     status: "active",
 
-    engines: ["parser", "ast", "codegen"],
+    engines: ["nodeTree", "layout", "timeline"],
 
-    ir: {
-        design: true,
-        layout: true,
-        interaction: false,
-        state: false,
-        motion: false,
+    tools: [],
+    panels: ["export"],
+
+    capabilities: {
+        canvas: true,
+        timeline: true, // read-only: for exporting motion
+        animation: false,
         audio: false,
         video: false,
-        semantic: true,
-        code: true,
+        codegen: true,
     },
 
-    timeline: {
-        enabled: false,
-        primary: false,
-        tracks: [],
-    },
-
-    nodes: [],
-
-    tools: ["inspect", "map", "convert"],
-
-    panels: ["source", "mapping", "output"],
+    timeline: null,
 
     export: {
-        formats: ["react", "vue", "html", "css"],
+        formats: ["css", "lottie", "react"],
     },
 };

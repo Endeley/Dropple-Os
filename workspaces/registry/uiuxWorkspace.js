@@ -1,3 +1,5 @@
+import { createTimelineCapability } from "./timelineCapability.js";
+
 export const uiuxWorkspace = {
     id: "uiux",
     label: "UI / UX Design",
@@ -5,29 +7,22 @@ export const uiuxWorkspace = {
     status: "active",
 
     engines: ["nodeTree", "layout", "constraints", "autoLayout"],
+    tools: ["select", "move", "resize", "text", "shape", "image"],
+    panels: ["layers", "properties", "tokens"],
 
-    ir: {
-        design: true,
-        layout: true,
-        interaction: true,
-        state: true,
-        motion: false,
+    capabilities: {
+        canvas: true,
+        timeline: true,
+        animation: false,
         audio: false,
         video: false,
-        semantic: true,
-        code: false,
+        codegen: false,
     },
 
-    timeline: {
-        enabled: false,
-        primary: false,
-        tracks: [],
-    },
-
-    nodes: ["frame", "group", "text", "image", "component"],
-
-    tools: ["select", "move", "resize", "text", "component"],
-    panels: ["layers", "properties", "tokens"],
+    timeline: createTimelineCapability({
+        readOnly: true,
+        allowedProperties: ["x", "y", "opacity"],
+    }),
 
     export: {
         formats: ["react", "html", "css"],

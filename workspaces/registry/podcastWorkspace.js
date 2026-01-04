@@ -1,34 +1,29 @@
+import { createTimelineCapability } from "./timelineCapability.js";
+
 export const podcastWorkspace = {
     id: "podcast",
-    label: "Podcast / Audio",
+    label: "Podcast / Streaming",
     status: "active",
 
     engines: ["timeline", "audio"],
+    tools: ["cut", "mute", "chapter"],
+    panels: ["timeline", "chapters"],
 
-    ir: {
-        design: false,
-        layout: false,
-        interaction: false,
-        state: false,
-        motion: true,
+    capabilities: {
+        canvas: false,
+        timeline: true,
+        animation: false,
         audio: true,
         video: false,
-        semantic: true,
-        code: false,
+        codegen: false,
     },
 
-    timeline: {
-        enabled: true,
-        primary: true,
-        tracks: ["audio", "markers"],
-    },
-
-    nodes: ["audio", "segment", "marker"],
-
-    tools: ["cut", "split", "noise-reduce"],
-    panels: ["timeline", "chapters", "properties"],
+    timeline: createTimelineCapability({
+        readOnly: false,
+        allowedProperties: ["volume", "mute"],
+    }),
 
     export: {
-        formats: ["mp3", "wav", "aac"],
+        formats: ["mp3", "wav"],
     },
 };

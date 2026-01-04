@@ -6,12 +6,13 @@ import GhostLayer from './GhostLayer.jsx';
 import GuideLayer from './GuideLayer.jsx';
 import SelectionLayer from './SelectionLayer.jsx';
 import CollabLayer from './CollabLayer.jsx';
-import { useRenderState } from '@/runtime/bridge/selectRenderState.js';
+import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
+import { getRuntimeState } from '@/runtime/state/runtimeState.js';
+import TimelinePanel from '@/ui/timeline/TimelinePanel.jsx';
 
-export default function CanvasRoot() {
-    const state = useRenderState();
-    const nodes = state?.nodes || {};
-    const rootIds = state?.rootIds || [];
+export default function CanvasRoot({ workspaceId }) {
+    const workspace = resolveWorkspacePolicy(workspaceId);
+    const timeline = getRuntimeState()?.timeline?.timelines?.default;
 
     return (
         <CanvasHost>
@@ -20,6 +21,7 @@ export default function CanvasRoot() {
             <GuideLayer />
             <SelectionLayer />
             <CollabLayer />
+            {workspace?.capabilities?.timeline && <TimelinePanel timeline={timeline} />}
         </CanvasHost>
     );
 }

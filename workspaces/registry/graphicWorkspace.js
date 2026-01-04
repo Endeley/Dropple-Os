@@ -4,29 +4,19 @@ export const graphicWorkspace = {
     status: "active",
 
     engines: ["nodeTree", "layout"],
-
-    ir: {
-        design: true,
-        layout: true,
-        interaction: false,
-        state: false,
-        motion: false,
-        audio: false,
-        video: false,
-        semantic: true,
-        code: false,
-    },
-
-    timeline: {
-        enabled: false,
-        primary: false,
-        tracks: [],
-    },
-
-    nodes: ["frame", "group", "shape", "text", "image", "vector"],
-
     tools: ["select", "move", "resize", "text", "shape", "image"],
     panels: ["layers", "properties"],
+
+    capabilities: {
+        canvas: true,
+        timeline: false,
+        animation: false,
+        audio: false,
+        video: false,
+        codegen: false,
+    },
+
+    timeline: null,
 
     export: {
         formats: ["png", "jpg", "svg", "pdf"],
