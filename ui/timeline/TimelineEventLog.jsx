@@ -1,9 +1,9 @@
 'use client';
 
 /**
- * Simple read-only list of timeline events.
+ * Read-only list of timeline events (debug / inspection).
  */
-export default function TimelineTracks({ timeline }) {
+export default function TimelineEventLog({ timeline }) {
     if (!timeline?.events) return null;
 
     return (

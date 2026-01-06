@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useTimelineStore } from './useTimelineStore.js';
 import { applyTimelinePreview } from './applyTimelinePreview.js';
 import TimelineScrubber from './TimelineScrubber.jsx';
-import TimelineTracks from './TimelineTracks.jsx';
+import TimelineEventLog from './TimelineEventLog.jsx';
 
 export default function TimelinePanel({ timeline }) {
     const { currentTime, duration, setTime } = useTimelineStore();
@@ -35,7 +35,7 @@ export default function TimelinePanel({ timeline }) {
             }}
         >
             <TimelineScrubber duration={panelDuration} />
-            <TimelineTracks timeline={timeline} />
+            <TimelineEventLog timeline={timeline} />
         </div>
     );
 }

@@ -8,7 +8,21 @@
  * @module
  */
 
+import type * as appendEvents from "../appendEvents.js";
+import type * as getAuditLogs from "../getAuditLogs.js";
+import type * as getDocumentMember from "../getDocumentMember.js";
+import type * as getPresence from "../getPresence.js";
+import type * as lib_assertPermission from "../lib/assertPermission.js";
+import type * as lib_permissions from "../lib/permissions.js";
+import type * as lib_writeAuditLog from "../lib/writeAuditLog.js";
+import type * as loadDocumentSnapshot from "../loadDocumentSnapshot.js";
+import type * as saveDocumentSnapshot from "../saveDocumentSnapshot.js";
+import type * as streamEvents from "../streamEvents.js";
 import type * as tasks from "../tasks.js";
+import type * as updateCursor from "../updateCursor.js";
+import type * as updateIntent from "../updateIntent.js";
+import type * as updatePresence from "../updatePresence.js";
+import type * as updateSelection from "../updateSelection.js";
 
 import type {
   ApiFromModules,
@@ -17,7 +31,21 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  appendEvents: typeof appendEvents;
+  getAuditLogs: typeof getAuditLogs;
+  getDocumentMember: typeof getDocumentMember;
+  getPresence: typeof getPresence;
+  "lib/assertPermission": typeof lib_assertPermission;
+  "lib/permissions": typeof lib_permissions;
+  "lib/writeAuditLog": typeof lib_writeAuditLog;
+  loadDocumentSnapshot: typeof loadDocumentSnapshot;
+  saveDocumentSnapshot: typeof saveDocumentSnapshot;
+  streamEvents: typeof streamEvents;
   tasks: typeof tasks;
+  updateCursor: typeof updateCursor;
+  updateIntent: typeof updateIntent;
+  updatePresence: typeof updatePresence;
+  updateSelection: typeof updateSelection;
 }>;
 
 /**

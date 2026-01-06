@@ -1,5 +1,6 @@
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
 import { sampleProperty } from './sampleTimeline.js';
+import { perfStart, perfEnd } from '@/perf/perfTracker.js';
 
 /**
  * Applies a preview frame based on timeline time.
@@ -8,6 +9,9 @@ import { sampleProperty } from './sampleTimeline.js';
 export function applyTimelinePreview({ timeline, baseState, time }) {
     if (!timeline || !baseState) return;
 
+    perfStart('timeline.preview');
+    const SNAP_MS = 16;
+    const snappedTime = Math.round(time / SNAP_MS) * SNAP_MS;
     const nextNodes = { ...baseState.nodes };
 
     Object.values(timeline.tracks || {}).forEach((track) => {
@@ -17,7 +21,7 @@ export function applyTimelinePreview({ timeline, baseState, time }) {
         const patch = {};
 
         Object.entries(track.properties || {}).forEach(([prop, keyframes]) => {
-            const value = sampleProperty(keyframes, time);
+            const value = sampleProperty(keyframes, snappedTime);
             if (value !== null) {
                 patch[prop] = value;
             }
@@ -36,4 +40,5 @@ export function applyTimelinePreview({ timeline, baseState, time }) {
         },
         false
     );
+    perfEnd('timeline.preview');
 }

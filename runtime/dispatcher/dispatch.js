@@ -8,12 +8,34 @@ import { easeOutCubic } from '../animation/easing.js';
 import { useAnimatedRuntimeStore } from '../stores/useAnimatedRuntimeStore.js';
 import { syncRuntimeToZustand } from '../bridge/zustandBridge.js';
 import { createHistory } from './history.js';
-import { getRuntimeState, resetRuntimeState, setRuntimeState, ensureDefaultTimeline } from '../state/runtimeState.js';
+import {
+    getRuntimeState,
+    resetRuntimeState,
+    setRuntimeState,
+    ensureDefaultTimeline,
+    setRuntimeError,
+} from '../state/runtimeState.js';
 import { perfStart, perfEnd } from '@/perf/perfTracker.js';
 import { applyTimelineGuard } from '../guards/timelineGuard.js';
+import { shouldRunLayout } from '../layout/shouldRunLayout.js';
+import { EventSequencer } from '../events/EventSequencer.js';
+import { createEventId } from '../events/createEventId.js';
 
-export function createEventDispatcher({ maxHistory = 100, workspaceId = null } = {}) {
+/**
+ * Canonical event dispatcher.
+ *
+ * 🔒 ID POLICY (Phase 8.2):
+ * - eventId is assigned HERE
+ * - one event → one immutable eventId
+ */
+export function createEventDispatcher({
+    maxHistory = 100,
+    workspaceId = null,
+    branchId = 'main',
+} = {}) {
     const history = createHistory(maxHistory);
+    const sequencer = new EventSequencer();
+
     const animationController = createAnimationController({
         duration: 220,
         easing: easeOutCubic,
@@ -32,11 +54,8 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null } =
 
     function commit(nextState) {
         const prev = getRuntimeState();
-
         setRuntimeState(nextState);
-
         animationController.start(prev, nextState);
-
         syncRuntimeToZustand(nextState);
         useAnimatedRuntimeStore.setState(
             {
@@ -48,42 +67,61 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null } =
         return nextState;
     }
 
-    function dispatch(event) {
+    function dispatch(rawEvent) {
         perfStart('dispatch');
-        const guarded = applyTimelineGuard(event);
-        if (!guarded) {
-            perfEnd('dispatch');
+
+        try {
+            // 🔒 Assign eventId exactly once
+            const seq = sequencer.next(branchId);
+            const eventId = createEventId({ branchId, nextSeq: seq });
+
+            const event = {
+                ...rawEvent,
+                id: eventId,
+            };
+
+            const guarded = applyTimelineGuard(event);
+            if (!guarded) {
+                return getRuntimeState();
+            }
+
+            const prev = getRuntimeState();
+            let next = applyEvent(prev, guarded);
+            next = ensureDefaultTimeline(next);
+
+            if (next === prev) return next;
+
+            let layoutMs = 0;
+            if (shouldRunLayout(guarded)) {
+                perfStart('layout');
+                next = applyLayoutPass(next);
+                layoutMs = perfEnd('layout');
+            }
+
+            history.push(next);
+            const committed = commit(next);
+
+            const t = perfEnd('dispatch');
+            if (t > 8) {
+                console.warn('dispatch slow:', t.toFixed(2), event.type, 'layout:', layoutMs?.toFixed(2));
+            }
+
+            setRuntimeError(null);
+            return committed;
+        } catch (err) {
+            console.error('[Dispatcher error]', err, rawEvent);
+            setRuntimeError(err);
             return getRuntimeState();
+        } finally {
+            perfEnd('dispatch');
         }
-
-        const prev = getRuntimeState();
-        let next = applyEvent(prev, guarded);
-        next = ensureDefaultTimeline(next);
-
-        if (next === prev) return next;
-
-        // 🔐 AUTO-LAYOUT RUNS HERE
-        perfStart('layout');
-        next = applyLayoutPass(next);
-        const layoutMs = perfEnd('layout');
-
-        history.push(next);
-        const committed = commit(next);
-        const t = perfEnd('dispatch');
-        if (t > 8) {
-            console.warn('dispatch slow:', t.toFixed(2), event.type, 'layout:', layoutMs?.toFixed(2));
-        }
-        return committed;
     }
 
     function undo() {
         perfStart('undo');
         const next = history.undo();
         const committed = commit(next);
-        const t = perfEnd('undo');
-        if (t > 5) {
-            console.warn('undo slow:', t.toFixed(2));
-        }
+        perfEnd('undo');
         return committed;
     }
 
@@ -91,15 +129,13 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null } =
         perfStart('redo');
         const next = history.redo();
         const committed = commit(next);
-        const t = perfEnd('redo');
-        if (t > 5) {
-            console.warn('redo slow:', t.toFixed(2));
-        }
+        perfEnd('redo');
         return committed;
     }
 
     function reset() {
         history.reset();
+        sequencer.reset();
         resetRuntimeState();
         syncRuntimeToZustand({ nodes: {}, rootIds: [] });
     }

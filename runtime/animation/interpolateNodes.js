@@ -1,4 +1,17 @@
+import { perfStart, perfEnd } from '@/perf/perfTracker.js';
+
+let lastFrameTime = 0;
+const FRAME_BUDGET = 1000 / 60; // ~60fps
+
 export function interpolateNodes(fromNodes, toNodes, t) {
+    const now = performance.now();
+    if (now - lastFrameTime < FRAME_BUDGET) {
+        return toNodes; // skip interpolation frame under budget
+    }
+
+    lastFrameTime = now;
+
+    perfStart('animation.interpolate');
     const result = {};
 
     Object.keys(toNodes).forEach((id) => {
@@ -20,6 +33,7 @@ export function interpolateNodes(fromNodes, toNodes, t) {
         };
     });
 
+    perfEnd('animation.interpolate');
     return result;
 }
 

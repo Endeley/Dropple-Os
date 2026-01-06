@@ -1,14 +1,18 @@
-import { perfStart, perfEnd } from '@/perf/perfTracker.js';
+import { applyEvent } from '@/core/events/applyEvent.js';
 
-export function replayBranch(branch, applyEvent, initialState) {
-    perfStart('replay');
+/**
+ * Replay a branch deterministically.
+ *
+ * Assumes:
+ * - validated persistence
+ * - stable eventIds
+ */
+export function replayBranch(branch, initialState) {
     let state = initialState;
 
-    branch.events.forEach((evt) => {
-        state = applyEvent(state, evt);
-    });
+    for (const event of branch.events) {
+        state = applyEvent(state, event);
+    }
 
-    const t = perfEnd('replay');
-    console.log('Replay ms:', t?.toFixed(2), 'events:', branch.events.length);
     return state;
 }

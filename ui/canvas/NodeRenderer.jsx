@@ -1,33 +1,21 @@
-import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
-import { canvasBus } from '@/ui/canvasBus.js';
-import { MoveSession } from '@/input/sessions/MoveSession.js';
+'use client';
 
-export function NodeRenderer({ nodeId }) {
-    const node = useAnimatedRuntimeStore((s) => s.nodes[nodeId]);
+import React, { memo } from 'react';
+import { NodeView } from '@/ui/NodeView.jsx';
 
+function NodeRendererImpl({ node }) {
     if (!node) return null;
 
-    function onPointerDown(e) {
-        e.preventDefault();
-        const session = new MoveSession({
-            nodeIds: [node.id],
-            startPointer: { x: e.clientX, y: e.clientY },
-        });
-        canvasBus.emit('pointer.down', { session, event: e });
-    }
-
-    return (
-        <div
-            style={{
-                position: 'absolute',
-                left: node.x ?? 0,
-                top: node.y ?? 0,
-                width: node.width ?? 100,
-                height: node.height ?? 100,
-            }}
-            onPointerDown={onPointerDown}
-        >
-            {node.type ?? nodeId}
-        </div>
-    );
+    return <NodeView node={node} />;
 }
+
+export const NodeRenderer = memo(
+    NodeRendererImpl,
+    (prev, next) => {
+        const a = prev.node;
+        const b = next.node;
+        if (!a || !b) return a === b;
+
+        return a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height && a.opacity === b.opacity;
+    }
+);

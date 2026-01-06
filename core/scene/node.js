@@ -1,8 +1,12 @@
-export function createNode(partial) {
+export function createNode({ id, type = "frame", children = [], ...rest }) {
+  if (!id) {
+    throw new Error("createNode: id (nodeId) is required");
+  }
+
   return {
-    id: crypto.randomUUID(),
-    type: "frame",
-    children: [],
-    ...partial,
+    id,
+    type,
+    children,
+    ...rest,
   };
 }

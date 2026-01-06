@@ -1,7 +1,10 @@
+// runtime/bridge/attachSessionCommitBridge.js
+
 import { EventTypes } from '@/core/events/eventTypes';
 import { canvasBus } from '@/ui/canvasBus.js';
 import { createEventDispatcher } from '@/runtime/dispatcher/dispatch';
 import { isAutoLayoutChild } from '@/engine/layout/isAutoLayoutChild';
+import { commitTimelineKeyframe } from '@/timeline/commitTimelineKeyframe';
 
 /**
  * Bridges committed input sessions into runtime events.
@@ -14,11 +17,9 @@ export function attachSessionCommitBridge() {
 
     function onCommit(event) {
         const { sessionType, payload } = event;
-        if (payload?.type === 'noop') {
-            return;
-        }
+        if (!payload || payload.type === 'noop') return;
 
-        if (payload?.type === 'reorder') {
+        if (payload.type === 'reorder') {
             dispatcher.dispatch({
                 type: EventTypes.NODE_REORDER,
                 payload,
@@ -26,7 +27,7 @@ export function attachSessionCommitBridge() {
             return;
         }
 
-        if (payload?.type === 'reparent') {
+        if (payload.type === 'reparent') {
             dispatcher.dispatch({
                 type: EventTypes.NODE_DETACH,
                 payload: { ids: payload.nodeIds },
@@ -40,32 +41,27 @@ export function attachSessionCommitBridge() {
                     index: payload.index,
                 },
             });
-
             return;
         }
 
-        if (payload?.type === 'timeline-keyframe') {
+        // 🔐 Timeline-aware commit (LEGAL ID CREATION)
+        if (payload.type === 'timeline-keyframe') {
             const { nodeIds, time, trackId, properties } = payload;
 
-            nodeIds.forEach((id) => {
-                Object.entries(properties).forEach(([prop, value]) => {
-                    dispatcher.dispatch({
-                        type: EventTypes.TIMELINE_KEYFRAME_ADD,
-                        payload: {
-                            nodeId: id,
-                            trackId,
-                            time,
-                            property: prop,
-                            value,
-                        },
+            nodeIds.forEach((nodeId) => {
+                Object.entries(properties).forEach(([property, value]) => {
+                    commitTimelineKeyframe({
+                        dispatcher,
+                        nodeId,
+                        trackId,
+                        time,
+                        property,
+                        value,
                     });
                 });
             });
-
             return;
         }
-
-        if (!payload) return;
 
         // Handle MoveSession commit
         if (sessionType === 'move') {
@@ -75,10 +71,7 @@ export function attachSessionCommitBridge() {
 
             nodeIds.forEach((id) => {
                 const node = nodes[id];
-                if (!node || isAutoLayoutChild(node, nodes)) {
-                    // Inside auto-layout: position is derived, so skip x/y mutation.
-                    return;
-                }
+                if (!node || isAutoLayoutChild(node, nodes)) return;
 
                 dispatcher.dispatch({
                     type: EventTypes.NODE_MOVE,

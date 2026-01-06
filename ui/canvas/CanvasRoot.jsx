@@ -9,12 +9,14 @@ import CollabLayer from './CollabLayer.jsx';
 import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
 import { getRuntimeState } from '@/runtime/state/runtimeState.js';
 import TimelinePanel from '@/ui/timeline/TimelinePanel.jsx';
+import { perfStart, perfEnd } from '@/perf/perfTracker.js';
 
 export default function CanvasRoot({ workspaceId }) {
+    perfStart('canvas.render');
     const workspace = resolveWorkspacePolicy(workspaceId);
     const timeline = getRuntimeState()?.timeline?.timelines?.default;
 
-    return (
+    const content = (
         <CanvasHost>
             <NodeLayer />
             <GhostLayer />
@@ -24,4 +26,7 @@ export default function CanvasRoot({ workspaceId }) {
             {workspace?.capabilities?.timeline && <TimelinePanel timeline={timeline} />}
         </CanvasHost>
     );
+
+    perfEnd('canvas.render');
+    return content;
 }

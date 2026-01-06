@@ -9,18 +9,29 @@ export function createTimeline({ duration = 1000 } = {}) {
     };
 }
 
-export function createAnimationTrack({ target, property }) {
+export function createAnimationTrack({ id = null, target, property, clips = [] } = {}) {
+    if (!target) {
+        throw new Error('createAnimationTrack: target is required');
+    }
+    if (!property) {
+        throw new Error('createAnimationTrack: property is required');
+    }
+
     return {
-        id: crypto.randomUUID(),
+        id, // assigned at commit boundary
         target, // nodeId
         property, // 'x' | 'y' | 'opacity' | 'scale' | etc.
-        keyframes: [],
+        clips,
     };
 }
 
-export function createKeyframe({ time, value, easing = 'linear' }) {
+export function createKeyframe({ id = null, time, value, easing = 'linear' } = {}) {
+    if (time == null) {
+        throw new Error('createKeyframe: time is required');
+    }
+
     return {
-        id: crypto.randomUUID(),
+        id, // assigned at commit boundary
         time, // ms
         value,
         easing,
