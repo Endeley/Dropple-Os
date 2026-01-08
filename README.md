@@ -8,6 +8,8 @@ This repository contains the core operating system for Dropple:
 - event-driven runtime
 - AI as an amplifier, not the OS
 
+Deployment strategy: see `docs/deployment-strategy.md`.
+
 Phase 0: Spine bootstrap.
 
 ## Core

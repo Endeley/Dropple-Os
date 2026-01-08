@@ -3,6 +3,11 @@ import { MessageBus } from '@/core/messageBus';
 /**
  * Manages exactly ONE active input session.
  * No mutations. No canvas logic. No UI logic.
+ *
+ * HARD RULES:
+ * - startSession must be strict
+ * - updateSession must be safe
+ * - commitSession must be safe when idle
  */
 export class InputSessionManager {
     constructor(bus) {
@@ -20,12 +25,6 @@ export class InputSessionManager {
         }
     }
 
-    assertActive() {
-        if (!this.state.activeSession) {
-            throw new Error('[InputSessionManager] No active session');
-        }
-    }
-
     cleanup() {
         this.state.activeSession = null;
         this.state.state = 'idle';
@@ -37,7 +36,7 @@ export class InputSessionManager {
         this.state.activeSession = session;
         this.state.state = 'active';
 
-        session.start(event);
+        session.start?.(event);
 
         this.bus.emit('session.start', {
             sessionId: session.id,
@@ -45,24 +44,47 @@ export class InputSessionManager {
         });
     }
 
+    /**
+     * Pointer move updates.
+     * Safe no-op when idle.
+     */
     updateSession(event) {
-        this.assertActive();
-
         const session = this.state.activeSession;
-        session.update(event);
+        if (!session) return null;
 
-        this.bus.emit('session.update', {
-            sessionId: session.id,
-            sessionType: session.type,
-            preview: session.getPreview?.() ?? null,
-        });
+        try {
+            session.update?.(event);
+
+            this.bus.emit('session.update', {
+                sessionId: session.id,
+                sessionType: session.type,
+                preview: session.getPreview?.() ?? null,
+            });
+
+            return session;
+        } catch (err) {
+            console.error('[InputSessionManager] updateSession failed:', err);
+            this.cancelSession();
+            return null;
+        }
     }
 
+    /**
+     * Pointer up commit.
+     * IMPORTANT: pointer.up can fire with NO active session.
+     * This MUST be a safe no-op.
+     */
     commitSession() {
-        this.assertActive();
-
         const session = this.state.activeSession;
-        const payload = session.commit();
+        if (!session) return null;
+
+        let payload = null;
+
+        try {
+            payload = session.commit?.();
+        } catch (err) {
+            console.error('[InputSessionManager] commitSession failed:', err);
+        }
 
         this.bus.emit('session.commit', {
             sessionId: session.id,
@@ -75,10 +97,14 @@ export class InputSessionManager {
     }
 
     cancelSession() {
-        if (!this.state.activeSession) return;
-
         const session = this.state.activeSession;
-        session.cancel();
+        if (!session) return;
+
+        try {
+            session.cancel?.();
+        } catch (err) {
+            console.warn('[InputSessionManager] cancelSession error:', err);
+        }
 
         this.bus.emit('session.cancel', {
             sessionId: session.id,

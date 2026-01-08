@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <div id="canvas"></div>
+
+    <script type="module">
+      import { renderDesignCanvas } from '../render/renderDesignCanvas.js';
+
+      const state = {
+        rootIds: ['a'],
+        nodes: {
+          a: {
+            id: 'a',
+            type: 'frame',
+            children: ['b'],
+            layout: { display: 'flex', padding: 20 },
+            style: { backgroundColor: '#222' },
+          },
+          b: {
+            id: 'b',
+            type: 'text',
+            parentId: 'a',
+            children: [],
+            content: 'Hello Dropple',
+            style: { color: 'white', fontSize: '24px' },
+          },
+        },
+      };
+
+      renderDesignCanvas({
+        state,
+        container: document.getElementById('canvas'),
+      });
+    </script>
+  </body>
+</html>

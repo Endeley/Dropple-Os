@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <div id="timeline"></div>
+    <div id="panel"></div>
+    <div id="annotations"></div>
+    <div id="annotation-panel"></div>
+    <div id="canvas"></div>
+
+    <script type="module">
+      import { WorkspaceShell } from '../WorkspaceShell.js';
+      import { MessageBus } from '../../core/messageBus.js';
+      import { TimelineUI } from '../timeline/TimelineUI.js';
+      import { InteractionController } from '../../interaction/InteractionController.js';
+      import { KeyboardController } from '../../interaction/KeyboardController.js';
+      import { AutoLayoutPanel } from '../../ui/panels/AutoLayoutPanel.js';
+      import { AnnotationStore } from '../../education/AnnotationStore.js';
+      import { AnnotationPanel } from '../../education/AnnotationPanel.js';
+      import { AnnotationOverlay } from '../../education/AnnotationOverlay.js';
+
+      const bus = new MessageBus({ runId: 'run-1' });
+
+      const shell = new WorkspaceShell({
+        runId: 'run-1',
+        messageBus: bus,
+        canvasContainer: document.getElementById('canvas'),
+      });
+
+      shell.cursor.authority = 'controller';
+      shell.enableEducationMode();
+
+      const timeline = new TimelineUI({
+        container: document.getElementById('timeline'),
+        shell,
+      });
+
+      shell.timelineUI = timeline;
+      timeline.mount();
+
+      shell.mount();
+
+      const interactions = new InteractionController({
+        shell,
+        messageBus: bus,
+        canvasContainer: document.getElementById('canvas'),
+      });
+
+      shell.interactions = interactions;
+      interactions.mount();
+
+      const keyboard = new KeyboardController({
+        shell,
+        interactions,
+        messageBus: bus,
+      });
+
+      keyboard.mount();
+
+      const panel = new AutoLayoutPanel({
+        container: document.getElementById('panel'),
+        shell,
+        interactions,
+        messageBus: bus,
+      });
+
+      panel.mount();
+
+      const annotationStore = new AnnotationStore();
+      const annotationPanel = new AnnotationPanel({
+        container: document.getElementById('annotation-panel'),
+        shell,
+        store: annotationStore,
+      });
+      const annotationOverlay = new AnnotationOverlay({
+        container: document.getElementById('annotations'),
+        store: annotationStore,
+        shell,
+      });
+
+      annotationPanel.render();
+      annotationOverlay.render();
+
+      bus.emit({
+        type: 'node.create',
+        payload: { nodeId: 'a', nodeType: 'frame' },
+      });
+
+      bus.emit({
+        type: 'node.create',
+        payload: {
+          nodeId: 'b',
+          nodeType: 'text',
+          parentId: 'a',
+        },
+      });
+
+      bus.emit({
+        type: 'text.content.update',
+        payload: {
+          nodeId: 'b',
+          content: 'WorkspaceShell works',
+        },
+      });
+    </script>
+  </body>
+</html>

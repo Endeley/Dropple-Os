@@ -1,32 +1,32 @@
 {
-  "name": "dropple",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "@stackframe/stack": "^2.8.56",
-    "clsx": "^2.1.1",
-    "convex": "^1.31.2",
-    "lucide-react": "^0.562.0",
-    "next": "^16.1.1",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
-    "zustand": "^5.0.9"
-  },
-  "devDependencies": {
-    "@playwright/test": "^1.57.0",
-    "@tailwindcss/postcss": "^4.1.18",
-    "@types/node": "^25.0.3",
-    "@types/react": "^19.2.7",
-    "babel-plugin-react-compiler": "1.0.0",
-    "eslint": "^9.39.2",
-    "eslint-config-next": "^16.1.1",
-    "tailwindcss": "^4.1.18"
-  }
+    "name": "dropple",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint"
+    },
+    "dependencies": {
+        "@stackframe/stack": "^2.8.56",
+        "clsx": "^2.1.1",
+        "convex": "^1.31.2",
+        "lucide-react": "^0.562.0",
+        "next": "^16.1.1",
+        "react": "^19.2.3",
+        "react-dom": "^19.2.3",
+        "zustand": "^5.0.9"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.57.0",
+        "@tailwindcss/postcss": "^4.1.18",
+        "@types/node": "^25.0.3",
+        "@types/react": "^19.2.7",
+        "babel-plugin-react-compiler": "1.0.0",
+        "eslint": "^9.39.2",
+        "eslint-config-next": "^16.1.1",
+        "tailwindcss": "^4.1.18"
+    }
 }

@@ -4,10 +4,17 @@ import { WorkspaceRegistry } from "../../workspaces/registry";
 import { WorkspaceShell } from "./WorkspaceShell";
 
 export function ModeLoader({ mode }) {
-  const workspace = WorkspaceRegistry[mode];
+  const key = (mode || "").toLowerCase();
+  const workspace = WorkspaceRegistry[key];
 
   if (!workspace) {
-    return <div>Unknown workspace: {mode}</div>;
+    const available = Object.keys(WorkspaceRegistry);
+    return (
+      <div style={{ padding: 16, fontSize: 14 }}>
+        <div style={{ marginBottom: 8 }}>Unknown workspace: {mode}</div>
+        <div>Available modes: {available.join(", ")}</div>
+      </div>
+    );
   }
 
   return <WorkspaceShell workspace={workspace} />;

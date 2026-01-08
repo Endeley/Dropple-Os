@@ -1,4 +1,4 @@
-import { WorkspaceRegistry } from './index.js';
+import { WorkspaceRegistry } from '../registry.js';
 
 /**
  * Resolves full workspace definition including inheritance.
