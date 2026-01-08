@@ -1,3 +1,4 @@
+import '@/workspaces/modes/registerModes';
 import "../ui/styles/globals.css";
 import { ConvexProvider } from "../providers/ConvexProvider";
 

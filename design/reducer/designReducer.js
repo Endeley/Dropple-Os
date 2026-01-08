@@ -16,6 +16,8 @@ export function designReducer(state = createDesignState(), event) {
       return nodeStructureReducer(state, event);
 
     case 'node.layout.update':
+    case 'node.layout.move':
+    case 'node.layout.resize':
       return nodeLayoutReducer(state, event);
 
     case 'node.style.update':

@@ -4,8 +4,13 @@ import { reconstructDesignState } from './reconstructDesignState.js';
 export function getDesignStateAtCursor({
   events,
   cursor,
+  uptoIndex,
 }) {
-  const resolvedCursor = resolveCursor(events, cursor);
+  const cursorFromIndex =
+    typeof uptoIndex === 'number'
+      ? { eventId: events[uptoIndex]?.id ?? null }
+      : null;
+  const resolvedCursor = resolveCursor(events, cursorFromIndex || cursor);
 
   return reconstructDesignState({
     events,

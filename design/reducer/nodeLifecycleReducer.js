@@ -5,7 +5,24 @@ export function nodeLifecycleReducer(state, event) {
 
   switch (event.type) {
     case 'node.create': {
-      const { nodeId, nodeType, parentId, initialProps } = event.payload;
+      const payloadNode = event.payload?.node;
+      if (payloadNode) {
+        if (next.nodes[payloadNode.id]) return state;
+
+        next.nodes[payloadNode.id] = payloadNode;
+
+        if (payloadNode.parentId) {
+          const parent = next.nodes[payloadNode.parentId];
+          if (!parent) return state;
+          parent.children.push(payloadNode.id);
+        } else {
+          next.rootIds.push(payloadNode.id);
+        }
+
+        return next;
+      }
+
+      const { nodeId, nodeType, parentId, initialProps, layout } = event.payload;
 
       if (next.nodes[nodeId]) return state;
 
@@ -14,6 +31,7 @@ export function nodeLifecycleReducer(state, event) {
         type: nodeType,
         parentId,
         props: initialProps || {},
+        layout: layout || {},
       });
 
       next.nodes[nodeId] = node;
