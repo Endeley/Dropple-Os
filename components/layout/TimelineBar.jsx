@@ -1,18 +1,27 @@
 'use client';
 
+import { useEducationCursor } from '@/education/EducationCursorContext';
+
 export default function TimelineBar({ events = [], cursor, setCursorIndex }) {
+  const education = useEducationCursor();
+  const locked = education?.locked ?? false;
+  const role = education?.role ?? 'teacher';
+  const canScrub = !locked || role === 'teacher';
   const hasEvents = events.length > 0;
   const max = events.length - 1;
 
   function undo() {
+    if (!canScrub) return;
     setCursorIndex((i) => Math.max(-1, i - 1));
   }
 
   function redo() {
+    if (!canScrub) return;
     setCursorIndex((i) => Math.min(max, i + 1));
   }
 
   function scrub(e) {
+    if (!canScrub) return;
     const value = Number(e.target.value);
     const next = Math.max(-1, Math.min(max, value));
     setCursorIndex(next);
@@ -20,11 +29,17 @@ export default function TimelineBar({ events = [], cursor, setCursorIndex }) {
 
   return (
     <div className="timeline-bar">
-      <button onClick={undo} disabled={!hasEvents || cursor.index <= -1}>
+      <button
+        onClick={undo}
+        disabled={!hasEvents || cursor.index <= -1 || !canScrub}
+      >
         Undo
       </button>
 
-      <button onClick={redo} disabled={!hasEvents || cursor.index >= max}>
+      <button
+        onClick={redo}
+        disabled={!hasEvents || cursor.index >= max || !canScrub}
+      >
         Redo
       </button>
 
@@ -34,7 +49,7 @@ export default function TimelineBar({ events = [], cursor, setCursorIndex }) {
         max={max}
         value={cursor.index}
         onChange={scrub}
-        disabled={!hasEvents}
+        disabled={!hasEvents || !canScrub}
         style={{ flex: 1 }}
       />
 

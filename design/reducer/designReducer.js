@@ -9,6 +9,7 @@ export function designReducer(state = createDesignState(), event) {
   switch (event.type) {
     case 'node.create':
     case 'node.delete':
+    case 'node.children.reorder':
       return nodeLifecycleReducer(state, event);
 
     case 'node.reparent':
@@ -18,6 +19,10 @@ export function designReducer(state = createDesignState(), event) {
     case 'node.layout.update':
     case 'node.layout.move':
     case 'node.layout.resize':
+    case 'node.layout.setConstraint':
+    case 'node.layout.clearConstraint':
+    case 'node.layout.setAutoLayout':
+    case 'node.layout.clearAutoLayout':
       return nodeLayoutReducer(state, event);
 
     case 'node.style.update':

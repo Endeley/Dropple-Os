@@ -1,16 +1,31 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ModeRegistry } from '@/workspaces/modes/ModeRegistry';
 import { WorkspaceLayout } from './WorkspaceLayout';
 import { MessageBus } from '@/runtime/MessageBus';
+import { GridProvider } from './GridContext';
+import { ClipboardProvider } from './ClipboardContext';
+import { applyAutoLayoutIfNeeded } from './useAutoLayoutCommit';
+import { getDesignStateAtCursor } from '@/runtime/replay/getDesignStateAtCursor';
+import { EducationCursorProvider } from '@/education/EducationCursorContext';
+import TemplateGeneratorOverlay from '@/templates/TemplateGeneratorOverlay';
+import { useTemplateGenerator } from '@/templates/useTemplateGenerator';
 
-export function WorkspaceShell({ modeId }) {
+export function WorkspaceShell({
+  modeId,
+  educationRole = 'teacher',
+  initialEvents = [],
+  initialCursorIndex = -1,
+  disableSeed = false,
+}) {
   const adapter = ModeRegistry.get(modeId);
+  const templateGen = useTemplateGenerator();
 
   const busRef = useRef(null);
-  const [events, setEvents] = useState([]);
-  const [cursorIndex, setCursorIndex] = useState(-1);
+  const [events, setEvents] = useState(() => initialEvents);
+  const [cursorIndex, setCursorIndex] = useState(initialCursorIndex);
+  const skipAutoLayoutOnce = useRef(initialEvents.length > 0);
 
   if (!busRef.current) {
     busRef.current = new MessageBus({ runId: 'design-run' });
@@ -27,7 +42,39 @@ export function WorkspaceShell({ modeId }) {
   const bus = busRef.current;
 
   useEffect(() => {
-    if (events.length > 0) return;
+    if (events.length === 0) return;
+    if (skipAutoLayoutOnce.current) {
+      skipAutoLayoutOnce.current = false;
+      return;
+    }
+
+    const lastEvent = events[events.length - 1];
+    if (!lastEvent) return;
+
+    const shouldApply = new Set([
+      'node.layout.setAutoLayout',
+      'node.layout.clearAutoLayout',
+      'node.layout.resize',
+      'node.create',
+      'node.delete',
+      'node.children.reorder',
+    ]);
+
+    if (!shouldApply.has(lastEvent.type)) return;
+
+    const state = getDesignStateAtCursor({
+      events,
+      uptoIndex: events.length - 1,
+    });
+
+    applyAutoLayoutIfNeeded({
+      state,
+      emit: bus.emit.bind(bus),
+    });
+  }, [events, bus]);
+
+  useEffect(() => {
+    if (disableSeed || events.length > 0) return;
 
     bus.emit({
       type: 'node.create',
@@ -56,13 +103,44 @@ export function WorkspaceShell({ modeId }) {
     index: cursorIndex,
   };
 
-  return (
+  const replayState = useMemo(
+    () =>
+      getDesignStateAtCursor({
+        events,
+        uptoIndex: cursorIndex,
+      }),
+    [events, cursorIndex]
+  );
+
+  const workspace = (
     <WorkspaceLayout
       adapter={adapter}
       events={events}
       cursor={cursor}
       setCursorIndex={setCursorIndex}
       emit={bus.emit.bind(bus)}
+      onOpenTemplateGenerator={templateGen.openGenerator}
     />
+  );
+
+  return (
+    <GridProvider>
+      <ClipboardProvider>
+        {modeId === 'education' ? (
+          <EducationCursorProvider role={educationRole}>
+            {workspace}
+          </EducationCursorProvider>
+        ) : (
+          workspace
+        )}
+        <TemplateGeneratorOverlay
+          open={templateGen.open}
+          onClose={templateGen.closeGenerator}
+          state={replayState}
+          events={events}
+          mode={adapter}
+        />
+      </ClipboardProvider>
+    </GridProvider>
   );
 }

@@ -55,6 +55,28 @@ export function nodeLifecycleReducer(state, event) {
       return next;
     }
 
+    case 'node.children.reorder': {
+      const { parentId, fromIndex, toIndex } = event.payload;
+      const parent = next.nodes[parentId];
+      if (!parent) return state;
+
+      const children = [...parent.children];
+      if (
+        fromIndex < 0 ||
+        toIndex < 0 ||
+        fromIndex >= children.length ||
+        toIndex >= children.length
+      ) {
+        return state;
+      }
+
+      const [moved] = children.splice(fromIndex, 1);
+      children.splice(toIndex, 0, moved);
+
+      parent.children = children;
+      return next;
+    }
+
     default:
       return state;
   }

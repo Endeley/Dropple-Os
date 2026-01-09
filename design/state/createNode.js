@@ -14,7 +14,15 @@ export function createNode({
     children: [],
     props,
     style,
-    layout,
+    layout: {
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+      constraints: {},
+      autoLayout: null, // flex | grid (explicit)
+      ...layout,
+    },
     content,
   };
 }

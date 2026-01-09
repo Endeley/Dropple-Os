@@ -7,12 +7,12 @@ const SelectionContext = createContext(null);
 export function SelectionProvider({ children }) {
   const [selectedIds, setSelectedIds] = useState(new Set());
 
-  function select(id) {
+  function selectSingle(id) {
     setSelectedIds(new Set([id]));
   }
 
-  function clear() {
-    setSelectedIds(new Set());
+  function setSelection(ids) {
+    setSelectedIds(new Set(ids));
   }
 
   function toggle(id) {
@@ -23,15 +23,19 @@ export function SelectionProvider({ children }) {
     });
   }
 
+  function clear() {
+    setSelectedIds(new Set());
+  }
+
   return (
-    <SelectionContext.Provider value={{ selectedIds, select, clear, toggle }}>
+    <SelectionContext.Provider
+      value={{ selectedIds, selectSingle, toggle, clear, setSelection }}
+    >
       {children}
     </SelectionContext.Provider>
   );
 }
 
 export function useSelection() {
-  const ctx = useContext(SelectionContext);
-  if (!ctx) throw new Error('useSelection must be used inside SelectionProvider');
-  return ctx;
+  return useContext(SelectionContext);
 }

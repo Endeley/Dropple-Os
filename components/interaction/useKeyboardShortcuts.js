@@ -1,18 +1,36 @@
 'use client';
 
 import { useEffect } from 'react';
+import { serializeSelection } from '@/components/workspace/serializeSelection';
+import { pasteFromClipboard } from '@/components/workspace/pasteFromClipboard';
+import { useClipboard } from '@/components/workspace/ClipboardContext';
 
 export function useKeyboardShortcuts({
+  enabled = true,
   selectedIds,
+  setSelection,
   emit,
   undo,
   redo,
   getState,
 }) {
+  const clipboard = useClipboard();
+
   useEffect(() => {
+    if (!enabled) return;
     function onKeyDown(e) {
       const isMac = navigator.platform.includes('Mac');
       const mod = isMac ? e.metaKey : e.ctrlKey;
+
+      if (mod && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        const snapshot = serializeSelection({
+          state: getState(),
+          selectedIds,
+        });
+        clipboard.copy(snapshot);
+        return;
+      }
 
       if (mod && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
@@ -29,6 +47,16 @@ export function useKeyboardShortcuts({
       if (mod && e.key.toLowerCase() === 'd') {
         e.preventDefault();
         duplicateSelection();
+        return;
+      }
+
+      if (mod && e.key.toLowerCase() === 'v') {
+        e.preventDefault();
+        const newIds = pasteFromClipboard({
+          clipboard: clipboard.clipboard,
+          emit,
+        });
+        setSelection(new Set(newIds));
         return;
       }
 
@@ -75,5 +103,5 @@ export function useKeyboardShortcuts({
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [selectedIds, emit, undo, redo, getState]);
+  }, [enabled, selectedIds, setSelection, emit, undo, redo, getState, clipboard]);
 }
