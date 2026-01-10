@@ -9,14 +9,18 @@
  */
 
 import type * as appendEvents from "../appendEvents.js";
+import type * as assessments from "../assessments.js";
+import type * as certificates from "../certificates.js";
 import type * as getAuditLogs from "../getAuditLogs.js";
 import type * as getDocumentMember from "../getDocumentMember.js";
 import type * as getPresence from "../getPresence.js";
 import type * as lib_assertPermission from "../lib/assertPermission.js";
+import type * as lib_audit from "../lib/audit.js";
 import type * as lib_permissions from "../lib/permissions.js";
 import type * as lib_writeAuditLog from "../lib/writeAuditLog.js";
 import type * as loadDocumentSnapshot from "../loadDocumentSnapshot.js";
 import type * as saveDocumentSnapshot from "../saveDocumentSnapshot.js";
+import type * as seed from "../seed.js";
 import type * as streamEvents from "../streamEvents.js";
 import type * as tasks from "../tasks.js";
 import type * as updateCursor from "../updateCursor.js";
@@ -32,14 +36,18 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   appendEvents: typeof appendEvents;
+  assessments: typeof assessments;
+  certificates: typeof certificates;
   getAuditLogs: typeof getAuditLogs;
   getDocumentMember: typeof getDocumentMember;
   getPresence: typeof getPresence;
   "lib/assertPermission": typeof lib_assertPermission;
+  "lib/audit": typeof lib_audit;
   "lib/permissions": typeof lib_permissions;
   "lib/writeAuditLog": typeof lib_writeAuditLog;
   loadDocumentSnapshot: typeof loadDocumentSnapshot;
   saveDocumentSnapshot: typeof saveDocumentSnapshot;
+  seed: typeof seed;
   streamEvents: typeof streamEvents;
   tasks: typeof tasks;
   updateCursor: typeof updateCursor;

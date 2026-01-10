@@ -121,4 +121,52 @@ export default defineSchema({
     tasks: defineTable({
         text: v.string(),
     }),
+
+    assessments: defineTable({
+        title: v.string(),
+        submittedBy: v.string(),
+        submittedAt: v.number(),
+        status: v.union(
+            v.literal('submitted'),
+            v.literal('under_review'),
+            v.literal('approved'),
+            v.literal('rejected')
+        ),
+        responses: v.array(
+            v.object({
+                question: v.string(),
+                answer: v.string(),
+            })
+        ),
+        review: v.optional(
+            v.object({
+                reviewerId: v.string(),
+                reviewedAt: v.number(),
+                decision: v.union(v.literal('approved'), v.literal('rejected')),
+                notes: v.optional(v.string()),
+            })
+        ),
+    }).index('by_status', ['status']),
+
+    reviewers: defineTable({
+        userId: v.string(),
+        role: v.union(v.literal('reviewer'), v.literal('admin')),
+        createdAt: v.number(),
+    }).index('by_userId', ['userId']),
+
+    certificates: defineTable({
+        certificateId: v.string(),
+        assessmentId: v.id('assessments'),
+        issuedTo: v.string(),
+        issuedBy: v.string(),
+        issuedAt: v.number(),
+        reviewSnapshot: v.object({
+            reviewerId: v.string(),
+            reviewedAt: v.number(),
+            decision: v.literal('approved'),
+        }),
+        verificationHash: v.string(),
+    })
+        .index('by_certificateId', ['certificateId'])
+        .index('by_assessment', ['assessmentId']),
 });
