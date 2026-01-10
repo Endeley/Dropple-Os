@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import { WorkspaceShell } from '@/components/workspace/WorkspaceShell';
 import { mockTemplates } from '@/marketplace/mockTemplates';
 import { createWorkspaceFromTemplate } from '@/workspace/createFromTemplate';
+import { mockLessons } from '@/marketplace/mockLessons';
+import { forkLessonToWorkspace } from '@/education/forkLessonToWorkspace';
 
 function createEmptyWorkspace() {
   return {
@@ -19,11 +21,17 @@ function createEmptyWorkspace() {
 export default function WorkspaceNewPage() {
   const searchParams = useSearchParams();
   const fromTemplate = searchParams.get('fromTemplate');
+  const fromLesson = searchParams.get('fromLesson');
 
   const workspace = useMemo(() => {
     const template = mockTemplates.find((t) => t.id === fromTemplate);
-    return template ? createWorkspaceFromTemplate(template) : createEmptyWorkspace();
-  }, [fromTemplate]);
+    if (template) return createWorkspaceFromTemplate(template);
+
+    const lesson = mockLessons.find((l) => l.id === fromLesson);
+    if (lesson) return forkLessonToWorkspace(lesson);
+
+    return createEmptyWorkspace();
+  }, [fromTemplate, fromLesson]);
 
   const initialCursorIndex = workspace.events.length
     ? workspace.events.length - 1

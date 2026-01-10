@@ -8,6 +8,7 @@ import RightPanel from '@/components/layout/RightPanel';
 import TimelineBar from '@/components/layout/TimelineBar';
 import CanvasStage from '@/components/layout/CanvasStage';
 import { EducationToolbar } from '@/education/EducationToolbar';
+import ReviewToolbar from '@/review/ReviewToolbar';
 import { SelectionProvider, useSelection } from './SelectionContext';
 import { useKeyboardShortcuts } from '@/components/interaction/useKeyboardShortcuts';
 import { getDesignStateAtCursor } from '@/runtime/replay/getDesignStateAtCursor';
@@ -19,8 +20,17 @@ function WorkspaceLayoutInner({
   setCursorIndex,
   emit,
   onOpenTemplateGenerator,
+  educationReadOnly = false,
+  reviewSubmission,
+  reviewRubric,
+  onReviewDecision,
+  onReviewCriteriaChange,
 }) {
   const { selectedIds, setSelection } = useSelection();
+  const keyboardEnabled =
+    adapter?.interactions?.keyboard !== false &&
+    adapter?.capabilities?.editing !== false &&
+    adapter?.id !== 'review';
 
   function getState() {
     return getDesignStateAtCursor({
@@ -30,7 +40,7 @@ function WorkspaceLayoutInner({
   }
 
   useKeyboardShortcuts({
-    enabled: adapter?.id !== 'education',
+    enabled: keyboardEnabled,
     selectedIds,
     setSelection,
     emit,
@@ -53,25 +63,37 @@ function WorkspaceLayoutInner({
               ? Array.from(selectedIds)[0]
               : null
           }
+          readOnly={educationReadOnly}
         />
+      ) : adapter?.id === 'review' ? (
+        <ReviewToolbar submission={reviewSubmission} onDecision={onReviewDecision} />
       ) : (
         <Toolbar mode={adapter} onOpenTemplateGenerator={onOpenTemplateGenerator} />
       )}
 
-      {adapter?.id === 'education' ? null : (
+      {adapter?.id === 'education' || adapter?.id === 'review' ? null : (
         <PropertyBar events={events} cursor={cursor} />
       )}
 
       <div className="workspace-main">
-        <LeftPanel panels={adapter.panels?.left} />
+        <LeftPanel panels={adapter.panels?.left} submission={reviewSubmission} />
 
-        <CanvasStage adapter={adapter} events={events} cursor={cursor} emit={emit} />
+        <CanvasStage
+          adapter={adapter}
+          events={events}
+          cursor={cursor}
+          emit={emit}
+          educationReadOnly={educationReadOnly}
+        />
 
         <RightPanel
           panels={adapter.panels?.right}
           events={events}
           cursor={cursor}
           emit={emit}
+          rubric={reviewRubric}
+          reviewCriteria={reviewSubmission?.review?.criteria}
+          onReviewCriteriaChange={onReviewCriteriaChange}
         />
       </div>
 
@@ -87,6 +109,11 @@ export function WorkspaceLayout({
   setCursorIndex,
   emit,
   onOpenTemplateGenerator,
+  educationReadOnly = false,
+  reviewSubmission,
+  reviewRubric,
+  onReviewDecision,
+  onReviewCriteriaChange,
 }) {
   return (
     <SelectionProvider>
@@ -97,6 +124,11 @@ export function WorkspaceLayout({
         setCursorIndex={setCursorIndex}
         emit={emit}
         onOpenTemplateGenerator={onOpenTemplateGenerator}
+        educationReadOnly={educationReadOnly}
+        reviewSubmission={reviewSubmission}
+        reviewRubric={reviewRubric}
+        onReviewDecision={onReviewDecision}
+        onReviewCriteriaChange={onReviewCriteriaChange}
       />
     </SelectionProvider>
   );

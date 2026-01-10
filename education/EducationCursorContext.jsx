@@ -4,8 +4,12 @@ import { createContext, useContext, useState } from 'react';
 
 const EducationCursorContext = createContext(null);
 
-export function EducationCursorProvider({ children, role = 'teacher' }) {
-  const [locked, setLocked] = useState(true);
+export function EducationCursorProvider({
+  children,
+  role = 'teacher',
+  initialLocked = true,
+}) {
+  const [locked, setLocked] = useState(initialLocked);
 
   return (
     <EducationCursorContext.Provider value={{ locked, setLocked, role }}>

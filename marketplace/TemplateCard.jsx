@@ -5,6 +5,8 @@ import { colors, radius, spacing } from '@/ui/tokens';
 export default function TemplateCard({ template, onOpen }) {
   const { metadata } = template;
   const creator = metadata.creator || {};
+  const pricing = metadata.pricing || { free: true };
+  const priceLabel = pricing.free ? 'Free' : `$${pricing.personal}`;
 
   return (
     <div
@@ -35,6 +37,7 @@ export default function TemplateCard({ template, onOpen }) {
         By {creator.name || 'Unknown'}
         {creator.region ? ` · ${creator.region}` : ''}
       </div>
+      <div style={{ fontSize: 11, color: colors.textMuted }}>{priceLabel}</div>
     </div>
   );
 }

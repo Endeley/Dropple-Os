@@ -11,7 +11,13 @@ export const mockTemplates = [
       level: 'beginner',
       tags: ['ui', 'landing'],
       thumbnail: { type: 'auto', rootCount: 5 },
+      pricing: {
+        free: false,
+        personal: 10,
+        commercial: 30,
+      },
       creator: {
+        id: 'creator-ayo',
         name: 'Ayo Designs',
         region: 'Nigeria',
       },

@@ -28,10 +28,14 @@ export default function ReadOnlyNodeRenderer({
   setReorderPreview,
   modeId,
   educationRole = 'teacher',
+  educationReadOnly = false,
 }) {
   const { selectedIds, selectSingle, toggle, setSelection } = useSelection();
   const { grid } = useGrid();
   const mods = useInteractionModifiers();
+  const isEducationReadOnly =
+    modeId === 'education' && (educationReadOnly || educationRole !== 'teacher');
+  const isReadOnly = modeId === 'review' || isEducationReadOnly;
 
   const dragRef = useRef({
     dragging: false,
@@ -70,7 +74,9 @@ export default function ReadOnlyNodeRenderer({
   if (!nodes) return null;
 
   function onNodeMouseDown(e, node) {
-    if (modeId === 'education' && educationRole !== 'teacher') return;
+    if (isReadOnly) {
+      return;
+    }
     e.stopPropagation();
 
     if (e.shiftKey) {
@@ -135,7 +141,9 @@ export default function ReadOnlyNodeRenderer({
   }
 
   function onMouseMove(e) {
-    if (modeId === 'education' && educationRole !== 'teacher') return;
+    if (isReadOnly) {
+      return;
+    }
     if (reorderRef.current.active) {
       if (!mods.alt) {
         const { parentId, toIndex } = reorderRef.current;
@@ -243,7 +251,9 @@ export default function ReadOnlyNodeRenderer({
   }
 
   function onMouseUp() {
-    if (modeId === 'education' && educationRole !== 'teacher') return;
+    if (isReadOnly) {
+      return;
+    }
     if (reorderRef.current.active) {
       const { parentId, fromIndex, toIndex } = reorderRef.current;
       const parent = nodes[parentId];
@@ -497,7 +507,7 @@ export default function ReadOnlyNodeRenderer({
             }}
           >
             {node.type} · {node.id}
-            {isSelected && (
+            {!isReadOnly && isSelected && (
               <div
                 onMouseDown={(e) => {
                   e.stopPropagation();

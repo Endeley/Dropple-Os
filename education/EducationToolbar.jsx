@@ -8,6 +8,7 @@ export function EducationToolbar({
   cursor,
   events = [],
   selectedId = null,
+  readOnly = false,
 }) {
   const cursorState = useEducationCursor();
 
@@ -18,7 +19,7 @@ export function EducationToolbar({
   const eventId = cursor?.index >= 0 ? events[cursor.index]?.id ?? null : null;
 
   function addAnnotation() {
-    if (!isTeacher) return;
+    if (!isTeacher || readOnly) return;
     emit({
       type: 'education.annotation.add',
       payload: {
@@ -34,7 +35,7 @@ export function EducationToolbar({
   }
 
   function addExplanation() {
-    if (!isTeacher) return;
+    if (!isTeacher || readOnly) return;
     emit({
       type: 'education.explanation.add',
       payload: {
@@ -75,36 +76,40 @@ export function EducationToolbar({
       >
         {locked ? 'Unlock Timeline' : 'Lock Timeline'}
       </button>
-      <button
-        onClick={addAnnotation}
-        disabled={!isTeacher}
-        style={{
-          minWidth: 32,
-          height: 32,
-          padding: `0 ${spacing.sm}px`,
-          border: `1px solid ${colors.border}`,
-          borderRadius: radius.sm,
-          background: '#fff',
-          fontSize: 12,
-        }}
-      >
-        Add Annotation
-      </button>
-      <button
-        onClick={addExplanation}
-        disabled={!isTeacher}
-        style={{
-          minWidth: 32,
-          height: 32,
-          padding: `0 ${spacing.sm}px`,
-          border: `1px solid ${colors.border}`,
-          borderRadius: radius.sm,
-          background: '#fff',
-          fontSize: 12,
-        }}
-      >
-        Add Explanation
-      </button>
+      {!readOnly ? (
+        <>
+          <button
+            onClick={addAnnotation}
+            disabled={!isTeacher}
+            style={{
+              minWidth: 32,
+              height: 32,
+              padding: `0 ${spacing.sm}px`,
+              border: `1px solid ${colors.border}`,
+              borderRadius: radius.sm,
+              background: '#fff',
+              fontSize: 12,
+            }}
+          >
+            Add Annotation
+          </button>
+          <button
+            onClick={addExplanation}
+            disabled={!isTeacher}
+            style={{
+              minWidth: 32,
+              height: 32,
+              padding: `0 ${spacing.sm}px`,
+              border: `1px solid ${colors.border}`,
+              borderRadius: radius.sm,
+              background: '#fff',
+              fontSize: 12,
+            }}
+          >
+            Add Explanation
+          </button>
+        </>
+      ) : null}
     </div>
   );
 }

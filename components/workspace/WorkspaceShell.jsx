@@ -15,9 +15,15 @@ import { useTemplateGenerator } from '@/templates/useTemplateGenerator';
 export function WorkspaceShell({
   modeId,
   educationRole = 'teacher',
+  educationInitialLocked = true,
+  educationReadOnly = false,
   initialEvents = [],
   initialCursorIndex = -1,
   disableSeed = false,
+  reviewSubmission,
+  reviewRubric,
+  onReviewDecision,
+  onReviewCriteriaChange,
 }) {
   const adapter = ModeRegistry.get(modeId);
   const templateGen = useTemplateGenerator();
@@ -120,6 +126,11 @@ export function WorkspaceShell({
       setCursorIndex={setCursorIndex}
       emit={bus.emit.bind(bus)}
       onOpenTemplateGenerator={templateGen.openGenerator}
+      educationReadOnly={educationReadOnly}
+      reviewSubmission={reviewSubmission}
+      reviewRubric={reviewRubric}
+      onReviewDecision={onReviewDecision}
+      onReviewCriteriaChange={onReviewCriteriaChange}
     />
   );
 
@@ -127,7 +138,10 @@ export function WorkspaceShell({
     <GridProvider>
       <ClipboardProvider>
         {modeId === 'education' ? (
-          <EducationCursorProvider role={educationRole}>
+          <EducationCursorProvider
+            role={educationRole}
+            initialLocked={educationInitialLocked}
+          >
             {workspace}
           </EducationCursorProvider>
         ) : (

@@ -16,7 +16,13 @@ import { AnnotationOverlay } from '@/education/AnnotationOverlay';
 import { useEducationCursor } from '@/education/EducationCursorContext';
 import { getEducationAtCursor } from '@/education/selectEducationState';
 
-export default function CanvasStage({ adapter, events, cursor, emit }) {
+export default function CanvasStage({
+  adapter,
+  events,
+  cursor,
+  emit,
+  educationReadOnly = false,
+}) {
   const containerRef = useRef(null);
 
   const state = useReplayState({ events, cursor });
@@ -38,6 +44,7 @@ export default function CanvasStage({ adapter, events, cursor, emit }) {
   const educationState = getEducationAtCursor(state, cursor);
   const isPreview =
     adapter?.id === 'preview' || adapter?.id === 'prototype' || adapter?.isPreview;
+  const isReview = adapter?.id === 'review';
   const showAutoLayoutOverlay = shouldShowAutoLayoutOverlay({
     selectedIds,
     nodes: state.nodes,
@@ -130,7 +137,9 @@ export default function CanvasStage({ adapter, events, cursor, emit }) {
       className="canvas-viewport"
       style={{ background: colors.bg }}
       onMouseDown={(e) => {
-        clear();
+        if (!isReview) {
+          clear();
+        }
         onMouseDown(e);
       }}
       onMouseMove={onMouseMove}
@@ -156,6 +165,7 @@ export default function CanvasStage({ adapter, events, cursor, emit }) {
           setReorderPreview={setReorderPreview}
           modeId={adapter?.id}
           educationRole={educationRole}
+          educationReadOnly={educationReadOnly}
         />
         <AutoLayoutOverlayLayer>
           {overlayNode && (
@@ -168,7 +178,6 @@ export default function CanvasStage({ adapter, events, cursor, emit }) {
           {adapter?.id === 'education' && educationState.annotations?.length ? (
             <AnnotationOverlay annotations={educationState.annotations} />
           ) : null}
-          )}
           {reorderParent && reorderPreview.toIndex != null && (
             <ReorderIndicator
               parent={reorderParent}
