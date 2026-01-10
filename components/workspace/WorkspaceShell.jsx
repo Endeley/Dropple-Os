@@ -24,6 +24,7 @@ export function WorkspaceShell({
   reviewRubric,
   onReviewDecision,
   onReviewCriteriaChange,
+  reviewerId,
 }) {
   const adapter = ModeRegistry.get(modeId);
   const templateGen = useTemplateGenerator();
@@ -131,6 +132,7 @@ export function WorkspaceShell({
       reviewRubric={reviewRubric}
       onReviewDecision={onReviewDecision}
       onReviewCriteriaChange={onReviewCriteriaChange}
+      reviewerId={reviewerId}
     />
   );
 

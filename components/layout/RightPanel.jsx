@@ -9,6 +9,7 @@ import { EducationInspector } from '@/education/EducationInspector';
 import { EducationTimelinePanel } from '@/education/EducationTimelinePanel';
 import { getEducationAtCursor } from '@/education/selectEducationState';
 import RubricPanel from '@/review/panels/RubricPanel';
+import AnnotationPanel from '@/review/panels/AnnotationPanel';
 
 export default function RightPanel({
   panels = [],
@@ -18,6 +19,8 @@ export default function RightPanel({
   rubric,
   reviewCriteria,
   onReviewCriteriaChange,
+  submissionId,
+  setCursorIndex,
 }) {
   const { selectedIds } = useSelection();
   const state = useReplayState({ events, cursor });
@@ -55,6 +58,14 @@ export default function RightPanel({
             rubric={rubric}
             initialScores={reviewCriteria}
             onUpdate={onReviewCriteriaChange}
+          />
+        </Panel>
+      ) : null}
+      {panels?.includes('AnnotationPanel') ? (
+        <Panel title="Annotations">
+          <AnnotationPanel
+            submissionId={submissionId}
+            setCursorIndex={setCursorIndex}
           />
         </Panel>
       ) : null}

@@ -25,6 +25,7 @@ function WorkspaceLayoutInner({
   reviewRubric,
   onReviewDecision,
   onReviewCriteriaChange,
+  reviewerId,
 }) {
   const { selectedIds, setSelection } = useSelection();
   const keyboardEnabled =
@@ -66,7 +67,12 @@ function WorkspaceLayoutInner({
           readOnly={educationReadOnly}
         />
       ) : adapter?.id === 'review' ? (
-        <ReviewToolbar submission={reviewSubmission} onDecision={onReviewDecision} />
+        <ReviewToolbar
+          submission={reviewSubmission}
+          onDecision={onReviewDecision}
+          reviewerId={reviewerId}
+          cursor={cursor}
+        />
       ) : (
         <Toolbar mode={adapter} onOpenTemplateGenerator={onOpenTemplateGenerator} />
       )}
@@ -94,10 +100,17 @@ function WorkspaceLayoutInner({
           rubric={reviewRubric}
           reviewCriteria={reviewSubmission?.review?.criteria}
           onReviewCriteriaChange={onReviewCriteriaChange}
+          submissionId={reviewSubmission?.id}
+          setCursorIndex={setCursorIndex}
         />
       </div>
 
-      <TimelineBar events={events} cursor={cursor} setCursorIndex={setCursorIndex} />
+      <TimelineBar
+        events={events}
+        cursor={cursor}
+        setCursorIndex={setCursorIndex}
+        submissionId={reviewSubmission?.id}
+      />
     </div>
   );
 }
@@ -114,6 +127,7 @@ export function WorkspaceLayout({
   reviewRubric,
   onReviewDecision,
   onReviewCriteriaChange,
+  reviewerId,
 }) {
   return (
     <SelectionProvider>
@@ -129,6 +143,7 @@ export function WorkspaceLayout({
         reviewRubric={reviewRubric}
         onReviewDecision={onReviewDecision}
         onReviewCriteriaChange={onReviewCriteriaChange}
+        reviewerId={reviewerId}
       />
     </SelectionProvider>
   );

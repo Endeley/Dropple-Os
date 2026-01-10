@@ -20,6 +20,7 @@ export default function SubmissionReviewPage({ params }) {
       disableSeed
       reviewSubmission={submission}
       reviewRubric={rubric}
+      reviewerId="reviewer-local"
       onReviewDecision={(status) => updateStatus(submission.id, status)}
       onReviewCriteriaChange={(criteria) =>
         updateReviewCriteria(submission.id, criteria)

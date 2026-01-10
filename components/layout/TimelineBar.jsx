@@ -1,14 +1,22 @@
 'use client';
 
+import { useAnnotations } from '@/certification/annotations/useAnnotationStore';
 import { useEducationCursor } from '@/education/EducationCursorContext';
 
-export default function TimelineBar({ events = [], cursor, setCursorIndex }) {
+export default function TimelineBar({
+  events = [],
+  cursor,
+  setCursorIndex,
+  submissionId,
+}) {
   const education = useEducationCursor();
   const locked = education?.locked ?? false;
   const role = education?.role ?? 'teacher';
   const canScrub = !locked || role === 'teacher';
   const hasEvents = events.length > 0;
   const max = events.length - 1;
+  const { getAnnotationsForSubmission } = useAnnotations();
+  const annotations = submissionId ? getAnnotationsForSubmission(submissionId) : [];
 
   function undo() {
     if (!canScrub) return;
@@ -43,15 +51,35 @@ export default function TimelineBar({ events = [], cursor, setCursorIndex }) {
         Redo
       </button>
 
-      <input
-        type="range"
-        min={-1}
-        max={max}
-        value={cursor.index}
-        onChange={scrub}
-        disabled={!hasEvents || !canScrub}
-        style={{ flex: 1 }}
-      />
+      <div style={{ position: 'relative', flex: 1 }}>
+        {annotations.map((a) => {
+          if (!hasEvents || max <= 0) return null;
+          const left = `${(a.cursorIndex / max) * 100}%`;
+          return (
+            <div
+              key={a.id}
+              style={{
+                position: 'absolute',
+                left,
+                top: -6,
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                background: '#2563eb',
+              }}
+            />
+          );
+        })}
+        <input
+          type="range"
+          min={-1}
+          max={max}
+          value={cursor.index}
+          onChange={scrub}
+          disabled={!hasEvents || !canScrub}
+          style={{ flex: 1, width: '100%' }}
+        />
+      </div>
 
       {hasEvents ? (
         <span>

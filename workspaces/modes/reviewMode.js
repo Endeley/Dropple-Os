@@ -20,7 +20,7 @@ export const ReviewMode = createModeAdapter({
   },
   panels: {
     left: ['SubmissionInfoPanel'],
-    right: ['RubricPanel'],
+    right: ['RubricPanel', 'AnnotationPanel'],
     top: ['ReviewToolbar'],
     bottom: ['TimelineBar'],
   },

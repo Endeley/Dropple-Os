@@ -1,11 +1,28 @@
 'use client';
 
+import { useAnnotations } from '@/certification/annotations/useAnnotationStore';
 import { useCertificates } from '@/certification/certificates/useCertificateStore';
 import { colors, radius, spacing } from '@/ui/tokens';
 
-export default function ReviewToolbar({ submission, onDecision }) {
+export default function ReviewToolbar({ submission, onDecision, reviewerId, cursor }) {
+  const { addAnnotation } = useAnnotations();
   const { issueCertificate } = useCertificates();
   const canIssue = submission?.status === 'passed';
+
+  function annotate() {
+    if (!submission) return;
+    const message = prompt('Add annotation');
+    if (!message) return;
+
+    addAnnotation({
+      id: globalThis.crypto?.randomUUID?.() ?? `annotation_${Date.now()}`,
+      submissionId: submission.id,
+      reviewerId,
+      cursorIndex: cursor?.index ?? -1,
+      message,
+      createdAt: Date.now(),
+    });
+  }
 
   function issue() {
     if (!canIssue) return;
@@ -33,6 +50,19 @@ export default function ReviewToolbar({ submission, onDecision }) {
       }}
     >
       <div style={{ fontSize: 13, color: colors.textMuted }}>Review</div>
+      <button
+        onClick={annotate}
+        style={{
+          height: 32,
+          padding: `0 ${spacing.sm}px`,
+          border: `1px solid ${colors.border}`,
+          borderRadius: radius.sm,
+          background: '#fff',
+          fontSize: 12,
+        }}
+      >
+        Add Annotation
+      </button>
       <button
         onClick={() => onDecision?.('passed')}
         style={{
