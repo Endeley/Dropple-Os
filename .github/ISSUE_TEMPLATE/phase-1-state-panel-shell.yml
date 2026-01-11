@@ -1,0 +1,26 @@
+name: "Phase 1 — State Panel Skeleton"
+description: "Introduce empty State Panel shell with contextual visibility."
+title: "[Phase 1] State panel skeleton"
+labels: ["phase-1", "ui", "states"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Scope
+        UI scaffolding only. No functionality.
+
+  - type: checkboxes
+    attributes:
+      label: UI Constraints
+      options:
+        - label: Panel hidden when no valid selection
+          required: true
+        - label: No state creation or switching
+          required: true
+
+  - type: checkboxes
+    attributes:
+      label: Acceptance Criteria
+      options:
+        - label: Panel renders correctly
+        - label: No system interaction

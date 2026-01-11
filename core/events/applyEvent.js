@@ -9,8 +9,12 @@ const initialState = Object.freeze({
         timelines: {},
     }),
     transitions: Object.freeze({
-        byId: Object.freeze({}),
-        byStatePair: Object.freeze({}),
+        component: Object.freeze({}),
+        page: Object.freeze({}),
+    }),
+    interactions: Object.freeze({
+        component: Object.freeze({}),
+        page: Object.freeze([]),
     }),
 });
 

@@ -1,0 +1,15 @@
+name: "Phase 1 — Persistence Verification"
+description: "Ensure states persist across save/load."
+title: "[Phase 1] Persistence verification"
+labels: ["phase-1", "persistence"]
+body:
+  - type: checkboxes
+    attributes:
+      label: Persistence Checks
+      options:
+        - label: States survive reload
+          required: true
+        - label: Active state restored
+          required: true
+        - label: No schema hacks
+          required: true

@@ -1,0 +1,27 @@
+name: "Phase 1 — Runtime State Awareness"
+description: "Make runtime aware of active state (preview-only)."
+title: "[Phase 1] Runtime state awareness"
+labels: ["phase-1", "runtime", "states"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Scope
+        Add read-only awareness of active state.
+        **Preview-only. No events.**
+
+  - type: checkboxes
+    attributes:
+      label: Rules
+      options:
+        - label: Switching state emits no events
+          required: true
+        - label: Undo/redo unaffected
+          required: true
+
+  - type: checkboxes
+    attributes:
+      label: Acceptance Criteria
+      options:
+        - label: Canvas updates on state switch
+        - label: Replay unchanged

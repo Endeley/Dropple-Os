@@ -1,0 +1,30 @@
+name: "Phase 2 — Transition Audit"
+description: "Verify replay, undo, and merge behavior with transitions."
+title: "[Phase 2] Transition audit"
+labels: ["phase-2", "audit", "stability"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Scope
+        Audit correctness only.
+        🚫 No new features allowed.
+
+  - type: checkboxes
+    attributes:
+      label: Verification
+      options:
+        - label: Replay from scratch verified
+          required: true
+        - label: Undo/redo verified
+          required: true
+        - label: Merge preview shows transition diffs
+          required: true
+
+  - type: checkboxes
+    attributes:
+      label: Explicit Non-Changes
+      options:
+        - label: No UI changes
+        - label: No schema changes
+        - label: No runtime behavior changes

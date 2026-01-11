@@ -1,0 +1,41 @@
+name: "Phase 2 — Transition Model"
+description: "Define the declarative transition data model (no UI, no timeline)."
+title: "[Phase 2] Transition model"
+labels: ["phase-2", "transitions", "architecture"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Scope
+        Define the transition schema and constraints.
+        Transitions connect **State → State** only.
+
+        🚫 No UI
+        🚫 No interactions
+        🚫 No timeline or keyframes
+
+  - type: checkboxes
+    attributes:
+      label: Architecture Alignment
+      options:
+        - label: I reviewed architecture.md §5 (Transition Model)
+          required: true
+        - label: I confirm transitions are declarative only
+          required: true
+
+  - type: checkboxes
+    attributes:
+      label: Model Rules
+      options:
+        - label: Transition references source and target states
+        - label: Transition defines duration and easing only
+        - label: Transition applies to explicit properties
+        - label: No ordering or sequencing
+
+  - type: checkboxes
+    attributes:
+      label: Acceptance Criteria
+      options:
+        - label: Transition data is deterministic
+        - label: Replay reconstructs transitions correctly
+        - label: No animation concepts introduced

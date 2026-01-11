@@ -1,0 +1,26 @@
+name: "Phase 1 — Create/Delete States"
+description: "Allow explicit state creation and deletion."
+title: "[Phase 1] Create & delete states"
+labels: ["phase-1", "states", "events"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Scope
+        Explicit user-driven state lifecycle.
+
+  - type: checkboxes
+    attributes:
+      label: Rules
+      options:
+        - label: Default state cannot be deleted
+          required: true
+        - label: State creation emits explicit events
+          required: true
+
+  - type: checkboxes
+    attributes:
+      label: Acceptance Criteria
+      options:
+        - label: State lifecycle replays correctly
+        - label: No transitions added

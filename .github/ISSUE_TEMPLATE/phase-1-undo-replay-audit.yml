@@ -1,0 +1,15 @@
+name: "Phase 1 — Undo & Replay Audit"
+description: "Verify undo/redo and replay correctness."
+title: "[Phase 1] Undo & replay audit"
+labels: ["phase-1", "audit", "stability"]
+body:
+  - type: checkboxes
+    attributes:
+      label: Verification
+      options:
+        - label: Replay from scratch verified
+          required: true
+        - label: Undo/redo verified
+          required: true
+        - label: No new features added
+          required: true

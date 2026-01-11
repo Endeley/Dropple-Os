@@ -1,0 +1,30 @@
+name: "Phase 2 — Transition Preview"
+description: "Preview transitions when switching states (read-only)."
+title: "[Phase 2] Transition preview"
+labels: ["phase-2", "preview", "transitions"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Scope
+        Preview transitions during state switching.
+        Preview must remain illusion only.
+
+  - type: checkboxes
+    attributes:
+      label: Preview Rules
+      options:
+        - label: Preview emits no events
+          required: true
+        - label: Preview does not affect undo/redo
+          required: true
+        - label: Preview always reverts
+          required: true
+
+  - type: checkboxes
+    attributes:
+      label: Acceptance Criteria
+      options:
+        - label: Transition preview applies correctly
+        - label: State truth remains unchanged
+        - label: Replay unaffected

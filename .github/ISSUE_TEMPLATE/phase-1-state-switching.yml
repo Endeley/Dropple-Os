@@ -1,0 +1,20 @@
+name: "Phase 1 — State Switching"
+description: "Enable preview-only state switching."
+title: "[Phase 1] State switching (preview)"
+labels: ["phase-1", "ui", "preview"]
+body:
+  - type: checkboxes
+    attributes:
+      label: Preview Rules
+      options:
+        - label: Switching emits no events
+          required: true
+        - label: Undo stack untouched
+          required: true
+
+  - type: checkboxes
+    attributes:
+      label: Acceptance Criteria
+      options:
+        - label: Active state visibly highlighted
+        - label: Canvas updates correctly

@@ -1,5 +1,13 @@
 import { createTimeline } from '@/timeline/schema/timeline.js';
 
+export const initialRuntimeState = {
+    nodes: {},
+    rootIds: [],
+    timeline: null,
+    activeStateId: null,
+    activeComponentId: null,
+};
+
 const runtimeState = {
     current: undefined,
 };

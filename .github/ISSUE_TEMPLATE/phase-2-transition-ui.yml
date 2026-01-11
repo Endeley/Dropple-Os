@@ -1,0 +1,50 @@
+name: "Phase 2 — Transition UI"
+description: "UI for creating and editing transitions between states."
+title: "[Phase 2] Transition UI"
+labels: ["phase-2", "ui", "transitions"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Scope
+        UI for defining transitions **between existing states only**.
+
+        🚫 No interactions
+        🚫 No timelines
+        🚫 No animation curves
+
+  - type: checkboxes
+    attributes:
+      label: UI Constraints
+      options:
+        - label: Transition UI appears only when ≥2 states exist
+          required: true
+        - label: Transitions are listed between state pairs
+          required: true
+        - label: No global transition panel
+          required: true
+
+  - type: checkboxes
+    attributes:
+      label: Allowed Controls
+      options:
+        - label: Duration
+        - label: Easing (preset only)
+        - label: Property selection
+
+  - type: checkboxes
+    attributes:
+      label: Forbidden Controls
+      options:
+        - label: Timeline scrubbing
+        - label: Keyframes
+        - label: Motion paths
+        - label: Trigger selection
+
+  - type: checkboxes
+    attributes:
+      label: Acceptance Criteria
+      options:
+        - label: Transitions are optional
+        - label: States function without transitions
+        - label: UI feels predictable and boring

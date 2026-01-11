@@ -1,0 +1,20 @@
+name: "Phase 1 — State Editing"
+description: "Ensure edits apply only to the active state."
+title: "[Phase 1] Edit within state"
+labels: ["phase-1", "states", "runtime"]
+body:
+  - type: checkboxes
+    attributes:
+      label: Rules
+      options:
+        - label: Edits scoped to active state
+          required: true
+        - label: No cross-state mutation
+          required: true
+
+  - type: checkboxes
+    attributes:
+      label: Acceptance Criteria
+      options:
+        - label: Undo/redo works per state
+        - label: Replay reconstructs state correctly

@@ -1,0 +1,30 @@
+name: "Phase 2 — Transition Export"
+description: "Map transitions to deterministic export output."
+title: "[Phase 2] Transition export mapping"
+labels: ["phase-2", "export", "transitions"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Scope
+        Define how transitions map to export formats (CSS / WAAPI).
+        Export must be deterministic and diffable.
+
+  - type: checkboxes
+    attributes:
+      label: Export Rules
+      options:
+        - label: Export derives only from state + transition data
+          required: true
+        - label: No DOM-based export
+          required: true
+        - label: Output is normalized
+          required: true
+
+  - type: checkboxes
+    attributes:
+      label: Acceptance Criteria
+      options:
+        - label: Export diff reflects transition changes
+        - label: No implicit animation generated
+        - label: Export matches UX mental model

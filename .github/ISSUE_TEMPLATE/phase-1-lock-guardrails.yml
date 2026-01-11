@@ -1,0 +1,22 @@
+name: "Phase 1 — Lock & Guardrails"
+description: "Prevent Phase 2 features from leaking in."
+title: "[Phase 1] Lock guardrails"
+labels: ["phase-1", "guardrails"]
+body:
+  - type: checkboxes
+    attributes:
+      label: Locks
+      options:
+        - label: Transitions disabled
+          required: true
+        - label: Interactions disabled
+          required: true
+        - label: Timeline UI disabled
+          required: true
+
+  - type: checkboxes
+    attributes:
+      label: Acceptance Criteria
+      options:
+        - label: Phase 2 features impossible
+        - label: Clear error messaging exists

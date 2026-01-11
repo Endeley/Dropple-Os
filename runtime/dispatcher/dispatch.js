@@ -20,6 +20,8 @@ import { applyTimelineGuard } from '../guards/timelineGuard.js';
 import { shouldRunLayout } from '../layout/shouldRunLayout.js';
 import { EventSequencer } from '../events/EventSequencer.js';
 import { createEventId } from '../events/createEventId.js';
+import { runTransitionPreview } from '../preview/runTransitionPreview.js';
+import { getTransitionForPreview } from '../preview/getTransitionForPreview.js';
 
 /**
  * Canonical event dispatcher.
@@ -35,6 +37,7 @@ export function createEventDispatcher({
 } = {}) {
     const history = createHistory(maxHistory);
     const sequencer = new EventSequencer();
+    let currentPreviewCancel = null;
 
     const animationController = createAnimationController({
         duration: 220,
@@ -52,10 +55,14 @@ export function createEventDispatcher({
         },
     });
 
-    function commit(nextState) {
+    function commit(nextState, { animate = true } = {}) {
         const prev = getRuntimeState();
         setRuntimeState(nextState);
-        animationController.start(prev, nextState);
+        if (animate) {
+            animationController.start(prev, nextState);
+        } else {
+            animationController.cancel();
+        }
         syncRuntimeToZustand(nextState);
         useAnimatedRuntimeStore.setState(
             {
@@ -71,6 +78,10 @@ export function createEventDispatcher({
         perfStart('dispatch');
 
         try {
+            if (currentPreviewCancel) {
+                currentPreviewCancel();
+                currentPreviewCancel = null;
+            }
             // 🔒 Assign eventId exactly once
             const seq = sequencer.next(branchId);
             const eventId = createEventId({ branchId, nextSeq: seq });
@@ -96,6 +107,23 @@ export function createEventDispatcher({
                 perfStart('layout');
                 next = applyLayoutPass(next);
                 layoutMs = perfEnd('layout');
+            }
+
+            const transition = getTransitionForPreview({ prev, next });
+            if (transition) {
+                currentPreviewCancel = runTransitionPreview({
+                    fromState: prev,
+                    toState: next,
+                    transition,
+                    onComplete: (finalState) => {
+                        history.push(finalState);
+                        commit(finalState, { animate: false });
+                        setRuntimeError(null);
+                        currentPreviewCancel = null;
+                    },
+                }).cancel;
+
+                return prev;
             }
 
             history.push(next);

@@ -1,0 +1,28 @@
+name: "Phase 2 — Transition Guardrails"
+description: "Prevent interactions, timelines, or animation from leaking into Phase 2."
+title: "[Phase 2] Transition guardrails"
+labels: ["phase-2", "guardrails"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Scope
+        Add explicit guards to enforce Phase 2 boundaries.
+
+  - type: checkboxes
+    attributes:
+      label: Guardrails
+      options:
+        - label: Interaction triggers disabled
+          required: true
+        - label: Timeline UI disabled
+          required: true
+        - label: Animation presets disabled
+          required: true
+
+  - type: checkboxes
+    attributes:
+      label: Acceptance Criteria
+      options:
+        - label: Phase 3 features impossible
+        - label: Clear error messaging exists

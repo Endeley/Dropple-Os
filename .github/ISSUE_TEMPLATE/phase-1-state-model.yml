@@ -1,0 +1,28 @@
+name: "Phase 1 — State Data Model"
+description: "Introduce state data structures and default state enforcement (no UI)."
+title: "[Phase 1] State data model"
+labels: ["phase-1", "states", "architecture"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Scope
+        Introduce state concepts into the document model.
+        **No UI allowed.**
+
+  - type: checkboxes
+    attributes:
+      label: Architecture Alignment
+      options:
+        - label: I have read architecture.md §2–§3
+          required: true
+        - label: I confirm this PR adds no UI
+          required: true
+
+  - type: checkboxes
+    attributes:
+      label: Acceptance Criteria
+      options:
+        - label: Default state exists per scope
+        - label: State data replays deterministically
+        - label: No transitions or interactions added
