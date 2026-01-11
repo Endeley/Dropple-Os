@@ -8,6 +8,10 @@ const initialState = Object.freeze({
     timeline: Object.freeze({
         timelines: {},
     }),
+    transitions: Object.freeze({
+        byId: Object.freeze({}),
+        byStatePair: Object.freeze({}),
+    }),
 });
 
 export function applyEvent(state = initialState, event) {

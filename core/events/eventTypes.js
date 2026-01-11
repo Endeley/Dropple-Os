@@ -20,4 +20,10 @@ export const EventTypes = Object.freeze({
 
     // Timeline
     TIMELINE_KEYFRAME_ADD: 'timeline/keyframe/add',
+    TIMELINE_KEYFRAME_MOVE: 'timeline/keyframe/move',
+
+    // Transitions
+    TRANSITION_CREATE: 'transition/create',
+    TRANSITION_UPDATE: 'transition/update',
+    TRANSITION_DELETE: 'transition/delete',
 });
