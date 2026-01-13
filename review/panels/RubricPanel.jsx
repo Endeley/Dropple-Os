@@ -1,22 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 export default function RubricPanel({ rubric, initialScores, onUpdate }) {
   const criteria = useMemo(() => rubric?.criteria ?? [], [rubric]);
-  const [scores, setScores] = useState(() => initialScores ?? {});
-
-  useEffect(() => {
-    if (!initialScores) return;
-    setScores(initialScores);
-  }, [initialScores]);
+  const scores = useMemo(() => initialScores ?? {}, [initialScores]);
 
   function toggle(id, value) {
-    setScores((prev) => {
-      const next = { ...prev, [id]: value };
-      onUpdate?.(next);
-      return next;
-    });
+    const next = { ...scores, [id]: value };
+    onUpdate?.(next);
   }
 
   if (!criteria.length) {

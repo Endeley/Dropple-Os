@@ -1,3 +1,4 @@
+// NOTE: This file is runtime/UI glue. Pure timeline evaluation lives elsewhere.
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
 import { sampleProperty } from './sampleTimeline.js';
 import { perfStart, perfEnd } from '@/perf/perfTracker.js';

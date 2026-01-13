@@ -10,8 +10,7 @@ export default function ExportPanel({ timeline }) {
     function onExportCSS() {
         const css = exportTimelineToCSS(timeline);
         navigator.clipboard?.writeText(css).catch(() => {});
-        // eslint-disable-next-line no-alert
-        alert('CSS animation copied to clipboard');
+        console.info('CSS animation copied to clipboard');
     }
 
     return (

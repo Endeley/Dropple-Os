@@ -1,3 +1,4 @@
+// Maps easing identifiers to easing math (pure resolver)
 import { EASINGS } from './easingRegistry.js';
 import { MOTION_PRESETS } from './motionPresets.js';
 import { EASING_PRESETS } from './easing/easingPresets.js';

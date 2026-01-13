@@ -97,6 +97,7 @@ function WorkspaceLayoutInner({
           events={events}
           cursor={cursor}
           emit={emit}
+          capabilities={adapter?.capabilities}
           rubric={reviewRubric}
           reviewCriteria={reviewSubmission?.review?.criteria}
           onReviewCriteriaChange={onReviewCriteriaChange}

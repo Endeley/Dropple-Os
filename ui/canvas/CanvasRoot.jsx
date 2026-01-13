@@ -14,7 +14,7 @@ import { perfStart, perfEnd } from '@/perf/perfTracker.js';
 export default function CanvasRoot({ workspaceId }) {
     perfStart('canvas.render');
     const workspace = resolveWorkspacePolicy(workspaceId);
-    const timeline = getRuntimeState()?.timeline?.timelines?.default;
+    const designState = getRuntimeState();
 
     const content = (
         <CanvasHost>
@@ -23,7 +23,7 @@ export default function CanvasRoot({ workspaceId }) {
             <GuideLayer />
             <SelectionLayer />
             <CollabLayer />
-            {workspace?.capabilities?.timeline && <TimelinePanel timeline={timeline} />}
+            {workspace?.capabilities?.timeline && <TimelinePanel designState={designState} />}
         </CanvasHost>
     );
 

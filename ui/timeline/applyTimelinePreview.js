@@ -1,3 +1,4 @@
+// NOTE: This file is runtime/UI glue. Pure timeline evaluation lives elsewhere.
 import { flattenTimeline } from '@/engine/timeline/flattenTimeline.js';
 import { applyEvent } from '@/core/events/applyEvent.js';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';

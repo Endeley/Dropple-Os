@@ -9,12 +9,14 @@ import { transitionReducers } from "./transitionReducers.js";
 import { stateReducers } from "./stateReducers.js";
 import { componentStateReducers } from "./componentStateReducers.js";
 import { interactionReducers } from "./interactionReducers.js";
+import { animationReducers } from "./animationReducers.js";
 
 export function rootReducer(state, event) {
   let next = state;
   next = stateReducers(next, event);
   next = componentStateReducers(next, event);
   next = interactionReducers(next, event);
+  next = animationReducers(next, event);
   next = nodeReducers(next, event);
   next = treeReducers(next, event);
   next = layoutReducers(next, event);

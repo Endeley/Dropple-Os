@@ -10,12 +10,14 @@ import { EducationTimelinePanel } from '@/education/EducationTimelinePanel';
 import { getEducationAtCursor } from '@/education/selectEducationState';
 import RubricPanel from '@/review/panels/RubricPanel';
 import AnnotationPanel from '@/review/panels/AnnotationPanel';
+import CurveEditorPanel from '@/ui/animation/curves/CurveEditorPanel';
 
 export default function RightPanel({
   panels = [],
   events,
   cursor,
   emit,
+  capabilities,
   rubric,
   reviewCriteria,
   onReviewCriteriaChange,
@@ -67,6 +69,11 @@ export default function RightPanel({
             submissionId={submissionId}
             setCursorIndex={setCursorIndex}
           />
+        </Panel>
+      ) : null}
+      {capabilities?.animation ? (
+        <Panel title="Easing Curve">
+          <CurveEditorPanel capabilities={capabilities} />
         </Panel>
       ) : null}
     </aside>

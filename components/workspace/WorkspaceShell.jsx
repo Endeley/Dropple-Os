@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ModeRegistry } from '@/workspaces/modes/ModeRegistry';
 import { WorkspaceLayout } from './WorkspaceLayout';
 import { MessageBus } from '@/runtime/MessageBus';
@@ -29,24 +29,21 @@ export function WorkspaceShell({
   const adapter = ModeRegistry.get(modeId);
   const templateGen = useTemplateGenerator();
 
-  const busRef = useRef(null);
   const [events, setEvents] = useState(() => initialEvents);
   const [cursorIndex, setCursorIndex] = useState(initialCursorIndex);
   const skipAutoLayoutOnce = useRef(initialEvents.length > 0);
+  const bus = useMemo(() => new MessageBus({ runId: 'design-run' }), []);
+  const emit = useCallback((event) => bus.emit(event), [bus]);
 
-  if (!busRef.current) {
-    busRef.current = new MessageBus({ runId: 'design-run' });
-
-    busRef.current.listeners.add((event) => {
+  useEffect(() => {
+    return bus.subscribe((event) => {
       setEvents((prev) => {
         const next = [...prev, event];
         setCursorIndex(next.length - 1);
         return next;
       });
     });
-  }
-
-  const bus = busRef.current;
+  }, [bus]);
 
   useEffect(() => {
     if (events.length === 0) return;
@@ -76,14 +73,14 @@ export function WorkspaceShell({
 
     applyAutoLayoutIfNeeded({
       state,
-      emit: bus.emit.bind(bus),
+      emit,
     });
-  }, [events, bus]);
+  }, [events, emit]);
 
   useEffect(() => {
     if (disableSeed || events.length > 0) return;
 
-    bus.emit({
+    emit({
       type: 'node.create',
       payload: {
         node: {
@@ -94,7 +91,7 @@ export function WorkspaceShell({
       },
     });
 
-    bus.emit({
+    emit({
       type: 'node.create',
       payload: {
         node: {
@@ -104,7 +101,7 @@ export function WorkspaceShell({
         },
       },
     });
-  }, [events.length, bus]);
+  }, [disableSeed, events.length, emit]);
 
   const cursor = {
     index: cursorIndex,
@@ -125,7 +122,7 @@ export function WorkspaceShell({
       events={events}
       cursor={cursor}
       setCursorIndex={setCursorIndex}
-      emit={bus.emit.bind(bus)}
+      emit={emit}
       onOpenTemplateGenerator={templateGen.openGenerator}
       educationReadOnly={educationReadOnly}
       reviewSubmission={reviewSubmission}

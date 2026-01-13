@@ -40,11 +40,11 @@ self.onmessage = async (e) => {
 
             // 🔐 Evaluate plugin code in worker scope
             // NOTE: pluginCode must export default plugin object
-            const module = await import(
+            const pluginModule = await import(
                 URL.createObjectURL(new Blob([pluginCode], { type: 'text/javascript' }))
             );
 
-            plugin = module.default;
+            plugin = pluginModule.default;
 
             if (!plugin || typeof plugin.activate !== 'function') {
                 throw new Error('Invalid plugin: missing activate()');

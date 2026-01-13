@@ -70,6 +70,9 @@ export default function ReadOnlyNodeRenderer({
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [resizeDelta, setResizeDelta] = useState({ w: 0, h: 0 });
   const [hoveredId, setHoveredId] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOrigins, setDragOrigins] = useState(() => new Map());
+  const [resizingId, setResizingId] = useState(null);
 
   if (!nodes) return null;
 
@@ -119,17 +122,19 @@ export default function ReadOnlyNodeRenderer({
       ? serializeSelection({ state: { nodes }, selectedIds: selection })
       : null;
 
+    const origins = new Map(
+      Array.from(selection).map((id) => {
+        const n = nodes[id];
+        return [id, { x: n.layout.x, y: n.layout.y }];
+      })
+    );
+
     dragRef.current = {
       dragging: true,
       startX: e.clientX,
       startY: e.clientY,
       primaryId: node.id,
-      origins: new Map(
-        Array.from(selection).map((id) => {
-          const n = nodes[id];
-          return [id, { x: n.layout.x, y: n.layout.y }];
-        })
-      ),
+      origins,
       lockedDx: 0,
       lockedDy: 0,
       duplicating,
@@ -137,6 +142,8 @@ export default function ReadOnlyNodeRenderer({
       modifiersAllowed: allowModifiers,
     };
 
+    setIsDragging(true);
+    setDragOrigins(origins);
     setDragOffset({ x: 0, y: 0 });
   }
 
@@ -353,8 +360,11 @@ export default function ReadOnlyNodeRenderer({
           dragRef.current.dragging = false;
           dragRef.current.duplicating = false;
           dragRef.current.snapshot = null;
+          setIsDragging(false);
+          setDragOrigins(new Map());
           setDragOffset({ x: 0, y: 0 });
           resizeRef.current.resizingId = null;
+          setResizingId(null);
           setResizeDelta({ w: 0, h: 0 });
           setGuides([]);
           return;
@@ -436,8 +446,11 @@ export default function ReadOnlyNodeRenderer({
     dragRef.current.dragging = false;
     dragRef.current.duplicating = false;
     dragRef.current.snapshot = null;
+    setIsDragging(false);
+    setDragOrigins(new Map());
     setDragOffset({ x: 0, y: 0 });
     resizeRef.current.resizingId = null;
+    setResizingId(null);
     setResizeDelta({ w: 0, h: 0 });
     setGuides([]);
   }
@@ -447,9 +460,8 @@ export default function ReadOnlyNodeRenderer({
       {Object.values(nodes).map((node) => {
         const layout = node.layout || {};
         const isSelected = selectedIds.has(node.id);
-        const isDragging = dragRef.current.dragging;
-        const isResizing = resizeRef.current.resizingId === node.id;
-        const origin = dragRef.current.origins.get(node.id);
+        const isResizing = resizingId === node.id;
+        const origin = dragOrigins.get(node.id);
         const parent = node.parentId ? nodes[node.parentId] : null;
         const isAutoChild = !!parent?.layout?.autoLayout;
         const baseWidth = layout.width || 100;
@@ -520,6 +532,7 @@ export default function ReadOnlyNodeRenderer({
                     originH: baseHeight,
                   };
 
+                  setResizingId(node.id);
                   setResizeDelta({ w: 0, h: 0 });
                 }}
                 style={{

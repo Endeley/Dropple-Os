@@ -38,16 +38,15 @@ export function useTimelinePlayback({
         outPoint,
     });
 
-    const getRange = () => {
+    const getRange = useCallback(() => {
         const start = typeof stateRef.current.inPoint === 'number' ? stateRef.current.inPoint : 0;
 
         const end = typeof stateRef.current.outPoint === 'number' ? stateRef.current.outPoint : duration;
 
         return { start, end };
-    };
+    }, [duration]);
 
-    const tick = useCallback(
-        (ts) => {
+    const tick = useCallback(function tickFrame(ts) {
             if (!playingRef.current) return;
 
             if (lastTsRef.current == null) {
@@ -78,10 +77,10 @@ export function useTimelinePlayback({
             onTimeUpdate(nextTime);
 
             if (playingRef.current) {
-                rafRef.current = requestAnimationFrame(tick);
+                rafRef.current = requestAnimationFrame(tickFrame);
             }
         },
-        [duration, onTimeUpdate]
+        [getRange, onTimeUpdate]
     );
 
     const play = useCallback(() => {
@@ -96,7 +95,7 @@ export function useTimelinePlayback({
         playingRef.current = true;
         lastTsRef.current = null;
         rafRef.current = requestAnimationFrame(tick);
-    }, [tick, onTimeUpdate]);
+    }, [getRange, tick, onTimeUpdate]);
 
     const pause = useCallback(() => {
         playingRef.current = false;
@@ -114,7 +113,7 @@ export function useTimelinePlayback({
             stateRef.current.time = clamped;
             onTimeUpdate(clamped);
         },
-        [onTimeUpdate]
+        [getRange, onTimeUpdate]
     );
 
     const setSpeed = useCallback((speed) => {

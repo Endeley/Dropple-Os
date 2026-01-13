@@ -1,3 +1,4 @@
+// Runtime timeline easing presets (preview/playback only)
 /**
  * Deterministic easing presets for timeline evaluation.
  */

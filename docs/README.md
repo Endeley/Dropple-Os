@@ -67,6 +67,7 @@ Branch B events ─┘
 - Preview = read-only sampling (AnimatedRuntimeStore)
 - Commit = reducer events
 - Timeline data is serializable
+- Phase 4 metadata only: schema in core/animation/AnimationSchema.js and reducer wiring in core/events/reducers/animationReducers.js (no preview/eval)
 
 **Export Trust Chain**
 ```

@@ -51,6 +51,10 @@ Branch B events ─┘
 - Preview = read-only sampling (AnimatedRuntimeStore)
 - Commit = reducer events
 - Timeline data is serializable
+- Layered responsibilities:
+  - Pure evaluation (math + sampling) is export-safe and deterministic
+  - UI/runtime preview glue writes only to AnimatedRuntimeStore
+  - Runtime easing helpers are isolated from export and reducers
 
 ## Export Trust Chain
 
@@ -350,6 +354,8 @@ Designers do not need to read code to trust export.
 - Animation Mode is where motion becomes content
 - Timeline authoring exists only in Animation Mode
 - UI must never blur this boundary
+- Phase 4 lock: see docs/ui-phase-4-animations.md
+- Phase 4H lock: see docs/phase-4h-playback.md
 
 ## 11) UI Implementation Guardrails
 

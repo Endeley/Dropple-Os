@@ -3,53 +3,53 @@
 import { Control, Input, Select } from '@/ui/Control';
 import { colors, radius, spacing } from '@/ui/tokens';
 
+function ReorderList({ parent, emit }) {
+  const children = parent.children;
+
+  function move(from, to) {
+    emit({
+      type: 'node.children.reorder',
+      payload: {
+        parentId: parent.id,
+        fromIndex: from,
+        toIndex: to,
+      },
+    });
+  }
+
+  return (
+    <div style={{ marginTop: 12 }}>
+      <strong>Order</strong>
+      {children.map((id, index) => (
+        <div
+          key={id}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            marginTop: 4,
+          }}
+        >
+          <span style={{ flex: 1 }}>{id}</span>
+          <button disabled={index === 0} onClick={() => move(index, index - 1)}>
+            ↑
+          </button>
+          <button
+            disabled={index === children.length - 1}
+            onClick={() => move(index, index + 1)}
+          >
+            ↓
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function AutoLayoutPanel({ node, emit }) {
   const auto = node.layout.autoLayout;
 
   if (!node.children?.length) return null;
-
-  function ReorderList({ parent }) {
-    const children = parent.children;
-
-    function move(from, to) {
-      emit({
-        type: 'node.children.reorder',
-        payload: {
-          parentId: parent.id,
-          fromIndex: from,
-          toIndex: to,
-        },
-      });
-    }
-
-    return (
-      <div style={{ marginTop: 12 }}>
-        <strong>Order</strong>
-        {children.map((id, index) => (
-          <div
-            key={id}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              marginTop: 4,
-            }}
-          >
-            <span style={{ flex: 1 }}>{id}</span>
-            <button disabled={index === 0} onClick={() => move(index, index - 1)}>
-              ↑
-            </button>
-            <button
-              disabled={index === children.length - 1}
-              onClick={() => move(index, index + 1)}
-            >
-              ↓
-            </button>
-          </div>
-        ))}
-      </div>
-    );
-  }
 
   function enable() {
     emit({
@@ -222,7 +222,7 @@ export function AutoLayoutPanel({ node, emit }) {
         </>
       )}
 
-      <ReorderList parent={node} />
+      <ReorderList parent={node} emit={emit} />
     </div>
   );
 }

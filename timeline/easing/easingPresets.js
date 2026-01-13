@@ -1,3 +1,4 @@
+// UX-level easing presets (labels, defaults, UI-facing only)
 export const EASING_PRESETS = Object.freeze({
     linear: { type: 'linear' },
 
