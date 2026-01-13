@@ -2,13 +2,19 @@
 
 import { applyEvent } from '../../core/events/applyEvent.js';
 import { applyLayoutPass } from '../layout/applyLayoutPass.js';
+
 import { createAnimationController } from '../animation/animationController.js';
+import { createPlaybackController } from '../animation/playbackController.js';
+
 import { interpolateNodes } from '../animation/interpolateNodes.js';
 import { easeOutCubic } from '../animation/easing.js';
+
 import { useAnimatedRuntimeStore } from '../stores/useAnimatedRuntimeStore.js';
 import { syncRuntimeToZustand } from '../bridge/zustandBridge.js';
 import { createHistory } from './history.js';
+
 import { getRuntimeState, resetRuntimeState, setRuntimeState, ensureDefaultTimeline, setRuntimeError } from '../state/runtimeState.js';
+
 import { perfStart, perfEnd } from '@/perf/perfTracker.js';
 import { applyTimelineGuard } from '../guards/timelineGuard.js';
 import { applyAnimationGuard } from '../guards/animationGuard.js';
@@ -22,22 +28,15 @@ import { getTransitionForPreview } from '../preview/getTransitionForPreview.js';
 import { resolveInteraction } from '../interactions/resolveInteraction.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 
-/**
- * Canonical event dispatcher.
- *
- * 🔒 Invariants:
- * - Single mutation gate
- * - Preview is illusion only
- * - Reducers are pure
- * - History records truth only
- */
 export function createEventDispatcher({ maxHistory = 100, workspaceId = null, branchId = 'main' } = {}) {
     const history = createHistory(maxHistory);
     const sequencer = new EventSequencer();
 
-    // Active preview cancellation handle (illusion only)
     let currentPreviewCancel = null;
 
+    // ─────────────────────────────────────────────
+    // Animation infrastructure (execution only)
+    // ─────────────────────────────────────────────
     const animationController = createAnimationController({
         duration: 220,
         easing: easeOutCubic,
@@ -54,19 +53,26 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
         },
     });
 
+    // ✅ NEW: playback orchestrator
+    const playbackController = createPlaybackController({
+        animationController,
+    });
+
     function commit(nextState, { animate = true } = {}) {
         const prev = getRuntimeState();
         setRuntimeState(nextState);
 
         if (animate) {
-            animationController.start(prev, nextState);
+            playbackController.play({
+                fromState: prev,
+                toState: nextState,
+            });
         } else {
-            animationController.cancel();
+            playbackController.cancel();
         }
 
         syncRuntimeToZustand(nextState);
 
-        // Animated store mirrors truth after commit
         useAnimatedRuntimeStore.setState(
             {
                 nodes: nextState?.nodes || {},
@@ -82,33 +88,23 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
         perfStart('dispatch');
 
         try {
-            // Cancel any active preview before new mutation
             if (currentPreviewCancel) {
                 currentPreviewCancel();
                 currentPreviewCancel = null;
             }
 
-            // 🔒 Assign eventId exactly once
             const seq = sequencer.next(branchId);
             const eventId = createEventId({ branchId, nextSeq: seq });
 
-            const event = {
-                ...rawEvent,
-                id: eventId,
-            };
+            const event = { ...rawEvent, id: eventId };
 
             const guarded = applyTimelineGuard(event);
-            if (!guarded) {
-                return getRuntimeState();
-            }
-            const animationGuarded = applyAnimationGuard(guarded);
-            if (!animationGuarded) {
-                return getRuntimeState();
-            }
+            if (!guarded) return getRuntimeState();
 
-            // ─────────────────────────────────────────────
-            // Phase 3 — Interaction execution (control event)
-            // ─────────────────────────────────────────────
+            const animationGuarded = applyAnimationGuard(guarded);
+            if (!animationGuarded) return getRuntimeState();
+
+            // Phase 3 — Interaction execution
             if (rawEvent.type === 'interaction/execute') {
                 const runtimeState = getRuntimeState();
                 const { trigger, sourceId } = rawEvent.payload || {};
@@ -119,18 +115,16 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
                     runtimeState,
                 });
 
-                if (!interaction) {
-                    return runtimeState;
-                }
+                if (!interaction) return runtimeState;
 
-                if (interaction.action === 'set_state' && interaction.targetStateId) {
+                if (interaction.action === 'set_state') {
                     return dispatch({
                         type: EventTypes.STATE_SET,
                         payload: { stateId: interaction.targetStateId },
                     });
                 }
 
-                if (interaction.action === 'set_component_active' && interaction.targetComponentId) {
+                if (interaction.action === 'set_component_active') {
                     return dispatch({
                         type: EventTypes.COMPONENT_SET_ACTIVE,
                         payload: { componentId: interaction.targetComponentId },
@@ -146,49 +140,27 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
 
             if (next === prev) return next;
 
-            let layoutMs = 0;
             if (shouldRunLayout(guarded)) {
-                perfStart('layout');
                 next = applyLayoutPass(next);
-                layoutMs = perfEnd('layout');
             }
 
-            // ─────────────────────────────────────────────
-            // Phase 2 — Transition preview (illusion only)
-            // ─────────────────────────────────────────────
+            // Phase 2 — Transition preview (illusion)
             const transition = getTransitionForPreview({ prev, next });
             if (transition) {
                 const preview = runTransitionPreview({
                     fromState: prev,
                     toState: next,
                     transition,
-                    onComplete: () => {
-                        currentPreviewCancel = null;
-                    },
                 });
 
                 currentPreviewCancel = preview.cancel;
 
-                // Commit truth immediately (preview does NOT commit)
                 history.push(next);
-                const committed = commit(next, { animate: false });
-                setRuntimeError(null);
-                return committed;
+                return commit(next, { animate: false });
             }
 
-            // ─────────────────────────────────────────────
-            // Normal commit path
-            // ─────────────────────────────────────────────
             history.push(next);
-            const committed = commit(next);
-
-            const t = perfEnd('dispatch');
-            if (t > 8) {
-                console.warn('dispatch slow:', t.toFixed(2), event.type, 'layout:', layoutMs?.toFixed(2));
-            }
-
-            setRuntimeError(null);
-            return committed;
+            return commit(next);
         } catch (err) {
             console.error('[Dispatcher error]', err, rawEvent);
             setRuntimeError(err);
@@ -199,38 +171,29 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
     }
 
     function undo() {
-        perfStart('undo');
         if (currentPreviewCancel) {
             currentPreviewCancel();
             currentPreviewCancel = null;
         }
-        const next = history.undo();
-        const committed = commit(next);
-        perfEnd('undo');
-        return committed;
+        playbackController.cancel();
+        return commit(history.undo(), { animate: false });
     }
 
     function redo() {
-        perfStart('redo');
         if (currentPreviewCancel) {
             currentPreviewCancel();
             currentPreviewCancel = null;
         }
-        const next = history.redo();
-        const committed = commit(next);
-        perfEnd('redo');
-        return committed;
+        playbackController.cancel();
+        return commit(history.redo(), { animate: false });
     }
 
     function reset() {
+        playbackController.cancel();
         history.reset();
         sequencer.reset();
         resetRuntimeState();
         syncRuntimeToZustand({ nodes: {}, rootIds: [] });
-    }
-
-    function getState() {
-        return getRuntimeState();
     }
 
     return {
@@ -238,6 +201,6 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
         undo,
         redo,
         reset,
-        getState,
+        getState: getRuntimeState,
     };
 }

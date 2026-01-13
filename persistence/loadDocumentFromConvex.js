@@ -3,7 +3,7 @@
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { replayBranch } from '@/persistence/replay';
-import { resetRuntimeState, setRuntimeState } from '@/runtime/state/runtimeState';
+import { resetRuntimeState, setRuntimeState, setIsReplaying } from '@/runtime/state/runtimeState';
 import { syncRuntimeToZustand } from '@/runtime/bridge/zustandBridge';
 
 /**
@@ -65,7 +65,13 @@ export function useLoadDocumentFromConvex(docId) {
         // 4️⃣ Replay active branch
         const activeBranch = document.branches[document.currentBranch];
 
-        const nextState = replayBranch(activeBranch, undefined);
+        setIsReplaying(true);
+        let nextState;
+        try {
+            nextState = replayBranch(activeBranch, undefined);
+        } finally {
+            setIsReplaying(false);
+        }
 
         // 5️⃣ Hydrate runtime with document + extras
         const hydrated = {
