@@ -12,7 +12,7 @@ Non-Goal: Experience, motion, logic, or behavior wiring
 Phase 1 introduces States as first-class UX entities.
 
 At the end of this phase:
-- Designers can create states
+- Designers can define state identities
 - Designers can switch between states
 - Designers can edit state-specific truth
 - Replay, undo, and export remain correct
@@ -83,18 +83,18 @@ This teaches baseline thinking immediately.
 
 ---
 
-6) Creating States (Minimal UX)
+6) Defining States (Minimal UX)
 
 Allowed Actions:
-- Create new state
+- Define a new state identity
 - Name the state
-- Delete non-default states
+- Remove non-default state identities
 
 UX Flow:
 - User selects a valid scope
 - State Panel appears
 - User clicks "Add State"
-- State is created (empty diff from Default)
+- State identity is added (empty diff from Default)
 
 No templates.
 No suggestions.

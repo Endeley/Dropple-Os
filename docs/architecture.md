@@ -2,7 +2,25 @@
 
 > State is a consequence, not a source of truth. Events are the only source of truth.
 
-## High-Level Flow
+## 🔒 Architecture Lock Legend
+
+This document contains **LOCKED sections** that define non-negotiable system law.
+
+**Legend**
+- 🔒 **LOCKED** — Must never change without a full architectural reset (Dropple v2)
+- 🧊 **CONTRACT-LOCKED** — Rules are frozen, UI/UX may evolve
+- 🟡 **EXTENSIBLE** — Safe to extend within locked invariants
+
+If a feature or tool contradicts a 🔒 LOCKED section, it is invalid by definition.
+
+## 🔒 Core Philosophy (LOCKED)
+
+> This philosophy is permanent. Violating it breaks replay, merge, and export guarantees.
+
+## 🔒 Event → State Pipeline (LOCKED)
+
+This pipeline order is immutable.
+No tool, preview system, or optimization may bypass or reorder these steps.
 
 ```
 UI
@@ -20,7 +38,10 @@ Zustand (render mirror)
 
 No layer may bypass the Dispatcher.
 
-## Event Sourcing
+## 🔒 Reducers & Replay Determinism (LOCKED)
+
+Reducers are pure, deterministic, and replay-safe.
+They must never infer intent, compute animation, or access runtime/UI state.
 
 ```
 initialState
@@ -46,6 +67,22 @@ Branch B events ─┘
        ▼                 ▼                 ▼
    Event Diff       Visual Diff       Export Diff
 ```
+
+## 🔒 Preview Systems (LOCKED)
+
+Preview is an illusion.
+
+Preview systems:
+- Write only to animated runtime stores
+- Must be cancelable
+- Must reset to truth
+- Must never run during replay, undo, or redo
+
+Preview must never emit events or write history.
+
+## 🧊 Timeline Authoring UI (Contract-Locked)
+
+UI may evolve, but must obey locked animation and reducer contracts.
 
 ## Timeline & Animation
 - Preview = read-only sampling (AnimatedRuntimeStore)
@@ -103,6 +140,37 @@ Intent → Event → Reducer → State → Export → Diff → Trust
 
 ---
 
+# 🔒 Authoring Tool Contracts (LOCKED)
+
+Dropple authoring tools do not mutate truth directly.
+
+**All tools must:**
+- Express user intent
+- Optionally preview (illusion only)
+- Emit explicit events
+- Go through the dispatcher
+- Be fully replayable
+
+Preview systems are read-only and must never affect:
+- history
+- persistence
+- replay
+- export
+
+See: Animate Between States, Interaction Tools, Timeline Authoring.
+
+# 🔒 Animate Between States (LOCKED)
+
+Animate Between States is a declarative relationship system.
+
+It:
+- Does not generate keyframes
+- Does not compute animation
+- Does not infer values
+- Stores animation truth only
+
+All animation math is deferred to evaluation and preview layers.
+
 # Architecture Addendum
 States, Transitions & Interaction UX (Authoritative)
 
@@ -141,6 +209,9 @@ States are not:
 - Undo steps
 - Versions
 - Animations
+
+State identity changes are represented only by `STATE_SET`.
+There are no `STATE_CREATE` or `STATE_DELETE` events.
 
 If a state cannot be exported deterministically, it must not exist.
 
@@ -377,3 +448,263 @@ Animation tells stories.
 Export reflects reality.
 
 This section is binding and part of the Dropple OS architecture.
+
+---
+
+# Phase 5G — Authoring Tools Contract
+(Architecture Lock)
+
+This document defines what authoring tools are allowed to be in Dropple OS, where they may operate, and what they are forbidden from doing.
+
+It is intentionally UI-agnostic.
+
+## 1) Purpose
+
+Authoring tools translate user intent into deterministic design truth while preserving:
+- Event-sourced correctness
+- Replay determinism
+- Undo/redo integrity
+- Branch/merge safety
+- Export trust
+
+No tool may bypass these guarantees.
+
+## 2) Definition: What Is a Tool?
+
+A tool is any system that:
+- Interprets user intent (gesture, click, rule, automation, preset)
+- Optionally performs computation or assistance
+- Emits explicit, replayable state changes or produces pure preview illusion
+
+A tool is not defined by UI or complexity, but by what layer it touches.
+
+## 3) Tool Categories (Hard-Separated)
+
+### 3.1 Truth-Mutating Tools (Core Tools)
+
+These tools change design state.
+
+Examples:
+- Animation authoring (keyframes, transitions)
+- Transform tools (move, rotate, scale)
+- Shadow/light parameters (numeric, explicit)
+- State-based animation authoring
+
+Rules:
+- MUST emit events
+- MUST use pure reducers
+- MUST be replayable from scratch
+- MUST be exportable or ignorable deterministically
+- MUST be diffable
+
+Forbidden:
+- Side effects
+- Runtime store mutation
+- Reading DOM or time
+- Implicit state changes
+
+### 3.2 Procedural / Generative Tools (Assisted Truth)
+
+These tools compute results, but only commit explicit outputs.
+
+Examples:
+- Motion presets
+- Auto-shadow generators
+- "Animate between states"
+- Constraint-based motion solvers
+- AI-assisted layout or animation
+
+Rules:
+- Computation may be complex or non-deterministic
+- Final committed output MUST be explicit
+- Only final output is stored as truth
+- Generation process is not replayed
+
+Pattern:
+Intent → Generator → Explicit values → Events → Reducers
+
+### 3.3 Preview-Only Tools (Illusion Layer)
+
+These tools never affect truth.
+
+Examples:
+- Live animation preview
+- Light/shadow exaggeration while scrubbing
+- Motion ghosting
+- Camera orbit / 3D parallax preview
+
+Rules:
+- MUST write only to animated/preview stores
+- MUST not emit events
+- MUST not write to persistence
+- MUST be cancelable
+- MUST be blocked during replay
+
+Preview is illusion. Commit is truth.
+
+### 3.4 Media / Asset Tools (Pipeline Tools)
+
+These tools produce new assets, not state mutations.
+
+Examples:
+- Image background removal
+- Image upscaling
+- Texture synthesis
+- Relighting
+
+Rules:
+- Tool produces a new asset
+- Design state references the asset ID
+- No reducer logic for "how" asset was created
+- Replay sees only asset reference changes
+
+Allowed Event:
+NODE_UPDATE { imageSrc: assetId }
+
+## 4) Explicitly Allowed Domains (Future-Safe)
+
+The following domains are allowed provided they obey category rules:
+- Numeric lighting models (2D/3D parameters)
+- Shadow systems (explicit, animatable values)
+- Motion curves and easing editors
+- State-driven animation
+- Interaction-triggered motion
+- AI-assisted generation (commit explicit results only)
+
+## 5) Explicitly Forbidden (Hard Stop)
+
+The following are never allowed:
+- Tools that mutate runtime state directly
+- Tools that store non-deterministic data in truth
+- GPU-only effects without export mapping
+- Timeline mutation outside reducer events
+- UI-only security enforcement
+- Hidden state mutation
+- "Magic" behavior that cannot be diffed or exported
+
+If a tool cannot be explained as events + reducers + export, it does not belong.
+
+## 6) Tool → Event Boundary
+
+All truth-mutating tools MUST cross this boundary:
+
+UI / Tool
+   ↓
+Intent Capture
+   ↓
+Event(s)
+   ↓
+Dispatcher
+   ↓
+Pure Reducers
+   ↓
+Runtime Truth
+
+Tools MAY NOT:
+- Call reducers directly
+- Write to stores
+- Commit history
+
+## 7) Relationship to Other Phases
+
+- Phase 5: establishes animation truth
+- Phase 5G: defines what tools may exist
+- Phase 6+: implements unique Dropple tools safely
+
+This contract intentionally does not define UI.
+
+## 8) Design Principle (Non-Negotiable)
+
+Dropple tools may feel magical,
+but their results must be explicit, inspectable, replayable, and exportable.
+
+Magic in preview is allowed.
+Magic in truth is not.
+
+## 9) Contract Status
+
+Status: Draft (Architecture-Locked)
+
+Scope: Authoring tools only
+
+Breaking change policy: Any violation requires rollback.
+
+---
+
+# Dropple-Only Tool Candidates (Contract-Safe)
+
+This is a design backlog aligned to the Phase 5G Authoring Tools Contract.
+No implementation implied.
+
+## I) State-Driven Animation Tools
+
+1) Animate Between States
+- User selects two states (A → B)
+- Dropple auto-generates transitions for all changed properties
+- Procedural / Generative Tool → commits explicit transitions
+
+2) State Rebase Animation
+- Re-target existing animations after layout/structure change
+- Assisted truth (generator → explicit updates)
+
+3) State Transition Inspector
+- Shows exactly what properties animate between states
+- Read-only analysis tool
+
+## II) Interaction-Driven Motion Tools
+
+4) Interaction → Motion Mapper
+- Bind interaction to a state transition
+- Truth-mutating metadata + preview illusion
+
+5) Interaction Conflict Resolver
+- Detect overlapping interaction rules
+- Validation / inspection tool
+
+## III) Motion Intelligence Tools (Safe “Smart” Tools)
+
+6) Motion Preset Compiler
+- Preset → explicit curves/keyframes
+- Procedural → explicit truth
+
+7) Curve Normalizer
+- Align curves to consistent timing
+- Truth-mutating (explicit rewrite)
+
+## IV) Lighting & Visual Depth (Safe Version)
+
+8) Numeric Lighting System
+- Numeric light params, animatable
+- Core truth tool
+
+9) Shadow Stack Animator
+- Animate explicit shadow arrays
+- Truth-mutating animation
+
+## V) Preview-Only “Magic” (Illusion Layer)
+
+10) Motion Ghost Trails
+- Preview-only
+
+11) Temporal Onion Skin
+- Preview-only
+
+## VI) Branch-Aware Tools
+
+12) Animation Merge Preview
+- Deterministic merge simulation
+- Analysis / preview tool
+
+13) Animation Diff Viewer
+- Export diff inspection
+- Inspection tool
+
+## VII) Media / Asset Tools
+
+14) Background Removal Pipeline
+- Asset pipeline tool
+
+## VIII) Meta-Tools (Power User)
+
+15) “What Changed?” Motion Explainer
+- Read-only analysis

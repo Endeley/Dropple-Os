@@ -144,7 +144,7 @@ No playback.
 7) Deletion UX
 
 - Transitions can be deleted independently
-- Deleting a state deletes its transitions (with confirmation)
+- Removing a state identity removes its transitions (with confirmation)
 - No soft-delete
 - No orphan transitions
 

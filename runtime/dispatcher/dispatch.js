@@ -151,12 +151,19 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
                     fromState: prev,
                     toState: next,
                     transition,
+                    onComplete: (finalState) => {
+                        // ✅ Truth commit happens ONLY after preview completes
+                        history.push(finalState);
+                        commit(finalState, { animate: false });
+                        setRuntimeError(null);
+                        currentPreviewCancel = null;
+                    },
                 });
 
                 currentPreviewCancel = preview.cancel;
 
-                history.push(next);
-                return commit(next, { animate: false });
+                // ✅ Preview is an illusion: runtime truth stays at prev until completion
+                return prev;
             }
 
             history.push(next);

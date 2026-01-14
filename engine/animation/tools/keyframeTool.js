@@ -1,22 +1,43 @@
+import { EventTypes } from '@/core/events/eventTypes.js';
+
 /**
- * Pure keyframe utilities.
- * No side effects. Safe for undo/replay/AI.
+ * Keyframe authoring tool (Phase 5B)
+ *
+ * Emits explicit keyframe events.
  */
-export function addKeyframe(track, keyframe) {
-    const keyframes = [...(track.keyframes || []), keyframe].sort((a, b) => a.time - b.time);
-    return { ...track, keyframes };
+export function addKeyframe({ dispatch, trackId, keyframe }) {
+    if (!dispatch || !trackId || !keyframe?.id) return;
+
+    dispatch({
+        type: EventTypes.ANIMATION_KEYFRAME_ADD,
+        payload: {
+            trackId,
+            keyframe,
+        },
+    });
 }
 
-export function updateKeyframe(track, keyframeId, patch) {
-    return {
-        ...track,
-        keyframes: (track.keyframes || []).map((k) => (k.id === keyframeId ? { ...k, ...patch } : k)),
-    };
+export function updateKeyframe({ dispatch, trackId, keyframeId, patch }) {
+    if (!dispatch || !trackId || !keyframeId || !patch) return;
+
+    dispatch({
+        type: EventTypes.ANIMATION_KEYFRAME_UPDATE,
+        payload: {
+            trackId,
+            keyframeId,
+            patch,
+        },
+    });
 }
 
-export function removeKeyframe(track, keyframeId) {
-    return {
-        ...track,
-        keyframes: (track.keyframes || []).filter((k) => k.id !== keyframeId),
-    };
+export function deleteKeyframe({ dispatch, trackId, keyframeId }) {
+    if (!dispatch || !trackId || !keyframeId) return;
+
+    dispatch({
+        type: EventTypes.ANIMATION_KEYFRAME_DELETE,
+        payload: {
+            trackId,
+            keyframeId,
+        },
+    });
 }

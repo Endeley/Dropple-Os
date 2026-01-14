@@ -1,199 +1,163 @@
-import { EventTypes } from "../eventTypes.js";
+import { EventTypes } from '../eventTypes.js';
 
-function ensureAnimationState(state) {
-  if (state.timeline?.animations) return state;
-
-  return {
-    ...state,
-    timeline: {
-      ...(state.timeline || {}),
-      animations: {
-        clips: {},
-        tracks: {},
-        keyframes: {},
-      },
-    },
-  };
-}
-
+/**
+ * Animation reducers (Phase 5A)
+ *
+ * 🔒 Rules:
+ * - Pure functions only
+ * - No ID generation
+ * - No sorting
+ * - No derived values
+ * - Invalid payloads → no-op
+ */
 export function animationReducers(state, event) {
-  const { type, payload } = event;
+    const { type, payload } = event;
+    const timeline = state.timeline?.timelines?.default;
+    if (!timeline) return state;
 
-  switch (type) {
-    // Clips
-    case EventTypes.ANIMATION_CLIP_CREATE: {
-      const { clip } = payload || {};
-      if (!clip?.id) return state;
+    switch (type) {
+        case EventTypes.ANIMATION_TRACK_CREATE: {
+            const { trackId, nodeId, property } = payload || {};
+            if (!trackId || !nodeId || !property) return state;
+            if (timeline.tracks?.some((t) => t.id === trackId)) return state;
 
-      state = ensureAnimationState(state);
+            const nextTrack = {
+                id: trackId,
+                nodeId,
+                property,
+                keyframes: [],
+            };
 
-      if (state.timeline.animations.clips[clip.id]) return state;
+            return {
+                ...state,
+                timeline: {
+                    ...state.timeline,
+                    timelines: {
+                        ...state.timeline.timelines,
+                        default: {
+                            ...timeline,
+                            tracks: [...(timeline.tracks || []), nextTrack],
+                        },
+                    },
+                },
+            };
+        }
 
-      return {
-        ...state,
-        timeline: {
-          ...state.timeline,
-          animations: {
-            ...state.timeline.animations,
-            clips: {
-              ...state.timeline.animations.clips,
-              [clip.id]: clip,
-            },
-          },
-        },
-      };
+        case EventTypes.ANIMATION_TRACK_DELETE: {
+            const { trackId } = payload || {};
+            if (!trackId) return state;
+
+            return {
+                ...state,
+                timeline: {
+                    ...state.timeline,
+                    timelines: {
+                        ...state.timeline.timelines,
+                        default: {
+                            ...timeline,
+                            tracks: (timeline.tracks || []).filter((t) => t.id !== trackId),
+                        },
+                    },
+                },
+            };
+        }
+
+        case EventTypes.ANIMATION_KEYFRAME_ADD: {
+            const { trackId, keyframe } = payload || {};
+            if (!trackId || !keyframe?.id) return state;
+
+            let changed = false;
+            const nextTracks = (timeline.tracks || []).map((track) => {
+                if (track.id !== trackId) return track;
+                if (track.keyframes?.some((kf) => kf.id === keyframe.id)) return track;
+                changed = true;
+                return {
+                    ...track,
+                    keyframes: [...(track.keyframes || []), keyframe],
+                };
+            });
+
+            if (!changed) return state;
+
+            return {
+                ...state,
+                timeline: {
+                    ...state.timeline,
+                    timelines: {
+                        ...state.timeline.timelines,
+                        default: {
+                            ...timeline,
+                            tracks: nextTracks,
+                        },
+                    },
+                },
+            };
+        }
+
+        case EventTypes.ANIMATION_KEYFRAME_UPDATE: {
+            const { trackId, keyframeId, patch } = payload || {};
+            if (!trackId || !keyframeId || !patch) return state;
+
+            let changed = false;
+            const nextTracks = (timeline.tracks || []).map((track) => {
+                if (track.id !== trackId) return track;
+                const nextKeyframes = (track.keyframes || []).map((kf) => {
+                    if (kf.id !== keyframeId) return kf;
+                    changed = true;
+                    return { ...kf, ...patch };
+                });
+                return { ...track, keyframes: nextKeyframes };
+            });
+
+            if (!changed) return state;
+
+            return {
+                ...state,
+                timeline: {
+                    ...state.timeline,
+                    timelines: {
+                        ...state.timeline.timelines,
+                        default: {
+                            ...timeline,
+                            tracks: nextTracks,
+                        },
+                    },
+                },
+            };
+        }
+
+        case EventTypes.ANIMATION_KEYFRAME_DELETE: {
+            const { trackId, keyframeId } = payload || {};
+            if (!trackId || !keyframeId) return state;
+
+            let changed = false;
+            const nextTracks = (timeline.tracks || []).map((track) => {
+                if (track.id !== trackId) return track;
+                const nextKeyframes = (track.keyframes || []).filter((kf) => kf.id !== keyframeId);
+                if (nextKeyframes.length !== (track.keyframes || []).length) {
+                    changed = true;
+                }
+                return { ...track, keyframes: nextKeyframes };
+            });
+
+            if (!changed) return state;
+
+            return {
+                ...state,
+                timeline: {
+                    ...state.timeline,
+                    timelines: {
+                        ...state.timeline.timelines,
+                        default: {
+                            ...timeline,
+                            tracks: nextTracks,
+                        },
+                    },
+                },
+            };
+        }
+
+        default:
+            return state;
     }
-
-    case EventTypes.ANIMATION_CLIP_UPDATE: {
-      const { clipId, patch } = payload || {};
-      if (!clipId || !patch) return state;
-
-      const clip = state.timeline?.animations?.clips?.[clipId];
-      if (!clip) return state;
-
-      return {
-        ...state,
-        timeline: {
-          ...state.timeline,
-          animations: {
-            ...state.timeline.animations,
-            clips: {
-              ...state.timeline.animations.clips,
-              [clipId]: { ...clip, ...patch },
-            },
-          },
-        },
-      };
-    }
-
-    case EventTypes.ANIMATION_CLIP_DELETE: {
-      const { clipId } = payload || {};
-      if (!clipId) return state;
-
-      const { [clipId]: _, ...rest } =
-        state.timeline?.animations?.clips || {};
-
-      return {
-        ...state,
-        timeline: {
-          ...state.timeline,
-          animations: {
-            ...state.timeline.animations,
-            clips: rest,
-          },
-        },
-      };
-    }
-
-    // Tracks
-    case EventTypes.ANIMATION_TRACK_CREATE: {
-      const { track } = payload || {};
-      if (!track?.id) return state;
-
-      state = ensureAnimationState(state);
-
-      if (state.timeline.animations.tracks[track.id]) return state;
-
-      return {
-        ...state,
-        timeline: {
-          ...state.timeline,
-          animations: {
-            ...state.timeline.animations,
-            tracks: {
-              ...state.timeline.animations.tracks,
-              [track.id]: track,
-            },
-          },
-        },
-      };
-    }
-
-    case EventTypes.ANIMATION_TRACK_DELETE: {
-      const { trackId } = payload || {};
-      if (!trackId) return state;
-
-      const { [trackId]: _, ...rest } =
-        state.timeline?.animations?.tracks || {};
-
-      return {
-        ...state,
-        timeline: {
-          ...state.timeline,
-          animations: {
-            ...state.timeline.animations,
-            tracks: rest,
-          },
-        },
-      };
-    }
-
-    // Keyframes
-    case EventTypes.ANIMATION_KEYFRAME_CREATE: {
-      const { keyframe } = payload || {};
-      if (!keyframe?.id) return state;
-
-      state = ensureAnimationState(state);
-
-      if (state.timeline.animations.keyframes[keyframe.id]) return state;
-
-      return {
-        ...state,
-        timeline: {
-          ...state.timeline,
-          animations: {
-            ...state.timeline.animations,
-            keyframes: {
-              ...state.timeline.animations.keyframes,
-              [keyframe.id]: keyframe,
-            },
-          },
-        },
-      };
-    }
-
-    case EventTypes.ANIMATION_KEYFRAME_UPDATE: {
-      const { keyframeId, patch } = payload || {};
-      if (!keyframeId || !patch) return state;
-
-      const keyframe = state.timeline?.animations?.keyframes?.[keyframeId];
-      if (!keyframe) return state;
-
-      return {
-        ...state,
-        timeline: {
-          ...state.timeline,
-          animations: {
-            ...state.timeline.animations,
-            keyframes: {
-              ...state.timeline.animations.keyframes,
-              [keyframeId]: { ...keyframe, ...patch },
-            },
-          },
-        },
-      };
-    }
-
-    case EventTypes.ANIMATION_KEYFRAME_DELETE: {
-      const { keyframeId } = payload || {};
-      if (!keyframeId) return state;
-
-      const { [keyframeId]: _, ...rest } =
-        state.timeline?.animations?.keyframes || {};
-
-      return {
-        ...state,
-        timeline: {
-          ...state.timeline,
-          animations: {
-            ...state.timeline.animations,
-            keyframes: rest,
-          },
-        },
-      };
-    }
-
-    default:
-      return state;
-  }
 }

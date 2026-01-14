@@ -1,4 +1,5 @@
 import { createTimelineCapability } from "./timelineCapability.js";
+import { EventTypes } from '@/core/events/eventTypes.js';
 
 /**
  * Animation Workspace
@@ -34,4 +35,12 @@ export const animationWorkspace = {
     export: {
         formats: ["mp4", "gif", "lottie"],
     },
+
+    allowedEventTypes: new Set([
+        EventTypes.ANIMATION_TRACK_CREATE,
+        EventTypes.ANIMATION_TRACK_DELETE,
+        EventTypes.ANIMATION_KEYFRAME_ADD,
+        EventTypes.ANIMATION_KEYFRAME_UPDATE,
+        EventTypes.ANIMATION_KEYFRAME_DELETE,
+    ]),
 };

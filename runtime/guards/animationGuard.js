@@ -1,19 +1,30 @@
 import { EventTypes } from '@/core/events/eventTypes.js';
-import { AnimationProperties } from '@/core/animation/AnimationSchema.js';
-import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
-import { getActiveWorkspace } from '../state/workspaceState.js';
 import { getRuntimeState } from '../state/runtimeState.js';
 
+const ALLOWED_ANIMATION_PROPERTIES = new Set([
+    'x',
+    'y',
+    'opacity',
+    'scale',
+    'rotation',
+    'width',
+    'height',
+]);
+
 const animationEventTypes = new Set([
-    EventTypes.ANIMATION_CLIP_CREATE,
-    EventTypes.ANIMATION_CLIP_UPDATE,
-    EventTypes.ANIMATION_CLIP_DELETE,
     EventTypes.ANIMATION_TRACK_CREATE,
     EventTypes.ANIMATION_TRACK_DELETE,
-    EventTypes.ANIMATION_KEYFRAME_CREATE,
+    EventTypes.ANIMATION_KEYFRAME_ADD,
     EventTypes.ANIMATION_KEYFRAME_UPDATE,
     EventTypes.ANIMATION_KEYFRAME_DELETE,
 ]);
+
+function isSerializableValue(value) {
+    if (value === undefined) return false;
+    if (typeof value === 'function') return false;
+    if (typeof value === 'symbol') return false;
+    return true;
+}
 
 /**
  * Returns null to block, or the event to allow.
@@ -21,90 +32,71 @@ const animationEventTypes = new Set([
 export function applyAnimationGuard(event) {
     if (!animationEventTypes.has(event?.type)) return event;
 
-    const workspaceId = getActiveWorkspace();
-    const policy = resolveWorkspacePolicy(workspaceId);
-    if (policy?.readonly) {
-        console.warn('[AnimationGuard] Blocked animation edit in readonly workspace', event?.type);
-        return null;
-    }
-
-    const timelineCapability = policy?.timeline || {};
-    if (timelineCapability.readOnly) {
-        console.warn('[AnimationGuard] Blocked animation edit in read-only timeline', event?.type);
-        return null;
-    }
-
     const state = getRuntimeState();
-    const animations = state?.timeline?.animations || {};
-    const { clips = {}, tracks = {}, keyframes = {} } = animations;
+    if (!state) return event;
 
-    if (event.type === EventTypes.ANIMATION_TRACK_CREATE) {
-        const { track } = event.payload || {};
-        if (!track?.clipId || !clips[track.clipId]) {
-            console.warn('[AnimationGuard] Blocked track without clip', track?.id);
-            return null;
+    const timeline = state.timeline?.timelines?.default;
+    const tracks = timeline?.tracks || [];
+
+    switch (event.type) {
+        case EventTypes.ANIMATION_TRACK_CREATE: {
+            const { trackId, nodeId, property } = event.payload || {};
+            if (!trackId || !nodeId || !property) return null;
+            if (!state.nodes?.[nodeId]) return null;
+            if (!ALLOWED_ANIMATION_PROPERTIES.has(property)) return null;
+
+            const duplicate = tracks.some((track) => track?.nodeId === nodeId && track?.property === property);
+            if (duplicate) return null;
+
+            return event;
         }
 
-        if (!AnimationProperties.includes(track.property)) {
-            console.warn('[AnimationGuard] Blocked unsupported property', track?.property);
-            return null;
+        case EventTypes.ANIMATION_TRACK_DELETE: {
+            const { trackId } = event.payload || {};
+            if (!trackId || !tracks.some((track) => track?.id === trackId)) return null;
+            return event;
         }
 
-        if (Array.isArray(timelineCapability.allowedProperties) && timelineCapability.allowedProperties.length) {
-            if (!timelineCapability.allowedProperties.includes(track.property)) {
-                console.warn('[AnimationGuard] Blocked property not allowed in workspace', track?.property);
-                return null;
-            }
+        case EventTypes.ANIMATION_KEYFRAME_ADD: {
+            const { trackId, keyframe } = event.payload || {};
+            if (!trackId || !keyframe?.id) return null;
+            if (!Number.isFinite(keyframe.time) || keyframe.time < 0) return null;
+            if (!isSerializableValue(keyframe.value)) return null;
+
+            const track = tracks.find((t) => t?.id === trackId);
+            if (!track) return null;
+
+            return event;
         }
+
+        case EventTypes.ANIMATION_KEYFRAME_UPDATE: {
+            const { trackId, keyframeId, patch } = event.payload || {};
+            if (!trackId || !keyframeId || !patch) return null;
+            if (Object.keys(patch).length === 0) return null;
+            if ('time' in patch && (!Number.isFinite(patch.time) || patch.time < 0)) return null;
+            if ('value' in patch && !isSerializableValue(patch.value)) return null;
+
+            const track = tracks.find((t) => t?.id === trackId);
+            if (!track) return null;
+            const exists = track.keyframes?.some((kf) => kf.id === keyframeId);
+            if (!exists) return null;
+
+            return event;
+        }
+
+        case EventTypes.ANIMATION_KEYFRAME_DELETE: {
+            const { trackId, keyframeId } = event.payload || {};
+            if (!trackId || !keyframeId) return null;
+
+            const track = tracks.find((t) => t?.id === trackId);
+            if (!track) return null;
+            const exists = track.keyframes?.some((kf) => kf.id === keyframeId);
+            if (!exists) return null;
+
+            return event;
+        }
+
+        default:
+            return event;
     }
-
-    if (event.type === EventTypes.ANIMATION_KEYFRAME_CREATE) {
-        const { keyframe } = event.payload || {};
-        if (!keyframe?.trackId || !tracks[keyframe.trackId]) {
-            console.warn('[AnimationGuard] Blocked keyframe without track', keyframe?.id);
-            return null;
-        }
-    }
-
-    if (event.type === EventTypes.ANIMATION_KEYFRAME_UPDATE) {
-        const { keyframeId } = event.payload || {};
-        if (!keyframeId || !keyframes[keyframeId]) {
-            console.warn('[AnimationGuard] Blocked keyframe update without keyframe', keyframeId);
-            return null;
-        }
-    }
-
-    if (event.type === EventTypes.ANIMATION_KEYFRAME_DELETE) {
-        const { keyframeId } = event.payload || {};
-        if (!keyframeId || !keyframes[keyframeId]) {
-            console.warn('[AnimationGuard] Blocked keyframe delete without keyframe', keyframeId);
-            return null;
-        }
-    }
-
-    if (event.type === EventTypes.ANIMATION_CLIP_UPDATE) {
-        const { clipId } = event.payload || {};
-        if (!clipId || !clips[clipId]) {
-            console.warn('[AnimationGuard] Blocked clip update without clip', clipId);
-            return null;
-        }
-    }
-
-    if (event.type === EventTypes.ANIMATION_CLIP_DELETE) {
-        const { clipId } = event.payload || {};
-        if (!clipId || !clips[clipId]) {
-            console.warn('[AnimationGuard] Blocked clip delete without clip', clipId);
-            return null;
-        }
-    }
-
-    if (event.type === EventTypes.ANIMATION_TRACK_DELETE) {
-        const { trackId } = event.payload || {};
-        if (!trackId || !tracks[trackId]) {
-            console.warn('[AnimationGuard] Blocked track delete without track', trackId);
-            return null;
-        }
-    }
-
-    return event;
 }

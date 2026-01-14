@@ -17,6 +17,7 @@ These rules are **non-negotiable**.
 - Side effects in reducers
 - UI-only security
 - Silent data fixes
+- `STATE_CREATE` / `STATE_DELETE` events
 
 ## Authority Chain
 

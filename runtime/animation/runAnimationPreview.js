@@ -1,72 +1,90 @@
-import { evaluateAnimationTimeline } from '@/timeline/evaluateAnimationTimeline.js';
+import { evaluateAnimation } from '@/engine/animation/evaluateAnimation.js';
 import { useAnimatedRuntimeStore } from '../stores/useAnimatedRuntimeStore.js';
 import { getRuntimeState } from '../state/runtimeState.js';
 
-/**
- * Runs animation preview (illusion only).
- *
- * @param {Object} params
- * @param {Object} params.designState
- * @param {number} params.timeMs
- * @param {string=} params.clipId
- *
- * @returns {{ cancel: Function }}
- */
-export function runAnimationPreview({ designState, timeMs, clipId }) {
-  let cancelled = false;
+export function runAnimationPreview({
+    fromState,
+    timeline,
+    durationMs = 300,
+    onComplete,
+}) {
+    let rafId = null;
+    let startTime = null;
+    let cancelled = false;
 
-  const runtime = getRuntimeState();
-  if (designState?.__isReplaying || runtime?.__isReplaying) {
-    return {
-      cancel() {
-        cancelled = true;
-      },
-    };
-  }
+    const runtimeState = getRuntimeState();
 
-  function apply() {
-    if (cancelled) return;
-
-    const animations = designState?.timeline?.animations;
-
-    if (!animations) return;
-
-    const projection = evaluateAnimationTimeline({
-      animations,
-      timeMs,
-      clipId,
-    });
-
-    const animatedNodes = { ...(runtime.nodes || {}) };
-
-    for (const nodeId in projection.nodes) {
-      animatedNodes[nodeId] = {
-        ...(animatedNodes[nodeId] || {}),
-        ...projection.nodes[nodeId],
-      };
+    // 🔒 Guard: never preview during replay
+    if (runtimeState?.__isReplaying) {
+        return { cancel: () => {} };
     }
 
-    useAnimatedRuntimeStore.setState(
-      {
-        nodes: animatedNodes,
-        rootIds: runtime.rootIds,
-      },
-      false
-    );
-  }
+    function tick(now) {
+        if (cancelled) return;
 
-  apply();
+        if (startTime == null) {
+            startTime = now;
+        }
 
-  return {
-    cancel() {
-      cancelled = true;
-      useAnimatedRuntimeStore.setState(
-        {
-          nodes: {},
-          rootIds: [],
+        const elapsed = now - startTime;
+        const clamped = Math.min(elapsed, durationMs);
+
+        const animatedValues = evaluateAnimation({
+            timeline,
+            timeMs: clamped,
+        });
+
+        const baseNodes = fromState?.nodes || {};
+        const projectedNodes = { ...baseNodes };
+
+        for (const nodeId in animatedValues) {
+            projectedNodes[nodeId] = {
+                ...projectedNodes[nodeId],
+                ...animatedValues[nodeId],
+            };
+        }
+
+        useAnimatedRuntimeStore.setState(
+            {
+                nodes: projectedNodes,
+                rootIds: fromState?.rootIds || [],
+            },
+            false
+        );
+
+        if (elapsed < durationMs) {
+            rafId = requestAnimationFrame(tick);
+        } else {
+            cleanup();
+            if (typeof onComplete === 'function') {
+                onComplete();
+            }
+        }
+    }
+
+    function cleanup() {
+        if (rafId) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+        }
+        cancelled = true;
+    }
+
+    rafId = requestAnimationFrame(tick);
+
+    return {
+        cancel() {
+            cleanup();
+
+            // Restore truth projection
+            const truth = getRuntimeState();
+            useAnimatedRuntimeStore.setState(
+                {
+                    nodes: truth?.nodes || {},
+                    rootIds: truth?.rootIds || [],
+                },
+                false
+            );
         },
-        false
-      );
-    },
-  };
+    };
 }
