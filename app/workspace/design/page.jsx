@@ -1,5 +1,5 @@
-import { WorkspaceShell } from '@/components/workspace/WorkspaceShell';
+import DesignWorkspaceClient from './DesignWorkspaceClient';
 
 export default function DesignWorkspacePage() {
-  return <WorkspaceShell modeId="design" />;
+  return <DesignWorkspaceClient />;
 }

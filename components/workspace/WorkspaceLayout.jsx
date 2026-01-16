@@ -26,6 +26,8 @@ import { FilePicker } from '@/ui/files/FilePicker';
 import { useCommandPalette } from '@/commands/useCommandPalette';
 import { CommandPalette } from '@/commands/CommandPalette';
 import { buildCommands } from '@/commands/commandRegistry';
+import { useGalleryIdentity } from '@/gallery/useGalleryIdentity';
+import { usePublishToServer } from '@/gallery/usePublishToServer';
 
 function WorkspaceLayoutInner({
   adapter,
@@ -64,6 +66,8 @@ function WorkspaceLayoutInner({
   const { open: commandOpen, close: commandClose } = useCommandPalette({
     enabled: keyboardEnabled,
   });
+  const galleryIdentity = useGalleryIdentity();
+  const publishToServer = usePublishToServer();
 
   const jsonReplaceRef = useRef(null);
   const jsonMergeRef = useRef(null);
@@ -126,8 +130,19 @@ function WorkspaceLayoutInner({
         cursorIndex: cursor.index,
         selected,
         mode: hintMode || mode,
+        publishToServer,
       }),
-    [emit, events, cursor.index, replayState.nodes, selected, hintMode, mode]
+    [
+      emit,
+      events,
+      cursor.index,
+      replayState.nodes,
+      selected,
+      hintMode,
+      mode,
+      publishToServer,
+      galleryIdentity,
+    ]
   );
 
   useKeyboardShortcuts({
@@ -173,7 +188,12 @@ function WorkspaceLayoutInner({
       {commandOpen && (
         <CommandPalette
           commands={commands}
-          context={{ selected, mode: hintMode || mode, readOnly: false }}
+          context={{
+            selected,
+            mode: hintMode || mode,
+            readOnly: false,
+            authenticated: !!galleryIdentity,
+          }}
           onClose={commandClose}
         />
       )}

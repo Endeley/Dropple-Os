@@ -6,6 +6,10 @@ export function filterCommands(commands, query, context) {
       return false;
     }
 
+    if (cmd.requiresAuth && !context?.authenticated) {
+      return false;
+    }
+
     if (cmd.requiresSelection === 'multi' && !(context?.selected?.length > 1)) {
       return false;
     }

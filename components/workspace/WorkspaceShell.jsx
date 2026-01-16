@@ -28,6 +28,8 @@ export function WorkspaceShell({
   initialEvents = [],
   initialCursorIndex = -1,
   disableSeed = false,
+  initialDocumentId = null,
+  skipDraftRestore = false,
   reviewSubmission,
   reviewRubric,
   onReviewDecision,
@@ -116,6 +118,22 @@ export function WorkspaceShell({
     const registry = loadRegistry();
     setRecentDocs(registry);
 
+    if (initialDocumentId) {
+      const loaded = loadDocumentSnapshot(initialDocumentId);
+      if (loaded?.snapshot) {
+        applySnapshot(loaded.snapshot);
+        setDocumentId(initialDocumentId);
+        if (loaded.name) setDocumentName(loaded.name);
+        setActiveDocument(initialDocumentId);
+        setHydrated(true);
+        return;
+      }
+      if (skipDraftRestore) {
+        setHydrated(true);
+        return;
+      }
+    }
+
     const activeId = getActiveDocument();
     if (activeId) {
       const loaded = loadDocumentSnapshot(activeId);
@@ -136,7 +154,7 @@ export function WorkspaceShell({
     }
 
     setHydrated(true);
-  }, [persistenceEnabled, applySnapshot]);
+  }, [persistenceEnabled, applySnapshot, initialDocumentId, skipDraftRestore]);
 
   useEffect(() => {
     if (events.length === 0) return;

@@ -10,12 +10,18 @@ function createId() {
   return `doc-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-export function saveDocumentSnapshot({ id, name = 'Untitled', events = [], cursorIndex = -1 } = {}) {
+export function saveDocumentSnapshot({
+  id,
+  name = 'Untitled',
+  events = [],
+  cursorIndex = -1,
+  metadata = {},
+} = {}) {
   const docId = id || createId();
   const snapshot = createLocalDocumentSnapshot({
     events,
     cursorIndex,
-    metadata: { name },
+    metadata: { name, ...metadata },
   });
 
   saveDocumentFile(docId, snapshot);

@@ -1,6 +1,7 @@
 import { createShareLink } from '@/share/createShareLink';
 import { addToGallery } from './galleryStore';
 import { generateThumbnail } from './generateThumbnail';
+import { getCurrentCreatorId } from '@/profiles/currentCreator';
 
 function createId() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -34,6 +35,7 @@ export async function publishCurrentDocument({
     thumbnail,
     tags: normalizedTags,
     mode: mode || null,
+    creatorId: getCurrentCreatorId(),
     createdAt: Date.now(),
   };
 

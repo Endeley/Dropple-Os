@@ -169,4 +169,43 @@ export default defineSchema({
     })
         .index('by_certificateId', ['certificateId'])
         .index('by_assessment', ['assessmentId']),
+
+    galleryDocuments: defineTable({
+        ownerId: v.string(),
+        snapshot: v.any(),
+        createdAt: v.number(),
+        updatedAt: v.number(),
+    }).index('by_owner', ['ownerId']),
+
+    galleryItems: defineTable({
+        ownerId: v.string(),
+        documentId: v.id('galleryDocuments'),
+        title: v.string(),
+        description: v.optional(v.string()),
+        thumbnailStorageId: v.optional(v.id('_storage')),
+        tags: v.optional(v.array(v.string())),
+        mode: v.optional(v.string()),
+        createdAt: v.number(),
+    })
+        .index('by_owner', ['ownerId'])
+        .index('by_createdAt', ['createdAt'])
+        .index('by_document', ['documentId']),
+
+    analyticsEvents: defineTable({
+        type: v.union(
+            v.literal('view'),
+            v.literal('fork'),
+            v.literal('publish')
+        ),
+        galleryItemId: v.optional(v.id('galleryItems')),
+        documentId: v.optional(v.id('galleryDocuments')),
+        actorId: v.optional(v.string()),
+        ownerId: v.optional(v.string()),
+        source: v.optional(v.string()),
+        createdAt: v.number(),
+    })
+        .index('by_type', ['type'])
+        .index('by_gallery', ['galleryItemId'])
+        .index('by_owner', ['ownerId'])
+        .index('by_time', ['createdAt']),
 });

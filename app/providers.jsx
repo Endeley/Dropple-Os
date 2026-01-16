@@ -1,5 +1,4 @@
 'use client';
-
 import { ConvexProvider } from '../providers/ConvexProvider';
 import { OwnershipProvider } from '@/marketplace/useOwnershipStore';
 import { SubmissionProvider } from '@/certification/submissions/useSubmissionStore';

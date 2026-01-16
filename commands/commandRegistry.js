@@ -25,6 +25,7 @@ export function buildCommands({
   cursorIndex = -1,
   selected = [],
   mode,
+  publishToServer,
 }) {
   return [
     {
@@ -96,8 +97,8 @@ export function buildCommands({
       },
     },
     {
-      id: 'publish-gallery',
-      title: 'Publish to Gallery',
+      id: 'publish-gallery-local',
+      title: 'Publish to Local Gallery',
       category: 'Share',
       modes: ['graphic', 'ui', 'animation'],
       keywords: ['publish', 'gallery'],
@@ -117,6 +118,34 @@ export function buildCommands({
           events,
           cursorIndex,
           nodes,
+          tags,
+          mode,
+        });
+      },
+    },
+    publishToServer && {
+      id: 'publish-gallery-server',
+      title: 'Publish to Public Gallery',
+      category: 'Share',
+      modes: ['graphic', 'ui', 'animation'],
+      keywords: ['publish', 'gallery', 'public'],
+      requiresAuth: true,
+      run: async () => {
+        const title = window.prompt('Public gallery title');
+        if (!title) return;
+        const description = window.prompt('Description (optional)') || '';
+        const rawTags = window.prompt('Tags (comma separated)') || '';
+        const tags = rawTags
+          .split(',')
+          .map((tag) => tag.trim())
+          .filter(Boolean);
+
+        await publishToServer({
+          title,
+          description,
+          nodes,
+          events,
+          cursorIndex,
           tags,
           mode,
         });
@@ -167,5 +196,5 @@ export function buildCommands({
       requiresSelection: 'multi',
       run: () => CapabilityActions.distributeY(selected, emit),
     },
-  ];
+  ].filter(Boolean);
 }
