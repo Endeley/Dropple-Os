@@ -1,0 +1,28 @@
+# =========================================================
+# Phase 7 — Animate Between States (Motion UX)
+# =========================================================
+# Any animation or motion-related change requires
+# UX approval under Phase 7 contract.
+# =========================================================
+
+# Animation & Motion
+/components/**/motion*            @dropple-ux
+/components/**/animate*           @dropple-ux
+/components/**/transition*        @dropple-ux
+
+# Core UI surfaces where motion applies
+/components/workspace/WorkspaceLayout.jsx   @dropple-ux
+/components/layout/Toolbar.jsx             @dropple-ux
+/components/layout/PropertyBar.jsx         @dropple-ux
+/components/layout/TimelineBar.jsx         @dropple-ux
+/components/layout/CanvasStage.jsx         @dropple-ux
+
+# Panels and contextual UI
+/components/**/panels/**         @dropple-ux
+/review/panels/**                @dropple-ux
+/education/**                    @dropple-ux
+
+# Canvas & interaction motion
+/canvas/**                       @dropple-ux
+/interaction/**                  @dropple-ux
+/input/**                        @dropple-ux

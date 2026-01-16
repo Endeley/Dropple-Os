@@ -14,6 +14,31 @@ export function timelineReducers(state, event) {
     const { type, payload } = event;
 
     switch (type) {
+        case EventTypes.TIMELINE_EVENT_ADD: {
+            const event = payload?.event;
+            if (!event) return state;
+
+            const timelineState = state.timeline || { timelines: {} };
+            const timelines = timelineState.timelines || {};
+            const timeline = timelines.default;
+            if (!timeline) return state;
+
+            const nextEvents = [...(timeline.events || []), event];
+
+            return {
+                ...state,
+                timeline: {
+                    ...timelineState,
+                    timelines: {
+                        ...timelines,
+                        default: {
+                            ...timeline,
+                            events: nextEvents,
+                        },
+                    },
+                },
+            };
+        }
         case EventTypes.TIMELINE_KEYFRAME_ADD: {
             const { nodeId, trackId, keyframeId, time, property, value, easing = 'linear' } = payload;
 

@@ -35,6 +35,7 @@ export const EventTypes = Object.freeze({
     // ─────────────────────────────
     TIMELINE_KEYFRAME_ADD: 'timeline/keyframe/add',
     TIMELINE_KEYFRAME_MOVE: 'timeline/keyframe/move',
+    TIMELINE_EVENT_ADD: 'timeline/event/add',
 
     // ─────────────────────────────
     // Animation authoring (Phase 5)

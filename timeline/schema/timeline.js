@@ -5,5 +5,6 @@ export function createTimeline({ fps = 60, duration = 0, unit = 'frames' } = {})
         duration,
         unit, // 'frames' | 'ms'
         tracks: [],
+        events: [],
     };
 }

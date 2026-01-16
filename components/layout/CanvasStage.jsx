@@ -15,6 +15,12 @@ import { colors } from '@/ui/tokens';
 import { AnnotationOverlay } from '@/education/AnnotationOverlay';
 import { useEducationCursor } from '@/education/EducationCursorContext';
 import { getEducationAtCursor } from '@/education/selectEducationState';
+import { ContextMenu } from '@/ui/context/ContextMenu';
+import { useContextMenu } from '@/ui/context/useContextMenu';
+import { CapabilityActions } from '@/ui/capabilities/capabilityActions';
+import { exportJSON } from '@/export/exportJSON';
+import { exportSVG } from '@/export/svg/exportSVG';
+import { exportPNG } from '@/export/png/exportPNG';
 
 export default function CanvasStage({
   adapter,
@@ -22,6 +28,11 @@ export default function CanvasStage({
   cursor,
   emit,
   educationReadOnly = false,
+  onImportJSONReplace,
+  onImportJSONMerge,
+  onImportSVGReplace,
+  onImportSVGMerge,
+  canImport = true,
 }) {
   const containerRef = useRef(null);
 
@@ -45,6 +56,8 @@ export default function CanvasStage({
   const isPreview =
     adapter?.id === 'preview' || adapter?.id === 'prototype' || adapter?.isPreview;
   const isReview = adapter?.id === 'review';
+  const isReadOnly =
+    isReview || (adapter?.id === 'education' && (educationReadOnly || educationRole !== 'teacher'));
   const showAutoLayoutOverlay = shouldShowAutoLayoutOverlay({
     selectedIds,
     nodes: state.nodes,
@@ -59,6 +72,7 @@ export default function CanvasStage({
   const reorderParent = reorderPreview.parentId
     ? state.nodes[reorderPreview.parentId]
     : null;
+  const { menu, openMenu, closeMenu } = useContextMenu();
 
   useEffect(() => {
     if (!reorderPreview.active && reorderPreview.parentId) {
@@ -131,13 +145,56 @@ export default function CanvasStage({
     });
   }
 
+  function onContextMenu(e) {
+    if (isReadOnly) return;
+    e.preventDefault();
+
+    const selected =
+      selectedIds && selectedIds.size > 1
+        ? Array.from(selectedIds).map((id) => state.nodes[id]).filter(Boolean)
+        : [];
+    const enabled = selected.length > 1;
+    const hasNodes = Object.keys(state.nodes || {}).length > 0;
+    const canShowImport = canImport;
+
+    openMenu({
+      x: e.clientX,
+      y: e.clientY,
+      items: [
+        { key: 'align-left', label: 'Align Left', disabled: !enabled, onClick: () => CapabilityActions.alignLeft(selected, emit) },
+        { key: 'align-center-x', label: 'Align Center', disabled: !enabled, onClick: () => CapabilityActions.alignCenterX(selected, emit) },
+        { key: 'align-right', label: 'Align Right', disabled: !enabled, onClick: () => CapabilityActions.alignRight(selected, emit) },
+        { type: 'separator' },
+        { key: 'align-top', label: 'Align Top', disabled: !enabled, onClick: () => CapabilityActions.alignTop(selected, emit) },
+        { key: 'align-center-y', label: 'Align Middle', disabled: !enabled, onClick: () => CapabilityActions.alignCenterY(selected, emit) },
+        { key: 'align-bottom', label: 'Align Bottom', disabled: !enabled, onClick: () => CapabilityActions.alignBottom(selected, emit) },
+        { type: 'separator' },
+        { key: 'distribute-x', label: 'Distribute Horizontally', disabled: !enabled, onClick: () => CapabilityActions.distributeX(selected, emit) },
+        { key: 'distribute-y', label: 'Distribute Vertically', disabled: !enabled, onClick: () => CapabilityActions.distributeY(selected, emit) },
+        { type: 'separator' },
+        { key: 'export-json', label: 'Export JSON', disabled: !hasNodes, onClick: () => exportJSON({ nodes: state.nodes, events, cursor }) },
+        { key: 'export-svg', label: 'Export SVG', disabled: !hasNodes, onClick: () => exportSVG({ nodes: state.nodes }) },
+        { key: 'export-png', label: 'Export PNG', disabled: !hasNodes, onClick: () => exportPNG({ nodes: state.nodes, scale: 2 }) },
+        ...(canShowImport
+          ? [
+              { type: 'separator' },
+              { key: 'import-json', label: 'Import JSON (Replace)', onClick: () => onImportJSONReplace?.() },
+              { key: 'import-json-merge', label: 'Import JSON (Merge)', onClick: () => onImportJSONMerge?.() },
+              { key: 'import-svg', label: 'Import SVG (Replace)', onClick: () => onImportSVGReplace?.() },
+              { key: 'import-svg-merge', label: 'Import SVG (Merge)', onClick: () => onImportSVGMerge?.() },
+            ]
+          : []),
+      ],
+    });
+  }
+
   return (
     <div
       ref={containerRef}
       className="canvas-viewport"
       style={{ background: colors.bg }}
       onMouseDown={(e) => {
-        if (!isReview) {
+        if (!isReview && e.button !== 2) {
           clear();
         }
         onMouseDown(e);
@@ -146,6 +203,7 @@ export default function CanvasStage({
       onMouseUp={onMouseUp}
       onMouseLeave={onMouseUp}
       onWheel={onWheel}
+      onContextMenu={onContextMenu}
     >
       <div
         className="canvas-world"
@@ -189,6 +247,9 @@ export default function CanvasStage({
         </AutoLayoutOverlayLayer>
         <SnapGuidesOverlay guides={guides} />
       </div>
+      {menu && (
+        <ContextMenu x={menu.x} y={menu.y} items={menu.items} onClose={closeMenu} />
+      )}
     </div>
   );
 }

@@ -7,7 +7,7 @@ import { perfStart, perfEnd } from '@/perf/perfTracker.js';
  * Constraint-aware resize intent session.
  */
 export class ResizeSession {
-    constructor({ nodeIds, nodes, startPointer, handle, options = {} }) {
+    constructor({ nodeIds, nodes, startPointer, handle, siblings = [], canvas = null, options = {} }) {
         if (!Array.isArray(nodeIds) || nodeIds.length === 0) {
             throw new Error('[ResizeSession] nodeIds required');
         }
@@ -24,6 +24,8 @@ export class ResizeSession {
         this.handle = handle; // 'n','s','e','w','ne','nw','se','sw'
         this.options = options;
         this.lockAspectRatio = options.lockAspectRatio ?? false;
+        this.siblings = siblings;
+        this.canvas = canvas;
 
         const bounds = computeSelectionBounds(nodes);
         this.aspectRatio = options.aspectRatio ?? (bounds.height === 0 ? 1 : bounds.width / Math.max(bounds.height, 1));
@@ -53,6 +55,8 @@ export class ResizeSession {
             pointerDelta: rawPointerDelta,
             handle: this.handle,
             nodes: this.nodes,
+            siblings: this.siblings,
+            canvas: this.canvas,
             options: {
                 ...this.options,
                 lockAspectRatio: this.lockAspectRatio,
@@ -85,6 +89,8 @@ export class ResizeSession {
             },
             handle: this.handle,
             nodes: this.nodes,
+            siblings: this.siblings,
+            canvas: this.canvas,
             options: {
                 ...this.options,
                 lockAspectRatio: this.lockAspectRatio,

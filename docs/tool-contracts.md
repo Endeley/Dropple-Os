@@ -1,312 +1,263 @@
-# Dropple OS — Authoring Tool Contracts
-🔒 **Authoritative · Frozen · Read-Only**
+Status: 🔒 FROZEN
+Change policy: Additive only via new tools. Existing tools are immutable.
 
-This document defines the **non-negotiable contracts** governing all authoring tools in Dropple OS.
+Dropple Tool Contracts
 
-If a tool, feature, or UI violates this document, it is **invalid by definition** and must not be merged.
+This document defines Dropple-only authoring tools that are foundational to the system’s identity.
 
-This file is intentionally strict. Convenience is secondary to correctness.
+These tools are not features.
+They are contracts that shape architecture, UX, safety, and export behavior.
 
----
+Global Tool Invariants (Applies to ALL Tools)
 
-## 🔒 0. Status & Authority
+All tools defined here must obey the following rules:
 
-- **Status:** 🔒 FROZEN
-- **Scope:** All authoring tools (present and future)
-- **Overrides:** Tool UX, previews, optimizations
-- **Referenced by:** `docs/architecture.md`
+Hard Laws
 
-Changing this document requires a **full architectural reset (Dropple v2)**.
+Tools never mutate runtime truth directly
 
----
+Tools never bypass the dispatcher
 
-## 🔒 1. Core Tool Philosophy (LOCKED)
+Tools never write to persistence
 
-> **Tools express intent.  
-> Events express truth.  
-> Reducers materialize truth.**
+Tools never affect replay or determinism
 
-Tools do not change state.  
-They **declare intent** and emit **explicit events**.
+Tools never read DOM or UI state
 
-This principle is absolute.
+Tools never generate IDs
 
----
+Tools never execute animation
 
-## 🔒 2. Universal Tool → Event Pipeline (LOCKED)
+Architecture
 
-All tools must obey this exact pipeline:
+Tools emit intent
 
-User Gesture
-→ Tool Intent Model
-→ Preview (illusion only, optional)
-→ Explicit Events
-→ Dispatcher (single gate)
-→ Reducers (pure)
-→ Runtime Truth
+Dispatcher translates intent → events
 
-### Forbidden
-- Skipping stages
-- Reordering stages
-- Writing truth during preview
-- Emitting events outside the dispatcher
+Reducers mutate truth
 
----
+Preview systems render illusion
 
-## 🔒 3. Global Tool Invariants (LOCKED)
+Export reads truth only
 
-All authoring tools must obey the following invariants.
+Violating any of these invalidates the tool.
 
-### 🔒 3.1 Absolute Prohibitions
+Tool #1 — Animate Between States
+Status
 
-Tools must **never**:
+🔒 LOCKED
 
-- Call `setRuntimeState`
-- Mutate Zustand stores directly
-- Write to persistence
-- Emit events from reducers
-- Generate IDs internally
-- Read preview state as truth
-- Bypass the dispatcher
-- Modify history directly
+Purpose
 
-If it didn’t come from an event, it doesn’t exist.
+Enable designers to create expressive motion without timelines or keyframes, by defining how one state flows into another.
 
----
+User Mental Model
 
-### 🔒 3.2 Preview Is an Illusion
+“When this state changes, it should feel like this.”
 
-Preview systems:
+Users never think in:
 
-- Write **only** to `useAnimatedRuntimeStore`
-- Must be cancelable
-- Must reset to truth on cancel
-- Must not emit events
-- Must not affect history, replay, or export
+Tracks
 
-Preview must **never run** during:
-- Replay
-- Undo
-- Redo
-- Merge simulation
+Curves
 
----
+Keyframes
 
-## 🧊 4. Tool Categories (STRUCTURE LOCKED)
+Time math
 
-All tools belong to **one category**.  
-Categories may grow, but **may not blur**.
+Architectural Definition
 
-### Categories
-1. Structural tools
-2. State authoring tools
-3. Animation relationship tools
-4. Interaction routing tools
-5. Timeline authoring tools
-6. Preview tools
-7. Dropple-only semantic tools
+Authoring tool emits transition definitions
 
----
-
-## 🔒 5. Structural Tools Contract (LOCKED)
+Transition is declarative metadata
 
-Examples:
-- Select
-- Move
-- Resize
-- Reorder
-- Auto-layout
+Transition never triggers state change
 
-### Contract
-- Emit node/layout events only
-- No animation
-- No timeline awareness
-- No state awareness
+Transition never owns animation execution
 
-Structural tools operate on **static truth only**.
+Storage
 
----
+Stored in transitions.component or transitions.page
 
-## 🔒 6. State Authoring Tools (LOCKED)
+Indexed by (sourceStateId → targetStateId)
 
-Examples:
-- Define state identity
-- Switch state identity
-- Remove state identity
+Execution
 
-### Guarantees
-- Emit only `STATE_SET` events
-- No `STATE_CREATE` / `STATE_DELETE` events
-- No implicit animation
-- No automatic node value changes
+Executed only during state switches
 
-State changes ≠ animation.
+Preview is illusion only
 
----
+Truth commits after preview completes
 
-## 🔒 7. Animate Between States Tool (LOCKED)
+Invariants
 
-### Purpose
-Declare **how differences between states animate**.
+No timeline usage
 
-### What It Is
-- Declarative relationship authoring
-- State-to-state animation metadata
-- Not a timeline
-- Not keyframes
+No keyframes
 
-### Tool Must
-- Let user select:
-  - source state
-  - target state
-  - properties
-  - duration
-  - easing
-- Emit explicit animation declaration events
+Deterministic easing only
 
-### Tool Must Never
-- Generate keyframes
-- Compute deltas
-- Infer values
-- Sample time
-- Mutate nodes directly
+Replay-safe
 
----
+Cancelable
 
-## 🔒 8. Animation Reducer Invariants (LOCKED)
+Export-neutral by default
 
-Animation reducers:
+Tool #2 — Smart Motion Presets
+Status
 
-- Never compute animation
-- Never infer missing data
-- Never reorder keyframes
-- Never generate IDs
-- Never read runtime/UI/preview state
-- Never sample time
+🔒 LOCKED
 
-Reducers **store truth only**.
+Purpose
 
-Breaking this invalidates:
-- Replay
-- Merge
-- Export
-- Auditability
+Provide high-quality motion without manual setup.
 
----
+User Mental Model
 
-## 🔒 9. Interaction Tools (LOCKED)
+“Make this feel smooth / energetic / calm.”
 
-Interactions define **when** something happens.
+Users select intent, not parameters.
 
-Examples:
-- On click → switch state
-- On hover → activate component
+Architectural Definition
 
-### Contract
-- Store routing metadata only
-- Emit `interaction/execute` control events
-- Dispatcher translates into real events
-- Reducers never execute interactions
+Presets resolve into:
 
-Interactions route intent. They do not perform logic.
+Transition properties
 
----
+Duration
 
-## 🔒 10. Preview Systems (LOCKED)
+Easing
 
-Applies to:
-- Transition preview
-- Animation preview
-- Timeline scrubbing preview
+Resolution is pure and deterministic
 
-### Guarantees
-- Read-only evaluation
-- Cancelable
-- Isolated from truth
-- Never recorded in history
-- Never affects export
+Presets do not store state
 
-Preview is **ephemeral**.
+Constraints
 
----
+No custom curves
 
-## 🧊 11. Timeline Authoring Tools (CONTRACT-LOCKED)
+No runtime branching
 
-### What Is Frozen
-- Timeline is literal
-- Keyframes are absolute
-- No implicit animation
-- No inferred easing or alignment
+No timeline ownership
 
-### What Can Evolve
-- UI
-- Editing ergonomics
-- Authoring workflows
+Presets are replaceable, not editable
 
-Truth rules are frozen. UX may evolve.
+Relationship
 
----
+Composes with:
 
-## 🧊 12. Dropple-Only Tools (EXTENSIBLE UNDER LAW)
+Animate Between States
 
-Dropple may introduce unique tools, such as:
-- Semantic motion ("enter", "exit")
-- State morphing
-- Motion constraints
-- AI-assisted animation
-- Lights & shadows
-- Physics metaphors
+Interaction Motion
 
-### All Must
-- Emit explicit events
-- Respect reducer invariants
-- Be replayable
-- Be preview-only until commit
+Never overrides explicit authoring
 
-No tool gets special privilege.
+Tool #3 — Motion From Interaction
 
----
+(hover → press → release)
 
-## 🔒 13. Explicit Non-Goals (LOCKED)
+Status
 
-Dropple tools will **never**:
+🔒 LOCKED
 
-- Guess user intent
-- Auto-animate silently
-- Hide generated truth
-- Collapse preview into state
-- Trade correctness for convenience
+Purpose
 
----
+Provide immediate tactile feedback for interactions without polluting design truth.
 
-## 🔒 14. Lock Summary
+User Mental Model
 
-| Area | Status |
-|---|---|
-| Core philosophy | 🔒 Frozen |
-| Tool → event pipeline | 🔒 Frozen |
-| Global invariants | 🔒 Frozen |
-| Structural tools | 🔒 Frozen |
-| State tools | 🔒 Frozen |
-| Animate between states | 🔒 Frozen |
-| Animation reducers | 🔒 Frozen |
-| Interaction routing | 🔒 Frozen |
-| Preview systems | 🔒 Frozen |
-| Timeline UI | 🧊 Contract-locked |
-| Dropple-only tools | 🧊 Extensible |
+“This feels responsive.”
 
----
+Not:
 
-## 🔒 15. Final Statement
+“This is an animation”
 
-Dropple OS tools are **truth-respecting instruments**, not magic wands.
+“This has keyframes”
 
-Every tool:
-- Declares intent
-- Produces explicit events
-- Leaves an auditable trail
-- Can be replayed years later
+Architectural Definition
 
-This document is **law**.
+Motion is ephemeral
 
-If a feature cannot obey it, that feature does not belong in Dropple OS.
+Exists only while interaction is active
+
+Lives entirely in runtime illusion layer
+
+Execution Rules
+
+No reducers
+
+No events
+
+No persistence
+
+No export
+
+No history
+
+No replay
+
+Safety Guards
+
+Blocked during replay (__isReplaying)
+
+Cancelable on:
+
+Pointer up
+
+Blur
+
+Undo
+
+State change
+
+Relationship
+System	Behavior
+Transitions	Coexists
+Playback	Never overlaps
+Timeline	Completely separate
+Accessibility	Must respect reduced motion
+Explicitly Non-Goals (Frozen)
+
+The following are not allowed under any tool above:
+
+Auto-creating keyframes
+
+Writing timeline data implicitly
+
+Exporting interaction motion
+
+Hidden persistence
+
+UI-driven state mutation
+
+Side-effects during replay
+
+If needed, these require new tools, not extensions.
+
+Future Tool Slots (Not Defined Yet)
+
+These names are reserved but not specified:
+
+Motion From Hierarchy
+
+Motion From Constraints
+
+Adaptive Motion (device / context)
+
+Expressive Physics Mode
+
+They must live in separate contracts.
+
+Final Lock Statement
+
+This file is architecturally binding.
+
+Any implementation:
+
+Must conform to these contracts
+
+Must not reinterpret intent
+
+Must not weaken invariants
+
+Violations are bugs, not design choices.
