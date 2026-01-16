@@ -30,6 +30,8 @@ export function WorkspaceShell({
   disableSeed = false,
   initialDocumentId = null,
   skipDraftRestore = false,
+  readOnly = false,
+  documentRole = null,
   reviewSubmission,
   reviewRubric,
   onReviewDecision,
@@ -52,8 +54,11 @@ export function WorkspaceShell({
   const editGroupRef = useRef({ id: null });
 
   const persistenceEnabled =
-    adapter?.id !== 'review' && !(adapter?.id === 'education' && educationReadOnly);
+    !readOnly &&
+    adapter?.id !== 'review' &&
+    !(adapter?.id === 'education' && educationReadOnly);
   const importEnabled =
+    !readOnly &&
     adapter?.capabilities?.editing !== false &&
     adapter?.id !== 'review' &&
     !(adapter?.id === 'education' && educationReadOnly);
@@ -434,31 +439,34 @@ export function WorkspaceShell({
   );
 
   const workspace = (
-    <WorkspaceLayout
-      adapter={adapter}
-      events={events}
-      cursor={cursor}
-      setCursorIndex={setCursorIndex}
-      emit={emit}
-      documentName={documentName}
-      onSave={handleSave}
-      onSaveAs={handleSaveAs}
-      recentDocs={recentDocs}
-      onOpenDocument={handleOpen}
-      canPersist={persistenceEnabled}
-      onImportJSONReplace={(file) => handleImportJSON(file, { replace: true })}
-      onImportJSONMerge={(file) => handleImportJSON(file, { replace: false })}
-      onImportSVGReplace={(file) => handleImportSVG(file, { replace: true })}
-      onImportSVGMerge={(file) => handleImportSVG(file, { replace: false })}
-      canImport={importEnabled}
-      onOpenTemplateGenerator={templateGen.openGenerator}
-      educationReadOnly={educationReadOnly}
-      reviewSubmission={reviewSubmission}
-      reviewRubric={reviewRubric}
-      onReviewDecision={onReviewDecision}
-      onReviewCriteriaChange={onReviewCriteriaChange}
-      reviewerId={reviewerId}
-    />
+      <WorkspaceLayout
+        adapter={adapter}
+        events={events}
+        cursor={cursor}
+        setCursorIndex={setCursorIndex}
+        emit={emit}
+        documentName={documentName}
+        onSave={handleSave}
+        onSaveAs={handleSaveAs}
+        recentDocs={recentDocs}
+        onOpenDocument={handleOpen}
+        canPersist={persistenceEnabled}
+        onImportJSONReplace={(file) => handleImportJSON(file, { replace: true })}
+        onImportJSONMerge={(file) => handleImportJSON(file, { replace: false })}
+        onImportSVGReplace={(file) => handleImportSVG(file, { replace: true })}
+        onImportSVGMerge={(file) => handleImportSVG(file, { replace: false })}
+        canImport={importEnabled}
+        onOpenTemplateGenerator={templateGen.openGenerator}
+        educationReadOnly={educationReadOnly}
+        readOnly={readOnly}
+        documentRole={documentRole}
+        documentId={documentId}
+        reviewSubmission={reviewSubmission}
+        reviewRubric={reviewRubric}
+        onReviewDecision={onReviewDecision}
+        onReviewCriteriaChange={onReviewCriteriaChange}
+        reviewerId={reviewerId}
+      />
   );
 
   return (

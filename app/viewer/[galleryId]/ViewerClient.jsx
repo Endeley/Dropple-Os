@@ -30,6 +30,27 @@ export default function ViewerClient({ snapshot, meta }) {
     isOwner && meta?.id ? { galleryItemId: meta.id } : 'skip'
   );
   const didTrackRef = useRef(false);
+  const sessionIdRef = useRef(null);
+
+  function getAnalyticsSessionId() {
+    if (typeof window === 'undefined') return null;
+    if (sessionIdRef.current) return sessionIdRef.current;
+
+    try {
+      let id = sessionStorage.getItem('dropple.analytics.session');
+      if (!id) {
+        id =
+          typeof crypto !== 'undefined' && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `session-${Math.random().toString(36).slice(2, 10)}`;
+        sessionStorage.setItem('dropple.analytics.session', id);
+      }
+      sessionIdRef.current = id;
+      return id;
+    } catch {
+      return null;
+    }
+  }
 
   const hydrated = useMemo(() => {
     if (!snapshot) return null;
@@ -61,6 +82,7 @@ export default function ViewerClient({ snapshot, meta }) {
       galleryItemId: meta.id,
       ownerId: meta.ownerId,
       source: 'viewer',
+      sessionId: getAnalyticsSessionId(),
     }).catch(() => {});
   }, [meta?.id, meta?.ownerId, trackView]);
 

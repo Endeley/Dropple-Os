@@ -11,6 +11,7 @@ import { getEducationAtCursor } from '@/education/selectEducationState';
 import RubricPanel from '@/review/panels/RubricPanel';
 import AnnotationPanel from '@/review/panels/AnnotationPanel';
 import CurveEditorPanel from '@/ui/animation/curves/CurveEditorPanel';
+import SharingPanel from '@/collaboration/panels/SharingPanel';
 
 export default function RightPanel({
   panels = [],
@@ -23,6 +24,7 @@ export default function RightPanel({
   onReviewCriteriaChange,
   submissionId,
   setCursorIndex,
+  documentId,
 }) {
   const { selectedIds } = useSelection();
   const state = useReplayState({ events, cursor });
@@ -39,6 +41,7 @@ export default function RightPanel({
   const showRubric = panels.includes('RubricPanel');
   const showAnnotation = panels.includes('AnnotationPanel') && !!submissionId;
   const showCurveEditor = !!capabilities?.animation;
+  const showSharing = panels.includes('SharingPanel') && !!documentId;
 
   const isRelevant =
     showInspector ||
@@ -47,7 +50,8 @@ export default function RightPanel({
     showEducationTimeline ||
     showRubric ||
     showAnnotation ||
-    showCurveEditor;
+    showCurveEditor ||
+    showSharing;
 
   return (
     <aside
@@ -106,6 +110,12 @@ export default function RightPanel({
       {showCurveEditor && (
         <Panel title="Easing Curve">
           <CurveEditorPanel capabilities={capabilities} />
+        </Panel>
+      )}
+
+      {showSharing && (
+        <Panel title="Sharing">
+          <SharingPanel docId={documentId} />
         </Panel>
       )}
     </aside>

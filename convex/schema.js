@@ -106,6 +106,21 @@ export default defineSchema({
         .index('by_doc', ['docId'])
         .index('by_doc_user', ['docId', 'userId']),
 
+    documentInvites: defineTable({
+        docId: v.string(),
+        email: v.string(),
+        role: v.union(v.literal('editor'), v.literal('viewer')),
+        invitedBy: v.string(),
+        status: v.union(
+            v.literal('pending'),
+            v.literal('accepted'),
+            v.literal('revoked')
+        ),
+        createdAt: v.number(),
+    })
+        .index('by_doc', ['docId'])
+        .index('by_email', ['email']),
+
     auditLogs: defineTable({
         docId: v.string(),
         actorId: v.string(),
@@ -201,11 +216,13 @@ export default defineSchema({
         documentId: v.optional(v.id('galleryDocuments')),
         actorId: v.optional(v.string()),
         ownerId: v.optional(v.string()),
+        sessionId: v.optional(v.string()),
         source: v.optional(v.string()),
         createdAt: v.number(),
     })
         .index('by_type', ['type'])
         .index('by_gallery', ['galleryItemId'])
         .index('by_owner', ['ownerId'])
+        .index('by_actor', ['actorId'])
         .index('by_time', ['createdAt']),
 });

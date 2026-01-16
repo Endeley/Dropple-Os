@@ -30,13 +30,14 @@ export default function ReadOnlyNodeRenderer({
   modeId,
   educationRole = 'teacher',
   educationReadOnly = false,
+  readOnly = false,
 }) {
   const { selectedIds, selectSingle, toggle, setSelection } = useSelection();
   const { grid } = useGrid();
   const mods = useInteractionModifiers();
   const isEducationReadOnly =
     modeId === 'education' && (educationReadOnly || educationRole !== 'teacher');
-  const isReadOnly = modeId === 'review' || isEducationReadOnly;
+  const isReadOnly = readOnly || modeId === 'review' || isEducationReadOnly;
 
   const dragRef = useRef({
     dragging: false,

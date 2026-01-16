@@ -48,6 +48,9 @@ function WorkspaceLayoutInner({
   canImport = true,
   onOpenTemplateGenerator,
   educationReadOnly = false,
+  readOnly = false,
+  documentRole = null,
+  documentId = null,
   reviewSubmission,
   reviewRubric,
   onReviewDecision,
@@ -58,7 +61,9 @@ function WorkspaceLayoutInner({
   const keyboardEnabled =
     adapter?.interactions?.keyboard !== false &&
     adapter?.capabilities?.editing !== false &&
-    adapter?.id !== 'review';
+    adapter?.id !== 'review' &&
+    !readOnly;
+  const canManageSharing = documentRole === 'owner' && !readOnly;
   const hintMode = adapter?.id === 'design' ? 'graphic' : adapter?.id;
   const hint = useModeOnboarding(hintMode);
   const mode = useMode();
@@ -144,6 +149,13 @@ function WorkspaceLayoutInner({
       galleryIdentity,
     ]
   );
+
+  const rightPanels = useMemo(() => {
+    const base = adapter?.panels?.right || [];
+    if (!canManageSharing) return base;
+    if (base.includes('SharingPanel')) return base;
+    return [...base, 'SharingPanel'];
+  }, [adapter?.panels?.right, canManageSharing]);
 
   useKeyboardShortcuts({
     enabled: keyboardEnabled,
@@ -239,7 +251,7 @@ function WorkspaceLayoutInner({
           reviewerId={reviewerId}
           cursor={cursor}
         />
-      ) : (
+      ) : readOnly ? null : (
         <Toolbar
           mode={adapter}
           onOpenTemplateGenerator={onOpenTemplateGenerator}
@@ -261,7 +273,7 @@ function WorkspaceLayoutInner({
         />
       )}
 
-      {adapter?.id === 'education' || adapter?.id === 'review' ? null : (
+      {adapter?.id === 'education' || adapter?.id === 'review' || readOnly ? null : (
         <PropertyBar events={events} cursor={cursor} emit={emit} />
       )}
 
@@ -274,6 +286,7 @@ function WorkspaceLayoutInner({
           cursor={cursor}
           emit={emit}
           educationReadOnly={educationReadOnly}
+          readOnly={readOnly}
           onImportJSONReplace={openImportJSONReplace}
           onImportJSONMerge={openImportJSONMerge}
           onImportSVGReplace={openImportSVGReplace}
@@ -282,7 +295,7 @@ function WorkspaceLayoutInner({
         />
 
         <RightPanel
-          panels={adapter.panels?.right}
+          panels={rightPanels}
           events={events}
           cursor={cursor}
           emit={emit}
@@ -292,6 +305,7 @@ function WorkspaceLayoutInner({
           onReviewCriteriaChange={onReviewCriteriaChange}
           submissionId={reviewSubmission?.id}
           setCursorIndex={setCursorIndex}
+          documentId={documentId}
         />
       </div>
 
@@ -299,8 +313,8 @@ function WorkspaceLayoutInner({
         events={events}
         cursor={cursor}
         setCursorIndex={setCursorIndex}
-        onUndo={undo}
-        onRedo={redo}
+        onUndo={readOnly ? undefined : undo}
+        onRedo={readOnly ? undefined : redo}
         submissionId={reviewSubmission?.id}
       />
     </div>

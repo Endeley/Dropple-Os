@@ -6,17 +6,68 @@ export const trackView = mutation({
     galleryItemId: v.id('galleryItems'),
     ownerId: v.string(),
     source: v.optional(v.string()),
+    sessionId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const now = Date.now();
+    const windowMs = 5 * 60 * 1000;
     const identity = await ctx.auth.getUserIdentity();
+    const actorId = identity?.subject ?? null;
+    const source = args.source ?? 'viewer';
+
+    if (source !== 'viewer') {
+      return;
+    }
+
+    const sessionId =
+      args.sessionId && args.sessionId.length <= 64 ? args.sessionId : null;
+
+    if (actorId) {
+      const recentByActor = await ctx.db
+        .query('analyticsEvents')
+        .withIndex('by_actor', (q) => q.eq('actorId', actorId))
+        .filter((q) => q.gte(q.field('createdAt'), now - 60_000))
+        .collect();
+
+      if (recentByActor.length >= 60) {
+        return;
+      }
+    }
+
+    if (actorId) {
+      const recent = await ctx.db
+        .query('analyticsEvents')
+        .withIndex('by_gallery', (q) => q.eq('galleryItemId', args.galleryItemId))
+        .filter((q) => q.eq(q.field('type'), 'view'))
+        .filter((q) => q.eq(q.field('actorId'), actorId))
+        .filter((q) => q.gte(q.field('createdAt'), now - windowMs))
+        .first();
+
+      if (recent) {
+        return;
+      }
+    } else if (sessionId) {
+      const recent = await ctx.db
+        .query('analyticsEvents')
+        .withIndex('by_gallery', (q) => q.eq('galleryItemId', args.galleryItemId))
+        .filter((q) => q.eq(q.field('type'), 'view'))
+        .filter((q) => q.eq(q.field('sessionId'), sessionId))
+        .filter((q) => q.gte(q.field('createdAt'), now - windowMs))
+        .first();
+
+      if (recent) {
+        return;
+      }
+    }
 
     await ctx.db.insert('analyticsEvents', {
       type: 'view',
       galleryItemId: args.galleryItemId,
       ownerId: args.ownerId,
-      actorId: identity?.subject ?? null,
-      source: args.source ?? null,
-      createdAt: Date.now(),
+      actorId,
+      sessionId,
+      source,
+      createdAt: now,
     });
   },
 });
@@ -28,12 +79,36 @@ export const trackFork = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
+    if (!identity?.subject) {
+      return;
+    }
+
+    const recentByActor = await ctx.db
+      .query('analyticsEvents')
+      .withIndex('by_actor', (q) => q.eq('actorId', identity.subject))
+      .filter((q) => q.gte(q.field('createdAt'), Date.now() - 60_000))
+      .collect();
+
+    if (recentByActor.length >= 60) {
+      return;
+    }
+
+    const existing = await ctx.db
+      .query('analyticsEvents')
+      .withIndex('by_gallery', (q) => q.eq('galleryItemId', args.galleryItemId))
+      .filter((q) => q.eq(q.field('type'), 'fork'))
+      .filter((q) => q.eq(q.field('actorId'), identity.subject))
+      .first();
+
+    if (existing) {
+      return;
+    }
 
     await ctx.db.insert('analyticsEvents', {
       type: 'fork',
       galleryItemId: args.galleryItemId,
       ownerId: args.ownerId,
-      actorId: identity?.subject ?? null,
+      actorId: identity.subject,
       source: 'viewer',
       createdAt: Date.now(),
     });

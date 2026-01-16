@@ -28,6 +28,7 @@ export default function CanvasStage({
   cursor,
   emit,
   educationReadOnly = false,
+  readOnly = false,
   onImportJSONReplace,
   onImportJSONMerge,
   onImportSVGReplace,
@@ -57,7 +58,9 @@ export default function CanvasStage({
     adapter?.id === 'preview' || adapter?.id === 'prototype' || adapter?.isPreview;
   const isReview = adapter?.id === 'review';
   const isReadOnly =
-    isReview || (adapter?.id === 'education' && (educationReadOnly || educationRole !== 'teacher'));
+    readOnly ||
+    isReview ||
+    (adapter?.id === 'education' && (educationReadOnly || educationRole !== 'teacher'));
   const showAutoLayoutOverlay = shouldShowAutoLayoutOverlay({
     selectedIds,
     nodes: state.nodes,
@@ -224,6 +227,7 @@ export default function CanvasStage({
           modeId={adapter?.id}
           educationRole={educationRole}
           educationReadOnly={educationReadOnly}
+          readOnly={readOnly}
         />
         <AutoLayoutOverlayLayer>
           {overlayNode && (

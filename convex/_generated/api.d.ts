@@ -8,10 +8,12 @@
  * @module
  */
 
+import type * as _helpers_permissions from "../_helpers/permissions.js";
 import type * as analytics from "../analytics.js";
 import type * as appendEvents from "../appendEvents.js";
 import type * as assessments from "../assessments.js";
 import type * as certificates from "../certificates.js";
+import type * as collaboration from "../collaboration.js";
 import type * as gallery from "../gallery.js";
 import type * as getAuditLogs from "../getAuditLogs.js";
 import type * as getDocumentMember from "../getDocumentMember.js";
@@ -37,10 +39,12 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "_helpers/permissions": typeof _helpers_permissions;
   analytics: typeof analytics;
   appendEvents: typeof appendEvents;
   assessments: typeof assessments;
   certificates: typeof certificates;
+  collaboration: typeof collaboration;
   gallery: typeof gallery;
   getAuditLogs: typeof getAuditLogs;
   getDocumentMember: typeof getDocumentMember;
