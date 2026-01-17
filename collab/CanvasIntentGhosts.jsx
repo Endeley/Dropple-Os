@@ -11,6 +11,8 @@ import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStor
  * 🔒 Visual only
  */
 export default function CanvasIntentGhosts({ intents }) {
+    // N2 intent visualization: highlights are advisory only.
+    // Do NOT use this layer to block interactions or enforce locks.
     const nodes = useAnimatedRuntimeStore((s) => s.nodes);
 
     if (!Array.isArray(intents) || intents.length === 0) return null;

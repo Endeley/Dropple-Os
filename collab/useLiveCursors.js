@@ -3,38 +3,39 @@
 import { useEffect } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
+import { throttle } from '@/collab/throttle';
 
 /**
- * Live cursor hook.
+ * N2 CURSOR SHARING
  *
- * 🔒 Canvas-only
- * 🔒 No engine coupling
+ * Cursor positions are advisory only.
+ * They must never:
+ * - snap to objects
+ * - affect hit testing
+ * - influence selection or transforms
  */
-export function useLiveCursors({ docId, userId }) {
+export function useLiveCursors({ docId, enabled = true, toCanvasCoords }) {
     const updateCursor = useMutation(api.updateCursor);
     const presence = useQuery(api.getPresence, { docId }) ?? [];
 
     useEffect(() => {
-        if (!docId || !userId) return;
+        if (!docId || !enabled || !toCanvasCoords) return;
 
-        let lastSent = 0;
+        // Throttle is intentional.
+        // Cursor smoothness is less important than network safety.
+        const emit = throttle((x, y) => {
+            updateCursor({ docId, x, y }).catch(() => {});
+        }, 50);
 
         const onMove = (e) => {
-            const now = performance.now();
-            if (now - lastSent < 50) return;
-            lastSent = now;
-
-            updateCursor({
-                docId,
-                userId,
-                x: e.clientX,
-                y: e.clientY,
-            });
+            const point = toCanvasCoords(e);
+            if (!point) return;
+            emit(point.x, point.y);
         };
 
         window.addEventListener('pointermove', onMove);
         return () => window.removeEventListener('pointermove', onMove);
-    }, [docId, userId, updateCursor]);
+    }, [docId, enabled, toCanvasCoords, updateCursor]);
 
-    return presence.filter((p) => p.userId !== userId);
+    return presence;
 }

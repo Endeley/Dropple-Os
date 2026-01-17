@@ -13,6 +13,10 @@ This document contains **LOCKED sections** that define non-negotiable system law
 
 If a feature or tool contradicts a 🔒 LOCKED section, it is invalid by definition.
 
+## Related Architecture Notes
+
+- docs/architecture/why-not-realtime-yet.md
+
 ## 🔒 Core Philosophy (LOCKED)
 
 > This philosophy is permanent. Violating it breaks replay, merge, and export guarantees.

@@ -5,29 +5,32 @@ import { useMutation, useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 
 /**
- * Live presence hook.
+ * N2 AWARENESS ONLY
  *
- * 🔒 Rules:
- * - UI-only
- * - Auto-heartbeat
- * - No engine coupling
+ * This hook emits presence heartbeats.
+ * It must never:
+ * - depend on editor state
+ * - block user actions
+ * - trigger document mutations
  */
-export function usePresence({ docId, userId, name, color }) {
+export function usePresence({ docId, enabled = true }) {
     const update = useMutation(api.updatePresence);
-    const presence = useQuery(api.getPresence, { docId });
+    const presence = useQuery(api.getPresence, docId ? { docId } : 'skip');
 
     useEffect(() => {
-        if (!docId || !userId) return;
+        if (!docId || !enabled) return;
 
+        // NOTE: Do not tighten interval without profiling.
+        // Presence should remain low-frequency and cheap.
         const tick = () => {
-            update({ docId, userId, name, color });
+            update({ docId }).catch(() => {});
         };
 
         tick();
-        const id = setInterval(tick, 3000);
+        const id = setInterval(tick, 5000);
 
         return () => clearInterval(id);
-    }, [docId, userId, name, color, update]);
+    }, [docId, enabled, update]);
 
     return presence ?? [];
 }

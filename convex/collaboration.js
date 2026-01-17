@@ -136,3 +136,87 @@ export const listInvitesForDocument = query({
       .collect();
   },
 });
+
+export const listDocumentMembers = query({
+  args: {
+    docId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const role = await getUserRole(ctx, args.docId);
+    if (role !== 'owner') {
+      throw new Error('Forbidden');
+    }
+
+    return await ctx.db
+      .query('documentMembers')
+      .withIndex('by_doc', (q) => q.eq('docId', args.docId))
+      .collect();
+  },
+});
+
+export const updateMemberRole = mutation({
+  args: {
+    docId: v.string(),
+    userId: v.string(),
+    role: v.union(v.literal('editor'), v.literal('viewer')),
+  },
+  handler: async (ctx, args) => {
+    const requesterRole = await getUserRole(ctx, args.docId);
+    if (requesterRole !== 'owner') {
+      throw new Error('Forbidden');
+    }
+
+    const membership = await ctx.db
+      .query('documentMembers')
+      .withIndex('by_doc_user', (q) =>
+        q.eq('docId', args.docId).eq('userId', args.userId)
+      )
+      .first();
+
+    if (!membership) {
+      throw new Error('Member not found');
+    }
+
+    if (membership.role === 'owner') {
+      throw new Error('Cannot change owner role');
+    }
+
+    await ctx.db.patch(membership._id, {
+      role: args.role,
+    });
+
+    return { ok: true };
+  },
+});
+
+export const removeMember = mutation({
+  args: {
+    docId: v.string(),
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const requesterRole = await getUserRole(ctx, args.docId);
+    if (requesterRole !== 'owner') {
+      throw new Error('Forbidden');
+    }
+
+    const membership = await ctx.db
+      .query('documentMembers')
+      .withIndex('by_doc_user', (q) =>
+        q.eq('docId', args.docId).eq('userId', args.userId)
+      )
+      .first();
+
+    if (!membership) {
+      return { ok: true };
+    }
+
+    if (membership.role === 'owner') {
+      throw new Error('Cannot remove owner');
+    }
+
+    await ctx.db.delete(membership._id);
+
+    return { ok: true };
+  },
+});

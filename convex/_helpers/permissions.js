@@ -1,8 +1,11 @@
 import { v } from 'convex/values';
+import { assertOwnershipInvariant } from './assertOwnershipInvariant';
 
 export async function getUserRole(ctx, docId) {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) return null;
+
+  await assertOwnershipInvariant(ctx, docId);
 
   const membership = await ctx.db
     .query('documentMembers')

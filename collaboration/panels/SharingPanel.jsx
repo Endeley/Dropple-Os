@@ -10,6 +10,9 @@ export default function SharingPanel({ docId }) {
   const invite = useMutation(api.collaboration.inviteToDocument);
   const revoke = useMutation(api.collaboration.revokeDocumentInvite);
   const invites = useQuery(api.collaboration.listInvitesForDocument, { docId });
+  const members = useQuery(api.collaboration.listDocumentMembers, { docId });
+  const updateRole = useMutation(api.collaboration.updateMemberRole);
+  const removeMember = useMutation(api.collaboration.removeMember);
 
   async function sendInvite() {
     const trimmed = email.trim();
@@ -60,6 +63,63 @@ export default function SharingPanel({ docId }) {
                 >
                   Revoke
                 </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {members && members.length ? (
+        <div style={{ marginTop: 4 }}>
+          <strong>Members</strong>
+          <div
+            style={{
+              marginTop: 8,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6,
+            }}
+          >
+            {members.map((member) => (
+              <div
+                key={member._id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  fontSize: 13,
+                }}
+              >
+                <span>
+                  {member.userId}
+                  {member.role === 'owner' ? ' · owner' : ''}
+                </span>
+
+                {member.role !== 'owner' ? (
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <select
+                      value={member.role}
+                      onChange={(e) =>
+                        updateRole({
+                          docId,
+                          userId: member.userId,
+                          role: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="viewer">Viewer</option>
+                      <option value="editor">Editor</option>
+                    </select>
+                    <button
+                      onClick={() =>
+                        removeMember({ docId, userId: member.userId })
+                      }
+                      style={{ fontSize: 12 }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : null}
               </div>
             ))}
           </div>

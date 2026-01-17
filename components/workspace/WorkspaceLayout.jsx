@@ -28,6 +28,7 @@ import { CommandPalette } from '@/commands/CommandPalette';
 import { buildCommands } from '@/commands/commandRegistry';
 import { useGalleryIdentity } from '@/gallery/useGalleryIdentity';
 import { usePublishToServer } from '@/gallery/usePublishToServer';
+import PresenceDots from '@/collab/PresenceDots';
 
 function WorkspaceLayoutInner({
   adapter,
@@ -56,6 +57,8 @@ function WorkspaceLayoutInner({
   onReviewDecision,
   onReviewCriteriaChange,
   reviewerId,
+  presence,
+  intents,
 }) {
   const { selectedIds, setSelection, selectSingle } = useSelection();
   const keyboardEnabled =
@@ -63,15 +66,17 @@ function WorkspaceLayoutInner({
     adapter?.capabilities?.editing !== false &&
     adapter?.id !== 'review' &&
     !readOnly;
-  const canManageSharing = documentRole === 'owner' && !readOnly;
+  const canManageSharing = documentRole === 'owner' && !readOnly && !!documentId;
   const hintMode = adapter?.id === 'design' ? 'graphic' : adapter?.id;
   const hint = useModeOnboarding(hintMode);
   const mode = useMode();
+  const canEmitCursor = !readOnly && (documentRole === 'owner' || documentRole === 'editor');
 
   const { open: commandOpen, close: commandClose } = useCommandPalette({
     enabled: keyboardEnabled,
   });
   const galleryIdentity = useGalleryIdentity();
+  const selfUserId = galleryIdentity?.id ?? null;
   const publishToServer = usePublishToServer();
 
   const jsonReplaceRef = useRef(null);
@@ -197,6 +202,7 @@ function WorkspaceLayoutInner({
 
   return (
     <div className="workspace-root">
+      <PresenceDots presence={presence} />
       {commandOpen && (
         <CommandPalette
           commands={commands}
@@ -287,6 +293,11 @@ function WorkspaceLayoutInner({
           emit={emit}
           educationReadOnly={educationReadOnly}
           readOnly={readOnly}
+          documentId={documentId}
+          canEmitCursor={canEmitCursor}
+          presence={presence}
+          selfUserId={selfUserId}
+          intents={intents}
           onImportJSONReplace={openImportJSONReplace}
           onImportJSONMerge={openImportJSONMerge}
           onImportSVGReplace={openImportSVGReplace}
@@ -345,6 +356,7 @@ export function WorkspaceLayout({
   onReviewDecision,
   onReviewCriteriaChange,
   reviewerId,
+  presence,
 }) {
   return (
     <SelectionProvider>
@@ -373,6 +385,7 @@ export function WorkspaceLayout({
           onReviewDecision={onReviewDecision}
           onReviewCriteriaChange={onReviewCriteriaChange}
           reviewerId={reviewerId}
+          presence={presence}
         />
       </ModeProvider>
     </SelectionProvider>

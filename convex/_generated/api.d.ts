@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as _helpers_assertOwnershipInvariant from "../_helpers/assertOwnershipInvariant.js";
+import type * as _helpers_ensureOwnerMember from "../_helpers/ensureOwnerMember.js";
 import type * as _helpers_permissions from "../_helpers/permissions.js";
 import type * as analytics from "../analytics.js";
 import type * as appendEvents from "../appendEvents.js";
@@ -23,6 +25,7 @@ import type * as lib_audit from "../lib/audit.js";
 import type * as lib_permissions from "../lib/permissions.js";
 import type * as lib_writeAuditLog from "../lib/writeAuditLog.js";
 import type * as loadDocumentSnapshot from "../loadDocumentSnapshot.js";
+import type * as migrations_repairMissingOwners from "../migrations/repairMissingOwners.js";
 import type * as saveDocumentSnapshot from "../saveDocumentSnapshot.js";
 import type * as seed from "../seed.js";
 import type * as streamEvents from "../streamEvents.js";
@@ -39,6 +42,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "_helpers/assertOwnershipInvariant": typeof _helpers_assertOwnershipInvariant;
+  "_helpers/ensureOwnerMember": typeof _helpers_ensureOwnerMember;
   "_helpers/permissions": typeof _helpers_permissions;
   analytics: typeof analytics;
   appendEvents: typeof appendEvents;
@@ -54,6 +59,7 @@ declare const fullApi: ApiFromModules<{
   "lib/permissions": typeof lib_permissions;
   "lib/writeAuditLog": typeof lib_writeAuditLog;
   loadDocumentSnapshot: typeof loadDocumentSnapshot;
+  "migrations/repairMissingOwners": typeof migrations_repairMissingOwners;
   saveDocumentSnapshot: typeof saveDocumentSnapshot;
   seed: typeof seed;
   streamEvents: typeof streamEvents;

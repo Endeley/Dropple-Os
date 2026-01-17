@@ -15,6 +15,7 @@ import { v } from 'convex/values';
 export default defineSchema({
     documents: defineTable({
         docId: v.string(), // canonical document ID
+        createdBy: v.optional(v.string()),
         createdAt: v.number(),
         updatedAt: v.number(),
 

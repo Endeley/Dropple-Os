@@ -2,6 +2,7 @@
 
 import { query } from './_generated/server';
 import { v } from 'convex/values';
+import { getUserRole } from './_helpers/permissions';
 
 /**
  * Get live presence for a document.
@@ -12,8 +13,11 @@ export const getPresence = query({
     },
 
     async handler(ctx, { docId }) {
+        const role = await getUserRole(ctx, docId);
+        if (!role) return [];
+
         const now = Date.now();
-        const TTL = 10_000; // 10s activity window
+        const TTL = 15_000; // 15s activity window
 
         const rows = await ctx.db.query('presence').withIndex('by_doc', (q) => q.eq('docId', docId)).collect();
 

@@ -1,0 +1,228 @@
+name: Enforce collaboration label invariants
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  enforce-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check labels vs changed paths
+        id: guard
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const labels = pr.labels.map(l => l.name);
+
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+              }
+            );
+
+            const changedPaths = files.map(f => f.filename);
+
+            const touches = (patterns) =>
+              changedPaths.some(p =>
+                patterns.some(pattern =>
+                  p.startsWith(pattern) || p.match(new RegExp(pattern))
+                )
+              );
+
+            // ---- PATH GROUPS ----
+
+            const N2_AWARENESS_PATHS = [
+              'collab/',
+              'presence/',
+              'convex/presence.js',
+              'convex/updatePresence.js',
+              'convex/updateCursor.js',
+              'convex/updateIntent.js',
+              'ui/canvas/',
+              'components/canvas/',
+            ];
+
+            const ARCH_CRITICAL_PATHS = [
+              'convex/',
+              'runtime/',
+              'components/workspace/WorkspaceShell.jsx',
+              'components/workspace/WorkspaceLayout.jsx',
+              'docs/architecture/',
+            ];
+
+            const MUTATION_RISK_PATHS = [
+              'runtime/',
+              'convex/',
+            ];
+
+            // ---- RULES ----
+
+            const errors = [];
+
+            if (touches(N2_AWARENESS_PATHS)) {
+              if (!labels.includes('n2-awareness')) {
+                errors.push(
+                  'Touches N2 awareness code but is missing `n2-awareness` label.'
+                );
+              }
+              if (!labels.includes('requires-arch-review')) {
+                errors.push(
+                  'Touches N2 awareness code but is missing `requires-arch-review` label.'
+                );
+              }
+            }
+
+            if (touches(ARCH_CRITICAL_PATHS)) {
+              if (!labels.includes('architecture-critical')) {
+                errors.push(
+                  'Touches architecture-critical paths but is missing `architecture-critical` label.'
+                );
+              }
+            }
+
+            if (touches(MUTATION_RISK_PATHS)) {
+              const hasBlock =
+                labels.includes('blocked-n3') ||
+                labels.includes('n3-design-only');
+
+              if (!hasBlock && labels.includes('n2-awareness')) {
+                errors.push(
+                  'Touches mutation-risk paths under `n2-awareness`. ' +
+                  'This likely violates N2. Add `blocked-n3` or convert to design.'
+                );
+              }
+            }
+
+            if (errors.length > 0) {
+              core.setOutput('errors', errors.map(e => `• ${e}`).join('\n'));
+              core.setFailed('Collaboration guardrail violations detected.');
+            }
+
+      - name: Comment on PR with guardrail violations
+        if: failure() && steps.guard.outputs.errors
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const labels = pr.labels.map(l => l.name);
+
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+              }
+            );
+
+            const paths = files.map(f => f.filename);
+
+            const touches = (patterns) =>
+              paths.some(p =>
+                patterns.some(pattern =>
+                  p.startsWith(pattern) || p.match(new RegExp(pattern))
+                )
+              );
+
+            const N2_AWARENESS_PATHS = [
+              'collab/',
+              'convex/updatePresence.js',
+              'convex/updateCursor.js',
+              'convex/updateIntent.js',
+              'ui/canvas/',
+            ];
+
+            const ARCH_CRITICAL_PATHS = [
+              'convex/',
+              'runtime/',
+              'components/workspace/WorkspaceShell.jsx',
+              'components/workspace/WorkspaceLayout.jsx',
+              'docs/architecture/',
+            ];
+
+            const MUTATION_RISK_PATHS = [
+              'runtime/',
+              'convex/',
+            ];
+
+            const UX_ONLY_PATHS = [
+              'ui/canvas/',
+              'components/canvas/',
+              'components/ui/',
+            ];
+
+            const suggestions = new Set();
+
+            if (touches(N2_AWARENESS_PATHS)) {
+              if (!labels.includes('n2-awareness')) suggestions.add('n2-awareness');
+              if (!labels.includes('requires-arch-review')) suggestions.add('requires-arch-review');
+            }
+
+            if (touches(ARCH_CRITICAL_PATHS)) {
+              if (!labels.includes('architecture-critical')) suggestions.add('architecture-critical');
+            }
+
+            if (touches(MUTATION_RISK_PATHS) && labels.includes('n2-awareness')) {
+              if (!labels.includes('blocked-n3')) suggestions.add('blocked-n3');
+            }
+
+            if (
+              touches(UX_ONLY_PATHS) &&
+              !touches(N2_AWARENESS_PATHS) &&
+              !touches(ARCH_CRITICAL_PATHS)
+            ) {
+              if (!labels.includes('ux-only')) suggestions.add('ux-only');
+            }
+
+            const baseUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}`;
+            const labelUrl = (name) =>
+              `${baseUrl}/labels/${encodeURIComponent(name)}`;
+            const suggestionList = [...suggestions]
+              .map(l => `- [\`${l}\`](${labelUrl(l)})`)
+              .join('\n');
+
+            const body = `
+            🚨 **Collaboration Guardrail Violations**
+
+            This PR failed automated checks because it crosses protected collaboration boundaries.
+
+            ---
+
+            ### ❌ What went wrong
+            ${steps.guard.outputs.errors}
+
+            ---
+
+            ### ✅ Suggested fix for *this* PR
+
+            Based on the files changed, add the following label(s) from the GitHub sidebar:
+
+            ${suggestionList || '_No label suggestions available — this PR may need redesign._'}
+
+            After adding the label(s), re-run checks.
+
+            ---
+
+            ### 📘 References
+            - docs/architecture/why-not-realtime-yet.md
+            - CONTRIBUTING.md
+            - CODEOWNERS
+
+            If you believe this failure is incorrect, request review from **@dropple/core-architecture**.
+            `;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              body,
+            });

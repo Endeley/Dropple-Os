@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useReplayState } from '@/runtime/replay/useReplayState';
 import ReadOnlyNodeRenderer from './ReadOnlyNodeRenderer';
 import { useSelection } from '@/components/workspace/SelectionContext';
@@ -21,6 +21,11 @@ import { CapabilityActions } from '@/ui/capabilities/capabilityActions';
 import { exportJSON } from '@/export/exportJSON';
 import { exportSVG } from '@/export/svg/exportSVG';
 import { exportPNG } from '@/export/png/exportPNG';
+import { useMutation } from 'convex/react';
+import { api } from '@/convex/_generated/api';
+import { throttle } from '@/collab/throttle';
+import CursorsLayer from '@/collab/CursorsLayer';
+import CanvasIntentGhosts from '@/collab/CanvasIntentGhosts';
 
 export default function CanvasStage({
   adapter,
@@ -29,6 +34,11 @@ export default function CanvasStage({
   emit,
   educationReadOnly = false,
   readOnly = false,
+  documentId = null,
+  canEmitCursor = false,
+  presence,
+  selfUserId = null,
+  intents,
   onImportJSONReplace,
   onImportJSONMerge,
   onImportSVGReplace,
@@ -76,6 +86,15 @@ export default function CanvasStage({
     ? state.nodes[reorderPreview.parentId]
     : null;
   const { menu, openMenu, closeMenu } = useContextMenu();
+  const updateCursor = useMutation(api.updateCursor);
+  const cursorEmitter = useMemo(
+    () =>
+      throttle((x, y) => {
+        if (!documentId) return;
+        updateCursor({ docId: documentId, x, y }).catch(() => {});
+      }, 50),
+    [documentId, updateCursor]
+  );
 
   useEffect(() => {
     if (!reorderPreview.active && reorderPreview.parentId) {
@@ -148,6 +167,22 @@ export default function CanvasStage({
     });
   }
 
+  function toCanvasCoords(e) {
+    if (!containerRef.current) return null;
+    const rect = containerRef.current.getBoundingClientRect();
+    return {
+      x: viewport.x + (e.clientX - rect.left) / viewport.zoom,
+      y: viewport.y + (e.clientY - rect.top) / viewport.zoom,
+    };
+  }
+
+  function onPointerMove(e) {
+    if (!canEmitCursor || isReadOnly) return;
+    const point = toCanvasCoords(e);
+    if (!point) return;
+    cursorEmitter(point.x, point.y);
+  }
+
   function onContextMenu(e) {
     if (isReadOnly) return;
     e.preventDefault();
@@ -203,6 +238,7 @@ export default function CanvasStage({
         onMouseDown(e);
       }}
       onMouseMove={onMouseMove}
+      onPointerMove={onPointerMove}
       onMouseUp={onMouseUp}
       onMouseLeave={onMouseUp}
       onWheel={onWheel}
@@ -250,7 +286,13 @@ export default function CanvasStage({
           )}
         </AutoLayoutOverlayLayer>
         <SnapGuidesOverlay guides={guides} />
+        <CanvasIntentGhosts intents={intents} />
       </div>
+      <CursorsLayer
+        presence={presence}
+        selfUserId={selfUserId}
+        viewport={viewport}
+      />
       {menu && (
         <ContextMenu x={menu.x} y={menu.y} items={menu.items} onClose={closeMenu} />
       )}

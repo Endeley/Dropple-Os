@@ -2,6 +2,7 @@
 
 import { mutation } from './_generated/server';
 import { v } from 'convex/values';
+import { ensureOwnerMember } from './_helpers/ensureOwnerMember';
 
 /**
  * Persist a full document snapshot.
@@ -46,6 +47,11 @@ export const saveDocumentSnapshot = mutation({
 
     async handler(ctx, args) {
         const now = Date.now();
+        const identity = await ctx.auth.getUserIdentity();
+
+        if (!identity) {
+            throw new Error('Unauthorized');
+        }
 
         // 1️⃣ Upsert document
         const existingDoc = await ctx.db
@@ -61,11 +67,15 @@ export const saveDocumentSnapshot = mutation({
         } else {
             await ctx.db.insert('documents', {
                 docId: args.docId,
+                createdBy: identity.subject,
                 currentBranch: args.currentBranch,
                 createdAt: now,
                 updatedAt: now,
             });
         }
+
+        // 1.1️⃣ Ensure owner membership exists (idempotent)
+        await ensureOwnerMember(ctx, args.docId);
 
         // 2️⃣ Upsert branches + events
         for (const branch of args.branches) {

@@ -19,6 +19,10 @@ import { loadRegistry } from '@/persistence/documentRegistry';
 import { loadDocumentSnapshot, saveDocumentSnapshot } from '@/persistence/documentCommands';
 import { readJSONFile } from '@/import/importJSON';
 import { parseSVG } from '@/import/svg/parseSVG';
+import { useDocumentRole } from '@/collab/useDocumentRole';
+import { usePresence } from '@/collab/usePresence';
+import { useGalleryIdentity } from '@/gallery/useGalleryIdentity';
+import { useIntentPreview } from '@/collab/useIntentPreview';
 
 export function WorkspaceShell({
   modeId,
@@ -31,7 +35,6 @@ export function WorkspaceShell({
   initialDocumentId = null,
   skipDraftRestore = false,
   readOnly = false,
-  documentRole = null,
   reviewSubmission,
   reviewRubric,
   onReviewDecision,
@@ -53,12 +56,27 @@ export function WorkspaceShell({
   const saveTimerRef = useRef(null);
   const editGroupRef = useRef({ id: null });
 
+  const documentRole = useDocumentRole(documentId);
+  const effectiveReadOnly = readOnly || documentRole === 'viewer';
+  // N2 vs N3 boundary:
+  // Awareness layers are mounted here. No shared document mutations in this layer.
+  const canEmitPresence = documentRole === 'owner' || documentRole === 'editor';
+  const presence = usePresence({ docId: documentId, enabled: canEmitPresence });
+  const galleryIdentity = useGalleryIdentity();
+  const selfUserId = galleryIdentity?.id ?? null;
+  const canEmitIntent = documentRole === 'owner' || documentRole === 'editor';
+  const intents = useIntentPreview({
+    docId: documentId,
+    enabled: canEmitIntent,
+    selfUserId,
+  });
+
   const persistenceEnabled =
-    !readOnly &&
+    !effectiveReadOnly &&
     adapter?.id !== 'review' &&
     !(adapter?.id === 'education' && educationReadOnly);
   const importEnabled =
-    !readOnly &&
+    !effectiveReadOnly &&
     adapter?.capabilities?.editing !== false &&
     adapter?.id !== 'review' &&
     !(adapter?.id === 'education' && educationReadOnly);
@@ -458,14 +476,16 @@ export function WorkspaceShell({
         canImport={importEnabled}
         onOpenTemplateGenerator={templateGen.openGenerator}
         educationReadOnly={educationReadOnly}
-        readOnly={readOnly}
+        readOnly={effectiveReadOnly}
         documentRole={documentRole}
         documentId={documentId}
+        intents={intents}
         reviewSubmission={reviewSubmission}
         reviewRubric={reviewRubric}
         onReviewDecision={onReviewDecision}
         onReviewCriteriaChange={onReviewCriteriaChange}
         reviewerId={reviewerId}
+        presence={presence}
       />
   );
 

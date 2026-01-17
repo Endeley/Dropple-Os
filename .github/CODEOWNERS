@@ -26,3 +26,47 @@
 /canvas/**                       @dropple-ux
 /interaction/**                  @dropple-ux
 /input/**                        @dropple-ux
+
+# =========================================================
+# N2 — Live Awareness Guardrails (N2 vs N3)
+# =========================================================
+# Two-tier review:
+# - Architecture-critical behavior (core-architecture)
+# - Visual-only awareness layers (ux)
+# =========================================================
+
+# --- N2 Awareness Logic (Architecture-Critical) ---
+/convex/updatePresence.js                  @dropple/core-architecture
+/convex/getPresence.js                     @dropple/core-architecture
+/convex/updateCursor.js                    @dropple/core-architecture
+/convex/updateIntent.js                    @dropple/core-architecture
+/convex/collaboration.js                   @dropple/core-architecture
+
+/collab/usePresence.js                     @dropple/core-architecture
+/collab/useLiveCursors.js                  @dropple/core-architecture
+/collab/useIntentPreview.js                @dropple/core-architecture
+
+/components/workspace/WorkspaceShell.jsx   @dropple/core-architecture
+/components/workspace/WorkspaceLayout.jsx  @dropple/core-architecture
+/runtime/**                                @dropple/core-architecture
+
+# --- Awareness UI & Visual Layers (UX-Only) ---
+/collab/PresenceDots.jsx                   @dropple/ux
+/collab/CursorsLayer.jsx                   @dropple/ux
+/collab/CanvasIntentGhosts.jsx             @dropple/ux
+/ui/canvas/RemoteCursors.jsx               @dropple/ux
+/ui/canvas/RemoteSelections.jsx            @dropple/ux
+
+# --- Architecture & Phase Docs ---
+/docs/architecture/**                      @dropple/core-architecture
+/docs/phases/N2*                           @dropple/core-architecture
+
+# --- PR Gates & Contribution Rules ---
+/.github/PULL_REQUEST_TEMPLATE/n2-guardrails.md @dropple/core-architecture
+/CONTRIBUTING.md                            @dropple/core-architecture
+
+# NOTE:
+# N2 = live awareness only (presence, cursors, intent, soft locks).
+# These systems must remain non-authoritative and must not mutate document state.
+# Any shared real-time editing behavior is N3 and requires a design proposal.
+# See: docs/architecture/why-not-realtime-yet.md

@@ -12,6 +12,22 @@ Deployment strategy: see `docs/deployment-strategy.md`.
 
 Phase 0: Spine bootstrap.
 
+## Why No Real-Time Editing Yet
+
+Dropple currently supports live awareness, not live document mutation.
+
+Collaborators can see:
+- who is present
+- where others are working
+- what objects are being interacted with
+- which parts of the canvas are "busy" (soft locks)
+
+Each user still edits locally and deterministically.
+
+This is intentional. Real-time editing requires conflict resolution, shared undo, and failure-safe merge semantics. Shipping it too early would compromise Dropple's local-first guarantees and user trust.
+
+We may add real-time editing later if it can be shipped opt-in and without sacrificing local-first behavior.
+
 ## Core
 
 OS-level primitives:

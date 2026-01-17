@@ -1,0 +1,63 @@
+# ----------------------------
+# Architecture / Guardrails
+# ----------------------------
+
+architecture-critical:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "convex/updatePresence.js"
+          - "convex/updateCursor.js"
+          - "convex/updateIntent.js"
+          - "convex/collaboration.js"
+          - "runtime/**"
+          - "components/workspace/WorkspaceShell.jsx"
+          - "components/workspace/WorkspaceLayout.jsx"
+          - "docs/architecture/**"
+          - "docs/phases/N2*"
+          - "docs/phases/N3*"
+
+requires-arch-review:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "convex/**"
+          - "runtime/**"
+          - "components/workspace/WorkspaceShell.jsx"
+          - "components/workspace/WorkspaceLayout.jsx"
+          - "collab/usePresence.js"
+          - "collab/useLiveCursors.js"
+          - "collab/useIntentPreview.js"
+
+# ----------------------------
+# N2 Awareness
+# ----------------------------
+
+n2-awareness:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "collab/**"
+          - "ui/canvas/**Cursor*"
+          - "ui/canvas/**Intent*"
+          - "ui/canvas/**Presence*"
+          - "ui/canvas/**Overlay*"
+          - "convex/updatePresence.js"
+          - "convex/updateCursor.js"
+          - "convex/updateIntent.js"
+
+# ----------------------------
+# UX-only (Visual)
+# ----------------------------
+
+ux-only:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "ui/canvas/**"
+
+# ----------------------------
+# N3 Design (Docs only)
+# ----------------------------
+
+n3-design-only:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "docs/phases/N3*"
+          - "docs/architecture/**realtime**"
