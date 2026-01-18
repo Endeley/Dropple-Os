@@ -38,6 +38,17 @@ export default function TemplateGeneratorOverlay({
       },
     });
 
+    try {
+      validateTemplate(artifact);
+    } catch (err) {
+      console.error(err);
+      alert(
+        'Template is invalid and was rejected.\n\n' +
+          (err instanceof Error ? err.message : 'Unknown validation error')
+      );
+      return;
+    }
+
     console.log('TEMPLATE ARTIFACT', artifact);
     onClose();
   }

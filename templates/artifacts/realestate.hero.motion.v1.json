@@ -1,0 +1,164 @@
+{
+  "metadata": {
+    "id": "realestate.hero.motion",
+    "version": "1.0.0",
+    "name": "Real Estate Hero — Motion",
+    "engine": "dropple-motion@1.x",
+    "author": "Dropple",
+    "license": "dropple-marketplace-standard",
+    "createdAt": "2026-01-18",
+    "description": "Animated hero section for real estate listings with luxury motion pacing."
+  },
+  "structure": {
+    "root": "scene",
+    "nodes": [
+      { "id": "scene", "type": "Scene" },
+      { "id": "hero", "type": "Container" },
+      { "id": "bgImage", "type": "Image" },
+      { "id": "overlay", "type": "Overlay" },
+      { "id": "title", "type": "Text" },
+      { "id": "price", "type": "Text" },
+      { "id": "cta", "type": "Button" }
+    ],
+    "tree": {
+      "scene": ["hero"],
+      "hero": ["bgImage", "overlay", "title", "price", "cta"]
+    },
+    "layout": {
+      "hero": "stack.vertical.center",
+      "title": "text.hero",
+      "price": "text.subtle",
+      "cta": "button.primary"
+    }
+  },
+  "motion": {
+    "timelines": {
+      "intro": {
+        "duration": 1200,
+        "tracks": [
+          {
+            "target": "bgImage",
+            "property": "opacity",
+            "keyframes": [
+              { "t": 0, "v": 0 },
+              { "t": 400, "v": 1 }
+            ]
+          },
+          {
+            "target": "bgImage",
+            "property": "scale",
+            "keyframes": [
+              { "t": 0, "v": 1.05 },
+              { "t": 1200, "v": 1.0 }
+            ]
+          },
+          {
+            "target": "title",
+            "property": "translateY",
+            "keyframes": [
+              { "t": 300, "v": 24 },
+              { "t": 700, "v": 0 }
+            ]
+          },
+          {
+            "target": "title",
+            "property": "opacity",
+            "keyframes": [
+              { "t": 300, "v": 0 },
+              { "t": 700, "v": 1 }
+            ]
+          },
+          {
+            "target": "price",
+            "property": "opacity",
+            "keyframes": [
+              { "t": 500, "v": 0 },
+              { "t": 850, "v": 1 }
+            ]
+          },
+          {
+            "target": "cta",
+            "property": "opacity",
+            "keyframes": [
+              { "t": 700, "v": 0 },
+              { "t": 1000, "v": 1 }
+            ]
+          }
+        ]
+      }
+    },
+    "triggers": {
+      "onLoad": "intro"
+    }
+  },
+  "params": {
+    "content": {
+      "title.text": {
+        "type": "string",
+        "default": "Luxury 4-Bedroom Duplex"
+      },
+      "price.text": {
+        "type": "string",
+        "default": "₦45,000,000"
+      },
+      "cta.text": {
+        "type": "string",
+        "default": "Book a Viewing"
+      },
+      "background.image": {
+        "type": "asset",
+        "required": true
+      }
+    },
+    "style": {
+      "theme.variant": {
+        "type": "enum",
+        "values": ["light", "dark"],
+        "default": "light"
+      },
+      "accent.color": {
+        "type": "token",
+        "values": ["emerald", "blue", "gold"],
+        "default": "emerald"
+      },
+      "text.scale": {
+        "type": "enum",
+        "values": ["sm", "md", "lg"],
+        "default": "md"
+      },
+      "overlay.opacity": {
+        "type": "enum",
+        "values": ["low", "medium", "high"],
+        "default": "medium"
+      }
+    },
+    "motion": {
+      "motion.speed": {
+        "type": "preset",
+        "values": ["slow", "normal", "fast"],
+        "default": "normal"
+      },
+      "motion.easing": {
+        "type": "preset",
+        "values": ["soft", "standard"],
+        "default": "standard"
+      },
+      "motion.intensity": {
+        "type": "preset",
+        "values": ["calm", "bold"],
+        "default": "calm"
+      }
+    }
+  },
+  "runtime": {
+    "viewport": ["mobile", "desktop"],
+    "autoplay": true,
+    "loop": true,
+    "reducedMotionFallback": true,
+    "marketplaceSafe": true,
+    "export": {
+      "motionVideo": true,
+      "code": false
+    }
+  }
+}
