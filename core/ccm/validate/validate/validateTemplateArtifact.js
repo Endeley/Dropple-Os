@@ -1,8 +1,4 @@
-// AUTO-GENERATED FILE
-// Source of truth: validateTemplateArtifact.ts
-// DO NOT EDIT MANUALLY
-
-import { TEMPLATE_V1_KEYS, REQUIRED_METADATA_FIELDS, ALLOWED_VIEWPORTS, ALLOWED_MOTION_PROPERTIES, ALLOWED_PARAM_TYPES, } from "../schema/template.v1.js";
+import { TEMPLATE_V1_KEYS, REQUIRED_METADATA_FIELDS, ALLOWED_VIEWPORTS, ALLOWED_MOTION_PROPERTIES, ALLOWED_PARAM_TYPES, } from "../schema/template.v1";
 export class ValidationError extends Error {
     constructor(message) {
         super(message);

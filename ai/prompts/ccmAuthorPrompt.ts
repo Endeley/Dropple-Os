@@ -21,6 +21,11 @@ You MUST:
 - Output JSON only (no markdown, no comments, no explanation)
 - Include EXACTLY these top-level keys:
   metadata, structure, motion, params, runtime
+- Include ALL required metadata fields:
+  - metadata.id (string, non-empty)
+  - metadata.version (string, semantic version)
+  - metadata.name (string, human-readable)
+  - metadata.engine (string, engine identifier)
 - Ensure the output passes a strict validator
 - Treat structure and motion as IMMUTABLE once generated
 - Use only allowed motion properties

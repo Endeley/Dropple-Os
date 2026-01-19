@@ -26,40 +26,48 @@ export async function generateTemplateArtifact(
 
   let lastError: unknown = null;
 
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    let aiOutput: string;
+ for (let attempt = 1; attempt <= maxRetries; attempt++) {
+     let aiOutput: string;
 
-    try {
-      aiOutput = await llm.generate({
-        system: ccmAuthorPrompt,
-        prompt: userPrompt,
-      });
-    } catch (err) {
-      throw new Error(
-        `LLM generate() failed on attempt ${attempt}: ${
-          err instanceof Error ? err.message : String(err)
-        }`
-      );
-    }
+     const systemPrompt =
+         lastError == null
+             ? ccmAuthorPrompt
+             : `${ccmAuthorPrompt}
 
-    let parsed: unknown;
+The previous output was rejected by the validator with this error:
 
-    try {
-      parsed = JSON.parse(aiOutput);
-    } catch {
-      lastError = "AI output was not valid JSON";
-      continue;
-    }
+${String(lastError)}
 
-    try {
-      validateTemplateArtifact(parsed);
-      return parsed as TemplateArtifactV1;
-    } catch (err) {
-      lastError =
-        err instanceof Error ? err.message : "Unknown validation error";
-      continue;
-    }
-  }
+You MUST fix this error and regenerate a FULL, VALID CCM v1 Template Artifact.
+Do not repeat the same mistake.`;
+
+     try {
+         aiOutput = await llm.generate({
+             system: systemPrompt,
+             prompt: userPrompt,
+         });
+     } catch (err) {
+         throw new Error(`LLM generate() failed on attempt ${attempt}: ${err instanceof Error ? err.message : String(err)}`);
+     }
+
+     let parsed: unknown;
+
+     try {
+         parsed = JSON.parse(aiOutput);
+     } catch {
+         lastError = 'AI output was not valid JSON';
+         continue;
+     }
+
+     try {
+         validateTemplateArtifact(parsed);
+         return parsed as TemplateArtifactV1;
+     } catch (err) {
+         lastError = err instanceof Error ? err.message : 'Unknown validation error';
+         continue;
+     }
+ }
+
 
   throw new Error(
     `Failed to generate a valid CCM template after ${maxRetries} attempts. ` +
