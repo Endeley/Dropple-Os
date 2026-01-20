@@ -41,6 +41,10 @@ export function setIsReplaying(value) {
     runtimeState.current = { ...runtimeState.current, __isReplaying: runtimeState.__isReplaying };
 }
 
+export function setReplaying(isReplaying) {
+    setIsReplaying(isReplaying);
+}
+
 export function getIsReplaying() {
     return runtimeState.__isReplaying;
 }

@@ -1,4 +1,6 @@
 import { MessageBus } from '@/core/messageBus';
 
-// Single shared bus for canvas interactions.
+// CANONICAL MESSAGE BUS
+// This is the ONLY message bus allowed in Dropple.
+// See architecture.md for rules.
 export const canvasBus = new MessageBus();

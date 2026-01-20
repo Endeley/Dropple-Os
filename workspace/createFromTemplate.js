@@ -1,16 +1,28 @@
-function createEvent(type, payload) {
+/**
+ * Create an event INTENT.
+ *
+ * IMPORTANT:
+ * - This function MUST NOT generate IDs.
+ * - IDs are assigned by the dispatcher/sequencer.
+ */
+function createEventIntent(type, payload) {
   return {
-    id: crypto.randomUUID(),
     type,
     payload,
   };
 }
 
+/**
+ * Normalize legacy events into dispatcher-ready intents.
+ *
+ * IDs are NOT generated here.
+ * Dispatcher will assign IDs during dispatch.
+ */
 function normalizeEvents(events = []) {
-  return events.map((event) => ({
-    id: event.id || crypto.randomUUID(),
-    ...event,
-  }));
+  return events.map((event) => {
+    const { id, ...rest } = event;
+    return rest;
+  });
 }
 
 function snapshotToEvents(snapshot) {
@@ -33,7 +45,7 @@ function snapshotToEvents(snapshot) {
       children: [],
     });
 
-    events.push(createEvent('node.create', { node: payloadNode }));
+    events.push(createEventIntent('node.create', { node: payloadNode }));
 
     const children = Array.isArray(node.children) ? node.children : [];
     children.forEach(addNode);

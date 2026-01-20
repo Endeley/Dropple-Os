@@ -1,47 +1,44 @@
-import { computeAutoLayout } from '@/layout/autoLayoutEngine';
-
 /**
- * Applies auto-layout to all containers that declare layout rules.
- * Runs AFTER reducers, BEFORE state is finalized.
+ * DERIVED LAYOUT PASS
+ *
+ * ⚠️ This function computes derived presentation state ONLY.
+ *
+ * RULES:
+ * - Must be pure and deterministic
+ * - Must NOT emit events
+ * - Must NOT mutate history
+ * - Must NOT introduce side effects
+ * - Safe to re-run at any time
+ *
+ * Layout output is NOT persisted and NOT replayed.
  */
-export function applyLayoutPass(state) {
-    if (!state?.nodes) return state;
 
-    let nextState = state;
+export function applyLayoutPass(runtimeState) {
+    if (!runtimeState || !runtimeState.nodes) {
+        return { nodes: {}, rootIds: [] };
+    }
 
-    Object.values(state.nodes).forEach((node) => {
-        const layout = node.layout;
-        if (!layout || layout.mode === 'none') return;
+    const derivedNodes = {};
+    const nodes = runtimeState.nodes;
 
-        const childrenIds = node.children || [];
-        if (!childrenIds.length) return;
+    for (const id in nodes) {
+        const node = nodes[id];
 
-        const children = childrenIds.map((id) => state.nodes[id]).filter(Boolean);
-
-        const positions = computeAutoLayout(node, children, state.nodes);
-        if (!positions) return;
-
-        // Apply derived positions
-        const updatedNodes = { ...nextState.nodes };
-
-        Object.entries(positions).forEach(([id, pos]) => {
-            const child = updatedNodes[id];
-            if (!child) return;
-
-            updatedNodes[id] = {
-                ...child,
-                x: pos.x,
-                y: pos.y,
-                width: pos.width,
-                height: pos.height,
-            };
-        });
-
-        nextState = {
-            ...nextState,
-            nodes: updatedNodes,
+        // IMPORTANT:
+        // Layout may only COMPUTE geometry.
+        // It must never invent semantic state.
+        derivedNodes[id] = {
+            ...node,
+            // Example: layout normalization hook
+            x: node.x ?? 0,
+            y: node.y ?? 0,
+            width: node.width ?? 100,
+            height: node.height ?? 100,
         };
-    });
+    }
 
-    return nextState;
+    return {
+        nodes: derivedNodes,
+        rootIds: runtimeState.rootIds || [],
+    };
 }

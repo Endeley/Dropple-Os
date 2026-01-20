@@ -42,6 +42,102 @@ Zustand (render mirror)
 
 No layer may bypass the Dispatcher.
 
+## 🔒 Message Bus Architecture (LOCKED)
+
+### 1. Purpose of the Message Bus
+
+The Message Bus exists to coordinate ephemeral UI intent and interaction state.
+
+It is used for:
+- pointer movement
+- drag / resize sessions
+- transient UI coordination
+- tool intent signaling
+
+It is not used for state mutation.
+
+### 2. Canonical Message Bus (Single Source)
+
+Dropple uses exactly one Message Bus implementation.
+
+This bus is the canonical bus and the only one allowed:
+
+`ui/canvasBus.js`
+
+(If renamed in the future, this section must be updated.)
+
+Any additional message bus implementations are forbidden.
+
+### 3. What the Message Bus Is NOT
+
+The Message Bus:
+- ❌ does NOT mutate runtime state
+- ❌ does NOT generate events
+- ❌ does NOT assign IDs
+- ❌ does NOT bypass the dispatcher
+- ❌ does NOT write to history
+- ❌ does NOT affect replay truth
+
+All state mutation must go through the dispatcher.
+
+### 4. Relationship to the Dispatcher
+
+The Message Bus and Dispatcher have strictly separate roles:
+
+Message Bus → UI intent (ephemeral)
+Dispatcher  → State mutation (authoritative)
+
+The Message Bus may trigger intent that results in events,
+but it may never apply events itself.
+
+### 5. Allowed Data on the Message Bus
+
+Allowed:
+- pointer events
+- session objects
+- transient geometry
+- UI-only metadata
+
+Forbidden:
+- event IDs
+- reducer payloads
+- state mutations
+- timeline operations
+
+If data must be replayable, auditable, or persisted,
+it must not go through the Message Bus.
+
+### 6. Enforcement & Cleanup Policy
+
+Only one Message Bus file may exist in the repository.
+
+Any duplicate or experimental buses must be removed.
+
+New contributors must use the canonical bus only.
+
+Violations are architectural errors, not stylistic ones.
+
+### 7. Mental Model
+
+The Message Bus is for coordination.
+The Dispatcher is for truth.
+
+## Legacy Dispatcher Adapter (DEPRECATED)
+
+The file `ui/interaction/dispatcher.js` exists solely to support
+legacy callsites during migration.
+
+Rules:
+- It must never create a dispatcher
+- It must never own lifecycle
+- It must only accept an injected dispatcher
+- It must not be used by new code
+
+All new UI, Canvas, Sessions, and Bridges MUST use
+`useDispatcher()` from WorkspaceRoot.
+
+This adapter will be removed once all legacy callsites are migrated.
+
 ## 🔒 Reducers & Replay Determinism (LOCKED)
 
 Reducers are pure, deterministic, and replay-safe.
@@ -56,6 +152,68 @@ initialState
 ```
 
 Replay must always produce the same result.
+
+## Layout & Derived State (LOCKED)
+
+### 1. Layout Is Derived, Not Authored
+
+Layout in Dropple is **derived state**.
+
+It is computed from authored runtime state but is:
+- not persisted
+- not recorded in history
+- not replayed as an event
+- not merge-relevant
+
+Reducers define truth.
+Layout derives presentation.
+
+---
+
+### 2. When Layout Runs
+
+Layout may run:
+- immediately after reducers
+- before commit to runtime stores
+- during live interaction
+- during preview
+
+Layout must NOT:
+- run during replay commit
+- mutate reducer-owned state
+- depend on time, randomness, or environment
+
+---
+
+### 3. Determinism Requirement
+
+Layout must be:
+- pure
+- deterministic
+- idempotent
+
+Given the same input state, layout must always produce the same output.
+
+If this cannot be guaranteed, the logic must move behind authored events.
+
+---
+
+### 4. Replay Safety Rule
+
+During replay:
+- reducers reconstruct authored state
+- layout may be recomputed locally
+- layout must not affect history or cursor position
+
+Replay correctness must never depend on layout logic.
+
+---
+
+### 5. Mental Model
+
+> **Reducers define truth.  
+> Layout defines appearance.  
+> Appearance must never change history.**
 
 ## Branching & Merge
 - Branches are logical event streams

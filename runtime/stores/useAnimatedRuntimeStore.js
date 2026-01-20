@@ -1,10 +1,10 @@
-'use client';
-
 import { create } from 'zustand';
 
 /**
- * Read-only animated mirror of runtime state for UI.
- * Animation frames write here; runtime state remains authoritative.
+ * AnimatedRuntimeStore
+ *
+ * Holds DERIVED visual state only.
+ * This is NOT authoritative runtime truth.
  */
 export const useAnimatedRuntimeStore = create(() => ({
     nodes: {},
