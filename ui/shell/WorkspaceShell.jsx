@@ -91,7 +91,7 @@ export function WorkspaceShell({ workspace }) {
                 {/* Canvas */}
                 <main style={{ flex: 1, position: 'relative' }}>
                     <CanvasRoot />
-                    <Controls />
+                    <Controls profile={workspace.profile} />
                 </main>
 
                 {/* Right sidebar (properties) */}

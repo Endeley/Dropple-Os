@@ -15,17 +15,17 @@ import { attachDispatcher } from '@/ui/interaction/dispatcher.js';
  */
 export function DispatcherProvider({ workspaceId = null, branchId = 'main', children }) {
     const dispatcherRef = useRef(null);
-    const [dispatcher, setDispatcher] = useState(null);
-
-    useEffect(() => {
+    const [dispatcher] = useState(() => {
         if (!dispatcherRef.current) {
             dispatcherRef.current = createEventDispatcher({
                 workspaceId,
                 branchId,
             });
-            setDispatcher(dispatcherRef.current);
         }
+        return dispatcherRef.current;
+    });
 
+    useEffect(() => {
         try {
             attachDispatcher(dispatcherRef.current);
         } catch {
