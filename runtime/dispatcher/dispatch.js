@@ -35,12 +35,15 @@ import { observeUXIntent } from './ux/observeUXIntent.js';
 import { createUXWarningEmitter } from './ux/emitUXWarning.js';
 import { emitUXWarningEvent } from './ux/uxWarningBus.js';
 import { createUXAuditLog } from './ux/uxAuditLog.js';
+import { requestUXConfirmation } from './ux/uxConfirmBus.js';
+import { shouldConfirmUXAction, defaultUXEnforcementTier } from './ux/shouldConfirmUXAction.js';
 
 export function createEventDispatcher({
     maxHistory = 100,
     workspaceId = null,
     branchId = 'main',
     profile = 'design',
+    uxEnforcementTier = defaultUXEnforcementTier,
 } = {}) {
     const history = createHistory(maxHistory);
     const sequencer = new EventSequencer();
@@ -49,6 +52,8 @@ export function createEventDispatcher({
         onEvent: emitUXWarningEvent,
         onAudit: (entry) => uxAuditLog.append(entry),
     });
+    const confirmedActionTypes = new Set();
+    let pendingConfirmation = null;
 
     let currentPreviewCancel = null;
     let isReplaying = false; // 🔒 REPLAY GUARD FLAG
@@ -100,19 +105,49 @@ export function createEventDispatcher({
         return nextState;
     }
 
-    function dispatch(rawEvent) {
-        const observation = observeUXIntent({
-            profile,
-            actionType: rawEvent?.type,
-        });
-
+    async function dispatch(rawEvent) {
         if (rawEvent && Object.prototype.hasOwnProperty.call(rawEvent, 'id')) {
             throw new Error(
                 'Illegal event: event IDs may only be assigned by dispatcher'
             );
         }
 
+        const observation = observeUXIntent({
+            profile,
+            actionType: rawEvent?.type,
+        });
+
+        if (
+            shouldConfirmUXAction({
+                profile,
+                intent: observation.intent,
+                uxEnforcementTier,
+            })
+        ) {
+            const actionType = observation.actionType;
+
+            if (actionType && !confirmedActionTypes.has(actionType)) {
+                if (pendingConfirmation) {
+                    await pendingConfirmation;
+                }
+
+                if (!confirmedActionTypes.has(actionType)) {
+                    const confirmationPromise = requestUXConfirmation({ actionType });
+                    pendingConfirmation = confirmationPromise;
+                    const confirmed = await confirmationPromise;
+                    pendingConfirmation = null;
+
+                    if (!confirmed) {
+                        return getRuntimeState();
+                    }
+
+                    confirmedActionTypes.add(actionType);
+                }
+            }
+        }
+
         perfStart('dispatch');
+        let didExecute = false;
 
         try {
             if (currentPreviewCancel) {
@@ -144,14 +179,14 @@ export function createEventDispatcher({
                 if (!interaction) return runtimeState;
 
                 if (interaction.action === 'set_state') {
-                    return dispatch({
+                    return await dispatch({
                         type: EventTypes.STATE_SET,
                         payload: { stateId: interaction.targetStateId },
                     });
                 }
 
                 if (interaction.action === 'set_component_active') {
-                    return dispatch({
+                    return await dispatch({
                         type: EventTypes.COMPONENT_SET_ACTIVE,
                         payload: { componentId: interaction.targetComponentId },
                     });
@@ -161,6 +196,7 @@ export function createEventDispatcher({
             }
 
             const prev = getRuntimeState();
+            didExecute = true;
             let next = applyEvent(prev, animationGuarded);
             next = ensureDefaultTimeline(next);
 
@@ -195,7 +231,9 @@ export function createEventDispatcher({
             return getRuntimeState();
         } finally {
             perfEnd('dispatch');
-            emitUXWarning(observation);
+            if (didExecute) {
+                emitUXWarning(observation);
+            }
         }
     }
 

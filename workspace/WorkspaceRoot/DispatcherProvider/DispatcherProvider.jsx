@@ -17,6 +17,7 @@ export function DispatcherProvider({
     workspaceId = null,
     branchId = 'main',
     profile = 'design',
+    uxEnforcementTier = 2,
     children,
 }) {
     const dispatcherRef = useRef(null);
@@ -26,6 +27,7 @@ export function DispatcherProvider({
                 workspaceId,
                 branchId,
                 profile,
+                uxEnforcementTier,
             });
         }
         return dispatcherRef.current;

@@ -12,6 +12,7 @@ export const uxIntentMap = Object.freeze({
     [EventTypes.SELECTION_SET]: UXIntent.SAFE,
     [EventTypes.STATE_SET]: UXIntent.SOFT_UNSAFE,
     [EventTypes.COMPONENT_SET_ACTIVE]: UXIntent.SOFT_UNSAFE,
+    ['interaction/execute']: UXIntent.SAFE,
 
     [EventTypes.NODE_CREATE]: UXIntent.HARD_UNSAFE,
     [EventTypes.NODE_UPDATE]: UXIntent.HARD_UNSAFE,
