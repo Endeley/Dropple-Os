@@ -13,6 +13,7 @@ jobs:
 
       - name: CI Guards
         run: |
+          scripts/ci/check-ux-phase-5-guardrails.sh
           scripts/ci/check-no-pre-dispatch-event-ids.sh
           scripts/ci/check-single-message-bus.sh
           scripts/ci/check-ccm-validator-sync.sh

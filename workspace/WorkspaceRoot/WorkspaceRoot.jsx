@@ -23,7 +23,10 @@ export function WorkspaceRoot({
     const isUXMode = profile === 'ux-validation';
 
     return (
-        <DispatcherProvider workspaceId={workspaceId} branchId={branchId}>
+        <DispatcherProvider
+            workspaceId={workspaceId}
+            branchId={branchId}
+            profile={profile}>
             <SelectionProvider>
                 <div
                     style={{

@@ -1,6 +1,7 @@
 'use client';
 
+import { UXWarningBanner } from './UXWarningBanner.jsx';
+
 export function WorkspaceUIRoot() {
-  // Put workspace-level UI panels, toolbars, sidebars here later.
-  return null;
+    return <UXWarningBanner />;
 }

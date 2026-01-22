@@ -31,10 +31,24 @@ import { resolveInteraction } from '../interactions/resolveInteraction.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 
 import { applyLayoutPass } from '../layout/applyLayoutPass.js';
+import { observeUXIntent } from './ux/observeUXIntent.js';
+import { createUXWarningEmitter } from './ux/emitUXWarning.js';
+import { emitUXWarningEvent } from './ux/uxWarningBus.js';
+import { createUXAuditLog } from './ux/uxAuditLog.js';
 
-export function createEventDispatcher({ maxHistory = 100, workspaceId = null, branchId = 'main' } = {}) {
+export function createEventDispatcher({
+    maxHistory = 100,
+    workspaceId = null,
+    branchId = 'main',
+    profile = 'design',
+} = {}) {
     const history = createHistory(maxHistory);
     const sequencer = new EventSequencer();
+    const uxAuditLog = createUXAuditLog();
+    const emitUXWarning = createUXWarningEmitter({
+        onEvent: emitUXWarningEvent,
+        onAudit: (entry) => uxAuditLog.append(entry),
+    });
 
     let currentPreviewCancel = null;
     let isReplaying = false; // 🔒 REPLAY GUARD FLAG
@@ -87,6 +101,11 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
     }
 
     function dispatch(rawEvent) {
+        const observation = observeUXIntent({
+            profile,
+            actionType: rawEvent?.type,
+        });
+
         if (rawEvent && Object.prototype.hasOwnProperty.call(rawEvent, 'id')) {
             throw new Error(
                 'Illegal event: event IDs may only be assigned by dispatcher'
@@ -176,6 +195,7 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
             return getRuntimeState();
         } finally {
             perfEnd('dispatch');
+            emitUXWarning(observation);
         }
     }
 
@@ -211,6 +231,7 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
         undo,
         redo,
         reset,
+        getUXAuditLog: uxAuditLog.snapshot,
         getState: getRuntimeState,
     };
 }

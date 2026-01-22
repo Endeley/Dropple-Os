@@ -13,13 +13,19 @@ import { attachDispatcher } from '@/ui/interaction/dispatcher.js';
  * - Provides it via React context to UI/Canvas/Sessions/Bridges.
  * - (Optional) Attaches it to the UI dispatcher adapter for legacy callsites.
  */
-export function DispatcherProvider({ workspaceId = null, branchId = 'main', children }) {
+export function DispatcherProvider({
+    workspaceId = null,
+    branchId = 'main',
+    profile = 'design',
+    children,
+}) {
     const dispatcherRef = useRef(null);
     const [dispatcher] = useState(() => {
         if (!dispatcherRef.current) {
             dispatcherRef.current = createEventDispatcher({
                 workspaceId,
                 branchId,
+                profile,
             });
         }
         return dispatcherRef.current;
