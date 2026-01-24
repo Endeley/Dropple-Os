@@ -16,6 +16,7 @@ If a feature or tool contradicts a 🔒 LOCKED section, it is invalid by definit
 ## Related Architecture Notes
 
 - docs/architecture/why-not-realtime-yet.md
+- UX Mode behavior is defined in `docs/ux-mode` and is phase-locked.
 
 ## 🔒 Core Philosophy (LOCKED)
 
