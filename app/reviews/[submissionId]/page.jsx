@@ -3,15 +3,15 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import RequireReviewer from '@/components/guards/RequireReviewer';
-import { ReviewerErrorBoundary } from '@/components/guards/ReviewerErrorBoundary';
-import ConfirmDecision from '@/components/reviews/ConfirmDecision';
-import IssueCertificateButton from '@/components/reviews/IssueCertificateButton';
+import RequireReviewer from '@/ui/shared/guards/RequireReviewer';
+import { ReviewerErrorBoundary } from '@/ui/shared/guards/ReviewerErrorBoundary';
+import ConfirmDecision from '@/ui/reviews/ConfirmDecision';
+import IssueCertificateButton from '@/ui/reviews/IssueCertificateButton';
 import { safeMutation } from '@/utils/safeMutation';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/ui/controls/badge';
+import { Card, CardContent, CardHeader } from '@/ui/controls/card';
+import { Button } from '@/ui/controls/button';
+import { Textarea } from '@/ui/controls/textarea';
 
 const statusStyles = {
   submitted: 'bg-yellow-100 text-yellow-800',

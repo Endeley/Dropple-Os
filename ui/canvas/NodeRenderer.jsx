@@ -2,11 +2,16 @@
 
 import React, { memo } from 'react';
 import { NodeView } from '@/ui/NodeView.jsx';
+import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
+import { projectToViewport } from '@/canvas/transform/projectToViewport.js';
 
 function NodeRendererImpl({ node }) {
     if (!node) return null;
+    const viewport = useWorkspaceState((state) => state.viewport);
+    const position = viewport ? projectToViewport(node, viewport) : undefined;
+    const scale = viewport?.scale ?? 1;
 
-    return <NodeView node={node} />;
+    return <NodeView node={node} position={position} scale={scale} />;
 }
 
 export const NodeRenderer = memo(

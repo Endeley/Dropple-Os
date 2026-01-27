@@ -9,6 +9,7 @@ export function workspaceRoutes() {
     icons: { label: "Icons", href: "/workspace/icons" },
     dev: { label: "Dev", href: "/workspace/dev" },
     education: { label: "Education", href: "/workspace/education" },
+    ai: { label: "AI Suite", href: "/workspace/ai" },
     branding: { label: "Branding", href: "/workspace/branding" },
     document: { label: "Document", href: "/workspace/document" },
     conversion: { label: "Conversion", href: "/workspace/conversion" },

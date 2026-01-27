@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useSubmissions } from '@/certification/submissions/useSubmissionStore';
-import { WorkspaceShell } from '@/components/workspace/WorkspaceShell';
+import { WorkspaceShell } from '@/ui/workspace/shared/WorkspaceShell';
 
 export default function SubmissionReviewPage({ params }) {
   const { submissions, updateStatus, updateReviewCriteria } = useSubmissions();

@@ -7,6 +7,7 @@ import { materialWorkspace } from './registry/materialWorkspace';
 import { iconWorkspace } from './registry/iconWorkspace';
 import { devWorkspace } from './registry/devWorkspace';
 import { educationWorkspace } from './registry/educationWorkspace';
+import { aiWorkspace } from './registry/aiWorkspace';
 import { brandingWorkspace } from './registry/brandingWorkspace';
 import { documentWorkspace } from './registry/documentWorkspace';
 import { conversionWorkspace } from './registry/conversionWorkspace';
@@ -24,6 +25,7 @@ export const WorkspaceRegistry = {
     icons: { ...iconWorkspace, routes },
     dev: { ...devWorkspace, routes },
     education: { ...educationWorkspace, routes },
+    ai: { ...aiWorkspace, routes },
     branding: { ...brandingWorkspace, routes },
     document: { ...documentWorkspace, routes },
     conversion: { ...conversionWorkspace, routes },

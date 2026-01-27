@@ -1,7 +1,7 @@
 'use client';
 
 import { mockLessons } from '@/marketplace/mockLessons';
-import { WorkspaceShell } from '@/components/workspace/WorkspaceShell';
+import { WorkspaceShell } from '@/ui/workspace/shared/WorkspaceShell';
 import { normalizeEvents, snapshotToEvents } from '@/education/lessonEvents';
 
 export default function LessonPlaybackPage({ params }) {

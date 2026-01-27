@@ -1,4 +1,4 @@
-import { ModeLoader } from '../../../ui/shell/ModeLoader';
+import { ModeLoader } from '../../../ui/workspace/shell/ModeLoader';
 
 export default async function WorkspacePage({ params }) {
     const { mode } = await params;

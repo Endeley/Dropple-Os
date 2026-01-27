@@ -28,7 +28,7 @@ Phase 2 — UI-only mutation control disable:
   - Renders the UX badge (Phase 1).
 - `ui/Controls.jsx`
   - Disables toolbar controls in UX Mode (Phase 2).
-- `ui/shell/WorkspaceShell.jsx`
+- `ui/workspace/shell/WorkspaceShell.jsx`
   - Passes `workspace.profile` into `Controls`.
 
 ## Explicitly Not Done (Locked)

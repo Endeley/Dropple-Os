@@ -1,6 +1,6 @@
 export const educationWorkspace = {
     id: "education",
-    label: "Education / AI Suite",
+    label: "Education",
     status: "active",
 
     engines: ["ai", "tutorial", "replay"],

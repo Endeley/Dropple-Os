@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { canvasBus } from '@/ui/canvasBus.js';
 import { NodeView } from './NodeView.jsx';
-import { useSelection } from '@/components/workspace/SelectionContext';
+import { useSelection } from '@/ui/workspace/shared/SelectionContext';
 import { computeSelectionBounds } from '@/ui/selection/selectionBounds.js';
 import { SelectionBox } from '@/ui/selection/SelectionBox.jsx';
 import { MoveSession } from '@/input/sessions/MoveSession.js';

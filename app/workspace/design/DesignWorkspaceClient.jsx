@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { WorkspaceShell } from '@/components/workspace/WorkspaceShell';
+import { WorkspaceShell } from '@/ui/workspace/shared/WorkspaceShell';
 
 export default function DesignWorkspaceClient() {
   const params = useSearchParams();

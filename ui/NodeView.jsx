@@ -3,7 +3,7 @@
 import { canvasBus } from '@/ui/canvasBus.js';
 import { MoveSession } from '@/input/sessions/MoveSession.js';
 
-export function NodeView({ node }) {
+export function NodeView({ node, position, scale = 1 }) {
     function onPointerDown(e) {
         e.preventDefault();
 
@@ -20,10 +20,10 @@ export function NodeView({ node }) {
             onPointerDown={onPointerDown}
             style={{
                 position: 'absolute',
-                left: node.x,
-                top: node.y,
-                width: node.width,
-                height: node.height,
+                left: position?.x ?? node.x,
+                top: position?.y ?? node.y,
+                width: (node.width ?? 0) * scale,
+                height: (node.height ?? 0) * scale,
                 background: '#e0e7ff',
                 color: '#111827',
                 userSelect: 'none',

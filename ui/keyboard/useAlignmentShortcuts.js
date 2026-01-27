@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useSelection } from '@/components/workspace/SelectionContext';
+import { useSelection } from '@/ui/workspace/shared/SelectionContext';
 import { CapabilityActions } from '@/ui/capabilities/capabilityActions';
 
 export function useAlignmentShortcuts({ enabled = true, emit, getState }) {

@@ -1,0 +1,1073 @@
+/Users/endeleykonboye/Desktop/dropple-os/dropple
+|-- .cursor
+|   `-- mcp.json
+|-- .env.local
+|-- .github
+|   |-- CODEOWNERS
+|   |-- ISSUE_TEMPLATE
+|   |   |-- phase-1-create-delete-states.yml
+|   |   |-- phase-1-default-state-ui.yml
+|   |   |-- phase-1-lock-guardrails.yml
+|   |   |-- phase-1-persistence-verification.yml
+|   |   |-- phase-1-runtime-awareness.yml
+|   |   |-- phase-1-state-editing.yml
+|   |   |-- phase-1-state-model.yml
+|   |   |-- phase-1-state-panel-shell.yml
+|   |   |-- phase-1-state-switching.yml
+|   |   |-- phase-1-undo-replay-audit.yml
+|   |   |-- phase-2-transition-audit.yml
+|   |   |-- phase-2-transition-export.yml
+|   |   |-- phase-2-transition-guardrails.yml
+|   |   |-- phase-2-transition-model.yml
+|   |   |-- phase-2-transition-preview.yml
+|   |   `-- phase-2-transition-ui.yml
+|   |-- PULL_REQUEST_TEMPLATE
+|   |   |-- n2-guardrails.md
+|   |   |-- phase-1-audit.md
+|   |   |-- phase-1-ui.md
+|   |   |-- phase-1.md
+|   |   |-- phase-2-audit.md
+|   |   |-- phase-2-export.md
+|   |   |-- phase-2-preview.md
+|   |   |-- phase-2-ui.md
+|   |   |-- phase-2.md
+|   |   `-- phase-7-animate-between-states.md
+|   |-- labeler.yml
+|   `-- workflows
+|       |-- auto-label.yml
+|       |-- ci.yml
+|       `-- enforce-collaboration-labels.yml
+|-- .gitignore
+|-- .mcp.json
+|-- .vscode
+|   |-- mcp.json
+|   `-- settings.json
+|-- CONTRIBUTING.md
+|-- README.md
+|-- RULES_OF_DROPPLE_OS.md
+|-- ai
+|   |-- README.md
+|   |-- generation
+|   |   |-- generateTemplateArtifact.ts
+|   |   `-- generateVariants.ts
+|   `-- prompts
+|       `-- ccmAuthorPrompt.ts
+|-- app
+|   |-- README.md
+|   |-- api
+|   |   `-- auth
+|   |       `-- [...nextauth]
+|   |-- certificates
+|   |   |-- [id]
+|   |   |   `-- page.jsx
+|   |   `-- page.jsx
+|   |-- education
+|   |   `-- [lessonId]
+|   |       `-- page.jsx
+|   |-- favicon.ico
+|   |-- gallery
+|   |   `-- page.jsx
+|   |-- globals.css
+|   |-- handler
+|   |   `-- [...stack]
+|   |       `-- page.js
+|   |-- layout.js
+|   |-- loading.js
+|   |-- marketplace
+|   |   |-- creator
+|   |   |   `-- [name]
+|   |   |       `-- page.jsx
+|   |   |-- lessons
+|   |   |   |-- [id]
+|   |   |   |   `-- page.jsx
+|   |   |   |-- creator
+|   |   |   |   `-- [name]
+|   |   |   |       `-- page.jsx
+|   |   |   `-- page.jsx
+|   |   |-- page.jsx
+|   |   `-- template
+|   |       `-- [id]
+|   |           `-- page.jsx
+|   |-- page.jsx
+|   |-- profile
+|   |   `-- [id]
+|   |       `-- page.jsx
+|   |-- providers.jsx
+|   |-- review
+|   |   `-- submissions
+|   |       `-- [id]
+|   |           `-- page.jsx
+|   |-- reviews
+|   |   |-- [submissionId]
+|   |   |   `-- page.jsx
+|   |   `-- page.jsx
+|   |-- verify
+|   |   `-- [certificateId]
+|   |       `-- page.jsx
+|   |-- viewer
+|   |   |-- [galleryId]
+|   |   |   |-- ViewerClient.jsx
+|   |   |   `-- page.jsx
+|   |   `-- page.jsx
+|   `-- workspace
+|       |-- [mode]
+|       |   `-- page.jsx
+|       |-- design
+|       |   |-- DesignWorkspaceClient.jsx
+|       |   `-- page.jsx
+|       |-- layout.jsx
+|       |-- new
+|       |   `-- page.jsx
+|       `-- page.jsx
+|-- audit
+|   `-- AuditLogPanel.jsx
+|-- auth
+|-- bench
+|   |-- alias-loader.mjs
+|   `-- engineBench.js
+|-- branching
+|   |-- conflicts
+|   |   |-- ConflictWarnings.jsx
+|   |   `-- detectBranchConflicts.js
+|   |-- graph
+|   |   |-- BranchGraph.jsx
+|   |   `-- buildBranchGraph.js
+|   |-- merge
+|   |   |-- MergePreview 2.jsx
+|   |   |-- MergePreview.jsx
+|   |   |-- VisualNodeDiffOverlay.jsx
+|   |   |-- applyMerge.js
+|   |   |-- computeMergeDiff.js
+|   |   |-- computeNodeDiff.js
+|   |   |-- planMerge.js
+|   |   `-- simulateMergeState.js
+|   `-- ui
+|       |-- BranchSwitcher.jsx
+|       |-- CreateBranch.jsx
+|       |-- MergeBranch.jsx
+|       `-- useBranchState.js
+|-- canvas
+|   |-- Canvas.jsx
+|   |-- render
+|   |   |-- layout
+|   |   |   `-- applyLayout.js
+|   |   |-- renderDesignCanvas.js
+|   |   |-- renderNode.js
+|   |   |-- style
+|   |   |   `-- applyStyle.js
+|   |   `-- types
+|   |       |-- renderImage.js
+|   |       `-- renderText.js
+|   `-- test
+|       `-- renderTest.html
+|-- certification
+|   |-- SubmitAssessmentButton.jsx
+|   |-- annotations
+|   |   |-- annotationTypes.ts
+|   |   `-- useAnnotationStore.js
+|   |-- assessments
+|   |   `-- assessmentTypes.js
+|   |-- certificates
+|   |   |-- certificateTypes.ts
+|   |   `-- useCertificateStore.js
+|   |-- replay
+|   |   `-- hashReplay.js
+|   |-- rubrics
+|   |   `-- rubricTypes.js
+|   `-- submissions
+|       |-- SubmissionList.jsx
+|       |-- submissionTypes.js
+|       `-- useSubmissionStore.js
+|-- collab
+|   |-- CanvasCursors.jsx
+|   |-- CanvasIntentGhosts.jsx
+|   |-- CanvasSelectionPresence.jsx
+|   |-- CursorsLayer.jsx
+|   |-- PresenceDots.jsx
+|   |-- applyMergedLog.js
+|   |-- eventEnvelope.js
+|   |-- eventLog.js
+|   |-- filterConflicts.js
+|   |-- lamportClock.js
+|   |-- lockManager.js
+|   |-- mergeEvents.js
+|   |-- optimistic
+|   |   |-- createOptimisticTx.js
+|   |   |-- mergeOptimistic.js
+|   |   |-- optimisticStore.js
+|   |   |-- optimisticTransaction.js
+|   |   `-- reconcileOptimism.js
+|   |-- permissionPolicy.js
+|   |-- policyGate.js
+|   |-- presenceStore.js
+|   |-- remoteEventAdapter.js
+|   |-- throttle.js
+|   |-- useDocumentRole.js
+|   |-- useIntentPreview.js
+|   |-- useLiveCursors.js
+|   |-- usePresence.js
+|   |-- useRemoteEventCommit.js
+|   `-- useSelectionPresence.js
+|-- collaboration
+|   `-- panels
+|       `-- SharingPanel.jsx
+|-- commands
+|   |-- CommandPalette.jsx
+|   |-- commandRegistry.js
+|   |-- filterCommands.js
+|   |-- groupCommands.js
+|   `-- useCommandPalette.js
+|-- convex
+|   |-- README.md
+|   |-- _generated
+|   |   |-- api.d.ts
+|   |   |-- api.js
+|   |   |-- dataModel.d.ts
+|   |   |-- server.d.ts
+|   |   `-- server.js
+|   |-- _helpers
+|   |   |-- assertOwnershipInvariant.js
+|   |   |-- ensureOwnerMember.js
+|   |   `-- permissions.js
+|   |-- analytics.js
+|   |-- appendEvents.js
+|   |-- assessments.js
+|   |-- auth.config.ts
+|   |-- certificates.ts
+|   |-- collaboration.js
+|   |-- convex.config.ts
+|   |-- gallery.js
+|   |-- getAuditLogs.js
+|   |-- getDocumentMember.js
+|   |-- getPresence.js
+|   |-- lib
+|   |   |-- assertPermission.js
+|   |   |-- audit.ts
+|   |   |-- permissions.js
+|   |   `-- writeAuditLog.js
+|   |-- loadDocumentSnapshot.js
+|   |-- migrations
+|   |   `-- repairMissingOwners.js
+|   |-- saveDocumentSnapshot.js
+|   |-- schema.js
+|   |-- seed.js
+|   |-- streamEvents.js
+|   |-- tasks.ts
+|   |-- tsconfig.json
+|   |-- updateCursor.js
+|   |-- updateIntent.js
+|   |-- updatePresence.js
+|   `-- updateSelection.js
+|-- core
+|   |-- README.md
+|   |-- animation
+|   |   `-- AnimationSchema.js
+|   |-- ccm
+|   |   |-- migration
+|   |   |   `-- LegacyTemplateConverter.ts
+|   |   |-- schema
+|   |   |   |-- template.v1.js
+|   |   |   `-- template.v1.ts
+|   |   |-- types.js
+|   |   |-- types.ts
+|   |   `-- validate
+|   |       |-- schema
+|   |       |   `-- template.v1.js
+|   |       |-- types.js
+|   |       |-- validate
+|   |       |   `-- validateTemplateArtifact.js
+|   |       |-- validateTemplateArtifact.js
+|   |       `-- validateTemplateArtifact.ts
+|   |-- contracts
+|   |   |-- EngineContract.js
+|   |   |-- ExportContract.js
+|   |   |-- TimelineContract.js
+|   |   `-- WorkspaceContract.js
+|   |-- events
+|   |   |-- README.md
+|   |   |-- applyEvent.js
+|   |   |-- eventTypes.js
+|   |   `-- reducers
+|   |       |-- animationReducers.js
+|   |       |-- componentStateReducers.js
+|   |       |-- index.js
+|   |       |-- interactionReducers.js
+|   |       |-- layoutReducers.js
+|   |       |-- nodeReducers.js
+|   |       |-- stateReducers.js
+|   |       |-- styleReducers.js
+|   |       |-- timelineReducers 2.js
+|   |       |-- timelineReducers.js
+|   |       |-- transitionReducers.js
+|   |       `-- treeReducers.js
+|   |-- history
+|   |   `-- historyStack.js
+|   |-- interactions
+|   |   `-- InteractionSchema.js
+|   |-- ir
+|   |   |-- BaseIR.js
+|   |   |-- ComponentIR.js
+|   |   |-- DesignIR.js
+|   |   |-- InteractionIR.js
+|   |   |-- MotionIR.js
+|   |   |-- SemanticIR.js
+|   |   |-- StateIR.js
+|   |   `-- index.js
+|   |-- messageBus.js
+|   |-- nodes
+|   |   `-- createNode.js
+|   |-- scene
+|   |   |-- node.js
+|   |   `-- nodeTypes.js
+|   |-- transitions
+|   |   |-- README.md
+|   |   `-- transitionSchema.js
+|   `-- variants
+|       `-- validateVariantSnapshot.ts
+|-- design
+|   |-- reducer
+|   |   |-- designReducer.js
+|   |   |-- nodeContentReducer.js
+|   |   |-- nodeLayoutReducer.js
+|   |   |-- nodeLifecycleReducer.js
+|   |   |-- nodeStructureReducer.js
+|   |   `-- nodeStyleReducer.js
+|   |-- state
+|   |   |-- createDesignState.js
+|   |   `-- createNode.js
+|   `-- test
+|       `-- replayTest.js
+|-- docs
+|   |-- README.md
+|   |-- add-a-tool.md
+|   |-- ai
+|   |   `-- ccm-v1-ai-generation-prompt-contract.md
+|   |-- animate-between-states.md
+|   |-- architecture
+|   |   `-- why-not-realtime-yet.md
+|   |-- architecture.md
+|   |-- contributor-onboarding.md
+|   |-- deployment-strategy.md
+|   |-- dropple-ui-architecture
+|   |   `-- README.md
+|   |-- failure-modes.md
+|   |-- invariants
+|   |   `-- N1.1-ownership-membership.md
+|   |-- marketplace
+|   |   `-- ccm-marketplace-eligibility.md
+|   |-- migrations
+|   |   |-- README.md
+|   |   |-- ccm-migration-approval.md
+|   |   |-- legacy-only-flag.md
+|   |   |-- legacy-to-ccm-implementation-plan.md
+|   |   |-- legacy-to-ccm.md
+|   |   |-- migration-audit-report.md
+|   |   `-- reorg-file-map.csv
+|   |-- phase-2-project-board.md
+|   |-- phase-4h-audit-checklist.md
+|   |-- phase-4h-playback.md
+|   |-- phase-7-diff-plan.md
+|   |-- phases
+|   |   |-- N1-completion.md
+|   |   |-- N1.2-members-role-changes.md
+|   |   `-- N3-realtime-editing.md
+|   |-- public-overview.md
+|   |-- rules.md
+|   |-- session-recap-ux-mode.md
+|   |-- tool-compliance-checklist.md
+|   |-- tool-contracts.md
+|   |-- transition-ui
+|   |   `-- README.md
+|   |-- ui-implementation-checklist.md
+|   |-- ui-phase-1-states.md
+|   |-- ui-phase-2-transition-preview.md
+|   |-- ui-phase-2-transitions.md
+|   |-- ui-phase-3-interactions.md
+|   |-- ui-phase-4-animations.md
+|   `-- ux-mode
+|       |-- README.md
+|       |-- anti-patterns.md
+|       |-- authority.md
+|       |-- confirm-tier.md
+|       |-- intent-and-escalation.md
+|       |-- lock.md
+|       |-- overview.md
+|       |-- phase-3.md
+|       |-- phase-4-escalation.md
+|       |-- phase-4-warnings.md
+|       |-- phase-4.md
+|       |-- phase-5-implementation-plan.md
+|       |-- phase-5-leakage-audit.md
+|       |-- phase-5.md
+|       |-- phase-6-leakage-audit.md
+|       |-- phase-6.md
+|       `-- phases.md
+|-- editor
+|   `-- openServerDocument.js
+|-- education
+|   |-- AnnotationOverlay.js
+|   |-- AnnotationOverlay.jsx
+|   |-- AnnotationPanel.js
+|   |-- AnnotationStore.js
+|   |-- EducationAnnotationsContext.jsx
+|   |-- EducationCursorContext.jsx
+|   |-- EducationInspector.jsx
+|   |-- EducationTimelinePanel.jsx
+|   |-- EducationToolbar.jsx
+|   |-- ai
+|   |   |-- ExplanationAgent.js
+|   |   |-- QAAgent.js
+|   |   |-- buildEvidenceContext.js
+|   |   |-- buildExplanationPrompt.js
+|   |   |-- buildQAPrompt.js
+|   |   `-- computeStateDiff.js
+|   |-- certification
+|   |   |-- AssessmentSchema.js
+|   |   |-- CertificateSchema.js
+|   |   |-- GradingAgent.js
+|   |   |-- RubricSchema.js
+|   |   |-- SubmissionSchema.js
+|   |   `-- isCertified.js
+|   |-- educationReducer.js
+|   |-- forkLessonToWorkspace.js
+|   |-- lesson
+|   |   |-- LessonPlayer.js
+|   |   |-- LessonSchema.js
+|   |   |-- downloadLesson.js
+|   |   |-- exportLesson.js
+|   |   |-- importLesson.js
+|   |   `-- selectLessonRange.js
+|   |-- lessonEvents.js
+|   |-- selectEducationState.js
+|   `-- useAnnotations.js
+|-- engine
+|   |-- README.md
+|   |-- animation
+|   |   |-- animationIR.js
+|   |   |-- compileTimelineToIR.js
+|   |   |-- easingPresets.js
+|   |   |-- evaluateAnimation.js
+|   |   |-- exporters
+|   |   |   `-- exportWebAnimation.js
+|   |   |-- preview
+|   |   |   `-- previewAtTime.js
+|   |   |-- timelineSchema.js
+|   |   `-- tools
+|   |       |-- keyframeTool.js
+|   |       |-- motionPresets.js
+|   |       `-- trackTool.js
+|   |-- canvas
+|   |   `-- nodeTree.js
+|   |-- constraints
+|   |   |-- constraintEngine.js
+|   |   |-- resizeConstraintEngine.js
+|   |   |-- selectionBounds.js
+|   |   |-- selectionBounds.test.mjs
+|   |   `-- snapUtils.js
+|   |-- export
+|   |-- ir
+|   |   |-- extractCanvasIR.js
+|   |   |-- extractComponentIR.js
+|   |   |-- extractDesignIR.js
+|   |   |-- extractInteractionIR.js
+|   |   |-- extractMotionIR.js
+|   |   |-- extractSemanticIR.js
+|   |   `-- extractStateIR.js
+|   |-- layout
+|   |   |-- computeReorderIndex.js
+|   |   |-- findDropTarget.js
+|   |   `-- isAutoLayoutChild.js
+|   |-- measure
+|   |   |-- measureChildrenBounds.js
+|   |   `-- measureText.js
+|   |-- motion
+|   |-- scene
+|   |   `-- nodeTree.js
+|   |-- text
+|   `-- timeline
+|       |-- commitTimeline.js
+|       |-- flattenTimeline.js
+|       `-- timeline.js
+|-- eslint.config.mjs
+|-- export
+|   |-- ExportDiffViewer.jsx
+|   |-- animation
+|   |   |-- __tests__
+|   |   |   `-- exportAnimation.test.js
+|   |   |-- css
+|   |   |   `-- exportCSSKeyframes.js
+|   |   |-- exportAnimation.js
+|   |   |-- normalizeAnimationExport.js
+|   |   `-- waapi
+|   |       `-- exportWAAPI.js
+|   |-- css
+|   |   `-- exportCSS.js
+|   |-- diffLines.js
+|   |-- evaluateAnimationForExport.js
+|   |-- exportJSON.js
+|   |-- exportMotion.js
+|   |-- generateExportPair.js
+|   |-- normalizeExport.js
+|   |-- png
+|   |   `-- exportPNG.js
+|   |-- svg
+|   |   |-- exportSVG.js
+|   |   `-- renderNodeToSVG.js
+|   |-- utils
+|   |   `-- download.js
+|   |-- verify
+|   |   |-- verifyCssKeyframes.js
+|   |   |-- verifyMotionExport.js
+|   |   `-- verifyWaapiOutput.js
+|   `-- waapi
+|       `-- exportWAAPI.js
+|-- gallery
+|   |-- GalleryFilters.jsx
+|   |-- galleryStore.js
+|   |-- generateThumbnail.js
+|   |-- publishToGallery.js
+|   |-- tagUtils.js
+|   |-- useGalleryIdentity.js
+|   `-- usePublishToServer.js
+|-- import
+|   |-- importJSON.js
+|   `-- svg
+|       `-- parseSVG.js
+|-- input
+|   |-- InputSessionManager.js
+|   |-- pointerMap.js
+|   |-- sessions
+|   |   |-- AnimationCreateClipSession.js
+|   |   |-- AnimationCreateKeyframeSession.js
+|   |   |-- AnimationCreateTrackSession.js
+|   |   |-- AnimationDeleteKeyframeSession.js
+|   |   |-- AnimationUpdateKeyframeSession.js
+|   |   |-- DrawSession.js
+|   |   |-- MoveSession.js
+|   |   |-- ResizeSession.js
+|   |   `-- TextSession.js
+|   `-- types.js
+|-- inspector
+|   |-- InspectorSection.jsx
+|   `-- sections
+|       |-- AnimationInspector.jsx
+|       |-- CommonInspector.jsx
+|       |-- GraphicInspector.jsx
+|       `-- UIInspector.jsx
+|-- interaction
+|   |-- InteractionController.js
+|   |-- KeyboardController.js
+|   |-- SelectionModel.js
+|   |-- geometry
+|   |   `-- computeBoundingBox.js
+|   |-- guides
+|   |   |-- GuideOverlay.js
+|   |   |-- computeSnapPoints.js
+|   |   `-- snapPosition.js
+|   |-- hitTest.js
+|   |-- measurements
+|   |   |-- MeasurementOverlay.js
+|   |   `-- computeMeasurements.js
+|   |-- renderResizeHandles.js
+|   |-- renderSelection.js
+|   `-- rulers
+|       |-- RulerOverlay.js
+|       `-- renderRulers.js
+|-- jsconfig.json
+|-- layout
+|   `-- autoLayoutEngine.js
+|-- lib
+|   `-- agents
+|       `-- persistence
+|           `-- messageBusPersistence.js
+|-- marketplace
+|   |-- LessonListingSchema.js
+|   |-- LessonVersionSchema.js
+|   |-- MarketplaceFilterBar.jsx
+|   |-- ReviewSchema.js
+|   |-- TemplateCard.jsx
+|   |-- collections.js
+|   |-- filterTemplates.js
+|   |-- lessons
+|   |   |-- LessonFilterBar.jsx
+|   |   |-- filterLessons.js
+|   |   |-- lessonCollections.js
+|   |   `-- useLessonFilters.js
+|   |-- mockLessons.js
+|   |-- mockTemplates.js
+|   |-- useMarketplaceFilters.js
+|   `-- useOwnershipStore.js
+|-- multiplayer
+|   |-- ClassroomSession.js
+|   |-- ObserverReceiver.js
+|   |-- TeacherBroadcaster.js
+|   `-- protocol.js
+|-- next.config.mjs
+|-- onboarding
+|   |-- ModeHint.jsx
+|   |-- modeHints.js
+|   |-- useModeOnboarding.js
+|   `-- useOnboardingState.js
+|-- package-lock.json
+|-- package.json
+|-- perf
+|   |-- PerfHUD.jsx
+|   |-- perfTracker 2.js
+|   `-- perfTracker.js
+|-- persistence
+|   |-- activeDocument.js
+|   |-- appendRuntimeEvents.js
+|   |-- branching.js
+|   |-- checkpoints.js
+|   |-- documentCommands.js
+|   |-- documentFiles.js
+|   |-- documentRegistry.js
+|   |-- documentSchema.js
+|   |-- loadDocument.js
+|   |-- loadDocumentFromConvex.js
+|   |-- localDocumentSchema.js
+|   |-- localDocumentStore.js
+|   |-- mergeBranch.js
+|   |-- replay.js
+|   |-- saveCurrentDocument.js
+|   |-- saveDocument.js
+|   |-- schema_v1.js
+|   `-- useAutosave.js
+|-- plugins
+|   |-- capabilityFactory.js
+|   |-- executionGuards.js
+|   |-- plugin-worker.js
+|   |-- pluginAPI.js
+|   |-- pluginManifest.js
+|   |-- pluginPermissions.js
+|   |-- pluginRegistry.js
+|   |-- pluginSupervisor.js
+|   |-- securePluginAPI.js
+|   |-- types.js
+|   `-- workerSandbox.js
+|-- postcss.config.mjs
+|-- profiles
+|   |-- EditProfile.jsx
+|   |-- creatorStore.js
+|   |-- currentCreator.js
+|   `-- linkLocalCreator.js
+|-- providers
+|   `-- ConvexProvider.jsx
+|-- public
+|   |-- file.svg
+|   |-- globe.svg
+|   |-- next.svg
+|   |-- vercel.svg
+|   `-- window.svg
+|-- review
+|   |-- AssessmentContent.jsx
+|   |-- AssessmentReviewLayout.jsx
+|   |-- ReviewToolbar.jsx
+|   `-- panels
+|       |-- AnnotationPanel.jsx
+|       |-- RubricPanel.jsx
+|       `-- SubmissionInfoPanel.jsx
+|-- runtime
+|   |-- MessageBus.js
+|   |-- README.md
+|   |-- animation
+|   |   |-- __tests__
+|   |   |   `-- runAnimationPreview.test.js
+|   |   |-- animationController.js
+|   |   |-- cancelAnimationPreview.js
+|   |   |-- easing.js
+|   |   |-- interpolateNodes.js
+|   |   |-- lerp.js
+|   |   |-- playbackController.js
+|   |   `-- runAnimationPreview.js
+|   |-- bridge
+|   |   |-- attachSessionCommitBridge.js
+|   |   |-- selectRenderState.js
+|   |   `-- zustandBridge.js
+|   |-- cursor
+|   |   |-- createCursor.js
+|   |   `-- resolveCursor.js
+|   |-- dispatcher
+|   |   |-- dispatch.js
+|   |   |-- history.js
+|   |   `-- ux
+|   |       |-- emitUXWarning.js
+|   |       |-- observeUXIntent.js
+|   |       |-- shouldConfirmUXAction.js
+|   |       |-- uxAuditLog.js
+|   |       |-- uxConfirmBus.js
+|   |       |-- uxIntentMap.js
+|   |       `-- uxWarningBus.js
+|   |-- eventDispatcher.js
+|   |-- events
+|   |   |-- EventSequencer.js
+|   |   |-- createEventId.js
+|   |   `-- getEventsUpToCursor.js
+|   |-- guards
+|   |   |-- animationGuard.js
+|   |   |-- authorityGuard.js
+|   |   `-- timelineGuard.js
+|   |-- interactions
+|   |   `-- resolveInteraction.js
+|   |-- layout
+|   |   |-- applyLayoutPass.js
+|   |   `-- shouldRunLayout.js
+|   |-- macro
+|   |   `-- macroRecorder.js
+|   |-- preview
+|   |   |-- getTransitionForPreview.js
+|   |   `-- runTransitionPreview.js
+|   |-- registry
+|   |   `-- engineRegistry.js
+|   |-- replay
+|   |   |-- __tests__
+|   |   |   `-- animationPreviewReplay.test.js
+|   |   |-- getDesignStateAtCursor.js
+|   |   |-- reconstructDesignState.js
+|   |   |-- useReplayState.js
+|   |   `-- withReplayGuard.js
+|   |-- state
+|   |   |-- runtimeState.js
+|   |   `-- workspaceState.js
+|   |-- stores
+|   |   |-- README.md
+|   |   |-- nodeTreeStore.js
+|   |   |-- useAnimatedRuntimeStore.js
+|   |   |-- useRuntimeStore.js
+|   |   `-- useTimelinePreviewStore.js
+|   |-- sync
+|   |   `-- README.md
+|   |-- test
+|   |   |-- cursorReplayTest.js
+|   |   `-- playbackControllerTest.js
+|   `-- timeline
+|       |-- README.md
+|       |-- clearTimelinePreview.js
+|       |-- easingPresets.js
+|       |-- evaluateTimeline.js
+|       `-- scrubTimeline.js
+|-- scratch
+|   |-- input-session-loader.mjs
+|   |-- mockMessageBus.mjs
+|   |-- test-dispatcher.mjs
+|   |-- test-events.mjs
+|   |-- test-input-session-manager.mjs
+|   `-- test-input-sessions.mjs
+|-- scripts
+|   |-- build-ccm-validator.sh
+|   |-- ci
+|   |   |-- check-ccm-validator-sync.sh
+|   |   |-- check-no-pre-dispatch-event-ids.sh
+|   |   |-- check-single-message-bus.sh
+|   |   |-- check-ux-phase-5-guardrails.sh
+|   |   `-- check-ux-phase-6-guardrails.sh
+|   |-- defineScript.js
+|   |-- reorg-file-map.cjs
+|   |-- runScript.js
+|   |-- scriptAPI.js
+|   `-- scriptGuards.js
+|-- security
+|   |-- permissions.js
+|   `-- usePermissions.js
+|-- selection
+|   `-- useSelectionStore.js
+|-- share
+|   |-- createEmbedCode.js
+|   |-- createShareLink.js
+|   `-- embedPresets.js
+|-- stability
+|   |-- EditorErrorBoundary.jsx
+|   `-- GlobalErrorBoundary.jsx
+|-- stack
+|   |-- client.js
+|   `-- server.js
+|-- templates
+|   |-- TemplateGeneratorOverlay.jsx
+|   |-- TemplateSerializer.js
+|   |-- TemplateValidator.js
+|   |-- artifacts
+|   |   `-- realestate.hero.motion.v1.json
+|   |-- converters
+|   |   |-- legacyToCCM.ts
+|   |   `-- types.ts
+|   |-- legacy
+|   |   `-- types.ts
+|   |-- templateTypes.js
+|   `-- useTemplateGenerator.js
+|-- tests
+|   |-- README.md
+|   `-- ccm
+|       `-- validateTemplateArtifact.smoke.test.js
+|-- timeline
+|   |-- __tests__
+|   |   `-- evaluateAnimationTimeline.test.js
+|   |-- applyTimelinePreview.js
+|   |-- commitTimelineKeyframe.js
+|   |-- easing
+|   |   `-- easingPresets.js
+|   |-- easingMath.js
+|   |-- easingRegistry.js
+|   |-- evaluateAnimationTimeline.js
+|   |-- evaluateAnimationTrack.js
+|   |-- evaluateTimeline.js
+|   |-- export
+|   |   |-- cssExporter.js
+|   |   |-- groupMotionFrames.js
+|   |   `-- motionIR.js
+|   |-- keyboard
+|   |   `-- useTimelineKeyboard.js
+|   |-- keyframeSchema.js
+|   |-- markers
+|   |   |-- MarkerControls.jsx
+|   |   `-- useTimelineMarkers.js
+|   |-- motionPresets.js
+|   |-- normalize
+|   |   `-- normalizeKeyframes.js
+|   |-- playback
+|   |   |-- PlaybackControls.jsx
+|   |   |-- usePlaybackPreviewBridge.js
+|   |   `-- useTimelinePlayback.js
+|   |-- resolveEasing.js
+|   |-- sampleKeyframes.js
+|   |-- sampleTimeline.js
+|   |-- schema
+|   |   |-- clip.js
+|   |   |-- keyframe.js
+|   |   |-- timeline.js
+|   |   `-- track.js
+|   |-- timelineCursor.js
+|   |-- timelineProjection.js
+|   |-- timelineSchema.js
+|   |-- timelineScrubber.js
+|   |-- trackSchema.js
+|   |-- transform
+|   |   `-- composeTransform.js
+|   |-- ui
+|   |   |-- useCommitKeyframeDrag.js
+|   |   |-- useKeyframeDragPreview.js
+|   |   |-- useKeyframePointer.js
+|   |   |-- useTimelineBounds.js
+|   |   |-- useTimelineSelectionStore.js
+|   |   `-- useTimelineSnapping.js
+|   `-- utils
+|       `-- findActiveClips.js
+|-- tool-ux.md
+|-- tree_L5.txt
+|-- tree_current.txt
+|-- ui
+|   |-- Canvas.jsx
+|   |-- Control.jsx
+|   |-- Controls.jsx
+|   |-- NodeView.jsx
+|   |-- Panel.jsx
+|   |-- README.md
+|   |-- alignment
+|   |   `-- alignmentUtils.js
+|   |-- animation
+|   |   |-- applyWebAnimations.js
+|   |   `-- curves
+|   |       |-- CurveCanvas.jsx
+|   |       |-- CurveEditorPanel.jsx
+|   |       |-- CurveHandle.jsx
+|   |       |-- CurvePresetPicker.jsx
+|   |       `-- commitCurveChange.js
+|   |-- canvas
+|   |   |-- CanvasGhostLayer.jsx
+|   |   |-- CanvasHost.jsx
+|   |   |-- CanvasRoot.jsx
+|   |   |-- CanvasSnapGuides.jsx
+|   |   |-- CollabLayer.jsx
+|   |   |-- GhostLayer.jsx
+|   |   |-- GhostNode.jsx
+|   |   |-- GuideLayer.jsx
+|   |   |-- InsertionLine.jsx
+|   |   |-- NodeLayer.jsx
+|   |   |-- NodeRenderer 2.jsx
+|   |   |-- NodeRenderer.jsx
+|   |   |-- RemoteCursors.jsx
+|   |   |-- RemoteSelections.jsx
+|   |   |-- SelectionLayer.jsx
+|   |   |-- SelectionOutline.jsx
+|   |   |-- canvas
+|   |   |   |-- AutoLayoutOverlayLayer.jsx
+|   |   |   |-- SnapGuidesOverlay.jsx
+|   |   |   |-- computeSnapGuides.js
+|   |   |   |-- overlays
+|   |   |   |   |-- GapOverlay.jsx
+|   |   |   |   |-- GridOverlay.jsx
+|   |   |   |   |-- PaddingOverlay.jsx
+|   |   |   |   `-- ReorderIndicator.jsx
+|   |   |   |-- resolveGridSnap.js
+|   |   |   |-- resolveSnap.js
+|   |   |   |-- snapConfig.js
+|   |   |   `-- useAutoLayoutOverlayVisibility.js
+|   |   `-- hooks
+|   |-- canvasBus.js
+|   |-- capabilities
+|   |   `-- capabilityActions.js
+|   |-- context
+|   |   |-- ContextMenu.jsx
+|   |   `-- useContextMenu.js
+|   |-- controls
+|   |   |-- AspectLockToggle.jsx
+|   |   `-- ui
+|   |       |-- badge.jsx
+|   |       |-- button.jsx
+|   |       |-- card.jsx
+|   |       `-- textarea.jsx
+|   |-- creation
+|   |   `-- creationResolver.js
+|   |-- export
+|   |   `-- exportMotion.js
+|   |-- files
+|   |   `-- FilePicker.jsx
+|   |-- inputs
+|   |   `-- NumericInput.jsx
+|   |-- inspector
+|   |   |-- AutoLayoutPanel.jsx
+|   |   `-- LayoutInspector.jsx
+|   |-- interaction
+|   |   |-- dispatcher.js
+|   |   |-- interaction
+|   |   |   |-- isModifierAllowed.js
+|   |   |   |-- useInteractionModifiers.js
+|   |   |   `-- useKeyboardShortcuts.js
+|   |   `-- sessionBinding.js
+|   |-- keyboard
+|   |   |-- useAlignmentShortcuts.js
+|   |   `-- useKeyboardNudge.js
+|   |-- layout
+|   |   |-- CanvasStage.jsx
+|   |   |-- LeftPanel.jsx
+|   |   |-- PropertyBar.jsx
+|   |   |-- ReadOnlyNodeRenderer.jsx
+|   |   |-- ReadOnlyScene.jsx
+|   |   |-- RightPanel.jsx
+|   |   |-- TimelineBar.jsx
+|   |   |-- Toolbar.jsx
+|   |   |-- TopBar.jsx
+|   |   |-- computeFlexLayout.js
+|   |   |-- computeGridLayout.js
+|   |   `-- computeReorderIndex.js
+|   |-- panels
+|   |   |-- AutoLayoutPanel.js
+|   |   `-- ExportPanel.jsx
+|   |-- reviews
+|   |   |-- ConfirmDecision.jsx
+|   |   |-- IssueCertificateButton.jsx
+|   |   `-- ReviewQueue.jsx
+|   |-- selection
+|   |   |-- SelectionBox.jsx
+|   |   `-- selectionBounds.js
+|   |-- share
+|   |   `-- EmbedPresetsMenu.jsx
+|   |-- shared
+|   |   `-- guards
+|   |       |-- RequireReviewer.jsx
+|   |       `-- ReviewerErrorBoundary.jsx
+|   |-- styles
+|   |   `-- globals.css
+|   |-- timeline
+|   |   |-- EditableKeyframe.jsx
+|   |   |-- KeyframeDots.jsx
+|   |   |-- TimelineEventLog.jsx
+|   |   |-- TimelinePanel.jsx
+|   |   |-- TimelinePlayhead.jsx
+|   |   |-- TimelineScrubber.jsx
+|   |   |-- TimelineTimeScale.jsx
+|   |   |-- TimelineTrack.jsx
+|   |   |-- TimelineTrackList.jsx
+|   |   |-- TimelineTracks.jsx
+|   |   |-- applyTimelinePreview.js
+|   |   |-- editEventBridge.js
+|   |   |-- samplePreviewState.js
+|   |   |-- useTimelinePreviewBridge.js
+|   |   |-- useTimelinePreviewStore.js
+|   |   `-- useTimelineStore.js
+|   |-- tokens.js
+|   |-- tools
+|   |   |-- createFrameTool.js
+|   |   |-- createLayerTool.js
+|   |   |-- createShapeTool.js
+|   |   `-- defaultCreateTool.js
+|   `-- workspace
+|       |-- editor
+|       |   `-- EditorWorkspaceShell.jsx
+|       |-- shared
+|       |   |-- ClipboardContext.jsx
+|       |   |-- GridContext.jsx
+|       |   |-- ModeContext.jsx
+|       |   |-- SelectionContext.jsx
+|       |   |-- WorkspaceLayout.jsx
+|       |   |-- WorkspaceShell.jsx
+|       |   |-- pasteFromClipboard.js
+|       |   |-- serializeSelection.js
+|       |   `-- useAutoLayoutCommit.js
+|       |-- shell
+|       |   |-- ModeLoader.jsx
+|       |   `-- WorkspaceShell.jsx
+|       `-- ux
+|           |-- UXInspectorPanel.jsx
+|           `-- UXWorkspaceShell.jsx
+|-- utils
+|   `-- safeMutation.js
+|-- viewer
+|   |-- ViewerStage.jsx
+|   |-- ViewerToolbar.jsx
+|   |-- parseViewerParams.js
+|   `-- useViewerControls.js
+|-- workspace
+|   |-- DispatcherContext.jsx
+|   |-- WorkspaceRoot
+|   |   |-- DispatcherProvider
+|   |   |   |-- Bridges
+|   |   |   |   `-- WorkspaceBridgesRoot.jsx
+|   |   |   |-- Canvas
+|   |   |   |   `-- WorkspaceCanvasRoot.jsx
+|   |   |   |-- DispatcherContext.jsx
+|   |   |   |-- DispatcherProvider.jsx
+|   |   |   |-- Sessions
+|   |   |   |   `-- WorkspaceSessionsRoot.jsx
+|   |   |   `-- UI
+|   |   |       |-- UXConfirmModal.jsx
+|   |   |       |-- UXWarningBanner.jsx
+|   |   |       `-- WorkspaceUIRoot.jsx
+|   |   |-- WorkspaceRoot.jsx
+|   |   `-- createEventDispatcher.js
+|   |-- WorkspaceShell.js
+|   |-- createFromTemplate.js
+|   |-- test
+|   |   `-- workspaceShellTest.html
+|   `-- timeline
+|       `-- TimelineUI.js
+`-- workspaces
+    |-- README.md
+    |-- modes
+    |   |-- ModeAdapter.js
+    |   |-- ModeRegistry.js
+    |   |-- designMode.js
+    |   |-- educationMode.js
+    |   |-- podcastMode.js
+    |   |-- registerModes.js
+    |   |-- reviewMode.js
+    |   |-- videoMode.js
+    |   `-- writerMode.js
+    |-- registry
+    |   |-- WorkspaceDefinition.js
+    |   |-- animationWorkspace.js
+    |   |-- brandingWorkspace.js
+    |   |-- conversionWorkspace.js
+    |   |-- devWorkspace.js
+    |   |-- documentWorkspace.js
+    |   |-- educationWorkspace.js
+    |   |-- graphicWorkspace.js
+    |   |-- iconWorkspace.js
+    |   |-- index.js
+    |   |-- materialWorkspace.js
+    |   |-- podcastWorkspace.js
+    |   |-- resolveWorkspacePolicy.js
+    |   |-- routes.js
+    |   |-- timelineCapability.js
+    |   |-- uiuxWorkspace.js
+    |   `-- videoWorkspace.js
+    `-- registry.js

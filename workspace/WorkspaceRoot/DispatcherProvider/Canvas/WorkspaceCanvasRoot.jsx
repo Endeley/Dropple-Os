@@ -1,8 +1,8 @@
 'use client';
 
-import Canvas from '@/canvas/Canvas.jsx';
+import CanvasRoot from '@/ui/canvas/CanvasRoot.jsx';
 
 export function WorkspaceCanvasRoot() {
-  return <Canvas />;
+  return <CanvasRoot />;
 }
 ``

@@ -5,6 +5,8 @@ import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { canvasBus } from '@/ui/canvasBus.js';
 import CanvasSnapGuides from './CanvasSnapGuides';
 import { GhostNode } from './GhostNode';
+import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
+import { projectToViewport } from '@/canvas/transform/projectToViewport.js';
 
 /**
  * Renders ephemeral ghost previews during active input sessions.
@@ -66,6 +68,7 @@ function InsertionLine({ containerId, index }) {
         },
         (a, b) => a.container === b.container && a.children === b.children && a.layout === b.layout
     );
+    const viewport = useWorkspaceState((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
 
     if (!container) return null;
 
@@ -88,9 +91,12 @@ function InsertionLine({ containerId, index }) {
             padding,
             gap,
         });
-        lineStyle.left = container.x ?? 0;
-        lineStyle.width = container.width ?? 0;
-        lineStyle.top = y;
+        const projectedContainerX = projectToViewport({ x: container.x ?? 0, y: 0 }, viewport).x;
+        const projectedPositionY = projectToViewport({ x: 0, y }, viewport).y;
+        const width = (container.width ?? 0) * viewport.scale;
+        lineStyle.left = projectedContainerX;
+        lineStyle.width = width;
+        lineStyle.top = projectedPositionY;
         lineStyle.height = 2;
     } else {
         const x = computeInsertionPosition({
@@ -101,9 +107,12 @@ function InsertionLine({ containerId, index }) {
             padding,
             gap,
         });
-        lineStyle.top = container.y ?? 0;
-        lineStyle.height = container.height ?? 0;
-        lineStyle.left = x;
+        const projectedContainerY = projectToViewport({ x: 0, y: container.y ?? 0 }, viewport).y;
+        const projectedPositionX = projectToViewport({ x, y: 0 }, viewport).x;
+        const height = (container.height ?? 0) * viewport.scale;
+        lineStyle.top = projectedContainerY;
+        lineStyle.height = height;
+        lineStyle.left = projectedPositionX;
         lineStyle.width = 2;
     }
 

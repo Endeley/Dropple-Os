@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { WorkspaceShell } from '@/components/workspace/WorkspaceShell';
+import { WorkspaceShell } from '@/ui/workspace/shared/WorkspaceShell';
 import { mockTemplates } from '@/marketplace/mockTemplates';
 import { createWorkspaceFromTemplate } from '@/workspace/createFromTemplate';
 import { mockLessons } from '@/marketplace/mockLessons';

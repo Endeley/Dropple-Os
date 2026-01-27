@@ -1,7 +1,9 @@
+let latestAuditLog = null;
+
 export function createUXAuditLog() {
     const entries = [];
 
-    return {
+    const log = {
         append(entry) {
             entries.push(entry);
         },
@@ -12,4 +14,10 @@ export function createUXAuditLog() {
             entries.length = 0;
         },
     };
+    latestAuditLog = log;
+    return log;
+}
+
+export function getUXAuditLog() {
+    return latestAuditLog ? latestAuditLog.snapshot() : [];
 }

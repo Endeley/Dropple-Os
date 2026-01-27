@@ -1,6 +1,8 @@
 'use client';
 
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore';
+import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
+import { projectToViewport } from '@/canvas/transform/projectToViewport.js';
 
 /**
  * Renders a visual insertion line for auto-layout reordering.
@@ -8,6 +10,7 @@ import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStor
  */
 export default function InsertionLine({ containerId, index }) {
     const nodes = useAnimatedRuntimeStore((s) => s.nodes);
+    const viewport = useWorkspaceState((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
 
     const container = nodes[containerId];
     if (!container) return null;
@@ -33,22 +36,29 @@ export default function InsertionLine({ containerId, index }) {
         position = isVertical ? target.y : target.x;
     }
 
+    const projectedContainerX = projectToViewport({ x: container.x ?? 0, y: 0 }, viewport).x;
+    const projectedContainerY = projectToViewport({ x: 0, y: container.y ?? 0 }, viewport).y;
+    const projectedPositionX = projectToViewport({ x: position, y: 0 }, viewport).x;
+    const projectedPositionY = projectToViewport({ x: 0, y: position }, viewport).y;
+    const width = (container.width ?? 0) * viewport.scale;
+    const height = (container.height ?? 0) * viewport.scale;
+
     const style = isVertical
         ? {
               position: 'absolute',
-              left: container.x ?? 0,
-              right: 0,
-              top: position,
+              left: projectedContainerX,
+              top: projectedPositionY,
+              width,
               height: 2,
               background: 'rgba(59,130,246,0.9)',
               pointerEvents: 'none',
           }
         : {
               position: 'absolute',
-              top: container.y ?? 0,
-              bottom: 0,
-              left: position,
+              top: projectedContainerY,
+              left: projectedPositionX,
               width: 2,
+              height,
               background: 'rgba(59,130,246,0.9)',
               pointerEvents: 'none',
           };

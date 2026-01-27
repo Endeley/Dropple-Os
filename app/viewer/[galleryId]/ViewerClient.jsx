@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from 'convex/react';
-import CanvasStage from '@/components/layout/CanvasStage';
-import TimelineBar from '@/components/layout/TimelineBar';
-import { SelectionProvider } from '@/components/workspace/SelectionContext';
-import { ModeProvider } from '@/components/workspace/ModeContext';
+import CanvasStage from '@/ui/layout/CanvasStage';
+import TimelineBar from '@/ui/layout/TimelineBar';
+import { SelectionProvider } from '@/ui/workspace/shared/SelectionContext';
+import { ModeProvider } from '@/ui/workspace/shared/ModeContext';
 import { hydrateLocalDocumentSnapshot } from '@/persistence/localDocumentSchema';
 import { useViewerControls } from '@/viewer/useViewerControls';
 import { ViewerToolbar } from '@/viewer/ViewerToolbar';

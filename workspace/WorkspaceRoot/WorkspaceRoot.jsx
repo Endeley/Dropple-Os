@@ -5,7 +5,7 @@ import { WorkspaceUIRoot } from './DispatcherProvider/UI/WorkspaceUIRoot.jsx';
 import { WorkspaceCanvasRoot } from './DispatcherProvider/Canvas/WorkspaceCanvasRoot.jsx';
 import { WorkspaceSessionsRoot } from './DispatcherProvider/Sessions/WorkspaceSessionsRoot.jsx';
 import { WorkspaceBridgesRoot } from './DispatcherProvider/Bridges/WorkspaceBridgesRoot.jsx';
-import { SelectionProvider } from '@/components/workspace/SelectionContext';
+import { SelectionProvider } from '@/ui/workspace/shared/SelectionContext';
 
 /**
  * WorkspaceRoot

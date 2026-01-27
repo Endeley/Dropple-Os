@@ -1,0 +1,81 @@
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple
+├── .cursor
+├── .env.local
+├── .git
+├── .github
+├── .gitignore
+├── .mcp.json
+├── .next
+├── .vscode
+├── CONTRIBUTING.md
+├── README.md
+├── RULES_OF_DROPPLE_OS.md
+├── ai
+├── app
+├── audit
+├── auth
+├── bench
+├── branching
+├── canvas
+├── certification
+├── collab
+├── collaboration
+├── commands
+├── components
+├── convex
+├── core
+├── design
+├── docs
+├── editor
+├── education
+├── engine
+├── eslint.config.mjs
+├── export
+├── gallery
+├── import
+├── input
+├── inspector
+├── interaction
+├── jsconfig.json
+├── layout
+├── lib
+├── marketplace
+├── multiplayer
+├── next.config.mjs
+├── node_modules
+├── onboarding
+├── package-lock.json
+├── package.json
+├── perf
+├── persistence
+├── plugins
+├── postcss.config.mjs
+├── profiles
+├── providers
+├── public
+├── review
+├── runtime
+├── scratch
+├── scripts
+├── security
+├── selection
+├── share
+├── stability
+├── stack
+├── templates
+├── tests
+├── timeline
+├── tool-ux.md
+├── tree_L5.txt
+├── ui
+├── utils
+├── viewer
+├── workspace
+└── workspaces
+
+directory: 59 file: 14
+
+
+
+[2K[1G

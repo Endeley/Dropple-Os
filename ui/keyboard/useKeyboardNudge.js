@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useSelection } from '@/components/workspace/SelectionContext';
+import { useSelection } from '@/ui/workspace/shared/SelectionContext';
 import { canvasBus } from '@/ui/canvasBus';
 
 export function useKeyboardNudge({ enabled = true, emit, getState }) {

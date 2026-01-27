@@ -1,5 +1,5 @@
 export const iconWorkspace = {
-    id: "icon",
+    id: "icons",
     label: "Icon Design",
     status: "active",
 
