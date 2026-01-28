@@ -2,7 +2,9 @@
 
 export function CanvasSurface({ surface, viewport }) {
     if (!surface) return null;
-    const safeViewport = viewport || { x: 0, y: 0 };
+    const safeViewport = viewport || { x: 0, y: 0, scale: 1 };
+    const scale = safeViewport.scale ?? 1;
+    const transform = `translate(${-safeViewport.x * scale}px, ${-safeViewport.y * scale}px) scale(${scale})`;
 
     if (surface.type === 'smooth') return null;
 
@@ -16,7 +18,7 @@ export function CanvasSurface({ surface, viewport }) {
                     inset: 0,
                     backgroundImage: 'radial-gradient(#d1d5db 1px, transparent 1px)',
                     backgroundSize: `${size}px ${size}px`,
-                    transform: `translate(${-safeViewport.x}px, ${-safeViewport.y}px)`,
+                    transform,
                     pointerEvents: 'none',
                 }}
             />
@@ -36,7 +38,7 @@ export function CanvasSurface({ surface, viewport }) {
             linear-gradient(90deg, #e5e7eb 1px, transparent 1px)
           `,
                     backgroundSize: `${size}px ${size}px`,
-                    transform: `translate(${-safeViewport.x}px, ${-safeViewport.y}px)`,
+                    transform,
                     pointerEvents: 'none',
                 }}
             />

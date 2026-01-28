@@ -1,5 +1,5 @@
 import { computeSelectionBounds } from './selectionBounds';
-import { findBestSnap } from './snapUtils';
+import { computeSnapCandidates, resolveSnapDelta, buildSnapGuides } from './snapEngine';
 
 // Pure constraint evaluation helpers.
 // No side effects, no global state.
@@ -21,7 +21,6 @@ export function applyMoveConstraints({ delta, nodes, siblings = [], canvas, opti
     if (!nodes || nodes.length === 0) {
         return { delta, guides: [] };
     }
-    const threshold = options.snapThreshold ?? 6;
     const guides = [];
 
     const bounds = computeSelectionBounds(nodes);
@@ -33,58 +32,35 @@ export function applyMoveConstraints({ delta, nodes, siblings = [], canvas, opti
         maxY: bounds.maxY + delta.y,
     };
 
-    // --- X AXIS CANDIDATES ---
-    const xCandidates = [];
-
-    // Canvas
-    if (canvas) {
-        xCandidates.push(0);
-        if (canvas.width != null && canvas.width !== undefined) {
-            // snap selection's left edge so right edge aligns to canvas width
-            xCandidates.push(canvas.width - bounds.width);
-        }
-    }
-
-    // Siblings
-    siblings.forEach((n) => {
-        const x = n?.x ?? 0;
-        const w = n?.width ?? 0;
-        xCandidates.push(x);
-        xCandidates.push(x + w);
-    });
-
-    const snapX = findBestSnap(moved.minX, xCandidates, threshold);
-
-    // --- Y AXIS CANDIDATES ---
-    const yCandidates = [];
-
-    if (canvas) {
-        yCandidates.push(0);
-        if (canvas.height != null && canvas.height !== undefined) {
-            // snap selection's top edge so bottom edge aligns to canvas height
-            yCandidates.push(canvas.height - bounds.height);
-        }
-    }
-
-    siblings.forEach((n) => {
-        const y = n?.y ?? 0;
-        const h = n?.height ?? 0;
-        yCandidates.push(y);
-        yCandidates.push(y + h);
-    });
-
-    const snapY = findBestSnap(moved.minY, yCandidates, threshold);
-
+    const snapRadius = options.snapRadius ?? 0;
     let blendedDelta = { ...delta };
 
-    if (snapX) {
-        blendedDelta.x = snapX.value - bounds.minX;
-        guides.push({ id: 'snap-x', type: 'vertical', x: snapX.value });
-    }
+    if (snapRadius > 0) {
+        const movingBounds = {
+            x: bounds.minX + delta.x,
+            y: bounds.minY + delta.y,
+            width: bounds.width,
+            height: bounds.height,
+        };
 
-    if (snapY) {
-        blendedDelta.y = snapY.value - bounds.minY;
-        guides.push({ id: 'snap-y', type: 'horizontal', y: snapY.value });
+        const targets = Array.isArray(options.snapTargets) ? options.snapTargets : siblings;
+        const filteredTargets = targets.filter((node) => !nodes.find((m) => m.id === node.id));
+
+        const candidates = computeSnapCandidates({
+            movingBounds,
+            targets: filteredTargets,
+            snapRadius,
+        });
+
+        const { delta: snapDelta, primaryX, primaryY } = resolveSnapDelta({ candidates });
+
+        if (primaryX || primaryY) {
+            blendedDelta = {
+                x: delta.x + snapDelta.x,
+                y: delta.y + snapDelta.y,
+            };
+            guides.push(...buildSnapGuides({ primaryX, primaryY }));
+        }
     }
 
     return {

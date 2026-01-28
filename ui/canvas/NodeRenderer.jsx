@@ -4,14 +4,23 @@ import React, { memo } from 'react';
 import { NodeView } from '@/ui/NodeView.jsx';
 import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
 import { projectToViewport } from '@/canvas/transform/projectToViewport.js';
+import { useCanvasContext } from '@/ui/canvas/CanvasContext.jsx';
 
 function NodeRendererImpl({ node }) {
     if (!node) return null;
     const viewport = useWorkspaceState((state) => state.viewport);
+    const { zoomTier } = useCanvasContext();
     const position = viewport ? projectToViewport(node, viewport) : undefined;
     const scale = viewport?.scale ?? 1;
 
-    return <NodeView node={node} position={position} scale={scale} />;
+    return (
+        <NodeView
+            node={node}
+            position={position}
+            scale={scale}
+            zoomTier={zoomTier}
+        />
+    );
 }
 
 export const NodeRenderer = memo(

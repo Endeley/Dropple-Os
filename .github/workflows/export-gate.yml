@@ -1,0 +1,77 @@
+name: Export UX Gate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - release/**
+
+jobs:
+  export-gate-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      EXPORT_GATE_ANNOTATE: summary
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Export Gate (capture status)
+        run: |
+          set +e
+          node scripts/dropple-export-gate.mjs \
+            --world ./fixtures/worlds/allow.json \
+            --width 1440 \
+            --height 900
+          EXIT_CODE=$?
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_ENV
+          set -e
+
+      - name: Fail on blocking errors
+        if: env.exit_code == '1'
+        run: |
+          echo "❌ Export blocked due to UX errors"
+          exit 1
+
+      - name: Warn on UX warnings
+        if: env.exit_code == '2'
+        run: |
+          echo "::warning title=Export UX Gate::Export has UX warnings (non-blocking on PRs)"
+
+  export-gate-release:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    env:
+      EXPORT_GATE_ANNOTATE: issues
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Export Gate (strict)
+        run: |
+          node scripts/dropple-export-gate.mjs \
+            --world ./fixtures/worlds/allow.json \
+            --width 1440 \
+            --height 900 \
+            --strict

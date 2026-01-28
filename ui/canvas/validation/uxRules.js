@@ -1,0 +1,11 @@
+export const UX_RULES = {
+    OVERLAP: 'OVERLAP',
+    TOO_CLOSE: 'TOO_CLOSE',
+    MISALIGNED: 'MISALIGNED',
+    INCONSISTENT_SPACING: 'INCONSISTENT_SPACING',
+    OFFSCREEN_CRITICAL: 'OFFSCREEN_CRITICAL',
+};
+
+if (process.env.NODE_ENV === 'development') {
+    Object.freeze(UX_RULES);
+}

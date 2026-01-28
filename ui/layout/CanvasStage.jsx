@@ -21,6 +21,7 @@ import { CapabilityActions } from '@/ui/capabilities/capabilityActions';
 import { exportJSON } from '@/export/exportJSON';
 import { exportSVG } from '@/export/svg/exportSVG';
 import { exportPNG } from '@/export/png/exportPNG';
+import { runExportGate } from '@/ui/export/exportGateClient.js';
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { throttle } from '@/collab/throttle';
@@ -210,9 +211,9 @@ export default function CanvasStage({
         { key: 'distribute-x', label: 'Distribute Horizontally', disabled: !enabled, onClick: () => CapabilityActions.distributeX(selected, emit) },
         { key: 'distribute-y', label: 'Distribute Vertically', disabled: !enabled, onClick: () => CapabilityActions.distributeY(selected, emit) },
         { type: 'separator' },
-        { key: 'export-json', label: 'Export JSON', disabled: !hasNodes, onClick: () => exportJSON({ nodes: state.nodes, events, cursor }) },
-        { key: 'export-svg', label: 'Export SVG', disabled: !hasNodes, onClick: () => exportSVG({ nodes: state.nodes }) },
-        { key: 'export-png', label: 'Export PNG', disabled: !hasNodes, onClick: () => exportPNG({ nodes: state.nodes, scale: 2 }) },
+        { key: 'export-json', label: 'Export JSON', disabled: !hasNodes, onClick: () => { if (!runExportGate()) return; exportJSON({ nodes: state.nodes, events, cursor }); } },
+        { key: 'export-svg', label: 'Export SVG', disabled: !hasNodes, onClick: () => { if (!runExportGate()) return; exportSVG({ nodes: state.nodes }); } },
+        { key: 'export-png', label: 'Export PNG', disabled: !hasNodes, onClick: () => { if (!runExportGate()) return; exportPNG({ nodes: state.nodes, scale: 2 }); } },
         ...(canShowImport
           ? [
               { type: 'separator' },

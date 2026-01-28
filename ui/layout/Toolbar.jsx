@@ -6,6 +6,7 @@ import { CapabilityActions } from '@/ui/capabilities/capabilityActions';
 import { exportJSON } from '@/export/exportJSON';
 import { exportSVG } from '@/export/svg/exportSVG';
 import { exportPNG } from '@/export/png/exportPNG';
+import { runExportGate } from '@/ui/export/exportGateClient.js';
 import { createShareLink } from '@/share/createShareLink';
 import { createEmbedCode } from '@/share/createEmbedCode';
 import { colors, spacing, radius } from '@/ui/tokens';
@@ -284,7 +285,10 @@ export default function Toolbar({
       </button>
       <button
         disabled={!hasNodes}
-        onClick={() => exportJSON({ nodes, events, cursor })}
+        onClick={() => {
+          if (!runExportGate()) return;
+          exportJSON({ nodes, events, cursor });
+        }}
         title="Export JSON"
         style={{
           minWidth: 32,
@@ -301,7 +305,10 @@ export default function Toolbar({
       </button>
       <button
         disabled={!hasNodes}
-        onClick={() => exportSVG({ nodes })}
+        onClick={() => {
+          if (!runExportGate()) return;
+          exportSVG({ nodes });
+        }}
         title="Export SVG"
         style={{
           minWidth: 32,
@@ -318,7 +325,10 @@ export default function Toolbar({
       </button>
       <button
         disabled={!hasNodes}
-        onClick={() => exportPNG({ nodes, scale: 2 })}
+        onClick={() => {
+          if (!runExportGate()) return;
+          exportPNG({ nodes, scale: 2 });
+        }}
         title="Export PNG"
         style={{
           minWidth: 32,

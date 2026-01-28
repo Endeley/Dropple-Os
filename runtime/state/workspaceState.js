@@ -24,7 +24,7 @@ export function resolveWorkspaceState(workspaceDef) {
     return {
         id: workspaceDef?.id ?? activeWorkspaceId,
         canvasPolicy: resolveCanvasPolicy(workspaceDef),
-        viewport: defaultViewport,
+        viewport: { ...defaultViewport },
         canvasSurface: resolveCanvasSurface(workspaceDef),
     };
 }
@@ -56,4 +56,20 @@ export function setCanvasSurface(surface) {
     if (!surface) return;
     workspaceState.canvasSurface = surface;
     notify();
+}
+
+export function setViewport(nextViewport) {
+    if (!nextViewport) return;
+    workspaceState.viewport = {
+        ...workspaceState.viewport,
+        ...nextViewport,
+    };
+    notify();
+}
+
+export function updateViewport(updater) {
+    if (!updater) return;
+    const nextViewport =
+        typeof updater === 'function' ? updater(workspaceState.viewport) : updater;
+    setViewport(nextViewport);
 }

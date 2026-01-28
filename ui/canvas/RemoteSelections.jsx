@@ -2,6 +2,7 @@
 
 import { usePresenceStore } from '@/collab/presenceStore';
 import { SelectionOutline } from './SelectionOutline';
+import { useCanvasContext } from '@/ui/canvas/CanvasContext.jsx';
 
 /**
  * UI-only rendering of other users' selections.
@@ -9,6 +10,9 @@ import { SelectionOutline } from './SelectionOutline';
 export default function RemoteSelections() {
     const selections = usePresenceStore((s) => s.selections);
     const users = usePresenceStore((s) => s.users);
+    const { zoomTier } = useCanvasContext();
+
+    if (zoomTier === 'far' || zoomTier === 'overview') return null;
 
     return Object.entries(selections).flatMap(([userId, nodeIds]) => {
         const user = users[userId];

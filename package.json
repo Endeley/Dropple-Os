@@ -7,7 +7,9 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
-        "lint": "eslint"
+        "lint": "eslint",
+        "lint:export": "node scripts/dropple-export-gate.mjs --world ./fixtures/worlds/allow.json --width 1440 --height 900",
+        "lint:export:json": "node scripts/dropple-export-gate.mjs --world ./fixtures/worlds/allow.json --width 1440 --height 900 --json"
     },
     "dependencies": {
         "@stackframe/stack": "^2.8.56",
