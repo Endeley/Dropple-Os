@@ -20,7 +20,7 @@ import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useSelectionStore } from '@/selection/useSelectionStore.js';
 import { screenToWorld } from '@/canvas/transform/screenToWorld.js';
 import { getViewportBounds } from '@/canvas/viewport/getViewportBounds.js';
-import { setViewport } from '@/runtime/state/workspaceState.js';
+import { getWorkspaceState, setViewport } from '@/runtime/state/workspaceState.js';
 import { CanvasDebugOverlay } from '@/ui/canvas/CanvasDebugOverlay.jsx';
 import { getZoomTier } from '@/ui/canvas/zoomTiers.js';
 import { CanvasProvider } from '@/ui/canvas/CanvasContext.jsx';
@@ -44,7 +44,18 @@ import { ValidationOverlayLayer } from '@/ui/canvas/ValidationOverlayLayer.jsx';
 
 export default function CanvasRoot({ workspaceId }) {
     perfStart('canvas.render');
-    const workspace = resolveWorkspacePolicy(workspaceId);
+    const workspaceState = getWorkspaceState();
+    const resolvedWorkspaceId = workspaceId ?? workspaceState?.id;
+    if (
+        process.env.NODE_ENV === 'development' &&
+        !workspaceId &&
+        !workspaceState?.id
+    ) {
+        console.warn(
+            '[CanvasRoot] No workspaceId provided and none found in workspaceState'
+        );
+    }
+    const workspace = resolveWorkspacePolicy(resolvedWorkspaceId);
     const designState = getRuntimeState();
     const viewport = useWorkspaceState((state) => state.viewport);
     const canvasSurface = useWorkspaceState((state) => state.canvasSurface);
