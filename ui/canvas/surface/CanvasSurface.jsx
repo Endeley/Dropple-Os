@@ -1,10 +1,13 @@
 'use client';
 
-// ---- tuning constants ----
+// ─────────────────────────────────────────────
+// Tunables
+// ─────────────────────────────────────────────
+
 const OVERSCAN_MIN = 1500;
 const OVERSCAN_MAX = 9000;
 
-// Grid density by zoom tier (world units)
+// Grid density by zoom scale
 const GRID_BY_SCALE = [
     { minScale: 1.2, size: 8 },
     { minScale: 0.6, size: 16 },
@@ -13,8 +16,16 @@ const GRID_BY_SCALE = [
     { minScale: 0, size: 128 },
 ];
 
+// Every N minor cells, draw a major line
+const MAJOR_LINE_INTERVAL = 5;
+
+// Beyond this zoom, CSS grids are disabled (perf safety)
+const EXTREME_ZOOM_OUT = 0.06;
+
 // Dev perf guard
-const MAX_SURFACE_PX = 18_000_000; // ~18M px area
+const MAX_SURFACE_MP = 18; // megapixels
+
+// ─────────────────────────────────────────────
 
 export function CanvasSurface({ surface, viewport }) {
     if (!surface) return null;
@@ -22,7 +33,12 @@ export function CanvasSurface({ surface, viewport }) {
     const safeViewport = viewport || { x: 0, y: 0, scale: 1 };
     const scale = safeViewport.scale ?? 1;
 
-    // Dynamic overscan (bigger when zoomed out)
+    // Extreme zoom-out → disable grid entirely (future WebGL hook)
+    if (scale < EXTREME_ZOOM_OUT) {
+        return null; // behaves like "smooth"
+    }
+
+    // Dynamic overscan (world px)
     const overscan = clamp(Math.round(2800 / scale), OVERSCAN_MIN, OVERSCAN_MAX);
 
     const width = `calc(100% + ${overscan * 2}px)`;
@@ -34,14 +50,20 @@ export function CanvasSurface({ surface, viewport }) {
     scale(${scale})
   `;
 
-    // Pick grid density by zoom
+    // Grid size by zoom
     const gridSize = surface.gridSize ?? GRID_BY_SCALE.find((t) => scale >= t.minScale)?.size ?? 64;
 
-    // ---- dev-only perf warning ----
+    const majorSize = gridSize * MAJOR_LINE_INTERVAL;
+
+    // Theme (safe defaults)
+    const minorColor = surface.theme?.minor ?? '#cbd5f5';
+    const majorColor = surface.theme?.major ?? '#94a3b8';
+
+    // Dev-only perf warning
     if (process.env.NODE_ENV === 'development') {
-        const approxArea = Math.pow(overscan * 2 + 2000, 2) * scale * scale;
-        if (approxArea > MAX_SURFACE_PX) {
-            console.warn('[CanvasSurface] Large surface area detected:', Math.round(approxArea / 1_000_000), 'MP');
+        const approxMP = ((overscan * 2 + 2000) ** 2 * scale * scale) / 1_000_000;
+        if (approxMP > MAX_SURFACE_MP) {
+            console.warn(`[CanvasSurface] Large surface area: ${approxMP.toFixed(1)} MP`);
         }
     }
 
@@ -59,33 +81,50 @@ export function CanvasSurface({ surface, viewport }) {
 
     return (
         <>
-            {/* ---- GRID / DOT SURFACE ---- */}
+            {/* ───────── Minor grid / dots ───────── */}
             {surface.type === 'dots' && (
                 <div
                     aria-hidden
                     style={{
                         ...baseStyle,
-                        backgroundImage: 'radial-gradient(#94a3b8 1.4px, transparent 1.4px)',
+                        backgroundImage: `radial-gradient(${minorColor} 1.4px, transparent 1.4px)`,
                         backgroundSize: `${gridSize}px ${gridSize}px`,
                     }}
                 />
             )}
 
             {surface.type === 'grid' && (
-                <div
-                    aria-hidden
-                    style={{
-                        ...baseStyle,
-                        backgroundImage: `
-              linear-gradient(#cbd5f5 1px, transparent 1px),
-              linear-gradient(90deg, #cbd5f5 1px, transparent 1px)
-            `,
-                        backgroundSize: `${gridSize}px ${gridSize}px`,
-                    }}
-                />
+                <>
+                    {/* Minor grid */}
+                    <div
+                        aria-hidden
+                        style={{
+                            ...baseStyle,
+                            backgroundImage: `
+                linear-gradient(${minorColor} 1px, transparent 1px),
+                linear-gradient(90deg, ${minorColor} 1px, transparent 1px)
+              `,
+                            backgroundSize: `${gridSize}px ${gridSize}px`,
+                        }}
+                    />
+
+                    {/* Major grid */}
+                    <div
+                        aria-hidden
+                        style={{
+                            ...baseStyle,
+                            backgroundImage: `
+                linear-gradient(${majorColor} 1px, transparent 1px),
+                linear-gradient(90deg, ${majorColor} 1px, transparent 1px)
+              `,
+                            backgroundSize: `${majorSize}px ${majorSize}px`,
+                            opacity: 0.45,
+                        }}
+                    />
+                </>
             )}
 
-            {/* ---- ORIGIN AXES (fade in at far zoom) ---- */}
+            {/* ───────── World origin axes (far zoom) ───────── */}
             {scale < 0.35 && (
                 <>
                     {/* X axis */}
@@ -121,7 +160,10 @@ export function CanvasSurface({ surface, viewport }) {
     );
 }
 
-// ---- utils ----
+// ─────────────────────────────────────────────
+// Utils
+// ─────────────────────────────────────────────
+
 function clamp(v, min, max) {
     return Math.max(min, Math.min(max, v));
 }
