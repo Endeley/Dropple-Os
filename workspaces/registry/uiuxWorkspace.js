@@ -27,7 +27,7 @@ export const uiuxWorkspace = {
     },
 
     engines: ['nodeTree', 'layout', 'constraints', 'autoLayout'],
-    tools: ['select', 'move', 'resize', 'text', 'shape', 'image'],
+    tools: ['select', 'move', 'resize', 'text', 'image', 'frame'],
     panels: ['layers', 'properties', 'tokens'],
 
     capabilities: {
@@ -37,6 +37,10 @@ export const uiuxWorkspace = {
         audio: false,
         video: false,
         codegen: false,
+        rootNodeTypes: ['frame'],
+        allowFrameNesting: false,
+        allowRootShapes: false,
+        autoLayoutParents: ['container'],
     },
 
     timeline: createTimelineCapability({

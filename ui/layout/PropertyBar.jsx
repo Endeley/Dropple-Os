@@ -78,7 +78,7 @@ export default function PropertyBar({ events, cursor, emit }) {
               <GraphicInspector node={node} emit={emit} />
             )}
 
-            {mode === 'ui' && <UIInspector node={node} emit={emit} />}
+            {mode === 'uiux' && <UIInspector node={node} emit={emit} />}
 
             {mode === 'animation' && <AnimationInspector node={node} />}
           </>

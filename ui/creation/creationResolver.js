@@ -10,7 +10,7 @@ export function registerCreationResolver({ getMode }) {
     const mode = getMode?.() ?? 'graphic';
 
     switch (mode) {
-      case 'ui':
+      case 'uiux':
         canvasBus.emit('tool.create.frame', intent);
         break;
       case 'animation':

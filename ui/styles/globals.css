@@ -161,3 +161,122 @@ textarea:focus-visible {
   flex: 1;
   accent-color: #6366f1;
 }
+
+.uiux-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.uiux-topbar {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  border-bottom: 1px solid #e5e5e5;
+  background: #ffffff;
+}
+
+.uiux-topbar-left,
+.uiux-topbar-center,
+.uiux-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.uiux-topbar .workspace-name {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.uiux-topbar .frame-indicator {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.uiux-main {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.uiux-toolrail {
+  width: 56px;
+  border-right: 1px solid #e5e5e5;
+  padding: 8px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.uiux-toolrail .tool-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.uiux-toolrail button,
+.uiux-topbar button,
+.uiux-rightpanel button {
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #ffffff;
+  font-size: 11px;
+  color: #0f172a;
+}
+
+.uiux-toolrail button {
+  width: 100%;
+}
+
+.uiux-toolrail button:disabled,
+.uiux-topbar button:disabled,
+.uiux-rightpanel button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.uiux-canvas-stage {
+  flex: 1;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.uiux-canvas-stage .canvas-placeholder {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.uiux-rightpanel {
+  width: 280px;
+  border-left: 1px solid #e5e5e5;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+}
+
+.uiux-rightpanel .panel-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.uiux-rightpanel .panel-tabs button.active {
+  border-color: #94a3b8;
+  background: #f1f5f9;
+}
+
+.uiux-rightpanel .panel-content {
+  padding: 12px;
+  flex: 1;
+  color: #475569;
+  font-size: 12px;
+}

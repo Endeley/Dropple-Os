@@ -1,6 +1,8 @@
 'use client';
-import CanvasRoot from '@/ui/canvas/CanvasRoot.jsx';
-import { UXInspectorPanel } from '@/ui/workspace/ux/UXInspectorPanel.jsx';
+import { UIUXTopBar } from './UIUXTopBar.jsx';
+import { UIUXToolRail } from './UIUXToolRail.jsx';
+import { UIUXCanvasStage } from './UIUXCanvasStage.jsx';
+import { UIUXRightPanel } from './UIUXRightPanel.jsx';
 
 /**
  * UXWorkspaceShell
@@ -71,37 +73,15 @@ import { UXInspectorPanel } from '@/ui/workspace/ux/UXInspectorPanel.jsx';
  * - profile: 'ux-validation'
  */
 
-export function UXWorkspaceShell(props) {
-    /**
-     * Intentionally empty.
-     *
-     * This component will be implemented only after:
-     * - branch routing is wired in WorkspaceShell
-     * - read-only guarantees are enforced
-     * - UX panel inventory is finalized
-     */
-
-    return (
-        <div
-            data-workspace='uiux'
-            style={{
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-            }}>
-            {/* Main read-only canvas area */}
-            <div style={{ flex: 1, position: 'relative' }}>
-                <CanvasRoot workspaceId='uiux' />
-            </div>
-
-            {/* Right-side UX Inspector */}
-            <div style={{ width: 360, borderLeft: '1px solid #eee' }}>
-                <UXInspectorPanel
-                    events={props.events}
-                    cursor={props.cursor}
-                    selection={props.selection}
-                />
-            </div>
-        </div>
-    );
+export function UXWorkspaceShell() {
+  return (
+    <div className="uiux-root" data-workspace="uiux">
+      <UIUXTopBar />
+      <div className="uiux-main">
+        <UIUXToolRail />
+        <UIUXCanvasStage />
+        <UIUXRightPanel />
+      </div>
+    </div>
+  );
 }
