@@ -1,5 +1,7 @@
 'use client';
 
+import { CanvasSurfacePanel } from './panels/CanvasSurfacePanel.jsx';
+
 export function UIUXRightPanel() {
   return (
     <aside className="uiux-rightpanel">
@@ -11,6 +13,7 @@ export function UIUXRightPanel() {
 
       <div className="panel-content">
         <p>Select a node to inspect.</p>
+        <CanvasSurfacePanel />
       </div>
     </aside>
   );
