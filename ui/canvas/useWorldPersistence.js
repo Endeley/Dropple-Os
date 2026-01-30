@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { WorldStore } from '@/persistence/worldStore.js';
 import { serializeWorld, hydrateWorld, roundTripWorldState } from '@/persistence/worldState.js';
 
@@ -13,18 +13,26 @@ export function useWorldPersistence({
     nodesById,
 }) {
     const loadedRef = useRef(false);
-    const metaRef = useRef({
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-    });
+    const metaRef = useRef(null);
     const saveTimerRef = useRef(null);
     const cameraTimerRef = useRef(null);
     const lastSavedRef = useRef(null);
 
-    function flushSave() {
+    function ensureMeta() {
+        if (!metaRef.current) {
+            const now = Date.now();
+            metaRef.current = {
+                createdAt: now,
+                updatedAt: now,
+            };
+        }
+    }
+
+    const flushSave = useCallback(() => {
         if (!loadedRef.current) return;
         if (!viewport || !nodesById) return;
 
+        ensureMeta();
         metaRef.current.updatedAt = Date.now();
         const payload = serializeWorld({
             nodesById,
@@ -37,7 +45,7 @@ export function useWorldPersistence({
         if (serialized === lastSavedRef.current) return;
         WorldStore.save(workspaceId, payload);
         lastSavedRef.current = serialized;
-    }
+    }, [nodesById, viewport, workspaceId]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
@@ -50,6 +58,8 @@ export function useWorldPersistence({
                 updatedAt: loaded.metadata?.updatedAt ?? Date.now(),
             };
             hydrateWorld(loaded);
+        } else {
+            ensureMeta();
         }
 
         loadedRef.current = true;
@@ -73,7 +83,7 @@ export function useWorldPersistence({
             };
             window.__droppleDebug = api;
         }
-    }, [nodesById, viewport, workspaceId]);
+    }, [nodesById, viewport, workspaceId, flushSave]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
@@ -101,7 +111,7 @@ export function useWorldPersistence({
             window.removeEventListener('pagehide', handlePageHide);
             document.removeEventListener('visibilitychange', handleVisibility);
         };
-    }, [nodesById, viewport, workspaceId]);
+    }, [nodesById, viewport, workspaceId, flushSave]);
 
     useEffect(() => {
         if (!loadedRef.current) return;
@@ -121,7 +131,7 @@ export function useWorldPersistence({
                 saveTimerRef.current = null;
             }
         };
-    }, [nodesById, workspaceId]);
+    }, [nodesById, viewport, workspaceId, flushSave]);
 
     useEffect(() => {
         if (!loadedRef.current) return;
@@ -141,5 +151,5 @@ export function useWorldPersistence({
                 cameraTimerRef.current = null;
             }
         };
-    }, [viewport?.x, viewport?.y, viewport?.scale, workspaceId]);
+    }, [viewport, workspaceId, flushSave]);
 }

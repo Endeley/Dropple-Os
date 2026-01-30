@@ -29,6 +29,7 @@ import { buildCommands } from '@/commands/commandRegistry';
 import { useGalleryIdentity } from '@/gallery/useGalleryIdentity';
 import { usePublishToServer } from '@/gallery/usePublishToServer';
 import PresenceDots from '@/collab/PresenceDots';
+import { ExportGateOverlay } from '@/ui/export/ExportGateOverlay';
 
 function WorkspaceLayoutInner({
   adapter,
@@ -118,18 +119,20 @@ function WorkspaceLayoutInner({
     });
   }, [events, setCursorIndex]);
 
-  function getState() {
+  const getState = useCallback(() => {
     return getDesignStateAtCursor({
       events,
       uptoIndex: cursor.index,
     });
-  }
+  }, [events, cursor.index]);
 
-  const replayState = useMemo(() => getState(), [events, cursor.index]);
-  const selected =
-    selectedIds && selectedIds.size > 1
-      ? Array.from(selectedIds).map((id) => replayState.nodes?.[id]).filter(Boolean)
-      : [];
+  const replayState = useMemo(() => getState(), [getState]);
+  const selected = useMemo(() => {
+    if (!selectedIds || selectedIds.size <= 1) return [];
+    return Array.from(selectedIds)
+      .map((id) => replayState.nodes?.[id])
+      .filter(Boolean);
+  }, [selectedIds, replayState.nodes]);
 
   const commands = useMemo(
     () =>
@@ -151,16 +154,14 @@ function WorkspaceLayoutInner({
       hintMode,
       mode,
       publishToServer,
-      galleryIdentity,
     ]
   );
 
-  const rightPanels = useMemo(() => {
-    const base = adapter?.panels?.right || [];
-    if (!canManageSharing) return base;
-    if (base.includes('SharingPanel')) return base;
-    return [...base, 'SharingPanel'];
-  }, [adapter?.panels?.right, canManageSharing]);
+  const baseRightPanels = adapter?.panels?.right || [];
+  const rightPanels =
+    canManageSharing && !baseRightPanels.includes('SharingPanel')
+      ? [...baseRightPanels, 'SharingPanel']
+      : baseRightPanels;
 
   useKeyboardShortcuts({
     enabled: keyboardEnabled,
@@ -328,6 +329,7 @@ function WorkspaceLayoutInner({
         onRedo={readOnly ? undefined : redo}
         submissionId={reviewSubmission?.id}
       />
+      <ExportGateOverlay />
     </div>
   );
 }

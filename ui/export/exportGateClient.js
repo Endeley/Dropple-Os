@@ -2,8 +2,9 @@
 
 import { evaluateExportGate } from '@/export/exportGate.js';
 import { useValidationStore } from '@/ui/canvas/validation/validationStore.js';
+import { useExportGateStore } from './exportGateStore';
 
-export function runExportGate() {
+export function runExportGate({ onProceed } = {}) {
     const issues = useValidationStore.getState().issues ?? [];
     const result = evaluateExportGate(issues);
 
@@ -15,27 +16,14 @@ export function runExportGate() {
         };
     }
 
-    if (result.status === 'allow') return true;
-
-    if (result.status === 'warn') {
-        const warningText = formatIssueList(result.warnings);
-        const proceed = window.confirm(
-            `This export has warnings.\n\n${warningText}\n\nExport anyway?`
-        );
-        return proceed;
+    if (result.status === 'allow') {
+        onProceed?.();
+        return true;
     }
 
-    const blockText = formatIssueList(result.blockingIssues);
-    window.alert(
-        `Export blocked due to UX errors.\n\n${blockText}\n\nResolve validation errors to export.`
-    );
-    return false;
-}
+    if (typeof window !== 'undefined') {
+        useExportGateStore.getState().openSheet(result, onProceed);
+    }
 
-function formatIssueList(issues = []) {
-    if (!issues.length) return 'No issues reported.';
-    return issues
-        .slice(0, 6)
-        .map((issue) => `• ${issue.message}`)
-        .join('\n');
+    return false;
 }

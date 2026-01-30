@@ -7,9 +7,9 @@ import { projectToViewport } from '@/canvas/transform/projectToViewport.js';
 import { useCanvasContext } from '@/ui/canvas/CanvasContext.jsx';
 
 function NodeRendererImpl({ node }) {
-    if (!node) return null;
     const viewport = useWorkspaceState((state) => state.viewport);
     const { zoomTier } = useCanvasContext();
+    if (!node) return null;
     const position = viewport ? projectToViewport(node, viewport) : undefined;
     const scale = viewport?.scale ?? 1;
 

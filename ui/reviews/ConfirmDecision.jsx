@@ -1,18 +1,46 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/ui/controls/button';
 
 export default function ConfirmDecision({ label, onConfirm, disabled, variant }) {
-  function handleClick() {
-    const ok = window.confirm(
-      'This action is final and cannot be undone. Continue?'
-    );
-    if (ok) onConfirm?.();
+  const [armed, setArmed] = useState(false);
+
+  function handleArm() {
+    if (disabled) return;
+    setArmed(true);
+  }
+
+  function handleCancel() {
+    setArmed(false);
+  }
+
+  function handleConfirm() {
+    setArmed(false);
+    onConfirm?.();
   }
 
   return (
-    <Button onClick={handleClick} disabled={disabled} variant={variant}>
-      {label}
-    </Button>
+    <div className="flex flex-col gap-2">
+      {armed ? (
+        <>
+          <div className="text-xs text-slate-500">
+            This action is final.
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={handleCancel} disabled={disabled}>
+              Cancel
+            </Button>
+            <Button onClick={handleConfirm} disabled={disabled} variant={variant}>
+              Confirm {label}
+            </Button>
+          </div>
+        </>
+      ) : (
+        <Button onClick={handleArm} disabled={disabled} variant={variant}>
+          {label}
+        </Button>
+      )}
+    </div>
   );
 }

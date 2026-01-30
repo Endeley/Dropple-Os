@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     respondUXConfirmation,
     subscribeUXConfirmRequests,
@@ -14,6 +14,15 @@ export function UXConfirmModal() {
     const [actionType, setActionType] = useState(null);
     const confirmRef = useRef(null);
     const cancelRef = useRef(null);
+
+    const handleResponse = useCallback(
+        (confirmed) => {
+            if (!actionType) return;
+            respondUXConfirmation({ actionType, confirmed });
+            setActionType(null);
+        },
+        [actionType]
+    );
 
     useEffect(() => {
         return subscribeUXConfirmRequests((event) => {
@@ -53,13 +62,7 @@ export function UXConfirmModal() {
         return () => {
             document.removeEventListener('keydown', handleKeyDown, true);
         };
-    }, [actionType]);
-
-    const handleResponse = (confirmed) => {
-        if (!actionType) return;
-        respondUXConfirmation({ actionType, confirmed });
-        setActionType(null);
-    };
+    }, [actionType, handleResponse]);
 
     if (!actionType) return null;
 

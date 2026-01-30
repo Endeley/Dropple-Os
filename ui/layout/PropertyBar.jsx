@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext';
 import { useReplayState } from '@/runtime/replay/useReplayState';
 import { useMode } from '@/ui/workspace/shared/ModeContext';
@@ -12,7 +12,7 @@ import { AnimationInspector } from '@/inspector/sections/AnimationInspector';
 export default function PropertyBar({ events, cursor, emit }) {
   const { selectedIds } = useSelection();
   const state = useReplayState({ events, cursor });
-  const [lockAspect, setLockAspect] = useState(false);
+  const [lockState, setLockState] = useState({ selectedId: null, value: false });
   const mode = useMode();
 
   const selectionCount = selectedIds?.size ?? 0;
@@ -21,9 +21,17 @@ export default function PropertyBar({ events, cursor, emit }) {
   const node = selectedId ? state.nodes?.[selectedId] : null;
   const layout = node?.layout || {};
 
-  useEffect(() => {
-    setLockAspect(false);
-  }, [selectedId]);
+  const lockAspect = useMemo(
+    () => (lockState.selectedId === selectedId ? lockState.value : false),
+    [lockState, selectedId]
+  );
+  const setLockAspect = (next) => {
+    setLockState((prev) => {
+      const current = prev.selectedId === selectedId ? prev.value : false;
+      const value = typeof next === 'function' ? next(current) : next;
+      return { selectedId, value: Boolean(value) };
+    });
+  };
 
   return (
     <div className="property-bar">

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
@@ -39,28 +40,27 @@ function GalleryCard({ item, ownerId }) {
           borderRadius: 6,
           marginBottom: 8,
           overflow: 'hidden',
+          position: 'relative',
         }}
       >
         {item.thumbnail && (
-          <img
+          <Image
             src={item.thumbnail}
             alt={item.title}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-            }}
+            fill
+            sizes="(max-width: 768px) 100vw, 240px"
+            style={{ objectFit: 'cover' }}
+            unoptimized
           />
         )}
         {!item.thumbnail && item.thumbnailUrl && (
-          <img
+          <Image
             src={item.thumbnailUrl}
             alt={item.title}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-            }}
+            fill
+            sizes="(max-width: 768px) 100vw, 240px"
+            style={{ objectFit: 'cover' }}
+            unoptimized
           />
         )}
       </div>

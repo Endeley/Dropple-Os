@@ -286,8 +286,7 @@ export default function Toolbar({
       <button
         disabled={!hasNodes}
         onClick={() => {
-          if (!runExportGate()) return;
-          exportJSON({ nodes, events, cursor });
+          runExportGate({ onProceed: () => exportJSON({ nodes, events, cursor }) });
         }}
         title="Export JSON"
         style={{
@@ -306,8 +305,7 @@ export default function Toolbar({
       <button
         disabled={!hasNodes}
         onClick={() => {
-          if (!runExportGate()) return;
-          exportSVG({ nodes });
+          runExportGate({ onProceed: () => exportSVG({ nodes }) });
         }}
         title="Export SVG"
         style={{
@@ -326,8 +324,7 @@ export default function Toolbar({
       <button
         disabled={!hasNodes}
         onClick={() => {
-          if (!runExportGate()) return;
-          exportPNG({ nodes, scale: 2 });
+          runExportGate({ onProceed: () => exportPNG({ nodes, scale: 2 }) });
         }}
         title="Export PNG"
         style={{

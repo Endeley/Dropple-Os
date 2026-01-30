@@ -1,9 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ModeRegistry } from '@/workspaces/modes/ModeRegistry';
 import { WorkspaceLayout } from './WorkspaceLayout';
-import { MessageBus } from '@/runtime/MessageBus';
 import { GridProvider } from './GridContext';
 import { ClipboardProvider } from './ClipboardContext';
 import { applyAutoLayoutIfNeeded } from './useAutoLayoutCommit';
@@ -51,8 +50,7 @@ export function EditorWorkspaceShell({
     const [documentName, setDocumentName] = useState('Untitled');
     const [recentDocs, setRecentDocs] = useState(() => loadRegistry());
     const skipAutoLayoutOnce = useRef(initialEvents.length > 0);
-    const bus = useMemo(() => new MessageBus({ runId: 'design-run' }), []);
-    const emit = useCallback((event) => bus.emit(event), [bus]);
+    const emit = useCallback((event) => canvasBus.emit(event), []);
     const saveTimerRef = useRef(null);
     const editGroupRef = useRef({ id: null });
 
@@ -109,7 +107,7 @@ export function EditorWorkspaceShell({
     /* ---------------- event subscription ---------------- */
 
     useEffect(() => {
-        return bus.subscribe((event) => {
+        return canvasBus.subscribe((event) => {
             setEvents((prev) => {
                 const groupId = editGroupRef.current.id;
                 const nextEvent = groupId ? { ...event, groupId } : event;
@@ -118,7 +116,7 @@ export function EditorWorkspaceShell({
                 return next;
             });
         });
-    }, [bus]);
+    }, []);
 
     /* ---------------- snapshot / persistence ---------------- */
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CanvasHost from './CanvasHost.jsx';
 import NodeLayer from './NodeLayer.jsx';
 import GhostLayer from './GhostLayer.jsx';
@@ -166,7 +166,7 @@ export default function CanvasRoot({ workspaceId }) {
         setNearestSnapshot(nearest, cursorWorld);
     }, [nearest, cursorWorld]);
 
-    const scheduleObserver = () => {
+    const scheduleObserver = useCallback(() => {
         if (process.env.NODE_ENV !== 'development') return;
         if (observerFrameRef.current) return;
         observerFrameRef.current = requestAnimationFrame(() => {
@@ -196,9 +196,9 @@ export default function CanvasRoot({ workspaceId }) {
             console.debug('[Observer]', frozenOutput);
             console.debug('[Suggestions]', frozenSuggestions);
         });
-    };
+    }, [setSuggestions]);
 
-    const flushObserver = () => {
+    const flushObserver = useCallback(() => {
         if (process.env.NODE_ENV !== 'development') return;
         if (observerFrameRef.current) {
             cancelAnimationFrame(observerFrameRef.current);
@@ -228,7 +228,7 @@ export default function CanvasRoot({ workspaceId }) {
         setSuggestions(frozenSuggestions);
         console.debug('[Observer]', frozenOutput);
         console.debug('[Suggestions]', frozenSuggestions);
-    };
+    }, [setSuggestions]);
 
     useEffect(() => {
         function onSessionStart(payload) {
@@ -268,7 +268,7 @@ export default function CanvasRoot({ workspaceId }) {
             canvasBus.off('session.commit', onSessionEnd);
             canvasBus.off('session.cancel', onSessionEnd);
         };
-    }, []);
+    }, [flushObserver]);
 
     useEffect(() => {
         if (process.env.NODE_ENV !== 'development') return;
@@ -396,6 +396,7 @@ export default function CanvasRoot({ workspaceId }) {
         interaction,
         nearest,
         snapCandidates,
+        scheduleObserver,
     ]);
 
     useEffect(() => {
@@ -429,7 +430,7 @@ export default function CanvasRoot({ workspaceId }) {
             };
         }
         setValidationIssues(frozenIssues);
-    }, [workspace?.profile, worldNodes, viewport, viewportBounds, zoomTier]);
+    }, [workspace?.profile, worldNodes, viewport, viewportBounds, zoomTier, setValidationIssues]);
 
     useEffect(
         () => () => {

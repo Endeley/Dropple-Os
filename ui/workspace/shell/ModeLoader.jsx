@@ -9,6 +9,11 @@ export function ModeLoader({ mode }) {
   const key = (mode || "").toLowerCase();
   const workspace = WorkspaceRegistry[key];
 
+  useEffect(() => {
+    if (!workspace?.id) return;
+    setActiveWorkspace(workspace.id, workspace);
+  }, [workspace]);
+
   if (!workspace) {
     const available = Object.keys(WorkspaceRegistry);
     return (
@@ -18,11 +23,6 @@ export function ModeLoader({ mode }) {
       </div>
     );
   }
-
-  useEffect(() => {
-    if (!workspace?.id) return;
-    setActiveWorkspace(workspace.id, workspace);
-  }, [workspace]);
 
   return <WorkspaceShell workspace={workspace} />;
 }

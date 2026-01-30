@@ -1,5 +1,6 @@
 import { colors, spacing } from '@/ui/tokens';
 import { ValidationIssueRow } from './ValidationIssueRow';
+import { EXPORT_GATE_STATUS } from '@/export/exportGateStatus';
 
 function SectionHeader({ title }) {
   return (
@@ -17,12 +18,12 @@ function SectionHeader({ title }) {
   );
 }
 
-export function SheetIssues({ blockingIssues = [], warnings = [], status }) {
-  const showBlocking = status === 'block' && blockingIssues.length > 0;
+export function SheetIssues({ blockingIssues: criticalIssues = [], warnings = [], status }) {
+  const showCritical = status === EXPORT_GATE_STATUS.HALT && criticalIssues.length > 0;
   const showWarnings = warnings.length > 0;
-  const showNoBlockingNotice = status === 'warn' && blockingIssues.length === 0;
+  const showNoCriticalNotice = status === EXPORT_GATE_STATUS.WARN && criticalIssues.length === 0;
 
-  if (!showBlocking && !showWarnings) {
+  if (!showCritical && !showWarnings) {
     return (
       <div
         style={{
@@ -32,9 +33,9 @@ export function SheetIssues({ blockingIssues = [], warnings = [], status }) {
           borderBottom: `1px solid ${colors.border}`,
         }}
       >
-        <SectionHeader title="Blocking issues" />
+        <SectionHeader title="Critical issues" />
         <div style={{ fontSize: 12, color: colors.textMuted }}>
-          No blocking issues or warnings.
+          No critical issues or warnings.
         </div>
       </div>
     );
@@ -49,29 +50,29 @@ export function SheetIssues({ blockingIssues = [], warnings = [], status }) {
         borderBottom: `1px solid ${colors.border}`,
       }}
     >
-      {showBlocking && (
+      {showCritical && (
         <div style={{ display: 'grid', gap: spacing.sm }}>
-          <SectionHeader title="Blocking issues" />
+          <SectionHeader title="Critical issues" />
           <div style={{ fontSize: 12, color: colors.textMuted }}>
-            These issues must be resolved before export.
+            Resolve these issues before export.
           </div>
           <div style={{ display: 'grid', gap: spacing.sm }}>
-            {blockingIssues.map((issue) => (
+            {criticalIssues.map((issue) => (
               <ValidationIssueRow key={issue.id || issue.message} issue={issue} />
             ))}
           </div>
         </div>
       )}
-      {showNoBlockingNotice && (
+      {showNoCriticalNotice && (
         <div style={{ fontSize: 12, color: colors.textMuted }}>
-          No blocking issues detected.
+          No critical issues detected.
         </div>
       )}
       {showWarnings && (
         <div style={{ display: 'grid', gap: spacing.sm }}>
           <SectionHeader title="Warnings" />
           <div style={{ fontSize: 12, color: colors.textMuted }}>
-            Warnings won't prevent export, but may affect quality.
+            Warnings may affect quality.
           </div>
           <div style={{ display: 'grid', gap: spacing.sm }}>
             {warnings.map((issue) => (

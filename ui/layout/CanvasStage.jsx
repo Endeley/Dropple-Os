@@ -211,9 +211,9 @@ export default function CanvasStage({
         { key: 'distribute-x', label: 'Distribute Horizontally', disabled: !enabled, onClick: () => CapabilityActions.distributeX(selected, emit) },
         { key: 'distribute-y', label: 'Distribute Vertically', disabled: !enabled, onClick: () => CapabilityActions.distributeY(selected, emit) },
         { type: 'separator' },
-        { key: 'export-json', label: 'Export JSON', disabled: !hasNodes, onClick: () => { if (!runExportGate()) return; exportJSON({ nodes: state.nodes, events, cursor }); } },
-        { key: 'export-svg', label: 'Export SVG', disabled: !hasNodes, onClick: () => { if (!runExportGate()) return; exportSVG({ nodes: state.nodes }); } },
-        { key: 'export-png', label: 'Export PNG', disabled: !hasNodes, onClick: () => { if (!runExportGate()) return; exportPNG({ nodes: state.nodes, scale: 2 }); } },
+        { key: 'export-json', label: 'Export JSON', disabled: !hasNodes, onClick: () => runExportGate({ onProceed: () => exportJSON({ nodes: state.nodes, events, cursor }) }) },
+        { key: 'export-svg', label: 'Export SVG', disabled: !hasNodes, onClick: () => runExportGate({ onProceed: () => exportSVG({ nodes: state.nodes }) }) },
+        { key: 'export-png', label: 'Export PNG', disabled: !hasNodes, onClick: () => runExportGate({ onProceed: () => exportPNG({ nodes: state.nodes, scale: 2 }) }) },
         ...(canShowImport
           ? [
               { type: 'separator' },

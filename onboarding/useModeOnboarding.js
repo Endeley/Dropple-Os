@@ -14,14 +14,21 @@ export function useModeOnboarding(mode) {
     const hint = MODE_HINTS[mode];
     if (!hint) return;
 
-    setText(hint);
+    let showTimer = null;
+    let hideTimer = null;
 
-    const t = setTimeout(() => {
-      setText(null);
-      markSeen(mode);
-    }, 2500);
+    showTimer = setTimeout(() => {
+      setText(hint);
+      hideTimer = setTimeout(() => {
+        setText(null);
+        markSeen(mode);
+      }, 2500);
+    }, 0);
 
-    return () => clearTimeout(t);
+    return () => {
+      if (showTimer) clearTimeout(showTimer);
+      if (hideTimer) clearTimeout(hideTimer);
+    };
   }, [mode]);
 
   useEffect(() => {

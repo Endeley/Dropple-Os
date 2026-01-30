@@ -10,8 +10,8 @@ import { projectRectToViewport } from '@/canvas/transform/projectRectToViewport.
  */
 export function GhostNode({ nodeId, delta }) {
   const node = useAnimatedRuntimeStore((s) => s.nodes[nodeId]);
-  if (!node) return null;
   const viewport = useWorkspaceState((state) => state.viewport);
+  if (!node) return null;
   const rect = projectRectToViewport(
     {
       x: (node.x ?? 0) + (delta?.x ?? 0),

@@ -1,14 +1,15 @@
 import { colors, spacing } from '@/ui/tokens';
+import { EXPORT_GATE_STATUS } from '@/export/exportGateStatus';
 
 const STATUS_STYLES = {
-  block: {
-    label: 'Blocked',
+  [EXPORT_GATE_STATUS.HALT]: {
+    label: 'Action required',
     bg: '#FEF2F2',
     border: '#FECACA',
     text: '#991B1B',
-    subtitle: "Export can't proceed due to UX errors.",
+    subtitle: "Export can't continue due to UX issues.",
   },
-  warn: {
+  [EXPORT_GATE_STATUS.WARN]: {
     label: 'Warnings present',
     bg: '#FFFBEB',
     border: '#FDE68A',

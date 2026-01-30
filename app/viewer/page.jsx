@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import CanvasStage from '@/ui/layout/CanvasStage';
 import TimelineBar from '@/ui/layout/TimelineBar';
 import { SelectionProvider } from '@/ui/workspace/shared/SelectionContext';
@@ -24,21 +24,20 @@ function decodeSnapshot(payload) {
 }
 
 export default function ViewerPage() {
-  const [events, setEvents] = useState([]);
-  const [cursorIndex, setCursorIndex] = useState(-1);
-  const params = parseViewerParams();
-  const controls = useViewerControls(params);
-
-  useEffect(() => {
+  const initialSnapshot = useMemo(() => {
+    if (typeof window === 'undefined') return null;
     const hash = window.location.hash.slice(1);
     const [payload] = hash.split('?');
-    const snapshot = decodeSnapshot(payload);
-    if (!snapshot) return;
-    setEvents(snapshot.events || []);
-    const maxIndex = (snapshot.events || []).length - 1;
-    const nextCursor = Math.max(-1, Math.min(maxIndex, snapshot.cursorIndex ?? -1));
-    setCursorIndex(nextCursor);
+    return decodeSnapshot(payload);
   }, []);
+  const [events] = useState(() => initialSnapshot?.events || []);
+  const [cursorIndex, setCursorIndex] = useState(() => {
+    const list = initialSnapshot?.events || [];
+    const maxIndex = list.length - 1;
+    return Math.max(-1, Math.min(maxIndex, initialSnapshot?.cursorIndex ?? -1));
+  });
+  const params = parseViewerParams();
+  const controls = useViewerControls(params);
 
   const adapter = useMemo(
     () => ({

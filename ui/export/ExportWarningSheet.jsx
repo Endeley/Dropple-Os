@@ -8,10 +8,9 @@ import { SheetIssues } from './SheetIssues';
 import { SheetFooter } from './SheetFooter';
 
 export function ExportWarningSheet({ result, open, onCancel, onProceed }) {
-  if (!result) return null;
-
   useEffect(() => {
     if (!open) return undefined;
+    if (!result) return undefined;
 
     function handleKeydown(event) {
       if (event.key !== 'Escape') return;
@@ -31,7 +30,9 @@ export function ExportWarningSheet({ result, open, onCancel, onProceed }) {
 
     window.addEventListener('keydown', handleKeydown);
     return () => window.removeEventListener('keydown', handleKeydown);
-  }, [open, onCancel]);
+  }, [open, onCancel, result]);
+
+  if (!result) return null;
 
   return (
     <Sheet open={open} side="right" width={400}>

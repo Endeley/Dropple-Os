@@ -6,8 +6,8 @@ import { projectRectToViewport } from '@/canvas/transform/projectRectToViewport.
 
 export function SelectionOutline({ nodeId, color = 'rgba(59,130,246,0.6)' }) {
     const node = useAnimatedRuntimeStore((s) => s.nodes[nodeId]);
-    if (!node) return null;
     const viewport = useWorkspaceState((state) => state.viewport);
+    if (!node) return null;
     const rect = projectRectToViewport(
         {
             x: node.x ?? 0,

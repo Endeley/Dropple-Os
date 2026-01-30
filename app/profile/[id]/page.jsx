@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useMemo } from 'react';
 import { getCreator } from '@/profiles/creatorStore';
 import { loadGallery } from '@/gallery/galleryStore';
@@ -21,10 +22,13 @@ export default function ProfilePage({ params }) {
       <header style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
           {creator.avatar && (
-            <img
+            <Image
               src={creator.avatar}
               alt={creator.name}
-              style={{ width: 64, height: 64, borderRadius: '50%' }}
+              width={64}
+              height={64}
+              style={{ borderRadius: '50%' }}
+              unoptimized
             />
           )}
           <div>
@@ -65,12 +69,22 @@ export default function ProfilePage({ params }) {
                 padding: 12,
               }}
             >
-              <div style={{ height: 140, marginBottom: 8, overflow: 'hidden' }}>
+              <div
+                style={{
+                  height: 140,
+                  marginBottom: 8,
+                  overflow: 'hidden',
+                  position: 'relative',
+                }}
+              >
                 {item.thumbnail && (
-                  <img
+                  <Image
                     src={item.thumbnail}
                     alt={item.title}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 240px"
+                    style={{ objectFit: 'cover' }}
+                    unoptimized
                   />
                 )}
               </div>
