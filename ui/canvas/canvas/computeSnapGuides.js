@@ -1,13 +1,36 @@
 import { SNAP_THRESHOLD } from './snapConfig';
 
+const GUIDE_PRIORITY = {
+    center: 3,
+    spacing: 2,
+    edge: 1,
+};
+
+const ALLOWED_KINDS_BY_TIER = {
+    far: new Set([]),
+    overview: new Set(['center']),
+    normal: new Set(['center', 'spacing']),
+    detail: new Set(['center', 'spacing', 'edge']),
+    micro: new Set(['center', 'spacing', 'edge']),
+};
+
 /**
  * Read-only snap guide detection (visual only).
  * World-space only. No snapping, no mutation.
  */
-export function computeSnapGuides({ movingNode, nodes }) {
+export function computeSnapGuides({ movingNode, nodes, zoomTier }) {
     if (!movingNode) return [];
 
     const guides = [];
+    const SPACING_EPSILON = 6;
+    const parentId = movingNode.parentId ?? null;
+    const parentNode = parentId ? nodes[parentId] : null;
+    const isFrameScoped = parentNode?.type === 'frame';
+    const candidateNodes = isFrameScoped
+        ? Object.values(nodes).filter(
+              (node) => node.parentId === parentId && node.id !== movingNode.id
+          )
+        : Object.values(nodes).filter((node) => node.id !== movingNode.id);
 
     const mx = movingNode.x;
     const my = movingNode.y;
@@ -23,8 +46,7 @@ export function computeSnapGuides({ movingNode, nodes }) {
         cy: my + mh / 2,
     };
 
-    for (const node of Object.values(nodes)) {
-        if (node.id === movingNode.id) continue;
+    for (const node of candidateNodes) {
 
         const l = node.layout.x;
         const t = node.layout.y;
@@ -55,26 +77,56 @@ export function computeSnapGuides({ movingNode, nodes }) {
         checkY(m.cy, s.cy, 'center', l, l + w);
     }
 
+    const siblingPool = candidateNodes;
+    const sameParent =
+        movingNode.parentId != null
+            ? siblingPool.filter((node) => node.parentId === movingNode.parentId)
+            : [];
+    const spacingCandidates = sameParent.length ? sameParent : siblingPool;
+
+    guides.push(
+        ...computeSpacingGuides({
+            moving: movingNode,
+            siblings: spacingCandidates,
+            axis: 'x',
+            epsilon: SPACING_EPSILON,
+        })
+    );
+    guides.push(
+        ...computeSpacingGuides({
+            moving: movingNode,
+            siblings: spacingCandidates,
+            axis: 'y',
+            epsilon: SPACING_EPSILON,
+        })
+    );
+
     function checkX(a, b, kind, from, to) {
         if (Math.abs(a - b) <= SNAP_THRESHOLD) {
+            const distance = Math.abs(a - b);
             pushUnique({
                 axis: 'x',
                 value: b,
                 from,
                 to,
                 kind,
+                _priority: GUIDE_PRIORITY[kind] || 0,
+                _distance: distance,
             });
         }
     }
 
     function checkY(a, b, kind, from, to) {
         if (Math.abs(a - b) <= SNAP_THRESHOLD) {
+            const distance = Math.abs(a - b);
             pushUnique({
                 axis: 'y',
                 value: b,
                 from,
                 to,
                 kind,
+                _priority: GUIDE_PRIORITY[kind] || 0,
+                _distance: distance,
             });
         }
     }
@@ -84,5 +136,108 @@ export function computeSnapGuides({ movingNode, nodes }) {
         if (!exists) guides.push(guide);
     }
 
+    const prioritized = applyGuidePriority(guides);
+    return applyZoomTierSuppression(prioritized, zoomTier);
+}
+
+function computeSpacingGuides({ moving, siblings, axis, epsilon }) {
+    if (!moving || !siblings || siblings.length < 2) return [];
+
+    const guides = [];
+    const getMin = (n) => (axis === 'x' ? n.layout.x : n.layout.y);
+    const getMax = (n) =>
+        axis === 'x'
+            ? n.layout.x + n.layout.width
+            : n.layout.y + n.layout.height;
+
+    const mMin = axis === 'x' ? moving.x : moving.y;
+    const mMax =
+        axis === 'x'
+            ? moving.x + moving.width
+            : moving.y + moving.height;
+
+    const ordered = siblings
+        .filter((n) => n?.layout)
+        .sort((a, b) => getMin(a) - getMin(b));
+
+    let prev = null;
+    let next = null;
+
+    for (const n of ordered) {
+        if (getMax(n) <= mMin) prev = n;
+        if (!next && getMin(n) >= mMax) next = n;
+    }
+
+    if (!prev || !next) return [];
+
+    const gapPrev = mMin - getMax(prev);
+    const gapNext = getMin(next) - mMax;
+
+    if (gapPrev < 0 || gapNext < 0) return [];
+
+    if (Math.abs(gapPrev - gapNext) <= epsilon) {
+        const gapCenter = (getMax(prev) + getMin(next)) / 2;
+        const from =
+            axis === 'x'
+                ? Math.min(prev.layout.y, moving.y, next.layout.y)
+                : Math.min(prev.layout.x, moving.x, next.layout.x);
+        const to =
+            axis === 'x'
+                ? Math.max(
+                      prev.layout.y + prev.layout.height,
+                      moving.y + moving.height,
+                      next.layout.y + next.layout.height
+                  )
+                : Math.max(
+                      prev.layout.x + prev.layout.width,
+                      moving.x + moving.width,
+                      next.layout.x + next.layout.width
+                  );
+
+        guides.push({
+            axis,
+            kind: 'spacing',
+            value: gapCenter,
+            from,
+            to,
+            gap: Math.round((gapPrev + gapNext) / 2),
+            _priority: GUIDE_PRIORITY.spacing,
+            _distance: Math.abs(gapPrev - gapNext),
+        });
+    }
+
     return guides;
+}
+
+function applyGuidePriority(guides) {
+    const byAxis = { x: [], y: [] };
+    for (const guide of guides) {
+        if (guide?.axis === 'x' || guide?.axis === 'y') {
+            byAxis[guide.axis].push(guide);
+        }
+    }
+
+    const result = [];
+    for (const axis of ['x', 'y']) {
+        if (!byAxis[axis].length) continue;
+        const sorted = byAxis[axis].sort((a, b) => {
+            if (b._priority !== a._priority) {
+                return b._priority - a._priority;
+            }
+            return (a._distance ?? 0) - (b._distance ?? 0);
+        });
+        result.push(stripInternal(sorted[0]));
+    }
+    return result;
+}
+
+function stripInternal(guide) {
+    const { _priority, _distance, ...clean } = guide;
+    return clean;
+}
+
+function applyZoomTierSuppression(guides, zoomTier) {
+    const allowed = ALLOWED_KINDS_BY_TIER[zoomTier];
+    if (!allowed || allowed.size === 0) return [];
+    return guides.filter((guide) => allowed.has(guide.kind));
 }

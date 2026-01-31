@@ -1,46 +1,47 @@
 'use client';
 
-import { forwardRef } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { canvasBus } from '@/ui/canvasBus.js';
 
-const CanvasHost = forwardRef(function CanvasHost(
-    { children, onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onWheel },
-    ref
-) {
-    const handlePointerDown = (e) => {
-        onPointerDown?.(e);
-    };
+const CanvasHost = forwardRef(function CanvasHost({ children, onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onWheel }, ref) {
+    const localRef = useRef(null);
+    useImperativeHandle(ref, () => localRef.current);
 
-    const handlePointerMove = (e) => {
-        onPointerMove?.(e);
-        canvasBus.emit('pointer.move', e);
-    };
+    useEffect(() => {
+        const target = localRef.current;
+        if (!target || !onWheel) return;
 
-    const handlePointerUp = (e) => {
-        onPointerUp?.(e);
-        canvasBus.emit('pointer.up', e);
-    };
+        const handleWheel = (e) => {
+            onWheel(e);
+        };
 
-    const handlePointerCancel = (e) => {
-        onPointerCancel?.(e);
-        canvasBus.emit('pointer.cancel', e);
-    };
-
-    const handleWheel = (e) => {
-        onWheel?.(e);
-    };
+        target.addEventListener('wheel', handleWheel, { passive: false });
+        return () => target.removeEventListener('wheel', handleWheel);
+    }, [onWheel]);
 
     return (
         <div
-            ref={ref}
-            className='relative w-full h-full overflow-hidden touch-none'
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerCancel}
-            onWheel={handleWheel}
-            style={{ position: 'relative', width: '100%', height: '100%' }}
-        >
+            ref={localRef}
+            onPointerDown={onPointerDown}
+            onPointerMove={(e) => {
+                onPointerMove?.(e);
+                canvasBus.emit('pointer.move', e);
+            }}
+            onPointerUp={(e) => {
+                onPointerUp?.(e);
+                canvasBus.emit('pointer.up', e);
+            }}
+            onPointerCancel={(e) => {
+                onPointerCancel?.(e);
+                canvasBus.emit('pointer.cancel', e);
+            }}
+            style={{
+                position: 'relative',
+                width: '100%',
+                height: '100%',
+                overflow: 'hidden', // 🔒 CRITICAL
+                touchAction: 'none',
+            }}>
             {children}
         </div>
     );

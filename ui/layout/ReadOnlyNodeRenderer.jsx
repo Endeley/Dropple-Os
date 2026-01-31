@@ -19,6 +19,7 @@ import {
 } from '@/ui/layout/computeReorderIndex';
 import { colors, motion } from '@/ui/tokens';
 import { canvasBus } from '@/ui/canvasBus';
+import { getZoomTier } from '@/ui/canvas/zoomTiers';
 
 export default function ReadOnlyNodeRenderer({
   nodes,
@@ -38,6 +39,7 @@ export default function ReadOnlyNodeRenderer({
   const isEducationReadOnly =
     modeId === 'education' && (educationReadOnly || educationRole !== 'teacher');
   const isReadOnly = readOnly || modeId === 'review' || isEducationReadOnly;
+  const zoomTier = getZoomTier(viewport?.scale ?? 1);
 
   const dragRef = useRef({
     dragging: false,
@@ -249,7 +251,7 @@ export default function ReadOnlyNodeRenderer({
         const nextGuides = computeSnapGuides({
           movingNode: moving,
           nodes,
-          viewport,
+          zoomTier,
         });
 
         setGuides(nextGuides);
@@ -348,7 +350,7 @@ export default function ReadOnlyNodeRenderer({
           height: nextHeight,
         },
         nodes,
-        viewport,
+        zoomTier,
       });
       setGuides(nextGuides);
     }

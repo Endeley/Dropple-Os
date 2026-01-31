@@ -21,6 +21,8 @@ export default function CanvasSnapGuides({ guides }) {
                     const x = projectToViewport({ x: guide.value, y: 0 }, viewport).x;
                     const y1 = projectToViewport({ x: 0, y: guide.from }, viewport).y;
                     const y2 = projectToViewport({ x: 0, y: guide.to }, viewport).y;
+                    const dashed = guide.kind === 'center' || guide.kind === 'spacing';
+                    const opacity = guide.kind === 'spacing' ? 0.5 : 0.8;
 
                     return (
                         <div
@@ -31,9 +33,9 @@ export default function CanvasSnapGuides({ guides }) {
                                 top: Math.min(y1, y2),
                                 height: Math.abs(y2 - y1),
                                 width: 1,
-                                background: 'rgba(59,130,246,0.8)',
+                                background: `rgba(59,130,246,${opacity})`,
                                 pointerEvents: 'none',
-                                borderLeft: guide.kind === 'center' ? '1px dashed rgba(59,130,246,0.8)' : undefined,
+                                borderLeft: dashed ? `1px dashed rgba(59,130,246,${opacity})` : undefined,
                             }}
                         />
                     );
@@ -43,6 +45,8 @@ export default function CanvasSnapGuides({ guides }) {
                     const y = projectToViewport({ x: 0, y: guide.value }, viewport).y;
                     const x1 = projectToViewport({ x: guide.from, y: 0 }, viewport).x;
                     const x2 = projectToViewport({ x: guide.to, y: 0 }, viewport).x;
+                    const dashed = guide.kind === 'center' || guide.kind === 'spacing';
+                    const opacity = guide.kind === 'spacing' ? 0.5 : 0.8;
 
                     return (
                         <div
@@ -53,9 +57,9 @@ export default function CanvasSnapGuides({ guides }) {
                                 left: Math.min(x1, x2),
                                 width: Math.abs(x2 - x1),
                                 height: 1,
-                                background: 'rgba(59,130,246,0.8)',
+                                background: `rgba(59,130,246,${opacity})`,
                                 pointerEvents: 'none',
-                                borderTop: guide.kind === 'center' ? '1px dashed rgba(59,130,246,0.8)' : undefined,
+                                borderTop: dashed ? `1px dashed rgba(59,130,246,${opacity})` : undefined,
                             }}
                         />
                     );
