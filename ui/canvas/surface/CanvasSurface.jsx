@@ -21,7 +21,8 @@ const MAX_SPACING_PX = 260;
 
 // Overscan keeps the surface infinite-feeling
 const OVERSCAN_MIN = 1500;
-const OVERSCAN_MAX = 9000;
+const OVERSCAN_MAX = 60000;
+const MAJOR_FACTOR = 4;
 
 export function CanvasSurface({ surface, viewport }) {
     if (!surface || surface.type === 'smooth') return null;
@@ -56,8 +57,9 @@ export function CanvasSurface({ surface, viewport }) {
     const width = `calc(100% + ${overscan * 2}px)`;
     const height = `calc(100% + ${overscan * 2}px)`;
 
-    const gridAlpha = smoothstep(14, 28, spacing);
-    const dotOpacity = baseDotOpacity * (1 - gridAlpha * 0.6);
+    const minorAlpha = smoothstep(14, 28, spacing);
+    const majorAlpha = smoothstep(24, 48, spacing);
+    const dotOpacity = baseDotOpacity * (1 - minorAlpha * 0.5);
 
     const baseStyle = (layerOpacity, opacity) => ({
         position: 'absolute',
@@ -106,7 +108,7 @@ export function CanvasSurface({ surface, viewport }) {
         );
     }
 
-    function renderGridLines(spacingPx, alpha) {
+    function renderMinorGrid(spacingPx, alpha) {
         return (
             <div
                 aria-hidden
@@ -117,7 +119,7 @@ export function CanvasSurface({ surface, viewport }) {
                     width,
                     height,
                     pointerEvents: 'none',
-                    opacity: alpha * 0.35,
+                    opacity: alpha * 0.25,
                     backgroundImage: `
                         linear-gradient(
                             to right,
@@ -137,6 +139,39 @@ export function CanvasSurface({ surface, viewport }) {
         );
     }
 
+    function renderMajorGrid(spacingPx, alpha) {
+        const majorSpacing = spacingPx * MAJOR_FACTOR;
+
+        return (
+            <div
+                aria-hidden
+                style={{
+                    position: 'absolute',
+                    left: -overscan,
+                    top: -overscan,
+                    width,
+                    height,
+                    pointerEvents: 'none',
+                    opacity: alpha * 0.45,
+                    backgroundImage: `
+                        linear-gradient(
+                            to right,
+                            rgba(148,163,184,1) 2px,
+                            transparent 2px
+                        ),
+                        linear-gradient(
+                            to bottom,
+                            rgba(148,163,184,1) 2px,
+                            transparent 2px
+                        )
+                    `,
+                    backgroundSize: `${majorSpacing}px ${majorSpacing}px`,
+                    backgroundPosition: `${snapPx(-x * scale)}px ${snapPx(-y * scale)}px`,
+                }}
+            />
+        );
+    }
+
     return (
         <>
             {surface.type === 'dots' && (
@@ -147,8 +182,11 @@ export function CanvasSurface({ surface, viewport }) {
                     {/* Secondary layer (fade early to avoid double dots) */}
                     {next && t > 0.15 && renderDots(nextSpacing, t * 0.85)}
 
-                    {/* Grid lines (precision layer) */}
-                    {gridAlpha > 0.02 && renderGridLines(spacing, gridAlpha)}
+                    {/* Minor grid */}
+                    {minorAlpha > 0.02 && renderMinorGrid(spacing, minorAlpha)}
+
+                    {/* Major grid */}
+                    {majorAlpha > 0.02 && renderMajorGrid(spacing, majorAlpha)}
                 </>
             )}
 
