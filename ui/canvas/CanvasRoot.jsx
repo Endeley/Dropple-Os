@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import CanvasHost from './CanvasHost.jsx';
 import NodeLayer from './NodeLayer.jsx';
 import GhostLayer from './GhostLayer.jsx';
@@ -21,6 +21,7 @@ import { screenToWorld } from '@/canvas/transform/screenToWorld.js';
 import { getWorkspaceState, setViewport } from '@/runtime/state/workspaceState.js';
 import { getZoomTier } from '@/ui/canvas/zoomTiers.js';
 import { CanvasProvider } from '@/ui/canvas/CanvasContext.jsx';
+import { canvasBus } from '@/ui/canvasBus.js';
 
 /** 🔑 Prevent floating-point collapse */
 const MIN_EFFECTIVE_ZOOM = 0.0005;
@@ -44,7 +45,8 @@ export default function CanvasRoot({ workspaceId }) {
     const panRef = useRef({ active: false, x: 0, y: 0 });
 
     const [worldOffset, setWorldOffset] = useState({ x: 0, y: 0 });
-    const [isDragging, setIsDragging] = useState(false);
+    const [isPanning, setIsPanning] = useState(false);
+    const [isNodeDragging, setIsNodeDragging] = useState(false);
     const [cursorWorld, setCursorWorld] = useState(null);
 
     const allowPan = canvasPolicy?.allowPan ?? true;
@@ -86,7 +88,7 @@ export default function CanvasRoot({ workspaceId }) {
             y: e.clientY,
         };
 
-        setIsDragging(true);
+        setIsPanning(true);
         e.currentTarget.setPointerCapture?.(e.pointerId);
     }
 
@@ -128,9 +130,28 @@ export default function CanvasRoot({ workspaceId }) {
 
     function handlePointerUp(e) {
         panRef.current.active = false;
-        setIsDragging(false);
+        setIsPanning(false);
         e.currentTarget.releasePointerCapture?.(e.pointerId);
     }
+
+    useEffect(() => {
+        const start = (payload) => {
+            if (payload?.sessionType === 'move' || payload?.sessionType === 'resize') {
+                setIsNodeDragging(true);
+            }
+        };
+        const end = () => setIsNodeDragging(false);
+
+        canvasBus.on('session.start', start);
+        canvasBus.on('session.commit', end);
+        canvasBus.on('session.cancel', end);
+
+        return () => {
+            canvasBus.off('session.start', start);
+            canvasBus.off('session.commit', end);
+            canvasBus.off('session.cancel', end);
+        };
+    }, []);
 
     function handleWheel(e) {
         if (!allowZoom || !viewport) return;
@@ -175,7 +196,7 @@ export default function CanvasRoot({ workspaceId }) {
                     <CanvasSurface
                         surface={canvasSurface}
                         viewport={viewport}
-                        isDragging={isDragging}
+                        emphasisMode={isNodeDragging ? 'drag' : isPanning ? 'pan' : 'none'}
                     />
                     {canvasPolicy?.type === 'infinite' && <CanvasOriginMarker />}
                     <NodeLayer />
