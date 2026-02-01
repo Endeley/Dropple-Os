@@ -3,10 +3,19 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { canvasBus } from '@/ui/canvasBus.js';
 
-const CanvasHost = forwardRef(function CanvasHost({ children, onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onWheel }, ref) {
+/**
+ * CanvasHost
+ *
+ * Screen-space container + infinite world transform.
+ * Viewport stays fullscreen.
+ * World stays fullscreen.
+ * Only transform moves.
+ */
+const CanvasHost = forwardRef(function CanvasHost({ children, viewport, worldOffset, onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onWheel }, ref) {
     const localRef = useRef(null);
     useImperativeHandle(ref, () => localRef.current);
 
+    // Wheel handling
     useEffect(() => {
         const target = localRef.current;
         if (!target || !onWheel) return;
@@ -18,6 +27,10 @@ const CanvasHost = forwardRef(function CanvasHost({ children, onPointerDown, onP
         target.addEventListener('wheel', handleWheel, { passive: false });
         return () => target.removeEventListener('wheel', handleWheel);
     }, [onWheel]);
+
+    const tx = viewport ? -(viewport.x + (worldOffset?.x ?? 0)) : 0;
+    const ty = viewport ? -(viewport.y + (worldOffset?.y ?? 0)) : 0;
+    const scale = viewport?.scale ?? 1;
 
     return (
         <div
@@ -39,10 +52,20 @@ const CanvasHost = forwardRef(function CanvasHost({ children, onPointerDown, onP
                 position: 'relative',
                 width: '100%',
                 height: '100%',
-                overflow: 'hidden', // 🔒 CRITICAL
+                overflow: 'hidden', // 🔒 clip world
                 touchAction: 'none',
             }}>
-            {children}
+            {/* 🌍 WORLD — FULLSCREEN, TRANSFORMED */}
+            <div
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    transform: `translate(${tx}px, ${ty}px) scale(${scale})`,
+                    transformOrigin: '0 0',
+                    willChange: 'transform',
+                }}>
+                {children}
+            </div>
         </div>
     );
 });
