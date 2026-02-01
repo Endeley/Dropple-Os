@@ -16,10 +16,16 @@ import { perfStart, perfEnd } from '@/perf/perfTracker.js';
 import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
 import { CanvasSurface } from '@/ui/canvas/surface/CanvasSurface.jsx';
 import { CanvasOriginMarker } from '@/ui/canvas/CanvasOriginMarker.jsx';
+import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
+import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useSelectionStore } from '@/selection/useSelectionStore.js';
 import { screenToWorld } from '@/canvas/transform/screenToWorld.js';
-import { setViewport, getWorkspaceState } from '@/runtime/state/workspaceState.js';
+import { getWorkspaceState, setViewport } from '@/runtime/state/workspaceState.js';
 import { getZoomTier } from '@/ui/canvas/zoomTiers.js';
 import { CanvasProvider } from '@/ui/canvas/CanvasContext.jsx';
+
+/** 🔑 Prevent floating-point collapse */
+const MIN_EFFECTIVE_ZOOM = 0.0005;
 
 export default function CanvasRoot({ workspaceId }) {
     perfStart('canvas.render');
@@ -33,12 +39,20 @@ export default function CanvasRoot({ workspaceId }) {
     const canvasSurface = useWorkspaceState((s) => s.canvasSurface);
     const canvasPolicy = useWorkspaceState((s) => s.canvasPolicy);
 
+    const nodes = useAnimatedRuntimeStore((s) => s.nodes);
+    const runtimeNodes = useRuntimeStore((s) => s.nodes);
+
+    const setSelectedIds = useSelectionStore((s) => s.setSelectedIds);
+    const clearSelection = useSelectionStore((s) => s.clearSelection);
+
     const containerRef = useRef(null);
     const panRef = useRef({ active: false, x: 0, y: 0 });
+
     const [cursorWorld, setCursorWorld] = useState(null);
 
     const allowPan = canvasPolicy?.allowPan ?? true;
     const allowZoom = canvasPolicy?.allowZoom ?? true;
+
     const minZoom = canvasPolicy?.minZoom ?? 0.002;
     const maxZoom = canvasPolicy?.maxZoom ?? 8;
 
@@ -52,7 +66,11 @@ export default function CanvasRoot({ workspaceId }) {
 
     function handlePointerDown(e) {
         if (allowPan && e.button === 1) {
-            panRef.current = { active: true, x: e.clientX, y: e.clientY };
+            panRef.current = {
+                active: true,
+                x: e.clientX,
+                y: e.clientY,
+            };
             e.currentTarget.setPointerCapture?.(e.pointerId);
         }
     }
@@ -95,9 +113,24 @@ export default function CanvasRoot({ workspaceId }) {
         };
 
         const worldBefore = screenToWorld(cursor, viewport);
-        const zoomFactor = Math.exp(-e.deltaY * 0.001);
 
-        const nextScale = Math.min(maxZoom, Math.max(minZoom, viewport.scale * zoomFactor));
+        // Natural zoom (scroll up = zoom in)
+        const zoomFactor = Math.exp(-e.deltaY * 0.001);
+        let nextScale = viewport.scale * zoomFactor;
+
+        let nextX = viewport.x;
+        let nextY = viewport.y;
+
+        // 🔁 Precision rebasing (true infinity)
+        if (nextScale < MIN_EFFECTIVE_ZOOM) {
+            const REBASE = 1000;
+            nextScale *= REBASE;
+            nextX /= REBASE;
+            nextY /= REBASE;
+        }
+
+        // 🧠 Soft UX limits (NOT real bounds)
+        nextScale = Math.min(32, Math.max(1e-9, nextScale));
 
         setViewport({
             scale: nextScale,
@@ -109,8 +142,13 @@ export default function CanvasRoot({ workspaceId }) {
     const content = (
         <CanvasProvider value={{ zoomTier }}>
             <CanvasHost ref={containerRef} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onWheel={handleWheel}>
-                {/* WORLD (no transform, infinite by math) */}
-                <div style={{ position: 'absolute', inset: 0 }}>
+                {/* 🌍 WORLD SPACE — MUST RECEIVE POINTER EVENTS */}
+                <div
+                    style={{
+                        position: 'absolute',
+                        inset: 0,
+                        pointerEvents: 'auto',
+                    }}>
                     <CanvasSurface surface={canvasSurface} viewport={viewport} />
                     {canvasPolicy?.type === 'infinite' && <CanvasOriginMarker />}
                     <NodeLayer />
@@ -120,8 +158,13 @@ export default function CanvasRoot({ workspaceId }) {
                     <RemoteSelections />
                 </div>
 
-                {/* SCREEN-SPACE UI */}
-                <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                {/* 🧭 SCREEN-SPACE UI */}
+                <div
+                    style={{
+                        position: 'absolute',
+                        inset: 0,
+                        pointerEvents: 'none',
+                    }}>
                     <RemoteCursors />
                     {workspace?.capabilities?.timeline && (
                         <div style={{ pointerEvents: 'auto' }}>
