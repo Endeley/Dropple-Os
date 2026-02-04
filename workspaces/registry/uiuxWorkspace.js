@@ -5,8 +5,8 @@ export const uiuxWorkspace = {
     id: 'uiux',
     label: 'UI / UX Design',
 
-    // 🔹 UI SEMANTIC FLAG (READ-ONLY UX MODE)
-    profile: 'ux-validation',
+    // 🔹 UI SEMANTIC FLAG (AUTHORING UX MODE)
+    profile: 'uiux-authoring',
 
     extends: 'graphic',
     status: 'active',

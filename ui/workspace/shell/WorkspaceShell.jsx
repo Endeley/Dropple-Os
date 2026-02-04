@@ -9,6 +9,7 @@ import { WorkspaceRegistry } from '@/workspaces/registry';
 
 // 🔹 UX Workspace (read-only UI)
 import { UXWorkspaceShell } from '@/ui/workspace/ux/UXWorkspaceShell';
+import { UIUXAuthoringShell } from '@/ui/workspace/ux/UIUXAuthoringShell.jsx';
 
 /**
  * The authoritative editor surface for a workspace mode.
@@ -26,7 +27,8 @@ export function WorkspaceShell({ workspace }) {
     const pathname = usePathname();
 
     const capabilities = workspace.capabilities || {};
-    const isUX = workspace.profile === 'ux-validation';
+    const isUX =
+        workspace.profile === 'ux-validation' || workspace.profile === 'uiux-authoring';
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
@@ -89,9 +91,13 @@ export function WorkspaceShell({ workspace }) {
             <div style={{ display: 'flex', flex: 1, position: 'relative' }}>
                 {isUX ? (
                     /* ────────────────────────────────────────────── */
-                    /* UX WORKSPACE — READ ONLY                       */
+                    /* UX WORKSPACE                                   */
                     /* ────────────────────────────────────────────── */
-                    <UXWorkspaceShell />
+                    workspace.profile === 'uiux-authoring' ? (
+                        <UIUXAuthoringShell profile={workspace.profile} />
+                    ) : (
+                        <UXWorkspaceShell profile={workspace.profile} />
+                    )
                 ) : (
                     /* ────────────────────────────────────────────── */
                     /* EDITOR WORKSPACE                               */

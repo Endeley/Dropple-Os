@@ -73,13 +73,13 @@ import { UIUXRightPanel } from './UIUXRightPanel.jsx';
  * - profile: 'ux-validation'
  */
 
-export function UXWorkspaceShell() {
+export function UXWorkspaceShell({ profile = 'ux-validation' }) {
   return (
     <div className="uiux-root" data-workspace="uiux">
       <UIUXTopBar />
       <div className="uiux-main">
         <UIUXToolRail />
-        <UIUXCanvasStage />
+        <UIUXCanvasStage profile={profile} />
         <UIUXRightPanel />
       </div>
     </div>

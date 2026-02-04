@@ -11,20 +11,18 @@ import { canvasBus } from '@/ui/canvasBus.js';
  * World stays fullscreen.
  * Only transform moves.
  */
-const CanvasHost = forwardRef(function CanvasHost({ children, viewport, worldOffset, onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onWheel }, ref) {
+const CanvasHost = forwardRef(function CanvasHost({ children, viewport, worldOffset, onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onWheel, onDoubleClick }, ref) {
     const localRef = useRef(null);
     useImperativeHandle(ref, () => localRef.current);
 
-    // Wheel handling
+    // Wheel handling (non-passive so zoom works)
     useEffect(() => {
         const target = localRef.current;
         if (!target || !onWheel) return;
 
-        const handleWheel = (e) => {
-            onWheel(e);
-        };
-
+        const handleWheel = (e) => onWheel(e);
         target.addEventListener('wheel', handleWheel, { passive: false });
+
         return () => target.removeEventListener('wheel', handleWheel);
     }, [onWheel]);
 
@@ -35,7 +33,13 @@ const CanvasHost = forwardRef(function CanvasHost({ children, viewport, worldOff
     return (
         <div
             ref={localRef}
-            onPointerDown={onPointerDown}
+            onPointerDown={(e) => {
+                onPointerDown?.(e);
+                canvasBus.emit('pointer.down', {
+                    event: e,
+                    session: null, // background interaction
+                });
+            }}
             onPointerMove={(e) => {
                 onPointerMove?.(e);
                 canvasBus.emit('pointer.move', e);
@@ -48,6 +52,7 @@ const CanvasHost = forwardRef(function CanvasHost({ children, viewport, worldOff
                 onPointerCancel?.(e);
                 canvasBus.emit('pointer.cancel', e);
             }}
+            onDoubleClick={onDoubleClick}
             style={{
                 position: 'relative',
                 width: '100%',

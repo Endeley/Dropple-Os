@@ -8,6 +8,10 @@ import { MessageBus } from '@/core/messageBus';
  * - startSession must be strict
  * - updateSession must be safe
  * - commitSession must be safe when idle
+ *
+ * IMPORTANT ADDITION:
+ * - pointer.down events WITHOUT a session (background / pan)
+ *   MUST be ignored by the session manager.
  */
 export class InputSessionManager {
     constructor(bus) {
@@ -30,7 +34,15 @@ export class InputSessionManager {
         this.state.state = 'idle';
     }
 
+    /**
+     * Start a new input session.
+     * If session is null, this is a background interaction (pan, hover, etc).
+     * That MUST be ignored.
+     */
     startSession(session, event) {
+        // ✅ FIX: ignore background pointer.down
+        if (!session) return;
+
         this.assertIdle();
 
         this.state.activeSession = session;
@@ -96,6 +108,10 @@ export class InputSessionManager {
         return payload;
     }
 
+    /**
+     * Cancel the active session.
+     * Safe no-op when idle.
+     */
     cancelSession() {
         const session = this.state.activeSession;
         if (!session) return;

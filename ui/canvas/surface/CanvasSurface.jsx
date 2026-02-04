@@ -24,7 +24,7 @@ const OVERSCAN_MIN = 1500;
 const OVERSCAN_MAX = 60000;
 const MAJOR_FACTOR = 4;
 
-export function CanvasSurface({ surface, viewport }) {
+export function CanvasSurface({ surface, viewport, isDragging = false }) {
     if (!surface || surface.type === 'smooth') return null;
 
     const { x = 0, y = 0, scale = 1 } = viewport ?? {};
@@ -59,7 +59,15 @@ export function CanvasSurface({ surface, viewport }) {
 
     const minorAlpha = smoothstep(14, 28, spacing);
     const majorAlpha = smoothstep(24, 48, spacing);
-    const dotOpacity = baseDotOpacity * (1 - minorAlpha * 0.5);
+    const SNAP_EMPHASIS = {
+        dots: 0.75,
+        minor: 1.35,
+        major: 1.6,
+    };
+    const emphasis = isDragging ? SNAP_EMPHASIS : null;
+
+    const dotOpacity =
+        baseDotOpacity * (1 - minorAlpha * 0.5) * (emphasis ? emphasis.dots : 1);
 
     const baseStyle = (layerOpacity, opacity) => ({
         position: 'absolute',
@@ -69,6 +77,7 @@ export function CanvasSurface({ surface, viewport }) {
         height,
         pointerEvents: 'none',
         opacity: layerOpacity * opacity,
+        transition: 'opacity 120ms ease-out',
     });
 
     function renderDots(spacingPx, layerOpacity) {
@@ -119,7 +128,7 @@ export function CanvasSurface({ surface, viewport }) {
                     width,
                     height,
                     pointerEvents: 'none',
-                    opacity: alpha * 0.25,
+                    ...baseStyle(1, alpha * 0.25 * (emphasis ? emphasis.minor : 1)),
                     backgroundImage: `
                         linear-gradient(
                             to right,
@@ -152,7 +161,7 @@ export function CanvasSurface({ surface, viewport }) {
                     width,
                     height,
                     pointerEvents: 'none',
-                    opacity: alpha * 0.45,
+                    ...baseStyle(1, alpha * 0.45 * (emphasis ? emphasis.major : 1)),
                     backgroundImage: `
                         linear-gradient(
                             to right,

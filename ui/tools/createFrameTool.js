@@ -1,30 +1,22 @@
 import { canvasBus } from '@/ui/canvasBus';
 
 /**
- * Frame creation tool (UI mode default).
+ * Frame creation tool (UIUX authoring).
+ * Emits intent ONLY.
+ * Actual node creation is handled by nodeCreateResolver.
  */
-export function registerCreateFrameTool({ emit, selectSingle }) {
-  if (!emit) {
-    throw new Error('registerCreateFrameTool requires emit');
-  }
+export function registerCreateFrameTool({ selectSingle }) {
+    const handleCreate = ({ bounds }) => {
+        if (!bounds) return;
 
-  const handleCreate = ({ bounds }) => {
-    if (!bounds) return;
-    const { x, y, width, height } = bounds;
-    const id = crypto.randomUUID();
+        canvasBus.emit('intent.node.create', {
+            type: 'frame',
+            bounds,
+        });
 
-    emit({
-      type: 'node.create',
-      payload: {
-        nodeId: id,
-        nodeType: 'frame',
-        parentId: null,
-        layout: { x, y, width, height },
-      },
-    });
+        // Selection will resolve after node is created
+        // (selection resolver / reducer handles this later)
+    };
 
-    selectSingle?.(id);
-  };
-
-  return canvasBus.on('tool.create.frame', handleCreate);
+    return canvasBus.on('tool.create.frame', handleCreate);
 }

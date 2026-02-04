@@ -882,7 +882,6 @@
 |   |   |-- GuideLayer.jsx
 |   |   |-- InsertionLine.jsx
 |   |   |-- NodeLayer.jsx
-|   |   |-- NodeRenderer 2.jsx
 |   |   |-- NodeRenderer.jsx
 |   |   |-- RemoteCursors.jsx
 |   |   |-- RemoteSelections.jsx

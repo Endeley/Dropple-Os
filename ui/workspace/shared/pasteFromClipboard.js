@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid';
+import { canvasBus } from '@/ui/canvasBus';
 
-export function pasteFromClipboard({ clipboard, emit, offset = 20 }) {
+export function pasteFromClipboard({ clipboard, offset = 20 }) {
   if (!clipboard) return [];
 
   const idMap = new Map();
@@ -9,36 +10,22 @@ export function pasteFromClipboard({ clipboard, emit, offset = 20 }) {
   clipboard.nodes.forEach((node) => {
     const newId = nanoid();
     idMap.set(node.id, newId);
-
-    emit({
-      type: 'node.create',
-      payload: {
-        nodeId: newId,
-        nodeType: node.type,
-        parentId: node.parentId ? idMap.get(node.parentId) || null : null,
-        initialProps: node.props,
-      },
-    });
-
     newIds.push(newId);
   });
 
   clipboard.nodes.forEach((node) => {
     const newId = idMap.get(node.id);
-
-    emit({
-      type: 'node.layout.move',
-      payload: {
-        nodeId: newId,
+    if (!newId) return;
+    canvasBus.emit('intent.node.create', {
+      id: newId,
+      type: node.type,
+      parentId: node.parentId ? idMap.get(node.parentId) || null : null,
+      props: node.props,
+      style: node.style,
+      content: node.content,
+      bounds: {
         x: node.layout.x + offset,
         y: node.layout.y + offset,
-      },
-    });
-
-    emit({
-      type: 'node.layout.resize',
-      payload: {
-        nodeId: newId,
         width: node.layout.width,
         height: node.layout.height,
       },

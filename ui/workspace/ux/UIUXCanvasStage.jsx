@@ -2,10 +2,10 @@
 
 import { WorkspaceCanvasRoot } from '@/workspace/WorkspaceRoot/DispatcherProvider/Canvas/WorkspaceCanvasRoot.jsx';
 
-export function UIUXCanvasStage() {
+export function UIUXCanvasStage({ profile = 'ux-validation' }) {
   return (
     <main className="uiux-canvas-stage">
-      <WorkspaceCanvasRoot />
+      <WorkspaceCanvasRoot profile={profile} />
     </main>
   );
 }

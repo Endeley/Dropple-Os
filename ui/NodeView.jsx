@@ -1,56 +1,37 @@
 'use client';
 
 import { canvasBus } from '@/ui/canvasBus.js';
-import { MoveSession } from '@/input/sessions/MoveSession.js';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { getSnapRadius } from '@/ui/canvas/snap/snapConfig.js';
-import { getNearestSnapshot } from '@/ui/canvas/hooks/nearestSnapshot.js';
 
 export function NodeView({ node, position, scale = 1, zoomTier = 'normal' }) {
+    if (!node) return null;
+
     function onPointerDown(e) {
+        // Left mouse only
         if (e.button !== 0) return;
+
+        // 🔑 CRITICAL: prevent canvas pan + selection conflict
         e.preventDefault();
+        e.stopPropagation();
 
-        const runtime = useRuntimeStore.getState();
-        const nodesById = runtime?.nodes || {};
-        const movingNodes = node?.id ? [nodesById[node.id]].filter(Boolean) : [];
-        const siblings = Object.values(nodesById).filter((n) => n && n.id !== node.id);
-        const snapRadius = getSnapRadius(zoomTier);
-        const nearestSnapshot = getNearestSnapshot();
-        const snapTargets = Array.isArray(nearestSnapshot?.nearest)
-            ? nearestSnapshot.nearest.map((entry) => ({
-                  id: entry.id,
-                  x: entry.bounds.x,
-                  y: entry.bounds.y,
-                  width: entry.bounds.width,
-                  height: entry.bounds.height,
-              }))
-            : [];
+        // Capture pointer so drag survives fast movement
+        e.currentTarget.setPointerCapture?.(e.pointerId);
 
-        const session = new MoveSession({
-            nodeIds: [node.id],
-            nodes: movingNodes,
-            siblings,
-            startPointer: { x: e.clientX, y: e.clientY },
-            options: {
-                snapRadius,
-                snapTargets,
-            },
+        // UI emits intent only (no MoveSession here)
+        canvasBus.emit('intent.node.pointerDown', {
+            nodeId: node.id,
+            pointer: { x: e.clientX, y: e.clientY },
+            zoomTier,
+            event: e,
         });
-
-        canvasBus.emit('pointer.down', { session, event: e });
     }
 
     const showLabel = zoomTier !== 'far';
     const showFull = zoomTier === 'normal' || zoomTier === 'detail' || zoomTier === 'micro';
+
     const isFar = zoomTier === 'far';
     const isOverview = zoomTier === 'overview';
 
-    const background = isFar
-        ? 'rgba(147, 197, 253, 0.12)'
-        : isOverview
-          ? 'rgba(147, 197, 253, 0.2)'
-          : '#e0e7ff';
+    const background = isFar ? 'rgba(147, 197, 253, 0.12)' : isOverview ? 'rgba(147, 197, 253, 0.2)' : '#e0e7ff';
 
     const border = isFar ? '1px solid rgba(59, 130, 246, 0.35)' : '1px solid #93c5fd';
 
@@ -74,8 +55,9 @@ export function NodeView({ node, position, scale = 1, zoomTier = 'normal' }) {
                 justifyContent: 'center',
                 fontSize: showFull ? 12 : 10,
                 letterSpacing: showFull ? 0 : 0.3,
-            }}
-        >
+                boxSizing: 'border-box',
+                pointerEvents: 'auto',
+            }}>
             {showLabel ? node.id : null}
         </div>
     );

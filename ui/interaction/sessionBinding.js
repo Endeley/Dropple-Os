@@ -4,8 +4,25 @@ import { dispatcher } from './dispatcher.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { computeSelectionBounds } from '@/engine/constraints/selectionBounds.js';
 import { registerEditEventBridge } from '@/ui/timeline/editEventBridge.js';
+import { registerNodeDragResolver } from '@/ui/interaction/nodeDragResolver.js';
+import { registerNodeCreateResolver } from '@/ui/interaction/nodeCreateResolver';
 
 registerEditEventBridge();
+registerNodeDragResolver();
+registerNodeCreateResolver();
+
+let warnedMissingDispatcher = false;
+
+function safeDispatch(event) {
+    try {
+        dispatcher.dispatch(event);
+    } catch (err) {
+        if (!warnedMissingDispatcher) {
+            console.warn('[sessionBinding] Dispatcher not attached; skipping canvas dispatch.', err);
+            warnedMissingDispatcher = true;
+        }
+    }
+}
 
 const sessionManager = new InputSessionManager(canvasBus);
 
@@ -28,7 +45,7 @@ canvasBus.on('pointer.up', () => {
         const { nodeIds, delta } = result;
 
         nodeIds.forEach((id) => {
-            dispatcher.dispatch({
+            safeDispatch({
                 type: EventTypes.NODE_MOVE,
                 payload: {
                     id,
@@ -66,7 +83,7 @@ canvasBus.on('pointer.up', () => {
             const relX = bounds.width === 0 ? 0 : (node.x - bounds.minX) / bounds.width;
             const relY = bounds.height === 0 ? 0 : (node.y - bounds.minY) / bounds.height;
 
-            dispatcher.dispatch({
+            safeDispatch({
                 type: EventTypes.NODE_UPDATE,
                 payload: {
                     id: node.id,

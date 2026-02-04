@@ -662,7 +662,6 @@ ui/canvas/GhostNode.jsx,ui/canvas/GhostNode.jsx,keep
 ui/canvas/GuideLayer.jsx,ui/canvas/GuideLayer.jsx,keep
 ui/canvas/InsertionLine.jsx,ui/canvas/InsertionLine.jsx,keep
 ui/canvas/NodeLayer.jsx,ui/canvas/NodeLayer.jsx,keep
-ui/canvas/NodeRenderer 2.jsx,ui/canvas/NodeRenderer 2.jsx,keep
 ui/canvas/NodeRenderer.jsx,ui/canvas/NodeRenderer.jsx,keep
 ui/canvas/RemoteCursors.jsx,ui/canvas/RemoteCursors.jsx,keep
 ui/canvas/RemoteSelections.jsx,ui/canvas/RemoteSelections.jsx,keep

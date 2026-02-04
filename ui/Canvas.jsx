@@ -9,11 +9,8 @@ import { computeSelectionBounds } from '@/ui/selection/selectionBounds.js';
 import { SelectionBox } from '@/ui/selection/SelectionBox.jsx';
 import { MoveSession } from '@/input/sessions/MoveSession.js';
 import { ResizeSession } from '@/input/sessions/ResizeSession.js';
-import { useDispatcher } from '@/workspace/WorkspaceRoot/DispatcherProvider/DispatcherContext.jsx';
-import { EventTypes } from '@/core/events/eventTypes.js';
 
 export default function Canvas() {
-    const dispatcher = useDispatcher();
     const nodes = useRuntimeStore((s) => s.nodes);
     const nodeList = Object.values(nodes);
 
@@ -49,9 +46,9 @@ export default function Canvas() {
                 ...previous,
 
                 createNodeDebug({ x = 40, y = 40, width = 160, height = 100 } = {}) {
-                    dispatcher.dispatch({
-                        type: EventTypes.NODE_CREATE_DEBUG,
-                        payload: { x, y, width, height },
+                    canvasBus.emit('intent.node.create', {
+                        type: 'frame',
+                        bounds: { x, y, width, height },
                     });
                 },
 
@@ -87,7 +84,7 @@ export default function Canvas() {
                 throw new Error('__droppleDebug is not available in production builds');
             },
         });
-    }, [clear, dispatcher, selectSingle, setSelection]);
+    }, [clear, selectSingle, setSelection]);
 
     function getLocalPoint(e) {
         const rect = containerRef.current?.getBoundingClientRect();

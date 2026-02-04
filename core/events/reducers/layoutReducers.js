@@ -11,14 +11,19 @@ export function layoutReducers(state, event) {
             const node = state.nodes[id];
             if (!node) return state;
 
+            const prevLayout = node.layout || {};
+
             return {
                 ...state,
                 nodes: {
                     ...state.nodes,
                     [id]: {
                         ...node,
-                        x: (node.x ?? 0) + xDelta,
-                        y: (node.y ?? 0) + yDelta,
+                        layout: {
+                            ...prevLayout,
+                            x: (prevLayout.x ?? 0) + xDelta,
+                            y: (prevLayout.y ?? 0) + yDelta,
+                        },
                     },
                 },
             };
@@ -29,14 +34,19 @@ export function layoutReducers(state, event) {
             const node = state.nodes[id];
             if (!node) return state;
 
+            const prevLayout = node.layout || {};
+
             return {
                 ...state,
                 nodes: {
                     ...state.nodes,
                     [id]: {
                         ...node,
-                        width,
-                        height,
+                        layout: {
+                            ...prevLayout,
+                            width: width ?? prevLayout.width,
+                            height: height ?? prevLayout.height,
+                        },
                     },
                 },
             };

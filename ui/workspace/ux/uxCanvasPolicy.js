@@ -22,14 +22,14 @@ export const uxCanvasPolicy = {
     },
 
     interaction: {
-        selectable: false,
-        editable: false,
-        draggable: false,
-        resizable: false,
+        selectable: true,
+        editable: true,
+        draggable: true,
+        resizable: true,
     },
 
     intent: {
-        readOnly: true,
-        allowMutations: false,
+        readOnly: false,
+        allowMutations: true,
     },
 };

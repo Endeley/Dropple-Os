@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { serializeSelection } from '@/ui/workspace/shared/serializeSelection';
 import { pasteFromClipboard } from '@/ui/workspace/shared/pasteFromClipboard';
 import { useClipboard } from '@/ui/workspace/shared/ClipboardContext';
+import { canvasBus } from '@/ui/canvasBus';
 
 export function useKeyboardShortcuts({
   enabled = true,
@@ -83,19 +84,16 @@ export function useKeyboardShortcuts({
 
         const newId = `${id}-copy`;
 
-        emit({
-          type: 'node.create',
-          payload: {
-            nodeId: newId,
-            nodeType: node.type,
-            parentId: node.parentId || null,
-            layout: {
-              x: node.layout.x + 20,
-              y: node.layout.y + 20,
-              width: node.layout.width,
-              height: node.layout.height,
-            },
-            initialProps: { ...node.props },
+        canvasBus.emit('intent.node.create', {
+          id: newId,
+          type: node.type,
+          parentId: node.parentId || null,
+          props: { ...node.props },
+          bounds: {
+            x: node.layout.x + 20,
+            y: node.layout.y + 20,
+            width: node.layout.width,
+            height: node.layout.height,
           },
         });
       });

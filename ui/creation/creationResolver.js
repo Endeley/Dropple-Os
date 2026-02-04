@@ -6,22 +6,19 @@ import { canvasBus } from '@/ui/canvasBus';
  * Routes intent based on mode / defaults.
  */
 export function registerCreationResolver({ getMode }) {
-  const handleIntent = (intent) => {
-    const mode = getMode?.() ?? 'graphic';
+    const handleIntent = (intent) => {
+        const mode = getMode?.() ?? 'graphic';
 
-    switch (mode) {
-      case 'uiux':
-        canvasBus.emit('tool.create.frame', intent);
-        break;
-      case 'animation':
-        canvasBus.emit('tool.create.layer', intent);
-        break;
-      case 'graphic':
-      default:
-        canvasBus.emit('tool.create.shape', intent);
-        break;
-    }
-  };
+        let type = 'shape';
+        if (mode === 'uiux') type = 'frame';
+        if (mode === 'animation') type = 'layer';
 
-  return canvasBus.on('intent.create', handleIntent);
+        canvasBus.emit('intent.node.create', {
+            type,
+            position: intent?.position ?? { x: 0, y: 0 },
+            bounds: intent?.bounds ?? null,
+        });
+    };
+
+    return canvasBus.on('intent.create', handleIntent);
 }

@@ -16,17 +16,15 @@ import { perfStart, perfEnd } from '@/perf/perfTracker.js';
 import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
 import { CanvasSurface } from '@/ui/canvas/surface/CanvasSurface.jsx';
 import { CanvasOriginMarker } from '@/ui/canvas/CanvasOriginMarker.jsx';
-import { useSelectionStore } from '@/selection/useSelectionStore.js';
 import { screenToWorld } from '@/canvas/transform/screenToWorld.js';
 import { getWorkspaceState, setViewport } from '@/runtime/state/workspaceState.js';
 import { getZoomTier } from '@/ui/canvas/zoomTiers.js';
 import { CanvasProvider } from '@/ui/canvas/CanvasContext.jsx';
 import { canvasBus } from '@/ui/canvasBus.js';
 
-/** 🔑 Prevent floating-point collapse */
+/** precision safety */
 const MIN_EFFECTIVE_ZOOM = 0.0005;
-
-/** 🌍 Camera rebasing threshold */
+/** camera rebasing */
 const REBASE_DISTANCE = 8000;
 
 export default function CanvasRoot({ workspaceId }) {
@@ -47,18 +45,11 @@ export default function CanvasRoot({ workspaceId }) {
     const [worldOffset, setWorldOffset] = useState({ x: 0, y: 0 });
     const [isPanning, setIsPanning] = useState(false);
     const [isNodeDragging, setIsNodeDragging] = useState(false);
-    const [cursorWorld, setCursorWorld] = useState(null);
 
     const allowPan = canvasPolicy?.allowPan ?? true;
     const allowZoom = canvasPolicy?.allowZoom ?? true;
 
     const zoomTier = useMemo(() => getZoomTier(viewport?.scale ?? 1), [viewport?.scale]);
-
-    function getLocalPoint(e) {
-        const rect = containerRef.current?.getBoundingClientRect();
-        if (!rect) return null;
-        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
-    }
 
     function maybeRebase(nextViewport) {
         if (Math.abs(nextViewport.x) > REBASE_DISTANCE || Math.abs(nextViewport.y) > REBASE_DISTANCE) {
@@ -67,20 +58,20 @@ export default function CanvasRoot({ workspaceId }) {
                 y: prev.y + nextViewport.y,
             }));
 
-            setViewport({
-                ...nextViewport,
-                x: 0,
-                y: 0,
-            });
-
+            setViewport({ ...nextViewport, x: 0, y: 0 });
             return true;
         }
         return false;
     }
 
-    // ✅ START PAN ON POINTER DOWN (NO BUTTON LOGIC)
+    // 🖱️ PAN START
     function handlePointerDown(e) {
         if (!allowPan) return;
+
+        const isMiddle = e.button === 1;
+        const isLeft = e.button === 0;
+
+        if (!isMiddle && !(isLeft && !isNodeDragging)) return;
 
         panRef.current = {
             active: true,
@@ -92,24 +83,10 @@ export default function CanvasRoot({ workspaceId }) {
         e.currentTarget.setPointerCapture?.(e.pointerId);
     }
 
-    // ✅ PAN ONLY WHILE A BUTTON IS HELD
+    // 🖱️ PAN MOVE
     function handlePointerMove(e) {
-        const point = getLocalPoint(e);
-
-        if (point && viewport) {
-            setCursorWorld(
-                screenToWorld(point, {
-                    ...viewport,
-                    x: viewport.x + worldOffset.x,
-                    y: viewport.y + worldOffset.y,
-                }),
-            );
-        }
-
-        // 🔑 THIS IS THE FIX
-        if (!allowPan || !panRef.current.active || e.buttons === 0 || !viewport) {
-            return;
-        }
+        if (!allowPan || !panRef.current.active || !viewport) return;
+        if ((e.buttons & 5) === 0) return;
 
         const dx = (e.clientX - panRef.current.x) / viewport.scale;
         const dy = (e.clientY - panRef.current.y) / viewport.scale;
@@ -134,25 +111,7 @@ export default function CanvasRoot({ workspaceId }) {
         e.currentTarget.releasePointerCapture?.(e.pointerId);
     }
 
-    useEffect(() => {
-        const start = (payload) => {
-            if (payload?.sessionType === 'move' || payload?.sessionType === 'resize') {
-                setIsNodeDragging(true);
-            }
-        };
-        const end = () => setIsNodeDragging(false);
-
-        canvasBus.on('session.start', start);
-        canvasBus.on('session.commit', end);
-        canvasBus.on('session.cancel', end);
-
-        return () => {
-            canvasBus.off('session.start', start);
-            canvasBus.off('session.commit', end);
-            canvasBus.off('session.cancel', end);
-        };
-    }, []);
-
+    // 🔍 ZOOM
     function handleWheel(e) {
         if (!allowZoom || !viewport) return;
         e.preventDefault();
@@ -174,11 +133,7 @@ export default function CanvasRoot({ workspaceId }) {
         const zoomFactor = Math.exp(-e.deltaY * 0.001);
         let nextScale = viewport.scale * zoomFactor;
 
-        if (nextScale < MIN_EFFECTIVE_ZOOM) {
-            const REBASE = 1000;
-            nextScale *= REBASE;
-        }
-
+        if (nextScale < MIN_EFFECTIVE_ZOOM) nextScale *= 1000;
         nextScale = Math.min(32, Math.max(1e-9, nextScale));
 
         setViewport({
@@ -188,16 +143,53 @@ export default function CanvasRoot({ workspaceId }) {
         });
     }
 
-    const content = (
+    // 🧪 TEMP: double-click emits intent to create a node (resolver handles creation)
+    function handleDoubleClick(e) {
+        if (!viewport || !containerRef.current) return;
+
+        const rect = containerRef.current.getBoundingClientRect();
+        const point = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+        const world = screenToWorld(point, {
+            ...viewport,
+            x: viewport.x + worldOffset.x,
+            y: viewport.y + worldOffset.y,
+        });
+
+        canvasBus.emit('intent.node.create', {
+            type: 'frame',
+            position: { x: world.x, y: world.y },
+        });
+    }
+
+    // 🔔 track node drag sessions
+    useEffect(() => {
+        const start = (p) => {
+            if (p?.sessionType === 'move' || p?.sessionType === 'resize') {
+                setIsNodeDragging(true);
+            }
+        };
+        const end = () => setIsNodeDragging(false);
+
+        canvasBus.on('session.start', start);
+        canvasBus.on('session.commit', end);
+        canvasBus.on('session.cancel', end);
+
+        return () => {
+            canvasBus.off('session.start', start);
+            canvasBus.off('session.commit', end);
+            canvasBus.off('session.cancel', end);
+        };
+    }, []);
+
+    perfEnd('canvas.render');
+
+    return (
         <CanvasProvider value={{ zoomTier }}>
-            <CanvasHost ref={containerRef} viewport={viewport} worldOffset={worldOffset} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onWheel={handleWheel}>
-                {/* 🌍 WORLD SPACE */}
-                <div style={{ position: 'absolute', inset: 0, pointerEvents: 'auto' }}>
-                    <CanvasSurface
-                        surface={canvasSurface}
-                        viewport={viewport}
-                        emphasisMode={isNodeDragging ? 'drag' : isPanning ? 'pan' : 'none'}
-                    />
+            <CanvasHost ref={containerRef} viewport={viewport} worldOffset={worldOffset} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onWheel={handleWheel} onDoubleClick={handleDoubleClick}>
+                {/* 🌍 WORLD */}
+                <div style={{ position: 'absolute', inset: 0 }}>
+                    <CanvasSurface surface={canvasSurface} viewport={viewport} emphasisMode={isNodeDragging ? 'drag' : isPanning ? 'pan' : 'none'} />
                     {canvasPolicy?.type === 'infinite' && <CanvasOriginMarker />}
                     <NodeLayer />
                     <GhostLayer />
@@ -206,7 +198,7 @@ export default function CanvasRoot({ workspaceId }) {
                     <RemoteSelections />
                 </div>
 
-                {/* 🧭 SCREEN SPACE UI */}
+                {/* 🧭 UI */}
                 <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                     <RemoteCursors />
                     {workspace?.capabilities?.timeline && (
@@ -218,7 +210,4 @@ export default function CanvasRoot({ workspaceId }) {
             </CanvasHost>
         </CanvasProvider>
     );
-
-    perfEnd('canvas.render');
-    return content;
 }

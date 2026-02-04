@@ -1,6 +1,7 @@
 'use client';
 
 import { UXWorkspaceShell } from '../ux/UXWorkspaceShell';
+import { UIUXAuthoringShell } from '../ux/UIUXAuthoringShell.jsx';
 import { EditorWorkspaceShell } from '../editor/EditorWorkspaceShell';
 
 /**
@@ -23,9 +24,12 @@ export function WorkspaceShell(props) {
     console.log('[WorkspaceShell] modeId =', modeId);
 
     if (modeId === 'uiux') {
-        return <UXWorkspaceShell modeId='uiux' events={props.initialEvents ?? []} cursor={{ index: props.initialCursorIndex ?? -1 }} profile='ux-validation'
-         
-        />;
+        const profile = props.profile ?? 'uiux-authoring';
+        return profile === 'uiux-authoring' ? (
+            <UIUXAuthoringShell modeId='uiux' events={props.initialEvents ?? []} cursor={{ index: props.initialCursorIndex ?? -1 }} profile={profile} />
+        ) : (
+            <UXWorkspaceShell modeId='uiux' events={props.initialEvents ?? []} cursor={{ index: props.initialCursorIndex ?? -1 }} profile={profile} />
+        );
     }
 
     return <EditorWorkspaceShell {...props} />;

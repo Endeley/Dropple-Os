@@ -1,7 +1,8 @@
 /**
- * ⚠️ LEGACY DISPATCHER ADAPTER (DEPRECATED)
+ * 🚫 DO NOT USE / LEGACY SHIM (DEPRECATED)
  *
  * This file exists ONLY for backward compatibility.
+ * New code must NOT import or modify this file.
  *
  * ❌ It MUST NOT create dispatchers
  * ❌ It MUST NOT own dispatcher lifecycle
