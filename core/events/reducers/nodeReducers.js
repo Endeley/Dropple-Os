@@ -20,6 +20,7 @@ export function nodeReducers(state, event) {
 
   switch (type) {
     case EventTypes.NODE_CREATE: {
+      console.log('[nodeReducers] received NODE_CREATE:', event);
       const { node } = payload;
       const baseNode = {
         children: [],
@@ -51,15 +52,33 @@ export function nodeReducers(state, event) {
       const prev = state.nodes[id];
       if (!prev) return state;
 
+      if (process.env.NODE_ENV !== 'production') {
+        if ('x' in patch || 'y' in patch || 'width' in patch || 'height' in patch) {
+          throw new Error(
+            'Invalid NODE_UPDATE: positional fields must live in patch.layout'
+          );
+        }
+      }
+
       return {
         ...state,
         nodes: {
           ...state.nodes,
           [id]: {
             ...prev,
-            ...patch,
-            layout: { ...defaultLayout, ...(prev.layout || {}), ...(patch.layout || {}) },
-            layoutChild: { ...defaultLayoutChild, ...(prev.layoutChild || {}), ...(patch.layoutChild || {}) },
+
+            // 🔒 ONLY layout & layoutChild may be updated
+            layout: {
+              ...defaultLayout,
+              ...(prev.layout || {}),
+              ...(patch.layout || {}),
+            },
+
+            layoutChild: {
+              ...defaultLayoutChild,
+              ...(prev.layoutChild || {}),
+              ...(patch.layoutChild || {}),
+            },
           },
         },
       };

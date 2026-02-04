@@ -10,8 +10,11 @@ let warnedMissingDispatcher = false;
 
 function safeDispatch(event) {
     try {
+        console.log('[nodeCreateResolver] dispatch start:', event?.type);
         dispatcher.dispatch(event);
+        console.log('[nodeCreateResolver] dispatch success:', event?.type);
     } catch (err) {
+        console.error('[nodeCreateResolver] dispatch error:', event?.type, err);
         if (!warnedMissingDispatcher) {
             console.warn('[nodeCreateResolver] Dispatcher not attached; skipping node create.', err);
             warnedMissingDispatcher = true;
@@ -27,7 +30,12 @@ export function registerNodeCreateResolver() {
     if (_unsub) return _unsub;
 
     const handler = (intent) => {
-        if (!intent) return;
+        console.log('[nodeCreateResolver] intent received:', intent);
+        console.trace('[nodeCreateResolver] intent.node.create origin stack');
+        if (!intent) {
+            console.warn('[nodeCreateResolver] early return: missing intent');
+            return;
+        }
 
         const {
             id,
@@ -63,6 +71,7 @@ export function registerNodeCreateResolver() {
             type: EventTypes.NODE_CREATE,
             payload: { node },
         });
+        console.log('[nodeCreateResolver] handler complete: NODE_CREATE dispatched path finished');
     };
 
     _unsub = canvasBus.on('intent.node.create', handler);

@@ -198,6 +198,9 @@ export function createEventDispatcher({
             const prev = getRuntimeState();
             didExecute = true;
             let next = applyEvent(prev, animationGuarded);
+            if (rawEvent?.type === EventTypes.NODE_CREATE) {
+                console.log('[dispatcher] post-reduction NODE_CREATE nextState.nodes:', next?.nodes);
+            }
             next = ensureDefaultTimeline(next);
 
             if (next === prev) return next;

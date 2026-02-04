@@ -20,6 +20,7 @@ export function WorkspaceRoot({
     branchId = 'main',
     profile = 'design', // expected: 'design' | 'ux-validation'
     uxEnforcementTier = 2,
+    children = null,
 }) {
     const isUXMode = profile === 'ux-validation';
 
@@ -58,11 +59,14 @@ export function WorkspaceRoot({
                             UX MODE — Validation Surface
                         </div>
                     )}
-
-                    <WorkspaceBridgesRoot />
-                    <WorkspaceSessionsRoot />
-                    <WorkspaceUIRoot />
-                    <WorkspaceCanvasRoot />
+                    {children ?? (
+                        <>
+                            <WorkspaceBridgesRoot />
+                            <WorkspaceSessionsRoot />
+                            <WorkspaceUIRoot />
+                            <WorkspaceCanvasRoot />
+                        </>
+                    )}
                 </div>
             </SelectionProvider>
         </DispatcherProvider>
