@@ -7,9 +7,7 @@ export function NodeView({ node, position, zoomTier = 'normal' }) {
 
     if (process.env.NODE_ENV !== 'production') {
         if (!Number.isFinite(node.layout?.x) || !Number.isFinite(node.layout?.y)) {
-            throw new Error(
-                `[NodeView] Invalid layout values.\nNode ${node.id} has non-finite x/y.\nProjection is broken upstream.`
-            );
+            throw new Error(`[NodeView] Invalid layout values.\nNode ${node.id} has non-finite x/y.\nProjection is broken upstream.`);
         }
     }
 
