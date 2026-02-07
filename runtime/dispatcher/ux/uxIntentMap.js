@@ -30,6 +30,7 @@ export const uxIntentMap = Object.freeze({
     [EventTypes.ANIMATION_TRACK_CREATE]: UXIntent.HARD_UNSAFE,
     [EventTypes.ANIMATION_TRACK_DELETE]: UXIntent.HARD_UNSAFE,
     [EventTypes.ANIMATION_KEYFRAME_ADD]: UXIntent.HARD_UNSAFE,
+    [EventTypes.ANIMATION_KEYFRAME_CREATE]: UXIntent.HARD_UNSAFE,
     [EventTypes.ANIMATION_KEYFRAME_UPDATE]: UXIntent.HARD_UNSAFE,
     [EventTypes.ANIMATION_KEYFRAME_DELETE]: UXIntent.HARD_UNSAFE,
 

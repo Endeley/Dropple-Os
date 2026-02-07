@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
 import CanvasHost from './CanvasHost.jsx';
 import NodeLayer from './NodeLayer.jsx';
 import GhostLayer from './GhostLayer.jsx';
@@ -15,7 +16,8 @@ import TimelinePanel from '@/ui/timeline/TimelinePanel.jsx';
 import { perfStart, perfEnd } from '@/perf/perfTracker.js';
 import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
 import { CanvasSurface } from '@/ui/canvas/surface/CanvasSurface.jsx';
-import { CanvasOriginMarker } from '@/ui/canvas/CanvasOriginMarker.jsx';
+import { WorldOriginMarker } from '@/ui/canvas/WorldOriginMarker.jsx';
+import { computeCenteredViewport } from '@/ui/canvas/computeCenteredViewport.js';
 import { screenToWorld } from '@/canvas/transform/screenToWorld.js';
 import { getWorkspaceState, setViewport } from '@/runtime/state/workspaceState.js';
 import { getZoomTier } from '@/ui/canvas/zoomTiers.js';
@@ -41,6 +43,7 @@ export default function CanvasRoot({ workspaceId }) {
 
     const containerRef = useRef(null);
     const panRef = useRef({ active: false, x: 0, y: 0 });
+    const hasCenteredRef = useRef(false);
 
     const [worldOffset, setWorldOffset] = useState({ x: 0, y: 0 });
     const [isPanning, setIsPanning] = useState(false);
@@ -143,7 +146,7 @@ export default function CanvasRoot({ workspaceId }) {
         });
     }
 
-    // 🧪 TEMP: double-click emits intent to create a node (resolver handles creation)
+    // 🧪 Double-click → create node
     function handleDoubleClick(e) {
         if (!viewport || !containerRef.current) return;
 
@@ -162,7 +165,51 @@ export default function CanvasRoot({ workspaceId }) {
         });
     }
 
-    // 🔔 track node drag sessions
+    // 🎯 RESET VIEW
+    const handleResetView = useCallback(() => {
+        if (!viewport || !containerRef.current) return;
+
+        const rect = containerRef.current.getBoundingClientRect();
+        const nextViewport = computeCenteredViewport({
+            width: rect.width,
+            height: rect.height,
+            scale: viewport.scale,
+        });
+
+        if (!nextViewport) return;
+
+        setWorldOffset({ x: 0, y: 0 });
+        setViewport(nextViewport);
+    }, [viewport]);
+
+    // 🔌 Listen for reset intent
+    useEffect(() => {
+        canvasBus.on('intent.viewport.reset', handleResetView);
+        return () => canvasBus.off('intent.viewport.reset', handleResetView);
+    }, [handleResetView]);
+
+    // 🧭 INITIAL CAMERA CENTER — IMPERATIVE, NOT AN EFFECT
+    const handleCanvasMount = useCallback((el) => {
+        if (hasCenteredRef.current) return;
+
+        const rect = el.getBoundingClientRect();
+        const scale = getWorkspaceState().viewport?.scale ?? 1;
+
+        const nextViewport = computeCenteredViewport({
+            width: rect.width,
+            height: rect.height,
+            scale,
+        });
+
+        if (!nextViewport) return;
+
+        setWorldOffset({ x: 0, y: 0 });
+        setViewport(nextViewport);
+
+        hasCenteredRef.current = true;
+    }, []);
+
+    // 🔔 Track node drag sessions
     useEffect(() => {
         const start = (p) => {
             if (p?.sessionType === 'move' || p?.sessionType === 'resize') {
@@ -186,11 +233,11 @@ export default function CanvasRoot({ workspaceId }) {
 
     return (
         <CanvasProvider value={{ zoomTier }}>
-            <CanvasHost ref={containerRef} viewport={viewport} worldOffset={worldOffset} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onWheel={handleWheel} onDoubleClick={handleDoubleClick}>
+            <CanvasHost ref={containerRef} onMount={handleCanvasMount} viewport={viewport} worldOffset={worldOffset} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onWheel={handleWheel} onDoubleClick={handleDoubleClick}>
                 {/* 🌍 WORLD */}
                 <div style={{ position: 'absolute', inset: 0 }}>
                     <CanvasSurface surface={canvasSurface} viewport={viewport} emphasisMode={isNodeDragging ? 'drag' : isPanning ? 'pan' : 'none'} />
-                    {canvasPolicy?.type === 'infinite' && <CanvasOriginMarker />}
+                    <WorldOriginMarker viewport={viewport} />
                     <NodeLayer />
                     <GhostLayer />
                     <GuideLayer />

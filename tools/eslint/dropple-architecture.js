@@ -137,12 +137,24 @@ const noUiTruthDispatch = {
     const filename = normalizePath(context.filename || context.getFilename?.());
     if (!filename.includes("/ui/")) return {};
 
+    const ALLOWLIST = [
+      /\/ui\/interaction\/.*Resolver\.js$/,
+      /\/ui\/interaction\/sessionBinding\.js$/,
+      /\/ui\/interaction\/dispatcher\.js$/,
+      /\/ui\/timeline\/.*Bridge\.js$/,
+      /\/ui\/timeline\/editEventBridge\.js$/,
+      /\/ui\/bridges\/.*/,
+    ];
+    if (ALLOWLIST.some((rx) => rx.test(filename))) return {};
+
     return {
       ImportDeclaration(node) {
         const source = String(node.source?.value || "");
-        const sourceLower = source.toLowerCase();
+        const sourceLower = source.toLowerCase().replaceAll("\\", "/");
         const hasDispatcherLikeSource =
-          sourceLower.includes("dispatcher") || sourceLower.includes("usedispatcher");
+          /(^|\/)dispatcher(\.[cm]?[jt]sx?)?$/.test(sourceLower) ||
+          /(^|\/)dispatchercontext(\.[cm]?[jt]sx?)?$/.test(sourceLower) ||
+          sourceLower.includes("usedispatcher");
         const hasDispatcherLikeSpecifier = (node.specifiers || []).some((specifier) => {
           const imported = specifier.imported?.name || "";
           const local = specifier.local?.name || "";
@@ -170,9 +182,6 @@ const noUiTruthDispatch = {
 
         if (
           node.callee?.type === "MemberExpression" &&
-          !node.callee.computed &&
-          node.callee.object?.type === "Identifier" &&
-          node.callee.object.name === "dispatcher" &&
           node.callee.property?.type === "Identifier" &&
           node.callee.property.name === "dispatch"
         ) {

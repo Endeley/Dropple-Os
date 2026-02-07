@@ -1,5 +1,7 @@
 'use client';
 
+import { useTimelineStore } from './useTimelineStore.js';
+
 export default function TimelineScrubber({
   duration,
   currentTime,
@@ -7,6 +9,26 @@ export default function TimelineScrubber({
   onScrubStart,
   onScrubEnd,
 }) {
+  const setTime = useTimelineStore((s) => s.setTime);
+  const startScrub = useTimelineStore((s) => s.startScrub);
+  const endScrub = useTimelineStore((s) => s.endScrub);
+
+  function handleScrubStart() {
+    startScrub?.();
+    onScrubStart?.();
+  }
+
+  function handleScrubEnd() {
+    endScrub?.();
+    onScrubEnd?.();
+  }
+
+  function handleScrubChange(e) {
+    const next = Number(e.target.value);
+    setTime?.(next);
+    onScrub?.(next);
+  }
+
   return (
     <div
       style={{
@@ -20,9 +42,9 @@ export default function TimelineScrubber({
         min={0}
         max={duration}
         value={currentTime}
-        onMouseDown={onScrubStart}
-        onMouseUp={onScrubEnd}
-        onChange={(e) => onScrub(Number(e.target.value))}
+        onMouseDown={handleScrubStart}
+        onMouseUp={handleScrubEnd}
+        onChange={handleScrubChange}
         style={{ width: '100%' }}
       />
       <div style={{ fontSize: 12, marginTop: 4 }}>

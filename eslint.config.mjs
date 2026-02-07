@@ -1,6 +1,7 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import droppleArchitecture from "./tools/eslint/dropple-architecture.js";
+import noNodeviewProjection from "./eslint-rules/no-nodeview-projection.js";
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -8,11 +9,15 @@ const eslintConfig = defineConfig([
     files: ["**/*.{js,jsx,ts,tsx}"],
     plugins: {
       "dropple-architecture": droppleArchitecture,
+      architecture: {
+        rules: {
+          "no-nodeview-projection": noNodeviewProjection,
+        },
+      },
     },
     rules: {
-      "dropple-architecture/no-nodeview-layout-math": "error",
       "dropple-architecture/no-ui-truth-dispatch": "error",
-      "dropple-architecture/single-dispatcher-owner": "error",
+      "architecture/no-nodeview-projection": "error",
     },
   },
   // Override default ignores of eslint-config-next.

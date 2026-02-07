@@ -1,10 +1,11 @@
-import { evaluateAnimation } from '@/engine/animation/evaluateAnimation.js';
+import { evaluateAnimationAtTime } from '@/timeline/evaluateAnimationAtTime.js';
 import { useAnimatedRuntimeStore } from '../stores/useAnimatedRuntimeStore.js';
 import { getRuntimeState } from '../state/runtimeState.js';
 
 export function runAnimationPreview({
     fromState,
     timeline,
+    designState,
     durationMs = 300,
     onComplete,
 }) {
@@ -29,20 +30,9 @@ export function runAnimationPreview({
         const elapsed = now - startTime;
         const clamped = Math.min(elapsed, durationMs);
 
-        const animatedValues = evaluateAnimation({
-            timeline,
-            timeMs: clamped,
-        });
-
-        const baseNodes = fromState?.nodes || {};
-        const projectedNodes = { ...baseNodes };
-
-        for (const nodeId in animatedValues) {
-            projectedNodes[nodeId] = {
-                ...projectedNodes[nodeId],
-                ...animatedValues[nodeId],
-            };
-        }
+        const animationSource = designState?.timeline?.animations || timeline;
+        const projectedState = evaluateAnimationAtTime(animationSource, clamped, designState || fromState);
+        const projectedNodes = projectedState?.nodes || {};
 
         useAnimatedRuntimeStore.setState(
             {

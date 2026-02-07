@@ -45,6 +45,7 @@ export const EventTypes = Object.freeze({
     ANIMATION_TRACK_DELETE: 'animation/track/delete',
 
     ANIMATION_KEYFRAME_ADD: 'animation/keyframe/add',
+    ANIMATION_KEYFRAME_CREATE: 'animation/keyframe/create',
     ANIMATION_KEYFRAME_UPDATE: 'animation/keyframe/update',
     ANIMATION_KEYFRAME_DELETE: 'animation/keyframe/delete',
 

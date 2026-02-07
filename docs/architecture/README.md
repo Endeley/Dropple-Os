@@ -4,6 +4,17 @@ Version: 1.0.0
 Status: Locked  
 Last updated: 2026-02-04
 
+Constitutional precedence:
+
+- `docs/LAW.md`
+- `RULES_OF_DROPPLE_OS.md`
+
+Enforcement references:
+
+- `docs/UI-AUTHORITY.md`
+- `docs/ESLINT-GUARDRAILS.md`
+- `docs/DECISIONS/`
+
 ## Purpose
 
 This document defines the non-negotiable architectural contracts for rendering, interaction, and mutation in Dropple-OS.

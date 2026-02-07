@@ -11,10 +11,16 @@ const ALLOWED_ANIMATION_PROPERTIES = new Set([
     'height',
 ]);
 
+const ALLOWED_ANIMATION_AUTHORING_PROPERTIES = new Set([
+    'layout.x',
+    'layout.y',
+]);
+
 const animationEventTypes = new Set([
     EventTypes.ANIMATION_TRACK_CREATE,
     EventTypes.ANIMATION_TRACK_DELETE,
     EventTypes.ANIMATION_KEYFRAME_ADD,
+    EventTypes.ANIMATION_KEYFRAME_CREATE,
     EventTypes.ANIMATION_KEYFRAME_UPDATE,
     EventTypes.ANIMATION_KEYFRAME_DELETE,
 ]);
@@ -66,6 +72,16 @@ export function applyAnimationGuard(event) {
             const track = tracks.find((t) => t?.id === trackId);
             if (!track) return null;
 
+            return event;
+        }
+
+        case EventTypes.ANIMATION_KEYFRAME_CREATE: {
+            const { nodeId, property, timeMs, value } = event.payload || {};
+            if (!nodeId || !property) return null;
+            if (!state.nodes?.[nodeId]) return null;
+            if (!ALLOWED_ANIMATION_AUTHORING_PROPERTIES.has(property)) return null;
+            if (!Number.isFinite(timeMs) || timeMs < 0) return null;
+            if (!Number.isFinite(value)) return null;
             return event;
         }
 

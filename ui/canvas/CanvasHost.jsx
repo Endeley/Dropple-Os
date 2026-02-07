@@ -11,9 +11,31 @@ import { canvasBus } from '@/ui/canvasBus.js';
  * World stays fullscreen.
  * Only transform moves.
  */
-const CanvasHost = forwardRef(function CanvasHost({ children, viewport, worldOffset, onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onWheel, onDoubleClick }, ref) {
+const CanvasHost = forwardRef(function CanvasHost(
+    {
+        children,
+        viewport,
+        worldOffset,
+        onMount, // ✅ NEW
+        onPointerDown,
+        onPointerMove,
+        onPointerUp,
+        onPointerCancel,
+        onWheel,
+        onDoubleClick,
+    },
+    ref,
+) {
     const localRef = useRef(null);
     useImperativeHandle(ref, () => localRef.current);
+
+    // Notify parent once when DOM is ready
+    useEffect(() => {
+        if (!localRef.current) return;
+        onMount?.(localRef.current);
+        // run once
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Wheel handling (non-passive so zoom works)
     useEffect(() => {
@@ -37,7 +59,7 @@ const CanvasHost = forwardRef(function CanvasHost({ children, viewport, worldOff
                 onPointerDown?.(e);
                 canvasBus.emit('pointer.down', {
                     event: e,
-                    session: null, // background interaction
+                    session: null,
                 });
             }}
             onPointerMove={(e) => {
@@ -57,7 +79,7 @@ const CanvasHost = forwardRef(function CanvasHost({ children, viewport, worldOff
                 position: 'relative',
                 width: '100%',
                 height: '100%',
-                overflow: 'hidden', // 🔒 clip world
+                overflow: 'hidden',
                 touchAction: 'none',
             }}>
             {/* 🌍 WORLD — FULLSCREEN, TRANSFORMED */}

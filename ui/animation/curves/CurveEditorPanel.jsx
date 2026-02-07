@@ -5,16 +5,12 @@ import { getRuntimeState } from "@/runtime/state/runtimeState.js";
 import { resolveWorkspacePolicy } from "@/workspaces/registry/resolveWorkspacePolicy.js";
 import { getActiveWorkspace } from "@/runtime/state/workspaceState.js";
 import { useTimelineSelectionStore } from "@/timeline/ui/useTimelineSelectionStore.js";
-import CurveCanvas from "./CurveCanvas.jsx";
-import CurvePresetPicker from "./CurvePresetPicker.jsx";
 import { commitCurveChange } from "./commitCurveChange.js";
+import BezierCurveCanvas from "./BezierCurveCanvas.jsx";
 
-const allowedEasings = new Set([
-  "linear",
-  "ease-in",
-  "ease-out",
-  "ease-in-out",
-]);
+function isBezier(easing) {
+  return easing && typeof easing === "object" && easing.type === "bezier";
+}
 
 export default function CurveEditorPanel({ capabilities }) {
   const selection = useTimelineSelectionStore((s) => s.selectedKeyframeIds);
@@ -30,29 +26,24 @@ export default function CurveEditorPanel({ capabilities }) {
   }, [selectedKeyframeId]);
 
   const easing = keyframe?.easing || "linear";
+  const bezierActive = isBezier(easing);
 
   if (!canRender) return null;
 
-  if (!selectedKeyframeId || !keyframe) {
-    return (
-      <div style={{ fontSize: 12, color: "#64748b" }}>
-        <div style={{ fontWeight: 600, color: "#0f172a" }}>No keyframe selected</div>
-        <div>Select a keyframe on the timeline to edit its easing curve.</div>
-      </div>
-    );
-  }
+  if (!selectedKeyframeId || !keyframe || !bezierActive) return null;
 
   function commit(nextEasing) {
-    if (!allowedEasings.has(nextEasing)) return;
+    if (!nextEasing || !isBezier(nextEasing)) return;
     commitCurveChange({ keyframeId: selectedKeyframeId, easing: nextEasing });
   }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <div style={{ fontSize: 12, color: "#64748b" }}>Keyframe: {selectedKeyframeId}</div>
-      <CurveCanvas key={selectedKeyframeId} easing={easing} onCommit={commit} />
-      <CurvePresetPicker easing={easing} onSelect={commit} />
-      <div style={{ fontSize: 12 }}>Easing: {easing}</div>
+      <BezierCurveCanvas key={selectedKeyframeId} easing={easing} onCommit={commit} />
+      <div style={{ fontSize: 12 }}>
+        Easing: bezier ({easing.in?.x?.toFixed?.(2) ?? "?"},{easing.in?.y?.toFixed?.(2) ?? "?"}) → ({easing.out?.x?.toFixed?.(2) ?? "?"},{easing.out?.y?.toFixed?.(2) ?? "?"})
+      </div>
     </div>
   );
 }

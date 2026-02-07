@@ -15,6 +15,25 @@ export function animationReducers(state, event) {
     const timeline = state.timeline?.timelines?.default;
     if (!timeline) return state;
 
+    function ensureAnimations(nextState) {
+        if (nextState.timeline?.animations) return nextState;
+        return {
+            ...nextState,
+            timeline: {
+                ...nextState.timeline,
+                animations: {
+                    clips: {},
+                    tracks: {},
+                    keyframes: {},
+                },
+            },
+        };
+    }
+
+    function defaultClipId() {
+        return 'clip-default';
+    }
+
     switch (type) {
         case EventTypes.ANIMATION_TRACK_CREATE: {
             const { trackId, nodeId, property } = payload || {};
@@ -57,6 +76,100 @@ export function animationReducers(state, event) {
                             ...timeline,
                             tracks: (timeline.tracks || []).filter((t) => t.id !== trackId),
                         },
+                    },
+                },
+            };
+        }
+
+        case EventTypes.ANIMATION_KEYFRAME_CREATE: {
+            const { nodeId, property, timeMs, value, easing = 'linear' } = payload || {};
+            if (!nodeId || !property || !Number.isFinite(timeMs) || !Number.isFinite(value)) return state;
+
+            const ensured = ensureAnimations(state);
+            const animations = ensured.timeline.animations;
+            const clipId = payload?.clipId || defaultClipId();
+            const existingClip = animations.clips?.[clipId];
+            const nextClip = existingClip
+                ? {
+                      ...existingClip,
+                      durationMs: Math.max(existingClip.durationMs || 0, timeMs),
+                  }
+                : {
+                      id: clipId,
+                      durationMs: Math.max(0, timeMs),
+                      trackIds: [],
+                  };
+
+            const tracks = animations.tracks || {};
+            const keyframes = animations.keyframes || {};
+
+            const existingTrack = Object.values(tracks).find(
+                (track) => track?.nodeId === nodeId && track?.property === property
+            );
+
+            const trackId = existingTrack?.id || payload?.trackId || `track-${nodeId}-${property}`;
+            const clipIdForTrack = existingTrack?.clipId || payload?.clipId || clipId;
+            const keyframeId = payload?.keyframeId || `kf-${trackId}-${timeMs}`;
+
+            const nextTrack = existingTrack
+                ? {
+                      ...existingTrack,
+                      clipId: clipIdForTrack,
+                      keyframeIds: [...(existingTrack.keyframeIds || [])],
+                  }
+                : {
+                      id: trackId,
+                      nodeId,
+                      property,
+                      clipId: clipIdForTrack,
+                      keyframeIds: [],
+                  };
+
+            const existingKeyframeId = (nextTrack.keyframeIds || []).find((id) => keyframes[id]?.timeMs === timeMs);
+            const finalKeyframeId = existingKeyframeId || keyframeId;
+
+            const nextKeyframes = {
+                ...keyframes,
+                [finalKeyframeId]: {
+                    id: finalKeyframeId,
+                    trackId,
+                    timeMs,
+                    value,
+                    easing,
+                },
+            };
+
+            if (!existingKeyframeId) {
+                nextTrack.keyframeIds = [...(nextTrack.keyframeIds || []), finalKeyframeId];
+            }
+
+            nextTrack.keyframeIds = (nextTrack.keyframeIds || [])
+                .slice()
+                .sort((a, b) => (nextKeyframes[a]?.timeMs || 0) - (nextKeyframes[b]?.timeMs || 0));
+
+            const nextTracks = {
+                ...tracks,
+                [trackId]: nextTrack,
+            };
+
+            const nextClips = {
+                ...animations.clips,
+                [clipId]: {
+                    ...nextClip,
+                    trackIds: nextClip.trackIds?.includes(trackId)
+                        ? nextClip.trackIds
+                        : [...(nextClip.trackIds || []), trackId],
+                },
+            };
+
+            return {
+                ...ensured,
+                timeline: {
+                    ...ensured.timeline,
+                    animations: {
+                        clips: nextClips,
+                        tracks: nextTracks,
+                        keyframes: nextKeyframes,
                     },
                 },
             };

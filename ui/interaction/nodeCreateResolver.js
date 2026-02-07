@@ -8,6 +8,10 @@ import { createNode } from '@/design/state/createNode.js';
 let _unsub = null;
 let warnedMissingDispatcher = false;
 
+function finiteOr(value, fallback) {
+    return Number.isFinite(value) ? value : fallback;
+}
+
 function safeDispatch(event) {
     try {
         console.log('[nodeCreateResolver] dispatch start:', event?.type);
@@ -48,14 +52,18 @@ export function registerNodeCreateResolver() {
             content = null,
         } = intent;
 
-        const layout = bounds
-            ? bounds
-            : {
-                  x: position?.x ?? 0,
-                  y: position?.y ?? 0,
-                  width: 160,
-                  height: 100,
-              };
+        const sourceLayout = bounds || {
+            x: position?.x,
+            y: position?.y,
+            width: 160,
+            height: 100,
+        };
+        const layout = {
+            x: finiteOr(sourceLayout?.x, 0),
+            y: finiteOr(sourceLayout?.y, 0),
+            width: finiteOr(sourceLayout?.width, 160),
+            height: finiteOr(sourceLayout?.height, 100),
+        };
 
         const node = createNode({
             id: id || `node-${nanoid()}`,

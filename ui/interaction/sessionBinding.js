@@ -3,13 +3,20 @@ import { InputSessionManager } from '@/input/InputSessionManager.js';
 import { dispatcher } from './dispatcher.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { computeSelectionBounds } from '@/engine/constraints/selectionBounds.js';
+import { getRuntimeState } from '@/runtime/state/runtimeState.js';
+import { getActiveWorkspace } from '@/runtime/state/workspaceState.js';
+import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
+import { useTimelineStore } from '@/ui/timeline/useTimelineStore.js';
+import { useSelectionStore } from '@/selection/useSelectionStore.js';
 import { registerEditEventBridge } from '@/ui/timeline/editEventBridge.js';
 import { registerNodeDragResolver } from '@/ui/interaction/nodeDragResolver.js';
 import { registerNodeCreateResolver } from '@/ui/interaction/nodeCreateResolver';
+import { registerAnimationKeyframeResolver } from '@/ui/interaction/animationKeyframeResolver.js';
 
 registerEditEventBridge();
 registerNodeDragResolver();
 registerNodeCreateResolver();
+registerAnimationKeyframeResolver();
 
 let warnedMissingDispatcher = false;
 
@@ -22,6 +29,77 @@ function safeDispatch(event) {
             warnedMissingDispatcher = true;
         }
     }
+}
+
+function canAuthorAnimationKeyframes() {
+    const runtimeState = getRuntimeState();
+    if (runtimeState?.__isReplaying) return false;
+
+    const workspaceId = getActiveWorkspace();
+    const policy = resolveWorkspacePolicy(workspaceId);
+    if (!policy?.capabilities?.timeline) return false;
+
+    return true;
+}
+
+function emitKeyframesForNodes(nodeIds) {
+    if (!Array.isArray(nodeIds) || nodeIds.length === 0) return;
+    if (!canAuthorAnimationKeyframes()) return;
+
+    const selectedIds = useSelectionStore.getState().selectedIds || [];
+    if (!selectedIds.length) return;
+
+    const timeMs = useTimelineStore.getState().currentTime;
+    if (!Number.isFinite(timeMs)) return;
+
+    const runtimeState = getRuntimeState();
+    const nodes = runtimeState?.nodes || {};
+
+    const idsToAuthor = selectedIds.length > 1 ? selectedIds : nodeIds;
+
+    idsToAuthor.forEach((nodeId) => {
+        const node = nodes[nodeId];
+        if (!node?.layout) return;
+
+        const { x, y, width, height } = node.layout;
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+
+        canvasBus.emit('intent.animation.keyframe.create', {
+            nodeId,
+            property: 'layout.x',
+            timeMs,
+            value: x,
+            source: 'session.move.commit',
+        });
+
+        canvasBus.emit('intent.animation.keyframe.create', {
+            nodeId,
+            property: 'layout.y',
+            timeMs,
+            value: y,
+            source: 'session.move.commit',
+        });
+
+        if (Number.isFinite(width)) {
+            canvasBus.emit('intent.animation.keyframe.create', {
+                nodeId,
+                property: 'layout.width',
+                timeMs,
+                value: width,
+                source: 'session.move.commit',
+            });
+        }
+
+        if (Number.isFinite(height)) {
+            canvasBus.emit('intent.animation.keyframe.create', {
+                nodeId,
+                property: 'layout.height',
+                timeMs,
+                value: height,
+                source: 'session.move.commit',
+            });
+        }
+    });
 }
 
 const sessionManager = new InputSessionManager(canvasBus);
@@ -60,6 +138,8 @@ canvasBus.on('pointer.up', () => {
             ids: nodeIds,
             source: 'canvas.move',
         });
+
+        emitKeyframesForNodes(nodeIds);
     }
 
     if (result?.type === 'resize') {
@@ -102,6 +182,8 @@ canvasBus.on('pointer.up', () => {
             ids: nodes.map((node) => node.id),
             source: 'canvas.resize',
         });
+
+        emitKeyframesForNodes(nodes.map((node) => node.id));
     }
 });
 

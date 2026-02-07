@@ -2,14 +2,12 @@
 
 import { canvasBus } from '@/ui/canvasBus.js';
 
-export function NodeView({ node, position, zoomTier = 'normal' }) {
+export function NodeView({ node, rect, zoomTier = 'normal' }) {
     if (!node) return null;
+    if (!rect) return null;
 
-    if (process.env.NODE_ENV !== 'production') {
-        if (!Number.isFinite(node.layout?.x) || !Number.isFinite(node.layout?.y)) {
-            throw new Error(`[NodeView] Invalid layout values.\nNode ${node.id} has non-finite x/y.\nProjection is broken upstream.`);
-        }
-    }
+    const { left, top, width, height } = rect;
+    if (!Number.isFinite(left) || !Number.isFinite(top) || !Number.isFinite(width) || !Number.isFinite(height)) return null;
 
     function onPointerDown(e) {
         // Left mouse only
@@ -46,10 +44,10 @@ export function NodeView({ node, position, zoomTier = 'normal' }) {
             onPointerDown={onPointerDown}
             style={{
                 position: 'absolute',
-                left: position?.x ?? node.x,
-                top: position?.y ?? node.y,
-                width: node.width ?? 0,
-                height: node.height ?? 0,
+                left,
+                top,
+                width,
+                height,
                 background,
                 color: '#111827',
                 userSelect: 'none',
