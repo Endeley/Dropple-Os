@@ -10,6 +10,8 @@ import TimelineTrackList from './TimelineTrackList.jsx';
 import TimelineTimeScale from './TimelineTimeScale.jsx';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext.jsx';
 import { canvasBus } from '@/ui/canvasBus.js';
+import { useTimelineStore } from './useTimelineStore.js';
+import { collectKeyframeTimes, getPrevKeyframeTime } from './keyframeTimeUtils.js';
 
 export default function TimelinePanel({ designState }) {
   const [currentTime, setCurrentTime] = useState(0);
@@ -21,6 +23,16 @@ export default function TimelinePanel({ designState }) {
   const cancelRef = useRef(null);
   const playbackRef = useRef({ rafId: null, cancelPreview: null, running: false });
   const { selectedIds } = useSelection() || {};
+  const snapToKeyframes = useTimelineStore((s) => s.snapToKeyframes);
+  const previewInterpolation = useTimelineStore((s) => s.previewInterpolation);
+  const stepForwardFrame = useTimelineStore((s) => s.stepForwardFrame);
+  const stepBackwardFrame = useTimelineStore((s) => s.stepBackwardFrame);
+  const stepNextKeyframe = useTimelineStore((s) => s.stepNextKeyframe);
+  const stepPreviousKeyframe = useTimelineStore((s) => s.stepPreviousKeyframe);
+  const setSnapToKeyframes = useTimelineStore((s) => s.setSnapToKeyframes);
+  const setPreviewInterpolation = useTimelineStore((s) => s.setPreviewInterpolation);
+  const setDuration = useTimelineStore((s) => s.setDuration);
+  const setKeyframeTimes = useTimelineStore((s) => s.setKeyframeTimes);
   const selectedId = selectedIds?.size === 1 ? Array.from(selectedIds)[0] : null;
   const selectedNode = useMemo(
     () => (selectedId ? designState?.nodes?.[selectedId] : null),
@@ -42,6 +54,8 @@ export default function TimelinePanel({ designState }) {
     if (!Number.isFinite(durationMs) || durationMs <= 0) {
       setRangeInMs(0);
       setRangeOutMs(0);
+      setDuration?.(0);
+      setKeyframeTimes?.([]);
       return;
     }
     setRangeInMs((prev) => Math.max(0, Math.min(prev, durationMs)));
@@ -49,7 +63,13 @@ export default function TimelinePanel({ designState }) {
       const next = Number.isFinite(prev) && prev > 0 ? prev : durationMs;
       return Math.max(0, Math.min(next, durationMs));
     });
-  }, [durationMs]);
+    setDuration?.(durationMs);
+    setKeyframeTimes?.(collectKeyframeTimes(animations));
+  }, [durationMs, setDuration, setKeyframeTimes, animations]);
+
+  useEffect(() => {
+    setKeyframeTimes?.(collectKeyframeTimes(animations));
+  }, [animations, setKeyframeTimes]);
 
   useEffect(() => {
     return () => {
@@ -73,6 +93,14 @@ export default function TimelinePanel({ designState }) {
   if (runtimeState?.__isReplaying) return null;
   if (!animations?.clips) return null;
 
+  function resolvePreviewTime(timeMs) {
+    if (previewInterpolation === 'hold') {
+      const times = useTimelineStore.getState().keyframeTimes || [];
+      return getPrevKeyframeTime(times, timeMs) ?? timeMs;
+    }
+    return timeMs;
+  }
+
   function handleScrub(timeMs) {
     if (isPlaying) {
       stopPlayback();
@@ -82,13 +110,18 @@ export default function TimelinePanel({ designState }) {
       cancelRef.current = null;
     }
 
+    const store = useTimelineStore.getState();
+    store.setTime(timeMs, { forceSnap: true });
+    const snappedTime = store.currentTime;
+    const previewTime = resolvePreviewTime(snappedTime);
+
     const preview = runAnimationPreview({
       designState,
-      timeMs,
+      timeMs: previewTime,
     });
 
     cancelRef.current = preview?.cancel || null;
-    setCurrentTime(timeMs);
+    setCurrentTime(snappedTime);
   }
 
   function clampToRange(value, min, max) {
@@ -206,6 +239,57 @@ export default function TimelinePanel({ designState }) {
     handleScrub(inMs);
   }
 
+  function handleStepFrame(direction) {
+    if (direction > 0) {
+      stepForwardFrame?.();
+    } else {
+      stepBackwardFrame?.();
+    }
+    const nextTime = useTimelineStore.getState().currentTime;
+    handleScrub(nextTime);
+  }
+
+  function handleStepKeyframe(direction) {
+    if (direction > 0) {
+      stepNextKeyframe?.();
+    } else {
+      stepPreviousKeyframe?.();
+    }
+    const nextTime = useTimelineStore.getState().currentTime;
+    handleScrub(nextTime);
+  }
+
+  useEffect(() => {
+    function isTypingTarget(target) {
+      if (!target) return false;
+      const tag = target.tagName?.toLowerCase();
+      return tag === 'input' || tag === 'textarea' || target.isContentEditable;
+    }
+
+    function handleKeyDown(e) {
+      if (isTypingTarget(e.target)) return;
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        handleStepFrame(-1);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        handleStepFrame(1);
+      } else if (e.key === ',') {
+        e.preventDefault();
+        handleStepKeyframe(-1);
+      } else if (e.key === '.') {
+        e.preventDefault();
+        handleStepKeyframe(1);
+      } else if (e.key.toLowerCase() === 'h') {
+        e.preventDefault();
+        setPreviewInterpolation?.(previewInterpolation === 'hold' ? 'interpolate' : 'hold');
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [previewInterpolation]);
+
   function handleSetKeyframe() {
     if (!canSetKeyframe) return;
 
@@ -245,6 +329,36 @@ export default function TimelinePanel({ designState }) {
         </button>
         <button
           type="button"
+          onClick={() => handleStepKeyframe(-1)}
+          style={{
+            padding: '6px 10px',
+            borderRadius: 6,
+            border: '1px solid #e2e8f0',
+            background: '#ffffff',
+            color: '#0f172a',
+            fontSize: 12,
+            cursor: 'pointer',
+          }}
+        >
+          ⏪
+        </button>
+        <button
+          type="button"
+          onClick={() => handleStepFrame(-1)}
+          style={{
+            padding: '6px 10px',
+            borderRadius: 6,
+            border: '1px solid #e2e8f0',
+            background: '#ffffff',
+            color: '#0f172a',
+            fontSize: 12,
+            cursor: 'pointer',
+          }}
+        >
+          ⏮
+        </button>
+        <button
+          type="button"
           onClick={() => (isPlaying ? stopPlayback() : startPlayback())}
           style={{
             padding: '6px 10px',
@@ -258,6 +372,36 @@ export default function TimelinePanel({ designState }) {
         >
           {isPlaying ? 'Pause' : 'Play'}
         </button>
+        <button
+          type="button"
+          onClick={() => handleStepFrame(1)}
+          style={{
+            padding: '6px 10px',
+            borderRadius: 6,
+            border: '1px solid #e2e8f0',
+            background: '#ffffff',
+            color: '#0f172a',
+            fontSize: 12,
+            cursor: 'pointer',
+          }}
+        >
+          ⏭
+        </button>
+        <button
+          type="button"
+          onClick={() => handleStepKeyframe(1)}
+          style={{
+            padding: '6px 10px',
+            borderRadius: 6,
+            border: '1px solid #e2e8f0',
+            background: '#ffffff',
+            color: '#0f172a',
+            fontSize: 12,
+            cursor: 'pointer',
+          }}
+        >
+          ⏩
+        </button>
         <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
           <input
             type="checkbox"
@@ -265,6 +409,22 @@ export default function TimelinePanel({ designState }) {
             onChange={(e) => setIsLooping(e.target.checked)}
           />
           Loop
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+          <input
+            type="checkbox"
+            checked={snapToKeyframes}
+            onChange={(e) => setSnapToKeyframes?.(e.target.checked)}
+          />
+          Snap
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+          <input
+            type="checkbox"
+            checked={previewInterpolation === 'hold'}
+            onChange={(e) => setPreviewInterpolation?.(e.target.checked ? 'hold' : 'interpolate')}
+          />
+          Hold
         </label>
         <button
           type="button"

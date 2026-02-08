@@ -4,6 +4,9 @@ import { dispatcher } from './dispatcher.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { computeSelectionBounds } from '@/engine/constraints/selectionBounds.js';
 import { getRuntimeState } from '@/runtime/state/runtimeState.js';
+import { getWorkspaceState } from '@/runtime/state/workspaceState.js';
+import { screenToWorld } from '@/canvas/transform/screenToWorld.js';
+import { setAimTarget } from '@/runtime/characters/characterRegistry.js';
 import { getActiveWorkspace } from '@/runtime/state/workspaceState.js';
 import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
 import { useTimelineStore } from '@/ui/timeline/useTimelineStore.js';
@@ -12,6 +15,7 @@ import { registerEditEventBridge } from '@/ui/timeline/editEventBridge.js';
 import { registerNodeDragResolver } from '@/ui/interaction/nodeDragResolver.js';
 import { registerNodeCreateResolver } from '@/ui/interaction/nodeCreateResolver';
 import { registerAnimationKeyframeResolver } from '@/ui/interaction/animationKeyframeResolver.js';
+import { useAutoKeyframeStore } from '@/ui/animation/autoKeyframeStore.js';
 
 registerEditEventBridge();
 registerNodeDragResolver();
@@ -42,9 +46,12 @@ function canAuthorAnimationKeyframes() {
     return true;
 }
 
-function emitKeyframesForNodes(nodeIds) {
+function emitKeyframesForNodes(nodeIds, { position, size, rotation } = {}) {
     if (!Array.isArray(nodeIds) || nodeIds.length === 0) return;
     if (!canAuthorAnimationKeyframes()) return;
+
+    const policy = useAutoKeyframeStore.getState();
+    if (!policy?.enabled) return;
 
     const selectedIds = useSelectionStore.getState().selectedIds || [];
     if (!selectedIds.length) return;
@@ -55,48 +62,61 @@ function emitKeyframesForNodes(nodeIds) {
     const runtimeState = getRuntimeState();
     const nodes = runtimeState?.nodes || {};
 
-    const idsToAuthor = selectedIds.length > 1 ? selectedIds : nodeIds;
+    const idsToAuthor = Array.from(
+        new Set(selectedIds.length > 1 ? selectedIds : nodeIds)
+    );
 
     idsToAuthor.forEach((nodeId) => {
         const node = nodes[nodeId];
         if (!node?.layout) return;
 
         const { x, y, width, height } = node.layout;
-        if (!Number.isFinite(x) || !Number.isFinite(y)) return;
 
-        canvasBus.emit('intent.animation.keyframe.create', {
-            nodeId,
-            property: 'layout.x',
-            timeMs,
-            value: x,
-            source: 'session.move.commit',
-        });
-
-        canvasBus.emit('intent.animation.keyframe.create', {
-            nodeId,
-            property: 'layout.y',
-            timeMs,
-            value: y,
-            source: 'session.move.commit',
-        });
-
-        if (Number.isFinite(width)) {
+        if (position && Number.isFinite(x) && Number.isFinite(y)) {
             canvasBus.emit('intent.animation.keyframe.create', {
                 nodeId,
-                property: 'layout.width',
+                property: 'layout.x',
                 timeMs,
-                value: width,
-                source: 'session.move.commit',
+                value: x,
+                source: 'auto-keyframe',
+            });
+            canvasBus.emit('intent.animation.keyframe.create', {
+                nodeId,
+                property: 'layout.y',
+                timeMs,
+                value: y,
+                source: 'auto-keyframe',
             });
         }
 
-        if (Number.isFinite(height)) {
+        if (size) {
+            if (Number.isFinite(width)) {
+                canvasBus.emit('intent.animation.keyframe.create', {
+                    nodeId,
+                    property: 'layout.width',
+                    timeMs,
+                    value: width,
+                    source: 'auto-keyframe',
+                });
+            }
+            if (Number.isFinite(height)) {
+                canvasBus.emit('intent.animation.keyframe.create', {
+                    nodeId,
+                    property: 'layout.height',
+                    timeMs,
+                    value: height,
+                    source: 'auto-keyframe',
+                });
+            }
+        }
+
+        if (rotation && Number.isFinite(node.rotation)) {
             canvasBus.emit('intent.animation.keyframe.create', {
                 nodeId,
-                property: 'layout.height',
+                property: 'rotation',
                 timeMs,
-                value: height,
-                source: 'session.move.commit',
+                value: node.rotation,
+                source: 'auto-keyframe',
             });
         }
     });
@@ -111,6 +131,20 @@ canvasBus.on('pointer.down', ({ session, event }) => {
 
 // pointer move
 canvasBus.on('pointer.move', (event) => {
+    if (event?.clientX != null && event?.clientY != null && event?.currentTarget) {
+        const rect = event.currentTarget.getBoundingClientRect?.();
+        if (rect) {
+            const viewport = getWorkspaceState()?.viewport;
+            if (viewport && Number.isFinite(viewport.scale)) {
+                const screenPoint = {
+                    x: event.clientX - rect.left,
+                    y: event.clientY - rect.top,
+                };
+                const worldPoint = screenToWorld(screenPoint, viewport);
+                setAimTarget(worldPoint);
+            }
+        }
+    }
     sessionManager.updateSession(event);
 });
 
@@ -139,7 +173,7 @@ canvasBus.on('pointer.up', () => {
             source: 'canvas.move',
         });
 
-        emitKeyframesForNodes(nodeIds);
+        emitKeyframesForNodes(nodeIds, { position: true });
     }
 
     if (result?.type === 'resize') {
@@ -183,7 +217,14 @@ canvasBus.on('pointer.up', () => {
             source: 'canvas.resize',
         });
 
-        emitKeyframesForNodes(nodes.map((node) => node.id));
+        emitKeyframesForNodes(nodes.map((node) => node.id), { size: true });
+    }
+
+    if (result?.type === 'rotate') {
+        const { nodeIds } = result;
+        if (Array.isArray(nodeIds) && nodeIds.length) {
+            emitKeyframesForNodes(nodeIds, { rotation: true });
+        }
     }
 });
 

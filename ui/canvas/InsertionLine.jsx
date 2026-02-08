@@ -1,6 +1,6 @@
 'use client';
 
-import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore';
+import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
 import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
 import { projectToViewport } from '@/canvas/transform/projectToViewport.js';
 
@@ -9,7 +9,7 @@ import { projectToViewport } from '@/canvas/transform/projectToViewport.js';
  * Pure UI, derived from current layout state.
  */
 export default function InsertionLine({ containerId, index }) {
-    const nodes = useAnimatedRuntimeStore((s) => s.nodes);
+    const nodes = useCharacterRenderNodes();
     const viewport = useWorkspaceState((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
 
     const container = nodes[containerId];

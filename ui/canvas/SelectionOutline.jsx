@@ -1,11 +1,12 @@
 'use client';
 
-import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore';
+import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
 import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
 import { projectRectToViewport } from '@/canvas/transform/projectRectToViewport.js';
 
 export function SelectionOutline({ nodeId, color = 'rgba(59,130,246,0.6)' }) {
-    const node = useAnimatedRuntimeStore((s) => s.nodes[nodeId]);
+    const nodes = useCharacterRenderNodes();
+    const node = nodes?.[nodeId];
     const viewport = useWorkspaceState((state) => state.viewport);
     if (!node) return null;
     const rect = projectRectToViewport(

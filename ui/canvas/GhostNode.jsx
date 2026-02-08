@@ -1,6 +1,6 @@
 'use client';
 
-import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore';
+import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
 import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
 import { projectRectToViewport } from '@/canvas/transform/projectRectToViewport.js';
 
@@ -9,7 +9,8 @@ import { projectRectToViewport } from '@/canvas/transform/projectRectToViewport.
  * Uses real node position + delta.
  */
 export function GhostNode({ nodeId, delta }) {
-  const node = useAnimatedRuntimeStore((s) => s.nodes[nodeId]);
+  const nodes = useCharacterRenderNodes();
+  const node = nodes?.[nodeId];
   const viewport = useWorkspaceState((state) => state.viewport);
   if (!node) return null;
   const rect = projectRectToViewport(

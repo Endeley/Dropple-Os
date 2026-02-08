@@ -3,12 +3,12 @@
 import CanvasSnapGuides from './CanvasSnapGuides.jsx';
 import InsertionLine from './InsertionLine.jsx';
 import FrameRulers from './FrameRulers.jsx';
-import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore';
+import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
 import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
 import { useSelectionStore } from '@/selection/useSelectionStore.js';
 
 export default function GuideLayer() {
-    const nodes = useAnimatedRuntimeStore((s) => s.nodes);
+    const nodes = useCharacterRenderNodes();
     const selectedIds = useSelectionStore((s) => s.selectedIds);
     const viewport = useWorkspaceState((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
 

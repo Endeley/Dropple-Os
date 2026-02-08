@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CanvasHost from './CanvasHost.jsx';
 import NodeLayer from './NodeLayer.jsx';
 import GhostLayer from './GhostLayer.jsx';
+import GhostFrameLayer from './GhostFrameLayer.jsx';
 import GuideLayer from './GuideLayer.jsx';
 import SelectionLayer from './SelectionLayer.jsx';
 import RemoteCursors from './RemoteCursors.jsx';
@@ -238,6 +239,7 @@ export default function CanvasRoot({ workspaceId }) {
                 <div style={{ position: 'absolute', inset: 0 }}>
                     <CanvasSurface surface={canvasSurface} viewport={viewport} emphasisMode={isNodeDragging ? 'drag' : isPanning ? 'pan' : 'none'} />
                     <WorldOriginMarker viewport={viewport} />
+                    <GhostFrameLayer designState={designState} />
                     <NodeLayer />
                     <GhostLayer />
                     <GuideLayer />
