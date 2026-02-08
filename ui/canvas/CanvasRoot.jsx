@@ -6,6 +6,8 @@ import CanvasHost from './CanvasHost.jsx';
 import NodeLayer from './NodeLayer.jsx';
 import GhostLayer from './GhostLayer.jsx';
 import GhostFrameLayer from './GhostFrameLayer.jsx';
+import MotionTrailLayer from './MotionTrailLayer.jsx';
+import ConstraintVisualizerLayer from './ConstraintVisualizerLayer.jsx';
 import GuideLayer from './GuideLayer.jsx';
 import SelectionLayer from './SelectionLayer.jsx';
 import RemoteCursors from './RemoteCursors.jsx';
@@ -240,6 +242,8 @@ export default function CanvasRoot({ workspaceId }) {
                     <CanvasSurface surface={canvasSurface} viewport={viewport} emphasisMode={isNodeDragging ? 'drag' : isPanning ? 'pan' : 'none'} />
                     <WorldOriginMarker viewport={viewport} />
                     <GhostFrameLayer designState={designState} />
+                    <MotionTrailLayer designState={designState} />
+                    <ConstraintVisualizerLayer />
                     <NodeLayer />
                     <GhostLayer />
                     <GuideLayer />

@@ -114,6 +114,11 @@ export function updateCharacterConstraint(partId, updater) {
     const nextConstraints = { ...(character.constraints || {}) };
     const current = nextConstraints[partId] || {};
     const next = typeof updater === 'function' ? updater(current) : updater;
+    if (__DEV__ && next) {
+        if (next.type === 'bone' || next.bone || next.ik || next.mesh || next.deform) {
+            console.warn('[Animation v1] Bones/IK/deformation are not supported.');
+        }
+    }
     nextConstraints[partId] = { ...current, ...next };
     const updated = { ...character, constraints: nextConstraints };
     characters.set(character.id, updated);

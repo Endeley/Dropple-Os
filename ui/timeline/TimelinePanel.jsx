@@ -33,6 +33,7 @@ export default function TimelinePanel({ designState }) {
   const setPreviewInterpolation = useTimelineStore((s) => s.setPreviewInterpolation);
   const setDuration = useTimelineStore((s) => s.setDuration);
   const setKeyframeTimes = useTimelineStore((s) => s.setKeyframeTimes);
+  const setIsPlayingFlag = useTimelineStore((s) => s.setIsPlaying);
   const selectedId = selectedIds?.size === 1 ? Array.from(selectedIds)[0] : null;
   const selectedNode = useMemo(
     () => (selectedId ? designState?.nodes?.[selectedId] : null),
@@ -185,6 +186,7 @@ export default function TimelinePanel({ designState }) {
     }
 
     setIsPlaying(false);
+    setIsPlayingFlag?.(false);
   }
 
   function startPlayback() {
@@ -230,6 +232,7 @@ export default function TimelinePanel({ designState }) {
 
     playbackRef.current.rafId = requestAnimationFrame(tick);
     setIsPlaying(true);
+    setIsPlayingFlag?.(true);
   }
 
   function handleResetToIn() {

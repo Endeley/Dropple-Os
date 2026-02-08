@@ -68,6 +68,7 @@ Branch B events ─┘
 - Commit = reducer events
 - Timeline data is serializable
 - Phase 4 metadata only: schema in core/animation/AnimationSchema.js and reducer wiring in core/events/reducers/animationReducers.js (no preview/eval)
+- Animation v1 is locked. New animation features must target v2.
 
 **Export Trust Chain**
 ```

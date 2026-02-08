@@ -18,6 +18,7 @@ export const useTimelineStore = create((set, get) => ({
     keyframeTimes: [],
     snapToKeyframes: false,
     previewInterpolation: 'interpolate',
+    isPlaying: false,
 
     setTime(t, options = {}) {
         const { snap = true, forceSnap = false } = options;
@@ -68,6 +69,10 @@ export const useTimelineStore = create((set, get) => ({
 
     setPreviewInterpolation(value) {
         set({ previewInterpolation: value === 'hold' ? 'hold' : 'interpolate' });
+    },
+
+    setIsPlaying(value) {
+        set({ isPlaying: Boolean(value) });
     },
 
     stepForwardFrame() {

@@ -92,6 +92,72 @@ export function attachProp({ hostId, propId, socketName, mode = 'follow' } = {})
     return attachment;
 }
 
+export function updateAttachment(attachmentId, updater) {
+    const current = attachments.get(attachmentId);
+    if (!current) return null;
+    const next = typeof updater === 'function' ? updater(current) : updater;
+    if (!next) return current;
+    if (__DEV__ && next) {
+        if (next.type === 'bone' || next.bone || next.ik || next.mesh || next.deform) {
+            console.warn('[Animation v1] Bones/IK/deformation are not supported.');
+        }
+    }
+
+    const updated = {
+        ...current,
+        ...next,
+        socket: next.socket ? { ...current.socket, ...next.socket } : current.socket,
+        mode: next.mode === 'lock' ? 'lock' : next.mode === 'follow' ? 'follow' : current.mode,
+    };
+
+    attachments.set(attachmentId, updated);
+
+    if (updated.propId && updated.propId !== current.propId) {
+        propToAttachment.delete(current.propId);
+        propToAttachment.set(updated.propId, attachmentId);
+    }
+
+    if (updated.hostId && updated.hostId !== current.hostId) {
+        const list = hostToAttachments.get(current.hostId) || [];
+        hostToAttachments.set(
+            current.hostId,
+            list.filter((id) => id !== attachmentId),
+        );
+        const nextList = hostToAttachments.get(updated.hostId) || [];
+        hostToAttachments.set(updated.hostId, [...nextList, attachmentId]);
+    }
+
+    return updated;
+}
+
+export function renameSocket(hostId, fromName, toName) {
+    if (!hostId || !fromName || !toName) return false;
+    const sockets = hostSockets.get(hostId) || {};
+    if (!sockets[fromName] || sockets[toName]) return false;
+
+    const socket = sockets[fromName];
+    const updatedSocket = { ...socket, name: toName };
+    const nextSockets = { ...sockets };
+    delete nextSockets[fromName];
+    nextSockets[toName] = updatedSocket;
+    hostSockets.set(hostId, nextSockets);
+
+    const attached = hostToAttachments.get(hostId) || [];
+    attached.forEach((attachmentId) => {
+        const attachment = attachments.get(attachmentId);
+        if (!attachment || attachment.socket?.name !== fromName) return;
+        attachments.set(attachmentId, {
+            ...attachment,
+            socket: {
+                ...attachment.socket,
+                name: toName,
+            },
+        });
+    });
+
+    return true;
+}
+
 export function detachProp(propId) {
     const attachmentId = propToAttachment.get(propId);
     if (!attachmentId) return false;

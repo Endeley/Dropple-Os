@@ -1,3 +1,8 @@
+// ⚠️ Animation v1 contract
+// This file is part of the locked Animation v1 system.
+// Do not extend with bones / IK / deformation.
+// See docs/ANIMATION_V1.md
+
 import { evaluateAnimationTimeline } from './evaluateAnimationTimeline.js';
 
 /**
