@@ -37,6 +37,9 @@ import { emitUXWarningEvent } from './ux/uxWarningBus.js';
 import { createUXAuditLog } from './ux/uxAuditLog.js';
 import { requestUXConfirmation } from './ux/uxConfirmBus.js';
 import { shouldConfirmUXAction, defaultUXEnforcementTier } from './ux/shouldConfirmUXAction.js';
+import { withMutationOrigin } from '@/core/mutationContext.js';
+import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
+import { getActiveWorkspace } from '../state/workspaceState.js';
 
 export function createEventDispatcher({
     maxHistory = 100,
@@ -106,138 +109,152 @@ export function createEventDispatcher({
     }
 
     async function dispatch(rawEvent) {
-        if (rawEvent && Object.prototype.hasOwnProperty.call(rawEvent, 'id')) {
-            throw new Error(
-                'Illegal event: event IDs may only be assigned by dispatcher'
-            );
-        }
+        return withMutationOrigin('dispatcher', async () => {
+            if (rawEvent && Object.prototype.hasOwnProperty.call(rawEvent, 'id')) {
+                throw new Error(
+                    'Illegal event: event IDs may only be assigned by dispatcher'
+                );
+            }
 
-        const observation = observeUXIntent({
-            profile,
-            actionType: rawEvent?.type,
-        });
-
-        if (
-            shouldConfirmUXAction({
+            const observation = observeUXIntent({
                 profile,
-                intent: observation.intent,
-                uxEnforcementTier,
-            })
-        ) {
-            const actionType = observation.actionType;
+                actionType: rawEvent?.type,
+            });
 
-            if (actionType && !confirmedActionTypes.has(actionType)) {
-                if (pendingConfirmation) {
-                    await pendingConfirmation;
+            if (process.env.NODE_ENV === 'development') {
+                const workspaceId = getActiveWorkspace();
+                const policy = resolveWorkspacePolicy(workspaceId);
+                const allowed = policy?.allowedEventTypes;
+                if (allowed && !allowed.has(rawEvent?.type)) {
+                    console.warn('[Skeleton v2] Intent not allowed in current mode', {
+                        intent: rawEvent?.type,
+                        mode: policy?.id ?? workspaceId,
+                    });
                 }
+            }
 
-                if (!confirmedActionTypes.has(actionType)) {
-                    const confirmationPromise = requestUXConfirmation({ actionType });
-                    pendingConfirmation = confirmationPromise;
-                    const confirmed = await confirmationPromise;
-                    pendingConfirmation = null;
+            if (
+                shouldConfirmUXAction({
+                    profile,
+                    intent: observation.intent,
+                    uxEnforcementTier,
+                })
+            ) {
+                const actionType = observation.actionType;
 
-                    if (!confirmed) {
-                        return getRuntimeState();
+                if (actionType && !confirmedActionTypes.has(actionType)) {
+                    if (pendingConfirmation) {
+                        await pendingConfirmation;
                     }
 
-                    confirmedActionTypes.add(actionType);
+                    if (!confirmedActionTypes.has(actionType)) {
+                        const confirmationPromise = requestUXConfirmation({ actionType });
+                        pendingConfirmation = confirmationPromise;
+                        const confirmed = await confirmationPromise;
+                        pendingConfirmation = null;
+
+                        if (!confirmed) {
+                            return getRuntimeState();
+                        }
+
+                        confirmedActionTypes.add(actionType);
+                    }
                 }
             }
-        }
 
-        perfStart('dispatch');
-        let didExecute = false;
+            perfStart('dispatch');
+            let didExecute = false;
 
-        try {
-            if (currentPreviewCancel) {
-                currentPreviewCancel();
-                currentPreviewCancel = null;
-            }
+            try {
+                if (currentPreviewCancel) {
+                    currentPreviewCancel();
+                    currentPreviewCancel = null;
+                }
 
-            const seq = sequencer.next(branchId);
-            const eventId = createEventId({ branchId, nextSeq: seq });
-            const event = { ...rawEvent, id: eventId };
+                const seq = sequencer.next(branchId);
+                const eventId = createEventId({ branchId, nextSeq: seq });
+                const event = { ...rawEvent, id: eventId };
 
-            const guarded = applyTimelineGuard(event);
-            if (!guarded) return getRuntimeState();
+                const guarded = applyTimelineGuard(event);
+                if (!guarded) return getRuntimeState();
 
-            const animationGuarded = applyAnimationGuard(guarded);
-            if (!animationGuarded) return getRuntimeState();
+                const animationGuarded = applyAnimationGuard(guarded);
+                if (!animationGuarded) return getRuntimeState();
 
-            // Interaction execution
-            if (rawEvent.type === 'interaction/execute') {
-                const runtimeState = getRuntimeState();
-                const { trigger, sourceId } = rawEvent.payload || {};
+                // Interaction execution
+                if (rawEvent.type === 'interaction/execute') {
+                    const runtimeState = getRuntimeState();
+                    const { trigger, sourceId } = rawEvent.payload || {};
 
-                const interaction = resolveInteraction({
-                    trigger,
-                    sourceId,
-                    runtimeState,
-                });
-
-                if (!interaction) return runtimeState;
-
-                if (interaction.action === 'set_state') {
-                    return await dispatch({
-                        type: EventTypes.STATE_SET,
-                        payload: { stateId: interaction.targetStateId },
+                    const interaction = resolveInteraction({
+                        trigger,
+                        sourceId,
+                        runtimeState,
                     });
+
+                    if (!interaction) return runtimeState;
+
+                    if (interaction.action === 'set_state') {
+                        return await dispatch({
+                            type: EventTypes.STATE_SET,
+                            payload: { stateId: interaction.targetStateId },
+                        });
+                    }
+
+                    if (interaction.action === 'set_component_active') {
+                        return await dispatch({
+                            type: EventTypes.COMPONENT_SET_ACTIVE,
+                            payload: { componentId: interaction.targetComponentId },
+                        });
+                    }
+
+                    return runtimeState;
                 }
 
-                if (interaction.action === 'set_component_active') {
-                    return await dispatch({
-                        type: EventTypes.COMPONENT_SET_ACTIVE,
-                        payload: { componentId: interaction.targetComponentId },
+                const prev = getRuntimeState();
+                didExecute = true;
+                let next = applyEvent(prev, animationGuarded);
+                if (rawEvent?.type === EventTypes.NODE_CREATE) {
+                    console.log('[dispatcher] post-reduction NODE_CREATE nextState.nodes:', next?.nodes);
+                }
+                next = ensureDefaultTimeline(next);
+
+                if (next === prev) return next;
+
+                // 🔒 Transition preview is FORBIDDEN during replay
+                const canPreview = !isReplaying;
+                const transition = canPreview && getTransitionForPreview({ prev, next });
+
+                if (transition) {
+                    const preview = runTransitionPreview({
+                        fromState: prev,
+                        toState: next,
+                        transition,
+                        onComplete: (finalState) => {
+                            history.push(finalState);
+                            commit(finalState, { animate: false });
+                            setRuntimeError(null);
+                            currentPreviewCancel = null;
+                        },
                     });
+
+                    currentPreviewCancel = preview.cancel;
+                    return prev;
                 }
 
-                return runtimeState;
+                history.push(next);
+                return commit(next);
+            } catch (err) {
+                console.error('[Dispatcher error]', err, rawEvent);
+                setRuntimeError(err);
+                return getRuntimeState();
+            } finally {
+                perfEnd('dispatch');
+                if (didExecute) {
+                    emitUXWarning(observation);
+                }
             }
-
-            const prev = getRuntimeState();
-            didExecute = true;
-            let next = applyEvent(prev, animationGuarded);
-            if (rawEvent?.type === EventTypes.NODE_CREATE) {
-                console.log('[dispatcher] post-reduction NODE_CREATE nextState.nodes:', next?.nodes);
-            }
-            next = ensureDefaultTimeline(next);
-
-            if (next === prev) return next;
-
-            // 🔒 Transition preview is FORBIDDEN during replay
-            const canPreview = !isReplaying;
-            const transition = canPreview && getTransitionForPreview({ prev, next });
-
-            if (transition) {
-                const preview = runTransitionPreview({
-                    fromState: prev,
-                    toState: next,
-                    transition,
-                    onComplete: (finalState) => {
-                        history.push(finalState);
-                        commit(finalState, { animate: false });
-                        setRuntimeError(null);
-                        currentPreviewCancel = null;
-                    },
-                });
-
-                currentPreviewCancel = preview.cancel;
-                return prev;
-            }
-
-            history.push(next);
-            return commit(next);
-        } catch (err) {
-            console.error('[Dispatcher error]', err, rawEvent);
-            setRuntimeError(err);
-            return getRuntimeState();
-        } finally {
-            perfEnd('dispatch');
-            if (didExecute) {
-                emitUXWarning(observation);
-            }
-        }
+        });
     }
 
     function undo() {

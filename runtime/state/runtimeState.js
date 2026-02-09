@@ -1,4 +1,5 @@
 import { createTimeline } from '@/timeline/schema/timeline.js';
+import { getMutationOrigin } from '@/core/mutationContext.js';
 
 export const initialRuntimeState = {
     nodes: {},
@@ -20,6 +21,12 @@ export function getRuntimeState() {
 }
 
 export function setRuntimeState(nextState) {
+    const origin = getMutationOrigin();
+    if (process.env.NODE_ENV === 'development') {
+        if (origin !== 'dispatcher' && origin !== 'system') {
+            console.warn('[Skeleton v2] State mutation outside dispatcher', { origin });
+        }
+    }
     runtimeState.current = nextState
         ? { ...nextState, __isReplaying: runtimeState.__isReplaying }
         : nextState;

@@ -4,6 +4,7 @@ import { canvasBus } from '@/ui/canvasBus.js';
 import { dispatcher } from './dispatcher.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { createNode } from '@/design/state/createNode.js';
+import { canProjectToCanonicalNode } from '@/validation/canProjectToCanonicalNode.js';
 
 let _unsub = null;
 let warnedMissingDispatcher = false;
@@ -74,6 +75,15 @@ export function registerNodeCreateResolver() {
             content,
             layout,
         });
+
+        if (process.env.NODE_ENV === 'development') {
+            if (!canProjectToCanonicalNode(node)) {
+                console.warn(
+                    '[Skeleton v2] Node cannot project to canonical Node contract',
+                    node
+                );
+            }
+        }
 
         safeDispatch({
             type: EventTypes.NODE_CREATE,

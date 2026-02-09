@@ -11,6 +11,7 @@ import { aiWorkspace } from './registry/aiWorkspace';
 import { brandingWorkspace } from './registry/brandingWorkspace';
 import { documentWorkspace } from './registry/documentWorkspace';
 import { conversionWorkspace } from './registry/conversionWorkspace';
+import { translateWorkspace } from './registry/translateWorkspace';
 import { workspaceRoutes } from './registry/routes';
 
 const routes = workspaceRoutes();
@@ -28,5 +29,6 @@ export const WorkspaceRegistry = {
     ai: { ...aiWorkspace, routes },
     branding: { ...brandingWorkspace, routes },
     document: { ...documentWorkspace, routes },
+    translate: { ...translateWorkspace, routes },
     conversion: { ...conversionWorkspace, routes },
 };

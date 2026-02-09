@@ -12,6 +12,7 @@ export function workspaceRoutes() {
     ai: { label: "AI Suite", href: "/workspace/ai" },
     branding: { label: "Branding", href: "/workspace/branding" },
     document: { label: "Document", href: "/workspace/document" },
-    conversion: { label: "Conversion", href: "/workspace/conversion" },
+    translate: { label: "Translate", href: "/workspace/translate" },
+    conversion: { label: "Translate", href: "/workspace/conversion" },
   };
 }

@@ -11,6 +11,7 @@ import { aiWorkspace } from './aiWorkspace';
 import { brandingWorkspace } from './brandingWorkspace';
 import { documentWorkspace } from './documentWorkspace';
 import { conversionWorkspace } from './conversionWorkspace';
+import { translateWorkspace } from './translateWorkspace';
 
 export const WorkspaceRegistry = {
     graphic: graphicWorkspace,
@@ -25,5 +26,6 @@ export const WorkspaceRegistry = {
     ai: aiWorkspace,
     branding: brandingWorkspace,
     document: documentWorkspace,
+    translate: translateWorkspace,
     conversion: conversionWorkspace,
 };
