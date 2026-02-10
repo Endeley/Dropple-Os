@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { CanvasSurfacePanel } from './panels/CanvasSurfacePanel.jsx';
 import { UXValidationPanel } from './panels/UXValidationPanel.jsx';
 import { UXSuggestionsPanel } from './panels/UXSuggestionsPanel.jsx';
+import { UIUXInspectorPanel } from './panels/UIUXInspectorPanel.jsx';
 
 const TAB_INSPECTOR = 'inspector';
 const TAB_VALIDATION = 'validation';
@@ -40,10 +40,7 @@ export function UIUXRightPanel() {
 
       <div className="panel-content">
         {activeTab === TAB_INSPECTOR && (
-          <>
-            <p>Select a node to inspect.</p>
-            <CanvasSurfacePanel />
-          </>
+          <UIUXInspectorPanel />
         )}
         {activeTab === TAB_VALIDATION && <UXValidationPanel />}
         {activeTab === TAB_SUGGESTIONS && <UXSuggestionsPanel />}

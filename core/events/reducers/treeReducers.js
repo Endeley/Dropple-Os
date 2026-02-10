@@ -66,6 +66,36 @@ export function treeReducers(state, event) {
           };
       }
 
+      case 'node.children.reorder': {
+          const { parentId, fromIndex, toIndex } = payload;
+          const parent = state.nodes[parentId];
+          if (!parent) return state;
+
+          const children = [...(parent.children || [])];
+          if (
+              fromIndex < 0 ||
+              toIndex < 0 ||
+              fromIndex >= children.length ||
+              toIndex >= children.length
+          ) {
+              return state;
+          }
+
+          const [moved] = children.splice(fromIndex, 1);
+          children.splice(toIndex, 0, moved);
+
+          return {
+              ...state,
+              nodes: {
+                  ...state.nodes,
+                  [parentId]: {
+                      ...parent,
+                      children,
+                  },
+              },
+          };
+      }
+
       default:
           return state;
   }

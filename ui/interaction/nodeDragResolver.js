@@ -4,6 +4,7 @@ import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
 import { getSnapRadius } from '@/ui/canvas/snap/snapConfig.js';
 import { getNearestSnapshot } from '@/ui/canvas/hooks/nearestSnapshot.js';
+import { useSelectionStore } from '@/selection/useSelectionStore.js';
 
 let _unsub = null;
 
@@ -22,6 +23,23 @@ export function registerNodeDragResolver() {
         const pointer = intent?.pointer;
 
         if (!nodeId || !event || !pointer) return;
+
+        const selectionState = useSelectionStore.getState();
+        const existing = Array.isArray(selectionState.selectedIds)
+            ? selectionState.selectedIds
+            : [];
+        const multi = event.shiftKey || event.metaKey || event.ctrlKey;
+        if (multi) {
+            const next = new Set(existing);
+            if (next.has(nodeId)) {
+                next.delete(nodeId);
+            } else {
+                next.add(nodeId);
+            }
+            selectionState.setSelectedIds(Array.from(next));
+        } else {
+            selectionState.setSelectedIds([nodeId]);
+        }
 
         const runtime = useRuntimeStore.getState();
         const animated = useAnimatedRuntimeStore.getState();

@@ -98,6 +98,45 @@ export function nodeReducers(state, event) {
       };
     }
 
+    case 'node.content.update':
+    case 'text.content.update':
+    case 'image.source.update': {
+      const { nodeId, content } = payload;
+      const prev = state.nodes[nodeId];
+      if (!prev) return state;
+
+      return {
+        ...state,
+        nodes: {
+          ...state.nodes,
+          [nodeId]: {
+            ...prev,
+            content,
+          },
+        },
+      };
+    }
+
+    case 'node.props.update': {
+      const { nodeId, props } = payload;
+      const prev = state.nodes[nodeId];
+      if (!prev) return state;
+
+      return {
+        ...state,
+        nodes: {
+          ...state.nodes,
+          [nodeId]: {
+            ...prev,
+            props: {
+              ...(prev.props || {}),
+              ...(props || {}),
+            },
+          },
+        },
+      };
+    }
+
     default:
       return state;
   }

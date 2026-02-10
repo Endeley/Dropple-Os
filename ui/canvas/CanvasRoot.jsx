@@ -191,6 +191,9 @@ export default function CanvasRoot({ workspaceId }) {
         return () => canvasBus.off('intent.viewport.reset', handleResetView);
     }, [handleResetView]);
 
+    // TEMP (dev-only): WordPress export determinism verification
+    // (dev-only export verification hook removed)
+
     // 🧭 INITIAL CAMERA CENTER — IMPERATIVE, NOT AN EFFECT
     const handleCanvasMount = useCallback((el) => {
         if (hasCenteredRef.current) return;
