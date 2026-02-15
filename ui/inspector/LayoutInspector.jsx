@@ -3,11 +3,12 @@
 import { Control, Input } from '@/ui/Control';
 import { colors, spacing } from '@/ui/tokens';
 
-function AspectRatioControl({ node, emit }) {
+function AspectRatioControl({ node, emit, readOnly = false }) {
   const layout = node.layout || {};
   const locked = !!layout.constraints?.aspectRatio;
 
   function toggleLock() {
+    if (readOnly) return;
     if (!locked) {
       emit({
         type: 'node.layout.setConstraint',
@@ -39,18 +40,24 @@ function AspectRatioControl({ node, emit }) {
         color: colors.text,
       }}
     >
-      <input type="checkbox" checked={locked} onChange={toggleLock} />
+      <input
+        type="checkbox"
+        checked={locked}
+        onChange={toggleLock}
+        disabled={readOnly}
+      />
       <span>Lock aspect ratio</span>
     </div>
   );
 }
 
-export default function LayoutInspector({ node, emit }) {
+export default function LayoutInspector({ node, emit, readOnly = false }) {
   if (!node) return null;
   const layout = node.layout || {};
   const style = node.style || {};
 
   function updateLayout(patch) {
+    if (readOnly) return;
     emit({
       type: 'node.layout.update',
       payload: {
@@ -61,6 +68,7 @@ export default function LayoutInspector({ node, emit }) {
   }
 
   function updateStyle(patch) {
+    if (readOnly) return;
     emit({
       type: 'node.style.update',
       payload: {
@@ -83,6 +91,7 @@ export default function LayoutInspector({ node, emit }) {
             type="number"
             value={safeNumber(layout.x)}
             onChange={(e) => updateLayout({ x: Number(e.target.value) })}
+            disabled={readOnly}
           />
         </Control>
         <Control label="Y">
@@ -90,6 +99,7 @@ export default function LayoutInspector({ node, emit }) {
             type="number"
             value={safeNumber(layout.y)}
             onChange={(e) => updateLayout({ y: Number(e.target.value) })}
+            disabled={readOnly}
           />
         </Control>
       </div>
@@ -102,6 +112,7 @@ export default function LayoutInspector({ node, emit }) {
             min={1}
             value={safeNumber(layout.width)}
             onChange={(e) => updateLayout({ width: Number(e.target.value) })}
+            disabled={readOnly}
           />
         </Control>
         <Control label="H">
@@ -110,6 +121,7 @@ export default function LayoutInspector({ node, emit }) {
             min={1}
             value={safeNumber(layout.height)}
             onChange={(e) => updateLayout({ height: Number(e.target.value) })}
+            disabled={readOnly}
           />
         </Control>
       </div>
@@ -122,11 +134,12 @@ export default function LayoutInspector({ node, emit }) {
           step={0.05}
           value={safeNumber(style.opacity ?? 1)}
           onChange={(e) => updateStyle({ opacity: Number(e.target.value) })}
+          disabled={readOnly}
         />
       </Control>
 
       <Control label="Aspect Ratio">
-        <AspectRatioControl node={node} emit={emit} />
+        <AspectRatioControl node={node} emit={emit} readOnly={readOnly} />
       </Control>
     </div>
   );

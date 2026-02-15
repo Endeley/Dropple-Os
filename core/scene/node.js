@@ -1,12 +1,7 @@
-export function createNode({ id, type = "frame", children = [], ...rest }) {
-  if (!id) {
-    throw new Error("createNode: id (nodeId) is required");
-  }
+// 🔒 Canonical node factory lives at `@/core/nodes/createNode`.
+// This module now exposes scene-specific helpers only.
+import { createNode } from '@/core/nodes/createNode';
 
-  return {
-    id,
-    type,
-    children,
-    ...rest,
-  };
+export function buildSceneNode({ id, type, children, ...rest }) {
+  return createNode({ id, type, children, ...rest });
 }

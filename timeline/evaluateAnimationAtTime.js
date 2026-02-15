@@ -3,7 +3,7 @@
 // Do not extend with bones / IK / deformation.
 // See docs/ANIMATION_V1.md
 
-import { evaluateAnimationTimeline } from './evaluateAnimationTimeline.js';
+import { evaluateTimeline } from './evaluateTimeline.js';
 
 /**
  * Canonical animation evaluation entry point.
@@ -19,17 +19,14 @@ import { evaluateAnimationTimeline } from './evaluateAnimationTimeline.js';
  * @param {Object=} baseState - Optional runtime/design state to merge onto.
  * @returns {Object} Projection or merged state (when baseState is provided).
  */
-export function evaluateAnimationAtTime(timelineOrAnimations, timeMs, baseState) {
-    const animations = timelineOrAnimations?.animations || timelineOrAnimations;
-    const projection = evaluateAnimationTimeline({ animations, timeMs });
-
-    if (!baseState) return projection;
-
-    return {
-        ...baseState,
-        nodes: {
-            ...(baseState.nodes || {}),
-            ...(projection.nodes || {}),
-        },
-    };
+export function evaluateAnimationAtTime(args, timeMs, baseState) {
+    // Legacy wrapper for Animation V1. Prefer `evaluateTimeline` instead.
+    if (timeMs !== undefined || baseState !== undefined) {
+        return evaluateTimeline({
+            animations: args,
+            timeMs,
+            baseState,
+        });
+    }
+    return evaluateTimeline(args);
 }

@@ -14,12 +14,13 @@ const TAG_OPTIONS = [
   'article',
 ];
 
-export function SemanticsPanel({ node, emit }) {
+export function SemanticsPanel({ node, emit, readOnly = false }) {
   if (!node) return null;
 
   const semantic = node.props?.semantic || {};
 
   function updateSemantic(patch) {
+    if (readOnly) return;
     emit({
       type: 'node.props.update',
       payload: {
@@ -40,6 +41,7 @@ export function SemanticsPanel({ node, emit }) {
         <Select
           value={semantic.tag || ''}
           onChange={(e) => updateSemantic({ tag: e.target.value || null })}
+          disabled={readOnly}
         >
           <option value="">Select tag</option>
           {TAG_OPTIONS.map((tag) => (
@@ -54,6 +56,7 @@ export function SemanticsPanel({ node, emit }) {
           value={semantic.role || ''}
           onChange={(e) => updateSemantic({ role: e.target.value })}
           placeholder="Optional role"
+          disabled={readOnly}
         />
       </Control>
       <Control label="Label / Description">
@@ -61,6 +64,7 @@ export function SemanticsPanel({ node, emit }) {
           value={semantic.label || ''}
           onChange={(e) => updateSemantic({ label: e.target.value })}
           placeholder="Accessible description"
+          disabled={readOnly}
         />
       </Control>
     </div>

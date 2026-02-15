@@ -3,7 +3,9 @@ import { nanoid } from 'nanoid';
 import { canvasBus } from '@/ui/canvasBus.js';
 import { dispatcher } from './dispatcher.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
-import { createNode } from '@/design/state/createNode.js';
+// 🔒 Canonical node factory import (sovereign path).
+import { createNode } from '@/core/nodes/createNode';
+import { normalizeNodeShape } from '@/design/state/normalizeNodeShape.js';
 import { canProjectToCanonicalNode } from '@/validation/canProjectToCanonicalNode.js';
 
 let _unsub = null;
@@ -66,7 +68,8 @@ export function registerNodeCreateResolver() {
             height: finiteOr(sourceLayout?.height, 100),
         };
 
-        const node = createNode({
+        const node = createNode(
+            normalizeNodeShape({
             id: id || `node-${nanoid()}`,
             type,
             parentId,
@@ -74,7 +77,8 @@ export function registerNodeCreateResolver() {
             style,
             content,
             layout,
-        });
+            }),
+        );
 
         if (process.env.NODE_ENV === 'development') {
             if (!canProjectToCanonicalNode(node)) {

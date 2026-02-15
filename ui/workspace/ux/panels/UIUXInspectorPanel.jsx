@@ -13,6 +13,9 @@ import { SemanticsPanel } from '@/ui/inspector/SemanticsPanel.jsx';
 import { MotionPanel } from '@/ui/inspector/MotionPanel.jsx';
 import { ExportPreviewPanel } from '@/ui/inspector/ExportPreviewPanel.jsx';
 import { colors, spacing } from '@/ui/tokens';
+import { Availability } from '@/ui/availability/availability';
+import { useAvailability } from '@/ui/availability/useAvailability';
+import { Capability } from '@/ui/capabilities/capabilityVocabulary';
 
 export function UIUXInspectorPanel() {
   const dispatcher = useDispatcher();
@@ -39,6 +42,37 @@ export function UIUXInspectorPanel() {
     return null;
   }, [node, parent, rootIds]);
 
+  const nodeRead = useAvailability({
+    readCaps: [Capability.NODE_READ],
+  });
+  const layoutAvail = useAvailability({
+    readCaps: [Capability.LAYOUT_READ],
+    writeCaps: [Capability.LAYOUT_WRITE],
+  });
+  const autoLayoutAvail = useAvailability({
+    readCaps: [Capability.LAYOUT_READ, Capability.LAYOUT_AUTOLAYOUT],
+    writeCaps: [Capability.LAYOUT_WRITE, Capability.LAYOUT_AUTOLAYOUT],
+  });
+  const contentAvail = useAvailability({
+    readCaps: [Capability.CONTENT_READ],
+    writeCaps: [Capability.CONTENT_WRITE],
+  });
+  const semanticsAvail = useAvailability({
+    readCaps: [Capability.CONTENT_READ],
+    writeCaps: [Capability.CONTENT_WRITE],
+  });
+  const motionAvail = useAvailability({
+    readCaps: [Capability.MOTION_READ],
+  });
+
+  if (nodeRead === Availability.HIDDEN) {
+    return (
+      <div style={{ fontSize: 12, color: colors.textMuted }}>
+        No access to inspect nodes in this workspace.
+      </div>
+    );
+  }
+
   if (!node) {
     return (
       <div style={{ fontSize: 12, color: colors.textMuted }}>
@@ -57,29 +91,55 @@ export function UIUXInspectorPanel() {
         />
       </InspectorSection>
 
-      <InspectorSection title="Layout" defaultOpen>
-        <LayoutInspector node={node} emit={emit} />
-        {orderIndex !== null && orderIndex >= 0 && (
-          <div style={{ marginTop: spacing.sm, fontSize: 12, color: colors.textMuted }}>
-            Order index: {orderIndex}
-          </div>
-        )}
-        <div style={{ marginTop: spacing.sm }}>
-          <AutoLayoutPanel node={node} emit={emit} />
-        </div>
-      </InspectorSection>
+      {layoutAvail !== Availability.HIDDEN && (
+        <InspectorSection title="Layout" defaultOpen>
+          <LayoutInspector
+            node={node}
+            emit={emit}
+            readOnly={layoutAvail === Availability.READ_ONLY}
+          />
+          {orderIndex !== null && orderIndex >= 0 && (
+            <div style={{ marginTop: spacing.sm, fontSize: 12, color: colors.textMuted }}>
+              Order index: {orderIndex}
+            </div>
+          )}
+          {autoLayoutAvail !== Availability.HIDDEN && (
+            <div style={{ marginTop: spacing.sm }}>
+              <AutoLayoutPanel
+                node={node}
+                emit={emit}
+                readOnly={autoLayoutAvail === Availability.READ_ONLY}
+              />
+            </div>
+          )}
+        </InspectorSection>
+      )}
 
-      <InspectorSection title="Content" defaultOpen>
-        <ContentPanel node={node} emit={emit} />
-      </InspectorSection>
+      {contentAvail !== Availability.HIDDEN && (
+        <InspectorSection title="Content" defaultOpen>
+          <ContentPanel
+            node={node}
+            emit={emit}
+            readOnly={contentAvail === Availability.READ_ONLY}
+          />
+        </InspectorSection>
+      )}
 
-      <InspectorSection title="Semantics" defaultOpen>
-        <SemanticsPanel node={node} emit={emit} />
-      </InspectorSection>
+      {semanticsAvail !== Availability.HIDDEN && (
+        <InspectorSection title="Semantics" defaultOpen>
+          <SemanticsPanel
+            node={node}
+            emit={emit}
+            readOnly={semanticsAvail === Availability.READ_ONLY}
+          />
+        </InspectorSection>
+      )}
 
-      <InspectorSection title="Motion (Read-Only)" defaultOpen={false}>
-        <MotionPanel node={node} />
-      </InspectorSection>
+      {motionAvail !== Availability.HIDDEN && (
+        <InspectorSection title="Motion (Read-Only)" defaultOpen={false}>
+          <MotionPanel node={node} />
+        </InspectorSection>
+      )}
 
       <InspectorSection title="Export Preview" defaultOpen={false}>
         <ExportPreviewPanel node={node} />

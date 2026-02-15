@@ -1,4 +1,4 @@
-import { evaluateAnimationAtTime } from '@/timeline/evaluateAnimationAtTime.js';
+import { evaluateTimeline } from '@/timeline/evaluateTimeline';
 import { applyCharacterConstraints } from '@/runtime/characters/applyCharacterConstraints.js';
 import { applyAttachments } from '@/runtime/attachments/applyAttachments.js';
 import { getPrevKeyframeTime } from '@/ui/timeline/keyframeTimeUtils.js';
@@ -51,7 +51,11 @@ export function evaluateMotionTrails({
             ? (getPrevKeyframeTime(keyframeTimes, clamped) ?? clamped)
             : clamped;
 
-        const projected = evaluateAnimationAtTime(animations, effectiveTime, designState);
+        const projected = evaluateTimeline({
+            animations,
+            timeMs: effectiveTime,
+            baseState: designState,
+        });
         const withCharacters = applyCharacterConstraints(projected?.nodes || {});
         const nodes = applyAttachments(withCharacters || {});
 

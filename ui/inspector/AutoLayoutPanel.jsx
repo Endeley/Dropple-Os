@@ -3,10 +3,11 @@
 import { Control, Input, Select } from '@/ui/Control';
 import { colors, radius, spacing } from '@/ui/tokens';
 
-function ReorderList({ parent, emit }) {
+function ReorderList({ parent, emit, readOnly = false }) {
   const children = parent.children;
 
   function move(from, to) {
+    if (readOnly) return;
     emit({
       type: 'node.children.reorder',
       payload: {
@@ -31,11 +32,14 @@ function ReorderList({ parent, emit }) {
           }}
         >
           <span style={{ flex: 1 }}>{id}</span>
-          <button disabled={index === 0} onClick={() => move(index, index - 1)}>
+          <button
+            disabled={readOnly || index === 0}
+            onClick={() => move(index, index - 1)}
+          >
             ↑
           </button>
           <button
-            disabled={index === children.length - 1}
+            disabled={readOnly || index === children.length - 1}
             onClick={() => move(index, index + 1)}
           >
             ↓
@@ -46,12 +50,13 @@ function ReorderList({ parent, emit }) {
   );
 }
 
-export function AutoLayoutPanel({ node, emit }) {
+export function AutoLayoutPanel({ node, emit, readOnly = false }) {
   const auto = node.layout.autoLayout;
 
   if (!node.children?.length) return null;
 
   function enable() {
+    if (readOnly) return;
     emit({
       type: 'node.layout.setAutoLayout',
       payload: { nodeId: node.id, config: {} },
@@ -59,6 +64,7 @@ export function AutoLayoutPanel({ node, emit }) {
   }
 
   function disable() {
+    if (readOnly) return;
     emit({
       type: 'node.layout.clearAutoLayout',
       payload: { nodeId: node.id },
@@ -69,6 +75,7 @@ export function AutoLayoutPanel({ node, emit }) {
     return (
       <button
         onClick={enable}
+        disabled={readOnly}
         style={{
           height: 32,
           padding: `0 ${spacing.sm}px`,
@@ -87,6 +94,7 @@ export function AutoLayoutPanel({ node, emit }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
       <button
         onClick={disable}
+        disabled={readOnly}
         style={{
           height: 32,
           padding: `0 ${spacing.sm}px`,
@@ -102,6 +110,7 @@ export function AutoLayoutPanel({ node, emit }) {
       <Control label="Layout Type">
         <Select
           value={auto.type}
+          disabled={readOnly}
           onChange={(e) =>
             emit({
               type: 'node.layout.setAutoLayout',
@@ -124,6 +133,7 @@ export function AutoLayoutPanel({ node, emit }) {
               type="number"
               min={1}
               value={auto.columns}
+              disabled={readOnly}
               onChange={(e) =>
                 emit({
                   type: 'node.layout.setAutoLayout',
@@ -140,6 +150,7 @@ export function AutoLayoutPanel({ node, emit }) {
             <Input
               type="number"
               value={auto.gap}
+              disabled={readOnly}
               onChange={(e) =>
                 emit({
                   type: 'node.layout.setAutoLayout',
@@ -156,6 +167,7 @@ export function AutoLayoutPanel({ node, emit }) {
             <Input
               type="number"
               value={auto.padding}
+              disabled={readOnly}
               onChange={(e) =>
                 emit({
                   type: 'node.layout.setAutoLayout',
@@ -173,6 +185,7 @@ export function AutoLayoutPanel({ node, emit }) {
           <Control label="Direction">
             <Select
               value={auto.direction}
+              disabled={readOnly}
               onChange={(e) =>
                 emit({
                   type: 'node.layout.setAutoLayout',
@@ -192,6 +205,7 @@ export function AutoLayoutPanel({ node, emit }) {
             <Input
               type="number"
               value={auto.gap}
+              disabled={readOnly}
               onChange={(e) =>
                 emit({
                   type: 'node.layout.setAutoLayout',
@@ -208,6 +222,7 @@ export function AutoLayoutPanel({ node, emit }) {
             <Input
               type="number"
               value={auto.padding}
+              disabled={readOnly}
               onChange={(e) =>
                 emit({
                   type: 'node.layout.setAutoLayout',
@@ -222,7 +237,7 @@ export function AutoLayoutPanel({ node, emit }) {
         </>
       )}
 
-      <ReorderList parent={node} emit={emit} />
+      <ReorderList parent={node} emit={emit} readOnly={readOnly} />
     </div>
   );
 }

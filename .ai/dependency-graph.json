@@ -1,0 +1,4158 @@
+{
+  "generatedAt": "2026-02-15T21:16:10.373Z",
+  "moduleCount": 799,
+  "zoneEdges": [
+    {
+      "from": "infra",
+      "to": "core",
+      "count": 14
+    },
+    {
+      "from": "infra",
+      "to": "ui",
+      "count": 34
+    },
+    {
+      "from": "ui",
+      "to": "infra",
+      "count": 58
+    },
+    {
+      "from": "workspace",
+      "to": "ui",
+      "count": 6
+    },
+    {
+      "from": "workspace",
+      "to": "infra",
+      "count": 3
+    },
+    {
+      "from": "infra",
+      "to": "runtime",
+      "count": 16
+    },
+    {
+      "from": "ui",
+      "to": "runtime",
+      "count": 86
+    },
+    {
+      "from": "engine",
+      "to": "ui",
+      "count": 1
+    },
+    {
+      "from": "runtime",
+      "to": "infra",
+      "count": 8
+    },
+    {
+      "from": "runtime",
+      "to": "ui",
+      "count": 9
+    },
+    {
+      "from": "core",
+      "to": "timeline",
+      "count": 1
+    },
+    {
+      "from": "engine",
+      "to": "timeline",
+      "count": 1
+    },
+    {
+      "from": "engine",
+      "to": "runtime",
+      "count": 1
+    },
+    {
+      "from": "engine",
+      "to": "core",
+      "count": 9
+    },
+    {
+      "from": "runtime",
+      "to": "core",
+      "count": 16
+    },
+    {
+      "from": "runtime",
+      "to": "engine",
+      "count": 7
+    },
+    {
+      "from": "ui",
+      "to": "engine",
+      "count": 17
+    },
+    {
+      "from": "infra",
+      "to": "engine",
+      "count": 1
+    },
+    {
+      "from": "runtime",
+      "to": "timeline",
+      "count": 3
+    },
+    {
+      "from": "runtime",
+      "to": "workspace",
+      "count": 3
+    },
+    {
+      "from": "ui",
+      "to": "core",
+      "count": 12
+    },
+    {
+      "from": "timeline",
+      "to": "runtime",
+      "count": 5
+    },
+    {
+      "from": "unknown",
+      "to": "runtime",
+      "count": 1
+    },
+    {
+      "from": "timeline",
+      "to": "engine",
+      "count": 1
+    },
+    {
+      "from": "timeline",
+      "to": "core",
+      "count": 2
+    },
+    {
+      "from": "timeline",
+      "to": "infra",
+      "count": 1
+    },
+    {
+      "from": "ui",
+      "to": "workspace",
+      "count": 10
+    },
+    {
+      "from": "ui",
+      "to": "timeline",
+      "count": 6
+    },
+    {
+      "from": "workspace",
+      "to": "runtime",
+      "count": 6
+    },
+    {
+      "from": "workspace",
+      "to": "engine",
+      "count": 1
+    },
+    {
+      "from": "workspace",
+      "to": "core",
+      "count": 3
+    }
+  ],
+  "modules": {
+    "ai/generation/generateTemplateArtifact.ts": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 3
+    },
+    "ai/generation/generateVariants.ts": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "ai/prompts/ccmAuthorPrompt.ts": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "app/certificates/[id]/page.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "app/certificates/page.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "app/education/[lessonId]/page.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 3
+    },
+    "app/gallery/page.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 4
+    },
+    "app/handler/[...stack]/page.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "app/layout.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "app/loading.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "app/marketplace/creator/[name]/page.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 3
+    },
+    "app/marketplace/lessons/[id]/page.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "app/marketplace/lessons/creator/[name]/page.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "app/marketplace/lessons/page.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 6
+    },
+    "app/marketplace/page.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 7
+    },
+    "app/marketplace/template/[id]/page.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 3
+    },
+    "app/page.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "app/profile/[id]/page.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "app/providers.jsx": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 5
+    },
+    "app/review/submissions/[id]/page.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "app/reviews/[submissionId]/page.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 6
+    },
+    "app/reviews/page.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 3
+    },
+    "app/verify/[certificateId]/page.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "app/viewer/[galleryId]/ViewerClient.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 12
+    },
+    "app/viewer/[galleryId]/page.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "app/viewer/page.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 9
+    },
+    "app/workspace/[mode]/page.jsx": {
+      "zone": "workspace",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "app/workspace/design/DesignWorkspaceClient.jsx": {
+      "zone": "workspace",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "app/workspace/design/page.jsx": {
+      "zone": "workspace",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "app/workspace/layout.jsx": {
+      "zone": "workspace",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "app/workspace/new/page.jsx": {
+      "zone": "workspace",
+      "fanIn": 0,
+      "fanOut": 5
+    },
+    "app/workspace/page.jsx": {
+      "zone": "workspace",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "audit/AuditLogPanel.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "bench/engineBench.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 4
+    },
+    "branching/conflicts/ConflictWarnings.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "branching/conflicts/detectBranchConflicts.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "branching/graph/BranchGraph.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 5
+    },
+    "branching/graph/buildBranchGraph.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "branching/merge/MergePreview 2.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "branching/merge/MergePreview.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 11
+    },
+    "branching/merge/VisualNodeDiffOverlay.jsx": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "branching/merge/applyMerge.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "branching/merge/computeMergeDiff.js": {
+      "zone": "infra",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "branching/merge/computeNodeDiff.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "branching/merge/planMerge.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "branching/merge/simulateMergeState.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "branching/ui/BranchSwitcher.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 4
+    },
+    "branching/ui/CreateBranch.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "branching/ui/MergeBranch.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 3
+    },
+    "branching/ui/useBranchState.js": {
+      "zone": "ui",
+      "fanIn": 3,
+      "fanOut": 1
+    },
+    "canvas/render/layout/applyLayout.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "canvas/render/renderDesignCanvas.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "canvas/render/renderNode.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 4
+    },
+    "canvas/render/style/applyStyle.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "canvas/render/types/renderImage.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "canvas/render/types/renderText.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "canvas/transform/projectRectToViewport.js": {
+      "zone": "engine",
+      "fanIn": 3,
+      "fanOut": 1
+    },
+    "canvas/transform/projectToViewport.js": {
+      "zone": "engine",
+      "fanIn": 6,
+      "fanOut": 0
+    },
+    "canvas/transform/screenToWorld.js": {
+      "zone": "engine",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "canvas/viewport/getViewportBounds.js": {
+      "zone": "engine",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "certification/SubmitAssessmentButton.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "certification/annotations/annotationTypes.ts": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "certification/annotations/useAnnotationStore.js": {
+      "zone": "infra",
+      "fanIn": 4,
+      "fanOut": 0
+    },
+    "certification/assessments/assessmentTypes.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "certification/certificates/certificateTypes.ts": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "certification/certificates/useCertificateStore.js": {
+      "zone": "infra",
+      "fanIn": 4,
+      "fanOut": 0
+    },
+    "certification/replay/hashReplay.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "certification/rubrics/rubricTypes.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "certification/submissions/SubmissionList.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "certification/submissions/submissionTypes.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "certification/submissions/useSubmissionStore.js": {
+      "zone": "infra",
+      "fanIn": 4,
+      "fanOut": 1
+    },
+    "collab/CanvasCursors.jsx": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "collab/CanvasIntentGhosts.jsx": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "collab/CanvasSelectionPresence.jsx": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "collab/CursorsLayer.jsx": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "collab/PresenceDots.jsx": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "collab/applyMergedLog.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "collab/eventEnvelope.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "collab/eventLog.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "collab/filterConflicts.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "collab/lamportClock.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "collab/lockManager.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "collab/mergeEvents.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "collab/optimistic/createOptimisticTx.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "collab/optimistic/mergeOptimistic.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "collab/optimistic/optimisticStore.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "collab/optimistic/optimisticTransaction.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "collab/optimistic/reconcileOptimism.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "collab/permissionPolicy.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "collab/policyGate.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "collab/presenceStore.js": {
+      "zone": "runtime",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "collab/remoteEventAdapter.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "collab/throttle.js": {
+      "zone": "runtime",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "collab/useDocumentRole.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "collab/useIntentPreview.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "collab/useLiveCursors.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "collab/usePresence.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "collab/useRemoteEventCommit.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "collab/useSelectionPresence.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "collaboration/panels/SharingPanel.jsx": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "commands/CommandPalette.jsx": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "commands/commandRegistry.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 7
+    },
+    "commands/filterCommands.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "commands/groupCommands.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "commands/useCommandPalette.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "contracts/droppleSpec.ts": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 4
+    },
+    "contracts/edge.ts": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "contracts/history.ts": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "contracts/intent.ts": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "contracts/mode.ts": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "contracts/node.ts": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "contracts/selection.ts": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "contracts/transform.ts": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "contracts/world.ts": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "convex/_generated/api.d.ts": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 23
+    },
+    "convex/_generated/api.js": {
+      "zone": "infra",
+      "fanIn": 23,
+      "fanOut": 0
+    },
+    "convex/_generated/dataModel.d.ts": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "convex/_generated/server.d.ts": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "convex/_generated/server.js": {
+      "zone": "infra",
+      "fanIn": 19,
+      "fanOut": 0
+    },
+    "convex/_helpers/assertOwnershipInvariant.js": {
+      "zone": "infra",
+      "fanIn": 3,
+      "fanOut": 0
+    },
+    "convex/_helpers/ensureOwnerMember.js": {
+      "zone": "infra",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "convex/_helpers/permissions.js": {
+      "zone": "infra",
+      "fanIn": 6,
+      "fanOut": 1
+    },
+    "convex/analytics.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "convex/appendEvents.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 4
+    },
+    "convex/assessments.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "convex/auth.config.ts": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "convex/certificates.ts": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "convex/collaboration.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "convex/convex.config.ts": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "convex/gallery.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "convex/getAuditLogs.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "convex/getDocumentMember.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "convex/getPresence.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "convex/lib/assertPermission.js": {
+      "zone": "infra",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "convex/lib/audit.ts": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "convex/lib/permissions.js": {
+      "zone": "infra",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "convex/lib/writeAuditLog.js": {
+      "zone": "infra",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "convex/loadDocumentSnapshot.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "convex/migrations/repairMissingOwners.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "convex/saveDocumentSnapshot.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "convex/schema.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "convex/seed.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "convex/streamEvents.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "convex/tasks.ts": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "convex/updateCursor.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "convex/updateIntent.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "convex/updatePresence.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "convex/updateSelection.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "core/animation/AnimationSchema.js": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "core/ccm/migration/LegacyTemplateConverter.ts": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "core/ccm/schema/template.v1.js": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "core/ccm/schema/template.v1.ts": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "core/ccm/types.js": {
+      "zone": "core",
+      "fanIn": 5,
+      "fanOut": 0
+    },
+    "core/ccm/types.ts": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "core/ccm/validate/schema/template.v1.js": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "core/ccm/validate/types.js": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "core/ccm/validate/validate/validateTemplateArtifact.js": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "core/ccm/validate/validateTemplateArtifact.js": {
+      "zone": "core",
+      "fanIn": 3,
+      "fanOut": 1
+    },
+    "core/ccm/validate/validateTemplateArtifact.ts": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "core/contracts/CanvasPolicy.js": {
+      "zone": "core",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "core/contracts/EngineContract.js": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "core/contracts/ExportContract.js": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "core/contracts/TimelineContract.js": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "core/contracts/WorkspaceContract.js": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "core/events/applyEvent.js": {
+      "zone": "core",
+      "fanIn": 6,
+      "fanOut": 2
+    },
+    "core/events/eventTypes.js": {
+      "zone": "core",
+      "fanIn": 30,
+      "fanOut": 0
+    },
+    "core/events/reducers/animationReducers.js": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "core/events/reducers/componentStateReducers.js": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "core/events/reducers/index.js": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 10
+    },
+    "core/events/reducers/interactionReducers.js": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "core/events/reducers/layoutReducers.js": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "core/events/reducers/nodeReducers.js": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "core/events/reducers/stateReducers.js": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "core/events/reducers/styleReducers.js": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "core/events/reducers/timelineReducers.js": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "core/events/reducers/transitionReducers.js": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "core/events/reducers/treeReducers.js": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "core/history/historyStack.js": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "core/interactions/InteractionSchema.js": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "core/ir/BaseIR.js": {
+      "zone": "core",
+      "fanIn": 6,
+      "fanOut": 0
+    },
+    "core/ir/ComponentIR.js": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "core/ir/DesignIR.js": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "core/ir/InteractionIR.js": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "core/ir/MotionIR.js": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "core/ir/SemanticIR.js": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "core/ir/StateIR.js": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "core/ir/index.js": {
+      "zone": "core",
+      "fanIn": 6,
+      "fanOut": 0
+    },
+    "core/messageBus.js": {
+      "zone": "core",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "core/mutationContext.js": {
+      "zone": "core",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "core/nodes/createNode.js": {
+      "zone": "core",
+      "fanIn": 4,
+      "fanOut": 0
+    },
+    "core/scene/node.js": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "core/scene/nodeTypes.js": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "core/transitions/transitionSchema.js": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "core/variants/validateVariantSnapshot.ts": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "design/reducer/designReducer.js": {
+      "zone": "core",
+      "fanIn": 3,
+      "fanOut": 6
+    },
+    "design/reducer/nodeContentReducer.js": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "design/reducer/nodeLayoutReducer.js": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "design/reducer/nodeLifecycleReducer.js": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "design/reducer/nodeStructureReducer.js": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "design/reducer/nodeStyleReducer.js": {
+      "zone": "core",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "design/state/createDesignState.js": {
+      "zone": "core",
+      "fanIn": 3,
+      "fanOut": 0
+    },
+    "design/state/normalizeNodeShape.js": {
+      "zone": "core",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "design/test/replayTest.js": {
+      "zone": "core",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "dev/index.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "dev/runExportPipeline.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 3
+    },
+    "dev/runTranslatePipeline.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 3
+    },
+    "editor/openServerDocument.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "education/AnnotationOverlay.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "education/AnnotationOverlay.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "education/AnnotationPanel.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "education/AnnotationStore.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "education/EducationAnnotationsContext.jsx": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "education/EducationCursorContext.jsx": {
+      "zone": "infra",
+      "fanIn": 4,
+      "fanOut": 0
+    },
+    "education/EducationInspector.jsx": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "education/EducationTimelinePanel.jsx": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "education/EducationToolbar.jsx": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "education/ai/ExplanationAgent.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "education/ai/QAAgent.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "education/ai/buildEvidenceContext.js": {
+      "zone": "infra",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "education/ai/buildExplanationPrompt.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "education/ai/buildQAPrompt.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "education/ai/computeStateDiff.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "education/certification/AssessmentSchema.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "education/certification/CertificateSchema.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "education/certification/GradingAgent.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "education/certification/RubricSchema.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "education/certification/SubmissionSchema.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "education/certification/isCertified.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "education/educationReducer.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "education/forkLessonToWorkspace.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "education/lesson/LessonPlayer.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "education/lesson/LessonSchema.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "education/lesson/downloadLesson.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "education/lesson/exportLesson.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 4
+    },
+    "education/lesson/importLesson.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "education/lesson/selectLessonRange.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "education/lessonEvents.js": {
+      "zone": "infra",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "education/selectEducationState.js": {
+      "zone": "infra",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "education/useAnnotations.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "engine/animation/animationIR.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "engine/animation/compileTimelineToIR.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "engine/animation/easingPresets.js": {
+      "zone": "engine",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "engine/animation/evaluateAnimation.js": {
+      "zone": "engine",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "engine/animation/exporters/exportWebAnimation.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "engine/animation/preview/previewAtTime.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "engine/animation/timelineSchema.js": {
+      "zone": "engine",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "engine/animation/tools/keyframeTool.js": {
+      "zone": "engine",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "engine/animation/tools/motionPresets.js": {
+      "zone": "engine",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "engine/animation/tools/trackTool.js": {
+      "zone": "engine",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "engine/canvas/nodeTree.js": {
+      "zone": "engine",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "engine/constraints/constraintEngine.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "engine/constraints/resizeConstraintEngine.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "engine/constraints/selectionBounds.js": {
+      "zone": "engine",
+      "fanIn": 5,
+      "fanOut": 0
+    },
+    "engine/constraints/snapEngine.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "engine/constraints/snapUtils.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "engine/ir/extractCanvasIR.js": {
+      "zone": "engine",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "engine/ir/extractComponentIR.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 6
+    },
+    "engine/ir/extractDesignIR.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "engine/ir/extractInteractionIR.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "engine/ir/extractMotionIR.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "engine/ir/extractSemanticIR.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "engine/ir/extractStateIR.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "engine/layout/computeReorderIndex.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "engine/layout/findDropTarget.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "engine/layout/isAutoLayoutChild.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "engine/measure/measureChildrenBounds.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "engine/measure/measureText.js": {
+      "zone": "engine",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "engine/scene/nodeTree.js": {
+      "zone": "engine",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "engine/timeline/commitTimeline.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "engine/timeline/flattenTimeline.js": {
+      "zone": "timeline",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "engine/timeline/timeline.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "eslint-rules/no-nodeview-projection.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "export/ExportDiffViewer.jsx": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "export/animation/__tests__/exportAnimation.test.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "export/animation/css/exportCSSKeyframes.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "export/animation/exportAnimation.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 3
+    },
+    "export/animation/normalizeAnimationExport.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "export/animation/waapi/exportWAAPI.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "export/buildDroppleSpec.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 3
+    },
+    "export/css/exportCSS.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "export/deriveEdgesFromNodes.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "export/diffLines.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "export/evaluateAnimationForExport.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "export/exportDroppleSpec.js": {
+      "zone": "infra",
+      "fanIn": 2,
+      "fanOut": 2
+    },
+    "export/exportGate.js": {
+      "zone": "infra",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "export/exportGateHeadless.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 3
+    },
+    "export/exportGateStatus.js": {
+      "zone": "infra",
+      "fanIn": 3,
+      "fanOut": 0
+    },
+    "export/exportJSON.js": {
+      "zone": "infra",
+      "fanIn": 3,
+      "fanOut": 1
+    },
+    "export/exportMetadata.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "export/exportModes.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "export/exportMotion.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "export/generateExportPair.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "export/normalizeExport.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "export/png/exportPNG.js": {
+      "zone": "infra",
+      "fanIn": 3,
+      "fanOut": 2
+    },
+    "export/static/buildStaticHTML.js": {
+      "zone": "infra",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "export/static/exportStaticHTML.js": {
+      "zone": "infra",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "export/svg/exportSVG.js": {
+      "zone": "infra",
+      "fanIn": 3,
+      "fanOut": 2
+    },
+    "export/svg/renderNodeToSVG.js": {
+      "zone": "infra",
+      "fanIn": 3,
+      "fanOut": 0
+    },
+    "export/utils/download.js": {
+      "zone": "infra",
+      "fanIn": 3,
+      "fanOut": 0
+    },
+    "export/validateDroppleSpec.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "export/verify/verifyCssKeyframes.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "export/verify/verifyMotionExport.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "export/verify/verifyWaapiOutput.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "export/waapi/exportWAAPI.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "export/wordpress/buildWordPressTheme.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "export/wordpress/exportWordPress.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "gallery/GalleryFilters.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "gallery/galleryStore.js": {
+      "zone": "ui",
+      "fanIn": 3,
+      "fanOut": 0
+    },
+    "gallery/generateThumbnail.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "gallery/publishToGallery.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 4
+    },
+    "gallery/tagUtils.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "gallery/useGalleryIdentity.js": {
+      "zone": "ui",
+      "fanIn": 4,
+      "fanOut": 1
+    },
+    "gallery/usePublishToServer.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 3
+    },
+    "import/importJSON.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "import/svg/parseSVG.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "input/InputSessionManager.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "input/pointerMap.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "input/sessions/AnimationCreateClipSession.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "input/sessions/AnimationCreateKeyframeSession.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "input/sessions/AnimationCreateTrackSession.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "input/sessions/AnimationDeleteKeyframeSession.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "input/sessions/AnimationUpdateKeyframeSession.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "input/sessions/DrawSession.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "input/sessions/MoveSession.js": {
+      "zone": "runtime",
+      "fanIn": 2,
+      "fanOut": 4
+    },
+    "input/sessions/ResizeSession.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 3
+    },
+    "input/sessions/TextSession.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "input/types.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "inspector/InspectorSection.jsx": {
+      "zone": "ui",
+      "fanIn": 4,
+      "fanOut": 0
+    },
+    "inspector/sections/AnimationInspector.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 10
+    },
+    "inspector/sections/CommonInspector.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 3
+    },
+    "inspector/sections/GraphicInspector.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "inspector/sections/UIInspector.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "interaction/InteractionController.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 11
+    },
+    "interaction/KeyboardController.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "interaction/SelectionModel.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "interaction/geometry/computeBoundingBox.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "interaction/guides/GuideOverlay.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "interaction/guides/computeSnapPoints.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "interaction/guides/snapPosition.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "interaction/hitTest.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "interaction/measurements/MeasurementOverlay.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "interaction/measurements/computeMeasurements.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "interaction/renderResizeHandles.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "interaction/renderSelection.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "interaction/rulers/RulerOverlay.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "interaction/rulers/renderRulers.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "layout/autoLayoutEngine.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "lib/agents/persistence/messageBusPersistence.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "marketplace/LessonListingSchema.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "marketplace/LessonVersionSchema.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "marketplace/MarketplaceFilterBar.jsx": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "marketplace/ReviewSchema.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "marketplace/TemplateCard.jsx": {
+      "zone": "infra",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "marketplace/collections.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "marketplace/filterTemplates.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "marketplace/lessons/LessonFilterBar.jsx": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "marketplace/lessons/filterLessons.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "marketplace/lessons/lessonCollections.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "marketplace/lessons/useLessonFilters.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "marketplace/mockLessons.js": {
+      "zone": "infra",
+      "fanIn": 5,
+      "fanOut": 0
+    },
+    "marketplace/mockTemplates.js": {
+      "zone": "infra",
+      "fanIn": 4,
+      "fanOut": 0
+    },
+    "marketplace/useMarketplaceFilters.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "marketplace/useOwnershipStore.js": {
+      "zone": "infra",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "multiplayer/ClassroomSession.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "multiplayer/ObserverReceiver.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "multiplayer/TeacherBroadcaster.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "multiplayer/protocol.js": {
+      "zone": "runtime",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "onboarding/ModeHint.jsx": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "onboarding/modeHints.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "onboarding/useModeOnboarding.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "onboarding/useOnboardingState.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "perf/PerfHUD.jsx": {
+      "zone": "engine",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "perf/perfTracker 2.js": {
+      "zone": "engine",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "perf/perfTracker.js": {
+      "zone": "engine",
+      "fanIn": 8,
+      "fanOut": 0
+    },
+    "persistence/activeDocument.js": {
+      "zone": "infra",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "persistence/appendRuntimeEvents.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "persistence/branching.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "persistence/checkpoints.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "persistence/documentCommands.js": {
+      "zone": "infra",
+      "fanIn": 2,
+      "fanOut": 4
+    },
+    "persistence/documentFiles.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "persistence/documentRegistry.js": {
+      "zone": "infra",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "persistence/documentSchema.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "persistence/loadDocument.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "persistence/loadDocumentFromConvex.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 4
+    },
+    "persistence/localDocumentSchema.js": {
+      "zone": "infra",
+      "fanIn": 7,
+      "fanOut": 0
+    },
+    "persistence/localDocumentStore.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "persistence/mergeBranch.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "persistence/replay.js": {
+      "zone": "infra",
+      "fanIn": 5,
+      "fanOut": 2
+    },
+    "persistence/saveCurrentDocument.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "persistence/saveDocument.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "persistence/schema_v1.js": {
+      "zone": "infra",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "persistence/useAutosave.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "persistence/worldState.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 4
+    },
+    "persistence/worldStore.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "plugins/capabilityFactory.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "plugins/executionGuards.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "plugins/plugin-worker.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "plugins/pluginAPI.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "plugins/pluginManifest.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "plugins/pluginPermissions.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "plugins/pluginRegistry.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "plugins/pluginSupervisor.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 5
+    },
+    "plugins/securePluginAPI.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "plugins/types.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "plugins/workerSandbox.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "profiles/EditProfile.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "profiles/creatorStore.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "profiles/currentCreator.js": {
+      "zone": "ui",
+      "fanIn": 3,
+      "fanOut": 0
+    },
+    "profiles/linkLocalCreator.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "providers/ConvexProvider.jsx": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "review/AssessmentContent.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "review/AssessmentReviewLayout.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "review/ReviewToolbar.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 3
+    },
+    "review/panels/AnnotationPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "review/panels/RubricPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "review/panels/SubmissionInfoPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "runtime/MessageBus.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "runtime/animation/__tests__/runAnimationPreview.test.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 3
+    },
+    "runtime/animation/animationController.js": {
+      "zone": "runtime",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "runtime/animation/cancelAnimationPreview.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "runtime/animation/easing.js": {
+      "zone": "runtime",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "runtime/animation/interpolateNodes.js": {
+      "zone": "runtime",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "runtime/animation/lerp.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "runtime/animation/playbackController.js": {
+      "zone": "runtime",
+      "fanIn": 2,
+      "fanOut": 2
+    },
+    "runtime/animation/runAnimationPreview.js": {
+      "zone": "runtime",
+      "fanIn": 3,
+      "fanOut": 3
+    },
+    "runtime/attachments/applyAttachments.js": {
+      "zone": "runtime",
+      "fanIn": 3,
+      "fanOut": 1
+    },
+    "runtime/attachments/attachmentRegistry.js": {
+      "zone": "runtime",
+      "fanIn": 3,
+      "fanOut": 2
+    },
+    "runtime/bridge/attachSessionCommitBridge.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 5
+    },
+    "runtime/bridge/selectRenderState.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "runtime/bridge/zustandBridge.js": {
+      "zone": "runtime",
+      "fanIn": 7,
+      "fanOut": 1
+    },
+    "runtime/characters/applyCharacterConstraints.js": {
+      "zone": "runtime",
+      "fanIn": 3,
+      "fanOut": 1
+    },
+    "runtime/characters/characterRegistry.js": {
+      "zone": "runtime",
+      "fanIn": 5,
+      "fanOut": 1
+    },
+    "runtime/characters/useCharacterRenderNodes.js": {
+      "zone": "runtime",
+      "fanIn": 6,
+      "fanOut": 3
+    },
+    "runtime/cursor/createCursor.js": {
+      "zone": "runtime",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "runtime/cursor/resolveCursor.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "runtime/dispatcher/dispatch.js": {
+      "zone": "runtime",
+      "fanIn": 3,
+      "fanOut": 27
+    },
+    "runtime/dispatcher/history.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "runtime/dispatcher/ux/emitUXWarning.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "runtime/dispatcher/ux/observeUXIntent.js": {
+      "zone": "runtime",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "runtime/dispatcher/ux/shouldConfirmUXAction.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "runtime/dispatcher/ux/uxAuditLog.js": {
+      "zone": "runtime",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "runtime/dispatcher/ux/uxConfirmBus.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "runtime/dispatcher/ux/uxIntentMap.js": {
+      "zone": "runtime",
+      "fanIn": 3,
+      "fanOut": 1
+    },
+    "runtime/dispatcher/ux/uxWarningBus.js": {
+      "zone": "runtime",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "runtime/eventDispatcher.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "runtime/events/EventSequencer.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "runtime/events/createEventId.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "runtime/events/getEventsUpToCursor.js": {
+      "zone": "runtime",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "runtime/guards/animationGuard.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "runtime/guards/authorityGuard.js": {
+      "zone": "runtime",
+      "fanIn": 3,
+      "fanOut": 0
+    },
+    "runtime/guards/timelineGuard.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "runtime/interactions/resolveInteraction.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "runtime/layout/applyLayoutPass.js": {
+      "zone": "ui",
+      "fanIn": 3,
+      "fanOut": 0
+    },
+    "runtime/layout/shouldRunLayout.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "runtime/macro/macroRecorder.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "runtime/preview/getTransitionForPreview.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "runtime/preview/runTransitionPreview.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 4
+    },
+    "runtime/registry/engineRegistry.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "runtime/replay/__tests__/animationPreviewReplay.test.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 3
+    },
+    "runtime/replay/getDesignStateAtCursor.js": {
+      "zone": "runtime",
+      "fanIn": 6,
+      "fanOut": 2
+    },
+    "runtime/replay/reconstructDesignState.js": {
+      "zone": "runtime",
+      "fanIn": 1,
+      "fanOut": 5
+    },
+    "runtime/replay/useReplayState.js": {
+      "zone": "runtime",
+      "fanIn": 3,
+      "fanOut": 1
+    },
+    "runtime/replay/withReplayGuard.js": {
+      "zone": "runtime",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "runtime/state/runtimeState.js": {
+      "zone": "runtime",
+      "fanIn": 30,
+      "fanOut": 2
+    },
+    "runtime/state/useWorkspaceState.js": {
+      "zone": "runtime",
+      "fanIn": 15,
+      "fanOut": 1
+    },
+    "runtime/state/workspaceState.js": {
+      "zone": "runtime",
+      "fanIn": 10,
+      "fanOut": 2
+    },
+    "runtime/stores/nodeTreeStore.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "runtime/stores/useAnimatedRuntimeStore.js": {
+      "zone": "runtime",
+      "fanIn": 18,
+      "fanOut": 0
+    },
+    "runtime/stores/useRuntimeStore.js": {
+      "zone": "runtime",
+      "fanIn": 6,
+      "fanOut": 0
+    },
+    "runtime/stores/useTimelinePreviewStore.js": {
+      "zone": "runtime",
+      "fanIn": 3,
+      "fanOut": 0
+    },
+    "runtime/test/cursorReplayTest.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "runtime/test/playbackControllerTest.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 3
+    },
+    "runtime/timeline/clearTimelinePreview.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "runtime/timeline/easingPresets.js": {
+      "zone": "timeline",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "runtime/timeline/scrubTimeline.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 3
+    },
+    "scripts/defineScript.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "scripts/runScript.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "scripts/scriptAPI.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "scripts/scriptGuards.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "security/permissions.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "security/usePermissions.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "selection/useSelectionStore.js": {
+      "zone": "ui",
+      "fanIn": 6,
+      "fanOut": 0
+    },
+    "share/createEmbedCode.js": {
+      "zone": "ui",
+      "fanIn": 3,
+      "fanOut": 2
+    },
+    "share/createShareLink.js": {
+      "zone": "ui",
+      "fanIn": 4,
+      "fanOut": 1
+    },
+    "share/embedPresets.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "stability/EditorErrorBoundary.jsx": {
+      "zone": "unknown",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "stability/GlobalErrorBoundary.jsx": {
+      "zone": "unknown",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "stack/client.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "stack/server.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "templates/TemplateGeneratorOverlay.jsx": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 4
+    },
+    "templates/TemplateSerializer.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "templates/TemplateValidator.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "templates/converters/legacyToCCM.ts": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "templates/converters/types.ts": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "templates/legacy/types.ts": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "templates/templateTypes.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "templates/useTemplateGenerator.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "tests/architecture/dispatcherOwnership.test.ts": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "tests/ccm/validateTemplateArtifact.smoke.test.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "timeline/__tests__/evaluateAnimationTimeline.test.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "timeline/animationContract.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "timeline/applyTimelinePreview.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 3
+    },
+    "timeline/commitTimelineKeyframe.js": {
+      "zone": "timeline",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "timeline/easing/easingPresets.js": {
+      "zone": "timeline",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "timeline/easingMath.js": {
+      "zone": "timeline",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "timeline/easingRegistry.js": {
+      "zone": "timeline",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "timeline/evaluateAnimationAtTime.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "timeline/evaluateAnimationProjection.js": {
+      "zone": "timeline",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "timeline/evaluateAnimationTimeline.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "timeline/evaluateAnimationTrack.js": {
+      "zone": "timeline",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "timeline/evaluateTimeline.js": {
+      "zone": "timeline",
+      "fanIn": 7,
+      "fanOut": 2
+    },
+    "timeline/export/cssExporter.js": {
+      "zone": "timeline",
+      "fanIn": 1,
+      "fanOut": 3
+    },
+    "timeline/export/groupMotionFrames.js": {
+      "zone": "timeline",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "timeline/export/motionIR.js": {
+      "zone": "timeline",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "timeline/keyboard/useTimelineKeyboard.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "timeline/keyframeSchema.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "timeline/markers/MarkerControls.jsx": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "timeline/markers/useTimelineMarkers.js": {
+      "zone": "timeline",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "timeline/motionPresets.js": {
+      "zone": "timeline",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "timeline/normalize/normalizeKeyframes.js": {
+      "zone": "timeline",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "timeline/playback/PlaybackControls.jsx": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "timeline/playback/usePlaybackPreviewBridge.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "timeline/playback/useTimelinePlayback.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "timeline/resolveEasing.js": {
+      "zone": "timeline",
+      "fanIn": 2,
+      "fanOut": 3
+    },
+    "timeline/sampleKeyframes.js": {
+      "zone": "timeline",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "timeline/sampleTimeline.js": {
+      "zone": "timeline",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "timeline/schema/clip.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "timeline/schema/keyframe.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "timeline/schema/timeline.js": {
+      "zone": "timeline",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "timeline/schema/track.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "timeline/timelineCursor.js": {
+      "zone": "timeline",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "timeline/timelineProjection.js": {
+      "zone": "timeline",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "timeline/timelineSchema.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "timeline/timelineScrubber.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 3
+    },
+    "timeline/trackSchema.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "timeline/transform/composeTransform.js": {
+      "zone": "timeline",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "timeline/ui/useCommitKeyframeDrag.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "timeline/ui/useKeyframeDragPreview.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "timeline/ui/useKeyframePointer.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "timeline/ui/useTimelineBounds.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "timeline/ui/useTimelineSelectionStore.js": {
+      "zone": "ui",
+      "fanIn": 3,
+      "fanOut": 0
+    },
+    "timeline/ui/useTimelineSnapping.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "timeline/utils/findActiveClips.js": {
+      "zone": "timeline",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "tools/eslint/dropple-architecture.js": {
+      "zone": "infra",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "translate/designToPseudoCode.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "translate/pseudoCodeToReact.js": {
+      "zone": "infra",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/Canvas.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 8
+    },
+    "ui/Control.jsx": {
+      "zone": "ui",
+      "fanIn": 4,
+      "fanOut": 1
+    },
+    "ui/Controls.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "ui/NodeView.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "ui/Panel.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "ui/alignment/alignmentUtils.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/animation/applyWebAnimations.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/animation/autoKeyframeStore.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "ui/animation/curves/BezierCurveCanvas.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/animation/curves/CurveCanvas.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "ui/animation/curves/CurveEditorPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 6
+    },
+    "ui/animation/curves/CurveHandle.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "ui/animation/curves/CurvePresetPicker.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/animation/curves/commitCurveChange.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 2
+    },
+    "ui/animation/evaluateGhostFrames.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 4
+    },
+    "ui/animation/evaluateMotionTrails.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 4
+    },
+    "ui/animation/getConstraintVisuals.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "ui/animation/useConstraintVisualizerStore.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "ui/animation/useMotionTrailStore.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "ui/animation/useOnionSkinStore.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "ui/availability/availability.js": {
+      "zone": "ui",
+      "fanIn": 4,
+      "fanOut": 0
+    },
+    "ui/availability/resolveAvailability.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 3
+    },
+    "ui/availability/useAvailability.js": {
+      "zone": "ui",
+      "fanIn": 3,
+      "fanOut": 2
+    },
+    "ui/canvas/CanvasContext.jsx": {
+      "zone": "ui",
+      "fanIn": 6,
+      "fanOut": 0
+    },
+    "ui/canvas/CanvasDebugOverlay.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/canvas/CanvasGhostLayer.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "ui/canvas/CanvasHost.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/canvas/CanvasNearestDebugOverlay.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 3
+    },
+    "ui/canvas/CanvasOriginMarker.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "ui/canvas/CanvasRoot.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 23
+    },
+    "ui/canvas/CanvasSnapGuides.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "ui/canvas/CollabLayer.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "ui/canvas/ConstraintVisualizerLayer.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 5
+    },
+    "ui/canvas/FrameRulers.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "ui/canvas/GhostFrameLayer.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 4
+    },
+    "ui/canvas/GhostLayer.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/canvas/GhostNode.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 3
+    },
+    "ui/canvas/GuideLayer.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 6
+    },
+    "ui/canvas/InsertionLine.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 3
+    },
+    "ui/canvas/Minimap.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/canvas/MotionTrailLayer.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 5
+    },
+    "ui/canvas/NodeLayer.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "ui/canvas/NodeRenderer.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 3
+    },
+    "ui/canvas/RemoteCursors.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "ui/canvas/RemoteSelections.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 3
+    },
+    "ui/canvas/SelectionLayer.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 6
+    },
+    "ui/canvas/SelectionOutline.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 3
+    },
+    "ui/canvas/SuggestionCard.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/canvas/SuggestionPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "ui/canvas/ValidationOverlayLayer.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 5
+    },
+    "ui/canvas/ValidationPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "ui/canvas/WorldOriginMarker.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/canvas/canvas/AutoLayoutOverlayLayer.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/canvas/canvas/SnapGuidesOverlay.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/canvas/canvas/computeSnapGuides.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "ui/canvas/canvas/overlays/GapOverlay.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/canvas/canvas/overlays/GridOverlay.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/canvas/canvas/overlays/PaddingOverlay.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/canvas/canvas/overlays/ReorderIndicator.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "ui/canvas/canvas/resolveGridSnap.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/canvas/canvas/resolveSnap.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "ui/canvas/canvas/snapConfig.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "ui/canvas/canvas/useAutoLayoutOverlayVisibility.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/canvas/computeCenteredViewport.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/canvas/hooks/nearestSnapshot.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/canvas/hooks/useNearestWorldObjects.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 4
+    },
+    "ui/canvas/intelligence/__tests__/observeSpatialStateSchema.test.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "ui/canvas/intelligence/__tests__/suggestionKindSchema.test.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "ui/canvas/intelligence/observeSpatialState.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/canvas/intelligence/suggestionLayer.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "ui/canvas/intelligence/validationSuggestionBridge.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "ui/canvas/nearest/nearRadius.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/canvas/nearest/nearestWorldNodes.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "ui/canvas/snap/snapConfig.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "ui/canvas/snap/snapToGrid.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/canvas/suggestions/suggestionStore.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/canvas/suggestions/useSuggestions.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "ui/canvas/surface/CanvasSurface.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/canvas/useWorldPersistence.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "ui/canvas/validation/__tests__/uxRulesSchema.test.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "ui/canvas/validation/useValidationIssues.js": {
+      "zone": "ui",
+      "fanIn": 3,
+      "fanOut": 1
+    },
+    "ui/canvas/validation/uxRules.js": {
+      "zone": "ui",
+      "fanIn": 3,
+      "fanOut": 0
+    },
+    "ui/canvas/validation/validateUX.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "ui/canvas/validation/validationStore.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "ui/canvas/zoomTiers.js": {
+      "zone": "ui",
+      "fanIn": 4,
+      "fanOut": 0
+    },
+    "ui/canvasBus.js": {
+      "zone": "ui",
+      "fanIn": 24,
+      "fanOut": 1
+    },
+    "ui/capabilities/capabilityActions.js": {
+      "zone": "ui",
+      "fanIn": 4,
+      "fanOut": 2
+    },
+    "ui/capabilities/capabilityVocabulary.js": {
+      "zone": "ui",
+      "fanIn": 4,
+      "fanOut": 0
+    },
+    "ui/capabilities/modeLocks.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/capabilities/workspaceCapabilities.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/context/ContextMenu.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/context/useContextMenu.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/controls/AspectLockToggle.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/controls/ui/badge.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/controls/ui/button.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/controls/ui/card.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/controls/ui/textarea.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/creation/creationResolver.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/export/ExportGateOverlay.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "ui/export/ExportWarningSheet.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 5
+    },
+    "ui/export/Sheet.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/export/SheetFooter.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 3
+    },
+    "ui/export/SheetHeader.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "ui/export/SheetIssues.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 3
+    },
+    "ui/export/SheetSummary.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/export/ValidationIssueRow.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/export/exportGateClient.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 3
+    },
+    "ui/export/exportGateStore.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "ui/export/exportMotion.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "ui/files/FilePicker.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/inputs/NumericInput.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "ui/inspector/AutoLayoutPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 2
+    },
+    "ui/inspector/ContentPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "ui/inspector/ExportPreviewPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/inspector/InspectorSection.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/inspector/LayoutInspector.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 2
+    },
+    "ui/inspector/MotionPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/inspector/NodeHeaderPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/inspector/SemanticsPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "ui/interaction/animationKeyframeResolver.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 3
+    },
+    "ui/interaction/dispatcher.js": {
+      "zone": "ui",
+      "fanIn": 8,
+      "fanOut": 0
+    },
+    "ui/interaction/interaction/isModifierAllowed.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/interaction/interaction/useInteractionModifiers.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/interaction/interaction/useKeyboardShortcuts.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 4
+    },
+    "ui/interaction/nodeCreateResolver.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 6
+    },
+    "ui/interaction/nodeDragResolver.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 7
+    },
+    "ui/interaction/sessionBinding.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 18
+    },
+    "ui/keyboard/useAlignmentShortcuts.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "ui/keyboard/useKeyboardNudge.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "ui/layout/CanvasStage.jsx": {
+      "zone": "ui",
+      "fanIn": 3,
+      "fanOut": 18
+    },
+    "ui/layout/LeftPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "ui/layout/PropertyBar.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 7
+    },
+    "ui/layout/ReadOnlyNodeRenderer.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 7
+    },
+    "ui/layout/ReadOnlyScene.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/layout/RightPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 12
+    },
+    "ui/layout/TimelineBar.jsx": {
+      "zone": "ui",
+      "fanIn": 3,
+      "fanOut": 2
+    },
+    "ui/layout/Toolbar.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 10
+    },
+    "ui/layout/TopBar.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/layout/computeFlexLayout.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/layout/computeGridLayout.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/layout/computeReorderIndex.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/panels/AutoLayoutPanel.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/panels/ExportPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "ui/reviews/ConfirmDecision.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/reviews/IssueCertificateButton.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "ui/reviews/ReviewQueue.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/selection/SelectionBox.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/selection/selectionBounds.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/share/EmbedPresetsMenu.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "ui/shared/guards/RequireReviewer.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "ui/shared/guards/ReviewerErrorBoundary.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "ui/timeline/EditableKeyframe.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/timeline/KeyframeDots.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "ui/timeline/TimelineEventLog.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/timeline/TimelinePanel.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 11
+    },
+    "ui/timeline/TimelinePlayhead.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/timeline/TimelineScrubber.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/timeline/TimelineTimeScale.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/timeline/TimelineTrack.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "ui/timeline/TimelineTrackList.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "ui/timeline/TimelineTracks.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "ui/timeline/applyTimelinePreview.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 4
+    },
+    "ui/timeline/editEventBridge.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 3
+    },
+    "ui/timeline/keyframeTimeUtils.js": {
+      "zone": "ui",
+      "fanIn": 3,
+      "fanOut": 0
+    },
+    "ui/timeline/samplePreviewState.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/timeline/useTimelinePreviewBridge.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 4
+    },
+    "ui/timeline/useTimelinePreviewStore.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/timeline/useTimelineStore.js": {
+      "zone": "ui",
+      "fanIn": 7,
+      "fanOut": 0
+    },
+    "ui/tokens.js": {
+      "zone": "ui",
+      "fanIn": 36,
+      "fanOut": 0
+    },
+    "ui/tools/createFrameTool.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/tools/createLayerTool.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/tools/createShapeTool.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/tools/defaultCreateTool.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "ui/tools/toolCapabilities.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/workspace/editor/EditorWorkspaceShell.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 17
+    },
+    "ui/workspace/shared/ClipboardContext.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "ui/workspace/shared/GridContext.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "ui/workspace/shared/ModeContext.jsx": {
+      "zone": "ui",
+      "fanIn": 4,
+      "fanOut": 0
+    },
+    "ui/workspace/shared/SelectionContext.jsx": {
+      "zone": "ui",
+      "fanIn": 15,
+      "fanOut": 0
+    },
+    "ui/workspace/shared/WorkspaceLayout.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 28
+    },
+    "ui/workspace/shared/WorkspaceShell.jsx": {
+      "zone": "ui",
+      "fanIn": 4,
+      "fanOut": 3
+    },
+    "ui/workspace/shared/pasteFromClipboard.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "ui/workspace/shared/serializeSelection.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "ui/workspace/shared/useAutoLayoutCommit.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 2
+    },
+    "ui/workspace/shell/ModeLoader.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 3
+    },
+    "ui/workspace/shell/WorkspaceShell.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 5
+    },
+    "ui/workspace/ux/UIUXAuthoringShell.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 5
+    },
+    "ui/workspace/ux/UIUXCanvasStage.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "ui/workspace/ux/UIUXRightPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 3
+    },
+    "ui/workspace/ux/UIUXToolRail.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 3
+    },
+    "ui/workspace/ux/UIUXTopBar.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "ui/workspace/ux/UXInspectorPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 4
+    },
+    "ui/workspace/ux/UXWorkspaceShell.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 4
+    },
+    "ui/workspace/ux/panels/CanvasSurfacePanel.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 3
+    },
+    "ui/workspace/ux/panels/UIUXInspectorPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 15
+    },
+    "ui/workspace/ux/panels/UXEventListPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/workspace/ux/panels/UXRiskImpactPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/workspace/ux/panels/UXSelectionInsightPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/workspace/ux/panels/UXSuggestionsPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/workspace/ux/panels/UXValidationPanel.jsx": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "ui/workspace/ux/useUXViewport.js": {
+      "zone": "ui",
+      "fanIn": 0,
+      "fanOut": 1
+    },
+    "ui/workspace/ux/uxCanvasPolicy.js": {
+      "zone": "ui",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "utils/safeMutation.js": {
+      "zone": "infra",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "validation/canProjectToCanonicalNode.js": {
+      "zone": "core",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "viewer/ViewerStage.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "viewer/ViewerToolbar.jsx": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "viewer/parseViewerParams.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "viewer/useViewerControls.js": {
+      "zone": "ui",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "workspace/DispatcherContext.jsx": {
+      "zone": "workspace",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "workspace/WorkspaceRoot/DispatcherProvider/Bridges/WorkspaceBridgesRoot.jsx": {
+      "zone": "workspace",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "workspace/WorkspaceRoot/DispatcherProvider/Canvas/WorkspaceCanvasRoot.jsx": {
+      "zone": "workspace",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "workspace/WorkspaceRoot/DispatcherProvider/DispatcherContext.jsx": {
+      "zone": "workspace",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "workspace/WorkspaceRoot/DispatcherProvider/DispatcherProvider.jsx": {
+      "zone": "workspace",
+      "fanIn": 1,
+      "fanOut": 3
+    },
+    "workspace/WorkspaceRoot/DispatcherProvider/Sessions/WorkspaceSessionsRoot.jsx": {
+      "zone": "workspace",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "workspace/WorkspaceRoot/DispatcherProvider/UI/UXConfirmModal.jsx": {
+      "zone": "workspace",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "workspace/WorkspaceRoot/DispatcherProvider/UI/UXWarningBanner.jsx": {
+      "zone": "workspace",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "workspace/WorkspaceRoot/DispatcherProvider/UI/WorkspaceUIRoot.jsx": {
+      "zone": "workspace",
+      "fanIn": 1,
+      "fanOut": 2
+    },
+    "workspace/WorkspaceRoot/WorkspaceRoot.jsx": {
+      "zone": "workspace",
+      "fanIn": 1,
+      "fanOut": 6
+    },
+    "workspace/WorkspaceRoot/createEventDispatcher.js": {
+      "zone": "workspace",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "workspace/WorkspaceShell.js": {
+      "zone": "workspace",
+      "fanIn": 0,
+      "fanOut": 5
+    },
+    "workspace/createFromTemplate.js": {
+      "zone": "workspace",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "workspace/timeline/TimelineUI.js": {
+      "zone": "workspace",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "workspaces/modes/ModeAdapter.js": {
+      "zone": "workspace",
+      "fanIn": 5,
+      "fanOut": 0
+    },
+    "workspaces/modes/ModeRegistry.js": {
+      "zone": "workspace",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "workspaces/modes/designMode.js": {
+      "zone": "workspace",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "workspaces/modes/educationMode.js": {
+      "zone": "workspace",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "workspaces/modes/podcastMode.js": {
+      "zone": "workspace",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "workspaces/modes/registerModes.js": {
+      "zone": "workspace",
+      "fanIn": 0,
+      "fanOut": 7
+    },
+    "workspaces/modes/reviewMode.js": {
+      "zone": "workspace",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "workspaces/modes/videoMode.js": {
+      "zone": "workspace",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "workspaces/modes/writerMode.js": {
+      "zone": "workspace",
+      "fanIn": 1,
+      "fanOut": 1
+    },
+    "workspaces/registry/WorkspaceDefinition.js": {
+      "zone": "workspace",
+      "fanIn": 0,
+      "fanOut": 0
+    },
+    "workspaces/registry/aiWorkspace.js": {
+      "zone": "workspace",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "workspaces/registry/animationWorkspace.js": {
+      "zone": "workspace",
+      "fanIn": 2,
+      "fanOut": 2
+    },
+    "workspaces/registry/brandingWorkspace.js": {
+      "zone": "workspace",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "workspaces/registry/canvasSurfacePolicy.js": {
+      "zone": "workspace",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "workspaces/registry/conversionWorkspace.js": {
+      "zone": "workspace",
+      "fanIn": 3,
+      "fanOut": 0
+    },
+    "workspaces/registry/devWorkspace.js": {
+      "zone": "workspace",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "workspaces/registry/documentWorkspace.js": {
+      "zone": "workspace",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "workspaces/registry/educationWorkspace.js": {
+      "zone": "workspace",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "workspaces/registry/graphicWorkspace.js": {
+      "zone": "workspace",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "workspaces/registry/iconWorkspace.js": {
+      "zone": "workspace",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "workspaces/registry/index.js": {
+      "zone": "workspace",
+      "fanIn": 0,
+      "fanOut": 14
+    },
+    "workspaces/registry/materialWorkspace.js": {
+      "zone": "workspace",
+      "fanIn": 2,
+      "fanOut": 0
+    },
+    "workspaces/registry/podcastWorkspace.js": {
+      "zone": "workspace",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "workspaces/registry/resolveWorkspacePolicy.js": {
+      "zone": "workspace",
+      "fanIn": 5,
+      "fanOut": 1
+    },
+    "workspaces/registry/routes.js": {
+      "zone": "workspace",
+      "fanIn": 1,
+      "fanOut": 0
+    },
+    "workspaces/registry/timelineCapability.js": {
+      "zone": "workspace",
+      "fanIn": 4,
+      "fanOut": 0
+    },
+    "workspaces/registry/translateWorkspace.js": {
+      "zone": "workspace",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "workspaces/registry/uiuxWorkspace.js": {
+      "zone": "workspace",
+      "fanIn": 2,
+      "fanOut": 2
+    },
+    "workspaces/registry/videoWorkspace.js": {
+      "zone": "workspace",
+      "fanIn": 2,
+      "fanOut": 1
+    },
+    "workspaces/registry.js": {
+      "zone": "workspace",
+      "fanIn": 3,
+      "fanOut": 15
+    },
+    "world/applyWorldTransform.js": {
+      "zone": "runtime",
+      "fanIn": 0,
+      "fanOut": 0
+    }
+  }
+}

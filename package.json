@@ -8,6 +8,7 @@
         "build": "next build",
         "start": "next start",
         "lint": "eslint",
+        "enforce:laws": "node enforceDroppleLaws.cjs",
         "lint:export": "node scripts/dropple-export-gate.mjs --world ./fixtures/worlds/allow.json --width 1440 --height 900",
         "lint:export:json": "node scripts/dropple-export-gate.mjs --world ./fixtures/worlds/allow.json --width 1440 --height 900 --json"
     },

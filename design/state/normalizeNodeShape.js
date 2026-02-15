@@ -1,6 +1,12 @@
-export function createNode({
+/**
+ * Normalizes design node fields without owning identity.
+ *
+ * Canonical node creation MUST use `@/core/nodes/createNode`.
+ * This helper only prepares consistent defaults for design state.
+ */
+export function normalizeNodeShape({
   id,
-  type,
+  type = 'frame',
   parentId = null,
   props = {},
   style = {},

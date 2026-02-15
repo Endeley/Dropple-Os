@@ -1,0 +1,55 @@
+name: "🧱 Core / Architecture"
+description: "Fundamental system, data model, or invariant work"
+title: "[CORE] "
+labels:
+  - core
+  - needs-design-review
+assignees:
+  - your-github-username
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ This issue affects Dropple’s architecture.
+        Read DO_NOT_BREAK.md before proceeding.
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0-critical
+        - P1-high
+        - P2-medium
+        - P3-later
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: invariants
+    attributes:
+      label: Architectural Invariants
+      options:
+        - label: Tools do NOT know workspaces
+          required: true
+        - label: Capabilities decide visibility
+          required: true
+        - label: No mutation outside intent resolvers
+          required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      placeholder: Describe the architectural change clearly.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: Bullet list of conditions that must be true.
+    validations:
+      required: true

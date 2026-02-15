@@ -1,4 +1,4 @@
-import { evaluateTimeline } from './evaluateTimeline.js';
+import { evaluateTimeline } from '@/timeline/evaluateTimeline';
 import { useTimelinePreviewStore } from '../stores/useTimelinePreviewStore.js';
 import { getRuntimeState } from '../state/runtimeState.js';
 

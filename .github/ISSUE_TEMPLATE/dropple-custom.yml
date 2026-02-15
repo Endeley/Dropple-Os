@@ -1,0 +1,52 @@
+name: "👻 Dropple-Custom / Intelligence"
+description: "Ghost Preview, Intent, Time, Explain, or other Dropple-only systems"
+title: "[DROPPLE] "
+labels:
+  - dropple-custom
+  - do-not-rush
+assignees:
+  - your-github-username
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        🚨 Dropple-custom systems must NEVER mutate state in v1.
+        Assume users do not trust the system yet.
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P1-high
+        - P2-medium
+        - P3-later
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: ghost_rules
+    attributes:
+      label: Ghost / Safety Rules
+      options:
+        - label: No state mutation
+          required: true
+        - label: No history writes
+          required: true
+        - label: No selection side effects
+          required: true
+
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Intended Behavior
+      placeholder: What illusion or intelligence does the user experience?
+    validations:
+      required: true
+
+  - type: textarea
+    id: non_goals
+    attributes:
+      label: Explicit Non-Goals
+      placeholder: What this issue must NOT do.

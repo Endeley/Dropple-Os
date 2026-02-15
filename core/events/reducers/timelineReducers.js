@@ -7,7 +7,7 @@ import { EventTypes } from '../eventTypes.js';
  *
  * 🔒 Rules:
  * - Pure functions
- * - No ID generation
+ * - No ID generation (IDs must be provided by events)
  * - Deterministic updates only
  */
 export function timelineReducers(state, event) {
@@ -42,7 +42,10 @@ export function timelineReducers(state, event) {
         case EventTypes.TIMELINE_KEYFRAME_ADD: {
             const { nodeId, trackId, keyframeId, time, property, value, easing = 'linear' } = payload;
 
-            if (!keyframeId) return state;
+            if (!keyframeId) {
+                // Hard guard — reducers must not fabricate identity
+                return state;
+            }
 
             const timelineState = state.timeline || { timelines: {} };
             const timelines = timelineState.timelines || {};

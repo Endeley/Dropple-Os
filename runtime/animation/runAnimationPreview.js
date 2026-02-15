@@ -1,4 +1,4 @@
-import { evaluateAnimationAtTime } from '@/timeline/evaluateAnimationAtTime.js';
+import { evaluateTimeline } from '@/timeline/evaluateTimeline';
 import { useAnimatedRuntimeStore } from '../stores/useAnimatedRuntimeStore.js';
 import { getRuntimeState } from '../state/runtimeState.js';
 
@@ -31,7 +31,11 @@ export function runAnimationPreview({
         const clamped = Math.min(elapsed, durationMs);
 
         const animationSource = designState?.timeline?.animations || timeline;
-        const projectedState = evaluateAnimationAtTime(animationSource, clamped, designState || fromState);
+        const projectedState = evaluateTimeline({
+            animations: animationSource,
+            timeMs: clamped,
+            baseState: designState || fromState,
+        });
         const projectedNodes = projectedState?.nodes || {};
 
         useAnimatedRuntimeStore.setState(

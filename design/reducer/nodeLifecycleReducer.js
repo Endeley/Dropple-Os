@@ -1,4 +1,6 @@
-import { createNode } from '../state/createNode.js';
+// 🔒 Canonical node factory import (sovereign path).
+import { createNode } from '@/core/nodes/createNode';
+import { normalizeNodeShape } from '../state/normalizeNodeShape.js';
 
 export function nodeLifecycleReducer(state, event) {
   const next = structuredClone(state);
@@ -9,14 +11,17 @@ export function nodeLifecycleReducer(state, event) {
       if (payloadNode) {
         if (next.nodes[payloadNode.id]) return state;
 
-        next.nodes[payloadNode.id] = payloadNode;
+        const normalized = normalizeNodeShape(payloadNode);
+        const node = createNode(normalized);
 
-        if (payloadNode.parentId) {
-          const parent = next.nodes[payloadNode.parentId];
+        next.nodes[node.id] = node;
+
+        if (node.parentId) {
+          const parent = next.nodes[node.parentId];
           if (!parent) return state;
-          parent.children.push(payloadNode.id);
+          parent.children.push(node.id);
         } else {
-          next.rootIds.push(payloadNode.id);
+          next.rootIds.push(node.id);
         }
 
         return next;
@@ -26,13 +31,15 @@ export function nodeLifecycleReducer(state, event) {
 
       if (next.nodes[nodeId]) return state;
 
-      const node = createNode({
+      const node = createNode(
+        normalizeNodeShape({
         id: nodeId,
         type: nodeType,
         parentId,
         props: initialProps || {},
         layout: layout || {},
-      });
+        }),
+      );
 
       next.nodes[nodeId] = node;
 

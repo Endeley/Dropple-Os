@@ -1,8 +1,8 @@
 // NOTE: Tests defined but not executed yet.
 // Runner setup is deferred intentionally.
-import { evaluateAnimationTimeline } from '../evaluateAnimationTimeline.js';
+import { evaluateTimeline } from '../evaluateTimeline.js';
 
-describe('evaluateAnimationTimeline (pure)', () => {
+describe('evaluateTimeline (animation projection)', () => {
   const animations = {
     clips: {
       clip1: {
@@ -39,12 +39,12 @@ describe('evaluateAnimationTimeline (pure)', () => {
   };
 
   it('returns deterministic output', () => {
-    const r1 = evaluateAnimationTimeline({
+    const r1 = evaluateTimeline({
       animations,
       timeMs: 150,
     });
 
-    const r2 = evaluateAnimationTimeline({
+    const r2 = evaluateTimeline({
       animations,
       timeMs: 150,
     });
@@ -55,7 +55,7 @@ describe('evaluateAnimationTimeline (pure)', () => {
   it('does not mutate animation input', () => {
     const snapshot = JSON.stringify(animations);
 
-    evaluateAnimationTimeline({
+    evaluateTimeline({
       animations,
       timeMs: 100,
     });
@@ -64,7 +64,7 @@ describe('evaluateAnimationTimeline (pure)', () => {
   });
 
   it('returns empty nodes when animations missing', () => {
-    const result = evaluateAnimationTimeline({
+    const result = evaluateTimeline({
       animations: null,
       timeMs: 100,
     });

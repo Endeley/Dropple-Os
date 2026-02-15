@@ -1,0 +1,55 @@
+name: "🎨 UIUX Workspace"
+description: "UIUX workspace features, tools, inspector, or canvas interactions"
+title: "[UIUX] "
+labels:
+  - uiux
+assignees:
+  - your-github-username
+
+body:
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0-critical
+        - P1-high
+        - P2-medium
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: ui_laws
+    attributes:
+      label: UI Laws
+      options:
+        - label: Left = Intent tools only
+          required: true
+        - label: Right = Inspector only
+          required: true
+        - label: Floating = Optional & one-click
+          required: true
+
+  - type: textarea
+    id: feature
+    attributes:
+      label: Feature Description
+      placeholder: What does the user gain?
+    validations:
+      required: true
+
+  - type: textarea
+    id: capabilities
+    attributes:
+      label: Capabilities Used
+      placeholder: e.g. layout.write, node.create
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      placeholder: Clear, testable conditions.
+    validations:
+      required: true
