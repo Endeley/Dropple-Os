@@ -2,8 +2,8 @@
 
 import { useCallback, useMemo } from 'react';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { useSelectionStore } from '@/selection/useSelectionStore.js';
-import { useDispatcher } from '@/workspace/WorkspaceRoot/DispatcherProvider/DispatcherContext.jsx';
+import { useSelectionStore } from '@/runtime/stores/useSelectionStore.js';
+import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
 import { InspectorSection } from '@/ui/inspector/InspectorSection.jsx';
 import { NodeHeaderPanel } from '@/ui/inspector/NodeHeaderPanel.jsx';
 import LayoutInspector from '@/ui/inspector/LayoutInspector.jsx';

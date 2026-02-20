@@ -1,9 +1,10 @@
 'use client';
 
-import { dispatcher } from './interaction/dispatcher.js';
-import { canvasBus } from '@/ui/canvasBus.js';
+import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
+import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
 
 export function Controls({ profile = 'design' }) {
+    const dispatcher = useDispatcher();
     const isUXMode = profile === 'ux-validation';
     const disabledTooltip = isUXMode ? 'Disabled in UX Mode (validation only)' : undefined;
 

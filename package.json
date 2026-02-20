@@ -3,7 +3,8 @@
     "version": "0.1.0",
     "private": true,
     "type": "module",
-    "scripts": {
+  "scripts": {
+    "arch": "node enforceDroppleLaws.cjs",
         "dev": "next dev",
         "build": "next build",
         "start": "next start",

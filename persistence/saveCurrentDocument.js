@@ -2,7 +2,6 @@
 
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import { getRuntimeState } from '@/runtime/state/runtimeState';
 
 /**
  * Explicitly persist the current runtime document to Convex.
@@ -14,9 +13,8 @@ import { getRuntimeState } from '@/runtime/state/runtimeState';
 export function useSaveCurrentDocument() {
     const save = useMutation(api.saveDocumentSnapshot);
 
-    return async function saveCurrentDocument() {
-        const state = getRuntimeState();
-        const doc = state?.document;
+    return async function saveCurrentDocument(runtimeSnapshot) {
+        const doc = runtimeSnapshot?.document;
 
         if (!doc) {
             throw new Error('No active document to save');
@@ -37,8 +35,8 @@ export function useSaveCurrentDocument() {
             docId: doc.id,
             currentBranch: doc.currentBranch,
             branches,
-            timelines: state.timeline ?? null,
-            markers: state.markers ?? null,
+            timelines: runtimeSnapshot?.timeline ?? null,
+            markers: runtimeSnapshot?.markers ?? null,
         });
     };
 }

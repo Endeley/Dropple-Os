@@ -3,7 +3,7 @@
 // perf/PerfHUD.jsx
 
 import React, { useEffect, useState } from 'react';
-import { getPerfStats } from './perfTracker';
+import { getPerfStats } from '@/runtime/instrumentation/perfTracker.js';
 
 export default function PerfHUD() {
     const [stats, setStats] = useState({});

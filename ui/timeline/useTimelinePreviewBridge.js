@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { samplePreviewState } from './samplePreviewState.js';
 import { useTimelinePreviewStore } from './useTimelinePreviewStore.js';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
-import { getRuntimeState } from '@/runtime/state/runtimeState.js';
+import { selectRenderState } from '@/runtime/projection';
 
 /**
  * Bridges UI scrubbing into the animated render store.
@@ -13,7 +13,7 @@ export function useTimelinePreviewBridge(timelineOverride) {
     const isScrubbing = useTimelinePreviewStore((s) => s.isScrubbing);
 
     useEffect(() => {
-        const runtimeState = getRuntimeState();
+        const runtimeState = selectRenderState();
         if (!runtimeState) return;
 
         const timeline = timelineOverride || runtimeState.timeline?.timelines?.default;

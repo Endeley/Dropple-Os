@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import { useSelectionStore } from '@/selection/useSelectionStore.js';
+import { useSelectionStore } from '@/runtime/stores/useSelectionStore.js';
 
 /**
  * Broadcast and receive selection presence.

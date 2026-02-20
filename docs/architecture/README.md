@@ -14,6 +14,8 @@ Enforcement references:
 - `docs/UI-AUTHORITY.md`
 - `docs/ESLINT-GUARDRAILS.md`
 - `docs/DECISIONS/`
+- `docs/PROJECTION_LAYER_V1.md`
+- `docs/AUTHORITY_TRANSLATION_LAYER_V1.md`
 
 ## Purpose
 
@@ -68,6 +70,18 @@ A CCM node:
 - Does not depend on viewport, zoom, or canvas state
 
 Rendering must never mutate or normalize CCM data.
+
+## Projection Boundary
+
+Projection is a formal layer between Runtime and UI.
+It is read-only transport.
+
+Flow:
+
+Runtime -> Projection -> UI
+
+Projection must not dispatch, mutate, or import UI.
+Authority translation lives in UI, not runtime.
 
 ## Rendering Architecture (Critical)
 

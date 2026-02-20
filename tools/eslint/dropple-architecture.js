@@ -219,13 +219,13 @@ const singleDispatcherOwner = {
     type: "problem",
     docs: {
       description:
-        "DispatcherProvider may only be imported within workspace/WorkspaceRoot.",
+        "DispatcherProvider may only be imported within ui/workspace/root.",
     },
     schema: [],
   },
   create(context) {
     const filename = normalizePath(context.filename || context.getFilename?.());
-    const allowed = filename.includes("/workspace/WorkspaceRoot/");
+    const allowed = filename.includes("/ui/workspace/root/");
     if (allowed) return {};
 
     return {
@@ -240,7 +240,7 @@ const singleDispatcherOwner = {
           context.report({
             node,
             message:
-              "DispatcherProvider ownership is exclusive to workspace/WorkspaceRoot.",
+              "DispatcherProvider ownership is exclusive to ui/workspace/root.",
           });
         }
       },

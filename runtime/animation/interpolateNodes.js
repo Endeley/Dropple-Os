@@ -1,17 +1,20 @@
-import { perfStart, perfEnd } from '@/perf/perfTracker.js';
+import { getRuntimeHooks } from '../hooks/runtimeInstrumentation.js';
 
 let lastFrameTime = 0;
 const FRAME_BUDGET = 1000 / 60; // ~60fps
 
 export function interpolateNodes(fromNodes, toNodes, t) {
+    const { onInterpolate } = getRuntimeHooks();
+    const stop = onInterpolate ? onInterpolate() : null;
+
     const now = performance.now();
     if (now - lastFrameTime < FRAME_BUDGET) {
+        if (typeof stop === 'function') stop();
         return toNodes; // skip interpolation frame under budget
     }
 
     lastFrameTime = now;
 
-    perfStart('animation.interpolate');
     const result = {};
 
     Object.keys(toNodes).forEach((id) => {
@@ -33,7 +36,7 @@ export function interpolateNodes(fromNodes, toNodes, t) {
         };
     });
 
-    perfEnd('animation.interpolate');
+    if (typeof stop === 'function') stop();
     return result;
 }
 

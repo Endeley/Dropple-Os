@@ -1,79 +1,45 @@
-import { createTimeline } from '@/timeline/schema/timeline.js';
-import { getMutationOrigin } from '@/core/mutationContext.js';
+/**
+ * PUBLIC RUNTIME API
+ * No mutation exposed.
+ * Runtime state is projection-only outside dispatcher.
+ */
 
-export const initialRuntimeState = {
-    nodes: {},
-    rootIds: [],
-    timeline: null,
-    activeStateId: null,
-    activeComponentId: null,
-    __isReplaying: false,
-};
+import {
+  __getRuntimeStateInternal,
+  __getIsReplayingInternal,
+  __getRuntimeErrorInternal,
+} from './runtimeState.internal.js';
 
-const runtimeState = {
-    current: undefined,
-    __isReplaying: false,
-};
-let lastError = null;
+function deepFreezeDev(obj) {
+  if (process.env.NODE_ENV !== 'development') return obj;
+  if (!obj || typeof obj !== 'object') return obj;
+
+  Object.freeze(obj);
+  Object.getOwnPropertyNames(obj).forEach((prop) => {
+    if (
+      obj[prop] &&
+      typeof obj[prop] === 'object' &&
+      !Object.isFrozen(obj[prop])
+    ) {
+      deepFreezeDev(obj[prop]);
+    }
+  });
+
+  return obj;
+}
 
 export function getRuntimeState() {
-    return runtimeState.current;
-}
+  const state = __getRuntimeStateInternal();
+  if (!state) return state;
 
-export function setRuntimeState(nextState) {
-    const origin = getMutationOrigin();
-    if (process.env.NODE_ENV === 'development') {
-        if (origin !== 'dispatcher' && origin !== 'system') {
-            console.warn('[Skeleton v2] State mutation outside dispatcher', { origin });
-        }
-    }
-    runtimeState.current = nextState
-        ? { ...nextState, __isReplaying: runtimeState.__isReplaying }
-        : nextState;
-    lastError = null;
-    return runtimeState.current;
-}
-
-export function resetRuntimeState() {
-    runtimeState.current = undefined;
-    lastError = null;
-}
-
-export function setIsReplaying(value) {
-    runtimeState.__isReplaying = Boolean(value);
-    if (!runtimeState.current) {
-        runtimeState.current = { ...initialRuntimeState, __isReplaying: runtimeState.__isReplaying };
-        return;
-    }
-    runtimeState.current = { ...runtimeState.current, __isReplaying: runtimeState.__isReplaying };
-}
-
-export function setReplaying(isReplaying) {
-    setIsReplaying(isReplaying);
+  const snapshot = structuredClone(state);
+  return deepFreezeDev(snapshot);
 }
 
 export function getIsReplaying() {
-    return runtimeState.__isReplaying;
-}
-
-export function ensureDefaultTimeline(state) {
-    if (!state?.timeline?.timelines?.default) {
-        return {
-            ...state,
-            timeline: {
-                timelines: {
-                    default: createTimeline(),
-                },
-            },
-        };
-    }
-    return state;
-}
-
-export function setRuntimeError(err) {
-    lastError = err;
+  return __getIsReplayingInternal();
 }
 
 export function getRuntimeError() {
-    return lastError;
+  return __getRuntimeErrorInternal();
 }

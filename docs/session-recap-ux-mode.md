@@ -24,7 +24,7 @@ Phase 2 — UI-only mutation control disable:
 
 ## Files Touched
 
-- `workspace/WorkspaceRoot/WorkspaceRoot.jsx`
+- `ui/workspace/root/WorkspaceRoot.jsx`
   - Renders the UX badge (Phase 1).
 - `ui/Controls.jsx`
   - Disables toolbar controls in UX Mode (Phase 2).

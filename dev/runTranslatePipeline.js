@@ -1,4 +1,4 @@
-import { exportDroppleSpec } from '../export/exportDroppleSpec';
+import { exportDroppleSpec } from '../runtime/export/exportDroppleSpec';
 import { designToPseudoCode } from '../translate/designToPseudoCode';
 import { pseudoCodeToReact } from '../translate/pseudoCodeToReact';
 

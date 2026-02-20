@@ -1,4 +1,4 @@
-import { computeSelectionBounds } from './selectionBounds';
+import { computeSelectionBounds } from '@/runtime/geometry/selectionBounds.js';
 import { computeSnapCandidates, resolveSnapDelta, buildSnapGuides } from './snapEngine';
 
 // Pure constraint evaluation helpers.

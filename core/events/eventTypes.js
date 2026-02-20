@@ -62,4 +62,11 @@ export const EventTypes = Object.freeze({
     INTERACTION_CREATE: 'interaction/create',
     INTERACTION_UPDATE: 'interaction/update',
     INTERACTION_DELETE: 'interaction/delete',
+
+    // ─────────────────────────────
+    // Workspace (projection state)
+    // ─────────────────────────────
+    WORKSPACE_SET_ACTIVE: 'workspace/set-active',
+    WORKSPACE_SET_VIEWPORT: 'workspace/viewport/set',
+    WORKSPACE_SET_CANVAS_SURFACE: 'workspace/canvas-surface/set',
 });

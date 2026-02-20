@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import { canvasBus } from '@/ui/canvasBus';
+import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
 
 /**
  * N2 INTENT SHARING

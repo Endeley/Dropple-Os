@@ -1,7 +1,7 @@
 'use client';
 
 import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
-import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
+import { useWorkspaceProjection } from '@/runtime/projection';
 import { projectRectToViewport } from '@/canvas/transform/projectRectToViewport.js';
 
 /**
@@ -11,7 +11,7 @@ import { projectRectToViewport } from '@/canvas/transform/projectRectToViewport.
 export function GhostNode({ nodeId, delta }) {
   const nodes = useCharacterRenderNodes();
   const node = nodes?.[nodeId];
-  const viewport = useWorkspaceState((state) => state.viewport);
+  const viewport = useWorkspaceProjection((state) => state.viewport);
   if (!node) return null;
   const rect = projectRectToViewport(
     {

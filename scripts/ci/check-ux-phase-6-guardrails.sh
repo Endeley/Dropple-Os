@@ -20,7 +20,7 @@ EXCLUDES=(
   --glob '!**/*.md'
 )
 
-CONFIRM_MODAL_PATH="workspace/WorkspaceRoot/DispatcherProvider/UI/UXConfirmModal.jsx"
+CONFIRM_MODAL_PATH="ui/workspace/root/DispatcherProvider/UI/UXConfirmModal.jsx"
 CONFIRM_LOGIC_PATH="runtime/dispatcher/ux/shouldConfirmUXAction.js"
 
 UNAUTHORIZED_CONFIRM_CALLS=$(rg -n "requestUXConfirmation" "${EXCLUDES[@]}" \

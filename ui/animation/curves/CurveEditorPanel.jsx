@@ -1,11 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { getRuntimeState } from "@/runtime/state/runtimeState.js";
+import { getRuntimeSnapshot } from "@/runtime/projection";
 import { resolveWorkspacePolicy } from "@/workspaces/registry/resolveWorkspacePolicy.js";
-import { getActiveWorkspace } from "@/runtime/state/workspaceState.js";
-import { useTimelineSelectionStore } from "@/timeline/ui/useTimelineSelectionStore.js";
+import { getActiveWorkspace } from "@/runtime/projection";
+import { useTimelineSelectionStore } from "@/ui/timeline/useTimelineSelectionStore.js";
 import { commitCurveChange } from "./commitCurveChange.js";
+import { useDispatcher } from "@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx";
 import BezierCurveCanvas from "./BezierCurveCanvas.jsx";
 
 function isBezier(easing) {
@@ -13,6 +14,7 @@ function isBezier(easing) {
 }
 
 export default function CurveEditorPanel({ capabilities }) {
+  const dispatcher = useDispatcher();
   const selection = useTimelineSelectionStore((s) => s.selectedKeyframeIds);
   const selectedKeyframeId = selection.size ? Array.from(selection)[0] : null;
   const workspaceId = getActiveWorkspace();
@@ -21,7 +23,7 @@ export default function CurveEditorPanel({ capabilities }) {
 
   const keyframe = useMemo(() => {
     if (!selectedKeyframeId) return null;
-    const state = getRuntimeState();
+    const state = getRuntimeSnapshot();
     return state?.timeline?.animations?.keyframes?.[selectedKeyframeId] || null;
   }, [selectedKeyframeId]);
 
@@ -34,7 +36,7 @@ export default function CurveEditorPanel({ capabilities }) {
 
   function commit(nextEasing) {
     if (!nextEasing || !isBezier(nextEasing)) return;
-    commitCurveChange({ keyframeId: selectedKeyframeId, easing: nextEasing });
+    commitCurveChange({ keyframeId: selectedKeyframeId, easing: nextEasing, dispatch: dispatcher.dispatch });
   }
 
   return (

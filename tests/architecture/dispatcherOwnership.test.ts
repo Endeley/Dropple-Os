@@ -61,8 +61,8 @@ test("has exactly one DispatcherProvider instantiation", () => {
     `Expected exactly one <DispatcherProvider> instance, found ${matches.length}:\n${matches.join("\n")}`
   );
   assert.equal(
-    matches[0]?.startsWith("workspace/WorkspaceRoot/WorkspaceRoot.jsx:"),
+    matches[0]?.startsWith("ui/workspace/root/WorkspaceRoot.jsx:"),
     true,
-    `Expected owner to be workspace/WorkspaceRoot/WorkspaceRoot.jsx, got ${matches[0]}`
+    `Expected owner to be ui/workspace/root/WorkspaceRoot.jsx, got ${matches[0]}`
   );
 });

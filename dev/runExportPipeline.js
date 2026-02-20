@@ -1,6 +1,6 @@
-import { exportDroppleSpec } from '../export/exportDroppleSpec';
-import { exportStaticHTML } from '../export/static/exportStaticHTML';
-import { exportWordPress } from '../export/wordpress/exportWordPress';
+import { exportDroppleSpec } from '../runtime/export/exportDroppleSpec';
+import { exportStaticHTML } from '../runtime/export/static/exportStaticHTML';
+import { exportWordPress } from '../runtime/export/wordpress/exportWordPress';
 
 /**
  * Dev-only export pipeline runner.

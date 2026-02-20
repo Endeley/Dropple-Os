@@ -2,11 +2,14 @@
 // Runner setup is deferred intentionally.
 import { runAnimationPreview } from '../runAnimationPreview.js';
 import { useAnimatedRuntimeStore } from '../../stores/useAnimatedRuntimeStore.js';
-import { getRuntimeState, setRuntimeState } from '../../state/runtimeState.js';
+import { getRuntimeState } from '../../state/runtimeState.js';
+import { createEventDispatcher } from '../../dispatcher/dispatch.js';
+
+const dispatcher = createEventDispatcher();
 
 describe('runAnimationPreview (illusion only)', () => {
   beforeEach(() => {
-    setRuntimeState({
+    dispatcher.hydrateRuntimeState({
       nodes: {
         nodeA: { opacity: 0.2 },
       },
@@ -47,7 +50,7 @@ describe('runAnimationPreview (illusion only)', () => {
           },
         },
       },
-    });
+    }, { animate: false });
 
     useAnimatedRuntimeStore.setState({ nodes: {}, rootIds: [] }, false);
   });

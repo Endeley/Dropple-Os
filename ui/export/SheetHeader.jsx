@@ -1,5 +1,5 @@
 import { colors, spacing } from '@/ui/tokens';
-import { EXPORT_GATE_STATUS } from '@/export/exportGateStatus';
+import { EXPORT_GATE_STATUS } from '@/runtime/export/exportGateStatus';
 
 const STATUS_STYLES = {
   [EXPORT_GATE_STATUS.HALT]: {

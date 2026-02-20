@@ -1,8 +1,8 @@
-import { PointerMap } from "../input/pointerMap.js";
-import { MoveSession } from "../input/sessions/MoveSession.js";
-import { ResizeSession } from "../input/sessions/ResizeSession.js";
-import { DrawSession } from "../input/sessions/DrawSession.js";
-import { TextSession } from "../input/sessions/TextSession.js";
+import { PointerMap } from "../runtime/interactions/input/pointerMap.js";
+import { MoveSession } from "../runtime/interactions/input/sessions/MoveSession.js";
+import { ResizeSession } from "../runtime/interactions/input/sessions/ResizeSession.js";
+import { DrawSession } from "../runtime/interactions/input/sessions/DrawSession.js";
+import { TextSession } from "../runtime/interactions/input/sessions/TextSession.js";
 
 function expect(condition, label) {
   if (!condition) throw new Error(`Assertion failed: ${label}`);

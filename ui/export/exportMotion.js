@@ -1,5 +1,5 @@
-import { compileTimelineToIR } from '@/engine/animation/compileTimelineToIR.js';
-import { exportWebAnimation } from '@/engine/animation/exporters/exportWebAnimation.js';
+import { compileTimelineToIR } from '@/runtime/animation/compileTimelineToIR.js';
+import { exportWebAnimation } from '@/runtime/animation/exporters/exportWebAnimation.js';
 
 /**
  * Exports motion intent from a timeline into Web Animations configs.

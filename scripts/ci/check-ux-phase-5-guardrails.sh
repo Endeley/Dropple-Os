@@ -21,7 +21,7 @@ EXCLUDES=(
 
 TARGETS=(
   runtime/dispatcher
-  workspace/WorkspaceRoot/DispatcherProvider
+  ui/workspace/root/DispatcherProvider
   ui
 )
 
@@ -55,7 +55,7 @@ if [ -d runtime/dispatcher/ux ]; then
   fi
 fi
 
-WARN_PATHS=(workspace/WorkspaceRoot/DispatcherProvider ui)
+WARN_PATHS=(ui/workspace/root/DispatcherProvider ui)
 WARN_MODAL_MATCHES=$(rg -n "\\b(Modal|Dialog)\\b" "${WARN_PATHS[@]}" "${EXCLUDES[@]}" || true)
 if [ -n "$WARN_MODAL_MATCHES" ]; then
   echo "❌ Guardrail violation: modal/dialog usage in UX warning paths"

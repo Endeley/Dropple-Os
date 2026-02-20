@@ -1,6 +1,6 @@
 'use client';
 
-import { evaluateExportGate } from '@/export/exportGate.js';
+import { evaluateExportGate } from '@/runtime/export/exportGate.js';
 import { useValidationStore } from '@/ui/canvas/validation/validationStore.js';
 import { useExportGateStore } from './exportGateStore';
 

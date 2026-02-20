@@ -1,6 +1,6 @@
-import { exportJSON } from '@/export/exportJSON';
-import { exportSVG } from '@/export/svg/exportSVG';
-import { exportPNG } from '@/export/png/exportPNG';
+import { exportJSON } from '@/runtime/export/exportJSON';
+import { exportSVG } from '@/runtime/export/svg/exportSVG';
+import { exportPNG } from '@/runtime/export/png/exportPNG';
 import { createShareLink } from '@/share/createShareLink';
 import { createEmbedCodeFromPreset } from '@/share/createEmbedCode';
 import { CapabilityActions } from '@/ui/capabilities/capabilityActions';

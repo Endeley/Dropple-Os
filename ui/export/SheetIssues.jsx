@@ -1,6 +1,6 @@
 import { colors, spacing } from '@/ui/tokens';
 import { ValidationIssueRow } from './ValidationIssueRow';
-import { EXPORT_GATE_STATUS } from '@/export/exportGateStatus';
+import { EXPORT_GATE_STATUS } from '@/runtime/export/exportGateStatus';
 
 function SectionHeader({ title }) {
   return (

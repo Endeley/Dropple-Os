@@ -12,7 +12,7 @@ import TemplateGeneratorOverlay from '@/templates/TemplateGeneratorOverlay';
 import { useTemplateGenerator } from '@/templates/useTemplateGenerator';
 import { createLocalDocumentSnapshot, hydrateLocalDocumentSnapshot } from '@/persistence/localDocumentSchema';
 import { loadLocalDocument, saveLocalDocument } from '@/persistence/localDocumentStore';
-import { canvasBus } from '@/ui/canvasBus';
+import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
 import { getActiveDocument, setActiveDocument } from '@/persistence/activeDocument';
 import { loadRegistry } from '@/persistence/documentRegistry';
 import { loadDocumentSnapshot, saveDocumentSnapshot } from '@/persistence/documentCommands';

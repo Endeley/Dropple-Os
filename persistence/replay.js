@@ -1,5 +1,4 @@
 import { applyEvent } from '@/core/events/applyEvent.js';
-import { withReplayGuard } from '@/runtime/replay/withReplayGuard.js';
 
 /**
  * Replay a branch deterministically.
@@ -9,13 +8,11 @@ import { withReplayGuard } from '@/runtime/replay/withReplayGuard.js';
  * - stable eventIds
  */
 export function replayBranch(branch, initialState) {
-    return withReplayGuard(() => {
-        let state = initialState;
+    let state = initialState;
 
-        for (const event of branch.events) {
-            state = applyEvent(state, event);
-        }
+    for (const event of branch.events) {
+        state = applyEvent(state, event);
+    }
 
-        return state;
-    });
+    return state;
 }

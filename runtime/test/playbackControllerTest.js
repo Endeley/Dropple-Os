@@ -1,6 +1,9 @@
 import { createPlaybackController } from '../animation/playbackController.js';
 import { useAnimatedRuntimeStore } from '../stores/useAnimatedRuntimeStore.js';
-import { getRuntimeState, setIsReplaying, setRuntimeState } from '../state/runtimeState.js';
+import { getRuntimeState } from '../state/runtimeState.js';
+import { createEventDispatcher } from '../dispatcher/dispatch.js';
+
+const dispatcher = createEventDispatcher();
 
 function createStubAnimationController() {
     const calls = { start: 0, cancel: 0 };
@@ -20,8 +23,8 @@ function createStubAnimationController() {
     const animationController = createStubAnimationController();
     const controller = createPlaybackController({ animationController });
 
-    setRuntimeState({ nodes: {}, rootIds: [] });
-    setIsReplaying(true);
+    dispatcher.hydrateRuntimeState({ nodes: {}, rootIds: [] }, { animate: false });
+    dispatcher.setReplaying(true);
 
     controller.play({ fromState: {}, toState: {} });
 
@@ -30,7 +33,7 @@ function createStubAnimationController() {
         'play() should be a no-op when __isReplaying is true'
     );
 
-    setIsReplaying(false);
+    dispatcher.setReplaying(false);
 }
 
 // Test 2: cancel() resets animated store to truth
@@ -39,7 +42,7 @@ function createStubAnimationController() {
     const controller = createPlaybackController({ animationController });
 
     const truth = { nodes: { a: { x: 1 } }, rootIds: ['a'] };
-    setRuntimeState(truth);
+    dispatcher.hydrateRuntimeState(truth, { animate: false });
 
     controller.play({ fromState: truth, toState: truth });
 

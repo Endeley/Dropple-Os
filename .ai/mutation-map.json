@@ -1,0 +1,19 @@
+[
+  "bench/engineBench.js",
+  "branching/merge/simulateMergeState.js",
+  "core/events/applyEvent.js",
+  "core/events/reducers/animationReducers.js",
+  "core/events/reducers/index.js",
+  "core/events/reducers/interactionReducers.js",
+  "core/events/reducers/nodeReducers.js",
+  "core/events/reducers/timelineReducers.js",
+  "core/events/reducers/transitionReducers.js",
+  "core/events/reducers/treeReducers.js",
+  "design/reducer/designReducer.js",
+  "design/reducer/nodeContentReducer.js",
+  "design/reducer/nodeLifecycleReducer.js",
+  "design/reducer/nodeStructureReducer.js",
+  "design/reducer/nodeStyleReducer.js",
+  "runtime/state/runtimeState.internal.js",
+  "ui/timeline/applyTimelinePreview.js"
+]

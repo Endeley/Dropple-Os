@@ -1,6 +1,6 @@
 'use client';
 
-import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
+import { useWorkspaceProjection } from '@/runtime/projection';
 import { projectToViewport } from '@/canvas/transform/projectToViewport.js';
 
 /**
@@ -9,7 +9,7 @@ import { projectToViewport } from '@/canvas/transform/projectToViewport.js';
  */
 export default function CanvasSnapGuides({ guides }) {
     // ✅ Hook is always called
-    const viewport = useWorkspaceState((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
+    const viewport = useWorkspaceProjection((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
 
     // ✅ Early return AFTER hooks
     if (!guides || guides.length === 0) return null;

@@ -1,15 +1,15 @@
 // NOTE: This file is runtime/UI glue. Pure timeline evaluation lives elsewhere.
-import { flattenTimeline } from '@/engine/timeline/flattenTimeline.js';
-import { applyEvent } from '@/core/events/applyEvent.js';
+import { flattenTimeline } from '@/runtime/timeline/flattenTimeline.js';
+import { evaluateTimelinePreview } from '@/runtime/projection';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
-import { getRuntimeState } from '@/runtime/state/runtimeState.js';
+import { getRuntimeSnapshot } from '@/runtime/projection';
 
 /**
  * Applies timeline intent as a preview into the animated render store.
  * Read-only: does not use dispatcher, history, or reducers outside applyEvent.
  */
 export function applyTimelinePreview({ timeline, time }) {
-    const baseState = getRuntimeState();
+    const baseState = getRuntimeSnapshot();
     if (!timeline || !baseState) return;
 
     let state = baseState;
@@ -19,9 +19,7 @@ export function applyTimelinePreview({ timeline, time }) {
         upToTime: time,
     });
 
-    events.forEach((evt) => {
-        state = applyEvent(state, evt);
-    });
+    state = evaluateTimelinePreview(state, events);
 
     useAnimatedRuntimeStore.setState(
         {

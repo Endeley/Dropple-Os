@@ -41,7 +41,7 @@ The following translator boundaries are exempt:
 
 This test ensures only one JSX `<DispatcherProvider` instance exists and that it lives in:
 
-- `workspace/WorkspaceRoot/WorkspaceRoot.jsx`
+- `ui/workspace/root/WorkspaceRoot.jsx`
 
 ## Related
 

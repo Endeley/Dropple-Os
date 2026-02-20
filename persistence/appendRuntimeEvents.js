@@ -2,7 +2,6 @@
 
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import { getRuntimeState } from '@/runtime/state/runtimeState';
 
 /**
  * Append newly committed runtime events to Convex.
@@ -15,11 +14,10 @@ import { getRuntimeState } from '@/runtime/state/runtimeState';
 export function useAppendRuntimeEvents() {
     const append = useMutation(api.appendEvents);
 
-    return async function appendRuntimeEvents(events) {
+    return async function appendRuntimeEvents(events, runtimeSnapshot) {
         if (!Array.isArray(events) || events.length === 0) return;
 
-        const state = getRuntimeState();
-        const doc = state?.document;
+        const doc = runtimeSnapshot?.document;
         if (!doc) {
             throw new Error('No active document');
         }

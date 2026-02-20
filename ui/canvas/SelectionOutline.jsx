@@ -1,13 +1,13 @@
 'use client';
 
 import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
-import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
+import { useWorkspaceProjection } from '@/runtime/projection';
 import { projectRectToViewport } from '@/canvas/transform/projectRectToViewport.js';
 
 export function SelectionOutline({ nodeId, color = 'rgba(59,130,246,0.6)' }) {
     const nodes = useCharacterRenderNodes();
     const node = nodes?.[nodeId];
-    const viewport = useWorkspaceState((state) => state.viewport);
+    const viewport = useWorkspaceProjection((state) => state.viewport);
     if (!node) return null;
     const rect = projectRectToViewport(
         {

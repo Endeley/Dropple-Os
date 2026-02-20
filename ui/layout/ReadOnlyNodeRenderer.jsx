@@ -18,7 +18,7 @@ import {
   computeGridReorderIndex,
 } from '@/ui/layout/computeReorderIndex';
 import { colors, motion } from '@/ui/tokens';
-import { canvasBus } from '@/ui/canvasBus';
+import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
 import { getZoomTier } from '@/ui/canvas/zoomTiers';
 
 export default function ReadOnlyNodeRenderer({

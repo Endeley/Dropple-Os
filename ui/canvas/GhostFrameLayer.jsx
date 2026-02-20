@@ -1,8 +1,8 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
-import { useTimelineStore } from '@/ui/timeline/useTimelineStore.js';
+import { useWorkspaceProjection } from '@/runtime/projection';
+import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
 import { useOnionSkinStore } from '@/ui/animation/useOnionSkinStore.js';
 import { evaluateGhostFrames } from '@/ui/animation/evaluateGhostFrames.js';
 
@@ -11,7 +11,7 @@ function safeNumber(value, fallback = 0) {
 }
 
 export default function GhostFrameLayer({ designState }) {
-    const viewport = useWorkspaceState((s) => s.viewport) || { x: 0, y: 0, scale: 1 };
+    const viewport = useWorkspaceProjection((s) => s.viewport) || { x: 0, y: 0, scale: 1 };
     const currentTime = useTimelineStore((s) => s.currentTime);
     const isScrubbing = useTimelineStore((s) => s.isScrubbing);
     const enabled = useOnionSkinStore((s) => s.enabled);

@@ -1,0 +1,62 @@
+import {
+    serializeWorld,
+    buildWorldState,
+    migrateWorld,
+    computeRootIds,
+    deepFreeze,
+    DEFAULT_RUNTIME_STATE,
+} from '@/persistence/worldState.js';
+import { getRuntimeState } from '@/runtime/state/runtimeState';
+import { setViewport } from '@/runtime/state/workspaceState.js';
+
+export function hydrateWorld(worldState, { dispatcher } = {}) {
+    if (!worldState) return null;
+    if (!dispatcher?.hydrateRuntimeState) {
+        throw new Error('[WorldState] Missing dispatcher for hydrateWorld');
+    }
+    const migrated = migrateWorld(worldState);
+    if (!migrated) return null;
+
+    const nodesById = {};
+    migrated.nodes?.forEach((node) => {
+        if (!node?.id) return;
+        nodesById[node.id] = node;
+    });
+
+    const rootIds = computeRootIds(nodesById);
+    const baseState = getRuntimeState() ?? DEFAULT_RUNTIME_STATE;
+    const nextState = {
+        ...baseState,
+        nodes: nodesById,
+        rootIds,
+    };
+
+    setViewport(migrated.camera);
+
+    if (process.env.NODE_ENV === 'development') {
+        deepFreeze(migrated);
+    }
+    return dispatcher.hydrateRuntimeState(nextState, { animate: false });
+}
+
+export function roundTripWorldState({ nodesById, viewport, workspaceId, metadata, dispatcher }) {
+    const first = serializeWorld({ nodesById, viewport, workspaceId, metadata });
+    if (!first) return { ok: false, reason: 'serialize_failed' };
+    hydrateWorld(first, { dispatcher });
+    const runtimeState = getRuntimeState();
+    const second = serializeWorld({
+        nodesById: runtimeState?.nodes ?? {},
+        viewport,
+        workspaceId,
+        metadata,
+    });
+    const equal = JSON.stringify(first) === JSON.stringify(second);
+    return { ok: equal, first, second };
+}
+
+export function buildWorldFromRuntime(workspaceSnapshot, metadata) {
+    const runtimeSnapshot = getRuntimeState();
+    return buildWorldState(runtimeSnapshot, workspaceSnapshot, metadata);
+}
+
+export { serializeWorld };

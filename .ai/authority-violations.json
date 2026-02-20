@@ -1,0 +1,607 @@
+[
+  {
+    "type": "EXTERNAL_MUTATION_ACCESS",
+    "from": "branching/merge/MergePreview.jsx",
+    "to": "branching/merge/simulateMergeState.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "collab/useIntentPreview.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "collab/useIntentPreview.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "collab/useSelectionPresence.js",
+    "to": "runtime/stores/useSelectionStore.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "dev/runExportPipeline.js",
+    "to": "runtime/export/exportDroppleSpec.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "dev/runExportPipeline.js",
+    "to": "runtime/export/static/exportStaticHTML.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "dev/runExportPipeline.js",
+    "to": "runtime/export/wordpress/exportWordPress.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "dev/runTranslatePipeline.js",
+    "to": "runtime/export/exportDroppleSpec.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "engine/animation/evaluateAnimation.js",
+    "to": "runtime/animation/lerp.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "engine/constraints/constraintEngine.js",
+    "to": "runtime/geometry/selectionBounds.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "engine/constraints/resizeConstraintEngine.js",
+    "to": "runtime/geometry/selectionBounds.js"
+  },
+  {
+    "type": "EXTERNAL_MUTATION_ACCESS",
+    "from": "persistence/replay.js",
+    "to": "core/events/applyEvent.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "plugins/pluginSupervisor.js",
+    "to": "plugins/workerSandbox.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "plugins/pluginSupervisor.js",
+    "to": "plugins/workerSandbox.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "plugins/pluginSupervisor.js",
+    "to": "plugins/capabilityFactory.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "plugins/pluginSupervisor.js",
+    "to": "plugins/capabilityFactory.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "plugins/pluginSupervisor.js",
+    "to": "plugins/securePluginAPI.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "plugins/pluginSupervisor.js",
+    "to": "plugins/securePluginAPI.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "plugins/pluginSupervisor.js",
+    "to": "plugins/executionGuards.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "plugins/pluginSupervisor.js",
+    "to": "plugins/executionGuards.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/attachments/attachmentRegistry.js",
+    "to": "runtime/state/runtimeState.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/attachments/attachmentRegistry.js",
+    "to": "runtime/state/runtimeState.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/characters/characterRegistry.js",
+    "to": "runtime/state/runtimeState.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/characters/characterRegistry.js",
+    "to": "runtime/state/runtimeState.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/dispatcher/dispatch.js",
+    "to": "core/events/eventTypes.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/dispatcher/dispatch.js",
+    "to": "core/events/eventTypes.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/dispatcher/dispatch.js",
+    "to": "core/mutationContext.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/dispatcher/dispatch.js",
+    "to": "core/mutationContext.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/dispatcher/dispatch.js",
+    "to": "workspaces/registry/resolveWorkspacePolicy.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/dispatcher/dispatch.js",
+    "to": "workspaces/registry/resolveWorkspacePolicy.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/guards/animationGuard.js",
+    "to": "core/events/eventTypes.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/guards/timelineGuard.js",
+    "to": "workspaces/registry/resolveWorkspacePolicy.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/editEventRuntimeBridge.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/editEventRuntimeBridge.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/editEventRuntimeBridge.js",
+    "to": "core/events/eventTypes.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/editEventRuntimeBridge.js",
+    "to": "core/events/eventTypes.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/editEventRuntimeBridge.js",
+    "to": "runtime/dispatcher/dispatcherHandle.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/editEventRuntimeBridge.js",
+    "to": "runtime/dispatcher/dispatcherHandle.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/nodeCreateRuntimeBridge.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/nodeCreateRuntimeBridge.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/nodeCreateRuntimeBridge.js",
+    "to": "core/events/eventTypes.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/nodeCreateRuntimeBridge.js",
+    "to": "core/events/eventTypes.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/nodeCreateRuntimeBridge.js",
+    "to": "runtime/dispatcher/dispatcherHandle.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/nodeCreateRuntimeBridge.js",
+    "to": "runtime/dispatcher/dispatcherHandle.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/nodeDragRuntimeBridge.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/nodeDragRuntimeBridge.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/nodeDragRuntimeBridge.js",
+    "to": "runtime/stores/useRuntimeStore.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/nodeDragRuntimeBridge.js",
+    "to": "runtime/stores/useRuntimeStore.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/nodeDragRuntimeBridge.js",
+    "to": "runtime/stores/useAnimatedRuntimeStore.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/nodeDragRuntimeBridge.js",
+    "to": "runtime/stores/useAnimatedRuntimeStore.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/nodeDragRuntimeBridge.js",
+    "to": "runtime/input/snap/snapConfig.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/nodeDragRuntimeBridge.js",
+    "to": "runtime/input/snap/snapConfig.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/nodeDragRuntimeBridge.js",
+    "to": "runtime/input/spatial/nearestSnapshot.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/nodeDragRuntimeBridge.js",
+    "to": "runtime/input/spatial/nearestSnapshot.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/nodeDragRuntimeBridge.js",
+    "to": "runtime/stores/useSelectionStore.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/nodeDragRuntimeBridge.js",
+    "to": "runtime/stores/useSelectionStore.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/sessionCommitRuntimeBridge.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/sessionCommitRuntimeBridge.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/sessionCommitRuntimeBridge.js",
+    "to": "core/events/eventTypes.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/sessionCommitRuntimeBridge.js",
+    "to": "core/events/eventTypes.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/sessionCommitRuntimeBridge.js",
+    "to": "runtime/geometry/selectionBounds.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/sessionCommitRuntimeBridge.js",
+    "to": "runtime/geometry/selectionBounds.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/sessionCommitRuntimeBridge.js",
+    "to": "workspaces/registry/resolveWorkspacePolicy.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/sessionCommitRuntimeBridge.js",
+    "to": "workspaces/registry/resolveWorkspacePolicy.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/sessionCommitRuntimeBridge.js",
+    "to": "runtime/stores/useTimelineStore.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/sessionCommitRuntimeBridge.js",
+    "to": "runtime/stores/useTimelineStore.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/sessionCommitRuntimeBridge.js",
+    "to": "runtime/stores/useSelectionStore.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/sessionCommitRuntimeBridge.js",
+    "to": "runtime/stores/useSelectionStore.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/sessionCommitRuntimeBridge.js",
+    "to": "runtime/stores/useAutoKeyframeStore.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/sessionCommitRuntimeBridge.js",
+    "to": "runtime/stores/useAutoKeyframeStore.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/input/sessionCommitRuntimeBridge.js",
+    "to": "runtime/dispatcher/dispatcherHandle.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/input/sessionCommitRuntimeBridge.js",
+    "to": "runtime/dispatcher/dispatcherHandle.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/instrumentation/perfTracker.js",
+    "to": "runtime/hooks/runtimeInstrumentation.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/instrumentation/perfTracker.js",
+    "to": "runtime/hooks/runtimeInstrumentation.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/interactions/input/sessions/AnimationCreateClipSession.js",
+    "to": "core/events/eventTypes.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/interactions/input/sessions/AnimationCreateClipSession.js",
+    "to": "core/events/eventTypes.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/interactions/input/sessions/AnimationCreateKeyframeSession.js",
+    "to": "core/events/eventTypes.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/interactions/input/sessions/AnimationCreateKeyframeSession.js",
+    "to": "core/events/eventTypes.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/interactions/input/sessions/AnimationCreateTrackSession.js",
+    "to": "core/events/eventTypes.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/interactions/input/sessions/AnimationCreateTrackSession.js",
+    "to": "core/events/eventTypes.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/interactions/input/sessions/AnimationDeleteKeyframeSession.js",
+    "to": "core/events/eventTypes.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/interactions/input/sessions/AnimationDeleteKeyframeSession.js",
+    "to": "core/events/eventTypes.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/interactions/input/sessions/AnimationUpdateKeyframeSession.js",
+    "to": "core/events/eventTypes.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/interactions/input/sessions/AnimationUpdateKeyframeSession.js",
+    "to": "core/events/eventTypes.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/interactions/input/sessions/ResizeSession.js",
+    "to": "runtime/geometry/selectionBounds.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "runtime/interactions/input/sessions/ResizeSession.js",
+    "to": "runtime/geometry/selectionBounds.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/preview/applyTimelinePreview.js",
+    "to": "runtime/stores/useAnimatedRuntimeStore.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/preview/timelineScrubber.js",
+    "to": "runtime/stores/useAnimatedRuntimeStore.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "runtime/replay/replayBranch.js",
+    "to": "persistence/replay.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/animation/evaluateGhostFrames.js",
+    "to": "runtime/characters/applyCharacterConstraints.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/animation/evaluateGhostFrames.js",
+    "to": "runtime/attachments/applyAttachments.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/animation/evaluateGhostFrames.js",
+    "to": "runtime/timeline/keyframeTimeUtils.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/animation/evaluateMotionTrails.js",
+    "to": "runtime/characters/applyCharacterConstraints.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/animation/evaluateMotionTrails.js",
+    "to": "runtime/attachments/applyAttachments.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/animation/evaluateMotionTrails.js",
+    "to": "runtime/timeline/keyframeTimeUtils.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/canvas/canvas/computeSnapGuides.js",
+    "to": "ui/canvas/canvas/snapConfig.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "ui/canvas/canvas/computeSnapGuides.js",
+    "to": "ui/canvas/canvas/snapConfig.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/canvas/hooks/useNearestWorldObjects.js",
+    "to": "ui/canvas/CanvasContext.jsx"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/canvas/useWorldPersistence.js",
+    "to": "persistence/worldStore.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/canvas/useWorldPersistence.js",
+    "to": "runtime/persistence/worldRuntimeBridge.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/canvas/useWorldPersistence.js",
+    "to": "ui/workspace/root/DispatcherProvider/DispatcherContext.jsx"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/capabilities/capabilityActions.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/creation/creationResolver.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "TRUTH_LEAK",
+    "from": "ui/creation/creationResolver.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/export/exportMotion.js",
+    "to": "runtime/animation/compileTimelineToIR.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/export/exportMotion.js",
+    "to": "runtime/animation/exporters/exportWebAnimation.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/interaction/interaction/useKeyboardShortcuts.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/interaction/sessionBinding.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/interaction/sessionBinding.js",
+    "to": "runtime/interactions/input/InputSessionManager.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/interaction/sessionBinding.js",
+    "to": "runtime/input/sessionRuntimeBridge.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/keyboard/useKeyboardNudge.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/selection/selectionBounds.js",
+    "to": "runtime/geometry/selectionBounds.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/timeline/applyTimelinePreview.js",
+    "to": "runtime/stores/useAnimatedRuntimeStore.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/timeline/useTimelinePreviewBridge.js",
+    "to": "runtime/stores/useAnimatedRuntimeStore.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/tools/createFrameTool.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/tools/createLayerTool.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/tools/createShapeTool.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/tools/defaultCreateTool.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/workspace/shared/pasteFromClipboard.js",
+    "to": "infrastructure/eventBus/canvasBus.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/workspace/useHydrateDocument.js",
+    "to": "runtime/replay/replayBranch.js"
+  },
+  {
+    "type": "UPWARD_AUTHORITY_LEAK",
+    "from": "ui/workspace/useHydrateDocument.js",
+    "to": "ui/workspace/root/DispatcherProvider/DispatcherContext.jsx"
+  }
+]

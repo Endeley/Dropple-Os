@@ -1,4 +1,4 @@
-import { canvasBus } from '@/ui/canvasBus';
+import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
 
 /**
  * Default creation tool.

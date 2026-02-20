@@ -6,19 +6,21 @@ import { interpolateNodes } from '../animation/interpolateNodes.js';
 import { easeOutCubic } from '../animation/easing.js';
 
 import { useAnimatedRuntimeStore } from '../stores/useAnimatedRuntimeStore.js';
-import { syncRuntimeToZustand } from '../bridge/zustandBridge.js';
+import { syncRuntimeToZustand } from '../projection/zustandBridge.js';
 import { createHistory } from './history.js';
 
+import { getRuntimeState as getRuntimeStatePublic } from '../state/runtimeState.js';
 import {
-    getRuntimeState,
-    resetRuntimeState,
-    setRuntimeState,
-    ensureDefaultTimeline,
-    setRuntimeError,
-    getIsReplaying,
-} from '../state/runtimeState.js';
+    __getRuntimeStateInternal,
+    __setRuntimeStateInternal,
+    __resetRuntimeStateInternal,
+    __ensureDefaultTimelineInternal,
+    __setRuntimeErrorInternal,
+    __getIsReplayingInternal,
+    __setIsReplayingInternal,
+} from '../state/runtimeState.internal.js';
 
-import { perfStart, perfEnd } from '@/perf/perfTracker.js';
+import { emitPerfEvent } from '../instrumentation/perfEvents.js';
 import { applyTimelineGuard } from '../guards/timelineGuard.js';
 import { applyAnimationGuard } from '../guards/animationGuard.js';
 import { EventSequencer } from '../events/EventSequencer.js';
@@ -39,7 +41,12 @@ import { requestUXConfirmation } from './ux/uxConfirmBus.js';
 import { shouldConfirmUXAction, defaultUXEnforcementTier } from './ux/shouldConfirmUXAction.js';
 import { withMutationOrigin } from '@/core/mutationContext.js';
 import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
-import { getActiveWorkspace } from '../state/workspaceState.js';
+import {
+    getActiveWorkspace,
+    setActiveWorkspace,
+    setCanvasSurface,
+    setViewport,
+} from '../state/workspaceState.js';
 
 export function createEventDispatcher({
     maxHistory = 100,
@@ -84,9 +91,9 @@ export function createEventDispatcher({
     });
 
     function commit(nextState, { animate = true } = {}) {
-        const prev = getRuntimeState();
+        const prev = __getRuntimeStateInternal();
 
-        setRuntimeState(nextState);
+        __setRuntimeStateInternal(nextState);
 
         if (animate && !isReplaying) {
             playbackController.play({
@@ -100,12 +107,27 @@ export function createEventDispatcher({
         syncRuntimeToZustand(nextState);
 
         // Derived layout ONLY
-        if (!getIsReplaying()) {
+        if (!__getIsReplayingInternal()) {
             const derived = applyLayoutPass(nextState);
             useAnimatedRuntimeStore.setState(derived, false);
         }
 
         return nextState;
+    }
+
+    function setReplaying(value) {
+        return withMutationOrigin('dispatcher', () => {
+            isReplaying = Boolean(value);
+            __setIsReplayingInternal(isReplaying);
+        });
+    }
+
+    function hydrateRuntimeState(nextState, { animate = false } = {}) {
+        return withMutationOrigin('dispatcher', () => {
+            setReplaying(false);
+            const ensured = __ensureDefaultTimelineInternal(nextState);
+            return commit(ensured, { animate });
+        });
     }
 
     async function dispatch(rawEvent) {
@@ -154,7 +176,7 @@ export function createEventDispatcher({
                         pendingConfirmation = null;
 
                         if (!confirmed) {
-                            return getRuntimeState();
+                            return __getRuntimeStateInternal();
                         }
 
                         confirmedActionTypes.add(actionType);
@@ -162,7 +184,7 @@ export function createEventDispatcher({
                 }
             }
 
-            perfStart('dispatch');
+            emitPerfEvent({ type: 'start', label: 'dispatch' });
             let didExecute = false;
 
             try {
@@ -175,15 +197,30 @@ export function createEventDispatcher({
                 const eventId = createEventId({ branchId, nextSeq: seq });
                 const event = { ...rawEvent, id: eventId };
 
+                if (event?.type === EventTypes.WORKSPACE_SET_ACTIVE) {
+                    setActiveWorkspace(event?.payload?.id, event?.payload?.workspaceDef ?? null);
+                    return __getRuntimeStateInternal();
+                }
+
+                if (event?.type === EventTypes.WORKSPACE_SET_VIEWPORT) {
+                    setViewport(event?.payload?.viewport);
+                    return __getRuntimeStateInternal();
+                }
+
+                if (event?.type === EventTypes.WORKSPACE_SET_CANVAS_SURFACE) {
+                    setCanvasSurface(event?.payload?.surface);
+                    return __getRuntimeStateInternal();
+                }
+
                 const guarded = applyTimelineGuard(event);
-                if (!guarded) return getRuntimeState();
+                if (!guarded) return __getRuntimeStateInternal();
 
                 const animationGuarded = applyAnimationGuard(guarded);
-                if (!animationGuarded) return getRuntimeState();
+                if (!animationGuarded) return __getRuntimeStateInternal();
 
                 // Interaction execution
                 if (rawEvent.type === 'interaction/execute') {
-                    const runtimeState = getRuntimeState();
+                    const runtimeState = __getRuntimeStateInternal();
                     const { trigger, sourceId } = rawEvent.payload || {};
 
                     const interaction = resolveInteraction({
@@ -211,13 +248,13 @@ export function createEventDispatcher({
                     return runtimeState;
                 }
 
-                const prev = getRuntimeState();
+                const prev = __getRuntimeStateInternal();
                 didExecute = true;
                 let next = applyEvent(prev, animationGuarded);
                 if (rawEvent?.type === EventTypes.NODE_CREATE) {
                     console.log('[dispatcher] post-reduction NODE_CREATE nextState.nodes:', next?.nodes);
                 }
-                next = ensureDefaultTimeline(next);
+                next = __ensureDefaultTimelineInternal(next);
 
                 if (next === prev) return next;
 
@@ -231,10 +268,12 @@ export function createEventDispatcher({
                         toState: next,
                         transition,
                         onComplete: (finalState) => {
-                            history.push(finalState);
-                            commit(finalState, { animate: false });
-                            setRuntimeError(null);
-                            currentPreviewCancel = null;
+                            withMutationOrigin('dispatcher', () => {
+                                history.push(finalState);
+                                commit(finalState, { animate: false });
+                                __setRuntimeErrorInternal(null);
+                                currentPreviewCancel = null;
+                            });
                         },
                     });
 
@@ -246,10 +285,10 @@ export function createEventDispatcher({
                 return commit(next);
             } catch (err) {
                 console.error('[Dispatcher error]', err, rawEvent);
-                setRuntimeError(err);
-                return getRuntimeState();
+                __setRuntimeErrorInternal(err);
+                return __getRuntimeStateInternal();
             } finally {
-                perfEnd('dispatch');
+                emitPerfEvent({ type: 'end', label: 'dispatch' });
                 if (didExecute) {
                     emitUXWarning(observation);
                 }
@@ -258,30 +297,36 @@ export function createEventDispatcher({
     }
 
     function undo() {
-        isReplaying = true;
-        if (currentPreviewCancel) currentPreviewCancel();
-        playbackController.cancel();
-        const result = commit(history.undo(), { animate: false });
-        isReplaying = false;
-        return result;
+        return withMutationOrigin('dispatcher', () => {
+            setReplaying(true);
+            if (currentPreviewCancel) currentPreviewCancel();
+            playbackController.cancel();
+            const result = commit(history.undo(), { animate: false });
+            setReplaying(false);
+            return result;
+        });
     }
 
     function redo() {
-        isReplaying = true;
-        if (currentPreviewCancel) currentPreviewCancel();
-        playbackController.cancel();
-        const result = commit(history.redo(), { animate: false });
-        isReplaying = false;
-        return result;
+        return withMutationOrigin('dispatcher', () => {
+            setReplaying(true);
+            if (currentPreviewCancel) currentPreviewCancel();
+            playbackController.cancel();
+            const result = commit(history.redo(), { animate: false });
+            setReplaying(false);
+            return result;
+        });
     }
 
     function reset() {
-        isReplaying = false;
-        playbackController.cancel();
-        history.reset();
-        sequencer.reset();
-        resetRuntimeState();
-        useAnimatedRuntimeStore.setState({ nodes: {}, rootIds: [] }, false);
+        return withMutationOrigin('dispatcher', () => {
+            setReplaying(false);
+            playbackController.cancel();
+            history.reset();
+            sequencer.reset();
+            __resetRuntimeStateInternal();
+            useAnimatedRuntimeStore.setState({ nodes: {}, rootIds: [] }, false);
+        });
     }
 
     return {
@@ -289,7 +334,9 @@ export function createEventDispatcher({
         undo,
         redo,
         reset,
+        setReplaying,
+        hydrateRuntimeState,
         getUXAuditLog: uxAuditLog.snapshot,
-        getState: getRuntimeState,
+        getState: getRuntimeStatePublic,
     };
 }

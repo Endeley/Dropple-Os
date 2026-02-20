@@ -2,13 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { canvasBus } from '@/ui/canvasBus.js';
+import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
 import { NodeView } from './NodeView.jsx';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext';
 import { computeSelectionBounds } from '@/ui/selection/selectionBounds.js';
 import { SelectionBox } from '@/ui/selection/SelectionBox.jsx';
-import { MoveSession } from '@/input/sessions/MoveSession.js';
-import { ResizeSession } from '@/input/sessions/ResizeSession.js';
 
 export default function Canvas() {
     const nodes = useRuntimeStore((s) => s.nodes);
@@ -162,31 +160,34 @@ export default function Canvas() {
     function startGroupMove(e) {
         if (selectedNodes.length < 2) return;
 
-        const session = new MoveSession({
+        canvasBus.emit('intent.group.move.start', {
             nodeIds: selectedNodes.map((node) => node.id),
-            nodes: selectedNodes,
-            siblings: unselectedNodes,
-            canvas: getCanvasSize(),
-            startPointer: { x: e.clientX, y: e.clientY },
+            pointer: { x: e.clientX, y: e.clientY },
+            modifiers: {
+                shiftKey: e.shiftKey,
+                altKey: e.altKey,
+                metaKey: e.metaKey,
+                ctrlKey: e.ctrlKey,
+            },
+            originalEvent: e,
         });
-
-        canvasBus.emit('pointer.down', { session, event: e });
     }
 
     function startGroupResize(e) {
         if (!selectionBounds || selectedNodes.length < 2) return;
 
-        const session = new ResizeSession({
+        canvasBus.emit('intent.group.resize.start', {
             nodeIds: selectedNodes.map((node) => node.id),
-            nodes: selectedNodes,
-            siblings: unselectedNodes,
-            canvas: getCanvasSize(),
-            startPointer: { x: e.clientX, y: e.clientY },
+            pointer: { x: e.clientX, y: e.clientY },
             handle: 'se',
-            options: { lockAspectRatio: e.shiftKey },
+            modifiers: {
+                shiftKey: e.shiftKey,
+                altKey: e.altKey,
+                metaKey: e.metaKey,
+                ctrlKey: e.ctrlKey,
+            },
+            originalEvent: e,
         });
-
-        canvasBus.emit('pointer.down', { session, event: e });
     }
 
     const ghostRect =

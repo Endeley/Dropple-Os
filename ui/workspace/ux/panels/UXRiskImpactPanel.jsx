@@ -8,12 +8,12 @@
  */
 
 import { useMemo } from 'react';
-import { getUXAuditLog } from '@/runtime/dispatcher/ux/uxAuditLog';
+import { getUXAuditSnapshot } from '@/runtime/projection';
 
 export function UXRiskImpactPanel() {
     const auditEntries = useMemo(() => {
         try {
-            return getUXAuditLog() ?? [];
+            return getUXAuditSnapshot() ?? [];
         } catch {
             return [];
         }

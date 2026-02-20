@@ -3,9 +3,9 @@
 import { useGrid } from '@/ui/workspace/shared/GridContext';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext';
 import { CapabilityActions } from '@/ui/capabilities/capabilityActions';
-import { exportJSON } from '@/export/exportJSON';
-import { exportSVG } from '@/export/svg/exportSVG';
-import { exportPNG } from '@/export/png/exportPNG';
+import { exportJSON } from '@/runtime/export/exportJSON';
+import { exportSVG } from '@/runtime/export/svg/exportSVG';
+import { exportPNG } from '@/runtime/export/png/exportPNG';
 import { runExportGate } from '@/ui/export/exportGateClient.js';
 import { createShareLink } from '@/share/createShareLink';
 import { createEmbedCode } from '@/share/createEmbedCode';

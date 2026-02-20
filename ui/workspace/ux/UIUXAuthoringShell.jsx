@@ -3,7 +3,7 @@ import { UIUXTopBar } from './UIUXTopBar.jsx';
 import { UIUXToolRail } from './UIUXToolRail.jsx';
 import { UIUXCanvasStage } from './UIUXCanvasStage.jsx';
 import { UIUXRightPanel } from './UIUXRightPanel.jsx';
-import { WorkspaceSessionsRoot } from '@/workspace/WorkspaceRoot/DispatcherProvider/Sessions/WorkspaceSessionsRoot.jsx';
+import { WorkspaceSessionsRoot } from '@/ui/workspace/root/DispatcherProvider/Sessions/WorkspaceSessionsRoot.jsx';
 
 /**
  * UIUXAuthoringShell

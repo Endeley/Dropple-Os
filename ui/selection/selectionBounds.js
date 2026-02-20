@@ -1,4 +1,4 @@
-import { computeSelectionBounds as computeBounds } from '@/engine/constraints/selectionBounds';
+import { computeSelectionBounds as computeBounds } from '@/runtime/geometry/selectionBounds.js';
 
 export function computeSelectionBounds(nodes = []) {
     if (!nodes.length) return null;

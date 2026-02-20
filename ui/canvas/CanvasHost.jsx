@@ -1,7 +1,7 @@
 'use client';
 
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
-import { canvasBus } from '@/ui/canvasBus.js';
+import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
 
 /**
  * CanvasHost

@@ -1,7 +1,7 @@
 import { evaluateTimeline } from '@/timeline/evaluateTimeline';
 import { applyCharacterConstraints } from '@/runtime/characters/applyCharacterConstraints.js';
 import { applyAttachments } from '@/runtime/attachments/applyAttachments.js';
-import { getPrevKeyframeTime } from '@/ui/timeline/keyframeTimeUtils.js';
+import { getPrevKeyframeTime } from '@/runtime/timeline/keyframeTimeUtils.js';
 
 function getAnimationDurationMs(animations) {
     if (!animations?.clips) return 0;

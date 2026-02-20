@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { serializeSelection } from '@/ui/workspace/shared/serializeSelection';
 import { pasteFromClipboard } from '@/ui/workspace/shared/pasteFromClipboard';
 import { useClipboard } from '@/ui/workspace/shared/ClipboardContext';
-import { canvasBus } from '@/ui/canvasBus';
+import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
 
 export function useKeyboardShortcuts({
   enabled = true,

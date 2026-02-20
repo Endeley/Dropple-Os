@@ -19,6 +19,8 @@ State is a consequence, not a source of truth.
 
 If a feature violates any of the above, it does not belong in Dropple OS.
 
+Runtime state is strictly governed by RUNTIME_STATE_CONTRACT_V1.
+
 1. Event System Rules (HARD LOCK)
 
 Allowed

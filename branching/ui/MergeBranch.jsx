@@ -5,7 +5,7 @@
 import React, { useState } from 'react';
 import { useBranchState } from './useBranchState';
 import { getRuntimeState, setRuntimeState } from '@/runtime/state/runtimeState';
-import { syncRuntimeToZustand } from '@/runtime/bridge/zustandBridge';
+import { syncRuntimeToZustand } from '@/runtime/projection/zustandBridge';
 
 /**
  * Merge Branch UI (explicit + guarded).

@@ -1,9 +1,9 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
+import { useWorkspaceProjection } from '@/runtime/projection';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext.jsx';
-import { useTimelineStore } from '@/ui/timeline/useTimelineStore.js';
+import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
 import { useMotionTrailStore } from '@/ui/animation/useMotionTrailStore.js';
 import { evaluateMotionTrails } from '@/ui/animation/evaluateMotionTrails.js';
 
@@ -15,7 +15,7 @@ function projectPoint(point, viewport) {
 }
 
 export default function MotionTrailLayer({ designState }) {
-    const viewport = useWorkspaceState((s) => s.viewport) || { x: 0, y: 0, scale: 1 };
+    const viewport = useWorkspaceProjection((s) => s.viewport) || { x: 0, y: 0, scale: 1 };
     const { selectedIds } = useSelection() || {};
     const selected = useMemo(() => Array.from(selectedIds || []), [selectedIds]);
 

@@ -2,7 +2,7 @@
 
 import React, { memo } from 'react';
 import { NodeView } from '@/ui/NodeView.jsx';
-import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
+import { useWorkspaceProjection } from '@/runtime/projection';
 import { useCanvasContext } from '@/ui/canvas/CanvasContext.jsx';
 
 const __DEV__ = process.env.NODE_ENV !== 'production';
@@ -25,7 +25,7 @@ function devSkip(reason, node, details = {}) {
 }
 
 function NodeRendererImpl({ node }) {
-    const viewport = useWorkspaceState((state) => state.viewport);
+    const viewport = useWorkspaceProjection((state) => state.viewport);
     const { zoomTier } = useCanvasContext();
     if (!node) return null;
 

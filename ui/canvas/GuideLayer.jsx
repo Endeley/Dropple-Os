@@ -4,13 +4,13 @@ import CanvasSnapGuides from './CanvasSnapGuides.jsx';
 import InsertionLine from './InsertionLine.jsx';
 import FrameRulers from './FrameRulers.jsx';
 import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
-import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
-import { useSelectionStore } from '@/selection/useSelectionStore.js';
+import { useWorkspaceProjection } from '@/runtime/projection';
+import { useSelectionStore } from '@/runtime/stores/useSelectionStore.js';
 
 export default function GuideLayer() {
     const nodes = useCharacterRenderNodes();
     const selectedIds = useSelectionStore((s) => s.selectedIds);
-    const viewport = useWorkspaceState((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
+    const viewport = useWorkspaceProjection((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
 
     let selectedFrame = null;
     if (Array.isArray(selectedIds) && selectedIds.length === 1) {

@@ -14,18 +14,20 @@ import RemoteCursors from './RemoteCursors.jsx';
 import RemoteSelections from './RemoteSelections.jsx';
 
 import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
-import { getRuntimeState } from '@/runtime/state/runtimeState.js';
+import { getRuntimeSnapshot } from '@/runtime/projection';
 import TimelinePanel from '@/ui/timeline/TimelinePanel.jsx';
-import { perfStart, perfEnd } from '@/perf/perfTracker.js';
-import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
+import { perfStart, perfEnd } from '@/runtime/instrumentation/perfTracker.js';
+import { useWorkspaceProjection } from '@/runtime/projection';
 import { CanvasSurface } from '@/ui/canvas/surface/CanvasSurface.jsx';
 import { WorldOriginMarker } from '@/ui/canvas/WorldOriginMarker.jsx';
 import { computeCenteredViewport } from '@/ui/canvas/computeCenteredViewport.js';
 import { screenToWorld } from '@/canvas/transform/screenToWorld.js';
-import { getWorkspaceState, setViewport } from '@/runtime/state/workspaceState.js';
+import { getWorkspaceProjection } from '@/runtime/projection';
+import { EventTypes } from '@/core/events/eventTypes.js';
+import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
 import { getZoomTier } from '@/ui/canvas/zoomTiers.js';
 import { CanvasProvider } from '@/ui/canvas/CanvasContext.jsx';
-import { canvasBus } from '@/ui/canvasBus.js';
+import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
 
 /** precision safety */
 const MIN_EFFECTIVE_ZOOM = 0.0005;
@@ -35,14 +37,15 @@ const REBASE_DISTANCE = 8000;
 export default function CanvasRoot({ workspaceId }) {
     perfStart('canvas.render');
 
-    const workspaceState = getWorkspaceState();
+    const dispatcher = useDispatcher();
+    const workspaceState = getWorkspaceProjection();
     const resolvedWorkspaceId = workspaceId ?? workspaceState?.id;
     const workspace = resolveWorkspacePolicy(resolvedWorkspaceId);
-    const designState = getRuntimeState();
+    const designState = getRuntimeSnapshot();
 
-    const viewport = useWorkspaceState((s) => s.viewport);
-    const canvasSurface = useWorkspaceState((s) => s.canvasSurface);
-    const canvasPolicy = useWorkspaceState((s) => s.canvasPolicy);
+    const viewport = useWorkspaceProjection((s) => s.viewport);
+    const canvasSurface = useWorkspaceProjection((s) => s.canvasSurface);
+    const canvasPolicy = workspace?.canvasPolicy;
 
     const containerRef = useRef(null);
     const panRef = useRef({ active: false, x: 0, y: 0 });
@@ -64,7 +67,10 @@ export default function CanvasRoot({ workspaceId }) {
                 y: prev.y + nextViewport.y,
             }));
 
-            setViewport({ ...nextViewport, x: 0, y: 0 });
+            dispatcher.dispatch({
+                type: EventTypes.WORKSPACE_SET_VIEWPORT,
+                payload: { viewport: { ...nextViewport, x: 0, y: 0 } },
+            });
             return true;
         }
         return false;
@@ -107,7 +113,10 @@ export default function CanvasRoot({ workspaceId }) {
         };
 
         if (!maybeRebase(nextViewport)) {
-            setViewport(nextViewport);
+            dispatcher.dispatch({
+                type: EventTypes.WORKSPACE_SET_VIEWPORT,
+                payload: { viewport: nextViewport },
+            });
         }
     }
 
@@ -142,10 +151,15 @@ export default function CanvasRoot({ workspaceId }) {
         if (nextScale < MIN_EFFECTIVE_ZOOM) nextScale *= 1000;
         nextScale = Math.min(32, Math.max(1e-9, nextScale));
 
-        setViewport({
-            scale: nextScale,
-            x: worldBefore.x - cursor.x / nextScale - worldOffset.x,
-            y: worldBefore.y - cursor.y / nextScale - worldOffset.y,
+        dispatcher.dispatch({
+            type: EventTypes.WORKSPACE_SET_VIEWPORT,
+            payload: {
+                viewport: {
+                    scale: nextScale,
+                    x: worldBefore.x - cursor.x / nextScale - worldOffset.x,
+                    y: worldBefore.y - cursor.y / nextScale - worldOffset.y,
+                },
+            },
         });
     }
 
@@ -182,8 +196,11 @@ export default function CanvasRoot({ workspaceId }) {
         if (!nextViewport) return;
 
         setWorldOffset({ x: 0, y: 0 });
-        setViewport(nextViewport);
-    }, [viewport]);
+        dispatcher.dispatch({
+            type: EventTypes.WORKSPACE_SET_VIEWPORT,
+            payload: { viewport: nextViewport },
+        });
+    }, [dispatcher, viewport]);
 
     // 🔌 Listen for reset intent
     useEffect(() => {
@@ -199,7 +216,7 @@ export default function CanvasRoot({ workspaceId }) {
         if (hasCenteredRef.current) return;
 
         const rect = el.getBoundingClientRect();
-        const scale = getWorkspaceState().viewport?.scale ?? 1;
+        const scale = getWorkspaceProjection()?.viewport?.scale ?? 1;
 
         const nextViewport = computeCenteredViewport({
             width: rect.width,
@@ -210,10 +227,13 @@ export default function CanvasRoot({ workspaceId }) {
         if (!nextViewport) return;
 
         setWorldOffset({ x: 0, y: 0 });
-        setViewport(nextViewport);
+        dispatcher.dispatch({
+            type: EventTypes.WORKSPACE_SET_VIEWPORT,
+            payload: { viewport: nextViewport },
+        });
 
         hasCenteredRef.current = true;
-    }, []);
+    }, [dispatcher]);
 
     // 🔔 Track node drag sessions
     useEffect(() => {

@@ -1,5 +1,5 @@
 import { evaluateAnimationProjection } from './evaluateAnimationProjection.js';
-import { easingPresets } from '@/runtime/timeline/easingPresets.js';
+import { easingPresets } from './easing/easingPresets.js';
 
 /**
  * Canonical timeline evaluation interface.

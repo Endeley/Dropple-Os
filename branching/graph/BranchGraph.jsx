@@ -7,7 +7,7 @@ import { buildBranchGraph } from './buildBranchGraph';
 import { useBranchState } from '@/branching/ui/useBranchState';
 import { replayBranch } from '@/persistence/replay';
 import { setRuntimeState } from '@/runtime/state/runtimeState';
-import { syncRuntimeToZustand } from '@/runtime/bridge/zustandBridge';
+import { syncRuntimeToZustand } from '@/runtime/projection/zustandBridge';
 
 /**
  * SVG-based Branch Graph UI.

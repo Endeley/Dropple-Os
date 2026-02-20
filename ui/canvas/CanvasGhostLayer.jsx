@@ -1,6 +1,6 @@
 'use client';
 
-import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
+import { useWorkspaceProjection } from '@/runtime/projection';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
 
 /**
@@ -13,7 +13,7 @@ import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStor
  * - Zero side effects
  */
 export default function CanvasGhostLayer() {
-    const viewport = useWorkspaceState((s) => s.viewport) || { x: 0, y: 0, scale: 1 };
+    const viewport = useWorkspaceProjection((s) => s.viewport) || { x: 0, y: 0, scale: 1 };
 
     const ghostNodes = useAnimatedRuntimeStore((s) => s.ghostNodes);
 

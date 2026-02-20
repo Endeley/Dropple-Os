@@ -1,6 +1,6 @@
 import { colors, spacing } from '@/ui/tokens';
 import { Button } from '@/ui/controls/ui/button.jsx';
-import { EXPORT_GATE_STATUS } from '@/export/exportGateStatus';
+import { EXPORT_GATE_STATUS } from '@/runtime/export/exportGateStatus';
 
 export function SheetFooter({ status, onCancel, onProceed }) {
   const isHalted = status === EXPORT_GATE_STATUS.HALT;

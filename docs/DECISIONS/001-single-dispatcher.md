@@ -8,7 +8,7 @@ There is exactly one dispatcher authority per workspace lifecycle.
 
 Owner:
 
-- `workspace/WorkspaceRoot/WorkspaceRoot.jsx`
+- `ui/workspace/root/WorkspaceRoot.jsx`
 
 No other subtree may instantiate `DispatcherProvider`.
 

@@ -33,6 +33,7 @@ UI may not:
 
 - `ui/interaction/*Resolver.js`
 - `ui/interaction/sessionBinding.js`
+- `ui/interaction/bridges/**`
 - `ui/timeline/*Bridge.js`
 - `ui/timeline/editEventBridge.js`
 - `ui/bridges/**`

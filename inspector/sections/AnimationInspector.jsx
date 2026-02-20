@@ -3,14 +3,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { InspectorSection } from '../InspectorSection';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext.jsx';
-import { getRuntimeState } from '@/runtime/state/runtimeState.js';
+import { selectNodes } from '@/runtime/projection';
 import { createCharacter, getCharacterByNodeId, getConstraintForPart, removeCharacter, updateCharacterConstraint } from '@/runtime/characters/characterRegistry.js';
 import { attachProp, createSocket, detachProp, getAllAttachments, getAttachmentByPropId, getSocketsForHost, renameSocket, updateAttachment } from '@/runtime/attachments/attachmentRegistry.js';
-import { useAutoKeyframeStore } from '@/ui/animation/autoKeyframeStore.js';
+import { useAutoKeyframeStore } from '@/runtime/stores/useAutoKeyframeStore.js';
 import { useOnionSkinStore } from '@/ui/animation/useOnionSkinStore.js';
 import { useMotionTrailStore } from '@/ui/animation/useMotionTrailStore.js';
 import { useConstraintVisualizerStore } from '@/ui/animation/useConstraintVisualizerStore.js';
-import { useTimelineStore } from '@/ui/timeline/useTimelineStore.js';
+import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
 
 export function AnimationInspector() {
   const { selectedIds } = useSelection() || {};
@@ -93,8 +93,7 @@ export function AnimationInspector() {
 
   function handleCreateCharacter() {
     if (!canCreate) return;
-    const runtime = getRuntimeState();
-    const nodes = runtime?.nodes || {};
+    const nodes = selectNodes();
     const rootId = selection[0];
     if (!nodes[rootId]) return;
 
@@ -225,8 +224,7 @@ export function AnimationInspector() {
     const hostSocketsMap = getSocketsForHost(nodeId);
     const socketsList = Object.values(hostSocketsMap || {});
 
-    const runtime = getRuntimeState();
-    const allNodes = runtime?.nodes || {};
+    const allNodes = selectNodes();
     const nodeOptions = Object.values(allNodes).map((n) => ({
       id: n.id,
       label: n.name || n.id,
@@ -840,7 +838,7 @@ export function AnimationInspector() {
           {showRigInspector && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {selection.map((nodeId) => {
-                const node = getRuntimeState()?.nodes?.[nodeId];
+                const node = selectNodes()?.[nodeId];
                 return (
                   <div key={nodeId} style={{ padding: '0 4px' }}>
                     <NodeRigRow nodeId={nodeId} node={node} defaultExpanded={selection.length === 1} />

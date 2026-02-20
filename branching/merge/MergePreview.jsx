@@ -10,12 +10,13 @@ import { applyMerge } from './applyMerge';
 import { simulateMergeState } from './simulateMergeState';
 import { computeNodeDiff } from './computeNodeDiff';
 import VisualNodeDiffOverlay from './VisualNodeDiffOverlay';
-import { dispatcher } from '@/ui/interaction/dispatcher.js';
-import { generateExportPair } from '@/export/generateExportPair';
-import { diffLines } from '@/export/diffLines';
-import ExportDiffViewer from '@/export/ExportDiffViewer';
+import { generateExportPair } from '@/runtime/export/generateExportPair';
+import { diffLines } from '@/runtime/export/diffLines';
+import ExportDiffViewer from '@/runtime/export/ExportDiffViewer';
+import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
 
 export default function MergePreview() {
+    const dispatcher = useDispatcher();
     const state = getRuntimeState();
     const doc = state?.document;
 

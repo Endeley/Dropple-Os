@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { canvasBus } from '@/ui/canvasBus';
+import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
 
 export function pasteFromClipboard({ clipboard, offset = 20 }) {
   if (!clipboard) return [];

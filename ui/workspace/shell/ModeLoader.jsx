@@ -2,17 +2,22 @@
 
 import { useEffect } from "react";
 import { WorkspaceRegistry } from "../../../workspaces/registry";
-import { setActiveWorkspace } from "@/runtime/state/workspaceState.js";
+import { EventTypes } from "@/core/events/eventTypes.js";
+import { useDispatcher } from "@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx";
 import { WorkspaceShell } from "./WorkspaceShell";
 
 export function ModeLoader({ mode }) {
+  const dispatcher = useDispatcher();
   const key = (mode || "").toLowerCase();
   const workspace = WorkspaceRegistry[key];
 
   useEffect(() => {
     if (!workspace?.id) return;
-    setActiveWorkspace(workspace.id, workspace);
-  }, [workspace]);
+    dispatcher.dispatch({
+      type: EventTypes.WORKSPACE_SET_ACTIVE,
+      payload: { id: workspace.id, workspaceDef: workspace },
+    });
+  }, [dispatcher, workspace]);
 
   if (!workspace) {
     const available = Object.keys(WorkspaceRegistry);

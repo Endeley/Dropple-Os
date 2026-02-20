@@ -1,6 +1,6 @@
 'use client';
 
-import { useTimelineStore } from './useTimelineStore.js';
+import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
 
 export default function TimelineScrubber({
   duration,

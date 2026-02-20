@@ -9,7 +9,7 @@ Pure data model and evaluation helpers for time-based preview.
 Files:
 - `timelineSchema.js` — constructors for timeline/track/keyframe (ms-based)
 - `evaluateTimeline.js` — pure evaluation at time t
-- `easingPresets.js` — deterministic easing helpers
+- `easing/` — easing helpers live in core timeline layer
 - `scrubTimeline.js` — read-only preview controller
 - `clearTimelinePreview.js` — clears preview store
 

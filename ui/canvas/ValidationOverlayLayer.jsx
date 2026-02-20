@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useWorkspaceState } from '@/runtime/state/useWorkspaceState.js';
+import { useWorkspaceProjection } from '@/runtime/projection';
 import { projectToViewport } from '@/canvas/transform/projectToViewport.js';
 import { useCanvasContext } from '@/ui/canvas/CanvasContext.jsx';
 import { UX_RULES } from '@/ui/canvas/validation/uxRules.js';
@@ -18,7 +18,7 @@ const ZOOM_ELIGIBLE = new Set(['normal', 'detail', 'micro']);
 
 export function ValidationOverlayLayer({ nodesById, canvasSize }) {
     const issues = useValidationIssues();
-    const viewport = useWorkspaceState((state) => state.viewport);
+    const viewport = useWorkspaceProjection((state) => state.viewport);
     const { zoomTier } = useCanvasContext();
 
     const overlays = useMemo(() => {

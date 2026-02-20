@@ -1,4 +1,4 @@
-import { renderNodeToSVG } from '@/export/svg/renderNodeToSVG';
+import { renderNodeToSVG } from '@/runtime/export/svg/renderNodeToSVG';
 
 function computeBounds(nodes) {
   if (!nodes.length) return null;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { getRuntimeState } from '@/runtime/state/runtimeState.js';
+import { selectIsReplaying } from '@/runtime/projection';
 import { runAnimationPreview } from '@/runtime/animation/runAnimationPreview.js';
 import { cancelAnimationPreview } from '@/runtime/animation/cancelAnimationPreview.js';
 import TimelineScrubber from './TimelineScrubber.jsx';
@@ -9,9 +9,9 @@ import TimelinePlayhead from './TimelinePlayhead.jsx';
 import TimelineTrackList from './TimelineTrackList.jsx';
 import TimelineTimeScale from './TimelineTimeScale.jsx';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext.jsx';
-import { canvasBus } from '@/ui/canvasBus.js';
-import { useTimelineStore } from './useTimelineStore.js';
-import { collectKeyframeTimes, getPrevKeyframeTime } from './keyframeTimeUtils.js';
+import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
+import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
+import { collectKeyframeTimes, getPrevKeyframeTime } from '@/runtime/timeline/keyframeTimeUtils.js';
 
 export default function TimelinePanel({ designState }) {
   const [currentTime, setCurrentTime] = useState(0);
@@ -42,7 +42,7 @@ export default function TimelinePanel({ designState }) {
   const selectedX = selectedNode?.layout?.x;
   const canSetKeyframe = Boolean(selectedId && Number.isFinite(selectedX));
 
-  const runtimeState = getRuntimeState();
+  const isReplaying = selectIsReplaying();
   const animations = designState?.timeline?.animations;
   const durationMs = animations?.clips
     ? Object.values(animations.clips).reduce(
@@ -91,7 +91,7 @@ export default function TimelinePanel({ designState }) {
     stopPlayback();
   }, [designState]);
 
-  if (runtimeState?.__isReplaying) return null;
+  if (isReplaying) return null;
   if (!animations?.clips) return null;
 
   function resolvePreviewTime(timeMs) {
@@ -191,7 +191,7 @@ export default function TimelinePanel({ designState }) {
 
   function startPlayback() {
     if (!animations?.clips) return;
-    if (runtimeState?.__isReplaying) return;
+    if (runtimeState?.isReplaying) return;
 
     stopPlayback();
 

@@ -1,4 +1,4 @@
-import { InputSessionManager } from "../input/InputSessionManager.js";
+import { InputSessionManager } from "../runtime/interactions/input/InputSessionManager.js";
 import { MessageBus } from "@/core/messageBus";
 
 function expect(condition, label) {

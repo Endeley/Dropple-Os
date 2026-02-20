@@ -6,7 +6,7 @@ import React from 'react';
 import { useBranchState } from './useBranchState';
 import { replayBranch } from '@/persistence/replay';
 import { resetRuntimeState, setRuntimeState } from '@/runtime/state/runtimeState';
-import { syncRuntimeToZustand } from '@/runtime/bridge/zustandBridge';
+import { syncRuntimeToZustand } from '@/runtime/projection/zustandBridge';
 
 /**
  * Branch Switcher UI.

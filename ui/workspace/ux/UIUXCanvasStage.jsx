@@ -1,6 +1,6 @@
 'use client';
 
-import { WorkspaceCanvasRoot } from '@/workspace/WorkspaceRoot/DispatcherProvider/Canvas/WorkspaceCanvasRoot.jsx';
+import { WorkspaceCanvasRoot } from '@/ui/workspace/WorkspaceCanvasRoot.jsx';
 
 export function UIUXCanvasStage({ profile = 'ux-validation' }) {
   return (
