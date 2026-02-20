@@ -11,7 +11,8 @@
         "lint": "eslint",
         "enforce:laws": "node enforceDroppleLaws.cjs",
         "lint:export": "node scripts/dropple-export-gate.mjs --world ./fixtures/worlds/allow.json --width 1440 --height 900",
-        "lint:export:json": "node scripts/dropple-export-gate.mjs --world ./fixtures/worlds/allow.json --width 1440 --height 900 --json"
+        "lint:export:json": "node scripts/dropple-export-gate.mjs --world ./fixtures/worlds/allow.json --width 1440 --height 900 --json",
+        "create:workspace": "node scripts/createWorkspace.js"
     },
     "dependencies": {
         "@stackframe/stack": "^2.8.56",

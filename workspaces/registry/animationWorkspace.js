@@ -16,7 +16,7 @@ export const animationWorkspace = {
 
     engines: ["nodeTree", "layout", "timeline"],
     tools: ["select", "move", "keyframe", "path"],
-    panels: ["layers", "timeline", "properties"],
+    panels: ["NodeHeaderPanel", "MotionPanel"],
 
     capabilities: {
         canvas: true,
@@ -36,11 +36,11 @@ export const animationWorkspace = {
         formats: ["mp4", "gif", "lottie"],
     },
 
-    allowedEventTypes: new Set([
+    allowedEventTypes: [
         EventTypes.ANIMATION_TRACK_CREATE,
         EventTypes.ANIMATION_TRACK_DELETE,
         EventTypes.ANIMATION_KEYFRAME_ADD,
         EventTypes.ANIMATION_KEYFRAME_UPDATE,
         EventTypes.ANIMATION_KEYFRAME_DELETE,
-    ]),
+    ],
 };

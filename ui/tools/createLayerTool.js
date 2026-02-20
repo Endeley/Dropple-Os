@@ -1,5 +1,10 @@
 import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
 
+export const CreateLayerTool = {
+  id: 'create-layer',
+  label: 'Create Layer',
+};
+
 /**
  * Layer creation tool (Animation mode default).
  */

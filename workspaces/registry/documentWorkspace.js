@@ -27,7 +27,18 @@ export const documentWorkspace = {
 
     tools: ["text", "section", "page"],
 
-    panels: ["pages", "outline", "styles"],
+    panels: ["NodeHeaderPanel"],
+
+    capabilities: {
+        canvas: false,
+        timeline: false,
+        animation: false,
+        audio: false,
+        video: false,
+        codegen: false,
+    },
+
+    allowedEventTypes: [],
 
     export: {
         formats: ["pdf", "docx", "ppt"],

@@ -1,8 +1,11 @@
 'use client';
+import { useCallback } from 'react';
 import { UIUXTopBar } from './UIUXTopBar.jsx';
 import { UIUXToolRail } from './UIUXToolRail.jsx';
 import { UIUXCanvasStage } from './UIUXCanvasStage.jsx';
-import { UIUXRightPanel } from './UIUXRightPanel.jsx';
+import { PanelRenderer } from '@/ui/workspace/shell/PanelRenderer.jsx';
+import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useSelectionStore } from '@/runtime/stores/useSelectionStore.js';
 
 /**
  * UXWorkspaceShell
@@ -74,13 +77,19 @@ import { UIUXRightPanel } from './UIUXRightPanel.jsx';
  */
 
 export function UXWorkspaceShell({ profile = 'ux-validation' }) {
+  const nodes = useRuntimeStore((s) => s.nodes || {});
+  const selectedIds = useSelectionStore((s) => s.selectedIds || []);
+  const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
+  const node = selectedId ? nodes[selectedId] : null;
+  const emit = useCallback(() => {}, []);
+
   return (
     <div className="uiux-root" data-workspace="uiux">
       <UIUXTopBar />
       <div className="uiux-main">
         <UIUXToolRail />
         <UIUXCanvasStage profile={profile} />
-        <UIUXRightPanel />
+        <PanelRenderer workspaceId="uiux" node={node} emit={emit} />
       </div>
     </div>
   );

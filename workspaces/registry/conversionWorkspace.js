@@ -6,7 +6,7 @@ export const conversionWorkspace = {
     engines: ["nodeTree", "layout", "timeline"],
 
     tools: [],
-    panels: ["export"],
+    panels: ["NodeHeaderPanel"],
 
     capabilities: {
         canvas: true,
@@ -16,6 +16,8 @@ export const conversionWorkspace = {
         video: false,
         codegen: true,
     },
+
+    allowedEventTypes: [],
 
     timeline: null,
 

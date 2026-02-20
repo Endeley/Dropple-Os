@@ -26,7 +26,20 @@ export const educationWorkspace = {
     nodes: [],
 
     tools: ["select", "step", "explain"],
-    panels: ["lessons", "steps", "explanations"],
+    panels: ["NodeHeaderPanel"],
+
+    capabilities: {
+        canvas: true,
+        timeline: true,
+        animation: false,
+        audio: false,
+        video: false,
+        codegen: false,
+        education: true,
+        editing: false,
+    },
+
+    allowedEventTypes: [],
 
     export: {
         formats: [],

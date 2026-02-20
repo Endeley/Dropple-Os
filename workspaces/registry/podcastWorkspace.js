@@ -7,7 +7,7 @@ export const podcastWorkspace = {
 
     engines: ["timeline", "audio"],
     tools: ["cut", "mute", "chapter"],
-    panels: ["timeline", "chapters"],
+    panels: ["NodeHeaderPanel"],
 
     capabilities: {
         canvas: false,
@@ -17,6 +17,8 @@ export const podcastWorkspace = {
         video: false,
         codegen: false,
     },
+
+    allowedEventTypes: [],
 
     timeline: createTimelineCapability({
         readOnly: false,

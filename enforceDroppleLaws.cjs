@@ -70,6 +70,34 @@ const PROJECTION_ALLOWED_RUNTIME_IMPORTS = new Set([
     'runtime/state/workspaceState.js',
 ]);
 
+const WORKSPACE_REGISTRY_PREFIX = 'workspaces/registry/';
+const WORKSPACE_DEFINITION_EXEMPT = new Set([
+    'workspaces/registry/index.js',
+    'workspaces/registry/resolveWorkspacePolicy.js',
+    'workspaces/registry/WorkspaceDefinition.js',
+    'workspaces/registry/routes.js',
+    'workspaces/registry/timelineCapability.js',
+    'workspaces/registry/canvasSurfacePolicy.js',
+]);
+
+const TOOL_PREFIX = 'ui/tools/';
+const PANEL_SUFFIX = 'Panel.jsx';
+const TOOL_ALLOWED_CORE = new Set(['core/events/eventTypes.js']);
+const TOOL_DISALLOWED_PREFIXES = [
+    'runtime/',
+    'core/',
+];
+const TOOL_DISALLOWED_EXACT = new Set([
+    'core/events/applyEvent.js',
+    'core/mutationContext.js',
+    'runtime/state/runtimeState.internal.js',
+]);
+const PANEL_DISALLOWED_EXACT = new Set([
+    'runtime/state/runtimeState.internal.js',
+    'core/events/applyEvent.js',
+    'core/mutationContext.js',
+]);
+
 function detectLayer(filePath) {
     for (const layer of LAYERS) {
         if (filePath.startsWith(layer.prefix)) {
@@ -133,6 +161,35 @@ function resolveImport(fromPath, imp, fileMap) {
     return null;
 }
 
+function isWorkspaceDefinitionFile(filePath) {
+    if (!filePath.startsWith(WORKSPACE_REGISTRY_PREFIX)) return false;
+    if (WORKSPACE_DEFINITION_EXEMPT.has(filePath)) return false;
+    return true;
+}
+
+function hasWorkspaceDefinitionShape(content) {
+    const hasId = /id\s*:\s*['"][^'"]+['"]/.test(content);
+    const hasLabel = /label\s*:\s*['"][^'"]+['"]/.test(content);
+    const hasCapabilities = /capabilities\s*:\s*(\{|\[)/.test(content);
+    const hasAllowed = /allowedEventTypes\s*:\s*\[/.test(content);
+    const hasTimeline = /timeline\s*:\s*/.test(content);
+    return hasId && hasLabel && hasCapabilities && hasAllowed && hasTimeline;
+}
+
+function isToolFile(filePath) {
+    return filePath.startsWith(TOOL_PREFIX);
+}
+
+function isPanelFile(filePath) {
+    return filePath.endsWith(PANEL_SUFFIX);
+}
+
+function hasToolContractShape(content) {
+    const hasId = /\bid\s*:\s*['"][^'"]+['"]/.test(content);
+    const hasLabel = /\blabel\s*:\s*['"][^'"]+['"]/.test(content);
+    return hasId && hasLabel;
+}
+
 function run() {
     const files = walk(ROOT);
     const fileMap = new Map(files.map((f) => [f.path, f]));
@@ -141,7 +198,34 @@ function run() {
     let violationCount = 0;
 
     files.forEach((f) => {
+        if (!isWorkspaceDefinitionFile(f.path)) return;
+        if (!hasWorkspaceDefinitionShape(f.content)) {
+            console.error(
+                `WORKSPACE DEFINITION VIOLATION: ${f.path} must export a valid WorkspaceDefinition.`
+            );
+            violationCount += 1;
+            process.exit(1);
+        }
+    });
+
+    files.forEach((f) => {
         const imports = extractImports(f.content);
+        const isTool = isToolFile(f.path);
+        const isPanel = isPanelFile(f.path);
+
+        if (isTool && !hasToolContractShape(f.content)) {
+            console.error(`TOOL CONTRACT VIOLATION: ${f.path} must export { id, label }`);
+            violationCount += 1;
+            process.exit(1);
+        }
+
+        if (isTool) {
+            if (/useRuntimeStore\.getState\(\)\.mutate/.test(f.content) || /runtimeState\.internal/.test(f.content)) {
+                console.error(`TOOL MUTATION BYPASS VIOLATION: ${f.path} attempted direct state mutation`);
+                violationCount += 1;
+                process.exit(1);
+            }
+        }
 
         imports.forEach((imp) => {
             const resolved = resolveImport(f.path, imp, fileMap);
@@ -200,6 +284,45 @@ function run() {
                 }
             }
 
+            if (isTool) {
+                const isDisallowedPrefix = TOOL_DISALLOWED_PREFIXES.some((prefix) => resolved.startsWith(prefix));
+                const isAllowedCore = TOOL_ALLOWED_CORE.has(resolved);
+
+                if (TOOL_DISALLOWED_EXACT.has(resolved)) {
+                    console.error(
+                        `TOOL ARCHITECTURE VIOLATION: ${f.path} illegally imports runtime/core mutation path`
+                    );
+                    violationCount += 1;
+                    process.exit(1);
+                }
+
+                if (resolved.startsWith('core/') && !isAllowedCore) {
+                    console.error(
+                        `TOOL ARCHITECTURE VIOLATION: ${f.path} illegally imports runtime/core mutation path`
+                    );
+                    violationCount += 1;
+                    process.exit(1);
+                }
+
+                if (isDisallowedPrefix && !resolved.startsWith('core/')) {
+                    console.error(
+                        `TOOL ARCHITECTURE VIOLATION: ${f.path} illegally imports runtime/core mutation path`
+                    );
+                    violationCount += 1;
+                    process.exit(1);
+                }
+            }
+
+            if (isPanel) {
+                if (PANEL_DISALLOWED_EXACT.has(resolved)) {
+                    console.error(
+                        `PANEL ARCHITECTURE VIOLATION: ${f.path} illegally imports mutation path`
+                    );
+                    violationCount += 1;
+                    process.exit(1);
+                }
+            }
+
             if (f.path.startsWith(PROJECTION_PREFIX)) {
                 if (resolved.startsWith('runtime/dispatcher/')) {
                     console.error(`PROJECTION VIOLATION: ${f.path} importing dispatcher`);
@@ -233,6 +356,8 @@ function run() {
     console.log(`Total Modules: ${files.length}`);
     console.log(`Violations: ${violationCount}`);
     console.log(`Architecture Health: ${healthScore}/100`);
+    console.log('Dropple Constitutional Law Active.');
+    console.log('Read docs/LAW.md before modifying architecture.');
 }
 
 run();

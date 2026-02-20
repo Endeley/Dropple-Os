@@ -8,7 +8,14 @@ export const graphicWorkspace = {
 
     engines: ['nodeTree', 'layout'],
     tools: ['select', 'move', 'resize', 'text', 'shape', 'image'],
-    panels: ['layers', 'properties'],
+    panels: [
+        'NodeHeaderPanel',
+        'LayoutInspector',
+        'AutoLayoutPanel',
+        'ContentPanel',
+        'SemanticsPanel',
+        'ExportPreviewPanel',
+    ],
 
     capabilities: {
         canvas: true,
@@ -27,7 +34,7 @@ export const graphicWorkspace = {
     },
 
     // 🔒 Event policy (Graphic Mode)
-    allowedEventTypes: new Set([
+    allowedEventTypes: [
         // Node lifecycle
         EventTypes.NODE_CREATE,
         EventTypes.NODE_UPDATE,
@@ -49,5 +56,5 @@ export const graphicWorkspace = {
         EventTypes.TRANSITION_CREATE,
         EventTypes.TRANSITION_UPDATE,
         EventTypes.TRANSITION_DELETE,
-    ]),
+    ],
 };

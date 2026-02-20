@@ -28,6 +28,19 @@ const MODE_ALIASES = {
     design: 'graphic',
 };
 
+const PANEL_LEFT = new Set(['SubmissionInfoPanel', 'LessonOutlinePanel']);
+const PANEL_RIGHT = new Set([
+    'InspectorPanel',
+    'AutoLayoutPanel',
+    'EducationInspector',
+    'EducationTimelinePanel',
+    'RubricPanel',
+    'AnnotationPanel',
+    'SharingPanel',
+]);
+const PANEL_TOP = new Set(['EducationToolbar', 'ReviewToolbar']);
+const PANEL_BOTTOM = new Set(['TimelineBar']);
+
 function resolveWorkspaceId(modeId) {
     if (!modeId) return 'graphic';
     const key = String(modeId);
@@ -36,31 +49,35 @@ function resolveWorkspaceId(modeId) {
     return 'graphic';
 }
 
-function resolvePanelsForMode(modeId) {
-    if (modeId === 'education') {
-        return {
-            left: ['LessonOutlinePanel'],
-            right: ['EducationInspector', 'EducationTimelinePanel'],
-            top: ['EducationToolbar'],
-            bottom: ['TimelineBar'],
-        };
-    }
-
-    if (modeId === 'review') {
-        return {
-            left: ['SubmissionInfoPanel'],
-            right: ['RubricPanel', 'AnnotationPanel'],
-            top: ['ReviewToolbar'],
-            bottom: ['TimelineBar'],
-        };
-    }
-
-    return {
+function mapPanels(panels = []) {
+    const layout = {
         left: [],
         right: [],
         top: [],
         bottom: [],
     };
+
+    panels.forEach((panel) => {
+        if (PANEL_LEFT.has(panel)) {
+            layout.left.push(panel);
+            return;
+        }
+        if (PANEL_TOP.has(panel)) {
+            layout.top.push(panel);
+            return;
+        }
+        if (PANEL_BOTTOM.has(panel)) {
+            layout.bottom.push(panel);
+            return;
+        }
+        if (PANEL_RIGHT.has(panel)) {
+            layout.right.push(panel);
+            return;
+        }
+        layout.right.push(panel);
+    });
+
+    return layout;
 }
 
 function resolveWorkspaceAdapter(modeId) {
@@ -74,7 +91,7 @@ function resolveWorkspaceAdapter(modeId) {
             label: modeId || workspaceId,
             workspaceId,
             capabilities: {},
-            panels: resolvePanelsForMode(modeId),
+            panels: mapPanels([]),
             interactions: { keyboard: true, pointer: true },
             ui: { editing: true },
         };
@@ -82,6 +99,7 @@ function resolveWorkspaceAdapter(modeId) {
 
     const isEducation = modeId === 'education';
     const isReview = modeId === 'review';
+    const editingEnabled = policy?.capabilities?.editing !== false;
 
     return {
         id: modeId || workspaceId,
@@ -91,13 +109,13 @@ function resolveWorkspaceAdapter(modeId) {
         capabilities: policy.capabilities || {},
         timeline: policy.timeline || null,
         allowedEventTypes: policy.allowedEventTypes || null,
-        panels: resolvePanelsForMode(modeId),
+        panels: mapPanels(workspace.panels || []),
         interactions: {
             keyboard: !isEducation && !isReview,
             pointer: !isEducation && !isReview,
         },
         ui: {
-            editing: !isEducation && !isReview,
+            editing: editingEnabled && !isEducation && !isReview,
         },
     };
 }

@@ -2,7 +2,7 @@
 
 import { Availability } from '@/ui/availability/availability';
 import { useAvailability } from '@/ui/availability/useAvailability';
-import { TOOL_CAPABILITIES } from '@/ui/tools/toolCapabilities';
+import { TOOL_CAPABILITIES } from '@/ui/capabilities/toolCapabilities';
 
 function ToolButton({ id, children }) {
   const caps = TOOL_CAPABILITIES[id] || { readCaps: [] };

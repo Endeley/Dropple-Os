@@ -27,7 +27,24 @@ export const brandingWorkspace = {
 
     tools: ["edit", "apply", "validate"],
 
-    panels: ["brand", "colors", "typography", "rules"],
+    panels: [
+        "NodeHeaderPanel",
+        "LayoutInspector",
+        "ContentPanel",
+        "SemanticsPanel",
+        "ExportPreviewPanel",
+    ],
+
+    capabilities: {
+        canvas: false,
+        timeline: false,
+        animation: false,
+        audio: false,
+        video: false,
+        codegen: false,
+    },
+
+    allowedEventTypes: [],
 
     export: {
         formats: ["brand-kit", "tokens", "pdf"],

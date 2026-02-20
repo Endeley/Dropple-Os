@@ -28,7 +28,11 @@ export const uiuxWorkspace = {
 
     engines: ['nodeTree', 'layout', 'constraints', 'autoLayout'],
     tools: ['select', 'move', 'resize', 'text', 'image', 'frame'],
-    panels: ['layers', 'properties', 'tokens'],
+    panels: [
+        'NodeHeaderPanel',
+        'SemanticsPanel',
+        'ExportPreviewPanel',
+    ],
 
     capabilities: {
         canvas: true,
@@ -42,6 +46,8 @@ export const uiuxWorkspace = {
         allowRootShapes: false,
         autoLayoutParents: ['container'],
     },
+
+    allowedEventTypes: [],
 
     timeline: createTimelineCapability({
         readOnly: true,

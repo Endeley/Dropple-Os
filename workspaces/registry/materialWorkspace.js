@@ -26,7 +26,18 @@ export const materialWorkspace = {
     nodes: ["component", "variant"],
 
     tools: ["component", "variant", "token"],
-    panels: ["tokens", "components", "properties"],
+    panels: ["NodeHeaderPanel", "LayoutInspector", "ContentPanel"],
+
+    capabilities: {
+        canvas: true,
+        timeline: false,
+        animation: false,
+        audio: false,
+        video: false,
+        codegen: false,
+    },
+
+    allowedEventTypes: [],
 
     export: {
         formats: ["design-tokens", "ui-kit"],

@@ -7,7 +7,7 @@ export const aiWorkspace = {
     engines: ["ai", "tutorial", "replay"],
 
     tools: ["select", "step", "explain"],
-    panels: ["lessons", "steps", "explanations"],
+    panels: ["NodeHeaderPanel"],
 
     capabilities: {
         canvas: false,
@@ -17,4 +17,7 @@ export const aiWorkspace = {
         video: false,
         codegen: true,
     },
+
+    allowedEventTypes: [],
+    timeline: null,
 };

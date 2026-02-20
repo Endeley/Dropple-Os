@@ -1,5 +1,10 @@
 import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
 
+export const DefaultCreateTool = {
+  id: 'create-default',
+  label: 'Create Default',
+};
+
 /**
  * Default creation tool.
  * Activated AFTER intent resolution.

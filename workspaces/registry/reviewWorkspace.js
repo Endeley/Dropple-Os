@@ -7,7 +7,7 @@ export const reviewWorkspace = {
 
     engines: ['replay'],
     tools: [],
-    panels: ['rubric', 'annotations'],
+    panels: ['NodeHeaderPanel', 'ExportPreviewPanel'],
 
     capabilities: {
         canvas: true,
@@ -16,6 +16,7 @@ export const reviewWorkspace = {
         audio: false,
         video: false,
         codegen: false,
+        editing: false,
     },
 
     timeline: {
@@ -26,7 +27,7 @@ export const reviewWorkspace = {
     export: null,
 
     // 🔒 Review mode should be read-only
-    allowedEventTypes: new Set([
+    allowedEventTypes: [
         EventTypes.SELECTION_SET,
-    ]),
+    ],
 };

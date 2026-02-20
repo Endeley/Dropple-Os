@@ -1,5 +1,10 @@
 import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
 
+export const CreateFrameTool = {
+    id: 'create-frame',
+    label: 'Create Frame',
+};
+
 /**
  * Frame creation tool (UIUX authoring).
  * Emits intent ONLY.

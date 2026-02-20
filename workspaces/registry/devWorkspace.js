@@ -27,7 +27,18 @@ export const devWorkspace = {
 
     tools: ["inspect", "translate", "refactor"],
 
-    panels: ["code", "props", "state"],
+    panels: ["NodeHeaderPanel"],
+
+    capabilities: {
+        canvas: false,
+        timeline: false,
+        animation: false,
+        audio: false,
+        video: false,
+        codegen: true,
+    },
+
+    allowedEventTypes: [],
 
     export: {
         formats: ["react", "vue", "svelte", "html"],

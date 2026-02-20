@@ -30,7 +30,7 @@ export function resolveWorkspacePolicy(id) {
         const parent = resolveWorkspacePolicy(base.extends);
         if (parent?.error) return parent;
 
-        return {
+        const merged = {
             ...parent,
             ...base,
 
@@ -47,14 +47,22 @@ export function resolveWorkspacePolicy(id) {
             allowedTools: base.status === 'stub' ? [] : base.tools || [],
             allowedPanels: base.status === 'stub' ? [] : base.panels || [],
         };
+        return {
+            ...merged,
+            allowedEventTypes: new Set(merged.allowedEventTypes || []),
+        };
     }
 
     // Root workspace (no inheritance)
-    return {
+    const merged = {
         ...base,
         allowedEventTypes: base.allowedEventTypes || null,
         readonly: base.status === 'stub',
         allowedTools: base.status === 'stub' ? [] : base.tools || [],
         allowedPanels: base.status === 'stub' ? [] : base.panels || [],
+    };
+    return {
+        ...merged,
+        allowedEventTypes: new Set(merged.allowedEventTypes || []),
     };
 }

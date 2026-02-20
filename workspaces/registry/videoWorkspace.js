@@ -7,7 +7,7 @@ export const videoWorkspace = {
 
     engines: ["timeline", "media"],
     tools: ["cut", "trim", "overlay", "text"],
-    panels: ["timeline", "layers", "export"],
+    panels: ["NodeHeaderPanel", "MotionPanel"],
 
     capabilities: {
         canvas: false,
@@ -17,6 +17,8 @@ export const videoWorkspace = {
         video: true,
         codegen: false,
     },
+
+    allowedEventTypes: [],
 
     timeline: createTimelineCapability({
         readOnly: false,

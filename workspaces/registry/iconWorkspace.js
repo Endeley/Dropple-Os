@@ -26,7 +26,18 @@ export const iconWorkspace = {
     nodes: ["vector", "shape"],
 
     tools: ["select", "path", "stroke"],
-    panels: ["layers", "properties"],
+    panels: ["NodeHeaderPanel", "LayoutInspector", "ContentPanel"],
+
+    capabilities: {
+        canvas: true,
+        timeline: false,
+        animation: false,
+        audio: false,
+        video: false,
+        codegen: false,
+    },
+
+    allowedEventTypes: [],
 
     export: {
         formats: ["svg", "icon-font"],
