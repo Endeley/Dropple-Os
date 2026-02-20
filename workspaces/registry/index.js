@@ -12,6 +12,7 @@ import { brandingWorkspace } from './brandingWorkspace';
 import { documentWorkspace } from './documentWorkspace';
 import { conversionWorkspace } from './conversionWorkspace';
 import { translateWorkspace } from './translateWorkspace';
+import { reviewWorkspace } from './reviewWorkspace';
 
 export const WorkspaceRegistry = {
     graphic: graphicWorkspace,
@@ -28,4 +29,5 @@ export const WorkspaceRegistry = {
     document: documentWorkspace,
     translate: translateWorkspace,
     conversion: conversionWorkspace,
+    review: reviewWorkspace,
 };

@@ -777,15 +777,6 @@ workspace/createFromTemplate.js,workspace/createFromTemplate.js,keep
 workspace/test/workspaceShellTest.html,workspace/test/workspaceShellTest.html,keep
 workspace/timeline/TimelineUI.js,workspace/timeline/TimelineUI.js,keep
 workspaces/README.md,workspaces/README.md,keep
-workspaces/modes/ModeAdapter.js,workspaces/modes/ModeAdapter.js,keep
-workspaces/modes/ModeRegistry.js,workspaces/modes/ModeRegistry.js,keep
-workspaces/modes/designMode.js,workspaces/modes/designMode.js,keep
-workspaces/modes/educationMode.js,workspaces/modes/educationMode.js,keep
-workspaces/modes/podcastMode.js,workspaces/modes/podcastMode.js,keep
-workspaces/modes/registerModes.js,workspaces/modes/registerModes.js,keep
-workspaces/modes/reviewMode.js,workspaces/modes/reviewMode.js,keep
-workspaces/modes/videoMode.js,workspaces/modes/videoMode.js,keep
-workspaces/modes/writerMode.js,workspaces/modes/writerMode.js,keep
 workspaces/registry.js,workspaces/registry.js,keep
 workspaces/registry/WorkspaceDefinition.js,workspaces/registry/WorkspaceDefinition.js,keep
 workspaces/registry/animationWorkspace.js,workspaces/registry/animationWorkspace.js,keep

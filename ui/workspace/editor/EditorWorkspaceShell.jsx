@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ModeRegistry } from '@/workspaces/modes/ModeRegistry';
+import { WorkspaceRegistry } from '@/workspaces/registry';
+import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy';
 import { WorkspaceLayout } from './WorkspaceLayout';
 import { GridProvider } from './GridContext';
 import { ClipboardProvider } from './ClipboardContext';
@@ -23,6 +24,84 @@ import { usePresence } from '@/collab/usePresence';
 import { useGalleryIdentity } from '@/gallery/useGalleryIdentity';
 import { useIntentPreview } from '@/collab/useIntentPreview';
 
+const MODE_ALIASES = {
+    design: 'graphic',
+};
+
+function resolveWorkspaceId(modeId) {
+    if (!modeId) return 'graphic';
+    const key = String(modeId);
+    if (WorkspaceRegistry[key]) return key;
+    if (MODE_ALIASES[key]) return MODE_ALIASES[key];
+    return 'graphic';
+}
+
+function resolvePanelsForMode(modeId) {
+    if (modeId === 'education') {
+        return {
+            left: ['LessonOutlinePanel'],
+            right: ['EducationInspector', 'EducationTimelinePanel'],
+            top: ['EducationToolbar'],
+            bottom: ['TimelineBar'],
+        };
+    }
+
+    if (modeId === 'review') {
+        return {
+            left: ['SubmissionInfoPanel'],
+            right: ['RubricPanel', 'AnnotationPanel'],
+            top: ['ReviewToolbar'],
+            bottom: ['TimelineBar'],
+        };
+    }
+
+    return {
+        left: [],
+        right: [],
+        top: [],
+        bottom: [],
+    };
+}
+
+function resolveWorkspaceAdapter(modeId) {
+    const workspaceId = resolveWorkspaceId(modeId);
+    const policy = resolveWorkspacePolicy(workspaceId);
+
+    const workspace = WorkspaceRegistry[workspaceId];
+    if (!workspace || policy?.error) {
+        return {
+            id: modeId || workspaceId,
+            label: modeId || workspaceId,
+            workspaceId,
+            capabilities: {},
+            panels: resolvePanelsForMode(modeId),
+            interactions: { keyboard: true, pointer: true },
+            ui: { editing: true },
+        };
+    }
+
+    const isEducation = modeId === 'education';
+    const isReview = modeId === 'review';
+
+    return {
+        id: modeId || workspaceId,
+        label: workspace.label || modeId || workspaceId,
+        workspaceId,
+        profile: workspace.profile,
+        capabilities: policy.capabilities || {},
+        timeline: policy.timeline || null,
+        allowedEventTypes: policy.allowedEventTypes || null,
+        panels: resolvePanelsForMode(modeId),
+        interactions: {
+            keyboard: !isEducation && !isReview,
+            pointer: !isEducation && !isReview,
+        },
+        ui: {
+            editing: !isEducation && !isReview,
+        },
+    };
+}
+
 export function EditorWorkspaceShell({
     modeId,
     educationRole = 'teacher',
@@ -40,7 +119,7 @@ export function EditorWorkspaceShell({
     onReviewCriteriaChange,
     reviewerId,
 }) {
-    const adapter = ModeRegistry.get(modeId);
+    const adapter = resolveWorkspaceAdapter(modeId);
     const templateGen = useTemplateGenerator();
 
     const [events, setEvents] = useState(() => initialEvents);
@@ -72,9 +151,17 @@ export function EditorWorkspaceShell({
         selfUserId,
     });
 
-    const persistenceEnabled = !effectiveReadOnly && adapter?.id !== 'review' && !(adapter?.id === 'education' && educationReadOnly);
+    const persistenceEnabled =
+        !effectiveReadOnly &&
+        adapter?.ui?.editing !== false &&
+        adapter?.id !== 'review' &&
+        !(adapter?.id === 'education' && educationReadOnly);
 
-    const importEnabled = !effectiveReadOnly && adapter?.capabilities?.editing !== false && adapter?.id !== 'review' && !(adapter?.id === 'education' && educationReadOnly);
+    const importEnabled =
+        !effectiveReadOnly &&
+        adapter?.ui?.editing !== false &&
+        adapter?.id !== 'review' &&
+        !(adapter?.id === 'education' && educationReadOnly);
 
     /* ---------------- canvas grouping ---------------- */
 

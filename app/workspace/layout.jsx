@@ -1,6 +1,5 @@
 'use client';
 
-import '@/workspaces/modes/registerModes';
 import { WorkspaceRoot } from '@/ui/workspace/root/WorkspaceRoot.jsx';
 
 export default function WorkspaceLayout({ children }) {

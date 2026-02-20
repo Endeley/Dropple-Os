@@ -64,7 +64,7 @@ function WorkspaceLayoutInner({
   const { selectedIds, setSelection, selectSingle } = useSelection();
   const keyboardEnabled =
     adapter?.interactions?.keyboard !== false &&
-    adapter?.capabilities?.editing !== false &&
+    adapter?.ui?.editing !== false &&
     adapter?.id !== 'review' &&
     !readOnly;
   const canManageSharing = documentRole === 'owner' && !readOnly && !!documentId;

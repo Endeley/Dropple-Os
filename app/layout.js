@@ -1,4 +1,3 @@
-import '@/workspaces/modes/registerModes';
 import '../ui/styles/globals.css';
 import Providers from './providers';
 
