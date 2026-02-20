@@ -467,7 +467,7 @@ persistence/loadDocumentFromConvex.js,persistence/loadDocumentFromConvex.js,keep
 persistence/localDocumentSchema.js,persistence/localDocumentSchema.js,keep
 persistence/localDocumentStore.js,persistence/localDocumentStore.js,keep
 persistence/mergeBranch.js,persistence/mergeBranch.js,keep
-persistence/replay.js,persistence/replay.js,keep
+runtime/replay/replayBranch.js,runtime/replay/replayBranch.js,keep
 persistence/saveCurrentDocument.js,persistence/saveCurrentDocument.js,keep
 persistence/saveDocument.js,persistence/saveDocument.js,keep
 persistence/schema_v1.js,persistence/schema_v1.js,keep
@@ -542,7 +542,6 @@ runtime/replay/__tests__/animationPreviewReplay.test.js,runtime/replay/__tests__
 runtime/replay/getDesignStateAtCursor.js,runtime/replay/getDesignStateAtCursor.js,keep
 runtime/replay/reconstructDesignState.js,runtime/replay/reconstructDesignState.js,keep
 runtime/replay/useReplayState.js,runtime/replay/useReplayState.js,keep
-runtime/replay/withReplayGuard.js,runtime/replay/withReplayGuard.js,keep
 runtime/state/runtimeState.js,runtime/state/runtimeState.js,keep
 runtime/state/workspaceState.js,runtime/state/workspaceState.js,keep
 runtime/stores/README.md,runtime/stores/README.md,keep
@@ -625,7 +624,6 @@ timeline/schema/keyframe.js,timeline/schema/keyframe.js,keep
 timeline/schema/timeline.js,timeline/schema/timeline.js,keep
 timeline/schema/track.js,timeline/schema/track.js,keep
 timeline/timelineCursor.js,timeline/timelineCursor.js,keep
-timeline/timelineProjection.js,timeline/timelineProjection.js,keep
 timeline/timelineSchema.js,timeline/timelineSchema.js,keep
 timeline/timelineScrubber.js,timeline/timelineScrubber.js,keep
 timeline/trackSchema.js,timeline/trackSchema.js,keep

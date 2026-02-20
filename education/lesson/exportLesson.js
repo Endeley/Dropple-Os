@@ -1,7 +1,6 @@
 import { createLessonExport } from './LessonSchema.js';
 import { selectLessonRange } from './selectLessonRange.js';
-import { createDesignState } from '../../design/state/createDesignState.js';
-import { designReducer } from '../../design/reducer/designReducer.js';
+import { replayEvents } from '@/runtime/dispatcher/replayEvents.js';
 
 export async function exportLesson({
   runId,
@@ -27,13 +26,10 @@ export async function exportLesson({
   };
 
   if (options.includeAI && agent) {
-    const replay = (index) => {
-      let state = createDesignState();
-      for (let i = 0; i <= index; i += 1) {
-        state = designReducer(state, lessonEvents[i]);
-      }
-      return state;
-    };
+    const replay = (index) =>
+      replayEvents({
+        events: lessonEvents.slice(0, index + 1),
+      });
 
     for (let i = 1; i < lessonEvents.length; i += 1) {
       await agent.observeStep({

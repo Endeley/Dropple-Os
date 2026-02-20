@@ -1,5 +1,4 @@
 import { createTimeline } from '@/timeline/schema/timeline.js';
-import { getMutationOrigin } from '@/core/mutationContext.js';
 
 export const initialRuntimeState = {
   nodes: {},
@@ -25,9 +24,7 @@ export function __getRuntimeStateInternal() {
   return runtimeState.current;
 }
 
-export function __setRuntimeStateInternal(nextState) {
-  const origin = getMutationOrigin();
-
+export function __setRuntimeStateInternal(nextState, origin = null) {
   if (origin !== 'dispatcher' && origin !== 'system') {
     throw new Error(
       '[Dropple Runtime Violation] runtimeState mutation outside dispatcher'

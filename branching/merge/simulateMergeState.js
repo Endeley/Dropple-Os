@@ -1,6 +1,6 @@
 // branching/merge/simulateMergeState.js
 
-import { applyEvent } from '@/core/events/applyEvent';
+import { replayEvents } from '@/runtime/dispatcher/replayEvents.js';
 import { applyLayoutPass } from '@/runtime/layout/applyLayoutPass';
 
 /**
@@ -9,18 +9,11 @@ import { applyLayoutPass } from '@/runtime/layout/applyLayoutPass';
  * 🔒 Pure
  */
 export function simulateMergeState({ baseState, events }) {
-    let next = baseState;
-
-    for (const evt of events) {
-        next = applyEvent(next, {
-            id: evt.id,
-            type: evt.type,
-            payload: evt.payload,
-        });
-
-        // Keep layout consistent with runtime
-        next = applyLayoutPass(next);
-    }
-
-    return next;
+    return replayEvents({
+        events,
+        initialState: baseState,
+        onEvent(state) {
+            return applyLayoutPass(state);
+        },
+    });
 }

@@ -1,5 +1,6 @@
 import { resolveCursor } from '../cursor/resolveCursor.js';
-import { reconstructDesignState } from './reconstructDesignState.js';
+import { getEventsUpToCursor } from '../events/getEventsUpToCursor.js';
+import { replayEvents } from '@/runtime/dispatcher/replayEvents.js';
 
 export function getDesignStateAtCursor({
   events,
@@ -12,8 +13,6 @@ export function getDesignStateAtCursor({
       : null;
   const resolvedCursor = resolveCursor(events, cursorFromIndex || cursor);
 
-  return reconstructDesignState({
-    events,
-    cursor: resolvedCursor,
-  });
+  const relevantEvents = getEventsUpToCursor(events, resolvedCursor);
+  return replayEvents({ events: relevantEvents });
 }

@@ -57,7 +57,7 @@ export function useHydrateDocument() {
 
         // 4️⃣ Replay active branch deterministically
         const activeBranch = document.branches[document.currentBranch];
-        const nextState = replayBranch(activeBranch, undefined);
+        const nextState = replayBranch(activeBranch, undefined, { dispatcher });
 
         // 5️⃣ Hydrate runtime
         const hydrated = {

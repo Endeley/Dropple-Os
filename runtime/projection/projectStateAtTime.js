@@ -1,16 +1,16 @@
-import { replayBranch } from '@/persistence/replay.js';
+import { replayBranch } from '@/runtime/replay/replayBranch.js';
 import { computeReplaySlice } from '@/timeline/computeReplaySlice.js';
 
 /**
  * Projects state at a given time by replaying events up to that time.
- * Infrastructure preview helper (uses persistence replay).
+ * Runtime projection helper.
  */
-export function projectStateAtTime({ branch, time, checkpoints = [] }) {
+export function projectStateAtTime({ branch, time, checkpoints = [], dispatcher }) {
     const { baseState, events } = computeReplaySlice({
         branch,
         time,
         checkpoints,
     });
 
-    return replayBranch({ events }, baseState);
+    return replayBranch({ events }, baseState, { dispatcher });
 }

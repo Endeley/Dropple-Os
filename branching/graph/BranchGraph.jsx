@@ -5,7 +5,7 @@
 import React from 'react';
 import { buildBranchGraph } from './buildBranchGraph';
 import { useBranchState } from '@/branching/ui/useBranchState';
-import { replayBranch } from '@/persistence/replay';
+import { replayBranch } from '@/runtime/replay/replayBranch.js';
 import { setRuntimeState } from '@/runtime/state/runtimeState';
 import { syncRuntimeToZustand } from '@/runtime/projection/zustandBridge';
 
@@ -44,7 +44,7 @@ export default function BranchGraph({ dispatcher, width = 600, height = 300 }) {
 
         dispatcher.reset();
 
-        const nextState = replayBranch(branch, undefined);
+        const nextState = replayBranch(branch, undefined, { dispatcher });
 
         const hydrated = {
             ...nextState,

@@ -93,7 +93,7 @@ export function createEventDispatcher({
     function commit(nextState, { animate = true } = {}) {
         const prev = __getRuntimeStateInternal();
 
-        __setRuntimeStateInternal(nextState);
+        __setRuntimeStateInternal(nextState, 'dispatcher');
 
         if (animate && !isReplaying) {
             playbackController.play({

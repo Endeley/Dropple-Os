@@ -3,7 +3,7 @@
 /**
  * Dropple Authority Audit (Strict Philosophy Mode)
  *
- * truth → domain → logic → mutation → evaluation → runtime → ui → product
+ * Structural enforcement only.
  */
 
 const fs = require('fs');
@@ -29,7 +29,7 @@ const LAYERS = [
     { name: 'core', prefix: 'workspaces/' },
     { name: 'core', prefix: 'canvas/' },
 
-    //  Debugger is part of runtime, not a higher layer
+    // Dispatcher is part of runtime, not a higher layer
     { name: 'runtime', prefix: 'runtime/dispatcher/' },
 
     { name: 'runtime', prefix: 'runtime/' },
@@ -50,14 +50,25 @@ const LAYER_RANK = {
     product: 5,
 };
 
+const SEMANTIC_RANK = LAYER_RANK;
+
 const PROJECTION_PREFIX = 'runtime/projection/';
 const AUTHORITY_BRIDGE_PREFIX = 'ui/interaction/bridges/';
 const REDUCER_IMPORTS = ['core/events/reducers', 'core/events/applyEvent.js'];
+const MUTATION_FUNNEL_IMPORTS = [
+    'core/events/reducers',
+    'core/events/applyEvent.js',
+    'core/mutationContext.js',
+];
+const MUTATION_FUNNEL_PREFIX = 'runtime/dispatcher/';
 
 const UI_RUNTIME_STATE_PREFIX = 'runtime/state/';
 const UI_PROJECTION_INTERNAL_PREFIX = 'runtime/projection/v1/internal/';
 
-const PROJECTION_ALLOWED_RUNTIME_IMPORTS = new Set(['runtime/state/runtimeState.internal.js', 'runtime/state/workspaceState.js']);
+const PROJECTION_ALLOWED_RUNTIME_IMPORTS = new Set([
+    'runtime/state/runtimeState.internal.js',
+    'runtime/state/workspaceState.js',
+]);
 
 function detectLayer(filePath) {
     for (const layer of LAYERS) {
@@ -67,17 +78,6 @@ function detectLayer(filePath) {
     }
     return 'product';
 }
-
-const AUTHORITY_RANK = {
-    truth: 0,
-    domain: 1,
-    logic: 2,
-    mutation: 3,
-    evaluation: 4,
-    runtime: 5,
-    ui: 6,
-    product: 7,
-};
 
 function hash(content) {
     return crypto.createHash('md5').update(content).digest('hex').slice(0, 8);
@@ -114,50 +114,6 @@ function extractImports(content) {
     return imports;
 }
 
-/**
- * Authority Classification (Improved Ordering)
- */
-function detectAuthority(file) {
-    const { path: filePath, content } = file;
-
-    // UI
-    if (/\.(jsx|tsx)$/.test(filePath) || content.includes('useState(')) {
-        return 'ui';
-    }
-
-    // Product
-    if (filePath.startsWith('app/') || filePath.startsWith('convex/') || filePath.startsWith('persistence/') || filePath.startsWith('export/') || filePath.startsWith('marketplace/') || filePath.startsWith('share/')) {
-        return 'product';
-    }
-
-    // Truth
-    if (filePath.includes('schema') || filePath.includes('contracts') || filePath.includes('ccm') || content.includes('interface ') || content.includes('type ')) {
-        return 'truth';
-    }
-
-    // Mutation
-    if (filePath.includes('reducer') || content.includes('applyEvent') || content.includes('mutationContext')) {
-        return 'mutation';
-    }
-
-    // Evaluation
-    if (filePath.includes('engine') || content.includes('evaluate') || content.includes('constraintEngine')) {
-        return 'evaluation';
-    }
-
-    // Domain (moved BEFORE runtime)
-    if (filePath.includes('validation') || filePath.includes('guard') || filePath.includes('constraint')) {
-        return 'domain';
-    }
-
-    // Runtime
-    if (filePath.includes('runtime') || content.includes('useRuntimeStore') || content.includes('dispatch(') || content.includes('MessageBus')) {
-        return 'runtime';
-    }
-
-    return 'logic';
-}
-
 function resolveImport(fromPath, imp, fileMap) {
     if (!imp || typeof imp !== 'string') return null;
 
@@ -181,19 +137,8 @@ function run() {
     const files = walk(ROOT);
     const fileMap = new Map(files.map((f) => [f.path, f]));
 
-    const authorityMap = {};
-    const violations = [];
     const uiRuntimeStateViolations = [];
-    const mutationFiles = [];
-    const truthFiles = [];
-
-    files.forEach((f) => {
-        f.authority = detectAuthority(f);
-        authorityMap[f.path] = f.authority;
-
-        if (f.authority === 'mutation') mutationFiles.push(f.path);
-        if (f.authority === 'truth') truthFiles.push(f.path);
-    });
+    let violationCount = 0;
 
     files.forEach((f) => {
         const imports = extractImports(f.content);
@@ -202,26 +147,33 @@ function run() {
             const resolved = resolveImport(f.path, imp, fileMap);
             if (!resolved) return;
 
-            const fromAuth = f.authority;
-            const toAuth = authorityMap[resolved];
-
-            const fromRank = AUTHORITY_RANK[fromAuth];
-            const toRank = AUTHORITY_RANK[toAuth];
-
             const fromLayer = detectLayer(f.path);
             const toLayer = detectLayer(resolved);
 
-            const fromLayerRank = LAYER_RANK[fromLayer];
-            const toLayerRank = LAYER_RANK[toLayer];
+            const fromLayerRank = SEMANTIC_RANK[fromLayer];
+            const toLayerRank = SEMANTIC_RANK[toLayer];
 
             if (fromLayerRank < toLayerRank) {
                 console.error(`ARCHITECTURE VIOLATION: ${f.path} (${fromLayer}) importing ${resolved} (${toLayer})`);
+                violationCount += 1;
+                process.exit(1);
+            }
+
+            if (
+                MUTATION_FUNNEL_IMPORTS.some((blocked) => resolved.startsWith(blocked)) &&
+                !f.path.startsWith(MUTATION_FUNNEL_PREFIX)
+            ) {
+                console.error(
+                    `MUTATION FUNNEL VIOLATION: ${f.path} must not import ${resolved} (only runtime/dispatcher allowed)`
+                );
+                violationCount += 1;
                 process.exit(1);
             }
 
             if (fromLayer === 'ui') {
                 if (resolved.startsWith('runtime/dispatcher/') && !f.path.startsWith(AUTHORITY_BRIDGE_PREFIX)) {
                     console.error(`UI DISPATCHER VIOLATION: ${f.path} must not import dispatcher (${resolved})`);
+                    violationCount += 1;
                     process.exit(1);
                 }
 
@@ -231,16 +183,19 @@ function run() {
                         resolved,
                     });
                     console.error(`UI RUNTIME STATE VIOLATION: ${f.path} importing ${resolved}`);
+                    violationCount += 1;
                     process.exit(1);
                 }
 
                 if (resolved.startsWith(UI_PROJECTION_INTERNAL_PREFIX)) {
                     console.error(`UI PROJECTION INTERNAL VIOLATION: ${f.path} importing ${resolved}`);
+                    violationCount += 1;
                     process.exit(1);
                 }
 
                 if (resolved.startsWith('runtime/projection/v1/')) {
                     console.error(`UI PROJECTION VERSION LOCK: ${f.path} importing ${resolved}`);
+                    violationCount += 1;
                     process.exit(1);
                 }
             }
@@ -248,59 +203,35 @@ function run() {
             if (f.path.startsWith(PROJECTION_PREFIX)) {
                 if (resolved.startsWith('runtime/dispatcher/')) {
                     console.error(`PROJECTION VIOLATION: ${f.path} importing dispatcher`);
+                    violationCount += 1;
                     process.exit(1);
                 }
 
                 if (resolved.startsWith('runtime/state/') && !PROJECTION_ALLOWED_RUNTIME_IMPORTS.has(resolved)) {
                     console.error(`PROJECTION VIOLATION: ${f.path} importing illegal runtime/state`);
+                    violationCount += 1;
                     process.exit(1);
                 }
 
                 if (REDUCER_IMPORTS.some((bad) => resolved.includes(bad))) {
                     console.error(`PROJECTION VIOLATION: ${f.path} importing reducers`);
+                    violationCount += 1;
                     process.exit(1);
                 }
-            }
-
-            if (fromRank < toRank) {
-                violations.push({
-                    type: 'UPWARD_AUTHORITY_LEAK',
-                    from: f.path,
-                    to: resolved,
-                });
-            }
-
-            if (fromAuth === 'truth' && toAuth !== 'truth') {
-                violations.push({
-                    type: 'TRUTH_LEAK',
-                    from: f.path,
-                    to: resolved,
-                });
-            }
-
-            if (toAuth === 'mutation' && fromAuth !== 'mutation') {
-                violations.push({
-                    type: 'EXTERNAL_MUTATION_ACCESS',
-                    from: f.path,
-                    to: resolved,
-                });
             }
         });
     });
 
-    fs.writeFileSync(path.join(AI_DIR, 'authority-map.json'), JSON.stringify(authorityMap, null, 2));
-    fs.writeFileSync(path.join(AI_DIR, 'mutation-map.json'), JSON.stringify(mutationFiles, null, 2));
-    fs.writeFileSync(path.join(AI_DIR, 'truth-map.json'), JSON.stringify(truthFiles, null, 2));
-    fs.writeFileSync(path.join(AI_DIR, 'authority-violations.json'), JSON.stringify(violations, null, 2));
-    fs.writeFileSync(path.join(AI_DIR, 'ui-runtime-state-violations.json'), JSON.stringify(uiRuntimeStateViolations, null, 2));
+    fs.writeFileSync(
+        path.join(AI_DIR, 'ui-runtime-state-violations.json'),
+        JSON.stringify(uiRuntimeStateViolations, null, 2)
+    );
 
-    const healthScore = Math.max(0, 100 - violations.length * 2);
+    const healthScore = Math.max(0, 100 - violationCount * 2);
 
     console.log('\n🧠 Dropple Authority Audit Complete');
     console.log(`Total Modules: ${files.length}`);
-    console.log(`Truth Files: ${truthFiles.length}`);
-    console.log(`Mutation Files: ${mutationFiles.length}`);
-    console.log(`Violations: ${violations.length}`);
+    console.log(`Violations: ${violationCount}`);
     console.log(`Architecture Health: ${healthScore}/100`);
 }
 

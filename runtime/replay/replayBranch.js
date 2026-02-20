@@ -1,6 +1,20 @@
-import { replayBranch as replayBranchPure } from '@/persistence/replay.js';
-import { withReplayGuard } from '@/runtime/replay/withReplayGuard.js';
+import { getRuntimeDispatcher } from '@/runtime/dispatcher/dispatcherHandle.js';
 
-export function replayBranch(branch, initialState) {
-    return withReplayGuard(() => replayBranchPure(branch, initialState));
+export function replayBranch(branch, initialState, { dispatcher } = {}) {
+    const activeDispatcher = dispatcher ?? getRuntimeDispatcher();
+
+    if (initialState) {
+        activeDispatcher.hydrateRuntimeState(initialState, { animate: false });
+    }
+
+    activeDispatcher.setReplaying?.(true);
+
+    for (const event of branch?.events || []) {
+        if (!event) continue;
+        const { id, ...sanitized } = event;
+        activeDispatcher.dispatch?.(sanitized);
+    }
+
+    activeDispatcher.setReplaying?.(false);
+    return activeDispatcher.getState?.();
 }

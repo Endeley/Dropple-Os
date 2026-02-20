@@ -2,8 +2,7 @@
 import { performance } from 'node:perf_hooks';
 import { createEventDispatcher } from '../runtime/dispatcher/dispatch.js';
 import { EventTypes } from '../core/events/eventTypes.js';
-import { replayBranch } from '../persistence/replay.js';
-import { applyEvent } from '../core/events/applyEvent.js';
+import { replayBranch } from '../runtime/replay/replayBranch.js';
 
 // Polyfill browser APIs for Node benchmark
 globalThis.performance = performance;
@@ -69,7 +68,7 @@ function measureReplay(eventCount) {
     const initialState = undefined; // applyEvent has its own default initial state
 
     time(`Replay ${eventCount} events`, () => {
-        replayBranch(branch, applyEvent, initialState);
+        replayBranch(branch, initialState, { dispatcher });
     });
 }
 

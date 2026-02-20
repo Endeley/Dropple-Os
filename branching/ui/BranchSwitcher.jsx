@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { useBranchState } from './useBranchState';
-import { replayBranch } from '@/persistence/replay';
+import { replayBranch } from '@/runtime/replay/replayBranch.js';
 import { resetRuntimeState, setRuntimeState } from '@/runtime/state/runtimeState';
 import { syncRuntimeToZustand } from '@/runtime/projection/zustandBridge';
 
@@ -37,7 +37,7 @@ export default function BranchSwitcher({ dispatcher }) {
         dispatcher.reset();
 
         // Replay branch deterministically
-        const nextState = replayBranch(branch, undefined);
+        const nextState = replayBranch(branch, undefined, { dispatcher });
 
         // Attach document + current branch
         const hydrated = {

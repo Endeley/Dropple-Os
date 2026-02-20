@@ -1,18 +1,20 @@
-import { applyEvent } from "../core/events/applyEvent.js";
+import { replayEvents } from "../runtime/dispatcher/replayEvents.js";
 
-const state0 = applyEvent(undefined, {
-  type: "node/create",
-  payload: { node: { id: "a", type: "frame" } },
+const state = replayEvents({
+  events: [
+    {
+      type: "node/create",
+      payload: { node: { id: "a", type: "frame" } },
+    },
+    {
+      type: "node/create",
+      payload: { node: { id: "b", type: "text" } },
+    },
+    {
+      type: "node/attach",
+      payload: { parentId: "a", childId: "b" },
+    },
+  ],
 });
 
-const state1 = applyEvent(state0, {
-  type: "node/create",
-  payload: { node: { id: "b", type: "text" } },
-});
-
-const state2 = applyEvent(state1, {
-  type: "node/attach",
-  payload: { parentId: "a", childId: "b" },
-});
-
-console.log(JSON.stringify(state2, null, 2));
+console.log(JSON.stringify(state, null, 2));
