@@ -1,18 +1,18 @@
-import { graphicWorkspace } from './registry/graphicWorkspace';
-import { uiuxWorkspace } from './registry/uiuxWorkspace';
-import { animationWorkspace } from './registry/animationWorkspace';
-import { videoWorkspace } from './registry/videoWorkspace';
-import { podcastWorkspace } from './registry/podcastWorkspace';
-import { materialWorkspace } from './registry/materialWorkspace';
-import { iconWorkspace } from './registry/iconWorkspace';
-import { devWorkspace } from './registry/devWorkspace';
-import { educationWorkspace } from './registry/educationWorkspace';
-import { aiWorkspace } from './registry/aiWorkspace';
-import { brandingWorkspace } from './registry/brandingWorkspace';
-import { documentWorkspace } from './registry/documentWorkspace';
-import { conversionWorkspace } from './registry/conversionWorkspace';
-import { translateWorkspace } from './registry/translateWorkspace';
-import { workspaceRoutes } from './registry/routes';
+import { graphicWorkspace } from './registry/graphicWorkspace.js';
+import { uiuxWorkspace } from './registry/uiuxWorkspace.js';
+import { animationWorkspace } from './registry/animationWorkspace.js';
+import { videoWorkspace } from './registry/videoWorkspace.js';
+import { podcastWorkspace } from './registry/podcastWorkspace.js';
+import { materialWorkspace } from './registry/materialWorkspace.js';
+import { iconWorkspace } from './registry/iconWorkspace.js';
+import { devWorkspace } from './registry/devWorkspace.js';
+import { educationWorkspace } from './registry/educationWorkspace.js';
+import { aiWorkspace } from './registry/aiWorkspace.js';
+import { brandingWorkspace } from './registry/brandingWorkspace.js';
+import { documentWorkspace } from './registry/documentWorkspace.js';
+import { conversionWorkspace } from './registry/conversionWorkspace.js';
+import { translateWorkspace } from './registry/translateWorkspace.js';
+import { workspaceRoutes } from './registry/routes.js';
 
 const routes = workspaceRoutes();
 

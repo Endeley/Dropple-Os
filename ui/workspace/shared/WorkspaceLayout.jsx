@@ -15,9 +15,7 @@ import { useKeyboardShortcuts } from '@/ui/interaction/useKeyboardShortcuts';
 import { getDesignStateAtCursor } from '@/runtime/replay/getDesignStateAtCursor';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { registerCreationResolver } from '@/ui/creation/creationResolver';
-import { registerCreateShapeTool } from '@/ui/tools/createShapeTool';
-import { registerCreateFrameTool } from '@/ui/tools/createFrameTool';
-import { registerCreateLayerTool } from '@/ui/tools/createLayerTool';
+import { registerWorkspaceTools } from '@/ui/interaction/toolRegistration';
 import { useKeyboardNudge } from '@/ui/keyboard/useKeyboardNudge';
 import { useAlignmentShortcuts } from '@/ui/keyboard/useAlignmentShortcuts';
 import { useModeOnboarding } from '@/onboarding/useModeOnboarding';
@@ -61,7 +59,7 @@ function WorkspaceLayoutInner({
   presence,
   intents,
 }) {
-  const { selectedIds, setSelection, selectSingle } = useSelection();
+  const { selectedIds, setSelection } = useSelection();
   const keyboardEnabled =
     adapter?.interactions?.keyboard !== false &&
     adapter?.ui?.editing !== false &&
@@ -189,17 +187,15 @@ function WorkspaceLayoutInner({
     const unregisterResolver = registerCreationResolver({
       getMode: () => adapter?.id,
     });
-    const unregisterShape = registerCreateShapeTool({ emit, selectSingle });
-    const unregisterFrame = registerCreateFrameTool({ emit, selectSingle });
-    const unregisterLayer = registerCreateLayerTool({ emit, selectSingle });
+    const unregisterTools = registerWorkspaceTools({
+      workspaceId: adapter?.workspaceId || adapter?.id,
+    });
 
     return () => {
       unregisterResolver?.();
-      unregisterShape?.();
-      unregisterFrame?.();
-      unregisterLayer?.();
+      unregisterTools?.();
     };
-  }, [adapter?.id, emit, selectSingle]);
+  }, [adapter?.id, adapter?.workspaceId]);
 
   return (
     <div className="workspace-root">

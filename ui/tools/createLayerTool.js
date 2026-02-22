@@ -8,18 +8,14 @@ export const CreateLayerTool = {
 /**
  * Layer creation tool (Animation mode default).
  */
-export function registerCreateLayerTool({ selectSingle }) {
+export function registerCreateLayerTool() {
   const handleCreate = ({ bounds }) => {
     if (!bounds) return;
-    const id = crypto.randomUUID();
 
     canvasBus.emit('intent.node.create', {
-      id,
       type: 'layer',
       bounds,
     });
-
-    selectSingle?.(id);
   };
 
   return canvasBus.on('tool.create.layer', handleCreate);

@@ -14,4 +14,6 @@ export const TOOL_CAPABILITIES = Object.freeze({
   'tool.create.image': {
     readCaps: [Capability.NODE_CREATE, Capability.CONTENT_WRITE],
   },
+  'tool.create.layer': { readCaps: [Capability.NODE_CREATE] },
+  'tool.create.default': { readCaps: [Capability.NODE_CREATE] },
 });

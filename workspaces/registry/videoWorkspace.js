@@ -8,6 +8,8 @@ export const videoWorkspace = {
     engines: ["timeline", "media"],
     tools: ["cut", "trim", "overlay", "text"],
     panels: ["NodeHeaderPanel", "MotionPanel"],
+    activeDomains: ["canvas", "state", "motion"],
+    enabledTriggerTypes: ["time"],
 
     capabilities: {
         canvas: false,

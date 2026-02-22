@@ -17,6 +17,8 @@ export const animationWorkspace = {
     engines: ["nodeTree", "layout", "timeline"],
     tools: ["select", "move", "keyframe", "path"],
     panels: ["NodeHeaderPanel", "MotionPanel"],
+    activeDomains: ["canvas", "state", "motion"],
+    enabledTriggerTypes: new Set(["manual"]),
 
     capabilities: {
         canvas: true,

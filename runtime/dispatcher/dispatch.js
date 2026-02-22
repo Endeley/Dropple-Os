@@ -31,6 +31,7 @@ import { getTransitionForPreview } from '../preview/getTransitionForPreview.js';
 
 import { resolveInteraction } from '../interactions/resolveInteraction.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
+import { resolveBehaviorTrigger } from '@/core/behavior/resolveBehaviorTrigger.js';
 
 import { applyLayoutPass } from '../layout/applyLayoutPass.js';
 import { observeUXIntent } from './ux/observeUXIntent.js';
@@ -48,12 +49,20 @@ import {
     setViewport,
 } from '../state/workspaceState.js';
 
+function cloneState(state) {
+    if (typeof structuredClone === 'function') {
+        return structuredClone(state);
+    }
+    return JSON.parse(JSON.stringify(state));
+}
+
 export function createEventDispatcher({
     maxHistory = 100,
     workspaceId = null,
     branchId = 'main',
     profile = 'design',
     uxEnforcementTier = defaultUXEnforcementTier,
+    headless = false,
 } = {}) {
     const history = createHistory(maxHistory);
     const sequencer = new EventSequencer();
@@ -67,6 +76,7 @@ export function createEventDispatcher({
 
     let currentPreviewCancel = null;
     let isReplaying = false; // 🔒 REPLAY GUARD FLAG
+    const isHeadless = Boolean(headless) || typeof window === 'undefined';
 
     const animationController = createAnimationController({
         duration: 220,
@@ -95,7 +105,7 @@ export function createEventDispatcher({
 
         __setRuntimeStateInternal(nextState, 'dispatcher');
 
-        if (animate && !isReplaying) {
+        if (!isHeadless && animate && !isReplaying) {
             playbackController.play({
                 fromState: prev,
                 toState: nextState,
@@ -197,6 +207,27 @@ export function createEventDispatcher({
                 const eventId = createEventId({ branchId, nextSeq: seq });
                 const event = { ...rawEvent, id: eventId };
 
+                if (event.type === EventTypes.BEHAVIOR_TRIGGER_FIRE) {
+                    const runtimeState = __getRuntimeStateInternal();
+                    const workspaceId = getActiveWorkspace();
+                    const policy = resolveWorkspacePolicy(workspaceId);
+                    const allowed = policy?.enabledTriggerTypes;
+
+                    if (allowed && !allowed.has(event.payload?.triggerType)) {
+                        return runtimeState;
+                    }
+
+                    const resolved = resolveBehaviorTrigger({
+                        entityId: event.payload?.entityId,
+                        triggerType: event.payload?.triggerType,
+                        world: runtimeState,
+                    });
+
+                    if (!resolved) return runtimeState;
+
+                    return await dispatch(resolved);
+                }
+
                 if (event?.type === EventTypes.WORKSPACE_SET_ACTIVE) {
                     setActiveWorkspace(event?.payload?.id, event?.payload?.workspaceDef ?? null);
                     return __getRuntimeStateInternal();
@@ -259,7 +290,7 @@ export function createEventDispatcher({
                 if (next === prev) return next;
 
                 // 🔒 Transition preview is FORBIDDEN during replay
-                const canPreview = !isReplaying;
+                const canPreview = !isReplaying && !isHeadless;
                 const transition = canPreview && getTransitionForPreview({ prev, next });
 
                 if (transition) {
@@ -269,7 +300,7 @@ export function createEventDispatcher({
                         transition,
                         onComplete: (finalState) => {
                             withMutationOrigin('dispatcher', () => {
-                                history.push(finalState);
+                                history.push(cloneState(finalState));
                                 commit(finalState, { animate: false });
                                 __setRuntimeErrorInternal(null);
                                 currentPreviewCancel = null;
@@ -281,8 +312,9 @@ export function createEventDispatcher({
                     return prev;
                 }
 
-                history.push(next);
-                return commit(next);
+                const committed = commit(next);
+                history.push(cloneState(__getRuntimeStateInternal()));
+                return committed;
             } catch (err) {
                 console.error('[Dispatcher error]', err, rawEvent);
                 __setRuntimeErrorInternal(err);

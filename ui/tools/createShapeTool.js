@@ -8,18 +8,14 @@ export const CreateShapeTool = {
 /**
  * Shape creation tool (Graphic mode default).
  */
-export function registerCreateShapeTool({ selectSingle }) {
+export function registerCreateShapeTool() {
   const handleCreate = ({ bounds }) => {
     if (!bounds) return;
-    const id = crypto.randomUUID();
 
     canvasBus.emit('intent.node.create', {
-      id,
       type: 'shape',
       bounds,
     });
-
-    selectSingle?.(id);
   };
 
   return canvasBus.on('tool.create.shape', handleCreate);

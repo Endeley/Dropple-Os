@@ -8,6 +8,8 @@ export const podcastWorkspace = {
     engines: ["timeline", "audio"],
     tools: ["cut", "mute", "chapter"],
     panels: ["NodeHeaderPanel"],
+    activeDomains: ["state", "motion"],
+    enabledTriggerTypes: new Set(["manual"]),
 
     capabilities: {
         canvas: false,

@@ -10,7 +10,7 @@ export const CreateFrameTool = {
  * Emits intent ONLY.
  * Actual node creation is handled by nodeCreateResolver.
  */
-export function registerCreateFrameTool({ selectSingle }) {
+export function registerCreateFrameTool() {
     const handleCreate = ({ bounds }) => {
         if (!bounds) return;
 

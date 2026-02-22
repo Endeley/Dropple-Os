@@ -26,6 +26,23 @@ export const EventTypes = Object.freeze({
     STATE_SET: 'state/set',
 
     // ─────────────────────────────
+    // Behavior graph (Phase B1)
+    // ─────────────────────────────
+    BEHAVIOR_STATE_CREATE: 'behavior/state/create',
+    BEHAVIOR_STATE_UPDATE: 'behavior/state/update',
+    BEHAVIOR_STATE_DELETE: 'behavior/state/delete',
+
+    BEHAVIOR_TRANSITION_DEFINE: 'behavior/transition/define',
+    BEHAVIOR_TRANSITION_DELETE: 'behavior/transition/delete',
+
+    BEHAVIOR_TRIGGER_BIND: 'behavior/trigger/bind',
+    BEHAVIOR_TRIGGER_UNBIND: 'behavior/trigger/unbind',
+
+    BEHAVIOR_TRIGGER_FIRE: 'behavior/trigger_fire',
+
+    BEHAVIOR_STATE_COMMIT: 'behavior/state/commit',
+
+    // ─────────────────────────────
     // Component identity (Phase 1¾)
     // ─────────────────────────────
     COMPONENT_SET_ACTIVE: 'component/set-active',

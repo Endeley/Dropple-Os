@@ -7,6 +7,7 @@ import NodeLayer from './NodeLayer.jsx';
 import GhostLayer from './GhostLayer.jsx';
 import GhostFrameLayer from './GhostFrameLayer.jsx';
 import MotionTrailLayer from './MotionTrailLayer.jsx';
+import { BehaviorPreviewLayer } from '@/design/canvas/behaviorPreview/BehaviorPreviewLayer.jsx';
 import ConstraintVisualizerLayer from './ConstraintVisualizerLayer.jsx';
 import GuideLayer from './GuideLayer.jsx';
 import SelectionLayer from './SelectionLayer.jsx';
@@ -268,6 +269,7 @@ export default function CanvasRoot({ workspaceId }) {
                     <MotionTrailLayer designState={designState} />
                     <ConstraintVisualizerLayer />
                     <NodeLayer />
+                    <BehaviorPreviewLayer />
                     <GhostLayer />
                     <GuideLayer />
                     <SelectionLayer />

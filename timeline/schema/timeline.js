@@ -1,6 +1,6 @@
 export function createTimeline({ fps = 60, duration = 0, unit = 'frames' } = {}) {
     return {
-        id: crypto.randomUUID(),
+        id: 'default',
         fps,
         duration,
         unit, // 'frames' | 'ms'

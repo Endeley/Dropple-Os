@@ -33,6 +33,13 @@ export const uiuxWorkspace = {
         'SemanticsPanel',
         'ExportPreviewPanel',
     ],
+    activeDomains: ['canvas', 'state', 'motion'],
+    enabledTriggerTypes: new Set([
+        'pointer_enter',
+        'pointer_leave',
+        'click',
+        'manual',
+    ]),
 
     capabilities: {
         canvas: true,

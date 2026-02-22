@@ -10,6 +10,7 @@ import { stateReducers } from "./stateReducers.js";
 import { componentStateReducers } from "./componentStateReducers.js";
 import { interactionReducers } from "./interactionReducers.js";
 import { animationReducers } from "./animationReducers.js";
+import { behaviorReducers } from "./behaviorReducers.js";
 
 export function rootReducer(state, event) {
   let next = state;
@@ -17,6 +18,7 @@ export function rootReducer(state, event) {
   next = componentStateReducers(next, event);
   next = interactionReducers(next, event);
   next = animationReducers(next, event);
+  next = behaviorReducers(next, event);
   next = nodeReducers(next, event);
   next = treeReducers(next, event);
   next = layoutReducers(next, event);
