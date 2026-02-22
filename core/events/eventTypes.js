@@ -32,8 +32,13 @@ export const EventTypes = Object.freeze({
     BEHAVIOR_STATE_UPDATE: 'behavior/state/update',
     BEHAVIOR_STATE_DELETE: 'behavior/state/delete',
 
-    BEHAVIOR_TRANSITION_DEFINE: 'behavior/transition/define',
+    BEHAVIOR_TRANSITION_CREATE: 'behavior/transition/create',
     BEHAVIOR_TRANSITION_DELETE: 'behavior/transition/delete',
+
+    BEHAVIOR_TRIGGER_CREATE: 'behavior/trigger/create',
+    BEHAVIOR_TRIGGER_DELETE: 'behavior/trigger/delete',
+
+    BEHAVIOR_TRANSITION_DEFINE: 'behavior/transition/define',
 
     BEHAVIOR_TRIGGER_BIND: 'behavior/trigger/bind',
     BEHAVIOR_TRIGGER_UNBIND: 'behavior/trigger/unbind',

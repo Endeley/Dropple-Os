@@ -1,5 +1,6 @@
 import { createEventDispatcher } from "../runtime/eventDispatcher.js";
 import { EventTypes } from "../core/events/eventTypes.js";
+import { hashBehaviorGraph } from "../core/contracts/BehaviorGraphContract.js";
 import crypto from "crypto";
 
 const runtime = createEventDispatcher();
@@ -258,3 +259,109 @@ console.log(
 console.log("HASH B:", hashB);
 
 console.log("DETERMINISTIC:", hashA === hashB);
+
+console.log("\n--- AUTHORING TESTS (PHASE 1) ---");
+
+await runtime.dispatch({
+  type: EventTypes.BEHAVIOR_STATE_CREATE,
+  payload: {
+    entityId: "nodeA",
+    state: {
+      id: "pressed",
+      label: "Pressed",
+      propertyOverrides: { style: { opacity: 0.2 } },
+    },
+  },
+});
+
+console.log(
+  "AFTER CREATE:",
+  runtime.getState().behaviors.nodeA.states.map((s) => s.id)
+);
+
+await runtime.dispatch({
+  type: EventTypes.BEHAVIOR_STATE_UPDATE,
+  payload: {
+    entityId: "nodeA",
+    stateId: "pressed",
+    patch: {
+      label: "Pressed Updated",
+      propertyOverrides: { style: { opacity: 0.3 } },
+    },
+  },
+});
+
+console.log(
+  "AFTER UPDATE:",
+  runtime.getState().behaviors.nodeA.states.find((s) => s.id === "pressed")
+);
+
+await runtime.dispatch({
+  type: EventTypes.BEHAVIOR_STATE_DELETE,
+  payload: {
+    entityId: "nodeA",
+    stateId: "pressed",
+  },
+});
+
+console.log(
+  "AFTER DELETE:",
+  runtime.getState().behaviors.nodeA.states.map((s) => s.id)
+);
+
+runtime.undo();
+console.log(
+  "UNDO DELETE:",
+  runtime.getState().behaviors.nodeA.states.map((s) => s.id)
+);
+
+runtime.redo();
+console.log(
+  "REDO DELETE:",
+  runtime.getState().behaviors.nodeA.states.map((s) => s.id)
+);
+
+await runtime.dispatch({
+  type: EventTypes.BEHAVIOR_STATE_COMMIT,
+  payload: { entityId: "nodeA", targetStateId: "hover" },
+});
+
+await runtime.dispatch({
+  type: EventTypes.BEHAVIOR_STATE_DELETE,
+  payload: {
+    entityId: "nodeA",
+    stateId: "hover",
+  },
+});
+
+console.log(
+  "DELETE ACTIVE STATE (runtime.currentStateId):",
+  runtime.getState().behaviorRuntime?.nodeA?.currentStateId
+);
+
+const graphA = {
+  baseStateId: "idle",
+  states: [
+    { id: "hover", propertyOverrides: { style: { opacity: 0.5 } } },
+    { id: "idle", propertyOverrides: { style: { opacity: 1 } } },
+  ],
+  transitions: [],
+  triggers: [],
+};
+
+const graphB = {
+  baseStateId: "idle",
+  states: [
+    { id: "idle", propertyOverrides: { style: { opacity: 1 } } },
+    { id: "hover", propertyOverrides: { style: { opacity: 0.5 } } },
+  ],
+  transitions: [],
+  triggers: [],
+};
+
+console.log("GRAPH HASH A:", hashBehaviorGraph(graphA));
+console.log("GRAPH HASH B:", hashBehaviorGraph(graphB));
+console.log(
+  "STRUCTURALLY EQUAL:",
+  hashBehaviorGraph(graphA) === hashBehaviorGraph(graphB)
+);

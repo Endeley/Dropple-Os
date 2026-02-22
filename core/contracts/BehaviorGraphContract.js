@@ -18,6 +18,8 @@
  * This file defines data shape only.
  */
 
+import crypto from 'crypto';
+
 /* -------------------------------------------------------------------------- */
 /*                                CONSTANTS                                   */
 /* -------------------------------------------------------------------------- */
@@ -29,6 +31,75 @@ export const TRIGGER_TYPES = Object.freeze({
   CONDITION: 'condition',
   SYSTEM: 'system',
 });
+
+/**
+ * Deep clone using structuredClone if available
+ */
+function deepClone(obj) {
+  if (typeof structuredClone === 'function') {
+    return structuredClone(obj);
+  }
+  return JSON.parse(JSON.stringify(obj));
+}
+
+/**
+ * Sort object keys recursively
+ */
+function sortObjectKeys(obj) {
+  if (Array.isArray(obj)) {
+    return obj.map(sortObjectKeys);
+  }
+
+  if (obj && typeof obj === 'object') {
+    return Object.keys(obj)
+      .sort()
+      .reduce((acc, key) => {
+        const value = obj[key];
+        if (value !== undefined) {
+          acc[key] = sortObjectKeys(value);
+        }
+        return acc;
+      }, {});
+  }
+
+  return obj;
+}
+
+/**
+ * Normalize propertyOverrides
+ */
+function normalizeOverrides(overrides) {
+  if (!overrides) return {};
+  return sortObjectKeys(overrides);
+}
+
+/**
+ * Canonical graph normalization (pure)
+ */
+export function normalizeBehaviorGraph(graph) {
+  const clone = deepClone(graph);
+
+  clone.states = [...(clone.states ?? [])]
+    .map((state) => ({
+      ...state,
+      propertyOverrides: normalizeOverrides(state.propertyOverrides),
+    }))
+    .sort((a, b) => a.id.localeCompare(b.id));
+
+  clone.transitions = [...(clone.transitions ?? [])].sort((a, b) =>
+    (a.fromStateId + '→' + a.toStateId).localeCompare(
+      b.fromStateId + '→' + b.toStateId
+    )
+  );
+
+  clone.triggers = [...(clone.triggers ?? [])].sort((a, b) =>
+    (a.triggerType + '|' + a.fromStateId + '|' + a.toStateId).localeCompare(
+      b.triggerType + '|' + b.fromStateId + '|' + b.toStateId
+    )
+  );
+
+  return clone;
+}
 
 /* -------------------------------------------------------------------------- */
 /*                                   STATE                                    */
@@ -174,60 +245,93 @@ export function createBehaviorGraph({
  * Must be safe to run during reducer validation.
  */
 export function validateBehaviorGraph(graph) {
-  if (!graph) return false;
+  if (!graph) throw new Error('BehaviorGraph missing');
 
-  const stateIds = new Set(graph.states.map((s) => s.id));
+  const normalized = normalizeBehaviorGraph(graph);
+  const stateIds = new Set();
 
-  // Base state must exist
-  if (!stateIds.has(graph.baseStateId)) {
-    throw new Error('Base state does not exist in graph');
+  // ---- States ----
+  if (!normalized.states || normalized.states.length === 0) {
+    throw new Error('BehaviorGraph must have at least one state');
   }
 
-  // All transitions must reference valid states
-  for (const t of graph.transitions) {
+  for (const state of normalized.states) {
+    if (!state.id) throw new Error('State missing id');
+
+    if (stateIds.has(state.id)) {
+      throw new Error(`Duplicate state id: ${state.id}`);
+    }
+
+    stateIds.add(state.id);
+  }
+
+  if (!stateIds.has(normalized.baseStateId)) {
+    throw new Error(`baseStateId does not exist: ${normalized.baseStateId}`);
+  }
+
+  // ---- Transitions ----
+  const transitionSet = new Set();
+
+  for (const t of normalized.transitions ?? []) {
     if (!stateIds.has(t.fromStateId)) {
       throw new Error(
-        `Transition ${t.id} references invalid fromStateId`
+        `Transition references invalid fromStateId: ${t.fromStateId}`
       );
     }
+
     if (!stateIds.has(t.toStateId)) {
       throw new Error(
-        `Transition ${t.id} references invalid toStateId`
+        `Transition references invalid toStateId: ${t.toStateId}`
       );
     }
+
+    const key = `${t.fromStateId}→${t.toStateId}`;
+    if (transitionSet.has(key)) {
+      throw new Error(`Duplicate transition: ${key}`);
+    }
+
+    transitionSet.add(key);
   }
 
-  if (Array.isArray(graph.triggers)) {
-    for (const trigger of graph.triggers) {
-      if (!trigger.id) {
-        throw new Error('Trigger missing id');
-      }
+  // ---- Triggers ----
+  const triggerSet = new Set();
 
-      if (!trigger.triggerType) {
-        throw new Error(`Trigger ${trigger.id} missing triggerType`);
-      }
+  for (const tr of normalized.triggers ?? []) {
+    if (!tr.triggerType) throw new Error('Trigger missing triggerType');
 
-      if (!trigger.fromStateId) {
-        throw new Error(`Trigger ${trigger.id} missing fromStateId`);
-      }
-
-      if (!trigger.toStateId) {
-        throw new Error(`Trigger ${trigger.id} missing toStateId`);
-      }
-
-      if (!stateIds.has(trigger.fromStateId)) {
-        throw new Error(
-          `Trigger ${trigger.id} references invalid fromStateId`
-        );
-      }
-
-      if (!stateIds.has(trigger.toStateId)) {
-        throw new Error(
-          `Trigger ${trigger.id} references invalid toStateId`
-        );
-      }
+    if (!stateIds.has(tr.fromStateId)) {
+      throw new Error(
+        `Trigger references invalid fromStateId: ${tr.fromStateId}`
+      );
     }
+
+    if (!stateIds.has(tr.toStateId)) {
+      throw new Error(`Trigger references invalid toStateId: ${tr.toStateId}`);
+    }
+
+    const key = `${tr.triggerType}|${tr.fromStateId}|${tr.toStateId}`;
+    if (triggerSet.has(key)) {
+      throw new Error(`Duplicate trigger: ${key}`);
+    }
+
+    triggerSet.add(key);
   }
 
   return true;
+}
+
+export function hashBehaviorGraph(graph) {
+  const normalized = normalizeBehaviorGraph(graph);
+
+  const structural = {
+    baseStateId: normalized.baseStateId,
+    states: normalized.states,
+    transitions: normalized.transitions,
+    triggers: normalized.triggers,
+  };
+
+  const sorted = sortObjectKeys(structural);
+  const json = JSON.stringify(sorted);
+
+  return crypto.createHash('sha256').update(json).digest('hex');
 }

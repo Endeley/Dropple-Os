@@ -51,6 +51,31 @@ function findTransition(graph, fromStateId, toStateId) {
   );
 }
 
+function normalizeStateInput(state) {
+  if (!state || typeof state !== 'object') {
+    throw new Error('BEHAVIOR_STATE_CREATE requires state object');
+  }
+  const { id, label = '', propertyOverrides = {} } = state;
+  if (!id) throw new Error('BehaviorState requires an id');
+  const overrides = filterBehaviorOverrides(propertyOverrides);
+  return { id, label, propertyOverrides: overrides };
+}
+
+function applyStatePatch(state, patch) {
+  if (!patch || typeof patch !== 'object') return state;
+  if (Object.prototype.hasOwnProperty.call(patch, 'id')) {
+    throw new Error('BehaviorState patch cannot change id');
+  }
+  const next = { ...state };
+  if (Object.prototype.hasOwnProperty.call(patch, 'label')) {
+    next.label = patch.label ?? '';
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, 'propertyOverrides')) {
+    next.propertyOverrides = filterBehaviorOverrides(patch.propertyOverrides);
+  }
+  return next;
+}
+
 // ---- apply patch to node (pure) ----
 // Adjust this to your actual node storage location.
 // Common patterns:
@@ -82,6 +107,130 @@ function applyNodePatch(world, entityId, patch) {
 
 export function behaviorReducers(world, event, ctx) {
   switch (event.type) {
+    case EventTypes.BEHAVIOR_STATE_CREATE: {
+      const { entityId, state } = event.payload ?? {};
+      if (!entityId) throw new Error('BEHAVIOR_STATE_CREATE requires entityId');
+
+      const behaviors = world.behaviors || {};
+      const graph = behaviors[entityId];
+      if (!graph)
+        throw new Error(`No BehaviorGraph found for entityId: ${entityId}`);
+
+      const nextState = normalizeStateInput(state);
+      if (nextState.id === graph.baseStateId) {
+        throw new Error('BehaviorState id cannot equal baseStateId');
+      }
+      if (findState(graph, nextState.id)) {
+        throw new Error(`BehaviorState already exists: ${nextState.id}`);
+      }
+
+      const nextGraph = {
+        ...graph,
+        states: [...(graph.states || []), nextState],
+      };
+
+      validateBehaviorGraph(nextGraph);
+
+      return {
+        ...world,
+        behaviors: {
+          ...behaviors,
+          [entityId]: nextGraph,
+        },
+      };
+    }
+
+    case EventTypes.BEHAVIOR_STATE_UPDATE: {
+      const { entityId, stateId, patch } = event.payload ?? {};
+      if (!entityId) throw new Error('BEHAVIOR_STATE_UPDATE requires entityId');
+      if (!stateId) throw new Error('BEHAVIOR_STATE_UPDATE requires stateId');
+
+      const behaviors = world.behaviors || {};
+      const graph = behaviors[entityId];
+      if (!graph)
+        throw new Error(`No BehaviorGraph found for entityId: ${entityId}`);
+
+      const existing = findState(graph, stateId);
+      if (!existing) {
+        throw new Error(`BehaviorState does not exist: ${stateId}`);
+      }
+
+      const nextStates = (graph.states || []).map((s) =>
+        s.id === stateId ? applyStatePatch(s, patch) : s
+      );
+
+      const nextGraph = {
+        ...graph,
+        states: nextStates,
+      };
+
+      validateBehaviorGraph(nextGraph);
+
+      return {
+        ...world,
+        behaviors: {
+          ...behaviors,
+          [entityId]: nextGraph,
+        },
+      };
+    }
+
+    case EventTypes.BEHAVIOR_STATE_DELETE: {
+      const { entityId, stateId } = event.payload ?? {};
+      if (!entityId) throw new Error('BEHAVIOR_STATE_DELETE requires entityId');
+      if (!stateId) throw new Error('BEHAVIOR_STATE_DELETE requires stateId');
+
+      const behaviors = world.behaviors || {};
+      const graph = behaviors[entityId];
+      if (!graph)
+        throw new Error(`No BehaviorGraph found for entityId: ${entityId}`);
+
+      if (stateId === graph.baseStateId) {
+        throw new Error('Cannot delete baseStateId');
+      }
+      if (!findState(graph, stateId)) {
+        throw new Error(`BehaviorState does not exist: ${stateId}`);
+      }
+
+      const nextStates = (graph.states || []).filter((s) => s.id !== stateId);
+      const nextTransitions = (graph.transitions || []).filter(
+        (t) => t.fromStateId !== stateId && t.toStateId !== stateId
+      );
+      const nextTriggers = (graph.triggers || []).filter(
+        (t) => t.fromStateId !== stateId && t.toStateId !== stateId
+      );
+
+      const nextGraph = {
+        ...graph,
+        states: nextStates,
+        transitions: nextTransitions,
+        triggers: nextTriggers,
+      };
+
+      validateBehaviorGraph(nextGraph);
+
+      const behaviorRuntime = world.behaviorRuntime || {};
+      const runtime = behaviorRuntime[entityId] || {};
+      const shouldResetRuntime = runtime.currentStateId === stateId;
+
+      return {
+        ...world,
+        behaviors: {
+          ...behaviors,
+          [entityId]: nextGraph,
+        },
+        behaviorRuntime: shouldResetRuntime
+          ? {
+              ...behaviorRuntime,
+              [entityId]: {
+                ...runtime,
+                currentStateId: graph.baseStateId,
+              },
+            }
+          : behaviorRuntime,
+      };
+    }
+
     case EventTypes.BEHAVIOR_STATE_COMMIT: {
       const { entityId, targetStateId } = event.payload ?? {};
       if (!entityId) throw new Error('BEHAVIOR_STATE_COMMIT requires entityId');
