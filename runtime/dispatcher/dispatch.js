@@ -42,6 +42,8 @@ import { requestUXConfirmation } from './ux/uxConfirmBus.js';
 import { shouldConfirmUXAction, defaultUXEnforcementTier } from './ux/shouldConfirmUXAction.js';
 import { withMutationOrigin } from '@/core/mutationContext.js';
 import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
+import { checkWorkspacePolicy } from '@/core/contracts/capabilityGate.js';
+import { INTENT_CAPS } from '@/core/contracts/intentCapabilities.v1.js';
 import {
     getActiveWorkspace,
     setActiveWorkspace,
@@ -226,6 +228,35 @@ export function createEventDispatcher({
                     if (!resolved) return runtimeState;
 
                     return await dispatch(resolved);
+                }
+
+                const workspaceId = getActiveWorkspace();
+                const policy = resolveWorkspacePolicy(workspaceId);
+                const requiredCaps = INTENT_CAPS[event.type] ?? [];
+                const mutationType =
+                    event.type === EventTypes.SELECTION_SET ||
+                    event.type === EventTypes.WORKSPACE_SET_ACTIVE ||
+                    event.type === EventTypes.WORKSPACE_SET_VIEWPORT ||
+                    event.type === EventTypes.WORKSPACE_SET_CANVAS_SURFACE
+                        ? 'select'
+                        : event.type.startsWith('EXPORT')
+                        ? 'export'
+                        : event.type.includes('KEYFRAME') || event.type.includes('TIMELINE')
+                        ? 'timelineEdit'
+                        : event.type.includes('CREATE')
+                        ? 'create'
+                        : event.type.includes('DELETE')
+                        ? 'delete'
+                        : 'mutate';
+
+                const verdict = checkWorkspacePolicy({
+                    workspace: policy,
+                    requiredCaps,
+                    mutationType,
+                });
+
+                if (!verdict.ok) {
+                    return __getRuntimeStateInternal();
                 }
 
                 if (event?.type === EventTypes.WORKSPACE_SET_ACTIVE) {

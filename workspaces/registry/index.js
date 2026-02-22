@@ -13,21 +13,22 @@ import { documentWorkspace } from './documentWorkspace';
 import { conversionWorkspace } from './conversionWorkspace';
 import { translateWorkspace } from './translateWorkspace';
 import { reviewWorkspace } from './reviewWorkspace';
+import { adaptWorkspaceToContractV1 } from '@/core/contracts/adaptWorkspaceToContractV1.js';
 
 export const WorkspaceRegistry = {
-    graphic: graphicWorkspace,
-    uiux: uiuxWorkspace,
-    animation: animationWorkspace,
-    video: videoWorkspace,
-    podcast: podcastWorkspace,
-    material: materialWorkspace,
-    icons: iconWorkspace,
-    dev: devWorkspace,
-    education: educationWorkspace,
-    ai: aiWorkspace,
-    branding: brandingWorkspace,
-    document: documentWorkspace,
-    translate: translateWorkspace,
-    conversion: conversionWorkspace,
-    review: reviewWorkspace,
+    graphic: adaptWorkspaceToContractV1(graphicWorkspace),
+    uiux: adaptWorkspaceToContractV1(uiuxWorkspace),
+    animation: adaptWorkspaceToContractV1(animationWorkspace),
+    video: adaptWorkspaceToContractV1(videoWorkspace),
+    podcast: adaptWorkspaceToContractV1(podcastWorkspace),
+    material: adaptWorkspaceToContractV1(materialWorkspace),
+    icons: adaptWorkspaceToContractV1(iconWorkspace),
+    dev: adaptWorkspaceToContractV1(devWorkspace),
+    education: adaptWorkspaceToContractV1(educationWorkspace),
+    ai: adaptWorkspaceToContractV1(aiWorkspace),
+    branding: adaptWorkspaceToContractV1(brandingWorkspace),
+    document: adaptWorkspaceToContractV1(documentWorkspace),
+    translate: adaptWorkspaceToContractV1(translateWorkspace),
+    conversion: adaptWorkspaceToContractV1(conversionWorkspace),
+    review: adaptWorkspaceToContractV1(reviewWorkspace),
 };
