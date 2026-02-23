@@ -20,7 +20,7 @@ function defaultBezier() {
   };
 }
 
-function TrackRow({ track, clipDurationMs, keyframes, currentTime, isSelected }) {
+function TrackRow({ track, clipDurationMs, keyframes, currentTime, isSelected, readOnly = false }) {
   const dispatcher = useDispatcher();
   const safeDuration = clipDurationMs > 0 ? clipDurationMs : 1;
   const highlightWindowMs = 40;
@@ -94,10 +94,12 @@ function TrackRow({ track, clipDurationMs, keyframes, currentTime, isSelected })
             <select
               value={row.easingLabel}
               onChange={(e) => {
+                if (readOnly) return;
                 const next = e.target.value;
                 const easing = next === 'bezier' ? defaultBezier() : next;
                 commitCurveChange({ keyframeId: row.id, easing, dispatch: dispatcher.dispatch });
               }}
+              disabled={readOnly}
               style={{
                 fontSize: 11,
                 padding: '2px 6px',
@@ -119,7 +121,7 @@ function TrackRow({ track, clipDurationMs, keyframes, currentTime, isSelected })
   );
 }
 
-export default function TimelineTrackList({ animations, currentTime, selectedNodeId }) {
+export default function TimelineTrackList({ animations, currentTime, selectedNodeId, readOnly = false }) {
   if (!animations?.tracks || !animations?.clips || !animations?.keyframes) {
     return null;
   }
@@ -154,6 +156,7 @@ export default function TimelineTrackList({ animations, currentTime, selectedNod
           keyframes={row.keyframes}
           currentTime={currentTime}
           isSelected={row.track.nodeId === selectedNodeId}
+          readOnly={readOnly}
         />
       ))}
     </div>

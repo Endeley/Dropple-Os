@@ -18,11 +18,18 @@ export function syncRuntimeToZustand(nextState) {
         return;
     }
 
-    useRuntimeStore.setState(
-        {
-            nodes: nextState.nodes,
-            rootIds: nextState.rootIds,
-        },
-        false
-    );
+    const prev = useRuntimeStore.getState();
+    const nextProjection = {
+        nodes: nextState.nodes,
+        rootIds: nextState.rootIds,
+    };
+
+    if (prev.sceneGraph !== nextState.sceneGraph) {
+        nextProjection.sceneGraph = nextState.sceneGraph ?? null;
+    }
+    if (prev.scene !== nextState.scene) {
+        nextProjection.scene = nextState.scene ?? null;
+    }
+
+    useRuntimeStore.setState(nextProjection, false);
 }

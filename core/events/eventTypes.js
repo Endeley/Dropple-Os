@@ -91,4 +91,9 @@ export const EventTypes = Object.freeze({
     WORKSPACE_SET_ACTIVE: 'workspace/set-active',
     WORKSPACE_SET_VIEWPORT: 'workspace/viewport/set',
     WORKSPACE_SET_CANVAS_SURFACE: 'workspace/canvas-surface/set',
+
+    // ─────────────────────────────
+    // Scene (runtime projection state)
+    // ─────────────────────────────
+    SHOT_SET_ACTIVE: 'scene/shot/set-active',
 });

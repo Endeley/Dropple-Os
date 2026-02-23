@@ -1,19 +1,25 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { selectIsReplaying } from '@/runtime/projection';
+import { selectIsReplaying, useWorkspaceProjection } from '@/runtime/projection';
 import { runAnimationPreview } from '@/runtime/animation/runAnimationPreview.js';
 import { cancelAnimationPreview } from '@/runtime/animation/cancelAnimationPreview.js';
 import TimelineScrubber from './TimelineScrubber.jsx';
 import TimelinePlayhead from './TimelinePlayhead.jsx';
 import TimelineTrackList from './TimelineTrackList.jsx';
 import TimelineTimeScale from './TimelineTimeScale.jsx';
+import ShotTimelineBar from './ShotTimelineBar.jsx';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext.jsx';
 import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
 import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
 import { collectKeyframeTimes, getPrevKeyframeTime } from '@/runtime/timeline/keyframeTimeUtils.js';
+import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 
 export default function TimelinePanel({ designState }) {
+  const workspaceId = useWorkspaceProjection((s) => s.id);
+  const isAnimationWorkspace = workspaceId === 'animation';
+  const sceneGraph = useRuntimeStore((s) => s.sceneGraph);
+  const runtimeScene = useRuntimeStore((s) => s.scene);
   const [currentTime, setCurrentTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLooping, setIsLooping] = useState(true);
@@ -43,7 +49,17 @@ export default function TimelinePanel({ designState }) {
   const canSetKeyframe = Boolean(selectedId && Number.isFinite(selectedX));
 
   const isReplaying = selectIsReplaying();
-  const animations = designState?.timeline?.animations;
+  const shotTimeline = useMemo(() => {
+    if (!isAnimationWorkspace) return null;
+    if (!sceneGraph || !runtimeScene) return null;
+    const activeScene = sceneGraph.scenes?.find((scene) => scene.id === runtimeScene.activeSceneId);
+    const activeShot = activeScene?.shots?.find((shot) => shot.id === runtimeScene.activeShotId);
+    return activeShot?.timeline ?? null;
+  }, [isAnimationWorkspace, sceneGraph, runtimeScene]);
+
+  const animations = isAnimationWorkspace
+    ? shotTimeline
+    : designState?.timeline?.animations;
   const durationMs = animations?.clips
     ? Object.values(animations.clips).reduce(
         (max, clip) => Math.max(max, clip?.durationMs || 0),
@@ -118,6 +134,7 @@ export default function TimelinePanel({ designState }) {
 
     const preview = runAnimationPreview({
       designState,
+      timeline: animations,
       timeMs: previewTime,
     });
 
@@ -220,11 +237,12 @@ export default function TimelinePanel({ designState }) {
       const effectiveTime = inMs + localTime;
       setCurrentTime(effectiveTime);
 
-      const preview = runAnimationPreview({
-        designState,
-        durationMs: 0,
-        onComplete: null,
-      });
+    const preview = runAnimationPreview({
+      designState,
+      timeline: animations,
+      durationMs: 0,
+      onComplete: null,
+    });
 
       playbackRef.current.cancelPreview = preview?.cancel || null;
       playbackRef.current.rafId = requestAnimationFrame(tick);
@@ -294,6 +312,7 @@ export default function TimelinePanel({ designState }) {
   }, [previewInterpolation]);
 
   function handleSetKeyframe() {
+    if (isAnimationWorkspace) return;
     if (!canSetKeyframe) return;
 
     canvasBus.emit('intent.animation.keyframe.create', {
@@ -313,6 +332,7 @@ export default function TimelinePanel({ designState }) {
         padding: 8,
       }}
     >
+      {isAnimationWorkspace && <ShotTimelineBar />}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8, flexWrap: 'wrap' }}>
         <button
           type="button"
@@ -507,6 +527,7 @@ export default function TimelinePanel({ designState }) {
           animations={animations}
           currentTime={currentTime}
           selectedNodeId={selectedId}
+          readOnly={isAnimationWorkspace}
         />
       </div>
       <TimelineScrubber

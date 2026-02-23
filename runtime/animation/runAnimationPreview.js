@@ -1,6 +1,7 @@
 import { evaluateTimeline } from '@/timeline/evaluateTimeline';
 import { useAnimatedRuntimeStore } from '../stores/useAnimatedRuntimeStore.js';
 import { getRuntimeState } from '../state/runtimeState.js';
+import { getCameraTransformAtTime } from '@/core/scene/cameraPlayback.v1';
 
 export function runAnimationPreview({
     fromState,
@@ -38,10 +39,16 @@ export function runAnimationPreview({
         });
         const projectedNodes = projectedState?.nodes || {};
 
+        const cameraTrack = getRuntimeState()?.scene?.camera ?? null;
+        const cameraTransform = cameraTrack
+            ? getCameraTransformAtTime(cameraTrack, clamped)
+            : null;
+
         useAnimatedRuntimeStore.setState(
             {
                 nodes: projectedNodes,
                 rootIds: fromState?.rootIds || [],
+                cameraTransform,
             },
             false
         );
@@ -62,6 +69,7 @@ export function runAnimationPreview({
             rafId = null;
         }
         cancelled = true;
+        useAnimatedRuntimeStore.setState({ cameraTransform: null }, false);
     }
 
     rafId = requestAnimationFrame(tick);

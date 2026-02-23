@@ -139,6 +139,26 @@ No casual modifications allowed.
 
 ---
 
+## 10. SceneGraph Invariants (v1)
+
+SceneGraph is canonical narrative structure.
+
+Rules:
+
+- Shots may not overlap inside a Scene (v1 constraint).
+- Scene duration must be >= last shot end.
+- Camera keyframes must be within shot duration.
+- compositionId must exist in project.compositions.
+- Scene order defines render order.
+- activeShotId must belong to activeSceneId.
+- activeShotId must not be null if the active scene has shots.
+- Scene without shots may set activeShotId to null.
+- If activeSceneId changes, activeShotId must be updated accordingly.
+
+No runtime enforcement yet.
+
+---
+
 Dropple has:
 
 One truth.

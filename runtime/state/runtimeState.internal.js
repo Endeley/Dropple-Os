@@ -6,6 +6,12 @@ export const initialRuntimeState = {
   timeline: null,
   activeStateId: null,
   activeComponentId: null,
+  // 🔹 Narrative slice (runtime only)
+  scene: {
+    activeSceneId: null,
+    activeShotId: null,
+    camera: null,
+  },
   __isReplaying: false,
 };
 

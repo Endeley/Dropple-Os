@@ -36,6 +36,13 @@ export function setActiveWorkspace(id, workspaceDef = null) {
     } else {
         workspaceState.id = id;
     }
+    if (process.env.NODE_ENV === 'development') {
+        console.log('[setActiveWorkspace]', {
+            activeWorkspaceId,
+            workspaceDef: workspaceDef?.id,
+            canvasSurface: workspaceState.canvasSurface,
+        });
+    }
     notify();
 }
 

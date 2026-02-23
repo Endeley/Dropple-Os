@@ -9,4 +9,6 @@ import { create } from 'zustand';
 export const useRuntimeStore = create(() => ({
     nodes: {},
     rootIds: [],
+    sceneGraph: null,
+    scene: null,
 }));

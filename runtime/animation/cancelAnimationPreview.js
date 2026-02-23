@@ -12,6 +12,7 @@ export function cancelAnimationPreview() {
     {
       nodes: {},
       rootIds: [],
+      cameraTransform: null,
     },
     false
   );

@@ -32,6 +32,7 @@ export const uiuxWorkspace = {
         'NodeHeaderPanel',
         'SemanticsPanel',
         'ExportPreviewPanel',
+        'CanvasSurfacePanel',
     ],
     activeDomains: ['canvas', 'state', 'motion'],
     enabledTriggerTypes: new Set([

@@ -12,6 +12,9 @@ export function ModeLoader({ mode }) {
   const workspace = WorkspaceRegistry[key];
 
   useEffect(() => {
+    if (process.env.NODE_ENV === "development") {
+      console.log("[ModeLoader] mode:", mode, "key:", key, "workspace:", workspace?.id);
+    }
     if (!workspace?.id) return;
     dispatcher.dispatch({
       type: EventTypes.WORKSPACE_SET_ACTIVE,

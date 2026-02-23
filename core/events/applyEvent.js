@@ -6,6 +6,11 @@ import { createTimeline } from "@/timeline/schema/timeline.js";
 const initialState = Object.freeze({
     nodes: Object.freeze({}),
     rootIds: Object.freeze([]),
+    scene: Object.freeze({
+        activeSceneId: null,
+        activeShotId: null,
+        camera: null,
+    }),
     // ✅ Always includes default timeline so animation reducers never no-op on replay
     timeline: Object.freeze({
         timelines: Object.freeze({

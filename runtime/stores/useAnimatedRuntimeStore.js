@@ -9,4 +9,5 @@ import { create } from 'zustand';
 export const useAnimatedRuntimeStore = create(() => ({
     nodes: {},
     rootIds: [],
+    cameraTransform: null,
 }));

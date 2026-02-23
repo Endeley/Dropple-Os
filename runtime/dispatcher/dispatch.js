@@ -51,6 +51,15 @@ import {
     setViewport,
 } from '../state/workspaceState.js';
 
+// System-level projection events (never domain mutations)
+const SYSTEM_EVENTS = new Set([
+    EventTypes.WORKSPACE_SET_ACTIVE,
+    EventTypes.WORKSPACE_SET_VIEWPORT,
+    EventTypes.WORKSPACE_SET_CANVAS_SURFACE,
+    EventTypes.SELECTION_SET,
+    EventTypes.SHOT_SET_ACTIVE,
+]);
+
 function cloneState(state) {
     if (typeof structuredClone === 'function') {
         return structuredClone(state);
@@ -100,6 +109,7 @@ export function createEventDispatcher({
 
     const playbackController = createPlaybackController({
         animationController,
+        dispatchEvent: dispatch,
     });
 
     function commit(nextState, { animate = true } = {}) {
@@ -159,7 +169,11 @@ export function createEventDispatcher({
                 const workspaceId = getActiveWorkspace();
                 const policy = resolveWorkspacePolicy(workspaceId);
                 const allowed = policy?.allowedEventTypes;
-                if (allowed && !allowed.has(rawEvent?.type)) {
+                if (
+                    allowed &&
+                    !allowed.has(rawEvent?.type) &&
+                    !SYSTEM_EVENTS.has(rawEvent?.type)
+                ) {
                     console.warn('[Skeleton v2] Intent not allowed in current mode', {
                         intent: rawEvent?.type,
                         mode: policy?.id ?? workspaceId,
@@ -249,17 +263,25 @@ export function createEventDispatcher({
                         ? 'delete'
                         : 'mutate';
 
-                const verdict = checkWorkspacePolicy({
-                    workspace: policy,
-                    requiredCaps,
-                    mutationType,
-                });
+                if (!SYSTEM_EVENTS.has(event.type)) {
+                    const verdict = checkWorkspacePolicy({
+                        workspace: policy,
+                        requiredCaps,
+                        mutationType,
+                    });
 
-                if (!verdict.ok) {
-                    return __getRuntimeStateInternal();
+                    if (!verdict.ok) {
+                        return __getRuntimeStateInternal();
+                    }
                 }
 
                 if (event?.type === EventTypes.WORKSPACE_SET_ACTIVE) {
+                    if (process.env.NODE_ENV === 'development') {
+                        console.log('[WORKSPACE_SET_ACTIVE]', {
+                            id: event?.payload?.id,
+                            workspaceDef: event?.payload?.workspaceDef?.id,
+                        });
+                    }
                     setActiveWorkspace(event?.payload?.id, event?.payload?.workspaceDef ?? null);
                     return __getRuntimeStateInternal();
                 }
@@ -271,6 +293,48 @@ export function createEventDispatcher({
 
                 if (event?.type === EventTypes.WORKSPACE_SET_CANVAS_SURFACE) {
                     setCanvasSurface(event?.payload?.surface);
+                    return __getRuntimeStateInternal();
+                }
+
+                if (event?.type === EventTypes.SHOT_SET_ACTIVE) {
+                    const shotId = event?.payload?.shotId ?? null;
+                    const current = __getRuntimeStateInternal();
+                    const runtimeScene = current?.scene ?? null;
+                    if (!runtimeScene || !shotId) {
+                        if (process.env.NODE_ENV === 'development') {
+                            console.warn('[SHOT_SET_ACTIVE] Invalid payload or missing scene', {
+                                shotId,
+                                hasScene: Boolean(runtimeScene),
+                            });
+                        }
+                        return current;
+                    }
+
+                    const sceneGraph = current?.sceneGraph;
+                    if (sceneGraph?.scenes?.length) {
+                        const activeSceneId = runtimeScene.activeSceneId;
+                        const activeScene = sceneGraph.scenes.find((scene) => scene.id === activeSceneId);
+                        const hasShot = activeScene?.shots?.some((shot) => shot.id === shotId);
+                        if (!hasShot) {
+                            if (process.env.NODE_ENV === 'development') {
+                                console.warn('[SHOT_SET_ACTIVE] Shot not found in active scene', {
+                                    shotId,
+                                    activeSceneId,
+                                });
+                            }
+                            return current;
+                        }
+                    }
+
+                    const nextState = {
+                        ...current,
+                        scene: {
+                            ...runtimeScene,
+                            activeShotId: shotId,
+                        },
+                    };
+                    __setRuntimeStateInternal(nextState, 'dispatcher');
+                    syncRuntimeToZustand(nextState);
                     return __getRuntimeStateInternal();
                 }
 

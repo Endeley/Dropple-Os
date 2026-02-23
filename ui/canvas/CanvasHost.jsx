@@ -16,6 +16,7 @@ const CanvasHost = forwardRef(function CanvasHost(
         children,
         viewport,
         worldOffset,
+        cameraTransform,
         onMount, // ✅ NEW
         onPointerDown,
         onPointerMove,
@@ -48,9 +49,14 @@ const CanvasHost = forwardRef(function CanvasHost(
         return () => target.removeEventListener('wheel', handleWheel);
     }, [onWheel]);
 
-    const tx = viewport ? -(viewport.x + (worldOffset?.x ?? 0)) : 0;
-    const ty = viewport ? -(viewport.y + (worldOffset?.y ?? 0)) : 0;
-    const scale = viewport?.scale ?? 1;
+    const cameraX = cameraTransform?.x ?? 0;
+    const cameraY = cameraTransform?.y ?? 0;
+    const cameraZoom = cameraTransform?.zoom ?? 1;
+    const cameraRotation = cameraTransform?.rotation ?? 0;
+
+    const tx = viewport ? -(viewport.x + (worldOffset?.x ?? 0) + cameraX) : 0;
+    const ty = viewport ? -(viewport.y + (worldOffset?.y ?? 0) + cameraY) : 0;
+    const scale = (viewport?.scale ?? 1) * cameraZoom;
 
     return (
         <div
@@ -87,7 +93,7 @@ const CanvasHost = forwardRef(function CanvasHost(
                 style={{
                     position: 'absolute',
                     inset: 0,
-                    transform: `translate(${tx}px, ${ty}px) scale(${scale})`,
+                    transform: `translate(${tx}px, ${ty}px) scale(${scale}) rotate(${cameraRotation}rad)`,
                     transformOrigin: '0 0',
                     willChange: 'transform',
                 }}>

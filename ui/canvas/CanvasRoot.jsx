@@ -29,6 +29,7 @@ import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/Dispatcher
 import { getZoomTier } from '@/ui/canvas/zoomTiers.js';
 import { CanvasProvider } from '@/ui/canvas/CanvasContext.jsx';
 import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
+import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
 
 /** precision safety */
 const MIN_EFFECTIVE_ZOOM = 0.0005;
@@ -46,6 +47,7 @@ export default function CanvasRoot({ workspaceId }) {
 
     const viewport = useWorkspaceProjection((s) => s.viewport);
     const canvasSurface = useWorkspaceProjection((s) => s.canvasSurface);
+    const cameraTransform = useAnimatedRuntimeStore((s) => s.cameraTransform);
     const canvasPolicy = workspace?.canvasPolicy;
 
     const containerRef = useRef(null);
@@ -260,7 +262,17 @@ export default function CanvasRoot({ workspaceId }) {
 
     return (
         <CanvasProvider value={{ zoomTier }}>
-            <CanvasHost ref={containerRef} onMount={handleCanvasMount} viewport={viewport} worldOffset={worldOffset} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onWheel={handleWheel} onDoubleClick={handleDoubleClick}>
+            <CanvasHost
+                ref={containerRef}
+                onMount={handleCanvasMount}
+                viewport={viewport}
+                worldOffset={worldOffset}
+                cameraTransform={cameraTransform}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onWheel={handleWheel}
+                onDoubleClick={handleDoubleClick}>
                 {/* 🌍 WORLD */}
                 <div style={{ position: 'absolute', inset: 0 }}>
                     <CanvasSurface surface={canvasSurface} viewport={viewport} emphasisMode={isNodeDragging ? 'drag' : isPanning ? 'pan' : 'none'} />
