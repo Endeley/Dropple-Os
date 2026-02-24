@@ -1,4 +1,4 @@
-import { validateUX } from '../ui/canvas/validation/validateUX.js';
+import { validateUX } from '../../ui/canvas/validation/validateUX.js';
 import { evaluateExportGate } from './exportGate.js';
 import { getZoomTier } from '../ui/canvas/zoomTiers.js';
 
