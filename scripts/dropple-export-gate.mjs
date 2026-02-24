@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import {
     runExportGateHeadless,
     exitCodeForStatus,
-} from '../export/exportGateHeadless.js';
+} from '../runtime/export/exportGateHeadless.js';
 
 const args = parseArgs(process.argv.slice(2));
 
