@@ -1,11 +1,39 @@
-import { evaluateScene } from '../scene/evaluateScene.js';
+import { evaluateShotAt } from './evaluateShotAt.js';
 import { hashEvaluatedScene } from './hashFrame.js';
 
 export function evaluateFrameHeadless(
     timeMs,
-    { previousEvaluatedScene = null, cache = null, reason = 'headless' } = {}
+    {
+        sceneGraph,
+        shotTimeline,
+        activeShotId,
+        cameraTransform,
+        previousEvaluatedScene = null,
+        cache = null,
+        reason = 'headless',
+    } = {}
 ) {
-    const evaluatedScene = evaluateScene(timeMs);
+    let evaluatedScene = {
+        __evaluatedSchemaVersion: 1,
+        children: [],
+    };
+    let shotId = null;
+    let shotTimeMs = null;
+    let evalStatus = 'NO_SHOT';
+
+    if (sceneGraph && shotTimeline) {
+        const shotResult = evaluateShotAt(shotTimeline, sceneGraph, timeMs, {
+            shotId: activeShotId ?? null,
+            cameraTransform,
+        });
+
+        if (shotResult.ok) {
+            evaluatedScene = shotResult.evaluatedScene;
+            shotId = shotResult.shotId;
+            shotTimeMs = shotResult.shotTimeMs;
+            evalStatus = 'OK';
+        }
+    }
 
     let frameHash = null;
     if (process.env.NODE_ENV !== 'production') {
@@ -16,6 +44,9 @@ export function evaluateFrameHeadless(
         frameTime: timeMs,
         evaluatedScene,
         frameHash,
+        shotId,
+        shotTimeMs,
+        evalStatus,
         reason,
     };
 }

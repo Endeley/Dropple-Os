@@ -9,6 +9,7 @@ import TimelinePlayhead from './TimelinePlayhead.jsx';
 import TimelineTrackList from './TimelineTrackList.jsx';
 import TimelineTimeScale from './TimelineTimeScale.jsx';
 import ShotTimelineBar from './ShotTimelineBar.jsx';
+import { ShotHUD } from './ShotHUD.jsx';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext.jsx';
 import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
 import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
@@ -305,6 +306,9 @@ export default function TimelinePanel({ designState }) {
       }}
     >
       {isAnimationWorkspace && <ShotTimelineBar />}
+      <div style={{ marginBottom: 8 }}>
+        <ShotHUD />
+      </div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8, flexWrap: 'wrap' }}>
         <button
           type="button"

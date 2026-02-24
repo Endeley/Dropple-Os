@@ -13,4 +13,7 @@ export const useRuntimeStore = create(() => ({
     scene: null,
     frameTime: 0,
     evaluatedScene: null,
+    shotId: null,
+    shotTimeMs: null,
+    evalStatus: 'NO_SHOT',
 }));

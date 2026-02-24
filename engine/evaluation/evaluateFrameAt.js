@@ -1,5 +1,5 @@
 import { useRuntimeStore } from '../../runtime/stores/useRuntimeStore.js';
-import { evaluateScene } from '../scene/evaluateScene.js';
+import { evaluateShotAt } from './evaluateShotAt.js';
 import { hashEvaluatedScene } from './hashFrame.js';
 
 const nodeHashCache = new Map();
@@ -9,9 +9,38 @@ const nodeHashCache = new Map();
  */
 export function evaluateFrameAt(
     timeMs,
-    { reason, previousEvaluatedScene, cache = null, commit = true } = {}
+    {
+        reason,
+        sceneGraph,
+        shotTimeline,
+        activeShotId,
+        cameraTransform,
+        previousEvaluatedScene,
+        cache = null,
+        commit = true,
+    } = {}
 ) {
-    const evaluatedScene = evaluateScene(timeMs);
+    let evaluatedScene = {
+        __evaluatedSchemaVersion: 1,
+        children: [],
+    };
+    let shotId = null;
+    let shotTimeMs = null;
+    let evalStatus = 'NO_SHOT';
+
+    if (sceneGraph && shotTimeline) {
+        const shotResult = evaluateShotAt(shotTimeline, sceneGraph, timeMs, {
+            shotId: activeShotId ?? null,
+            cameraTransform,
+        });
+
+        if (shotResult.ok) {
+            evaluatedScene = shotResult.evaluatedScene;
+            shotId = shotResult.shotId;
+            shotTimeMs = shotResult.shotTimeMs;
+            evalStatus = 'OK';
+        }
+    }
     let frameHash = null;
 
     if (process.env.NODE_ENV !== 'production') {
@@ -28,6 +57,9 @@ export function evaluateFrameAt(
                 frameTime: timeMs,
                 evaluatedScene,
                 frameHash,
+                shotId,
+                shotTimeMs,
+                evalStatus,
             },
             false
         );
@@ -36,6 +68,10 @@ export function evaluateFrameAt(
     return {
         frameTime: timeMs,
         frameHash,
+        shotId,
+        shotTimeMs,
+        evalStatus,
+        evaluatedScene,
         reason: reason ?? 'unknown',
     };
 }

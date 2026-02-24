@@ -13,6 +13,13 @@
         "lint:export": "node scripts/dropple-export-gate.mjs --world ./fixtures/worlds/allow.json --width 1440 --height 900",
         "lint:export:json": "node scripts/dropple-export-gate.mjs --world ./fixtures/worlds/allow.json --width 1440 --height 900 --json",
         "create:workspace": "node scripts/createWorkspace.js",
+        "engine:test": "node engine/evaluation/evaluateScene.fixture.test.mjs",
+        "engine:shot:test": "node engine/evaluation/evaluateShotAt.fixture.test.mjs",
+        "engine:track:test": "node engine/__tests__/trackContract.test.mjs",
+        "engine:timeline:test": "node engine/__tests__/timelineContract.test.mjs",
+        "engine:dispatcher:test": "node engine/__tests__/trackDispatcher.test.mjs",
+        "engine:projection:test": "node engine/__tests__/timelineProjection.test.mjs",
+        "runtime:map:test": "node runtime/animation/buildEvaluationInputs.fixture.test.mjs",
         "determinism": "NODE_ENV=test node scripts/determinismGate.mjs",
         "ci:determinism": "npm run determinism"
     },

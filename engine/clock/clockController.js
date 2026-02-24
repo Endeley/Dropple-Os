@@ -1,5 +1,7 @@
 import { clock } from './clock.js';
 import { evaluateFrameAt } from '@/engine/evaluation/evaluateFrameAt.js';
+import { getRuntimeState } from '@/runtime/state/runtimeState.js';
+import { buildEvaluationInputs } from '@/runtime/animation/buildEvaluationInputs.js';
 
 let rafId = null;
 
@@ -17,7 +19,17 @@ function tick(now) {
     clock.time = Math.max(0, clock.time + delta);
     clock.lastTick = now;
 
-    evaluateFrameAt(clock.time, { reason: 'clock-tick' });
+    const runtime = getRuntimeState();
+    const { sceneGraphTree, shotTimeline, activeShotId, cameraTransform } =
+        buildEvaluationInputs(runtime);
+
+    evaluateFrameAt(clock.time, {
+        reason: 'clock-tick',
+        sceneGraph: sceneGraphTree,
+        shotTimeline,
+        activeShotId,
+        cameraTransform,
+    });
 
     rafId = requestAnimationFrame(tick);
 }
@@ -43,5 +55,15 @@ export function seek(time) {
     clock.time = next;
     clock.delta = 0;
     clock.lastTick = null;
-    evaluateFrameAt(clock.time, { reason: 'seek' });
+    const runtime = getRuntimeState();
+    const { sceneGraphTree, shotTimeline, activeShotId, cameraTransform } =
+        buildEvaluationInputs(runtime);
+
+    evaluateFrameAt(clock.time, {
+        reason: 'seek',
+        sceneGraph: sceneGraphTree,
+        shotTimeline,
+        activeShotId,
+        cameraTransform,
+    });
 }
