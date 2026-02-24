@@ -96,4 +96,11 @@ export const EventTypes = Object.freeze({
     // Scene (runtime projection state)
     // ─────────────────────────────
     SHOT_SET_ACTIVE: 'scene/shot/set-active',
+
+    // ─────────────────────────────
+    // Clock (system time authority)
+    // ─────────────────────────────
+    CLOCK_SEEK: 'clock/seek',
+    CLOCK_PLAY: 'clock/play',
+    CLOCK_PAUSE: 'clock/pause',
 });

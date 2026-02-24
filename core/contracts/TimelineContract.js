@@ -11,11 +11,6 @@ export const TimelineContract = {
     duration: 0,
 
     /**
-     * Current playhead position (ms)
-     */
-    currentTime: 0,
-
-    /**
      * Timeline tracks
      * Each track describes how state changes over time
      */

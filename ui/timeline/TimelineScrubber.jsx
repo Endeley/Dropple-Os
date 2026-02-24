@@ -4,12 +4,11 @@ import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
 
 export default function TimelineScrubber({
   duration,
-  currentTime,
+  frameTime,
   onScrub,
   onScrubStart,
   onScrubEnd,
 }) {
-  const setTime = useTimelineStore((s) => s.setTime);
   const startScrub = useTimelineStore((s) => s.startScrub);
   const endScrub = useTimelineStore((s) => s.endScrub);
 
@@ -25,7 +24,6 @@ export default function TimelineScrubber({
 
   function handleScrubChange(e) {
     const next = Number(e.target.value);
-    setTime?.(next);
     onScrub?.(next);
   }
 
@@ -41,14 +39,14 @@ export default function TimelineScrubber({
         type="range"
         min={0}
         max={duration}
-        value={currentTime}
+        value={frameTime}
         onMouseDown={handleScrubStart}
         onMouseUp={handleScrubEnd}
         onChange={handleScrubChange}
         style={{ width: '100%' }}
       />
       <div style={{ fontSize: 12, marginTop: 4 }}>
-        Time: {currentTime} ms / {duration} ms
+        Time: {frameTime} ms / {duration} ms
       </div>
     </div>
   );

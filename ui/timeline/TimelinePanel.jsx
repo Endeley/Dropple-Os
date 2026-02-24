@@ -12,29 +12,27 @@ import ShotTimelineBar from './ShotTimelineBar.jsx';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext.jsx';
 import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
 import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
-import { collectKeyframeTimes, getPrevKeyframeTime } from '@/runtime/timeline/keyframeTimeUtils.js';
+import { collectKeyframeTimes, getNearestKeyframeTime, getNextKeyframeTime, getPrevKeyframeTime } from '@/runtime/timeline/keyframeTimeUtils.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
+import { EventTypes } from '@/core/events/eventTypes.js';
 
 export default function TimelinePanel({ designState }) {
   const workspaceId = useWorkspaceProjection((s) => s.id);
   const isAnimationWorkspace = workspaceId === 'animation';
   const sceneGraph = useRuntimeStore((s) => s.sceneGraph);
   const runtimeScene = useRuntimeStore((s) => s.scene);
-  const [currentTime, setCurrentTime] = useState(0);
+  const frameTime = useRuntimeStore((s) => s.frameTime) ?? 0;
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLooping, setIsLooping] = useState(true);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [rangeInMs, setRangeInMs] = useState(0);
   const [rangeOutMs, setRangeOutMs] = useState(0);
   const cancelRef = useRef(null);
-  const playbackRef = useRef({ rafId: null, cancelPreview: null, running: false });
+  const dispatcher = useDispatcher();
   const { selectedIds } = useSelection() || {};
   const snapToKeyframes = useTimelineStore((s) => s.snapToKeyframes);
   const previewInterpolation = useTimelineStore((s) => s.previewInterpolation);
-  const stepForwardFrame = useTimelineStore((s) => s.stepForwardFrame);
-  const stepBackwardFrame = useTimelineStore((s) => s.stepBackwardFrame);
-  const stepNextKeyframe = useTimelineStore((s) => s.stepNextKeyframe);
-  const stepPreviousKeyframe = useTimelineStore((s) => s.stepPreviousKeyframe);
   const setSnapToKeyframes = useTimelineStore((s) => s.setSnapToKeyframes);
   const setPreviewInterpolation = useTimelineStore((s) => s.setPreviewInterpolation);
   const setDuration = useTimelineStore((s) => s.setDuration);
@@ -94,7 +92,7 @@ export default function TimelinePanel({ designState }) {
         cancelRef.current();
         cancelRef.current = null;
       }
-      stopPlayback();
+      pausePlayback();
       cancelAnimationPreview();
     };
   }, []);
@@ -104,7 +102,7 @@ export default function TimelinePanel({ designState }) {
       cancelRef.current();
       cancelRef.current = null;
     }
-    stopPlayback();
+    pausePlayback();
   }, [designState]);
 
   if (isReplaying) return null;
@@ -118,18 +116,50 @@ export default function TimelinePanel({ designState }) {
     return timeMs;
   }
 
+  function clampToRange(value, min, max) {
+    return Math.max(min, Math.min(value, max));
+  }
+
+  function resolveSnappedTime(timeMs, { forceSnap = false } = {}) {
+    const store = useTimelineStore.getState();
+    const duration = Number.isFinite(store.duration) ? store.duration : 0;
+    const frameMs = 1000 / (store.fps || 24);
+    let next = Math.max(0, timeMs);
+
+    if (duration > 0) {
+      next = Math.min(next, duration);
+    }
+
+    if (store.snapToKeyframes && (store.isScrubbing || forceSnap)) {
+      const threshold = frameMs / 2;
+      const snapped = getNearestKeyframeTime(store.keyframeTimes, next, threshold);
+      if (Number.isFinite(snapped)) {
+        next = snapped;
+      }
+    }
+
+    return next;
+  }
+
+  function seekTime(timeMs, options = {}) {
+    const next = resolveSnappedTime(timeMs, options);
+    dispatcher.dispatch({
+      type: EventTypes.CLOCK_SEEK,
+      payload: { time: next },
+    });
+    return next;
+  }
+
   function handleScrub(timeMs) {
     if (isPlaying) {
-      stopPlayback();
+      pausePlayback();
     }
     if (cancelRef.current) {
       cancelRef.current();
       cancelRef.current = null;
     }
 
-    const store = useTimelineStore.getState();
-    store.setTime(timeMs, { forceSnap: true });
-    const snappedTime = store.currentTime;
+    const snappedTime = seekTime(timeMs, { forceSnap: true });
     const previewTime = resolvePreviewTime(snappedTime);
 
     const preview = runAnimationPreview({
@@ -139,11 +169,6 @@ export default function TimelinePanel({ designState }) {
     });
 
     cancelRef.current = preview?.cancel || null;
-    setCurrentTime(snappedTime);
-  }
-
-  function clampToRange(value, min, max) {
-    return Math.max(min, Math.min(value, max));
   }
 
   function buildPlaybackAnimations(animationsSource, rangeIn, rangeOut, speed) {
@@ -189,66 +214,15 @@ export default function TimelinePanel({ designState }) {
     };
   }
 
-  function stopPlayback() {
-    playbackRef.current.running = false;
-
-    if (playbackRef.current.rafId) {
-      cancelAnimationFrame(playbackRef.current.rafId);
-      playbackRef.current.rafId = null;
-    }
-
-    if (playbackRef.current.cancelPreview) {
-      playbackRef.current.cancelPreview();
-      playbackRef.current.cancelPreview = null;
-    }
-
+  function pausePlayback() {
+    dispatcher.dispatch({ type: EventTypes.CLOCK_PAUSE });
     setIsPlaying(false);
     setIsPlayingFlag?.(false);
   }
 
   function startPlayback() {
     if (!animations?.clips) return;
-    if (runtimeState?.isReplaying) return;
-
-    stopPlayback();
-
-    const safeSpeed = Number.isFinite(playbackSpeed) && playbackSpeed > 0 ? playbackSpeed : 1;
-    const min = 0;
-    const max = durationMs;
-    const inMs = clampToRange(rangeInMs ?? 0, min, max);
-    const outMs = clampToRange(rangeOutMs ?? max, min, max);
-    if (!Number.isFinite(outMs) || outMs <= inMs) return;
-
-    const windowDuration = outMs - inMs;
-    const startTime = performance.now();
-    playbackRef.current.running = true;
-
-    function tick(now) {
-      if (!playbackRef.current.running) return;
-
-      const elapsed = (now - startTime) * safeSpeed;
-      let localTime = elapsed % windowDuration;
-
-      if (!isLooping && elapsed >= windowDuration) {
-        localTime = windowDuration;
-        stopPlayback();
-      }
-
-      const effectiveTime = inMs + localTime;
-      setCurrentTime(effectiveTime);
-
-    const preview = runAnimationPreview({
-      designState,
-      timeline: animations,
-      durationMs: 0,
-      onComplete: null,
-    });
-
-      playbackRef.current.cancelPreview = preview?.cancel || null;
-      playbackRef.current.rafId = requestAnimationFrame(tick);
-    }
-
-    playbackRef.current.rafId = requestAnimationFrame(tick);
+    dispatcher.dispatch({ type: EventTypes.CLOCK_PLAY });
     setIsPlaying(true);
     setIsPlayingFlag?.(true);
   }
@@ -261,23 +235,21 @@ export default function TimelinePanel({ designState }) {
   }
 
   function handleStepFrame(direction) {
-    if (direction > 0) {
-      stepForwardFrame?.();
-    } else {
-      stepBackwardFrame?.();
-    }
-    const nextTime = useTimelineStore.getState().currentTime;
+    const store = useTimelineStore.getState();
+    const frameMs = 1000 / (store.fps || 24);
+    const delta = direction > 0 ? frameMs : -frameMs;
+    const nextTime = frameTime + delta;
     handleScrub(nextTime);
   }
 
   function handleStepKeyframe(direction) {
-    if (direction > 0) {
-      stepNextKeyframe?.();
-    } else {
-      stepPreviousKeyframe?.();
+    const store = useTimelineStore.getState();
+    const next = direction > 0
+      ? getNextKeyframeTime(store.keyframeTimes, frameTime)
+      : getPrevKeyframeTime(store.keyframeTimes, frameTime);
+    if (Number.isFinite(next)) {
+      handleScrub(next);
     }
-    const nextTime = useTimelineStore.getState().currentTime;
-    handleScrub(nextTime);
   }
 
   useEffect(() => {
@@ -318,7 +290,7 @@ export default function TimelinePanel({ designState }) {
     canvasBus.emit('intent.animation.keyframe.create', {
       nodeId: selectedId,
       property: 'layout.x',
-      timeMs: currentTime,
+      timeMs: frameTime,
       value: selectedX,
       source: 'timeline.set-keyframe',
     });
@@ -382,7 +354,7 @@ export default function TimelinePanel({ designState }) {
         </button>
         <button
           type="button"
-          onClick={() => (isPlaying ? stopPlayback() : startPlayback())}
+          onClick={() => (isPlaying ? pausePlayback() : startPlayback())}
           style={{
             padding: '6px 10px',
             borderRadius: 6,
@@ -522,17 +494,17 @@ export default function TimelinePanel({ designState }) {
       </div>
       <TimelineTimeScale durationMs={durationMs} />
       <div style={{ position: 'relative', paddingBottom: 8 }}>
-        <TimelinePlayhead currentTime={currentTime} durationMs={durationMs} />
+        <TimelinePlayhead frameTime={frameTime} durationMs={durationMs} />
         <TimelineTrackList
           animations={animations}
-          currentTime={currentTime}
+          frameTime={frameTime}
           selectedNodeId={selectedId}
           readOnly={isAnimationWorkspace}
         />
       </div>
       <TimelineScrubber
         duration={durationMs}
-        currentTime={currentTime}
+        frameTime={frameTime}
         onScrub={handleScrub}
       />
     </div>

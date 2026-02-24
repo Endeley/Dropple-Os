@@ -1,20 +1,30 @@
-name: CI
+name: Dropple CI
 
 on:
   push:
+    branches: [ main ]
   pull_request:
+    branches: [ main ]
 
 jobs:
-  guards:
+  build-and-validate:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: CI Guards
-        run: |
-          scripts/ci/check-ux-phase-6-guardrails.sh
-          scripts/ci/check-ux-phase-5-guardrails.sh
-          scripts/ci/check-no-pre-dispatch-event-ids.sh
-          scripts/ci/check-single-message-bus.sh
-          scripts/ci/check-ccm-validator-sync.sh
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Architecture Gate
+        run: npm run arch
+
+      - name: Determinism Gate
+        run: npm run determinism

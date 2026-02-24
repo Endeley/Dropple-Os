@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useWorkspaceProjection } from '@/runtime/projection';
 import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
+import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useOnionSkinStore } from '@/ui/animation/useOnionSkinStore.js';
 import { evaluateGhostFrames } from '@/ui/animation/evaluateGhostFrames.js';
 
@@ -12,7 +13,7 @@ function safeNumber(value, fallback = 0) {
 
 export default function GhostFrameLayer({ designState }) {
     const viewport = useWorkspaceProjection((s) => s.viewport) || { x: 0, y: 0, scale: 1 };
-    const currentTime = useTimelineStore((s) => s.currentTime);
+    const frameTime = useRuntimeStore((s) => s.frameTime);
     const isScrubbing = useTimelineStore((s) => s.isScrubbing);
     const enabled = useOnionSkinStore((s) => s.enabled);
     const prevFrames = useOnionSkinStore((s) => s.prevFrames);
@@ -37,12 +38,12 @@ export default function GhostFrameLayer({ designState }) {
         if (!offsets.length) return [];
         return evaluateGhostFrames({
             designState,
-            baseTimeMs: currentTime,
+            baseTimeMs: frameTime,
             offsetsMs: offsets,
             previewInterpolation,
             keyframeTimes,
         });
-    }, [enabled, isScrubbing, prevFrames, nextFrames, stepMs, currentTime, designState, previewInterpolation, keyframeTimes]);
+    }, [enabled, isScrubbing, prevFrames, nextFrames, stepMs, frameTime, designState, previewInterpolation, keyframeTimes]);
 
     if (!frames.length) return null;
 

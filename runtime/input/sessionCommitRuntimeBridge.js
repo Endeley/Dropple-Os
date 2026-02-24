@@ -4,7 +4,7 @@ import { computeSelectionBounds } from '@/runtime/geometry/selectionBounds.js';
 import { getRuntimeSnapshot } from '@/runtime/projection';
 import { getActiveWorkspace } from '@/runtime/projection';
 import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
-import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
+import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useSelectionStore } from '@/runtime/stores/useSelectionStore.js';
 import { useAutoKeyframeStore } from '@/runtime/stores/useAutoKeyframeStore.js';
 import { commitTimelineKeyframe } from '@/runtime/timeline/commitTimelineKeyframe';
@@ -47,7 +47,7 @@ function emitKeyframesForNodes(nodeIds, { position, size, rotation } = {}) {
     const selectedIds = useSelectionStore.getState().selectedIds || [];
     if (!selectedIds.length) return;
 
-    const timeMs = useTimelineStore.getState().currentTime;
+    const timeMs = useRuntimeStore.getState().frameTime;
     if (!Number.isFinite(timeMs)) return;
 
     const runtimeState = getRuntimeSnapshot();

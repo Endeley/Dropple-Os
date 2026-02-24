@@ -7,6 +7,7 @@ export function runAnimationPreview({
     fromState,
     timeline,
     designState,
+    timeMs,
     durationMs = 300,
     onComplete,
 }) {
@@ -21,27 +22,18 @@ export function runAnimationPreview({
         return { cancel: () => {} };
     }
 
-    function tick(now) {
-        if (cancelled) return;
-
-        if (startTime == null) {
-            startTime = now;
-        }
-
-        const elapsed = now - startTime;
-        const clamped = Math.min(elapsed, durationMs);
-
+    function evaluateAtTime(time) {
         const animationSource = designState?.timeline?.animations || timeline;
         const projectedState = evaluateTimeline({
             animations: animationSource,
-            timeMs: clamped,
+            timeMs: time,
             baseState: designState || fromState,
         });
         const projectedNodes = projectedState?.nodes || {};
 
         const cameraTrack = getRuntimeState()?.scene?.camera ?? null;
         const cameraTransform = cameraTrack
-            ? getCameraTransformAtTime(cameraTrack, clamped)
+            ? getCameraTransformAtTime(cameraTrack, time)
             : null;
 
         useAnimatedRuntimeStore.setState(
@@ -52,6 +44,35 @@ export function runAnimationPreview({
             },
             false
         );
+    }
+
+    if (Number.isFinite(timeMs)) {
+        evaluateAtTime(timeMs);
+        return {
+            cancel() {
+                const truth = getRuntimeState();
+                useAnimatedRuntimeStore.setState(
+                    {
+                        nodes: truth?.nodes || {},
+                        rootIds: truth?.rootIds || [],
+                    },
+                    false
+                );
+            },
+        };
+    }
+
+    function tick(now) {
+        if (cancelled) return;
+
+        if (startTime == null) {
+            startTime = now;
+        }
+
+        const elapsed = now - startTime;
+        const clamped = Math.min(elapsed, durationMs);
+
+        evaluateAtTime(clamped);
 
         if (elapsed < durationMs) {
             rafId = requestAnimationFrame(tick);

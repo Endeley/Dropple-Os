@@ -41,6 +41,7 @@ import { createUXAuditLog } from './ux/uxAuditLog.js';
 import { requestUXConfirmation } from './ux/uxConfirmBus.js';
 import { shouldConfirmUXAction, defaultUXEnforcementTier } from './ux/shouldConfirmUXAction.js';
 import { withMutationOrigin } from '@/core/mutationContext.js';
+import { getSystemEventHandler } from '@/core/events/systemEventRegistry.js';
 import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
 import { checkWorkspacePolicy } from '@/core/contracts/capabilityGate.js';
 import { INTENT_CAPS } from '@/core/contracts/intentCapabilities.v1.js';
@@ -58,6 +59,9 @@ const SYSTEM_EVENTS = new Set([
     EventTypes.WORKSPACE_SET_CANVAS_SURFACE,
     EventTypes.SELECTION_SET,
     EventTypes.SHOT_SET_ACTIVE,
+    EventTypes.CLOCK_SEEK,
+    EventTypes.CLOCK_PLAY,
+    EventTypes.CLOCK_PAUSE,
 ]);
 
 function cloneState(state) {
@@ -271,6 +275,14 @@ export function createEventDispatcher({
                     });
 
                     if (!verdict.ok) {
+                        return __getRuntimeStateInternal();
+                    }
+                }
+
+                if (SYSTEM_EVENTS.has(event.type)) {
+                    const handler = getSystemEventHandler(event.type);
+                    if (handler) {
+                        handler(event);
                         return __getRuntimeStateInternal();
                     }
                 }

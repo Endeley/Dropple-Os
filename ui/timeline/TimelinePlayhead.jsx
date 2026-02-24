@@ -1,8 +1,8 @@
 'use client';
 
-export default function TimelinePlayhead({ currentTime, durationMs }) {
+export default function TimelinePlayhead({ frameTime, durationMs }) {
   const safeDuration = durationMs > 0 ? durationMs : 1;
-  const left = Math.min(100, Math.max(0, (currentTime / safeDuration) * 100));
+  const left = Math.min(100, Math.max(0, (frameTime / safeDuration) * 100));
 
   return (
     <div

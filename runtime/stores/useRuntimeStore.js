@@ -11,4 +11,6 @@ export const useRuntimeStore = create(() => ({
     rootIds: [],
     sceneGraph: null,
     scene: null,
+    frameTime: 0,
+    evaluatedScene: null,
 }));

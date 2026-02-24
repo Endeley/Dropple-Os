@@ -3,8 +3,8 @@
     "version": "0.1.0",
     "private": true,
     "type": "module",
-  "scripts": {
-    "arch": "node enforceDroppleLaws.cjs",
+    "scripts": {
+        "arch": "node enforceDroppleLaws.cjs",
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
@@ -12,7 +12,9 @@
         "enforce:laws": "node enforceDroppleLaws.cjs",
         "lint:export": "node scripts/dropple-export-gate.mjs --world ./fixtures/worlds/allow.json --width 1440 --height 900",
         "lint:export:json": "node scripts/dropple-export-gate.mjs --world ./fixtures/worlds/allow.json --width 1440 --height 900 --json",
-        "create:workspace": "node scripts/createWorkspace.js"
+        "create:workspace": "node scripts/createWorkspace.js",
+        "determinism": "NODE_ENV=test node scripts/determinismGate.mjs",
+        "ci:determinism": "npm run determinism"
     },
     "dependencies": {
         "@stackframe/stack": "^2.8.56",

@@ -124,7 +124,7 @@ export class MoveSession {
             return {
                 type: 'timeline-keyframe',
                 nodeIds: this.nodeIds,
-                time: this.context.currentTime,
+                time: this.context.frameTime,
                 trackId: this.context.trackId,
                 properties: {
                     x: this.delta.x,

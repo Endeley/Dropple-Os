@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { useWorkspaceProjection } from '@/runtime/projection';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext.jsx';
 import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
+import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useMotionTrailStore } from '@/ui/animation/useMotionTrailStore.js';
 import { evaluateMotionTrails } from '@/ui/animation/evaluateMotionTrails.js';
 
@@ -25,7 +26,7 @@ export default function MotionTrailLayer({ designState }) {
     const opacity = useMotionTrailStore((s) => s.opacity);
     const fade = useMotionTrailStore((s) => s.fade);
 
-    const currentTime = useTimelineStore((s) => s.currentTime);
+    const frameTime = useRuntimeStore((s) => s.frameTime);
     const isPlaying = useTimelineStore((s) => s.isPlaying);
     const previewInterpolation = useTimelineStore((s) => s.previewInterpolation);
     const keyframeTimes = useTimelineStore((s) => s.keyframeTimes);
@@ -34,7 +35,7 @@ export default function MotionTrailLayer({ designState }) {
         if (!enabled || isPlaying || selected.length === 0) return {};
         return evaluateMotionTrails({
             designState,
-            baseTimeMs: currentTime,
+            baseTimeMs: frameTime,
             nodeIds: selected,
             steps,
             stepMs,
@@ -46,7 +47,7 @@ export default function MotionTrailLayer({ designState }) {
         isPlaying,
         selected,
         designState,
-        currentTime,
+        frameTime,
         steps,
         stepMs,
         previewInterpolation,

@@ -11,9 +11,9 @@ import { useTimelineMarkers } from './useTimelineMarkers';
  * - No reducers
  * - No persistence
  */
-export default function MarkerControls({ currentTime, onSeek }) {
-    if (typeof currentTime !== 'number') {
-        throw new Error('MarkerControls: currentTime is required');
+export default function MarkerControls({ frameTime, onSeek }) {
+    if (typeof frameTime !== 'number') {
+        throw new Error('MarkerControls: frameTime is required');
     }
     if (typeof onSeek !== 'function') {
         throw new Error('MarkerControls: onSeek callback is required');
@@ -29,7 +29,7 @@ export default function MarkerControls({ currentTime, onSeek }) {
 
         addMarker({
             id: `marker:${Date.now()}`, // UI-only ID (safe)
-            time: currentTime,
+            time: frameTime,
             label: label.trim(),
         });
         setLabel('');
@@ -47,10 +47,10 @@ export default function MarkerControls({ currentTime, onSeek }) {
         >
             {/* In / Out */}
             <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
-                <button style={btn} onClick={() => setInPoint(currentTime)}>
+                <button style={btn} onClick={() => setInPoint(frameTime)}>
                     Set In
                 </button>
-                <button style={btn} onClick={() => setOutPoint(currentTime)}>
+                <button style={btn} onClick={() => setOutPoint(frameTime)}>
                     Set Out
                 </button>
                 <button style={btn} onClick={clearInOut}>

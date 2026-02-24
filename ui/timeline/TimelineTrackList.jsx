@@ -20,7 +20,7 @@ function defaultBezier() {
   };
 }
 
-function TrackRow({ track, clipDurationMs, keyframes, currentTime, isSelected, readOnly = false }) {
+function TrackRow({ track, clipDurationMs, keyframes, frameTime, isSelected, readOnly = false }) {
   const dispatcher = useDispatcher();
   const safeDuration = clipDurationMs > 0 ? clipDurationMs : 1;
   const highlightWindowMs = 40;
@@ -56,8 +56,8 @@ function TrackRow({ track, clipDurationMs, keyframes, currentTime, isSelected, r
       >
         {keyframes.map((kf) => (
           (() => {
-            const isNear = Number.isFinite(currentTime)
-              ? Math.abs(kf.timeMs - currentTime) <= highlightWindowMs
+            const isNear = Number.isFinite(frameTime)
+              ? Math.abs(kf.timeMs - frameTime) <= highlightWindowMs
               : false;
             const isHighlighted = isSelected && isNear;
             const isActive = isKeyframeSelected(kf.id);
@@ -121,7 +121,7 @@ function TrackRow({ track, clipDurationMs, keyframes, currentTime, isSelected, r
   );
 }
 
-export default function TimelineTrackList({ animations, currentTime, selectedNodeId, readOnly = false }) {
+export default function TimelineTrackList({ animations, frameTime, selectedNodeId, readOnly = false }) {
   if (!animations?.tracks || !animations?.clips || !animations?.keyframes) {
     return null;
   }
@@ -154,7 +154,7 @@ export default function TimelineTrackList({ animations, currentTime, selectedNod
           track={row.track}
           clipDurationMs={row.clipDurationMs}
           keyframes={row.keyframes}
-          currentTime={currentTime}
+          frameTime={frameTime}
           isSelected={row.track.nodeId === selectedNodeId}
           readOnly={readOnly}
         />
