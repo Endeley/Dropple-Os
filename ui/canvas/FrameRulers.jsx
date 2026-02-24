@@ -1,7 +1,7 @@
 'use client';
 
 import { projectToViewport } from '@/canvas/transform/projectToViewport.js';
-import { getZoomTier } from './zoomTiers.js';
+import { getZoomTier } from '@/runtime/canvas/zoomTiers.js';
 
 /**
  * Read-only frame-relative rulers.

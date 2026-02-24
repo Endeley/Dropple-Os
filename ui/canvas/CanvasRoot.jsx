@@ -26,7 +26,7 @@ import { screenToWorld } from '@/canvas/transform/screenToWorld.js';
 import { getWorkspaceProjection } from '@/runtime/projection';
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
-import { getZoomTier } from '@/ui/canvas/zoomTiers.js';
+import { getZoomTier } from '@/runtime/canvas/zoomTiers.js';
 import { CanvasProvider } from '@/ui/canvas/CanvasContext.jsx';
 import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';

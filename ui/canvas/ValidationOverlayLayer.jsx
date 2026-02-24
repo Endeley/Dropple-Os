@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useWorkspaceProjection } from '@/runtime/projection';
 import { projectToViewport } from '@/canvas/transform/projectToViewport.js';
 import { useCanvasContext } from '@/ui/canvas/CanvasContext.jsx';
-import { UX_RULES } from '@/ui/canvas/validation/uxRules.js';
+import { UX_RULES } from '@/runtime/validation/uxRules.js';
 import { useValidationIssues } from '@/ui/canvas/validation/useValidationIssues.js';
 
 const COLORS = {

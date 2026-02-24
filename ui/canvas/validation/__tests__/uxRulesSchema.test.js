@@ -1,4 +1,4 @@
-import { UX_RULES } from '../uxRules.js';
+import { UX_RULES } from '@/runtime/validation/uxRules.js';
 
 describe('UX_RULES schema', () => {
     it('matches the exact rule keys', () => {

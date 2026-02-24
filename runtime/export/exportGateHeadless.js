@@ -1,6 +1,6 @@
-import { validateUX } from '../../ui/canvas/validation/validateUX.js';
+import { validateUX } from '../validation/validateUX.js';
 import { evaluateExportGate } from './exportGate.js';
-import { getZoomTier } from '../ui/canvas/zoomTiers.js';
+import { getZoomTier } from '../canvas/zoomTiers.js';
 
 const DEFAULT_SIZE = { width: 1440, height: 900 };
 const DEFAULT_MAX_ISSUES = 10;

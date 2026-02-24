@@ -1,5 +1,5 @@
 import { UX_RULES } from './uxRules.js';
-import { getSnapRadius } from '../snap/snapConfig.js';
+import { getSnapRadius } from '../input/snap/snapConfig.js';
 
 export const UX_THRESHOLDS = {
     OVERLAP_TOLERANCE: 0,

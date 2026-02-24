@@ -19,7 +19,7 @@ import {
 } from '@/ui/layout/computeReorderIndex';
 import { colors, motion } from '@/ui/tokens';
 import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
-import { getZoomTier } from '@/ui/canvas/zoomTiers';
+import { getZoomTier } from '@/runtime/canvas/zoomTiers.js';
 
 export default function ReadOnlyNodeRenderer({
   nodes,
