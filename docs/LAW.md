@@ -171,3 +171,9 @@ One projection path.
 One structural axis.
 
 This law defines the system.
+
+---
+
+## Milestones
+
+- `timeline-engine-v2-dag` — see `docs/TIMELINE_ENGINE_V2_DAG.md`

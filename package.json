@@ -29,6 +29,7 @@
         "engine:track:blend:test": "node engine/__tests__/trackBlendMode.test.mjs",
         "engine:track:group:test": "node engine/__tests__/trackGrouping.test.mjs",
         "engine:timeline:dag:test": "node engine/__tests__/snapshotDag.test.mjs",
+        "engine:timeline:label:test": "node engine/__tests__/snapshotLabeling.test.mjs",
         "runtime:map:test": "node runtime/animation/buildEvaluationInputs.fixture.test.mjs",
         "determinism": "NODE_ENV=test node scripts/determinismGate.mjs",
         "ci:determinism": "npm run determinism"

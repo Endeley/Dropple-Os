@@ -9,13 +9,11 @@ export function createSnapshotNode(timeline, parentIds = [], diff = null) {
         parentIds,
         childrenIds: [],
         diffFromParent: diff,
-        meta: {
-            createdAt: Date.now(),
-        },
     };
 }
 
 export function createSnapshotGraph(initialTimeline) {
+    const createdAt = Date.now();
     const root = createSnapshotNode(initialTimeline);
 
     return {
@@ -23,6 +21,13 @@ export function createSnapshotGraph(initialTimeline) {
             [root.id]: root,
         },
         headId: root.id,
+        meta: {
+            [root.id]: {
+                label: '',
+                createdAt,
+                updatedAt: createdAt,
+            },
+        },
     };
 }
 

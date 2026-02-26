@@ -4,6 +4,7 @@ import {
     undo,
     redo,
     checkoutSnapshot as checkoutSnapshotInternal,
+    setSnapshotLabel as setSnapshotLabelInternal,
 } from './timelineHistory.js';
 import { dispatchTrackAction } from './trackDispatcher.js';
 
@@ -55,6 +56,19 @@ export function redoTimeline(controller) {
 
 export function checkoutSnapshot(controller, snapshotId) {
     const nextGraph = checkoutSnapshotInternal(controller.snapshotGraph, snapshotId);
+    if (nextGraph === controller.snapshotGraph) return controller;
+    return {
+        ...controller,
+        snapshotGraph: nextGraph,
+        headId: nextGraph.headId,
+    };
+}
+
+export function setSnapshotLabel(controller, { snapshotId, label }) {
+    const nextGraph = setSnapshotLabelInternal(controller.snapshotGraph, {
+        snapshotId,
+        label,
+    });
     if (nextGraph === controller.snapshotGraph) return controller;
     return {
         ...controller,

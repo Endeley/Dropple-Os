@@ -60,6 +60,7 @@ export default function TimelinePanel({ designState }) {
     undo,
     redo,
     checkout,
+    setSnapshotLabel,
     canUndo,
     canRedo,
     snapshots,
@@ -346,10 +347,8 @@ export default function TimelinePanel({ designState }) {
           </div>
           <div style={{ display: 'grid', gap: 4 }}>
             {snapshots.map((snapshot) => (
-              <button
+              <div
                 key={snapshot.id}
-                type="button"
-                onClick={() => checkout(snapshot.id)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -359,15 +358,51 @@ export default function TimelinePanel({ designState }) {
                   border: '1px solid #e2e8f0',
                   background: snapshot.id === currentSnapshotId ? '#e2e8f0' : '#ffffff',
                   fontSize: 11,
-                  cursor: 'pointer',
-                  textAlign: 'left',
                 }}
               >
-                <span>{snapshot.id.slice(0, 8)}</span>
-                <span style={{ color: '#64748b' }}>
-                  p:{snapshot.parentIds?.length ?? 0} c:{snapshot.childrenIds?.length ?? 0}
-                </span>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => checkout(snapshot.id)}
+                  style={{
+                    border: 'none',
+                    background: 'transparent',
+                    padding: 0,
+                    fontSize: 11,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    color: '#0f172a',
+                  }}
+                >
+                  {snapshot.label || snapshot.shortId}
+                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <input
+                    key={`${snapshot.id}:${snapshot.label}`}
+                    type="text"
+                    defaultValue={snapshot.label}
+                    onBlur={(event) => {
+                      setSnapshotLabel(snapshot.id, event.target.value);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.currentTarget.blur();
+                      }
+                    }}
+                    placeholder={snapshot.shortId}
+                    style={{
+                      fontSize: 10,
+                      padding: '2px 4px',
+                      borderRadius: 4,
+                      border: '1px solid #e2e8f0',
+                      background: '#ffffff',
+                      width: 120,
+                    }}
+                  />
+                  <span style={{ color: '#64748b' }}>
+                    p:{snapshot.parentCount} c:{snapshot.childCount}
+                  </span>
+                </div>
+              </div>
             ))}
           </div>
         </div>
