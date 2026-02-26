@@ -84,4 +84,56 @@ const noShotResult = evaluateShotAt(timeline, scene, 3000);
 assert(noShotResult.ok === false, 'no-shot failed: expected ok=false');
 assert(noShotResult.reason === 'NO_SHOT', 'no-shot failed: wrong reason');
 
+const timelineOverlay = {
+    shots: [
+        {
+            id: 'shotOverlay',
+            startMs: 0,
+            endMs: 1000,
+            timeline: {
+                duration: 1000,
+                tracks: [
+                    { id: 't1', type: 'standard', order: 0, channelIds: ['opacity'] },
+                    { id: 't2', type: 'overlay', order: 1, channelIds: ['opacity'] },
+                ],
+                channels: [
+                    { id: 'opacity', keyframes: [{ time: 0, value: 0.2 }] },
+                ],
+            },
+        },
+    ],
+};
+const overlayScene = {
+    id: 'root',
+    type: 'frame',
+    channels: { opacity: 1 },
+    children: [],
+};
+const overlayResult = evaluateShotAt(timelineOverlay, overlayScene, 0);
+const overlayOpacity = overlayResult.evaluatedScene.opacity;
+
+const timelineOverlaySwapped = {
+    shots: [
+        {
+            id: 'shotOverlay',
+            startMs: 0,
+            endMs: 1000,
+            timeline: {
+                duration: 1000,
+                tracks: [
+                    { id: 't1', type: 'overlay', order: 0, channelIds: ['opacity'] },
+                    { id: 't2', type: 'standard', order: 1, channelIds: ['opacity'] },
+                ],
+                channels: [
+                    { id: 'opacity', keyframes: [{ time: 0, value: 0.2 }] },
+                ],
+            },
+        },
+    ],
+};
+const swappedResult = evaluateShotAt(timelineOverlaySwapped, overlayScene, 0);
+const swappedOpacity = swappedResult.evaluatedScene.opacity;
+
+assert(overlayOpacity !== swappedOpacity, 'track order should change output deterministically');
+
 console.log('evaluateShotAt deterministic fixture: OK');

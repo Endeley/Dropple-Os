@@ -10,6 +10,7 @@ import TimelineTrackList from './TimelineTrackList.jsx';
 import TimelineTimeScale from './TimelineTimeScale.jsx';
 import ShotTimelineBar from './ShotTimelineBar.jsx';
 import { ShotHUD } from './ShotHUD.jsx';
+import { useTimelineController } from './useTimelineController.js';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext.jsx';
 import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
 import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
@@ -17,6 +18,7 @@ import { collectKeyframeTimes, getNearestKeyframeTime, getNextKeyframeTime, getP
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
 import { EventTypes } from '@/core/events/eventTypes.js';
+import { TrackActions } from '@/runtime/timeline/trackControllerBridge.js';
 
 export default function TimelinePanel({ designState }) {
   const workspaceId = useWorkspaceProjection((s) => s.id);
@@ -29,6 +31,12 @@ export default function TimelinePanel({ designState }) {
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [rangeInMs, setRangeInMs] = useState(0);
   const [rangeOutMs, setRangeOutMs] = useState(0);
+  const [draggingId, setDraggingId] = useState(null);
+  const [hoverIndex, setHoverIndex] = useState(null);
+  const [dragChannelId, setDragChannelId] = useState(null);
+  const [dragChannelSourceTrackId, setDragChannelSourceTrackId] = useState(null);
+  const [hoverTrackId, setHoverTrackId] = useState(null);
+  const [hoverGroupId, setHoverGroupId] = useState(null);
   const cancelRef = useRef(null);
   const dispatcher = useDispatcher();
   const { selectedIds } = useSelection() || {};
@@ -39,6 +47,21 @@ export default function TimelinePanel({ designState }) {
   const setDuration = useTimelineStore((s) => s.setDuration);
   const setKeyframeTimes = useTimelineStore((s) => s.setKeyframeTimes);
   const setIsPlayingFlag = useTimelineStore((s) => s.setIsPlaying);
+  const timelineSource = useMemo(
+    () =>
+      designState?.timeline?.timelines?.default ??
+      designState?.timeline ??
+      { duration: 0, tracks: [], channels: [] },
+    [designState]
+  );
+  const {
+    projection,
+    dispatch,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useTimelineController(timelineSource);
   const selectedId = selectedIds?.size === 1 ? Array.from(selectedIds)[0] : null;
   const selectedNode = useMemo(
     () => (selectedId ? designState?.nodes?.[selectedId] : null),
@@ -305,6 +328,449 @@ export default function TimelinePanel({ designState }) {
         padding: 8,
       }}
     >
+      <div
+        style={{
+          border: '1px solid #e2e8f0',
+          borderRadius: 8,
+          background: '#ffffff',
+          padding: 8,
+          marginBottom: 8,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: '#0f172a' }}>
+            Tracks
+          </div>
+          <button
+            type="button"
+            onClick={() =>
+              dispatch({
+                type: TrackActions.ADD_TRACK,
+                payload: { id: `track_${projection.trackCount + 1}`, type: 'standard' },
+              })}
+            style={{
+              padding: '4px 8px',
+              borderRadius: 6,
+              border: '1px solid #e2e8f0',
+              background: '#ffffff',
+              fontSize: 11,
+              cursor: 'pointer',
+            }}
+          >
+            Add Track
+          </button>
+          <button
+            type="button"
+            onClick={undo}
+            disabled={!canUndo}
+            style={{
+              padding: '4px 8px',
+              borderRadius: 6,
+              border: '1px solid #e2e8f0',
+              background: '#ffffff',
+              fontSize: 11,
+              cursor: canUndo ? 'pointer' : 'not-allowed',
+              opacity: canUndo ? 1 : 0.5,
+            }}
+          >
+            Undo
+          </button>
+          <button
+            type="button"
+            onClick={redo}
+            disabled={!canRedo}
+            style={{
+              padding: '4px 8px',
+              borderRadius: 6,
+              border: '1px solid #e2e8f0',
+              background: '#ffffff',
+              fontSize: 11,
+              cursor: canRedo ? 'pointer' : 'not-allowed',
+              opacity: canRedo ? 1 : 0.5,
+            }}
+          >
+            Redo
+          </button>
+        </div>
+        <div style={{ display: 'grid', gap: 6 }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '6px 8px',
+              borderRadius: 6,
+              border: '1px dashed #cbd5f5',
+              background: '#f8fafc',
+              fontSize: 12,
+            }}
+          >
+            <span>Groups: {projection.groupCount ?? 0}</span>
+            <button
+              type="button"
+              onClick={() =>
+                dispatch({
+                  type: TrackActions.ADD_GROUP,
+                  payload: { id: `group_${(projection.groupCount ?? 0) + 1}` },
+                })}
+              style={{
+                padding: '2px 6px',
+                borderRadius: 6,
+                border: '1px solid #e2e8f0',
+                background: '#ffffff',
+                fontSize: 11,
+                cursor: 'pointer',
+              }}
+            >
+              Add Group
+            </button>
+          </div>
+          {projection.groups?.map((group) => (
+            <div
+              key={group.id}
+              onDragOver={(event) => {
+                if (!draggingId) return;
+                event.preventDefault();
+                if (hoverGroupId !== group.id) {
+                  setHoverGroupId(group.id);
+                }
+              }}
+              onDragLeave={() => {
+                if (hoverGroupId === group.id) {
+                  setHoverGroupId(null);
+                }
+              }}
+              onDrop={(event) => {
+                if (!draggingId) return;
+                event.preventDefault();
+                dispatch({
+                  type: TrackActions.ASSIGN_TRACK_TO_GROUP,
+                  payload: { groupId: group.id, trackId: draggingId },
+                });
+                setHoverGroupId(null);
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                border: '1px solid #e2e8f0',
+                borderRadius: 6,
+                padding: '6px 8px',
+                fontSize: 12,
+                background: hoverGroupId === group.id ? '#e2e8f0' : '#ffffff',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span>
+                  {group.meta?.collapsed ? '▸' : '▾'} {group.id} · {group.trackCount} tracks
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    dispatch({
+                      type: TrackActions.TOGGLE_GROUP_COLLAPSE,
+                      payload: { id: group.id },
+                    })}
+                  style={{
+                    padding: '2px 6px',
+                    borderRadius: 6,
+                    border: '1px solid #e2e8f0',
+                    background: '#ffffff',
+                    fontSize: 11,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {group.meta?.collapsed ? 'Expand' : 'Collapse'}
+                </button>
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    dispatch({
+                      type: TrackActions.TOGGLE_GROUP_LOCK,
+                      payload: { id: group.id },
+                    })}
+                  style={{
+                    padding: '2px 6px',
+                    borderRadius: 6,
+                    border: '1px solid #e2e8f0',
+                    background: '#ffffff',
+                    fontSize: 11,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {group.meta?.locked ? '🔒' : '🔓'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    dispatch({
+                      type: TrackActions.REMOVE_GROUP,
+                      payload: { id: group.id },
+                    })}
+                  style={{
+                    padding: '2px 6px',
+                    borderRadius: 6,
+                    border: '1px solid #e2e8f0',
+                    background: '#ffffff',
+                    fontSize: 11,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          ))}
+          {projection.tracks.map((track) => {
+            const groupId = projection.groupMap?.get(track.id) ?? null;
+            const group = projection.groups?.find((g) => g.id === groupId) ?? null;
+            if (group?.meta?.collapsed) {
+              return null;
+            }
+            return (
+            <div
+              key={track.id}
+              draggable
+              onDragStart={() => {
+                setDraggingId(track.id);
+                setHoverIndex(track.index);
+              }}
+              onDragOver={(event) => {
+                event.preventDefault();
+                if (dragChannelId) {
+                  if (hoverTrackId !== track.id) {
+                    setHoverTrackId(track.id);
+                  }
+                  return;
+                }
+                if (hoverIndex !== track.index) {
+                  setHoverIndex(track.index);
+                }
+              }}
+              onDragLeave={() => {
+                if (hoverTrackId === track.id) {
+                  setHoverTrackId(null);
+                }
+                if (hoverIndex === track.index) {
+                  setHoverIndex(null);
+                }
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                if (dragChannelId && hoverTrackId) {
+                  if (dragChannelSourceTrackId !== hoverTrackId) {
+                    dispatch({
+                      type: TrackActions.ASSIGN_CHANNEL,
+                      payload: {
+                        trackId: hoverTrackId,
+                        channelId: dragChannelId,
+                      },
+                    });
+                  }
+                } else {
+                  const targetIndex = track.index;
+                  if (draggingId != null && hoverIndex != null && hoverIndex !== targetIndex) {
+                    dispatch({
+                      type: TrackActions.REORDER_TRACK,
+                      payload: { id: draggingId, toIndex: targetIndex },
+                    });
+                  }
+                }
+                setDraggingId(null);
+                setHoverIndex(null);
+                setDragChannelId(null);
+                setDragChannelSourceTrackId(null);
+                setHoverTrackId(null);
+                setHoverGroupId(null);
+              }}
+              onDragEnd={() => {
+                setDraggingId(null);
+                setHoverIndex(null);
+                setDragChannelId(null);
+                setDragChannelSourceTrackId(null);
+                setHoverTrackId(null);
+                setHoverGroupId(null);
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                border: '1px solid #e2e8f0',
+                borderRadius: 6,
+                padding: '6px 8px',
+                fontSize: 12,
+                color: '#0f172a',
+                background:
+                  hoverTrackId === track.id || hoverIndex === track.index ? '#e2e8f0' : '#f8fafc',
+                opacity: draggingId === track.id ? 0.7 : 1,
+              }}
+            >
+              <div style={{ display: 'grid', gap: 4 }}>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  <span>
+                    #{track.index} · {track.id} · {track.type} · {track.channelCount} channels
+                  </span>
+                  <span
+                    className="track-blend-indicator"
+                    style={{ fontSize: 12, color: '#64748b' }}
+                  >
+                    {track.meta?.blendMode === 'replace' ? '↺' : '+'}
+                  </span>
+                  {groupId && (
+                    <span style={{ fontSize: 11, color: '#64748b' }}>
+                      in {groupId}
+                    </span>
+                  )}
+                </div>
+                {track.channels.length > 0 && (
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {track.channels.map((channelId) => (
+                      <button
+                        key={channelId}
+                        type="button"
+                        draggable
+                        onDragStart={(event) => {
+                          event.stopPropagation();
+                          event.dataTransfer?.setData('text/plain', channelId);
+                          setDragChannelId(channelId);
+                          setDragChannelSourceTrackId(track.id);
+                          setHoverTrackId(track.id);
+                        }}
+                        onDragEnd={(event) => {
+                          event.stopPropagation();
+                          setDragChannelId(null);
+                          setDragChannelSourceTrackId(null);
+                          setHoverTrackId(null);
+                        }}
+                        style={{
+                          border: '1px solid #cbd5f5',
+                          borderRadius: 999,
+                          padding: '2px 8px',
+                          fontSize: 11,
+                          background: dragChannelId === channelId ? '#c7d2fe' : '#eef2ff',
+                          cursor: 'grab',
+                        }}
+                      >
+                        {channelId}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {groupId && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      dispatch({
+                        type: TrackActions.UNASSIGN_TRACK_FROM_GROUP,
+                        payload: { groupId, trackId: track.id },
+                      })}
+                    style={{
+                      padding: '2px 6px',
+                      borderRadius: 6,
+                      border: '1px solid #e2e8f0',
+                      background: '#ffffff',
+                      fontSize: 11,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Ungroup
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() =>
+                    dispatch({
+                      type: TrackActions.TOGGLE_TRACK_LOCK,
+                      payload: { id: track.id },
+                    })}
+                  style={{
+                    padding: '2px 6px',
+                    borderRadius: 6,
+                    border: '1px solid #e2e8f0',
+                    background: '#ffffff',
+                    fontSize: 11,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {track.meta?.locked ? '🔒' : '🔓'}
+                </button>
+                <select
+                  value={track.meta?.blendMode ?? 'add'}
+                  disabled={track.meta?.locked || track.type === 'overlay'}
+                  onChange={(event) => {
+                    const next = event.target.value;
+                    dispatch({
+                      type: TrackActions.SET_TRACK_BLEND_MODE,
+                      payload: { id: track.id, blendMode: next },
+                    });
+                  }}
+                  style={{
+                    padding: '2px 6px',
+                    borderRadius: 6,
+                    border: '1px solid #e2e8f0',
+                    background: '#ffffff',
+                    fontSize: 11,
+                    cursor:
+                      track.meta?.locked || track.type === 'overlay' ? 'not-allowed' : 'pointer',
+                    opacity: track.meta?.locked || track.type === 'overlay' ? 0.6 : 1,
+                  }}
+                >
+                  <option value="add">Add</option>
+                  <option value="replace">Replace</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={() =>
+                    dispatch({
+                      type: TrackActions.REORDER_TRACK,
+                      payload: { id: track.id, toIndex: Math.max(0, track.index - 1) },
+                    })}
+                  disabled={track.index === 0}
+                  style={{
+                    padding: '2px 6px',
+                    borderRadius: 6,
+                    border: '1px solid #e2e8f0',
+                    background: '#ffffff',
+                    fontSize: 11,
+                    cursor: track.index === 0 ? 'not-allowed' : 'pointer',
+                    opacity: track.index === 0 ? 0.5 : 1,
+                  }}
+                >
+                  Up
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    dispatch({
+                      type: TrackActions.REORDER_TRACK,
+                      payload: { id: track.id, toIndex: track.index + 1 },
+                    })}
+                  disabled={track.index === projection.trackCount - 1}
+                  style={{
+                    padding: '2px 6px',
+                    borderRadius: 6,
+                    border: '1px solid #e2e8f0',
+                    background: '#ffffff',
+                    fontSize: 11,
+                    cursor:
+                      track.index === projection.trackCount - 1
+                        ? 'not-allowed'
+                        : 'pointer',
+                    opacity: track.index === projection.trackCount - 1 ? 0.5 : 1,
+                  }}
+                >
+                  Down
+                </button>
+              </div>
+            </div>
+          );
+          })}
+        </div>
+      </div>
       {isAnimationWorkspace && <ShotTimelineBar />}
       <div style={{ marginBottom: 8 }}>
         <ShotHUD />

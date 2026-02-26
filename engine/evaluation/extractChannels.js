@@ -35,6 +35,13 @@ function validateChannelValue(key, value) {
         return { value };
     }
 
+    if (value && typeof value === 'object' && 'value' in value) {
+        if (!Number.isFinite(value.value)) {
+            throw new Error(`Channel ${key} value must be a finite number`);
+        }
+        return { value: value.value };
+    }
+
     throw new Error(`Channel ${key} must be a static number or keyframes`);
 }
 

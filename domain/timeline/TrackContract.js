@@ -4,6 +4,8 @@ export const TRACK_TYPES = Object.freeze({
     MUTE: 'mute',
 });
 
+const BLEND_MODES = new Set(['replace', 'add']);
+
 export function createTrack({
     id,
     type = TRACK_TYPES.STANDARD,
@@ -46,10 +48,15 @@ export function normalizeTrack(track) {
     const uniqueChannels = Array.from(new Set(channelIds));
     uniqueChannels.sort();
 
+    const defaultBlendMode = type === TRACK_TYPES.OVERLAY ? 'replace' : 'add';
+    const requestedBlendMode = meta?.blendMode;
+    const blendMode = BLEND_MODES.has(requestedBlendMode) ? requestedBlendMode : defaultBlendMode;
+
     const normalizedMeta = {
         name: meta?.name ?? undefined,
         color: meta?.color ?? undefined,
         locked: meta?.locked ?? false,
+        blendMode: type === TRACK_TYPES.OVERLAY ? 'replace' : blendMode,
     };
 
     return {

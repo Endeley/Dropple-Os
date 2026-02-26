@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { normalizeTrack } from './TrackContract.js';
+import { normalizeGroup } from './TrackGroupContract.js';
 
 export function normalizeTimeline(timeline) {
     if (!timeline || typeof timeline !== 'object') {
@@ -16,9 +17,29 @@ export function normalizeTimeline(timeline) {
         track.order = index;
     });
 
+    const trackIdSet = new Set(normalizedTracks.map((track) => track.id));
+    const normalizedGroups = (timeline.groups ?? [])
+        .map((group) => normalizeGroup(group, trackIdSet))
+        .sort((a, b) => a.order - b.order);
+
+    normalizedGroups.forEach((group, index) => {
+        group.order = index;
+    });
+
+    const seenGroupTracks = new Set();
+    for (const group of normalizedGroups) {
+        for (const trackId of group.trackIds) {
+            if (seenGroupTracks.has(trackId)) {
+                throw new Error(`Track ${trackId} duplicated across groups`);
+            }
+            seenGroupTracks.add(trackId);
+        }
+    }
+
     return {
         duration,
         tracks: normalizedTracks,
+        groups: normalizedGroups,
         channels: timeline.channels ?? [],
     };
 }

@@ -20,10 +20,28 @@ export function projectTimeline(timeline) {
         };
     });
 
+    const groupMap = new Map();
+    const groups = normalized.groups.map((group, index) => {
+        group.trackIds.forEach((trackId) => {
+            groupMap.set(trackId, group.id);
+        });
+
+        return {
+            id: group.id,
+            index,
+            trackCount: group.trackIds.length,
+            trackIds: [...group.trackIds],
+            meta: { ...group.meta },
+        };
+    });
+
     return {
         duration: normalized.duration,
         trackCount: tracks.length,
+        groupCount: groups.length,
         tracks,
+        groups,
         channelToTrackMap,
+        groupMap,
     };
 }

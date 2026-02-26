@@ -119,7 +119,10 @@ All architectural constraints are enforced by:
 
 `enforceDroppleLaws.cjs`
 
-This script may not be weakened without constitutional amendment.
+---
+
+Blend semantics are versioned separately.
+See `docs/BLEND_V1.md` for deterministic blend contract.
 
 ---
 
