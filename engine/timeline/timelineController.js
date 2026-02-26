@@ -1,24 +1,32 @@
-import { createTimelineHistory, applyTimelineMutation, undo, redo } from './timelineHistory.js';
+import {
+    createTimelineHistory,
+    applyTimelineMutation,
+    undo,
+    redo,
+    checkoutSnapshot as checkoutSnapshotInternal,
+} from './timelineHistory.js';
 import { dispatchTrackAction } from './trackDispatcher.js';
-import { diffTimeline } from './diffTimeline.js';
-import { hashTimeline } from '../../domain/timeline/TimelineContract.js';
 
 export function createTimelineController(initialTimeline) {
+    const graph = createTimelineHistory(initialTimeline);
     return {
-        history: createTimelineHistory(initialTimeline),
+        snapshotGraph: graph,
+        headId: graph.headId,
     };
 }
 
 export function dispatchTrack(controller, action) {
-    const current = controller.history.present;
+    const graph = controller.snapshotGraph;
+    const currentNode = graph.nodes[graph.headId];
+    const current = currentNode.timeline;
     try {
         const nextTimeline = dispatchTrackAction(current, action);
-        const diff = diffTimeline(current, nextTimeline);
-        const nextHistory = applyTimelineMutation(controller.history, nextTimeline);
-
+        const nextGraph = applyTimelineMutation(graph, nextTimeline);
+        if (nextGraph === graph) return controller;
         return {
             ...controller,
-            history: attachDiff(nextHistory, controller.history, diff),
+            snapshotGraph: nextGraph,
+            headId: nextGraph.headId,
         };
     } catch (error) {
         return controller;
@@ -26,33 +34,31 @@ export function dispatchTrack(controller, action) {
 }
 
 export function undoTimeline(controller) {
+    const nextGraph = undo(controller.snapshotGraph);
+    if (nextGraph === controller.snapshotGraph) return controller;
     return {
         ...controller,
-        history: undo(controller.history),
+        snapshotGraph: nextGraph,
+        headId: nextGraph.headId,
     };
 }
 
 export function redoTimeline(controller) {
+    const nextGraph = redo(controller.snapshotGraph);
+    if (nextGraph === controller.snapshotGraph) return controller;
     return {
         ...controller,
-        history: redo(controller.history),
+        snapshotGraph: nextGraph,
+        headId: nextGraph.headId,
     };
 }
 
-function attachDiff(nextHistory, prevHistory, diff) {
-    if (nextHistory === prevHistory) return nextHistory;
-    const lastIndex = nextHistory.past.length - 1;
-    if (lastIndex < 0) return nextHistory;
-
-    const pastEntry = nextHistory.past[lastIndex];
-    const timeline = pastEntry?.timeline ?? pastEntry;
-    const hash = hashTimeline(timeline);
-
-    const nextPast = [...nextHistory.past];
-    nextPast[lastIndex] = { timeline, hash, diff };
-
+export function checkoutSnapshot(controller, snapshotId) {
+    const nextGraph = checkoutSnapshotInternal(controller.snapshotGraph, snapshotId);
+    if (nextGraph === controller.snapshotGraph) return controller;
     return {
-        ...nextHistory,
-        past: nextPast,
+        ...controller,
+        snapshotGraph: nextGraph,
+        headId: nextGraph.headId,
     };
 }

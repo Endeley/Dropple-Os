@@ -6,6 +6,7 @@ import {
 } from '../../engine/timeline/timelineController.js';
 
 import { TrackActions } from '../../engine/timeline/trackDispatcher.js';
+import { hashTimeline } from '../../domain/timeline/TimelineContract.js';
 
 const base = {
     duration: 100,
@@ -22,7 +23,7 @@ controller = dispatchTrack(controller, {
 
 console.log(
     'NO OP NOT RECORDED:',
-    controller.history.past.length === 0
+    Object.keys(controller.snapshotGraph.nodes).length === 1
 );
 
 controller = dispatchTrack(controller, {
@@ -32,21 +33,23 @@ controller = dispatchTrack(controller, {
 
 console.log(
     'CHANGE RECORDED:',
-    controller.history.past.length === 1
+    Object.keys(controller.snapshotGraph.nodes).length === 2
 );
 
-const hashAfterAdd = controller.history.presentHash;
+const hashAfterAdd = hashTimeline(
+    controller.snapshotGraph.nodes[controller.headId].timeline
+);
 
 controller = undoTimeline(controller);
 
 console.log(
     'UNDO WORKS:',
-    controller.history.presentHash !== hashAfterAdd
+    hashTimeline(controller.snapshotGraph.nodes[controller.headId].timeline) !== hashAfterAdd
 );
 
 controller = redoTimeline(controller);
 
 console.log(
     'REDO WORKS:',
-    controller.history.presentHash === hashAfterAdd
+    hashTimeline(controller.snapshotGraph.nodes[controller.headId].timeline) === hashAfterAdd
 );

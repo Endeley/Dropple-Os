@@ -3,6 +3,7 @@ import {
     dispatchTrack,
     undoTimeline,
     redoTimeline,
+    checkoutSnapshot,
 } from '../../engine/timeline/timelineController.js';
 import { TrackActions } from '../../engine/timeline/trackDispatcher.js';
 
@@ -11,5 +12,6 @@ export {
     dispatchTrack,
     undoTimeline,
     redoTimeline,
+    checkoutSnapshot,
     TrackActions,
 };

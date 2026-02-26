@@ -17,21 +17,21 @@ controller = dispatchTrack(controller, {
     payload: { trackId: 't1', channelId: 'a' },
 });
 
-console.log('LOCK BLOCKS ASSIGN:', controller.history.past.length === 0);
+console.log('LOCK BLOCKS ASSIGN:', Object.keys(controller.snapshotGraph.nodes).length === 1);
 
 controller = dispatchTrack(controller, {
     type: TrackActions.REORDER_TRACK,
     payload: { id: 't2', toIndex: 0 },
 });
 
-console.log('LOCK BLOCKS REORDER:', controller.history.past.length === 0);
+console.log('LOCK BLOCKS REORDER:', Object.keys(controller.snapshotGraph.nodes).length === 1);
 
 controller = dispatchTrack(controller, {
     type: TrackActions.REMOVE_TRACK,
     payload: { id: 't1' },
 });
 
-console.log('LOCK BLOCKS REMOVE:', controller.history.past.length === 0);
+console.log('LOCK BLOCKS REMOVE:', Object.keys(controller.snapshotGraph.nodes).length === 1);
 
 controller = dispatchTrack(controller, {
     type: TrackActions.TOGGLE_TRACK_LOCK,
@@ -43,9 +43,10 @@ controller = dispatchTrack(controller, {
     payload: { trackId: 't1', channelId: 'a' },
 });
 
-const unlockedTrack = controller.history.present.tracks.find((track) => track.id === 't1');
+const unlockedTrack =
+    controller.snapshotGraph.nodes[controller.headId].timeline.tracks.find((track) => track.id === 't1');
 
 console.log(
     'UNLOCK ALLOWS ASSIGN:',
-    controller.history.past.length >= 2 && unlockedTrack?.channelIds?.includes('a')
+    Object.keys(controller.snapshotGraph.nodes).length >= 2 && unlockedTrack?.channelIds?.includes('a')
 );

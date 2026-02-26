@@ -59,8 +59,11 @@ export default function TimelinePanel({ designState }) {
     dispatch,
     undo,
     redo,
+    checkout,
     canUndo,
     canRedo,
+    snapshots,
+    currentSnapshotId,
   } = useTimelineController(timelineSource);
   const selectedId = selectedIds?.size === 1 ? Array.from(selectedIds)[0] : null;
   const selectedNode = useMemo(
@@ -337,6 +340,37 @@ export default function TimelinePanel({ designState }) {
           marginBottom: 8,
         }}
       >
+        <div style={{ display: 'grid', gap: 6, marginBottom: 8 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: '#0f172a' }}>
+            Snapshots
+          </div>
+          <div style={{ display: 'grid', gap: 4 }}>
+            {snapshots.map((snapshot) => (
+              <button
+                key={snapshot.id}
+                type="button"
+                onClick={() => checkout(snapshot.id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '4px 6px',
+                  borderRadius: 6,
+                  border: '1px solid #e2e8f0',
+                  background: snapshot.id === currentSnapshotId ? '#e2e8f0' : '#ffffff',
+                  fontSize: 11,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                <span>{snapshot.id.slice(0, 8)}</span>
+                <span style={{ color: '#64748b' }}>
+                  p:{snapshot.parentIds?.length ?? 0} c:{snapshot.childrenIds?.length ?? 0}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: '#0f172a' }}>
             Tracks

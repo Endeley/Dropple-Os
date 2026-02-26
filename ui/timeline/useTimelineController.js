@@ -6,6 +6,7 @@ import {
   dispatchTrack,
   undoTimeline,
   redoTimeline,
+  checkoutSnapshot,
 } from '@/runtime/timeline/trackControllerBridge.js';
 import { projectTimeline } from '@/runtime/projection/timelineProjection.js';
 
@@ -16,7 +17,9 @@ export function useTimelineController(initialTimeline) {
 
   // 🔒 Projection is always derived from canonical present
   const projection = useMemo(() => {
-    return projectTimeline(controller.history.present);
+    const current =
+      controller.snapshotGraph.nodes[controller.headId]?.timeline ?? initialTimeline;
+    return projectTimeline(current);
   }, [controller]);
 
   // 🔒 UI intent → controller → dispatcher → history → hash gate
@@ -32,15 +35,26 @@ export function useTimelineController(initialTimeline) {
     setController((prev) => redoTimeline(prev));
   }, []);
 
-  const canUndo = controller.history.past.length > 0;
-  const canRedo = controller.history.future.length > 0;
+  const checkout = useCallback((snapshotId) => {
+    setController((prev) => checkoutSnapshot(prev, snapshotId));
+  }, []);
+
+  const currentNode = controller.snapshotGraph.nodes[controller.headId];
+  const canUndo = Boolean(currentNode?.parentIds?.length);
+  const canRedo = Boolean(currentNode?.childrenIds?.length === 1);
+
+  const snapshots = Object.values(controller.snapshotGraph.nodes);
+  const currentSnapshotId = controller.headId;
 
   return {
     projection,
     dispatch,
     undo,
     redo,
+    checkout,
     canUndo,
     canRedo,
+    snapshots,
+    currentSnapshotId,
   };
 }

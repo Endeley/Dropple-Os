@@ -37,7 +37,10 @@ controller = dispatchTrack(controller, {
     payload: { trackId: 't1', channelId: 'a' },
 });
 
-console.log('GROUP LOCK BLOCKS TRACK MUTATION:', controller.history.past.length === 0);
+console.log(
+    'GROUP LOCK BLOCKS TRACK MUTATION:',
+    Object.keys(controller.snapshotGraph.nodes).length === 1
+);
 
 controller = dispatchTrack(controller, {
     type: TrackActions.TOGGLE_GROUP_LOCK,
@@ -51,8 +54,8 @@ controller = dispatchTrack(controller, {
 
 console.log(
     'REMOVE GROUP PRESERVES TRACKS:',
-    controller.history.present.tracks.length === 1 &&
-        controller.history.present.groups.length === 0
+    controller.snapshotGraph.nodes[controller.headId].timeline.tracks.length === 1 &&
+        controller.snapshotGraph.nodes[controller.headId].timeline.groups.length === 0
 );
 
 const evalBase = {

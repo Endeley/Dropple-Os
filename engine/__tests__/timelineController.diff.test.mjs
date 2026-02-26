@@ -21,7 +21,7 @@ controller = dispatchTrack(controller, {
 
 console.log(
     'NO OP NO DIFF:',
-    controller.history.past.length === 0
+    Object.keys(controller.snapshotGraph.nodes).length === 1
 );
 
 // Real change: add track
@@ -30,7 +30,9 @@ controller = dispatchTrack(controller, {
     payload: { id: 't1', type: 'standard' },
 });
 
-const last = controller.history.past[controller.history.past.length - 1];
-const hasDiff = Boolean(last && last.diff);
+const current = controller.snapshotGraph.nodes[controller.headId];
+const parentId = current?.parentIds?.[0];
+const parent = parentId ? controller.snapshotGraph.nodes[parentId] : null;
+const hasDiff = Boolean(current && current.diffFromParent && parent);
 
 console.log('DIFF ATTACHED:', hasDiff === true);

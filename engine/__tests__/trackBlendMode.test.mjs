@@ -135,7 +135,7 @@ controller = dispatchTrack(controller, {
     payload: { id: 't1', blendMode: 'replace' },
 });
 
-console.log('LOCK BLOCKS BLEND CHANGE:', controller.history.past.length === 0);
+console.log('LOCK BLOCKS BLEND CHANGE:', Object.keys(controller.snapshotGraph.nodes).length === 1);
 
 const overlayBase = {
     duration: 100,
@@ -151,4 +151,4 @@ overlayController = dispatchTrack(overlayController, {
     payload: { id: 't1', blendMode: 'add' },
 });
 
-console.log('OVERLAY BLEND REJECTED:', overlayController.history.past.length === 0);
+console.log('OVERLAY BLEND REJECTED:', Object.keys(overlayController.snapshotGraph.nodes).length === 1);
