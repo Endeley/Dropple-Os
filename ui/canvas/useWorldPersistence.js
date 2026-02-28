@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useRef } from 'react';
-import { WorldStore } from '@/persistence/worldStore.js';
 import { serializeWorld, hydrateWorld, roundTripWorldState } from '@/runtime/persistence/worldRuntimeBridge.js';
 import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
 
@@ -12,6 +11,7 @@ export function useWorldPersistence({
     workspaceId,
     viewport,
     nodesById,
+    persistenceAdapter,
 }) {
     const dispatcher = useDispatcher();
     const loadedRef = useRef(false);
@@ -45,15 +45,20 @@ export function useWorldPersistence({
         if (!payload) return;
         const serialized = JSON.stringify(payload);
         if (serialized === lastSavedRef.current) return;
-        WorldStore.save(workspaceId, payload);
+        if (typeof persistenceAdapter?.save === 'function') {
+            persistenceAdapter.save(workspaceId, payload);
+        }
         lastSavedRef.current = serialized;
-    }, [nodesById, viewport, workspaceId]);
+    }, [nodesById, viewport, workspaceId, persistenceAdapter]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
         if (loadedRef.current) return;
 
-        const loaded = WorldStore.load(workspaceId);
+        const loaded =
+            typeof persistenceAdapter?.load === 'function'
+                ? persistenceAdapter.load(workspaceId)
+                : null;
         if (loaded) {
             metaRef.current = {
                 createdAt: loaded.metadata?.createdAt ?? Date.now(),
@@ -86,7 +91,7 @@ export function useWorldPersistence({
             };
             window.__droppleDebug = api;
         }
-    }, [nodesById, viewport, workspaceId, flushSave, dispatcher]);
+    }, [nodesById, viewport, workspaceId, flushSave, dispatcher, persistenceAdapter]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;

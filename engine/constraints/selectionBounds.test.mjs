@@ -1,4 +1,4 @@
-import { computeSelectionBounds } from "./selectionBounds.js";
+import { computeSelectionBounds } from "../../domain/geometry/selectionBounds.js";
 
 const nodes = [
   { x: 10, y: 20, width: 100, height: 50 },

@@ -4,7 +4,7 @@ import { OwnershipProvider } from '@/marketplace/useOwnershipStore';
 import { SubmissionProvider } from '@/certification/submissions/useSubmissionStore';
 import { CertificateProvider } from '@/certification/certificates/useCertificateStore';
 import { AnnotationProvider } from '@/certification/annotations/useAnnotationStore';
-import '@/engine/init/registerEngineSystemHandlers.js';
+import '@/runtime/init/registerRuntimeSystemHandlers.js';
 
 export default function Providers({ children }) {
   return (

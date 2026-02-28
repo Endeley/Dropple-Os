@@ -1,19 +1,4 @@
-function buildSceneTree(nodesById, rootIds) {
-    if (!nodesById || !Array.isArray(rootIds)) return null;
-    const visiting = new Set();
-
-    function buildNode(id) {
-        const node = nodesById[id];
-        if (!node || visiting.has(id)) return null;
-        visiting.add(id);
-        const childIds = Array.isArray(node.children) ? node.children : [];
-        const children = childIds.map(buildNode).filter(Boolean);
-        visiting.delete(id);
-        return { ...node, children };
-    }
-
-    return rootIds.map(buildNode).filter(Boolean);
-}
+import { buildSceneTree } from '../../domain/scene/buildSceneTree.js';
 
 function buildShotTimeline(sceneGraph, activeSceneId) {
     if (!sceneGraph || !Array.isArray(sceneGraph.scenes)) {
@@ -69,7 +54,17 @@ export function buildEvaluationInputs(runtimeState) {
     const sceneActiveShotId = runtimeState?.scene?.activeShotId ?? null;
     const graphActiveShotId = sceneGraph?.activeShotId ?? null;
 
-    const sceneGraphTree = buildSceneTree(nodesById, rootIds);
+    const root = buildSceneTree({
+        rootId: rootIds?.[0] ?? null,
+        nodes: Object.values(nodesById ?? {}),
+        tree: Object.fromEntries(
+            Object.entries(nodesById ?? {}).map(([id, node]) => [
+                id,
+                Array.isArray(node?.children) ? node.children : [],
+            ])
+        ),
+    });
+    const sceneGraphTree = root ? [root] : [];
     const shotTimeline = buildShotTimeline(sceneGraph, activeSceneId);
     const activeShotId = sceneActiveShotId || graphActiveShotId || null;
 

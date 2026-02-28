@@ -126,7 +126,27 @@ See `docs/BLEND_V1.md` for deterministic blend contract.
 
 ---
 
-## 9. Amendment Procedure
+## 9. Deterministic Replay Law (v1)
+
+Given the same seed and identical event sequence, Dropple must produce
+the exact same evaluation fingerprint across:
+
+- time
+- machine
+- session
+- export -> install -> replay cycles
+
+Invariant:
+
+`H(seed, events) == H(export(install(seed), events))`
+
+No tolerance. No float drift. Exact hash match.
+
+Snapshot DAG must not alter evaluation output.
+
+---
+
+## 10. Amendment Procedure
 
 Changes to:
 
@@ -142,7 +162,7 @@ No casual modifications allowed.
 
 ---
 
-## 10. SceneGraph Invariants (v1)
+## 11. SceneGraph Invariants (v1)
 
 SceneGraph is canonical narrative structure.
 

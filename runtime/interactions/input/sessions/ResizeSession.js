@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import { applyResizeConstraints } from '@/engine/constraints/resizeConstraintEngine';
-import { computeSelectionBounds } from '@/runtime/geometry/selectionBounds.js';
+import { computeSelectionBounds } from '../../../../domain/geometry/selectionBounds.js';
 import { perfStart, perfEnd } from '@/runtime/instrumentation/perfTracker.js';
 
 /**

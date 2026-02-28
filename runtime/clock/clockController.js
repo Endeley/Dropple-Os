@@ -1,7 +1,7 @@
 import { clock } from './clock.js';
-import { evaluateFrameAt } from '@/engine/evaluation/evaluateFrameAt.js';
-import { getRuntimeState } from '@/runtime/state/runtimeState.js';
-import { buildEvaluationInputs } from '@/runtime/animation/buildEvaluationInputs.js';
+import { evaluateFrameAt } from '../../engine/evaluation/evaluateFrameAt.js';
+import { getRuntimeState } from '../state/runtimeState.js';
+import { buildEvaluationInputs } from '../animation/buildEvaluationInputs.js';
 
 let rafId = null;
 

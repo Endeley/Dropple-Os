@@ -1,11 +1,25 @@
-import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
+import { canvasBus } from '../eventBus/canvasBus.js';
 import { InputSessionManager } from '@/runtime/interactions/input/InputSessionManager.js';
 import { getWorkspaceProjection } from '@/runtime/projection';
 import { screenToWorld } from '@/canvas/transform/screenToWorld.js';
 import { setAimTarget } from '@/runtime/characters/characterRegistry.js';
-import { registerSessionRuntimeBridge } from '@/runtime/input/sessionRuntimeBridge.js';
+import { registerNodeDragBridge } from '@/ui/bridges/nodeDragBridge.js';
+import { registerNodeCreateBridge } from '@/ui/bridges/nodeCreateBridge.js';
+import { registerGroupSessionBridge } from '@/ui/bridges/groupSessionBridge.js';
+import { registerSessionBridge } from '@/ui/bridges/sessionBridge.js';
+import { registerSessionCommitBridge } from '@/ui/bridges/sessionCommitBridge.js';
+import { registerAnimationKeyframeBridge } from './bridges/animationKeyframeBridge.js';
+import { registerEditEventBridge } from './bridges/editEventBridge.js';
 
-registerSessionRuntimeBridge();
+export function registerSessionBindings(dispatch) {
+    registerNodeDragBridge();
+    registerNodeCreateBridge(dispatch);
+    registerGroupSessionBridge();
+    registerSessionBridge();
+    registerSessionCommitBridge(dispatch);
+    registerAnimationKeyframeBridge();
+    registerEditEventBridge();
+}
 
 const sessionManager = new InputSessionManager(canvasBus);
 

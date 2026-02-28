@@ -1,74 +1,54 @@
-import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
-import { getSnapRadius } from '@/runtime/input/snap/snapConfig.js';
-import { getNearestSnapshot } from '@/runtime/input/spatial/nearestSnapshot.js';
-import { useSelectionStore } from '@/runtime/stores/useSelectionStore.js';
+import { getSnapRadius } from './snap/snapConfig.js';
 
-let _unsub = null;
+export function createNodeDragSessionIntent({
+    intent,
+    selectedIds = [],
+    nodesById = {},
+    nearestSnapshot = null,
+    zoomTier = 'normal',
+}) {
+    const nodeId = intent?.nodeId;
+    const event = intent?.event;
+    const pointer = intent?.pointer;
 
-/**
- * Registers the drag resolver once.
- * - listens for intent emitted by NodeView
- * - computes snap targets and selection
- * - emits intent.session.start for runtime session construction
- */
-export function registerNodeDragRuntimeBridge() {
-    if (_unsub) return _unsub;
+    if (!nodeId || !event || !pointer) return null;
 
-    const handler = (intent) => {
-        const nodeId = intent?.nodeId;
-        const event = intent?.event;
-        const pointer = intent?.pointer;
+    const existing = Array.isArray(selectedIds) ? selectedIds : [];
+    const multi = event.shiftKey || event.metaKey || event.ctrlKey;
+    let nextSelectedIds = existing;
 
-        if (!nodeId || !event || !pointer) return;
-
-        const selectionState = useSelectionStore.getState();
-        const existing = Array.isArray(selectionState.selectedIds)
-            ? selectionState.selectedIds
-            : [];
-        const multi = event.shiftKey || event.metaKey || event.ctrlKey;
-        if (multi) {
-            const next = new Set(existing);
-            if (next.has(nodeId)) {
-                next.delete(nodeId);
-            } else {
-                next.add(nodeId);
-            }
-            selectionState.setSelectedIds(Array.from(next));
+    if (multi) {
+        const next = new Set(existing);
+        if (next.has(nodeId)) {
+            next.delete(nodeId);
         } else {
-            selectionState.setSelectedIds([nodeId]);
+            next.add(nodeId);
         }
+        nextSelectedIds = Array.from(next);
+    } else {
+        nextSelectedIds = [nodeId];
+    }
 
-        const runtime = useRuntimeStore.getState();
-        const animated = useAnimatedRuntimeStore.getState();
-        const nodesById = (runtime?.nodes && Object.keys(runtime.nodes).length > 0)
-            ? runtime.nodes
-            : animated?.nodes || {};
-        const node = nodesById[nodeId];
+    const node = nodesById[nodeId];
+    if (!node) return null;
 
-        if (!node) return;
+    // Optional rule: only frames draggable
+    if (node.type && node.type !== 'frame') return null;
 
-        // Optional rule: only frames draggable
-        if (node.type && node.type !== 'frame') return;
+    const snapRadius = getSnapRadius(zoomTier);
+    const snapTargets = Array.isArray(nearestSnapshot?.nearest)
+        ? nearestSnapshot.nearest.map((entry) => ({
+              id: entry.id,
+              x: entry.bounds.x,
+              y: entry.bounds.y,
+              width: entry.bounds.width,
+              height: entry.bounds.height,
+          }))
+        : [];
 
-        const siblings = Object.values(nodesById).filter((n) => n && n.id !== nodeId);
-
-        const zoomTier = intent?.zoomTier ?? 'normal';
-        const snapRadius = getSnapRadius(zoomTier);
-
-        const nearestSnapshot = getNearestSnapshot?.();
-        const snapTargets = Array.isArray(nearestSnapshot?.nearest)
-            ? nearestSnapshot.nearest.map((entry) => ({
-                  id: entry.id,
-                  x: entry.bounds.x,
-                  y: entry.bounds.y,
-                  width: entry.bounds.width,
-                  height: entry.bounds.height,
-              }))
-            : [];
-
-        canvasBus.emit('intent.session.start', {
+    return {
+        nextSelectedIds,
+        sessionIntent: {
             sessionType: 'move',
             payload: {
                 nodeIds: [nodeId],
@@ -79,9 +59,6 @@ export function registerNodeDragRuntimeBridge() {
                 },
             },
             originalEvent: event,
-        });
+        },
     };
-
-    _unsub = canvasBus.on('intent.node.pointerDown', handler);
-    return _unsub;
 }

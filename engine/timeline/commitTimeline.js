@@ -1,4 +1,4 @@
-import { flattenTimeline } from '@/runtime/timeline/flattenTimeline.js';
+import { flattenTimeline } from '../../domain/timeline/flattenTimeline.js';
 
 /**
  * Commits timeline events up to a given time through the dispatcher.

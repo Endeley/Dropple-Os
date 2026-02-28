@@ -1,6 +1,6 @@
 'use client';
 
-import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
+import { canvasBus } from './eventBus/canvasBus.js';
 
 export function NodeView({ node, rect, zoomTier = 'normal' }) {
     if (!node) return null;

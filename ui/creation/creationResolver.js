@@ -1,4 +1,4 @@
-import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
+import { canvasBus } from '../eventBus/canvasBus.js';
 
 /**
  * Central resolver for creation intent.

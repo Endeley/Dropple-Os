@@ -1,4 +1,4 @@
-import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
+import { canvasBus } from '../eventBus/canvasBus.js';
 import { alignNodes, distributeNodes } from '@/ui/alignment/alignmentUtils';
 
 function applyLayoutUpdates({ updates, emit, intentType, source }) {

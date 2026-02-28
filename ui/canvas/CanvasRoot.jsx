@@ -28,7 +28,7 @@ import { EventTypes } from '@/core/events/eventTypes.js';
 import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
 import { getZoomTier } from '@/runtime/canvas/zoomTiers.js';
 import { CanvasProvider } from '@/ui/canvas/CanvasContext.jsx';
-import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
+import { canvasBus } from '../eventBus/canvasBus.js';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
 
 /** precision safety */

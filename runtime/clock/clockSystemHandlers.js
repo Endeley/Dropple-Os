@@ -1,5 +1,5 @@
-import { registerSystemEventHandler } from '@/core/events/systemEventRegistry.js';
-import { EventTypes } from '@/core/events/eventTypes.js';
+import { registerSystemEventHandler } from '../../core/events/systemEventRegistry.js';
+import { EventTypes } from '../../core/events/eventTypes.js';
 import { play, pause, seek } from './clockController.js';
 
 export function registerClockSystemHandlers() {

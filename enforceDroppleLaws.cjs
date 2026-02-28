@@ -22,6 +22,7 @@ const EXTENSIONS = ['.js', '.jsx', '.ts', '.tsx'];
  */
 const LAYERS = [
     { name: 'core', prefix: 'core/' },
+    { name: 'core', prefix: 'domain/' },
     { name: 'core', prefix: 'timeline/' },
     { name: 'core', prefix: 'design/' },
     { name: 'core', prefix: 'contracts/' },
@@ -29,28 +30,27 @@ const LAYERS = [
     { name: 'core', prefix: 'workspaces/' },
     { name: 'core', prefix: 'canvas/' },
 
+    { name: 'engine', prefix: 'engine/' },
+
     // Dispatcher is part of runtime, not a higher layer
     { name: 'runtime', prefix: 'runtime/dispatcher/' },
 
     { name: 'runtime', prefix: 'runtime/' },
-    { name: 'infrastructure', prefix: 'infrastructure/' },
-    { name: 'infrastructure', prefix: 'persistence/' },
-    { name: 'workspace', prefix: 'workspace/' },
 
     { name: 'ui', prefix: 'ui/' },
     { name: 'product', prefix: 'app/' },
+    { name: 'product', prefix: 'infrastructure/' },
+    { name: 'product', prefix: 'persistence/' },
+    { name: 'product', prefix: 'workspace/' },
 ];
 
-const LAYER_RANK = {
-    core: 0,
-    infrastructure: 1,
-    runtime: 2,
-    workspace: 3,
-    ui: 4,
-    product: 5,
+const ALLOWED_ZONE_IMPORTS = {
+    core: [],
+    engine: ['core'],
+    runtime: ['core', 'engine'],
+    ui: ['runtime', 'core'],
+    product: ['ui', 'runtime', 'engine', 'core'],
 };
-
-const SEMANTIC_RANK = LAYER_RANK;
 
 const PROJECTION_PREFIX = 'runtime/projection/';
 const AUTHORITY_BRIDGE_PREFIX = 'ui/interaction/bridges/';
@@ -234,10 +234,8 @@ function run() {
             const fromLayer = detectLayer(f.path);
             const toLayer = detectLayer(resolved);
 
-            const fromLayerRank = SEMANTIC_RANK[fromLayer];
-            const toLayerRank = SEMANTIC_RANK[toLayer];
-
-            if (fromLayerRank < toLayerRank) {
+            const allowed = ALLOWED_ZONE_IMPORTS[fromLayer] ?? [];
+            if (fromLayer !== toLayer && !allowed.includes(toLayer)) {
                 console.error(`ARCHITECTURE VIOLATION: ${f.path} (${fromLayer}) importing ${resolved} (${toLayer})`);
                 violationCount += 1;
                 process.exit(1);

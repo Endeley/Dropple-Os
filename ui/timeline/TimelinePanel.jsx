@@ -12,7 +12,7 @@ import ShotTimelineBar from './ShotTimelineBar.jsx';
 import { ShotHUD } from './ShotHUD.jsx';
 import { useTimelineController } from './useTimelineController.js';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext.jsx';
-import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
+import { canvasBus } from '../eventBus/canvasBus.js';
 import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
 import { collectKeyframeTimes, getNearestKeyframeTime, getNextKeyframeTime, getPrevKeyframeTime } from '@/runtime/timeline/keyframeTimeUtils.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';

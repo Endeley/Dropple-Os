@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
+import { canvasBus } from './eventBus/canvasBus.js';
 import { NodeView } from './NodeView.jsx';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext';
 import { computeSelectionBounds } from '@/ui/selection/selectionBounds.js';

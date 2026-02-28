@@ -3,7 +3,6 @@
 import { useRouter, usePathname } from 'next/navigation';
 import CanvasRoot from '@/ui/canvas/CanvasRoot.jsx';
 import { Controls } from '@/ui/Controls.jsx';
-import '@/ui/interaction/sessionBinding.js';
 
 import { WorkspaceRegistry } from '@/workspaces/registry';
 

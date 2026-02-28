@@ -1,5 +1,5 @@
 import { resolveEasing } from '@/timeline/resolveEasing.js';
-import { lerp } from '@/runtime/animation/lerp.js';
+import { lerp } from '../../domain/math/lerp.js';
 
 /**
  * Evaluate animation tracks at time t (ms).

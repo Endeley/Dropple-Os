@@ -1,7 +1,7 @@
 'use client';
 
 import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
-import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
+import { canvasBus } from './eventBus/canvasBus.js';
 
 export function Controls({ profile = 'design' }) {
     const dispatcher = useDispatcher();

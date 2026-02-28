@@ -1,4 +1,4 @@
-import { computeSelectionBounds } from '@/runtime/geometry/selectionBounds.js';
+import { computeSelectionBounds } from '../../domain/geometry/selectionBounds.js';
 import { findBestSnap } from './snapUtils';
 
 export function applyResizeConstraints({ pointerDelta, handle, nodes, siblings = [], canvas, options = {} }) {

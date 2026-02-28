@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext';
-import { canvasBus } from '@/infrastructure/eventBus/canvasBus.js';
+import { canvasBus } from '../eventBus/canvasBus.js';
 
 export function useKeyboardNudge({ enabled = true, emit, getState }) {
   const { selectedIds } = useSelection();
