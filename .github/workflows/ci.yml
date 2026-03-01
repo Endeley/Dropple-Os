@@ -28,3 +28,9 @@ jobs:
 
       - name: Determinism Gate
         run: npm run determinism
+
+      - name: Template Verification
+        run: npm run template:verify-all
+        env:
+          ENGINE_VERSION: ${{ secrets.ENGINE_VERSION }}
+          ROOT_PUBLIC_KEY: ${{ secrets.ROOT_PUBLIC_KEY }}
