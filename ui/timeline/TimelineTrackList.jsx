@@ -3,7 +3,6 @@
 import { useMemo } from 'react';
 import { useTimelineSelectionStore } from '@/ui/timeline/useTimelineSelectionStore.js';
 import { commitCurveChange } from '@/ui/animation/curves/commitCurveChange.js';
-import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
 
 function normalizeEasingValue(easing) {
   if (easing && typeof easing === 'object' && easing.type === 'bezier') {
@@ -21,7 +20,6 @@ function defaultBezier() {
 }
 
 function TrackRow({ track, clipDurationMs, keyframes, frameTime, isSelected, readOnly = false }) {
-  const dispatcher = useDispatcher();
   const safeDuration = clipDurationMs > 0 ? clipDurationMs : 1;
   const highlightWindowMs = 40;
   const selectSingle = useTimelineSelectionStore((s) => s.selectSingle);
@@ -97,7 +95,7 @@ function TrackRow({ track, clipDurationMs, keyframes, frameTime, isSelected, rea
                 if (readOnly) return;
                 const next = e.target.value;
                 const easing = next === 'bezier' ? defaultBezier() : next;
-                commitCurveChange({ keyframeId: row.id, easing, dispatch: dispatcher.dispatch });
+                commitCurveChange({ keyframeId: row.id, easing });
               }}
               disabled={readOnly}
               style={{

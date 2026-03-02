@@ -21,7 +21,7 @@ export function useTimelineController(initialTimeline) {
     const current =
       controller.snapshotGraph.nodes[controller.headId]?.timeline ?? initialTimeline;
     return projectTimeline(current);
-  }, [controller]);
+  }, [controller, initialTimeline]);
 
   // 🔒 UI intent → controller → dispatcher → history → hash gate
   const dispatch = useCallback((action) => {

@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { canvasBus } from '../../eventBus/canvasBus.js';
+import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
 
 export function pasteFromClipboard({ clipboard, offset = 20 }) {
   if (!clipboard) return [];
@@ -16,7 +16,7 @@ export function pasteFromClipboard({ clipboard, offset = 20 }) {
   clipboard.nodes.forEach((node) => {
     const newId = idMap.get(node.id);
     if (!newId) return;
-    canvasBus.emit('intent.node.create', {
+    nodeCreateIntent({
       id: newId,
       type: node.type,
       parentId: node.parentId ? idMap.get(node.parentId) || null : null,

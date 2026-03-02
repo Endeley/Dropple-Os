@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { selectIsReplaying, useWorkspaceProjection } from '@/runtime/projection';
 import { runAnimationPreview } from '@/runtime/animation/runAnimationPreview.js';
 import { cancelAnimationPreview } from '@/runtime/animation/cancelAnimationPreview.js';
@@ -16,8 +16,11 @@ import { canvasBus } from '../eventBus/canvasBus.js';
 import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
 import { collectKeyframeTimes, getNearestKeyframeTime, getNextKeyframeTime, getPrevKeyframeTime } from '@/runtime/timeline/keyframeTimeUtils.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
-import { EventTypes } from '@/core/events/eventTypes.js';
+import {
+  timelineIntentClockPause,
+  timelineIntentClockPlay,
+  timelineIntentClockSeek,
+} from '@/ui/timeline/timelineIntent.js';
 import { TrackActions } from '@/runtime/timeline/trackControllerBridge.js';
 
 export default function TimelinePanel({ designState }) {
@@ -26,7 +29,7 @@ export default function TimelinePanel({ designState }) {
   const sceneGraph = useRuntimeStore((s) => s.sceneGraph);
   const runtimeScene = useRuntimeStore((s) => s.scene);
   const frameTime = useRuntimeStore((s) => s.frameTime) ?? 0;
-  const [isPlaying, setIsPlaying] = useState(false);
+  const isPlaying = useTimelineStore((s) => s.isPlaying);
   const [isLooping, setIsLooping] = useState(true);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [rangeInMs, setRangeInMs] = useState(0);
@@ -38,7 +41,6 @@ export default function TimelinePanel({ designState }) {
   const [hoverTrackId, setHoverTrackId] = useState(null);
   const [hoverGroupId, setHoverGroupId] = useState(null);
   const cancelRef = useRef(null);
-  const dispatcher = useDispatcher();
   const { selectedIds } = useSelection() || {};
   const snapToKeyframes = useTimelineStore((s) => s.snapToKeyframes);
   const previewInterpolation = useTimelineStore((s) => s.previewInterpolation);
@@ -47,6 +49,10 @@ export default function TimelinePanel({ designState }) {
   const setDuration = useTimelineStore((s) => s.setDuration);
   const setKeyframeTimes = useTimelineStore((s) => s.setKeyframeTimes);
   const setIsPlayingFlag = useTimelineStore((s) => s.setIsPlaying);
+  const pausePlayback = useCallback(() => {
+    timelineIntentClockPause();
+    setIsPlayingFlag?.(false);
+  }, [setIsPlayingFlag]);
   const timelineSource = useMemo(
     () =>
       designState?.timeline?.timelines?.default ??
@@ -95,24 +101,13 @@ export default function TimelinePanel({ designState }) {
 
   useEffect(() => {
     if (!Number.isFinite(durationMs) || durationMs <= 0) {
-      setRangeInMs(0);
-      setRangeOutMs(0);
       setDuration?.(0);
       setKeyframeTimes?.([]);
       return;
     }
-    setRangeInMs((prev) => Math.max(0, Math.min(prev, durationMs)));
-    setRangeOutMs((prev) => {
-      const next = Number.isFinite(prev) && prev > 0 ? prev : durationMs;
-      return Math.max(0, Math.min(next, durationMs));
-    });
     setDuration?.(durationMs);
     setKeyframeTimes?.(collectKeyframeTimes(animations));
   }, [durationMs, setDuration, setKeyframeTimes, animations]);
-
-  useEffect(() => {
-    setKeyframeTimes?.(collectKeyframeTimes(animations));
-  }, [animations, setKeyframeTimes]);
 
   useEffect(() => {
     return () => {
@@ -123,7 +118,7 @@ export default function TimelinePanel({ designState }) {
       pausePlayback();
       cancelAnimationPreview();
     };
-  }, []);
+  }, [pausePlayback]);
 
   useEffect(() => {
     if (cancelRef.current) {
@@ -131,24 +126,32 @@ export default function TimelinePanel({ designState }) {
       cancelRef.current = null;
     }
     pausePlayback();
-  }, [designState]);
+  }, [designState, pausePlayback]);
 
-  if (isReplaying) return null;
-  if (!animations?.clips) return null;
+  const canRenderTimeline = !isReplaying && Boolean(animations?.clips);
 
-  function resolvePreviewTime(timeMs) {
+  const resolvePreviewTime = useCallback((timeMs) => {
     if (previewInterpolation === 'hold') {
       const times = useTimelineStore.getState().keyframeTimes || [];
       return getPrevKeyframeTime(times, timeMs) ?? timeMs;
     }
     return timeMs;
-  }
+  }, [previewInterpolation]);
 
   function clampToRange(value, min, max) {
     return Math.max(min, Math.min(value, max));
   }
 
-  function resolveSnappedTime(timeMs, { forceSnap = false } = {}) {
+  const hasValidDuration = Number.isFinite(durationMs) && durationMs > 0;
+  const safeDurationMs = hasValidDuration ? durationMs : 0;
+  const normalizedRangeInMs = hasValidDuration
+    ? clampToRange(rangeInMs, 0, durationMs)
+    : 0;
+  const normalizedRangeOutMs = hasValidDuration
+    ? clampToRange(rangeOutMs > 0 ? rangeOutMs : durationMs, 0, durationMs)
+    : 0;
+
+  const resolveSnappedTime = useCallback((timeMs, { forceSnap = false } = {}) => {
     const store = useTimelineStore.getState();
     const duration = Number.isFinite(store.duration) ? store.duration : 0;
     const frameMs = 1000 / (store.fps || 24);
@@ -167,18 +170,15 @@ export default function TimelinePanel({ designState }) {
     }
 
     return next;
-  }
+  }, []);
 
-  function seekTime(timeMs, options = {}) {
+  const seekTime = useCallback((timeMs, options = {}) => {
     const next = resolveSnappedTime(timeMs, options);
-    dispatcher.dispatch({
-      type: EventTypes.CLOCK_SEEK,
-      payload: { time: next },
-    });
+    timelineIntentClockSeek({ time: next });
     return next;
-  }
+  }, [resolveSnappedTime]);
 
-  function handleScrub(timeMs) {
+  const handleScrub = useCallback((timeMs) => {
     if (isPlaying) {
       pausePlayback();
     }
@@ -197,7 +197,7 @@ export default function TimelinePanel({ designState }) {
     });
 
     cancelRef.current = preview?.cancel || null;
-  }
+  }, [isPlaying, pausePlayback, seekTime, resolvePreviewTime, designState, animations]);
 
   function buildPlaybackAnimations(animationsSource, rangeIn, rangeOut, speed) {
     if (!animationsSource) return null;
@@ -242,35 +242,28 @@ export default function TimelinePanel({ designState }) {
     };
   }
 
-  function pausePlayback() {
-    dispatcher.dispatch({ type: EventTypes.CLOCK_PAUSE });
-    setIsPlaying(false);
-    setIsPlayingFlag?.(false);
-  }
-
   function startPlayback() {
     if (!animations?.clips) return;
-    dispatcher.dispatch({ type: EventTypes.CLOCK_PLAY });
-    setIsPlaying(true);
+    timelineIntentClockPlay();
     setIsPlayingFlag?.(true);
   }
 
   function handleResetToIn() {
     const min = 0;
     const max = durationMs;
-    const inMs = clampToRange(rangeInMs, min, max);
+    const inMs = clampToRange(normalizedRangeInMs, min, max);
     handleScrub(inMs);
   }
 
-  function handleStepFrame(direction) {
+  const handleStepFrame = useCallback((direction) => {
     const store = useTimelineStore.getState();
     const frameMs = 1000 / (store.fps || 24);
     const delta = direction > 0 ? frameMs : -frameMs;
     const nextTime = frameTime + delta;
     handleScrub(nextTime);
-  }
+  }, [frameTime, handleScrub]);
 
-  function handleStepKeyframe(direction) {
+  const handleStepKeyframe = useCallback((direction) => {
     const store = useTimelineStore.getState();
     const next = direction > 0
       ? getNextKeyframeTime(store.keyframeTimes, frameTime)
@@ -278,9 +271,10 @@ export default function TimelinePanel({ designState }) {
     if (Number.isFinite(next)) {
       handleScrub(next);
     }
-  }
+  }, [frameTime, handleScrub]);
 
   useEffect(() => {
+    if (!canRenderTimeline) return undefined;
     function isTypingTarget(target) {
       if (!target) return false;
       const tag = target.tagName?.toLowerCase();
@@ -309,7 +303,7 @@ export default function TimelinePanel({ designState }) {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [previewInterpolation]);
+  }, [previewInterpolation, canRenderTimeline, handleStepFrame, handleStepKeyframe, setPreviewInterpolation]);
 
   function handleSetKeyframe() {
     if (isAnimationWorkspace) return;
@@ -323,6 +317,8 @@ export default function TimelinePanel({ designState }) {
       source: 'timeline.set-keyframe',
     });
   }
+
+  if (!canRenderTimeline) return null;
 
   return (
     <div
@@ -998,12 +994,12 @@ export default function TimelinePanel({ designState }) {
           <input
             type="number"
             min={0}
-            max={durationMs}
-            value={rangeInMs}
+            max={safeDurationMs}
+            value={normalizedRangeInMs}
             onChange={(e) => {
-              const next = clampToRange(Number(e.target.value), 0, durationMs);
+              const next = clampToRange(Number(e.target.value), 0, safeDurationMs);
               setRangeInMs(next);
-              if (rangeOutMs && next > rangeOutMs) {
+              if (normalizedRangeOutMs && next > normalizedRangeOutMs) {
                 setRangeOutMs(next);
               }
             }}
@@ -1015,12 +1011,12 @@ export default function TimelinePanel({ designState }) {
           <input
             type="number"
             min={0}
-            max={durationMs}
-            value={rangeOutMs}
+            max={safeDurationMs}
+            value={normalizedRangeOutMs}
             onChange={(e) => {
-              const next = clampToRange(Number(e.target.value), 0, durationMs);
+              const next = clampToRange(Number(e.target.value), 0, safeDurationMs);
               setRangeOutMs(next);
-              if (rangeInMs && next < rangeInMs) {
+              if (normalizedRangeInMs && next < normalizedRangeInMs) {
                 setRangeInMs(next);
               }
             }}

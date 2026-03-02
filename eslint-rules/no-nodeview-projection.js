@@ -1,4 +1,4 @@
-module.exports = {
+const noNodeviewProjection = {
   meta: {
     type: "problem",
     docs: {
@@ -31,3 +31,5 @@ module.exports = {
     };
   },
 };
+
+export default noNodeviewProjection;

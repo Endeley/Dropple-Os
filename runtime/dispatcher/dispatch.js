@@ -42,11 +42,11 @@ import { requestUXConfirmation } from './ux/uxConfirmBus.js';
 import { shouldConfirmUXAction, defaultUXEnforcementTier } from './ux/shouldConfirmUXAction.js';
 import { withMutationOrigin } from '@/core/mutationContext.js';
 import { getSystemEventHandler } from '@/core/events/systemEventRegistry.js';
-import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
 import { checkWorkspacePolicy } from '@/core/contracts/capabilityGate.js';
 import { INTENT_CAPS } from '@/core/contracts/intentCapabilities.v1.js';
 import {
     getActiveWorkspace,
+    getWorkspaceState,
     setActiveWorkspace,
     setCanvasSurface,
     setViewport,
@@ -170,18 +170,32 @@ export function createEventDispatcher({
             });
 
             if (process.env.NODE_ENV === 'development') {
-                const workspaceId = getActiveWorkspace();
-                const policy = resolveWorkspacePolicy(workspaceId);
-                const allowed = policy?.allowedEventTypes;
-                if (
-                    allowed &&
-                    !allowed.has(rawEvent?.type) &&
-                    !SYSTEM_EVENTS.has(rawEvent?.type)
-                ) {
-                    console.warn('[Skeleton v2] Intent not allowed in current mode', {
-                        intent: rawEvent?.type,
-                        mode: policy?.id ?? workspaceId,
+                const SYSTEM_EVENT_PREFIXES = ['workspace/', 'viewport/', 'camera/'];
+                const isSystemEvent = SYSTEM_EVENT_PREFIXES.some((prefix) =>
+                    rawEvent?.type?.startsWith(prefix),
+                );
+
+                if (!isSystemEvent) {
+                    const workspace = getWorkspaceState();
+                    const requiredCaps = INTENT_CAPS[rawEvent?.type];
+                    const mutationType = rawEvent?.type;
+                    const verdict = checkWorkspacePolicy({
+                        workspace,
+                        requiredCaps,
+                        mutationType,
                     });
+
+                    if (!verdict.ok && verdict.reason !== 'NO_POLICY') {
+                        console.warn(
+                            '[Skeleton v2] Intent blocked by capability gate',
+                            {
+                                intent: rawEvent?.type,
+                                mode: workspace?.id ?? getActiveWorkspace(),
+                                reason: verdict.reason,
+                                cap: verdict.cap,
+                            },
+                        );
+                    }
                 }
             }
 
@@ -229,8 +243,9 @@ export function createEventDispatcher({
 
                 if (event.type === EventTypes.BEHAVIOR_TRIGGER_FIRE) {
                     const runtimeState = __getRuntimeStateInternal();
-                    const workspaceId = getActiveWorkspace();
-                    const policy = resolveWorkspacePolicy(workspaceId);
+                    const workspace = getWorkspaceState();
+                    const workspaceId = workspace?.id ?? getActiveWorkspace();
+                    const policy = workspace;
                     const allowed = policy?.enabledTriggerTypes;
 
                     if (allowed && !allowed.has(event.payload?.triggerType)) {
@@ -248,8 +263,9 @@ export function createEventDispatcher({
                     return await dispatch(resolved);
                 }
 
-                const workspaceId = getActiveWorkspace();
-                const policy = resolveWorkspacePolicy(workspaceId);
+                const workspace = getWorkspaceState();
+                const workspaceId = workspace?.id ?? getActiveWorkspace();
+                const policy = workspace;
                 const requiredCaps = INTENT_CAPS[event.type] ?? [];
                 const mutationType =
                     event.type === EventTypes.SELECTION_SET ||
@@ -268,8 +284,14 @@ export function createEventDispatcher({
                         : 'mutate';
 
                 if (!SYSTEM_EVENTS.has(event.type)) {
+                    console.log('DEBUG WORKSPACE', {
+                        workspaceId,
+                        requiredCaps,
+                        policyCaps: policy?.policy?.capabilities,
+                        mutation: policy?.policy?.mutation,
+                    });
                     const verdict = checkWorkspacePolicy({
-                        workspace: policy,
+                        workspace,
                         requiredCaps,
                         mutationType,
                     });

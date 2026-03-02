@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { serializeSelection } from '@/ui/workspace/shared/serializeSelection';
 import { pasteFromClipboard } from '@/ui/workspace/shared/pasteFromClipboard';
 import { useClipboard } from '@/ui/workspace/shared/ClipboardContext';
-import { canvasBus } from '../../eventBus/canvasBus.js';
+import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
 
 export function useKeyboardShortcuts({
   enabled = true,
@@ -84,7 +84,7 @@ export function useKeyboardShortcuts({
 
         const newId = `${id}-copy`;
 
-        canvasBus.emit('intent.node.create', {
+        nodeCreateIntent({
           id: newId,
           type: node.type,
           parentId: node.parentId || null,

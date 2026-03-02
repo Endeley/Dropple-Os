@@ -1,6 +1,6 @@
 'use client';
 
-import { DispatcherProvider } from '@/ui/interaction/bridges/DispatcherProvider.jsx';
+import { DispatcherProvider } from '@/runtime/boundary/DispatcherProvider.jsx';
 import { WorkspaceUIRoot } from './DispatcherProvider/UI/WorkspaceUIRoot.jsx';
 import { WorkspaceCanvasRoot } from '@/ui/workspace/WorkspaceCanvasRoot.jsx';
 import { WorkspaceSessionsRoot } from './DispatcherProvider/Sessions/WorkspaceSessionsRoot.jsx';

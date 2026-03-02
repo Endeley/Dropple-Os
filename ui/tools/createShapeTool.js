@@ -1,4 +1,5 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
+import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
 
 export const CreateShapeTool = {
   id: 'create-shape',
@@ -12,7 +13,7 @@ export function registerCreateShapeTool() {
   const handleCreate = ({ bounds }) => {
     if (!bounds) return;
 
-    canvasBus.emit('intent.node.create', {
+    nodeCreateIntent({
       type: 'shape',
       bounds,
     });

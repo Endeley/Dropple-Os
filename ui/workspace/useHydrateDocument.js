@@ -1,5 +1,5 @@
 import { replayBranch } from '@/runtime/replay/replayBranch.js';
-import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
+import { getRuntimeDispatcher } from '@/runtime/dispatcher/dispatcherHandle.js';
 
 /**
  * Runtime orchestration hook.
@@ -10,10 +10,9 @@ import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/Dispatcher
  * - Hydration
  */
 export function useHydrateDocument() {
-    const dispatcher = useDispatcher();
-
     function hydrateFromSnapshot(snapshot) {
         if (!snapshot) return;
+        const dispatcher = getRuntimeDispatcher();
 
         const { doc, branches, events, timelines, markers } = snapshot;
 

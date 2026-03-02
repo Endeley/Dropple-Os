@@ -1,4 +1,5 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
+import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
 
 export const CreateFrameTool = {
     id: 'create-frame',
@@ -8,13 +9,13 @@ export const CreateFrameTool = {
 /**
  * Frame creation tool (UIUX authoring).
  * Emits intent ONLY.
- * Actual node creation is handled by nodeCreateResolver.
+ * Actual node creation is handled by nodeCreateBridge.
  */
 export function registerCreateFrameTool() {
     const handleCreate = ({ bounds }) => {
         if (!bounds) return;
 
-        canvasBus.emit('intent.node.create', {
+        nodeCreateIntent({
             type: 'frame',
             bounds,
         });

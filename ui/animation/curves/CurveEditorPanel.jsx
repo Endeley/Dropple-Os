@@ -6,7 +6,6 @@ import { resolveWorkspacePolicy } from "@/workspaces/registry/resolveWorkspacePo
 import { getActiveWorkspace } from "@/runtime/projection";
 import { useTimelineSelectionStore } from "@/ui/timeline/useTimelineSelectionStore.js";
 import { commitCurveChange } from "./commitCurveChange.js";
-import { useDispatcher } from "@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx";
 import BezierCurveCanvas from "./BezierCurveCanvas.jsx";
 
 function isBezier(easing) {
@@ -14,7 +13,6 @@ function isBezier(easing) {
 }
 
 export default function CurveEditorPanel({ capabilities }) {
-  const dispatcher = useDispatcher();
   const selection = useTimelineSelectionStore((s) => s.selectedKeyframeIds);
   const selectedKeyframeId = selection.size ? Array.from(selection)[0] : null;
   const workspaceId = getActiveWorkspace();
@@ -36,7 +34,7 @@ export default function CurveEditorPanel({ capabilities }) {
 
   function commit(nextEasing) {
     if (!nextEasing || !isBezier(nextEasing)) return;
-    commitCurveChange({ keyframeId: selectedKeyframeId, easing: nextEasing, dispatch: dispatcher.dispatch });
+    commitCurveChange({ keyframeId: selectedKeyframeId, easing: nextEasing });
   }
 
   return (

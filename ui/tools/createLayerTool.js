@@ -1,4 +1,5 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
+import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
 
 export const CreateLayerTool = {
   id: 'create-layer',
@@ -12,7 +13,7 @@ export function registerCreateLayerTool() {
   const handleCreate = ({ bounds }) => {
     if (!bounds) return;
 
-    canvasBus.emit('intent.node.create', {
+    nodeCreateIntent({
       type: 'layer',
       bounds,
     });

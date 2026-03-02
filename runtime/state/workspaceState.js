@@ -9,6 +9,10 @@ const workspaceState = {
     canvasPolicy: DefaultCanvasPolicy,
     viewport: defaultViewport,
     canvasSurface: defaultSurface,
+    policy: null,
+    ui: null,
+    timeline: null,
+    profile: null,
 };
 const listeners = new Set();
 
@@ -32,15 +36,25 @@ export function resolveWorkspaceState(workspaceDef) {
 export function setActiveWorkspace(id, workspaceDef = null) {
     activeWorkspaceId = id;
     if (workspaceDef) {
-        Object.assign(workspaceState, resolveWorkspaceState(workspaceDef));
+        Object.assign(workspaceState, {
+            ...workspaceDef,
+            id,
+            enabledTriggerTypes: new Set(
+                workspaceDef?.events?.enabledTriggerTypes ?? []
+            ),
+            allowedEventTypes: new Set(
+                workspaceDef?.events?.allowedEventTypes ?? []
+            ),
+        });
     } else {
         workspaceState.id = id;
     }
     if (process.env.NODE_ENV === 'development') {
         console.log('[setActiveWorkspace]', {
             activeWorkspaceId,
-            workspaceDef: workspaceDef?.id,
-            canvasSurface: workspaceState.canvasSurface,
+            policyCaps: workspaceState?.policy?.capabilities,
+            enabledTriggerTypesType:
+                workspaceState?.enabledTriggerTypes instanceof Set,
         });
     }
     notify();

@@ -8,10 +8,12 @@ import {
 } from '@/persistence/worldState.js';
 import { getRuntimeState } from '@/runtime/state/runtimeState';
 import { setViewport } from '@/runtime/state/workspaceState.js';
+import { getRuntimeDispatcher } from '@/runtime/dispatcher/dispatcherHandle.js';
 
 export function hydrateWorld(worldState, { dispatcher } = {}) {
     if (!worldState) return null;
-    if (!dispatcher?.hydrateRuntimeState) {
+    const resolvedDispatcher = dispatcher ?? getRuntimeDispatcher?.();
+    if (!resolvedDispatcher?.hydrateRuntimeState) {
         throw new Error('[WorldState] Missing dispatcher for hydrateWorld');
     }
     const migrated = migrateWorld(worldState);
@@ -36,7 +38,7 @@ export function hydrateWorld(worldState, { dispatcher } = {}) {
     if (process.env.NODE_ENV === 'development') {
         deepFreeze(migrated);
     }
-    return dispatcher.hydrateRuntimeState(nextState, { animate: false });
+    return resolvedDispatcher.hydrateRuntimeState(nextState, { animate: false });
 }
 
 export function roundTripWorldState({ nodesById, viewport, workspaceId, metadata, dispatcher }) {

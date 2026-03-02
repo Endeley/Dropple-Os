@@ -25,9 +25,24 @@ function inferMutationPolicy(ws) {
   return 'open';
 }
 
+const CREATE_TOOLS = new Set([
+  'frame',
+  'text',
+  'image',
+  'shape',
+  'layer',
+  'defaultCreate',
+]);
+
+function hasCreateTool(ws) {
+  const tools = ws?.tools ?? ws?.ui?.tools ?? [];
+  return tools.some((tool) => CREATE_TOOLS.has(tool));
+}
+
 export function adaptWorkspaceToContractV1(ws) {
   const name = ws.label ?? ws.name ?? ws.id;
   const kind = inferCanvasKind(ws);
+  const tools = ws.tools ?? ws.ui?.tools ?? [];
 
   const caps = [];
   const denies = [];
@@ -46,21 +61,25 @@ export function adaptWorkspaceToContractV1(ws) {
   if (ws.canvasSurface?.snap) caps.push('snap:enabled');
 
   // tools -> node type affordances
-  if (ws.tools?.includes('select')) caps.push('select:basic');
+  if (tools.includes('select')) caps.push('select:basic');
 
   if (
-    ws.tools?.some((t) =>
+    tools.some((t) =>
       ['move', 'resize', 'text', 'image', 'frame', 'shape', 'path'].includes(t)
     )
   ) {
     caps.push('node:mutate');
   }
 
-  if (ws.tools?.includes('frame')) caps.push('node:type:frame');
-  if (ws.tools?.includes('text')) caps.push('node:type:text');
-  if (ws.tools?.includes('image')) caps.push('node:type:image');
-  if (ws.tools?.includes('shape')) caps.push('node:type:shape');
-  if (ws.tools?.includes('path')) caps.push('node:path', 'path:edit');
+  if (tools.some((tool) => CREATE_TOOLS.has(tool))) {
+    caps.push('node:create');
+  }
+
+  if (tools.includes('frame')) caps.push('node:type:frame');
+  if (tools.includes('text')) caps.push('node:type:text');
+  if (tools.includes('image')) caps.push('node:type:image');
+  if (tools.includes('shape')) caps.push('node:type:shape');
+  if (tools.includes('path')) caps.push('node:path', 'path:edit');
 
   // timeline policy
   const timelineEnabled =
@@ -111,9 +130,9 @@ export function adaptWorkspaceToContractV1(ws) {
   }
 
   // dev tools
-  if (ws.tools?.includes('inspect')) caps.push('dev:inspect');
-  if (ws.tools?.includes('translate')) caps.push('dev:translate');
-  if (ws.tools?.includes('refactor')) caps.push('dev:refactor');
+  if (tools.includes('inspect')) caps.push('dev:inspect');
+  if (tools.includes('translate')) caps.push('dev:translate');
+  if (tools.includes('refactor')) caps.push('dev:refactor');
 
   // hard blocks when canvas disabled (dev)
   if (!canvasEnabled) {
@@ -161,8 +180,8 @@ export function adaptWorkspaceToContractV1(ws) {
     },
 
     ui: {
-      tools: ws.tools ?? [],
-      panels: ws.panels ?? [],
+      tools,
+      panels: ws.panels ?? ws.ui?.panels ?? [],
     },
 
     policy: {

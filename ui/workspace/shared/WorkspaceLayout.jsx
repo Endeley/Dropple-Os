@@ -14,7 +14,6 @@ import { ModeProvider, useMode } from './ModeContext';
 import { useKeyboardShortcuts } from '@/ui/interaction/useKeyboardShortcuts';
 import { getDesignStateAtCursor } from '@/runtime/replay/getDesignStateAtCursor';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { registerCreationResolver } from '@/ui/creation/creationResolver';
 import { registerWorkspaceTools } from '@/ui/interaction/toolRegistration';
 import { useKeyboardNudge } from '@/ui/keyboard/useKeyboardNudge';
 import { useAlignmentShortcuts } from '@/ui/keyboard/useAlignmentShortcuts';
@@ -184,15 +183,11 @@ function WorkspaceLayoutInner({
   });
 
   useEffect(() => {
-    const unregisterResolver = registerCreationResolver({
-      getMode: () => adapter?.id,
-    });
     const unregisterTools = registerWorkspaceTools({
       workspaceId: adapter?.workspaceId || adapter?.id,
     });
 
     return () => {
-      unregisterResolver?.();
       unregisterTools?.();
     };
   }, [adapter?.id, adapter?.workspaceId]);

@@ -1,4 +1,5 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
+import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
 
 export const DefaultCreateTool = {
   id: 'create-default',
@@ -13,7 +14,7 @@ export function registerDefaultCreateTool() {
   const handleCreate = ({ bounds }) => {
     if (!bounds) return;
 
-    canvasBus.emit('intent.node.create', {
+    nodeCreateIntent({
       type: 'rect',
       bounds,
     });

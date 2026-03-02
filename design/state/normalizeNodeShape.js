@@ -20,6 +20,12 @@ export function normalizeNodeShape({
     children: [],
     props,
     style,
+    // Required for canonical projection
+    transform: {
+      x: layout?.x ?? 0,
+      y: layout?.y ?? 0,
+    },
+    meta: {},
     layout: {
       x: 0,
       y: 0,

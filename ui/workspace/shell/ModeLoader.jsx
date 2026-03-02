@@ -2,12 +2,10 @@
 
 import { useEffect } from "react";
 import { WorkspaceRegistry } from "../../../workspaces/registry";
-import { EventTypes } from "@/core/events/eventTypes.js";
-import { useDispatcher } from "@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx";
+import { workspaceIntentSetActive } from "@/ui/workspace/workspaceIntent.js";
 import { WorkspaceShell } from "./WorkspaceShell";
 
 export function ModeLoader({ mode }) {
-  const dispatcher = useDispatcher();
   const key = (mode || "").toLowerCase();
   const workspace = WorkspaceRegistry[key];
 
@@ -16,11 +14,11 @@ export function ModeLoader({ mode }) {
       console.log("[ModeLoader] mode:", mode, "key:", key, "workspace:", workspace?.id);
     }
     if (!workspace?.id) return;
-    dispatcher.dispatch({
-      type: EventTypes.WORKSPACE_SET_ACTIVE,
-      payload: { id: workspace.id, workspaceDef: workspace },
+    workspaceIntentSetActive({
+      id: workspace.id,
+      workspaceDef: workspace,
     });
-  }, [dispatcher, workspace]);
+  }, [workspace, key, mode]);
 
   if (!workspace) {
     const available = Object.keys(WorkspaceRegistry);

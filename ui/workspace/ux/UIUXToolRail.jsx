@@ -4,13 +4,24 @@ import { useMemo } from 'react';
 import { useWorkspaceProjection } from '@/runtime/projection';
 import { getWorkspaceCapabilities } from '@/ui/capabilities/workspaceCapabilities';
 import { getVisibleToolsForWorkspace } from '@/ui/tools/toolDefinitions';
+import { useToolStore } from '@/ui/state/useToolStore.js';
 
-function ToolButton({ label, id }) {
-  return <button data-tool-id={id}>{label}</button>;
+function ToolButton({ label, id, active, onSelect }) {
+  return (
+    <button
+      data-tool-id={id}
+      className={active ? 'active' : ''}
+      onClick={onSelect}
+    >
+      {label}
+    </button>
+  );
 }
 
 export function UIUXToolRail() {
   const workspaceId = useWorkspaceProjection((state) => state.id) || 'uiux';
+  const activeTool = useToolStore((s) => s.activeTool);
+  const setActiveTool = useToolStore((s) => s.setActiveTool);
   const capabilitySet = useMemo(
     () => getWorkspaceCapabilities(workspaceId),
     [workspaceId]
@@ -40,7 +51,13 @@ export function UIUXToolRail() {
       {grouped.map(([groupId, groupTools]) => (
         <div className="tool-group" key={groupId}>
           {groupTools.map((tool) => (
-            <ToolButton key={tool.id} id={tool.id} label={tool.label} />
+            <ToolButton
+              key={tool.id}
+              id={tool.id}
+              label={tool.label}
+              active={activeTool === tool.id}
+              onSelect={() => setActiveTool(tool.id)}
+            />
           ))}
         </div>
       ))}

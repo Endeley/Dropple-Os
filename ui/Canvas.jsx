@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { canvasBus } from './eventBus/canvasBus.js';
+import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
 import { NodeView } from './NodeView.jsx';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext';
 import { computeSelectionBounds } from '@/ui/selection/selectionBounds.js';
@@ -44,7 +45,7 @@ export default function Canvas() {
                 ...previous,
 
                 createNodeDebug({ x = 40, y = 40, width = 160, height = 100 } = {}) {
-                    canvasBus.emit('intent.node.create', {
+                    nodeCreateIntent({
                         type: 'frame',
                         bounds: { x, y, width, height },
                     });
@@ -137,7 +138,8 @@ export default function Canvas() {
         const height = Math.abs(dragCurrent.y - dragStart.y);
 
         if (width > 6 && height > 6) {
-            canvasBus.emit('intent.create', {
+            nodeCreateIntent({
+                type: 'frame',
                 bounds: { x, y, width, height },
                 source: 'canvas.drag',
             });

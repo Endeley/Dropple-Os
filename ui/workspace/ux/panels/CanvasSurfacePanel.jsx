@@ -2,9 +2,8 @@
 
 import { useMemo } from 'react';
 import { CanvasSurfaceTypes } from '@/workspaces/registry/canvasSurfacePolicy.js';
-import { EventTypes } from '@/core/events/eventTypes.js';
 import { useWorkspaceProjection } from '@/runtime/projection';
-import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
+import { canvasSurfaceIntentSet } from '@/ui/workspace/canvasSurfaceIntent.js';
 
 const SURFACE_OPTIONS = [
     { id: CanvasSurfaceTypes.SMOOTH, label: 'Smooth', snap: false },
@@ -13,7 +12,6 @@ const SURFACE_OPTIONS = [
 ];
 
 export function CanvasSurfacePanel() {
-    const dispatcher = useDispatcher();
     const surface = useWorkspaceProjection((state) => state.canvasSurface);
     const currentType = surface?.type ?? CanvasSurfaceTypes.SMOOTH;
     const gridSize = surface?.gridSize ?? 8;
@@ -24,14 +22,11 @@ export function CanvasSurfacePanel() {
         const nextOption = options.find((option) => option.id === nextType);
         if (!nextOption) return;
 
-        dispatcher.dispatch({
-            type: EventTypes.WORKSPACE_SET_CANVAS_SURFACE,
-            payload: {
-                surface: {
-                    type: nextOption.id,
-                    gridSize,
-                    snap: nextOption.snap,
-                },
+        canvasSurfaceIntentSet({
+            surface: {
+                type: nextOption.id,
+                gridSize,
+                snap: nextOption.snap,
             },
         });
     }

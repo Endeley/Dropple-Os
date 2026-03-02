@@ -1,16 +1,15 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
 import { registerSessionBindings } from '@/ui/interaction/sessionBinding.js';
+import { getRuntimeDispatcher } from '@/runtime/dispatcher/dispatcherHandle.js';
 
 export function WorkspaceSessionsRoot() {
-  const dispatcher = useDispatcher();
-
   useEffect(() => {
+    const dispatcher = getRuntimeDispatcher();
     if (!dispatcher?.dispatch) return undefined;
     return registerSessionBindings(dispatcher.dispatch);
-  }, [dispatcher]);
+  }, []);
 
   return null;
 }

@@ -31,8 +31,10 @@ export function DispatcherProvider({
 
     useEffect(() => {
         setDispatcher(dispatcher);
+        globalThis.__droppleDispatcher = dispatcher;
         return () => {
             setDispatcher(null);
+            globalThis.__droppleDispatcher = null;
         };
     }, [dispatcher]);
 

@@ -1,11 +1,9 @@
 'use client';
 
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
-import { EventTypes } from '@/core/events/eventTypes.js';
+import { timelineIntentShotSetActive } from '@/ui/timeline/timelineIntent.js';
 
 export default function ShotTimelineBar() {
-  const dispatcher = useDispatcher();
   const sceneGraph = useRuntimeStore((s) => s.sceneGraph);
   const runtimeScene = useRuntimeStore((s) => s.scene);
 
@@ -48,10 +46,7 @@ export default function ShotTimelineBar() {
             key={shot.id}
             onClick={() => {
               if (!shot?.id) return;
-              dispatcher.dispatch({
-                type: EventTypes.SHOT_SET_ACTIVE,
-                payload: { shotId: shot.id },
-              });
+              timelineIntentShotSetActive({ shotId: shot.id });
             }}
             style={{
               flex: `0 0 ${widthPct}%`,

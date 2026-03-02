@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from 'react';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useSelectionStore } from '@/runtime/stores/useSelectionStore.js';
-import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
+import { nodeUpdateIntent } from '@/ui/inspector/nodeUpdateIntent.js';
 import { InspectorSection } from '@/ui/inspector/InspectorSection.jsx';
 import { NodeHeaderPanel } from '@/ui/inspector/NodeHeaderPanel.jsx';
 import LayoutInspector from '@/ui/inspector/LayoutInspector.jsx';
@@ -18,8 +18,7 @@ import { useAvailability } from '@/ui/availability/useAvailability';
 import { Capability } from '@/ui/capabilities/capabilityVocabulary';
 
 export function UIUXInspectorPanel() {
-  const dispatcher = useDispatcher();
-  const emit = useCallback((event) => dispatcher.dispatch(event), [dispatcher]);
+  const emit = useCallback((event) => nodeUpdateIntent(event), []);
 
   const nodes = useRuntimeStore((s) => s.nodes || {});
   const rootIds = useRuntimeStore((s) => s.rootIds || []);

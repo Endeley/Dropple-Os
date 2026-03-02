@@ -1,17 +1,13 @@
-import { EventTypes } from '@/core/events/eventTypes.js';
+import { timelineIntentKeyframeUpdate } from '@/ui/timeline/timelineIntent.js';
 
 /**
  * Commit a curve edit as a single easing update event.
  */
-export function commitCurveChange({ keyframeId, easing, dispatch } = {}) {
+export function commitCurveChange({ keyframeId, easing } = {}) {
     if (!keyframeId || !easing) return;
-    if (typeof dispatch !== 'function') return;
 
-    dispatch({
-        type: EventTypes.ANIMATION_KEYFRAME_UPDATE,
-        payload: {
-            keyframeId,
-            patch: { easing },
-        },
+    timelineIntentKeyframeUpdate({
+        keyframeId,
+        patch: { easing },
     });
 }

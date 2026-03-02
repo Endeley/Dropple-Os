@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useUXWarnings } from '@/ui/interaction/bridges/UXWarningBridge.js';
 
 const BANNER_COPY =
@@ -8,16 +8,10 @@ const BANNER_COPY =
 
 export function UXWarningBanner() {
     const warningEvent = useUXWarnings();
-    const [visible, setVisible] = useState(false);
     const [dismissed, setDismissed] = useState(false);
+    const visible = !dismissed && warningEvent?.severity === 'warning';
 
-    useEffect(() => {
-        if (dismissed) return;
-        if (warningEvent?.severity !== 'warning') return;
-        setVisible(true);
-    }, [dismissed, warningEvent]);
-
-    if (!visible || dismissed) return null;
+    if (!visible) return null;
 
     return (
         <div
@@ -44,7 +38,6 @@ export function UXWarningBanner() {
                 type='button'
                 onClick={() => {
                     setDismissed(true);
-                    setVisible(false);
                 }}
                 style={{
                     border: 'none',

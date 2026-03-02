@@ -1,10 +1,9 @@
 'use client';
 
-import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
 import { canvasBus } from './eventBus/canvasBus.js';
+import { historyIntentRedo, historyIntentUndo } from '@/ui/history/historyIntent.js';
 
 export function Controls({ profile = 'design' }) {
-    const dispatcher = useDispatcher();
     const isUXMode = profile === 'ux-validation';
     const disabledTooltip = isUXMode ? 'Disabled in UX Mode (validation only)' : undefined;
 
@@ -42,8 +41,8 @@ export function Controls({ profile = 'design' }) {
                 zIndex: 50,
             }}
         >
-            {renderControl('Undo', () => dispatcher.undo())}
-            {renderControl('Redo', () => dispatcher.redo())}
+            {renderControl('Undo', () => historyIntentUndo())}
+            {renderControl('Redo', () => historyIntentRedo())}
             {renderControl('Reset View', handleResetView)}
         </div>
     );

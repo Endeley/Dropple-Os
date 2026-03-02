@@ -1,6 +1,6 @@
 // ui/timeline/useCommitKeyframeDrag.js
 
-import { EventTypes } from '@/core/events/eventTypes';
+import { timelineIntentKeyframeMove } from '@/ui/timeline/timelineIntent.js';
 
 /**
  * Commits dragged keyframes (single or group).
@@ -10,11 +10,7 @@ import { EventTypes } from '@/core/events/eventTypes';
  * - Deterministic
  * - One event per keyframe
  */
-export function useCommitKeyframeDrag({ dispatcher }) {
-    if (!dispatcher) {
-        throw new Error('useCommitKeyframeDrag: dispatcher is required');
-    }
-
+export function useCommitKeyframeDrag() {
     function commitGroupDrag({ keyframeIds, trackId, deltaTime, keyframeTimesById }) {
         if (!keyframeIds || !trackId) return;
 
@@ -24,13 +20,10 @@ export function useCommitKeyframeDrag({ dispatcher }) {
 
             const nextTime = originalTime + deltaTime;
 
-            dispatcher.dispatch({
-                type: EventTypes.TIMELINE_KEYFRAME_MOVE,
-                payload: {
-                    keyframeId,
-                    trackId,
-                    time: nextTime,
-                },
+            timelineIntentKeyframeMove({
+                keyframeId,
+                trackId,
+                time: nextTime,
             });
         });
     }

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 import { serializeWorld, hydrateWorld, roundTripWorldState } from '@/runtime/persistence/worldRuntimeBridge.js';
-import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
 
 const SAVE_DEBOUNCE_MS = 300;
 const CAMERA_THROTTLE_MS = 200;
@@ -13,7 +12,6 @@ export function useWorldPersistence({
     nodesById,
     persistenceAdapter,
 }) {
-    const dispatcher = useDispatcher();
     const loadedRef = useRef(false);
     const metaRef = useRef(null);
     const saveTimerRef = useRef(null);
@@ -64,7 +62,7 @@ export function useWorldPersistence({
                 createdAt: loaded.metadata?.createdAt ?? Date.now(),
                 updatedAt: loaded.metadata?.updatedAt ?? Date.now(),
             };
-            hydrateWorld(loaded, { dispatcher });
+            hydrateWorld(loaded);
         } else {
             ensureMeta();
         }
@@ -81,7 +79,6 @@ export function useWorldPersistence({
                         viewport,
                         workspaceId,
                         metadata: metaRef.current,
-                        dispatcher,
                     });
                 },
                 worldSave() {
@@ -91,7 +88,7 @@ export function useWorldPersistence({
             };
             window.__droppleDebug = api;
         }
-    }, [nodesById, viewport, workspaceId, flushSave, dispatcher, persistenceAdapter]);
+    }, [nodesById, viewport, workspaceId, flushSave, persistenceAdapter]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;

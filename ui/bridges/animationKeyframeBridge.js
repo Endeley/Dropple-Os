@@ -1,4 +1,4 @@
-import { canvasBus } from '../../eventBus/canvasBus.js';
+import { canvasBus } from '../eventBus/canvasBus.js';
 import { getRuntimeDispatcher } from '@/runtime/dispatcher/dispatcherHandle.js';
 import { createAnimationKeyframeEvent } from '@/runtime/input/animationKeyframeRuntimeBridge.js';
 

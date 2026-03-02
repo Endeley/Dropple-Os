@@ -1,13 +1,17 @@
 'use client';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { UIUXTopBar } from './UIUXTopBar.jsx';
 import { UIUXToolRail } from './UIUXToolRail.jsx';
 import { UIUXCanvasStage } from './UIUXCanvasStage.jsx';
 import { PanelRenderer } from '@/ui/workspace/shell/PanelRenderer.jsx';
 import { WorkspaceSessionsRoot } from '@/ui/workspace/root/DispatcherProvider/Sessions/WorkspaceSessionsRoot.jsx';
-import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
+import { nodeUpdateIntent } from '@/ui/inspector/nodeUpdateIntent.js';
+import { workspaceIntentSetActive } from '@/ui/workspace/workspaceIntent.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useSelectionStore } from '@/runtime/stores/useSelectionStore.js';
+import { CertifiedTemplatesPanel } from '@/ui/workspace/ux/panels/CertifiedTemplatesPanel.jsx';
+import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
+import { adaptWorkspaceToContractV1 } from '@/core/contracts/adaptWorkspaceToContractV1.js';
 
 /**
  * UIUXAuthoringShell
@@ -16,20 +20,45 @@ import { useSelectionStore } from '@/runtime/stores/useSelectionStore.js';
  * Allowed to mount input/session bindings and emit intents.
  */
 export function UIUXAuthoringShell({ profile = 'uiux-authoring' }) {
-  const dispatcher = useDispatcher();
-  const emit = useCallback((event) => dispatcher.dispatch(event), [dispatcher]);
+  useEffect(() => {
+    workspaceIntentSetActive({
+      workspaceId: 'uiux',
+      workspaceDef: adaptWorkspaceToContractV1(resolveWorkspacePolicy('uiux')),
+    });
+  }, []);
+  const emit = useCallback((event) => nodeUpdateIntent(event), []);
   const nodes = useRuntimeStore((s) => s.nodes || {});
   const selectedIds = useSelectionStore((s) => s.selectedIds || []);
   const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
   const node = selectedId ? nodes[selectedId] : null;
+  const [templatesOpen, setTemplatesOpen] = useState(false);
+
+  const extraPanels = useMemo(() => {
+    if (!templatesOpen) return [];
+    return [
+      {
+        key: 'CertifiedTemplatesPanel',
+        component: CertifiedTemplatesPanel,
+        props: { mode: 'uiux' },
+      },
+    ];
+  }, [templatesOpen]);
 
   return (
     <div className="uiux-root" data-workspace="uiux">
-      <UIUXTopBar />
+      <UIUXTopBar
+        templatesOpen={templatesOpen}
+        onToggleTemplates={() => setTemplatesOpen((prev) => !prev)}
+      />
       <div className="uiux-main">
         <UIUXToolRail />
         <UIUXCanvasStage profile={profile} />
-        <PanelRenderer workspaceId="uiux" node={node} emit={emit} />
+        <PanelRenderer
+          workspaceId="uiux"
+          node={node}
+          emit={emit}
+          extraPanels={extraPanels}
+        />
       </div>
       <WorkspaceSessionsRoot />
     </div>

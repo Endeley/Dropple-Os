@@ -49,6 +49,7 @@ export const uiuxWorkspace = {
         audio: false,
         video: false,
         codegen: false,
+        'node:create': true,
         rootNodeTypes: ['frame'],
         allowFrameNesting: false,
         allowRootShapes: false,

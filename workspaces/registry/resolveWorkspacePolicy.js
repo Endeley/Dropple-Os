@@ -80,8 +80,8 @@ export function resolveWorkspacePolicy(id) {
             ...merged,
             allowedEventTypes: new Set(merged.allowedEventTypes || []),
             enabledTriggerTypes: new Set(asArray(merged.enabledTriggerTypes)),
-            tools: merged.ui?.tools ?? [],
-            panels: merged.ui?.panels ?? [],
+            tools: merged.tools ?? merged.ui?.tools ?? [],
+            panels: merged.panels ?? merged.ui?.panels ?? [],
             canvasPolicy: merged.canvas?.policy ?? null,
             canvasSurface: merged.canvas?.surface ?? null,
         };
@@ -100,8 +100,8 @@ export function resolveWorkspacePolicy(id) {
         ...merged,
         allowedEventTypes: new Set(merged.allowedEventTypes || []),
         enabledTriggerTypes: new Set(asArray(merged.enabledTriggerTypes)),
-        tools: merged.ui?.tools ?? [],
-        panels: merged.ui?.panels ?? [],
+        tools: merged.tools ?? merged.ui?.tools ?? [],
+        panels: merged.panels ?? merged.ui?.panels ?? [],
         canvasPolicy: merged.canvas?.policy ?? null,
         canvasSurface: merged.canvas?.surface ?? null,
     };
