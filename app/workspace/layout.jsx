@@ -2,6 +2,11 @@
 
 import { WorkspaceRoot } from '@/ui/workspace/root/WorkspaceRoot.jsx';
 
-export default function WorkspaceLayout({ children }) {
-  return <WorkspaceRoot workspaceId={null} branchId="main">{children}</WorkspaceRoot>;
+export default function WorkspaceLayout({ children, params }) {
+  const modeId = params?.mode ?? null;
+  return (
+    <WorkspaceRoot workspaceId={null} branchId="main" modeId={modeId}>
+      {children}
+    </WorkspaceRoot>
+  );
 }

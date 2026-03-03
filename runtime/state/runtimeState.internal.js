@@ -1,9 +1,11 @@
 import { createTimeline } from '@/timeline/schema/timeline.js';
+import { createDefaultWorkspaceState } from './workspaceRuntime.js';
 
 export const initialRuntimeState = {
   nodes: {},
   rootIds: [],
   timeline: null,
+  workspace: createDefaultWorkspaceState(),
   activeStateId: null,
   activeComponentId: null,
   // 🔹 Narrative slice (runtime only)
@@ -88,6 +90,16 @@ export function __ensureDefaultTimelineInternal(state) {
           default: createTimeline(),
         },
       },
+    };
+  }
+  return state;
+}
+
+export function __ensureDefaultWorkspaceInternal(state) {
+  if (!state?.workspace) {
+    return {
+      ...state,
+      workspace: createDefaultWorkspaceState(),
     };
   }
   return state;

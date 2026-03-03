@@ -22,6 +22,7 @@ export function syncRuntimeToZustand(nextState) {
     const nextProjection = {
         nodes: nextState.nodes,
         rootIds: nextState.rootIds,
+        workspace: nextState.workspace ?? null,
     };
 
     if (prev.sceneGraph !== nextState.sceneGraph) {

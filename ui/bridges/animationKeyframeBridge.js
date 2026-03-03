@@ -1,33 +1,25 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { getRuntimeDispatcher } from '@/runtime/dispatcher/dispatcherHandle.js';
 import { createAnimationKeyframeEvent } from '@/runtime/input/animationKeyframeRuntimeBridge.js';
 
 let _unsub = null;
-let warnedMissingDispatcher = false;
-
-function safeDispatch(event) {
-    try {
-        const dispatcher = getRuntimeDispatcher();
-        dispatcher.dispatch(event);
-    } catch (err) {
-        if (!warnedMissingDispatcher) {
-            console.warn('[animationKeyframeBridge] Dispatcher not available; skipping keyframe create.', err);
-            warnedMissingDispatcher = true;
-        }
-    }
-}
 
 /**
  * Registers the animation keyframe creation resolver once.
  * Canvas intent → domain event
  */
-export function registerAnimationKeyframeBridge() {
+export function registerAnimationKeyframeBridge(dispatch) {
     if (_unsub) return _unsub;
 
     const handler = (intent) => {
         const event = createAnimationKeyframeEvent(intent);
         if (!event) return;
-        safeDispatch(event);
+        if (typeof dispatch === 'function') {
+            dispatch(event);
+        } else {
+            console.warn(
+                '[animationKeyframeBridge] Dispatch not provided; skipping keyframe create.'
+            );
+        }
     };
 
     _unsub = canvasBus.on('intent.animation.keyframe.create', handler);

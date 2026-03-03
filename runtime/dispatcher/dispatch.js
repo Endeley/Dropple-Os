@@ -15,6 +15,8 @@ import {
     __setRuntimeStateInternal,
     __resetRuntimeStateInternal,
     __ensureDefaultTimelineInternal,
+    __ensureDefaultWorkspaceInternal,
+    initialRuntimeState,
     __setRuntimeErrorInternal,
     __getIsReplayingInternal,
     __setIsReplayingInternal,
@@ -45,12 +47,10 @@ import { getSystemEventHandler } from '@/core/events/systemEventRegistry.js';
 import { checkWorkspacePolicy } from '@/core/contracts/capabilityGate.js';
 import { INTENT_CAPS } from '@/core/contracts/intentCapabilities.v1.js';
 import {
-    getActiveWorkspace,
-    getWorkspaceState,
-    setActiveWorkspace,
-    setCanvasSurface,
-    setViewport,
-} from '../state/workspaceState.js';
+    applyWorkspaceActivation,
+    applyViewportUpdate,
+    applyCanvasSurfaceUpdate,
+} from '../state/workspaceRuntime.js';
 
 // System-level projection events (never domain mutations)
 const SYSTEM_EVENTS = new Set([
@@ -69,6 +69,11 @@ function cloneState(state) {
         return structuredClone(state);
     }
     return JSON.parse(JSON.stringify(state));
+}
+
+function getWorkspaceFromRuntime() {
+    const state = __getRuntimeStateInternal();
+    return state?.workspace ?? null;
 }
 
 export function createEventDispatcher({
@@ -118,27 +123,30 @@ export function createEventDispatcher({
 
     function commit(nextState, { animate = true } = {}) {
         const prev = __getRuntimeStateInternal();
+        const ensured = __ensureDefaultWorkspaceInternal(
+            __ensureDefaultTimelineInternal(nextState)
+        );
 
-        __setRuntimeStateInternal(nextState, 'dispatcher');
+        __setRuntimeStateInternal(ensured, 'dispatcher');
 
         if (!isHeadless && animate && !isReplaying) {
             playbackController.play({
                 fromState: prev,
-                toState: nextState,
+                toState: ensured,
             });
         } else {
             playbackController.cancel();
         }
 
-        syncRuntimeToZustand(nextState);
+        syncRuntimeToZustand(ensured);
 
         // Derived layout ONLY
         if (!__getIsReplayingInternal()) {
-            const derived = applyLayoutPass(nextState);
+            const derived = applyLayoutPass(ensured);
             useAnimatedRuntimeStore.setState(derived, false);
         }
 
-        return nextState;
+        return ensured;
     }
 
     function setReplaying(value) {
@@ -176,7 +184,7 @@ export function createEventDispatcher({
                 );
 
                 if (!isSystemEvent) {
-                    const workspace = getWorkspaceState();
+                    const workspace = getWorkspaceFromRuntime();
                     const requiredCaps = INTENT_CAPS[rawEvent?.type];
                     const mutationType = rawEvent?.type;
                     const verdict = checkWorkspacePolicy({
@@ -190,7 +198,7 @@ export function createEventDispatcher({
                             '[Skeleton v2] Intent blocked by capability gate',
                             {
                                 intent: rawEvent?.type,
-                                mode: workspace?.id ?? getActiveWorkspace(),
+                                mode: workspace?.id ?? 'graphic',
                                 reason: verdict.reason,
                                 cap: verdict.cap,
                             },
@@ -243,8 +251,8 @@ export function createEventDispatcher({
 
                 if (event.type === EventTypes.BEHAVIOR_TRIGGER_FIRE) {
                     const runtimeState = __getRuntimeStateInternal();
-                    const workspace = getWorkspaceState();
-                    const workspaceId = workspace?.id ?? getActiveWorkspace();
+                    const workspace = getWorkspaceFromRuntime();
+                    const workspaceId = workspace?.id ?? 'graphic';
                     const policy = workspace;
                     const allowed = policy?.enabledTriggerTypes;
 
@@ -263,8 +271,8 @@ export function createEventDispatcher({
                     return await dispatch(resolved);
                 }
 
-                const workspace = getWorkspaceState();
-                const workspaceId = workspace?.id ?? getActiveWorkspace();
+                const workspace = getWorkspaceFromRuntime();
+                const workspaceId = workspace?.id ?? 'graphic';
                 const policy = workspace;
                 const requiredCaps = INTENT_CAPS[event.type] ?? [];
                 const mutationType =
@@ -309,25 +317,70 @@ export function createEventDispatcher({
                     }
                 }
 
+                if (event?.type === EventTypes.NODE_CREATE) {
+                    console.log('[DISPATCH NODE_CREATE]', event);
+                }
+
                 if (event?.type === EventTypes.WORKSPACE_SET_ACTIVE) {
                     if (process.env.NODE_ENV === 'development') {
                         console.log('[WORKSPACE_SET_ACTIVE]', {
                             id: event?.payload?.id,
                             workspaceDef: event?.payload?.workspaceDef?.id,
+                            hasPolicy: Boolean(event?.payload?.workspaceDef?.policy),
+                            policyCapsSize: event?.payload?.workspaceDef?.policy?.capabilities
+                                ? event.payload.workspaceDef.policy.capabilities.length ??
+                                  event.payload.workspaceDef.policy.capabilities.size ??
+                                  null
+                                : null,
+                        });
+                    } else {
+                        console.log('[WORKSPACE_SET_ACTIVE]', {
+                            id: event?.payload?.id,
+                            workspaceDef: event?.payload?.workspaceDef?.id,
+                            hasPolicy: Boolean(event?.payload?.workspaceDef?.policy),
+                            policyCapsSize: event?.payload?.workspaceDef?.policy?.capabilities
+                                ? event.payload.workspaceDef.policy.capabilities.length ??
+                                  event.payload.workspaceDef.policy.capabilities.size ??
+                                  null
+                                : null,
                         });
                     }
-                    setActiveWorkspace(event?.payload?.id, event?.payload?.workspaceDef ?? null);
-                    return __getRuntimeStateInternal();
+                    const current = __getRuntimeStateInternal() ?? initialRuntimeState;
+                    const nextWorkspace = applyWorkspaceActivation(
+                        current.workspace,
+                        event?.payload?.workspaceDef ?? null
+                    );
+                    const nextState = {
+                        ...current,
+                        workspace: nextWorkspace,
+                    };
+                    return commit(nextState, { animate: false });
                 }
 
                 if (event?.type === EventTypes.WORKSPACE_SET_VIEWPORT) {
-                    setViewport(event?.payload?.viewport);
-                    return __getRuntimeStateInternal();
+                    const current = __getRuntimeStateInternal() ?? initialRuntimeState;
+                    const nextWorkspace = applyViewportUpdate(
+                        current.workspace,
+                        event?.payload?.viewport
+                    );
+                    const nextState = {
+                        ...current,
+                        workspace: nextWorkspace,
+                    };
+                    return commit(nextState, { animate: false });
                 }
 
                 if (event?.type === EventTypes.WORKSPACE_SET_CANVAS_SURFACE) {
-                    setCanvasSurface(event?.payload?.surface);
-                    return __getRuntimeStateInternal();
+                    const current = __getRuntimeStateInternal() ?? initialRuntimeState;
+                    const nextWorkspace = applyCanvasSurfaceUpdate(
+                        current.workspace,
+                        event?.payload?.surface
+                    );
+                    const nextState = {
+                        ...current,
+                        workspace: nextWorkspace,
+                    };
+                    return commit(nextState, { animate: false });
                 }
 
                 if (event?.type === EventTypes.SHOT_SET_ACTIVE) {

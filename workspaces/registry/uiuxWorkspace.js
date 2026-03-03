@@ -27,7 +27,7 @@ export const uiuxWorkspace = {
     },
 
     engines: ['nodeTree', 'layout', 'constraints', 'autoLayout'],
-    tools: ['select', 'move', 'resize', 'text', 'image', 'frame'],
+    tools: ['select', 'move', 'resize', 'text', 'image', 'frame', 'shape'],
     panels: [
         'NodeHeaderPanel',
         'SemanticsPanel',

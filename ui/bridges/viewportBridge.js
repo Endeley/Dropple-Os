@@ -1,36 +1,24 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { getRuntimeDispatcher } from '@/runtime/dispatcher/dispatcherHandle.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 
 let registered = false;
-let warnedMissingDispatcher = false;
 
-function safeDispatch(event) {
-    try {
-        const dispatcher = getRuntimeDispatcher();
-        dispatcher.dispatch(event);
-    } catch (err) {
-        if (!warnedMissingDispatcher) {
-            console.warn(
-                '[viewportBridge] Dispatcher not available; skipping viewport intent.',
-                err,
-            );
-            warnedMissingDispatcher = true;
-        }
-    }
-}
-
-export function registerViewportBridge() {
+export function registerViewportBridge(dispatcher) {
     if (registered) return () => {};
     registered = true;
+    const dispatch = dispatcher?.dispatch;
 
     const onViewportSet = (intent) => {
         const viewport = intent?.viewport;
         if (!viewport) return;
-        safeDispatch({
-            type: EventTypes.WORKSPACE_SET_VIEWPORT,
-            payload: { viewport },
-        });
+        if (typeof dispatch === 'function') {
+            dispatch({
+                type: EventTypes.WORKSPACE_SET_VIEWPORT,
+                payload: { viewport },
+            });
+        } else {
+            console.warn('[viewportBridge] Dispatcher not provided; skipping viewport intent.');
+        }
     };
 
     canvasBus.on('intent.viewport.set', onViewportSet);

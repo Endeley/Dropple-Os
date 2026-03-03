@@ -1,11 +1,12 @@
 import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
-import { getActiveWorkspace } from '../state/workspaceState.js';
+import { getRuntimeState } from '../state/runtimeState.js';
 
 /**
  * Returns null to block, or the event to allow.
  */
 export function applyTimelineGuard(event) {
-    const workspaceId = getActiveWorkspace();
+    const runtimeState = getRuntimeState();
+    const workspaceId = runtimeState?.workspace?.id ?? 'graphic';
     const policy = resolveWorkspacePolicy(workspaceId);
 
     if (!policy || !policy.timeline) return event;

@@ -1,13 +1,14 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
+import { useMemo } from 'react';
+import { useRuntimeStore } from '../../stores/useRuntimeStore.js';
 import { getWorkspaceProjection } from './workspaceProjection.js';
-import { subscribeWorkspaceState } from '../../state/workspaceState.js';
 
 export function useWorkspaceProjection(selector = (state) => state) {
-    return useSyncExternalStore(
-        subscribeWorkspaceState,
-        () => selector(getWorkspaceProjection()),
-        () => selector(getWorkspaceProjection()),
+    const workspace = useRuntimeStore((state) => state.workspace);
+    const projection = useMemo(
+        () => getWorkspaceProjection({ workspace }),
+        [workspace]
     );
+    return selector(projection);
 }

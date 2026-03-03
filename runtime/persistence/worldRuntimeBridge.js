@@ -7,7 +7,7 @@ import {
     DEFAULT_RUNTIME_STATE,
 } from '@/persistence/worldState.js';
 import { getRuntimeState } from '@/runtime/state/runtimeState';
-import { setViewport } from '@/runtime/state/workspaceState.js';
+import { applyViewportUpdate } from '@/runtime/state/workspaceRuntime.js';
 import { getRuntimeDispatcher } from '@/runtime/dispatcher/dispatcherHandle.js';
 
 export function hydrateWorld(worldState, { dispatcher } = {}) {
@@ -31,9 +31,8 @@ export function hydrateWorld(worldState, { dispatcher } = {}) {
         ...baseState,
         nodes: nodesById,
         rootIds,
+        workspace: applyViewportUpdate(baseState?.workspace, migrated.camera),
     };
-
-    setViewport(migrated.camera);
 
     if (process.env.NODE_ENV === 'development') {
         deepFreeze(migrated);

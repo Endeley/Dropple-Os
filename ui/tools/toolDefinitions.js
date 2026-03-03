@@ -20,12 +20,12 @@ export const TOOL_DEFINITIONS = Object.freeze([
   { id: 'zoom', label: 'Zoom', group: 'navigate' },
   { id: 'fit', label: 'Fit', group: 'navigate' },
 
-  { id: 'frame', label: 'Frame', group: 'create' },
-  { id: 'text', label: 'Text', group: 'create' },
-  { id: 'shape', label: 'Shape', group: 'create' },
-  { id: 'image', label: 'Image', group: 'create' },
-  { id: 'layer', label: 'Layer', group: 'create' },
-  { id: 'defaultCreate', label: 'Default Create', group: 'create' },
+  { id: 'frame', label: 'Frame', group: 'create', createsNode: true, nodeType: 'frame' },
+  { id: 'text', label: 'Text', group: 'create', createsNode: true, nodeType: 'text' },
+  { id: 'shape', label: 'Shape', group: 'create', createsNode: true, nodeType: 'shape' },
+  { id: 'image', label: 'Image', group: 'create', createsNode: true, nodeType: 'image' },
+  { id: 'layer', label: 'Layer', group: 'create', createsNode: true, nodeType: 'layer' },
+  { id: 'defaultCreate', label: 'Default Create', group: 'create', createsNode: true, nodeType: 'shape' },
 
   { id: 'move', label: 'Move', group: 'edit' },
   { id: 'resize', label: 'Resize', group: 'edit' },
@@ -58,6 +58,13 @@ export const TOOL_DEFINITIONS = Object.freeze([
   { id: 'apply', label: 'Apply', group: 'branding' },
   { id: 'validate', label: 'Validate', group: 'branding' },
 ]);
+
+export const TOOL_DEFINITION_BY_ID = Object.freeze(
+  TOOL_DEFINITIONS.reduce((acc, tool) => {
+    acc[tool.id] = tool;
+    return acc;
+  }, {})
+);
 
 export const TOOL_CAPABILITIES = BASE_TOOL_CAPABILITIES;
 

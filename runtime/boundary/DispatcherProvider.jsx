@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createEventDispatcher } from '@/runtime/dispatcher/dispatch.js';
-import { DispatcherContext } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
+import { DispatcherContext } from '@/runtime/boundary/DispatcherContext.jsx';
 import { setDispatcher } from '@/runtime/dispatcher/dispatcherHandle.js';
 
 /**

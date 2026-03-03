@@ -4,6 +4,7 @@ import { UIUXTopBar } from './UIUXTopBar.jsx';
 import { UIUXToolRail } from './UIUXToolRail.jsx';
 import { UIUXCanvasStage } from './UIUXCanvasStage.jsx';
 import { PanelRenderer } from '@/ui/workspace/shell/PanelRenderer.jsx';
+import { WorkspaceSessionsRoot } from '@/ui/workspace/root/DispatcherProvider/Sessions/WorkspaceSessionsRoot.jsx';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useSelectionStore } from '@/runtime/stores/useSelectionStore.js';
 
@@ -76,7 +77,7 @@ import { useSelectionStore } from '@/runtime/stores/useSelectionStore.js';
  * - profile: 'ux-validation'
  */
 
-export function UXWorkspaceShell({ profile = 'ux-validation' }) {
+export function UXWorkspaceShell({ profile = 'ux-validation', modeId = 'uiux' }) {
   const nodes = useRuntimeStore((s) => s.nodes || {});
   const selectedIds = useSelectionStore((s) => s.selectedIds || []);
   const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
@@ -91,6 +92,7 @@ export function UXWorkspaceShell({ profile = 'ux-validation' }) {
         <UIUXCanvasStage profile={profile} />
         <PanelRenderer workspaceId="uiux" node={node} emit={emit} />
       </div>
+      <WorkspaceSessionsRoot modeId={modeId} />
     </div>
   );
 }

@@ -26,9 +26,9 @@ export function WorkspaceShell(props) {
     if (modeId === 'uiux') {
         const profile = props.profile ?? 'uiux-authoring';
         return profile === 'uiux-authoring' ? (
-            <UIUXAuthoringShell modeId='uiux' events={props.initialEvents ?? []} cursor={{ index: props.initialCursorIndex ?? -1 }} profile={profile} />
+            <UIUXAuthoringShell modeId={modeId} events={props.initialEvents ?? []} cursor={{ index: props.initialCursorIndex ?? -1 }} profile={profile} />
         ) : (
-            <UXWorkspaceShell modeId='uiux' events={props.initialEvents ?? []} cursor={{ index: props.initialCursorIndex ?? -1 }} profile={profile} />
+            <UXWorkspaceShell modeId={modeId} events={props.initialEvents ?? []} cursor={{ index: props.initialCursorIndex ?? -1 }} profile={profile} />
         );
     }
 

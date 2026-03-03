@@ -1,63 +1,90 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { getRuntimeDispatcher } from '@/runtime/dispatcher/dispatcherHandle.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 
 let registered = false;
-let warnedMissingDispatcher = false;
 
-function safeDispatch(event) {
-    try {
-        const dispatcher = getRuntimeDispatcher();
-        dispatcher.dispatch(event);
-    } catch (err) {
-        if (!warnedMissingDispatcher) {
-            console.warn('[timelineBridge] Dispatcher not available; skipping timeline intent.', err);
-            warnedMissingDispatcher = true;
-        }
-    }
-}
-
-export function registerTimelineBridge() {
+export function registerTimelineBridge(dispatcher) {
     if (registered) return () => {};
     registered = true;
+    const dispatch = dispatcher?.dispatch;
 
     const onTimelineAdd = (payload) => {
         if (!payload) return;
-        safeDispatch({ type: EventTypes.TIMELINE_EVENT_ADD, payload });
+        if (typeof dispatch === 'function') {
+            dispatch({ type: EventTypes.TIMELINE_EVENT_ADD, payload });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping timeline add.');
+        }
     };
     const onTimelineUpdate = (payload) => {
         if (!payload) return;
-        safeDispatch({ type: EventTypes.TIMELINE_EVENT_UPDATE, payload });
+        if (typeof dispatch === 'function') {
+            dispatch({ type: EventTypes.TIMELINE_EVENT_UPDATE, payload });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping timeline update.');
+        }
     };
     const onTimelineRemove = (payload) => {
         if (!payload) return;
-        safeDispatch({ type: EventTypes.TIMELINE_EVENT_REMOVE, payload });
+        if (typeof dispatch === 'function') {
+            dispatch({ type: EventTypes.TIMELINE_EVENT_REMOVE, payload });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping timeline remove.');
+        }
     };
     const onKeyframeCreate = (payload) => {
         if (!payload) return;
-        safeDispatch({ type: EventTypes.ANIMATION_KEYFRAME_CREATE, payload });
+        if (typeof dispatch === 'function') {
+            dispatch({ type: EventTypes.ANIMATION_KEYFRAME_CREATE, payload });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping keyframe create.');
+        }
     };
     const onKeyframeMove = (payload) => {
         if (!payload) return;
-        safeDispatch({ type: EventTypes.TIMELINE_KEYFRAME_MOVE, payload });
+        if (typeof dispatch === 'function') {
+            dispatch({ type: EventTypes.TIMELINE_KEYFRAME_MOVE, payload });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping keyframe move.');
+        }
     };
     const onKeyframeUpdate = (payload) => {
         if (!payload) return;
-        safeDispatch({ type: EventTypes.ANIMATION_KEYFRAME_UPDATE, payload });
+        if (typeof dispatch === 'function') {
+            dispatch({ type: EventTypes.ANIMATION_KEYFRAME_UPDATE, payload });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping keyframe update.');
+        }
     };
     const onClockSeek = (payload) => {
         if (!payload) return;
-        safeDispatch({ type: EventTypes.CLOCK_SEEK, payload });
+        if (typeof dispatch === 'function') {
+            dispatch({ type: EventTypes.CLOCK_SEEK, payload });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping clock seek.');
+        }
     };
     const onClockPlay = () => {
-        safeDispatch({ type: EventTypes.CLOCK_PLAY });
+        if (typeof dispatch === 'function') {
+            dispatch({ type: EventTypes.CLOCK_PLAY });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping clock play.');
+        }
     };
     const onClockPause = () => {
-        safeDispatch({ type: EventTypes.CLOCK_PAUSE });
+        if (typeof dispatch === 'function') {
+            dispatch({ type: EventTypes.CLOCK_PAUSE });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping clock pause.');
+        }
     };
     const onShotSetActive = (payload) => {
         if (!payload) return;
-        safeDispatch({ type: EventTypes.SHOT_SET_ACTIVE, payload });
+        if (typeof dispatch === 'function') {
+            dispatch({ type: EventTypes.SHOT_SET_ACTIVE, payload });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping shot set active.');
+        }
     };
 
     canvasBus.on('intent.timeline.add', onTimelineAdd);

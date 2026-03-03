@@ -1,29 +1,19 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { getRuntimeDispatcher } from '@/runtime/dispatcher/dispatcherHandle.js';
-
 let registered = false;
-let warnedMissingDispatcher = false;
 
-function safeDispatch(event) {
-    try {
-        const dispatcher = getRuntimeDispatcher();
-        dispatcher.dispatch(event);
-    } catch (err) {
-        if (!warnedMissingDispatcher) {
-            console.warn('[nodeUpdateBridge] Dispatcher not available; skipping node update.', err);
-            warnedMissingDispatcher = true;
-        }
-    }
-}
-
-export function registerNodeUpdateBridge() {
+export function registerNodeUpdateBridge(dispatcher) {
     if (registered) return () => {};
     registered = true;
+    const dispatch = dispatcher?.dispatch;
 
     const handler = (intent) => {
         const event = intent?.event;
         if (!event?.type || !event.type.startsWith('node.')) return;
-        safeDispatch(event);
+        if (typeof dispatch === 'function') {
+            dispatch(event);
+        } else {
+            console.warn('[nodeUpdateBridge] Dispatcher not provided; skipping node update.');
+        }
     };
 
     canvasBus.on('intent.node.update', handler);

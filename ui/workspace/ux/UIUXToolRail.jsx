@@ -34,6 +34,12 @@ export function UIUXToolRail() {
       }),
     [workspaceId, capabilitySet]
   );
+  console.log('WorkspaceId:', workspaceId);
+  console.log('Capabilities:', capabilitySet);
+  console.log(
+    'VisibleTools:',
+    getVisibleToolsForWorkspace({ workspaceId, capabilitySet })
+  );
 
   const grouped = useMemo(() => {
     const map = new Map();

@@ -31,6 +31,7 @@ import { canvasBus } from '../eventBus/canvasBus.js';
 import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
 import { useToolStore } from '@/ui/state/useToolStore.js';
+import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions';
 
 /** precision safety */
 const MIN_EFFECTIVE_ZOOM = 0.0005;
@@ -80,7 +81,8 @@ export default function CanvasRoot({ workspaceId }) {
 
     // 🖱️ PAN START
     function handlePointerDown(e) {
-        if (activeTool === 'frame') {
+        const toolDef = TOOL_DEFINITION_BY_ID[activeTool];
+        if (toolDef?.createsNode) {
             if (!viewport || !containerRef.current) return;
 
             const rect = containerRef.current.getBoundingClientRect();
@@ -150,6 +152,14 @@ export default function CanvasRoot({ workspaceId }) {
 
     function handlePointerUp(e) {
         if (createSession) {
+            console.log('CREATE TOOL:', activeTool);
+            const toolDef = TOOL_DEFINITION_BY_ID[activeTool];
+            console.log('toolDef:', toolDef);
+            if (!toolDef?.createsNode) {
+                setCreateSession(null);
+                e.currentTarget.releasePointerCapture?.(e.pointerId);
+                return;
+            }
             const { start, current } = createSession;
             const width = Math.abs(current.x - start.x);
             const height = Math.abs(current.y - start.y);
@@ -162,12 +172,13 @@ export default function CanvasRoot({ workspaceId }) {
                     width,
                     height,
                 };
+                console.log('BOUNDS:', bounds);
 
                 const snapshot = getRuntimeSnapshot();
                 const rootId = snapshot?.rootIds?.[0] ?? null;
 
                 nodeCreateIntent({
-                    type: 'frame',
+                    type: toolDef.nodeType,
                     bounds,
                     parentId: rootId,
                 });

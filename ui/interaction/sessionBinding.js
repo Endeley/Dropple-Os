@@ -17,20 +17,21 @@ import { registerSessionCommitBridge } from '@/ui/bridges/sessionCommitBridge.js
 import { registerAnimationKeyframeBridge } from '@/ui/bridges/animationKeyframeBridge.js';
 import { registerEditEventBridge } from '@/ui/bridges/editEventBridge.js';
 
-export function registerSessionBindings(dispatch) {
+export function registerSessionBindings(dispatcher) {
+    const dispatch = dispatcher?.dispatch;
     registerNodeDragBridge();
     registerNodeCreateBridge(dispatch);
-    registerNodeUpdateBridge();
-    registerViewportBridge();
-    registerWorkspaceBridge();
-    registerCanvasSurfaceBridge();
-    registerTimelineBridge();
-    registerHistoryBridge();
+    registerNodeUpdateBridge(dispatcher);
+    registerViewportBridge(dispatcher);
+    registerWorkspaceBridge(dispatcher);
+    registerCanvasSurfaceBridge(dispatch);
+    registerTimelineBridge(dispatcher);
+    registerHistoryBridge(dispatcher);
     registerGroupSessionBridge();
     registerSessionBridge();
     registerSessionCommitBridge(dispatch);
-    registerAnimationKeyframeBridge();
-    registerEditEventBridge();
+    registerAnimationKeyframeBridge(dispatch);
+    registerEditEventBridge(dispatch);
 }
 
 const sessionManager = new InputSessionManager(canvasBus);

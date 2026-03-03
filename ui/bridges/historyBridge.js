@@ -1,32 +1,23 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { getRuntimeDispatcher } from '@/runtime/dispatcher/dispatcherHandle.js';
-
 let registered = false;
-let warnedMissingDispatcher = false;
 
-function getDispatcher() {
-    try {
-        return getRuntimeDispatcher();
-    } catch (err) {
-        if (!warnedMissingDispatcher) {
-            console.warn('[historyBridge] Dispatcher not available; skipping history intent.', err);
-            warnedMissingDispatcher = true;
-        }
-        return null;
-    }
-}
-
-export function registerHistoryBridge() {
+export function registerHistoryBridge(dispatcher) {
     if (registered) return () => {};
     registered = true;
 
     const onUndo = () => {
-        const dispatcher = getDispatcher();
-        dispatcher?.undo?.();
+        if (dispatcher?.undo) {
+            dispatcher.undo();
+        } else {
+            console.warn('[historyBridge] Dispatcher not provided; skipping history undo.');
+        }
     };
     const onRedo = () => {
-        const dispatcher = getDispatcher();
-        dispatcher?.redo?.();
+        if (dispatcher?.redo) {
+            dispatcher.redo();
+        } else {
+            console.warn('[historyBridge] Dispatcher not provided; skipping history redo.');
+        }
     };
 
     canvasBus.on('intent.history.undo', onUndo);

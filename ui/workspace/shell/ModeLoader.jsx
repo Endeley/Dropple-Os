@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { WorkspaceRegistry } from "../../../workspaces/registry";
-import { workspaceIntentSetActive } from "@/ui/workspace/workspaceIntent.js";
 import { WorkspaceShell } from "./WorkspaceShell";
 
 export function ModeLoader({ mode }) {
@@ -13,11 +12,6 @@ export function ModeLoader({ mode }) {
     if (process.env.NODE_ENV === "development") {
       console.log("[ModeLoader] mode:", mode, "key:", key, "workspace:", workspace?.id);
     }
-    if (!workspace?.id) return;
-    workspaceIntentSetActive({
-      id: workspace.id,
-      workspaceDef: workspace,
-    });
   }, [workspace, key, mode]);
 
   if (!workspace) {

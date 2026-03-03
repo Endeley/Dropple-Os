@@ -1,5 +1,5 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { getRuntimeSnapshot, getActiveWorkspace } from '@/runtime/projection';
+import { getRuntimeSnapshot, getWorkspaceProjection } from '@/runtime/projection';
 import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useSelectionStore } from '@/runtime/stores/useSelectionStore.js';
@@ -14,7 +14,7 @@ function canAuthorAnimationKeyframes() {
     const runtimeState = getRuntimeSnapshot();
     if (runtimeState?.isReplaying) return false;
 
-    const workspaceId = getActiveWorkspace();
+    const workspaceId = getWorkspaceProjection()?.id ?? 'graphic';
     const policy = resolveWorkspacePolicy(workspaceId);
     if (!policy?.capabilities?.timeline) return false;
 

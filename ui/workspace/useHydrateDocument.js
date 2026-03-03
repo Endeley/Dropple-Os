@@ -1,5 +1,4 @@
 import { replayBranch } from '@/runtime/replay/replayBranch.js';
-import { getRuntimeDispatcher } from '@/runtime/dispatcher/dispatcherHandle.js';
 
 /**
  * Runtime orchestration hook.
@@ -9,10 +8,13 @@ import { getRuntimeDispatcher } from '@/runtime/dispatcher/dispatcherHandle.js';
  * - Deterministic replay
  * - Hydration
  */
-export function useHydrateDocument() {
+export function useHydrateDocument(dispatcher) {
     function hydrateFromSnapshot(snapshot) {
         if (!snapshot) return;
-        const dispatcher = getRuntimeDispatcher();
+        if (!dispatcher) {
+            console.warn('[useHydrateDocument] Dispatcher not provided; skipping hydration.');
+            return;
+        }
 
         const { doc, branches, events, timelines, markers } = snapshot;
 

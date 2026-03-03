@@ -19,6 +19,7 @@ export function WorkspaceRoot({
     workspaceId = null,
     branchId = 'main',
     profile = 'design', // expected: 'design' | 'ux-validation'
+    modeId = null,
     uxEnforcementTier = 2,
     children = null,
 }) {
@@ -62,7 +63,7 @@ export function WorkspaceRoot({
                     {children ?? (
                         <>
                             <WorkspaceBridgesRoot />
-                            <WorkspaceSessionsRoot />
+                            <WorkspaceSessionsRoot modeId={modeId} />
                             <WorkspaceUIRoot />
                             <WorkspaceCanvasRoot />
                         </>

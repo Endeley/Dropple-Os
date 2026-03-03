@@ -3,4 +3,4 @@
 export {
   DispatcherContext,
   useDispatcher,
-} from './root/DispatcherProvider/DispatcherContext.jsx';
+} from '@/runtime/boundary/DispatcherContext.jsx';

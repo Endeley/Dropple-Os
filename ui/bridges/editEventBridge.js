@@ -1,33 +1,22 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { getRuntimeDispatcher } from '@/runtime/dispatcher/dispatcherHandle.js';
 import { createEditEvent } from '@/runtime/input/editEventRuntimeBridge.js';
 
 let registered = false;
-let warnedMissingDispatcher = false;
 
-function safeDispatch(event) {
-    try {
-        const dispatcher = getRuntimeDispatcher();
-        dispatcher.dispatch(event);
-    } catch (err) {
-        if (!warnedMissingDispatcher) {
-            console.warn(
-                '[editEventBridge] Dispatcher not available; skipping timeline event.',
-                err
-            );
-            warnedMissingDispatcher = true;
-        }
-    }
-}
-
-export function registerEditEventBridge() {
+export function registerEditEventBridge(dispatch) {
     if (registered) return () => {};
     registered = true;
 
     const onCommit = (intent) => {
         const event = createEditEvent(intent);
         if (!event) return;
-        safeDispatch(event);
+        if (typeof dispatch === 'function') {
+            dispatch(event);
+        } else {
+            console.warn(
+                '[editEventBridge] Dispatch not provided; skipping timeline event.'
+            );
+        }
     };
 
     canvasBus.on('intent.edit.commit', onCommit);
