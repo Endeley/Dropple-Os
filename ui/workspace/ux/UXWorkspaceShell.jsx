@@ -1,4 +1,5 @@
 'use client';
+import '@/ui/styles/uiux.css';
 import { useCallback } from 'react';
 import { UIUXTopBar } from './UIUXTopBar.jsx';
 import { UIUXToolRail } from './UIUXToolRail.jsx';
