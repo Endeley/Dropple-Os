@@ -15,6 +15,14 @@ const defaultLayoutChild = Object.freeze({
   size: "fixed", // 'fixed' | 'fill' | 'hug'
 });
 
+function normalizeAngle(angle) {
+  const TAU = Math.PI * 2;
+  let a = angle;
+  while (a > Math.PI) a -= TAU;
+  while (a < -Math.PI) a += TAU;
+  return a;
+}
+
 export function nodeReducers(state, event) {
   const { type, payload } = event;
 
@@ -134,6 +142,28 @@ export function nodeReducers(state, event) {
             },
           },
         },
+      };
+    }
+
+    case EventTypes.NODE_ROTATE: {
+      const { nodeIds, rotation } = payload;
+      if (!Array.isArray(nodeIds) || nodeIds.length === 0) return state;
+      const delta = rotation ?? 0;
+
+      const nextNodes = { ...state.nodes };
+      nodeIds.forEach((id) => {
+        const prev = nextNodes[id];
+        if (!prev) return;
+        const nextRotation = normalizeAngle((prev.rotation ?? 0) + delta);
+        nextNodes[id] = {
+          ...prev,
+          rotation: nextRotation,
+        };
+      });
+
+      return {
+        ...state,
+        nodes: nextNodes,
       };
     }
 

@@ -47,9 +47,18 @@ export function renderNode(node, state) {
 
   const dx = node.previewTransform?.dx || 0;
   const dy = node.previewTransform?.dy || 0;
-  if (dx !== 0 || dy !== 0) {
+  const rotation = node.previewTransform?.rotation || 0;
+  if (node.previewTransform?.originScreen && node.screen) {
+    const ox = node.previewTransform.originScreen.x - (node.screen?.x ?? 0);
+    const oy = node.previewTransform.originScreen.y - (node.screen?.y ?? 0);
+    el.style.transformOrigin = `${ox}px ${oy}px`;
+  }
+  if (dx !== 0 || dy !== 0 || rotation !== 0) {
+    const parts = [];
+    if (dx !== 0 || dy !== 0) parts.push(`translate(${dx}px, ${dy}px)`);
+    if (rotation !== 0) parts.push(`rotate(${rotation}rad)`);
     const existing = el.style.transform ? ` ${el.style.transform}` : '';
-    el.style.transform = `translate(${dx}px, ${dy}px)${existing}`;
+    el.style.transform = `${parts.join(' ')}${existing}`;
   }
 
   if (node.children?.length) {

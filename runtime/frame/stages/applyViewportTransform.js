@@ -17,10 +17,20 @@ export function applyViewportTransform(context) {
       ? projectRectToViewport(node.previewBounds, viewport)
       : null;
 
+    let previewTransform = node.previewTransform;
+    if (previewTransform?.origin) {
+      const originScreen = projectToViewport(previewTransform.origin, viewport);
+      previewTransform = {
+        ...previewTransform,
+        originScreen,
+      };
+    }
+
     return {
       ...node,
       screen: projected,
       previewBoundsScreen,
+      previewTransform,
     };
   });
 

@@ -214,6 +214,27 @@ export function createSessionCommitActions({ event, context }) {
     }
 
     if (payload.type === 'rotate') {
+        const { nodeIds, rotationDelta } = payload;
+        if (!Array.isArray(nodeIds) || nodeIds.length === 0) return actions;
+
+        actions.dispatchEvents.push({
+            type: EventTypes.NODE_ROTATE,
+            payload: {
+                nodeIds,
+                rotation: rotationDelta,
+            },
+        });
+
+        actions.editCommitIntents.push({
+            type: 'rotate',
+            ids: nodeIds,
+            source: 'canvas.rotate',
+        });
+
+        return actions;
+    }
+
+    if (payload.type === 'rotate') {
         const { nodeIds } = payload;
         if (Array.isArray(nodeIds) && nodeIds.length) {
             actions.keyframeIntents.push(

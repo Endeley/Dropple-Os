@@ -25,6 +25,11 @@ export function beginSession({ type, payload }) {
     sessionPayload.startPointer = payload?.pointerWorld;
     sessionPayload.handle = payload?.handleId;
   }
+  if (type === 'rotate') {
+    if (!sessionPayload.nodeIds && payload?.nodeId) {
+      sessionPayload.nodeIds = [payload.nodeId];
+    }
+  }
 
   const session = createSessionFromIntent({
     sessionType: type,
