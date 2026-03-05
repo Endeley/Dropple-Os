@@ -32,6 +32,8 @@ import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
 import { useToolStore } from '@/ui/state/useToolStore.js';
 import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions';
+import { useCanvasInteractions } from '@/ui/interactions/useCanvasInteractions.js';
+import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
 
 /** precision safety */
 const MIN_EFFECTIVE_ZOOM = 0.0005;
@@ -51,6 +53,8 @@ export default function CanvasRoot({ workspaceId }) {
     const cameraTransform = useAnimatedRuntimeStore((s) => s.cameraTransform);
     const activeTool = useToolStore((s) => s.activeTool);
     const canvasPolicy = workspace?.canvasPolicy;
+    const dispatcher = useDispatcher();
+    const dispatch = dispatcher?.dispatch;
 
     const containerRef = useRef(null);
     const panRef = useRef({ active: false, x: 0, y: 0 });
@@ -60,6 +64,24 @@ export default function CanvasRoot({ workspaceId }) {
     const [isPanning, setIsPanning] = useState(false);
     const [isNodeDragging, setIsNodeDragging] = useState(false);
     const [createSession, setCreateSession] = useState(null);
+
+    const { onPointerDown: onCanvasPointerDown, onPointerMove: onCanvasPointerMove, onPointerUp: onCanvasPointerUp } = useCanvasInteractions({
+        getRuntimeState: () => getRuntimeSnapshot(),
+        dispatch,
+        getActiveToolId: () => activeTool,
+        getWorldPointFromEvent: (e) => {
+            if (!viewport || !containerRef.current) {
+                return { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY };
+            }
+            const rect = containerRef.current.getBoundingClientRect();
+            const screenPoint = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            return screenToWorld(screenPoint, {
+                ...viewport,
+                x: viewport.x + worldOffset.x,
+                y: viewport.y + worldOffset.y,
+            });
+        },
+    });
 
     const allowPan = canvasPolicy?.allowPan ?? true;
     const allowZoom = canvasPolicy?.allowZoom ?? true;
@@ -146,7 +168,7 @@ export default function CanvasRoot({ workspaceId }) {
         };
 
         if (!maybeRebase(nextViewport)) {
-            viewportIntent({ viewport: nextViewport });
+            viewportIntent({ type: 'pan', dx: -dx, dy: -dy });
         }
     }
 
@@ -220,11 +242,9 @@ export default function CanvasRoot({ workspaceId }) {
         nextScale = Math.min(32, Math.max(1e-9, nextScale));
 
         viewportIntent({
-            viewport: {
-                scale: nextScale,
-                x: worldBefore.x - cursor.x / nextScale - worldOffset.x,
-                y: worldBefore.y - cursor.y / nextScale - worldOffset.y,
-            },
+            type: 'zoom',
+            scale: zoomFactor,
+            anchor: worldBefore,
         });
     }
 
@@ -310,7 +330,11 @@ export default function CanvasRoot({ workspaceId }) {
                 onPointerUp={handlePointerUp}
                 onWheel={handleWheel}>
                 {/* 🌍 WORLD */}
-                <div style={{ position: 'absolute', inset: 0 }}>
+                <div
+                    style={{ position: 'absolute', inset: 0 }}
+                    onPointerDown={onCanvasPointerDown}
+                    onPointerMove={onCanvasPointerMove}
+                    onPointerUp={onCanvasPointerUp}>
                     <CanvasSurface surface={canvasSurface} viewport={viewport} emphasisMode={isNodeDragging ? 'drag' : isPanning ? 'pan' : 'none'} />
                     <WorldOriginMarker viewport={viewport} />
                     <GhostFrameLayer designState={designState} />

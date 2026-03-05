@@ -31,6 +31,9 @@
     "engine:timeline:dag:test": "node engine/__tests__/snapshotDag.test.mjs",
     "engine:timeline:label:test": "node engine/__tests__/snapshotLabeling.test.mjs",
     "runtime:map:test": "node runtime/animation/buildEvaluationInputs.fixture.test.mjs",
+    "runtime:replay:test": "node --loader ./bench/alias-loader.mjs runtime/__tests__/runtimeReplayDeterminism.test.mjs",
+    "runtime:statehash:test": "node --loader ./bench/alias-loader.mjs runtime/__tests__/runtimeStateHash.test.mjs",
+    "ui:interactions:test": "node --loader ./bench/alias-loader.mjs ui/interactions/__tests__/toolController.test.mjs",
     "determinism": "NODE_ENV=test node scripts/determinismGate.mjs",
     "ci:determinism": "npm run determinism",
     "template:verify-all": "NODE_ENV=test node scripts/templateVerifyAll.mjs"

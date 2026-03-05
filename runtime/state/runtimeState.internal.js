@@ -8,6 +8,9 @@ export const initialRuntimeState = {
   workspace: createDefaultWorkspaceState(),
   activeStateId: null,
   activeComponentId: null,
+  selection: {
+    ids: [],
+  },
   // 🔹 Narrative slice (runtime only)
   scene: {
     activeSceneId: null,

@@ -28,6 +28,22 @@ export function renderNode(node, state) {
   applyLayout(el, node.layout);
   applyStyle(el, node.style);
 
+  if (!node.screen) {
+    console.warn('[renderNode] Missing screen coords for node', node.id);
+  } else {
+    const x = node.screen?.x ?? 0;
+    const y = node.screen?.y ?? 0;
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
+  }
+
+  const dx = node.previewTransform?.dx || 0;
+  const dy = node.previewTransform?.dy || 0;
+  if (dx !== 0 || dy !== 0) {
+    const existing = el.style.transform ? ` ${el.style.transform}` : '';
+    el.style.transform = `translate(${dx}px, ${dy}px)${existing}`;
+  }
+
   if (node.children?.length) {
     for (const childId of node.children) {
       const child = state.nodes[childId];

@@ -25,6 +25,9 @@ const initialState = Object.freeze({
         component: Object.freeze({}),
         page: Object.freeze([]),
     }),
+    selection: Object.freeze({
+        ids: Object.freeze([]),
+    }),
 });
 
 function ensureDefaultTimeline(state) {

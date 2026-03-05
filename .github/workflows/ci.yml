@@ -26,6 +26,15 @@ jobs:
       - name: Architecture Gate
         run: npm run arch
 
+      - name: Runtime Map Test
+        run: npm run runtime:map:test
+
+      - name: Runtime Replay Determinism
+        run: npm run runtime:replay:test
+
+      - name: Runtime State Hash Stability
+        run: npm run runtime:statehash:test
+
       - name: Determinism Gate
         run: npm run determinism
 
