@@ -1,4 +1,5 @@
 import { applyResizeConstraints } from '@/engine/constraints/resizeConstraintEngine';
+import { resolveSnap } from '@/engine/constraints/snapEngine.js';
 import { computeSelectionBounds } from '../../../../domain/geometry/selectionBounds.js';
 import { perfStart, perfEnd } from '@/runtime/instrumentation/perfTracker.js';
 
@@ -59,11 +60,35 @@ export class ResizeSession {
             return;
         }
 
-        this.currentPointer = { x, y };
+        let pointerWorld = { x, y };
+        const candidates = (this.siblings || [])
+            .filter((node) => node && !this.nodeIds.includes(node.id))
+            .map((node) => ({
+                nodeId: node.id,
+                bounds: {
+                    x: node.x ?? node.layout?.x ?? 0,
+                    y: node.y ?? node.layout?.y ?? 0,
+                    width: node.width ?? node.layout?.width ?? 0,
+                    height: node.height ?? node.layout?.height ?? 0,
+                },
+            }));
+
+        const snap = resolveSnap({
+            pointerWorld,
+            nodeBounds: this.bounds,
+            candidates,
+            gridSize: this.options?.gridSize ?? null,
+            threshold: this.options?.snapThreshold ?? 6,
+        });
+
+        pointerWorld = snap.snappedPoint;
+        this.guides = snap.guides ?? [];
+
+        this.currentPointer = pointerWorld;
 
         const rawPointerDelta = {
-            x: x - this.startPointer.x,
-            y: y - this.startPointer.y,
+            x: pointerWorld.x - this.startPointer.x,
+            y: pointerWorld.y - this.startPointer.y,
         };
 
         const result = applyResizeConstraints({
@@ -81,7 +106,9 @@ export class ResizeSession {
 
         this.resize = result.resize;
         this.delta = result.delta; // position shift if resizing from left/top
-        this.guides = result.guides ?? [];
+        if (!this.guides.length) {
+            this.guides = result.guides ?? [];
+        }
         perfEnd('resize.update');
     }
 
@@ -104,6 +131,7 @@ export class ResizeSession {
                 width: nextWidth,
                 height: nextHeight,
             },
+            snapGuides: this.guides,
         };
     }
 

@@ -1,186 +1,84 @@
-export const SNAP_TYPES = {
-    EDGE_LEFT: 'edge-left',
-    EDGE_RIGHT: 'edge-right',
-    EDGE_TOP: 'edge-top',
-    EDGE_BOTTOM: 'edge-bottom',
-    CENTER_X: 'center-x',
-    CENTER_Y: 'center-y',
-};
-
-const SNAP_TYPE_ORDER = {
-    [SNAP_TYPES.EDGE_LEFT]: 0,
-    [SNAP_TYPES.EDGE_RIGHT]: 0,
-    [SNAP_TYPES.EDGE_TOP]: 0,
-    [SNAP_TYPES.EDGE_BOTTOM]: 0,
-    [SNAP_TYPES.CENTER_X]: 1,
-    [SNAP_TYPES.CENTER_Y]: 1,
-};
-
-export function computeSnapCandidates({ movingBounds, targets, snapRadius }) {
-    if (!movingBounds || !Array.isArray(targets) || snapRadius <= 0) {
-        return [];
-    }
-
-    const moving = rectMetrics(movingBounds);
-    const candidates = [];
-
-    targets.forEach((node) => {
-        if (!node?.id) return;
-        const targetBounds = rectFromNode(node);
-        const target = rectMetrics(targetBounds);
-
-        // X axis edges + center
-        addCandidate(candidates, node.id, SNAP_TYPES.EDGE_LEFT, target.left - moving.left, snapRadius, targetBounds);
-        addCandidate(candidates, node.id, SNAP_TYPES.EDGE_RIGHT, target.right - moving.right, snapRadius, targetBounds);
-        addCandidate(candidates, node.id, SNAP_TYPES.EDGE_LEFT, target.right - moving.left, snapRadius, targetBounds);
-        addCandidate(candidates, node.id, SNAP_TYPES.EDGE_RIGHT, target.left - moving.right, snapRadius, targetBounds);
-        addCandidate(candidates, node.id, SNAP_TYPES.CENTER_X, target.cx - moving.cx, snapRadius, targetBounds);
-
-        // Y axis edges + center
-        addCandidate(candidates, node.id, SNAP_TYPES.EDGE_TOP, target.top - moving.top, snapRadius, targetBounds);
-        addCandidate(candidates, node.id, SNAP_TYPES.EDGE_BOTTOM, target.bottom - moving.bottom, snapRadius, targetBounds);
-        addCandidate(candidates, node.id, SNAP_TYPES.EDGE_TOP, target.bottom - moving.top, snapRadius, targetBounds);
-        addCandidate(candidates, node.id, SNAP_TYPES.EDGE_BOTTOM, target.top - moving.bottom, snapRadius, targetBounds);
-        addCandidate(candidates, node.id, SNAP_TYPES.CENTER_Y, target.cy - moving.cy, snapRadius, targetBounds);
-    });
-
-    return candidates.sort((a, b) => {
-        if (a.distance !== b.distance) return a.distance - b.distance;
-        const aOrder = SNAP_TYPE_ORDER[a.type] ?? 2;
-        const bOrder = SNAP_TYPE_ORDER[b.type] ?? 2;
-        if (aOrder !== bOrder) return aOrder - bOrder;
-        if (a.targetId === b.targetId) return 0;
-        return a.targetId < b.targetId ? -1 : 1;
-    });
+function roundPx(value) {
+  return Math.round(value * 2) / 2;
 }
 
-export function resolveSnapDelta({ candidates }) {
-    if (!Array.isArray(candidates) || candidates.length === 0) {
-        return {
-            delta: { x: 0, y: 0 },
-            primaryX: null,
-            primaryY: null,
+function buildCandidateValues(candidate) {
+  const b = candidate.bounds;
+  if (!b) return [];
+  const left = b.x;
+  const right = b.x + b.width;
+  const centerX = b.x + b.width / 2;
+  const top = b.y;
+  const bottom = b.y + b.height;
+  const centerY = b.y + b.height / 2;
+
+  return [
+    { axis: 'x', value: left },
+    { axis: 'x', value: right },
+    { axis: 'x', value: centerX },
+    { axis: 'y', value: top },
+    { axis: 'y', value: bottom },
+    { axis: 'y', value: centerY },
+  ];
+}
+
+export function resolveSnap({
+  pointerWorld,
+  nodeBounds,
+  candidates = [],
+  gridSize = null,
+  threshold = 6,
+}) {
+  const guides = [];
+  const bestX = { dist: threshold + 1, value: null, guide: null };
+  const bestY = { dist: threshold + 1, value: null, guide: null };
+
+  if (gridSize && gridSize > 0) {
+    const gx = Math.round(pointerWorld.x / gridSize) * gridSize;
+    const gy = Math.round(pointerWorld.y / gridSize) * gridSize;
+    const dx = Math.abs(gx - pointerWorld.x);
+    const dy = Math.abs(gy - pointerWorld.y);
+
+    if (dx <= threshold && dx < bestX.dist) {
+      bestX.dist = dx;
+      bestX.value = gx;
+      bestX.guide = null;
+    }
+    if (dy <= threshold && dy < bestY.dist) {
+      bestY.dist = dy;
+      bestY.value = gy;
+      bestY.guide = null;
+    }
+  }
+
+  const ordered = [...candidates].sort((a, b) =>
+    String(a.nodeId).localeCompare(String(b.nodeId))
+  );
+
+  ordered.forEach((candidate) => {
+    buildCandidateValues(candidate).forEach((entry) => {
+      const target = entry.axis === 'x' ? bestX : bestY;
+      const pointValue = entry.axis === 'x' ? pointerWorld.x : pointerWorld.y;
+      const dist = Math.abs(entry.value - pointValue);
+      if (dist <= threshold && dist < target.dist) {
+        target.dist = dist;
+        target.value = entry.value;
+        target.guide = {
+          type: entry.axis === 'x' ? 'vertical' : 'horizontal',
+          position: entry.value,
+          sourceNodeId: candidate.nodeId,
         };
-    }
+      }
+    });
+  });
 
-    const xCandidates = candidates.filter((c) => isXType(c.type));
-    const yCandidates = candidates.filter((c) => isYType(c.type));
+  if (bestX.guide) guides.push(bestX.guide);
+  if (bestY.guide) guides.push(bestY.guide);
 
-    const primaryX = pickBestCandidate(xCandidates);
-    const primaryY = pickBestCandidate(yCandidates);
+  const snappedPoint = {
+    x: roundPx(bestX.value ?? pointerWorld.x),
+    y: roundPx(bestY.value ?? pointerWorld.y),
+  };
 
-    return {
-        delta: {
-            x: primaryX ? primaryX.delta.x : 0,
-            y: primaryY ? primaryY.delta.y : 0,
-        },
-        primaryX,
-        primaryY,
-    };
-}
-
-export function buildSnapGuides({ primaryX, primaryY }) {
-    const guides = [];
-
-    if (primaryX) {
-        const x = guideX(primaryX);
-        if (x != null) {
-            guides.push({
-                id: `snap-x-${primaryX.type}-${primaryX.targetId}`,
-                type: 'vertical',
-                x,
-                meta: primaryX,
-            });
-        }
-    }
-
-    if (primaryY) {
-        const y = guideY(primaryY);
-        if (y != null) {
-            guides.push({
-                id: `snap-y-${primaryY.type}-${primaryY.targetId}`,
-                type: 'horizontal',
-                y,
-                meta: primaryY,
-            });
-        }
-    }
-
-    return guides;
-}
-
-function addCandidate(list, targetId, type, delta, snapRadius, bounds) {
-    const distance = Math.abs(delta);
-    if (distance > snapRadius) return;
-
-    const candidate = {
-        targetId,
-        type,
-        delta: isXType(type) ? { x: delta, y: 0 } : { x: 0, y: delta },
-        distance,
-        bounds: {
-            x: bounds.x,
-            y: bounds.y,
-            width: bounds.width,
-            height: bounds.height,
-        },
-    };
-
-    list.push(candidate);
-}
-
-function pickBestCandidate(list) {
-    if (!list.length) return null;
-    return list.sort((a, b) => {
-        if (a.distance !== b.distance) return a.distance - b.distance;
-        const aOrder = SNAP_TYPE_ORDER[a.type] ?? 2;
-        const bOrder = SNAP_TYPE_ORDER[b.type] ?? 2;
-        if (aOrder !== bOrder) return aOrder - bOrder;
-        if (a.targetId === b.targetId) return 0;
-        return a.targetId < b.targetId ? -1 : 1;
-    })[0];
-}
-
-function rectFromNode(node) {
-    return {
-        x: node.x ?? 0,
-        y: node.y ?? 0,
-        width: node.width ?? 0,
-        height: node.height ?? 0,
-    };
-}
-
-function rectMetrics(rect) {
-    return {
-        left: rect.x,
-        right: rect.x + rect.width,
-        top: rect.y,
-        bottom: rect.y + rect.height,
-        cx: rect.x + rect.width / 2,
-        cy: rect.y + rect.height / 2,
-    };
-}
-
-function isXType(type) {
-    return type === SNAP_TYPES.EDGE_LEFT || type === SNAP_TYPES.EDGE_RIGHT || type === SNAP_TYPES.CENTER_X;
-}
-
-function isYType(type) {
-    return type === SNAP_TYPES.EDGE_TOP || type === SNAP_TYPES.EDGE_BOTTOM || type === SNAP_TYPES.CENTER_Y;
-}
-
-function guideX(candidate) {
-    if (!candidate?.bounds) return null;
-    if (candidate.type === SNAP_TYPES.EDGE_LEFT) return candidate.bounds.x;
-    if (candidate.type === SNAP_TYPES.EDGE_RIGHT) return candidate.bounds.x + candidate.bounds.width;
-    if (candidate.type === SNAP_TYPES.CENTER_X) return candidate.bounds.x + candidate.bounds.width / 2;
-    return null;
-}
-
-function guideY(candidate) {
-    if (!candidate?.bounds) return null;
-    if (candidate.type === SNAP_TYPES.EDGE_TOP) return candidate.bounds.y;
-    if (candidate.type === SNAP_TYPES.EDGE_BOTTOM) return candidate.bounds.y + candidate.bounds.height;
-    if (candidate.type === SNAP_TYPES.CENTER_Y) return candidate.bounds.y + candidate.bounds.height / 2;
-    return null;
+  return { snappedPoint, guides };
 }

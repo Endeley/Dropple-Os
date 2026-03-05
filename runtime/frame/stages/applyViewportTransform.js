@@ -25,6 +25,13 @@ export function applyViewportTransform(context) {
         originScreen,
       };
     }
+    if (previewTransform && (previewTransform.dx || previewTransform.dy)) {
+      previewTransform = {
+        ...previewTransform,
+        dx: (previewTransform.dx ?? 0) * viewport.scale,
+        dy: (previewTransform.dy ?? 0) * viewport.scale,
+      };
+    }
 
     return {
       ...node,

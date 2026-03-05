@@ -1,5 +1,7 @@
 import { nanoid } from 'nanoid';
 import { applyMoveConstraints } from '@/engine/constraints/constraintEngine';
+import { resolveSnap } from '@/engine/constraints/snapEngine.js';
+import { computeSelectionBounds } from '@/domain/geometry/selectionBounds.js';
 import { computeReorderIndex } from '@/engine/layout/computeReorderIndex';
 import { findDropTarget } from '@/engine/layout/findDropTarget';
 import { perfStart, perfEnd } from '@/runtime/instrumentation/perfTracker.js';
@@ -36,15 +38,17 @@ export class MoveSession {
 
     update(event) {
         perfStart('move.update');
-        const x = event.clientX;
-        const y = event.clientY;
+        const x = event?.x ?? event?.clientX;
+        const y = event?.y ?? event?.clientY;
+        if (!Number.isFinite(x) || !Number.isFinite(y)) {
+            perfEnd('move.update');
+            return;
+        }
 
         this.currentPointer = { x, y };
 
-        const rawDelta = {
-            x: x - this.startPointer.x,
-            y: y - this.startPointer.y,
-        };
+        let pointerWorld = this.currentPointer;
+        let snapGuides = [];
 
         if (this.context?.crossContainer) {
             const target = findDropTarget(this.currentPointer, this.context.allowedDropTargets || []);
@@ -74,6 +78,37 @@ export class MoveSession {
             return;
         }
 
+        if (!this.context?.autoLayout) {
+            const bounds = computeSelectionBounds(this.nodes || []);
+            const candidates = (this.siblings || [])
+                .filter((node) => node && !this.nodeIds.includes(node.id))
+                .map((node) => ({
+                    nodeId: node.id,
+                    bounds: {
+                        x: node.x ?? node.layout?.x ?? 0,
+                        y: node.y ?? node.layout?.y ?? 0,
+                        width: node.width ?? node.layout?.width ?? 0,
+                        height: node.height ?? node.layout?.height ?? 0,
+                    },
+                }));
+
+            const snap = resolveSnap({
+                pointerWorld,
+                nodeBounds: bounds,
+                candidates,
+                gridSize: this.options?.gridSize ?? null,
+                threshold: this.options?.snapThreshold ?? 6,
+            });
+
+            pointerWorld = snap.snappedPoint;
+            snapGuides = snap.guides;
+        }
+
+        const rawDelta = {
+            x: pointerWorld.x - this.startPointer.x,
+            y: pointerWorld.y - this.startPointer.y,
+        };
+
         const { delta, guides } = applyMoveConstraints({
             delta: rawDelta,
             nodes: this.nodes,
@@ -83,7 +118,7 @@ export class MoveSession {
         });
 
         this.delta = delta;
-        this.guides = guides;
+        this.guides = snapGuides.length ? snapGuides : guides;
 
         if (this.context?.isAutoLayoutChild) {
             this.reorderOrder = this.computeReorderOrder();
@@ -102,10 +137,13 @@ export class MoveSession {
         }
 
         return {
-            type: 'move-preview',
+            kind: 'move',
             nodeIds: this.nodeIds,
-            delta: this.delta,
-            guides: this.guides,
+            previewTransform: {
+                dx: this.delta.x,
+                dy: this.delta.y,
+            },
+            snapGuides: this.guides,
         };
     }
 

@@ -22,6 +22,7 @@ export function applySessionPreview(context) {
       renderGraph: {
         ...renderGraph,
         nodes: updatedNodes,
+        snapGuides: preview.snapGuides || [],
       },
     };
   }
@@ -45,6 +46,31 @@ export function applySessionPreview(context) {
       renderGraph: {
         ...renderGraph,
         nodes: updatedNodes,
+        snapGuides: preview.snapGuides || [],
+      },
+    };
+  }
+
+  if (preview.kind === 'move' && Array.isArray(preview.nodeIds)) {
+    const updatedNodes = nodes.map((node) => {
+      if (!preview.nodeIds.includes(node.id)) return node;
+      const nextPreview = {
+        ...(node.previewTransform || {}),
+        dx: preview.previewTransform?.dx ?? 0,
+        dy: preview.previewTransform?.dy ?? 0,
+      };
+      return {
+        ...node,
+        previewTransform: nextPreview,
+      };
+    });
+
+    return {
+      ...context,
+      renderGraph: {
+        ...renderGraph,
+        nodes: updatedNodes,
+        snapGuides: preview.snapGuides || [],
       },
     };
   }

@@ -57,6 +57,7 @@ export class RotateSession {
       nodeIds: this.nodeIds,
       rotationDelta: this.rotationDelta,
       centerWorld: this.centerWorld,
+      snapGuides: [],
     };
   }
 
