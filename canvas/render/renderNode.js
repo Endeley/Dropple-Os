@@ -37,6 +37,14 @@ export function renderNode(node, state) {
     el.style.top = `${y}px`;
   }
 
+  if (node.previewBoundsScreen) {
+    const b = node.previewBoundsScreen;
+    el.style.left = `${b.x}px`;
+    el.style.top = `${b.y}px`;
+    el.style.width = `${b.width}px`;
+    el.style.height = `${b.height}px`;
+  }
+
   const dx = node.previewTransform?.dx || 0;
   const dy = node.previewTransform?.dy || 0;
   if (dx !== 0 || dy !== 0) {

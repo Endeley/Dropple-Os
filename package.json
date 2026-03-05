@@ -33,6 +33,7 @@
     "runtime:map:test": "node runtime/animation/buildEvaluationInputs.fixture.test.mjs",
     "runtime:replay:test": "node --loader ./bench/alias-loader.mjs runtime/__tests__/runtimeReplayDeterminism.test.mjs",
     "runtime:statehash:test": "node --loader ./bench/alias-loader.mjs runtime/__tests__/runtimeStateHash.test.mjs",
+    "runtime:resize:session:test": "node --loader ./bench/alias-loader.mjs runtime/__tests__/resizeSessionDeterminism.test.mjs && node --loader ./bench/alias-loader.mjs runtime/__tests__/resizeSessionCommitBridge.test.mjs",
     "ui:interactions:test": "node --loader ./bench/alias-loader.mjs ui/interactions/__tests__/toolController.test.mjs",
     "determinism": "NODE_ENV=test node scripts/determinismGate.mjs",
     "ci:determinism": "npm run determinism",

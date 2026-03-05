@@ -21,6 +21,8 @@ import { colors, motion } from '@/ui/tokens';
 import { canvasBus } from '../eventBus/canvasBus.js';
 import { getZoomTier } from '@/runtime/canvas/zoomTiers.js';
 
+const RESIZE_DISABLED = true;
+
 export default function ReadOnlyNodeRenderer({
   nodes,
   emit,
@@ -258,7 +260,7 @@ export default function ReadOnlyNodeRenderer({
       }
     }
 
-    if (resizeRef.current.resizingId) {
+    if (!RESIZE_DISABLED && resizeRef.current.resizingId) {
       const {
         startX,
         startY,
@@ -500,7 +502,7 @@ export default function ReadOnlyNodeRenderer({
       }
     }
 
-    if (resizingId) {
+    if (!RESIZE_DISABLED && resizingId) {
       const dw = resizeDelta.w;
       const dh = resizeDelta.h;
       const node = nodes[resizingId];
@@ -606,7 +608,7 @@ export default function ReadOnlyNodeRenderer({
       {Object.values(nodes).map((node) => {
         const layout = node.layout || {};
         const isSelected = selectedIds.has(node.id);
-        const isResizing = resizingId === node.id;
+        const isResizing = !RESIZE_DISABLED && resizingId === node.id;
         const origin = dragOrigins.get(node.id);
         const parent = node.parentId ? nodes[node.parentId] : null;
         const isAutoChild = !!parent?.layout?.autoLayout;
@@ -670,7 +672,7 @@ export default function ReadOnlyNodeRenderer({
             }}
           >
             {node.type} · {node.id}
-            {!isReadOnly && isSelected && selectedIds.size === 1
+            {!isReadOnly && !RESIZE_DISABLED && isSelected && selectedIds.size === 1
               ? ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'].map((handle) => (
                   <div
                     key={handle}

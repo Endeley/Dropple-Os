@@ -1,4 +1,3 @@
-import { nanoid } from 'nanoid';
 import { applyResizeConstraints } from '@/engine/constraints/resizeConstraintEngine';
 import { computeSelectionBounds } from '../../../../domain/geometry/selectionBounds.js';
 import { perfStart, perfEnd } from '@/runtime/instrumentation/perfTracker.js';
@@ -12,7 +11,7 @@ export class ResizeSession {
             throw new Error('[ResizeSession] nodeIds required');
         }
 
-        this.id = nanoid();
+        this.id = `resize:${nodeIds.join(',')}:${handle ?? 'se'}`;
         this.type = 'resize';
 
         this.nodeIds = nodeIds;
@@ -28,6 +27,7 @@ export class ResizeSession {
         this.canvas = canvas;
 
         const bounds = computeSelectionBounds(nodes);
+        this.bounds = bounds;
         this.aspectRatio = options.aspectRatio ?? (bounds.height === 0 ? 1 : bounds.width / Math.max(bounds.height, 1));
 
         this.delta = { x: 0, y: 0 };
@@ -35,14 +35,29 @@ export class ResizeSession {
         this.guides = [];
     }
 
+    onBegin(payload) {
+        if (payload?.startPointer) {
+            this.startPointer = payload.startPointer;
+            this.currentPointer = payload.startPointer;
+        }
+    }
+
     start(_event) {
-        // no-op
+        this.onBegin(_event);
+    }
+
+    onPointerMove(pointer) {
+        this.update(pointer);
     }
 
     update(event) {
         perfStart('resize.update');
-        const x = event.clientX;
-        const y = event.clientY;
+        const x = event?.x ?? event?.clientX;
+        const y = event?.y ?? event?.clientY;
+        if (!Number.isFinite(x) || !Number.isFinite(y)) {
+            perfEnd('resize.update');
+            return;
+        }
 
         this.currentPointer = { x, y };
 
@@ -71,14 +86,31 @@ export class ResizeSession {
     }
 
     getPreview() {
+        const bounds = this.bounds;
+        const resize = this.resize || { width: 0, height: 0 };
+        const delta = this.delta || { x: 0, y: 0 };
+
+        const nextWidth = Math.max(1, bounds.width + resize.width);
+        const nextHeight = Math.max(1, bounds.height + resize.height);
+        const originX = bounds.minX + delta.x;
+        const originY = bounds.minY + delta.y;
+
         return {
-            type: 'resize-preview',
-            nodeIds: this.nodeIds,
-            resize: this.resize,
-            delta: this.delta,
-            guides: this.guides,
-            handle: this.handle,
+            kind: 'resize',
+            nodeId: this.nodeIds[0] ?? null,
+            previewBoundsWorld: {
+                x: originX,
+                y: originY,
+                width: nextWidth,
+                height: nextHeight,
+            },
         };
+    }
+
+    onPointerUp(pointer) {
+        if (pointer?.x != null && pointer?.y != null) {
+            this.currentPointer = { x: pointer.x, y: pointer.y };
+        }
     }
 
     commit() {

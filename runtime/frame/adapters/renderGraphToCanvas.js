@@ -7,5 +7,6 @@ export function renderGraphToCanvas(renderGraph) {
     props: node.props || {},
     previewTransform: node.previewTransform,
     screen: node.screen,
+    previewBoundsScreen: node.previewBoundsScreen,
   }));
 }

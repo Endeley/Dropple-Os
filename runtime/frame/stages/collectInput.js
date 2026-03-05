@@ -1,6 +1,13 @@
+import { getPreview } from '@/runtime/interactions/input/inputSessionManager.js';
+
 export function collectInput(context) {
+  const input = context.input || {};
+
   return {
     ...context,
-    input: context.input || {},
+    input: {
+      ...input,
+      sessionPreview: getPreview(),
+    },
   };
 }

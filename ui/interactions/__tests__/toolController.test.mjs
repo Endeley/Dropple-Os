@@ -33,5 +33,6 @@ assert(events[1].type === 'node/move', 'move event type mismatch');
 assert(events[1].payload.id === 'a', 'move payload id mismatch');
 assert(events[1].payload.dx === 10, 'move dx mismatch');
 assert(events[1].payload.dy === 15, 'move dy mismatch');
+assert(!events.some((evt) => evt.type === 'node/resize'), 'UI must not dispatch node/resize');
 
 console.log('toolController deterministic: OK');

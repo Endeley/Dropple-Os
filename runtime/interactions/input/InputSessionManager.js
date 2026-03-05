@@ -1,132 +1,84 @@
-import { MessageBus } from '@/core/messageBus';
+import { getRuntimeState } from '@/runtime/state/runtimeState.js';
+import { createSessionFromIntent } from '@/runtime/input/sessionRuntimeBridge.js';
 
-/**
- * Manages exactly ONE active input session.
- * No mutations. No canvas logic. No UI logic.
- *
- * HARD RULES:
- * - startSession must be strict
- * - updateSession must be safe
- * - commitSession must be safe when idle
- *
- * IMPORTANT ADDITION:
- * - pointer.down events WITHOUT a session (background / pan)
- *   MUST be ignored by the session manager.
- */
-export class InputSessionManager {
-    constructor(bus) {
-        this.bus = bus;
+let activeSession = null;
+let activeSessionType = null;
+let latestPreview = null;
 
-        this.state = {
-            activeSession: null,
-            state: 'idle', // 'idle' | 'active'
-        };
-    }
+function clearSession() {
+  activeSession = null;
+  activeSessionType = null;
+  latestPreview = null;
+}
 
-    assertIdle() {
-        if (this.state.state !== 'idle') {
-            throw new Error('[InputSessionManager] Session already active');
-        }
-    }
+export function beginSession({ type, payload }) {
+  if (activeSession) {
+    throw new Error('[inputSessionManager] Session already active');
+  }
 
-    cleanup() {
-        this.state.activeSession = null;
-        this.state.state = 'idle';
-    }
+  const runtimeState = getRuntimeState();
+  const nodesById = runtimeState?.nodes || {};
 
-    /**
-     * Start a new input session.
-     * If session is null, this is a background interaction (pan, hover, etc).
-     * That MUST be ignored.
-     */
-    startSession(session, event) {
-        // ✅ FIX: ignore background pointer.down
-        if (!session) return;
+  const sessionPayload = { ...(payload || {}) };
+  if (type === 'resize') {
+    sessionPayload.nodeIds = [payload?.nodeId].filter(Boolean);
+    sessionPayload.startPointer = payload?.pointerWorld;
+    sessionPayload.handle = payload?.handleId;
+  }
 
-        this.assertIdle();
+  const session = createSessionFromIntent({
+    sessionType: type,
+    payload: sessionPayload,
+    nodesById,
+  });
 
-        this.state.activeSession = session;
-        this.state.state = 'active';
+  if (!session) return null;
 
-        session.start?.(event);
+  activeSession = session;
+  activeSessionType = session.type;
 
-        this.bus.emit('session.start', {
-            sessionId: session.id,
-            sessionType: session.type,
-        });
-    }
+  if (typeof session.onBegin === 'function') {
+    session.onBegin(sessionPayload);
+  } else {
+    session.start?.(sessionPayload);
+  }
 
-    /**
-     * Pointer move updates.
-     * Safe no-op when idle.
-     */
-    updateSession(event) {
-        const session = this.state.activeSession;
-        if (!session) return null;
+  latestPreview = session.getPreview?.() ?? null;
+  return latestPreview;
+}
 
-        try {
-            session.update?.(event);
+export function updatePointer({ pointer }) {
+  if (!activeSession) return null;
 
-            this.bus.emit('session.update', {
-                sessionId: session.id,
-                sessionType: session.type,
-                preview: session.getPreview?.() ?? null,
-            });
+  if (typeof activeSession.onPointerMove === 'function') {
+    activeSession.onPointerMove(pointer);
+  } else {
+    activeSession.update?.(pointer);
+  }
 
-            return session;
-        } catch (err) {
-            console.error('[InputSessionManager] updateSession failed:', err);
-            this.cancelSession();
-            return null;
-        }
-    }
+  latestPreview = activeSession.getPreview?.() ?? null;
+  return latestPreview;
+}
 
-    /**
-     * Pointer up commit.
-     * IMPORTANT: pointer.up can fire with NO active session.
-     * This MUST be a safe no-op.
-     */
-    commitSession() {
-        const session = this.state.activeSession;
-        if (!session) return null;
+export function endSession({ reason } = {}) {
+  if (!activeSession) return null;
 
-        let payload = null;
+  if (typeof activeSession.onPointerUp === 'function') {
+    activeSession.onPointerUp({ reason });
+  }
 
-        try {
-            payload = session.commit?.();
-        } catch (err) {
-            console.error('[InputSessionManager] commitSession failed:', err);
-        }
+  const payload = activeSession.commit?.() ?? null;
+  const event = { sessionType: activeSession.type, payload };
 
-        this.bus.emit('session.commit', {
-            sessionId: session.id,
-            sessionType: session.type,
-            payload,
-        });
+  clearSession();
+  return event;
+}
 
-        this.cleanup();
-        return payload;
-    }
+export function getPreview() {
+  if (latestPreview) return latestPreview;
+  return activeSession?.getPreview?.() ?? null;
+}
 
-    /**
-     * Cancel the active session.
-     * Safe no-op when idle.
-     */
-    cancelSession() {
-        const session = this.state.activeSession;
-        if (!session) return;
-
-        try {
-            session.cancel?.();
-        } catch (err) {
-            console.warn('[InputSessionManager] cancelSession error:', err);
-        }
-
-        this.bus.emit('session.cancel', {
-            sessionId: session.id,
-            sessionType: session.type,
-        });
-
-        this.cleanup();
-    }
+export function getActiveSessionType() {
+  return activeSessionType;
 }

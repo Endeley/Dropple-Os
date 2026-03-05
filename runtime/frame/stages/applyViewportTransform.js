@@ -1,4 +1,5 @@
 import { projectToViewport } from '@/canvas/transform/projectToViewport.js';
+import { projectRectToViewport } from '@/canvas/transform/projectRectToViewport.js';
 
 export function applyViewportTransform(context) {
   const renderGraph = context.renderGraph;
@@ -12,10 +13,14 @@ export function applyViewportTransform(context) {
 
   const projectedNodes = nodes.map((node) => {
     const projected = projectToViewport(node, viewport);
+    const previewBoundsScreen = node.previewBounds
+      ? projectRectToViewport(node.previewBounds, viewport)
+      : null;
 
     return {
       ...node,
       screen: projected,
+      previewBoundsScreen,
     };
   });
 
