@@ -3,7 +3,7 @@ import {
   VIEWPORT_PAN,
   VIEWPORT_ZOOM,
 } from '../viewportEvents.js';
-import { clampZoom } from '@/engine/camera/cameraPolicy.js';
+import { clampZoom } from '@/core/viewport/cameraPolicy.js';
 
 export function viewportReducer(state, event) {
   const workspace = state.workspace || {};
