@@ -123,3 +123,11 @@ export function createToolController({ getRuntimeState, dispatch }) {
     },
   };
 }
+
+export function resolveSessionNodeIds(selectionIds, targetNodeId) {
+  const ids = Array.isArray(selectionIds) ? selectionIds : [];
+  if (targetNodeId && ids.includes(targetNodeId)) {
+    return ids;
+  }
+  return targetNodeId ? [targetNodeId] : [];
+}

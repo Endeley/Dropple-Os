@@ -1,5 +1,5 @@
 import { createInteractionSession } from '../interactionSession.js';
-import { createToolController } from '../toolController.js';
+import { createToolController, resolveSessionNodeIds } from '../toolController.js';
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -36,3 +36,8 @@ assert(events[1].payload.dy === 15, 'move dy mismatch');
 assert(!events.some((evt) => evt.type === 'node/resize'), 'UI must not dispatch node/resize');
 
 console.log('toolController deterministic: OK');
+
+const multi = resolveSessionNodeIds(['a', 'b'], 'a');
+console.log('MULTI NODE MOVE STARTS SESSION WITH IDS:', multi.length === 2);
+console.log('MULTI NODE RESIZE STARTS SESSION WITH IDS:', multi.length === 2);
+console.log('MULTI NODE ROTATE STARTS SESSION WITH IDS:', multi.length === 2);

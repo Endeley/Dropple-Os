@@ -21,7 +21,11 @@ export function beginSession({ type, payload }) {
 
   const sessionPayload = { ...(payload || {}) };
   if (type === 'resize') {
-    sessionPayload.nodeIds = [payload?.nodeId].filter(Boolean);
+    if (Array.isArray(payload?.nodeIds) && payload.nodeIds.length) {
+      sessionPayload.nodeIds = payload.nodeIds;
+    } else {
+      sessionPayload.nodeIds = [payload?.nodeId].filter(Boolean);
+    }
     sessionPayload.startPointer = payload?.pointerWorld;
     sessionPayload.handle = payload?.handleId;
   }

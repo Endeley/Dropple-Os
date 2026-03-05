@@ -1,3 +1,5 @@
+import { computeSelectionBounds } from '@/domain/geometry/selectionBounds.js';
+
 const TAU = Math.PI * 2;
 
 function normalizeAngle(angle) {
@@ -18,7 +20,15 @@ export class RotateSession {
 
     this.nodeIds = nodeIds;
     this.nodes = nodes || [];
-    this.centerWorld = centerWorld;
+    if (centerWorld) {
+      this.centerWorld = centerWorld;
+    } else {
+      const bounds = computeSelectionBounds(this.nodes);
+      this.centerWorld = {
+        x: bounds.minX + bounds.width / 2,
+        y: bounds.minY + bounds.height / 2,
+      };
+    }
 
     this.startPointerWorld = startPointerWorld;
     this.currentPointerWorld = startPointerWorld;
