@@ -4,6 +4,8 @@ import { evaluateTimeline } from './stages/evaluateTimeline.js';
 import { buildRenderGraph } from './stages/buildRenderGraph.js';
 import { applySessionPreview } from './stages/applySessionPreview.js';
 import { applyPreviewTransforms } from './stages/applyPreviewTransforms.js';
+import { computeGuidesStage } from './stages/computeGuides.js';
+import { computeLayoutInferenceStage } from './stages/computeLayoutInference.js';
 import { applyViewportTransform } from './stages/applyViewportTransform.js';
 import { buildSelectionOverlay } from './stages/buildSelectionOverlay.js';
 
@@ -14,6 +16,8 @@ export function runFramePipeline(context) {
   context = buildRenderGraph(context);
   context = applySessionPreview(context);
   context = applyPreviewTransforms(context);
+  context = computeGuidesStage(context);
+  context = computeLayoutInferenceStage(context);
   context = applyViewportTransform(context);
   context = buildSelectionOverlay(context);
 

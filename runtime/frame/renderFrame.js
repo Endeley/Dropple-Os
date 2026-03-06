@@ -1,6 +1,6 @@
 import { runFrame } from './runFramePipeline.js';
 import { renderDesignCanvas } from '@/canvas/render/renderDesignCanvas.js';
-import { renderSelectionOverlay, renderSnapGuides } from '@/canvas/render/renderFrame.js';
+import { renderSelectionOverlay, renderSnapGuides, renderGuides, renderLayoutSuggestions } from '@/canvas/render/renderFrame.js';
 import { renderGraphToCanvas } from './adapters/renderGraphToCanvas.js';
 
 export function renderFrame({
@@ -28,6 +28,8 @@ export function renderFrame({
 
   renderSelectionOverlay(canvasContext, frame.renderGraph?.selectionOverlay);
   renderSnapGuides(canvasContext, frame.renderGraph?.snapGuides);
+  renderGuides(canvasContext, frame.renderGraph?.guides);
+  renderLayoutSuggestions(canvasContext, frame.renderGraph?.layouts);
 
   return frame;
 }
