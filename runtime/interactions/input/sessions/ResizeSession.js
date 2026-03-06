@@ -28,8 +28,11 @@ export class ResizeSession {
         this.canvas = canvas;
 
         const bounds = computeSelectionBounds(nodes);
+        this.startBounds = bounds;
         this.bounds = bounds;
-        this.aspectRatio = options.aspectRatio ?? (bounds.height === 0 ? 1 : bounds.width / Math.max(bounds.height, 1));
+        this.aspectRatio =
+            options.aspectRatio ??
+            (bounds.height === 0 ? 1 : bounds.width / Math.max(bounds.height, 1));
 
         this.delta = { x: 0, y: 0 };
         this.resize = { width: 0, height: 0 };

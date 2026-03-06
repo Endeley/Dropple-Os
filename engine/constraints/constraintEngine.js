@@ -44,7 +44,8 @@ export function applyMoveConstraints({ delta, nodes, siblings = [], canvas, opti
         };
 
         const targets = Array.isArray(options.snapTargets) ? options.snapTargets : siblings;
-        const filteredTargets = targets.filter((node) => !nodes.find((m) => m.id === node.id));
+        const movingIds = new Set(nodes.map((node) => node.id));
+        const filteredTargets = targets.filter((node) => !movingIds.has(node.id));
 
         const candidates = computeSnapCandidates({
             movingBounds,

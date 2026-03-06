@@ -18,7 +18,7 @@ export function renderSnapGuides(ctx, guides) {
   ctx.lineWidth = 1;
 
   guides.forEach((guide) => {
-    const pos = guide.position;
+    const pos = guide.x ?? guide.y ?? guide.position;
     ctx.beginPath();
     if (guide.type === 'vertical') {
       ctx.moveTo(pos, -100000);

@@ -1,6 +1,4 @@
-function roundPx(value) {
-  return Math.round(value * 2) / 2;
-}
+import { roundWorld } from '../../core/math/pixelRounding.js';
 
 function buildCandidateValues(candidate) {
   const b = candidate.bounds;
@@ -65,7 +63,7 @@ export function resolveSnap({
         target.value = entry.value;
         target.guide = {
           type: entry.axis === 'x' ? 'vertical' : 'horizontal',
-          position: entry.value,
+          ...(entry.axis === 'x' ? { x: entry.value } : { y: entry.value }),
           sourceNodeId: candidate.nodeId,
         };
       }
@@ -76,8 +74,8 @@ export function resolveSnap({
   if (bestY.guide) guides.push(bestY.guide);
 
   const snappedPoint = {
-    x: roundPx(bestX.value ?? pointerWorld.x),
-    y: roundPx(bestY.value ?? pointerWorld.y),
+    x: roundWorld(bestX.value ?? pointerWorld.x),
+    y: roundWorld(bestY.value ?? pointerWorld.y),
   };
 
   return { snappedPoint, guides };

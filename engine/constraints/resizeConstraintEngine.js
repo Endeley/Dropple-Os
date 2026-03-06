@@ -13,7 +13,10 @@ export function applyResizeConstraints({ pointerDelta, handle, nodes, siblings =
     const bounds = computeSelectionBounds(nodes);
 
     const lockAspectRatio = options.lockAspectRatio;
-    const aspectRatio = options.aspectRatio ?? (bounds.height === 0 ? 1 : bounds.width / bounds.height);
+    const centerResize = options.centerResize;
+    const aspectRatio =
+        options.aspectRatio ??
+        (bounds.height === 0 ? 1 : bounds.width / bounds.height);
 
     let widthDelta = 0;
     let heightDelta = 0;
@@ -49,6 +52,13 @@ export function applyResizeConstraints({ pointerDelta, handle, nodes, siblings =
         }
     }
 
+    if (centerResize) {
+        widthDelta *= 2;
+        heightDelta *= 2;
+        xDelta -= widthDelta / 2;
+        yDelta -= heightDelta / 2;
+    }
+
     const minWidth = options.minWidth ?? 1;
     const minHeight = options.minHeight ?? 1;
 
@@ -57,46 +67,64 @@ export function applyResizeConstraints({ pointerDelta, handle, nodes, siblings =
 
     const guides = [];
     const threshold = options.snapThreshold ?? options.threshold ?? 6;
+    const gridSize = options.gridSize;
+    const snapTargets = Array.isArray(options.snapTargets) ? options.snapTargets : siblings;
 
     // SNAP X (active edge only)
     if (handle.includes('e')) {
         const rightEdge = bounds.minX + nextWidth;
-        const snap = findBestSnap(rightEdge, buildXCandidates(bounds, siblings, canvas), threshold);
+        const xCandidates = buildXCandidates(bounds, snapTargets, canvas);
+        if (gridSize && gridSize > 0) {
+            xCandidates.push(Math.round(rightEdge / gridSize) * gridSize);
+        }
+        const snap = findBestSnap(rightEdge, xCandidates, threshold);
         if (snap) {
             nextWidth = snap.value - bounds.minX;
-            guides.push({ id: 'snap-x', type: 'vertical', x: snap.value });
+            guides.push({ type: 'vertical', x: snap.value, sourceNodeId: null });
         }
     }
     if (handle.includes('w')) {
         const leftEdge = bounds.minX + xDelta;
-        const snap = findBestSnap(leftEdge, buildXCandidates(bounds, siblings, canvas), threshold);
+        const xCandidates = buildXCandidates(bounds, snapTargets, canvas);
+        if (gridSize && gridSize > 0) {
+            xCandidates.push(Math.round(leftEdge / gridSize) * gridSize);
+        }
+        const snap = findBestSnap(leftEdge, xCandidates, threshold);
         if (snap) {
             const snappedLeft = snap.value;
             const widthAfterSnap = bounds.maxX - snappedLeft;
             nextWidth = Math.max(minWidth, widthAfterSnap);
             xDelta = snappedLeft - bounds.minX;
-            guides.push({ id: 'snap-x', type: 'vertical', x: snap.value });
+            guides.push({ type: 'vertical', x: snap.value, sourceNodeId: null });
         }
     }
 
     // SNAP Y (active edge only)
     if (handle.includes('s')) {
         const bottomEdge = bounds.maxY + nextHeight - bounds.height;
-        const snap = findBestSnap(bottomEdge, buildYCandidates(bounds, siblings, canvas), threshold);
+        const yCandidates = buildYCandidates(bounds, snapTargets, canvas);
+        if (gridSize && gridSize > 0) {
+            yCandidates.push(Math.round(bottomEdge / gridSize) * gridSize);
+        }
+        const snap = findBestSnap(bottomEdge, yCandidates, threshold);
         if (snap) {
             nextHeight = snap.value - bounds.minY;
-            guides.push({ id: 'snap-y', type: 'horizontal', y: snap.value });
+            guides.push({ type: 'horizontal', y: snap.value, sourceNodeId: null });
         }
     }
     if (handle.includes('n')) {
         const topEdge = bounds.minY + yDelta;
-        const snap = findBestSnap(topEdge, buildYCandidates(bounds, siblings, canvas), threshold);
+        const yCandidates = buildYCandidates(bounds, snapTargets, canvas);
+        if (gridSize && gridSize > 0) {
+            yCandidates.push(Math.round(topEdge / gridSize) * gridSize);
+        }
+        const snap = findBestSnap(topEdge, yCandidates, threshold);
         if (snap) {
             const snappedTop = snap.value;
             const heightAfterSnap = bounds.maxY - snappedTop;
             nextHeight = Math.max(minHeight, heightAfterSnap);
             yDelta = snappedTop - bounds.minY;
-            guides.push({ id: 'snap-y', type: 'horizontal', y: snap.value });
+            guides.push({ type: 'horizontal', y: snap.value, sourceNodeId: null });
         }
     }
 
@@ -123,6 +151,7 @@ function buildXCandidates(bounds, siblings, canvas) {
         const w = sib?.width ?? 0;
         xs.push(x);
         xs.push(x + w);
+        xs.push(x + w / 2);
     });
     return xs;
 }
@@ -138,6 +167,7 @@ function buildYCandidates(bounds, siblings, canvas) {
         const h = sib?.height ?? 0;
         ys.push(y);
         ys.push(y + h);
+        ys.push(y + h / 2);
     });
     return ys;
 }
