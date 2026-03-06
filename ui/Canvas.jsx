@@ -18,6 +18,7 @@ export default function Canvas() {
     const unselectedNodes = selectedIds ? nodeList.filter((node) => !selectedIds.has(node.id)) : nodeList;
 
     const selectionBounds = selectedNodes.length > 1 ? computeSelectionBounds(selectedNodes) : null;
+    const resizeDisabled = selectedNodes.some((node) => node?.resizeLocked);
 
     const containerRef = useRef(null);
 
@@ -234,7 +235,14 @@ export default function Canvas() {
                 />
             )}
 
-            {selectionBounds && <SelectionBox bounds={selectionBounds} onMoveStart={startGroupMove} onResizeStart={startGroupResize} />}
+            {selectionBounds && (
+                <SelectionBox
+                    bounds={selectionBounds}
+                    onMoveStart={startGroupMove}
+                    onResizeStart={startGroupResize}
+                    resizeDisabled={resizeDisabled}
+                />
+            )}
 
             {nodeList.map((node) => (
                 <NodeView key={node.id} node={node} />

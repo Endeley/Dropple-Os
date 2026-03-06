@@ -1,7 +1,12 @@
 {
   "compilerOptions": {
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@core": ["./core/index.js"],
+      "@engine": ["./engine/index.js"],
+      "@runtime": ["./runtime/index.js"],
+      "@workspace": ["./workspace/index.js"],
+      "@ui": ["./ui/index.js"]
     }
   }
 }

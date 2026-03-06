@@ -1,12 +1,12 @@
 'use client';
 
-export function AutoLayoutOverlayLayer({ children }) {
+export function AutoLayoutOverlayLayer({ children, interactive = false }) {
   return (
     <div
       style={{
         position: 'absolute',
         inset: 0,
-        pointerEvents: 'none',
+        pointerEvents: interactive ? 'auto' : 'none',
         zIndex: 3,
       }}
     >

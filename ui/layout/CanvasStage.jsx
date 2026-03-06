@@ -263,11 +263,17 @@ export default function CanvasStage({
           educationReadOnly={educationReadOnly}
           readOnly={readOnly}
         />
-        <AutoLayoutOverlayLayer>
+        <AutoLayoutOverlayLayer interactive={!readOnly}>
           {overlayNode && (
             <>
               <PaddingOverlay node={overlayNode} />
-              <GapOverlay node={overlayNode} childrenNodes={overlayChildren} />
+              <GapOverlay
+                node={overlayNode}
+                childrenNodes={overlayChildren}
+                emit={emit}
+                viewport={viewport}
+                readOnly={readOnly}
+              />
               <GridOverlay node={overlayNode} />
             </>
           )}

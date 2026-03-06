@@ -18,13 +18,16 @@ export default function InsertionLine({ containerId, index }) {
     const childrenIds = container.children || [];
     const children = childrenIds.map((id) => nodes[id]).filter(Boolean);
 
-    const isVertical = container.layout?.mode === 'auto-y';
-    if (!isVertical && container.layout?.mode !== 'auto-x') return null;
+    const autoLayout = container.layout?.autoLayout;
+    if (!autoLayout || autoLayout.type !== 'flex') return null;
+    const isVertical = autoLayout.direction === 'column';
 
     let position;
 
+    const padding = autoLayout.padding ?? 0;
+
     if (children.length === 0) {
-        position = container.layout?.padding ?? 0;
+        position = padding;
     } else if (index <= 0) {
         const first = children[0];
         position = isVertical ? first.y : first.x;

@@ -147,10 +147,12 @@ export function applyLayoutPass(runtimeState) {
         positions.forEach(({ nodeId, x, y }) => {
             const child = derivedNodes[nodeId];
             if (!child) return;
+            const containerX = derivedNodes[id]?.x ?? 0;
+            const containerY = derivedNodes[id]?.y ?? 0;
             derivedNodes[nodeId] = {
                 ...child,
-                x,
-                y,
+                x: containerX + x,
+                y: containerY + y,
             };
         });
     }

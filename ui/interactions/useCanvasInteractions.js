@@ -1,7 +1,7 @@
 import { useMemo, useRef, useCallback } from 'react';
 import { createInteractionSession } from './interactionSession.js';
 import { createToolController, resolveSessionNodeIds } from './toolController.js';
-import { hitTestNode } from './hitTestNode.js';
+import { hitTestNode, getNodeRect, pointInRect } from './hitTestNode.js';
 import { canvasBus } from '@/ui/eventBus/canvasBus.js';
 import {
   beginSession,
@@ -34,12 +34,30 @@ export function useCanvasInteractions({ getRuntimeState, dispatch, getActiveTool
     if (toolId === 'move' || toolId === 'resize' || toolId === 'rotate') {
       const worldPoint = toWorldPoint(e);
       const runtimeState = getRuntimeState();
-      const hit = hitTestNode(runtimeState, worldPoint);
+      let hit = hitTestNode(runtimeState, worldPoint);
       if (!hit?.id) {
         if (toolId === 'move' && typeof dispatch === 'function') {
           dispatch({ type: SELECTION_CLEAR });
         }
         return;
+      }
+
+      const nodesById = runtimeState?.nodes || {};
+      const hitParent = hit.parentId ? nodesById[hit.parentId] : null;
+      if (hitParent?.layout?.autoLayout) {
+        const parentRect = getNodeRect(hitParent);
+        const edge = 6;
+        const innerRect = {
+          x: parentRect.x + edge,
+          y: parentRect.y + edge,
+          width: Math.max(0, parentRect.width - edge * 2),
+          height: Math.max(0, parentRect.height - edge * 2),
+        };
+        const onBoundary =
+          pointInRect(worldPoint, parentRect) && !pointInRect(worldPoint, innerRect);
+        if (onBoundary) {
+          hit = hitParent;
+        }
       }
 
       const selectionIds = runtimeState?.selection?.ids || [];

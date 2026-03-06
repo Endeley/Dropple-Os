@@ -49,9 +49,16 @@ export class MoveSession {
 
         let pointerWorld = this.currentPointer;
         let snapGuides = [];
+        const rawDelta = {
+            x: pointerWorld.x - this.startPointer.x,
+            y: pointerWorld.y - this.startPointer.y,
+        };
 
         if (this.context?.crossContainer) {
-            const target = findDropTarget(this.currentPointer, this.context.allowedDropTargets || []);
+            const target = findDropTarget(
+                this.currentPointer,
+                this.context.allowedDropTargets || [],
+            );
             this.dropTarget = target;
             this.reorderIndex = target
                 ? computeReorderIndex({
@@ -103,11 +110,6 @@ export class MoveSession {
             pointerWorld = snap.snappedPoint;
             snapGuides = snap.guides;
         }
-
-        const rawDelta = {
-            x: pointerWorld.x - this.startPointer.x,
-            y: pointerWorld.y - this.startPointer.y,
-        };
 
         const { delta, guides } = applyMoveConstraints({
             delta: rawDelta,

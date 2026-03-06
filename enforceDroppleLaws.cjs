@@ -98,6 +98,15 @@ const PANEL_DISALLOWED_EXACT = new Set([
     'core/mutationContext.js',
 ]);
 
+const ZONE_ENTRYPOINTS = new Set(['@core', '@engine', '@runtime', '@workspace', '@ui']);
+const ZONE_DEEP_PREFIXES = [
+    '@core/',
+    '@engine/',
+    '@runtime/',
+    '@workspace/',
+    '@ui/',
+];
+
 function detectLayer(filePath) {
     for (const layer of LAYERS) {
         if (filePath.startsWith(layer.prefix)) {
@@ -228,6 +237,15 @@ function run() {
         }
 
         imports.forEach((imp) => {
+            if (ZONE_DEEP_PREFIXES.some((prefix) => imp.startsWith(prefix))) {
+                console.error(
+                    `ZONE ENTRYPOINT VIOLATION: ${f.path} must import ${imp.split('/')[0]} via entrypoint (${imp})`
+                );
+                violationCount += 1;
+                process.exit(1);
+            }
+
+            if (ZONE_ENTRYPOINTS.has(imp)) return;
             const resolved = resolveImport(f.path, imp, fileMap);
             if (!resolved) return;
 

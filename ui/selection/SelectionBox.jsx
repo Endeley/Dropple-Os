@@ -1,6 +1,12 @@
 'use client';
 
-export function SelectionBox({ bounds, onMoveStart, onResizeStart }) {
+export function SelectionBox({
+    bounds,
+    onMoveStart,
+    onResizeStart,
+    resizeDisabled = false,
+    resizeDisabledHint = 'Size controlled by auto-layout container',
+}) {
     if (!bounds) return null;
 
     function handleMoveStart(e) {
@@ -10,6 +16,7 @@ export function SelectionBox({ bounds, onMoveStart, onResizeStart }) {
     }
 
     function handleResizeStart(e) {
+        if (resizeDisabled) return;
         e.preventDefault();
         e.stopPropagation();
         onResizeStart?.(e);
@@ -38,10 +45,12 @@ export function SelectionBox({ bounds, onMoveStart, onResizeStart }) {
                     bottom: -4,
                     width: 8,
                     height: 8,
-                    background: '#2563eb',
+                    background: resizeDisabled ? '#94a3b8' : '#2563eb',
                     borderRadius: 2,
-                    cursor: 'se-resize',
+                    cursor: resizeDisabled ? 'not-allowed' : 'se-resize',
+                    opacity: resizeDisabled ? 0.7 : 1,
                 }}
+                title={resizeDisabled ? resizeDisabledHint : undefined}
             />
         </div>
     );
