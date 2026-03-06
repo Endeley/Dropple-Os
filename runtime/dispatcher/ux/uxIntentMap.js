@@ -24,6 +24,7 @@ export const uxIntentMap = Object.freeze({
     [EventTypes.NODE_RESIZE]: UXIntent.HARD_UNSAFE,
     [EventTypes.ALIGN_NODES]: UXIntent.HARD_UNSAFE,
     [EventTypes.DISTRIBUTE_NODES]: UXIntent.HARD_UNSAFE,
+    [EventTypes.LAYOUT_CONVERT]: UXIntent.HARD_UNSAFE,
 
     [EventTypes.TIMELINE_KEYFRAME_ADD]: UXIntent.HARD_UNSAFE,
     [EventTypes.TIMELINE_KEYFRAME_MOVE]: UXIntent.HARD_UNSAFE,

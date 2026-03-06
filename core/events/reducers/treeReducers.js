@@ -26,6 +26,17 @@ export function treeReducers(state, event) {
           ids.forEach((id) => {
               const child = state.nodes[id];
               if (!child) return;
+              const prevParentId = child.parentId;
+              if (prevParentId && prevParentId !== parentId) {
+                  const prevParent = nextNodes[prevParentId];
+                  if (prevParent) {
+                      const prevChildren = Array.isArray(prevParent.children) ? prevParent.children : [];
+                      nextNodes[prevParentId] = {
+                          ...prevParent,
+                          children: prevChildren.filter((childId) => childId !== id),
+                      };
+                  }
+              }
               nextNodes[id] = { ...child, parentId };
           });
 
@@ -33,6 +44,40 @@ export function treeReducers(state, event) {
               ...state,
               nodes: nextNodes,
               rootIds: state.rootIds.filter((id) => !ids.includes(id)),
+          };
+      }
+
+      case EventTypes.NODE_DETACH: {
+          const { ids } = payload || {};
+          const detachIds = Array.isArray(ids) ? ids : [];
+          if (!detachIds.length) return state;
+
+          const nextNodes = { ...state.nodes };
+          const nextRootIds = new Set(state.rootIds || []);
+
+          detachIds.forEach((id) => {
+              const child = state.nodes[id];
+              if (!child) return;
+              const prevParentId = child.parentId;
+              if (prevParentId) {
+                  const prevParent = nextNodes[prevParentId];
+                  if (prevParent) {
+                      const prevChildren = Array.isArray(prevParent.children) ? prevParent.children : [];
+                      nextNodes[prevParentId] = {
+                          ...prevParent,
+                          children: prevChildren.filter((childId) => childId !== id),
+                      };
+                  }
+              }
+
+              nextNodes[id] = { ...child, parentId: null };
+              nextRootIds.add(id);
+          });
+
+          return {
+              ...state,
+              nodes: nextNodes,
+              rootIds: Array.from(nextRootIds),
           };
       }
 

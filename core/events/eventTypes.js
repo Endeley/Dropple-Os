@@ -19,6 +19,7 @@ export const EventTypes = Object.freeze({
     NODE_ROTATE: 'node/rotate',
     ALIGN_NODES: 'align/nodes',
     DISTRIBUTE_NODES: 'distribute/nodes',
+    LAYOUT_CONVERT: 'layout/convert',
 
     // Selection
     SELECTION_SET: 'selection/set',

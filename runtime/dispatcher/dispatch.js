@@ -1,6 +1,7 @@
 import { applyEvent } from '../../core/events/applyEvent.js';
 import { alignNodes } from '@/engine/alignment/alignNodes.js';
 import { distributeNodes } from '@/engine/alignment/distributeNodes.js';
+import { convertLayout } from '@/engine/layout/convertLayout.js';
 
 import { createAnimationController } from '../animation/animationController.js';
 import { createPlaybackController } from '../animation/playbackController.js';
@@ -501,6 +502,65 @@ export function createEventDispatcher({
                         type: 'node.layout.bulk',
                         payload: { updates },
                     });
+                }
+
+                if (rawEvent.type === EventTypes.LAYOUT_CONVERT) {
+                    const runtimeState = __getRuntimeStateInternal();
+                    const payload = rawEvent.payload || {};
+                    const containerId = payload.containerId;
+                    if (!containerId || runtimeState?.nodes?.[containerId]) return runtimeState;
+
+                    const plan = convertLayout({
+                        layout: payload.layout,
+                        nodeIds: payload.nodeIds,
+                        nodesById: runtimeState?.nodes || {},
+                        containerId,
+                        options: {
+                            ...(payload.options || {}),
+                            columns: payload.columns,
+                            rows: payload.rows,
+                        },
+                    });
+
+                    if (!plan) return runtimeState;
+
+                    await dispatch({
+                        type: EventTypes.NODE_CREATE,
+                        payload: { node: plan.container },
+                    });
+
+                    if (plan.parentId) {
+                        const parent = runtimeState?.nodes?.[plan.parentId];
+                        const childSet = new Set(plan.childIds || []);
+                        let index = undefined;
+                        if (parent && Array.isArray(parent.children)) {
+                            const indices = parent.children
+                                .map((id, i) => (childSet.has(id) ? i : -1))
+                                .filter((i) => i >= 0);
+                            if (indices.length) {
+                                index = Math.min(...indices);
+                            }
+                        }
+
+                        await dispatch({
+                            type: EventTypes.NODE_ATTACH,
+                            payload: {
+                                parentId: plan.parentId,
+                                childId: plan.container.id,
+                                index,
+                            },
+                        });
+                    }
+
+                    await dispatch({
+                        type: EventTypes.NODE_ATTACH,
+                        payload: {
+                            parentId: plan.container.id,
+                            childIds: plan.childIds,
+                        },
+                    });
+
+                    return __getRuntimeStateInternal();
                 }
 
                 const prev = __getRuntimeStateInternal();
