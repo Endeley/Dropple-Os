@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from 'react';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { useSelectionStore } from '@/runtime/stores/useSelectionStore.js';
+import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { nodeUpdateIntent } from '@/ui/inspector/nodeUpdateIntent.js';
 import { InspectorSection } from '@/ui/inspector/InspectorSection.jsx';
 import { NodeHeaderPanel } from '@/ui/inspector/NodeHeaderPanel.jsx';
@@ -22,7 +22,7 @@ export function UIUXInspectorPanel() {
 
   const nodes = useRuntimeStore((s) => s.nodes || {});
   const rootIds = useRuntimeStore((s) => s.rootIds || []);
-  const selectedIds = useSelectionStore((s) => s.selectedIds || []);
+  const selectedIds = useRuntimeStore((s) => s.selection?.ids || []);
 
   const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
   const node = selectedId ? nodes[selectedId] : null;

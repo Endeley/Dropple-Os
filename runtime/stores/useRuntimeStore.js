@@ -12,6 +12,7 @@ export const useRuntimeStore = create(() => ({
     workspace: null,
     sceneGraph: null,
     scene: null,
+    selection: { ids: [] },
     frameTime: 0,
     evaluatedScene: null,
     shotId: null,

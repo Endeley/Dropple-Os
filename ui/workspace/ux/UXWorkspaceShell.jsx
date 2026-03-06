@@ -7,7 +7,7 @@ import { UIUXCanvasStage } from './UIUXCanvasStage.jsx';
 import { PanelRenderer } from '@/ui/workspace/shell/PanelRenderer.jsx';
 import { WorkspaceSessionsRoot } from '@/ui/workspace/root/DispatcherProvider/Sessions/WorkspaceSessionsRoot.jsx';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { useSelectionStore } from '@/runtime/stores/useSelectionStore.js';
+import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 
 /**
  * UXWorkspaceShell
@@ -80,7 +80,7 @@ import { useSelectionStore } from '@/runtime/stores/useSelectionStore.js';
 
 export function UXWorkspaceShell({ profile = 'ux-validation', modeId = 'uiux' }) {
   const nodes = useRuntimeStore((s) => s.nodes || {});
-  const selectedIds = useSelectionStore((s) => s.selectedIds || []);
+  const selectedIds = useRuntimeStore((s) => s.selection?.ids || []);
   const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
   const node = selectedId ? nodes[selectedId] : null;
   const emit = useCallback(() => {}, []);

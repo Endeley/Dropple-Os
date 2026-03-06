@@ -113,6 +113,20 @@ export class ResizeSession {
     }
 
     getPreview() {
+        /*
+         NOTE:
+         Multi-node resize preview is not yet implemented.
+
+         Current behavior:
+         - Preview applies to first node only
+         - Commit applies to all nodeIds using selection bounds
+
+         This preserves deterministic runtime behavior while
+         avoiding complex preview transform math.
+
+         Full group preview will be implemented with the
+         Selection Transform System.
+        */
         const bounds = this.bounds;
         const resize = this.resize || { width: 0, height: 0 };
         const delta = this.delta || { x: 0, y: 0 };

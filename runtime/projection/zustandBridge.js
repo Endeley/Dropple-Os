@@ -12,6 +12,7 @@ export function syncRuntimeToZustand(nextState) {
             {
                 nodes: {},
                 rootIds: [],
+                selection: { ids: [] },
             },
             false
         );
@@ -23,6 +24,7 @@ export function syncRuntimeToZustand(nextState) {
         nodes: nextState.nodes,
         rootIds: nextState.rootIds,
         workspace: nextState.workspace ?? null,
+        selection: { ids: nextState.selection?.ids || [] },
     };
 
     if (prev.sceneGraph !== nextState.sceneGraph) {

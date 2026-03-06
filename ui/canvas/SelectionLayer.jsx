@@ -1,14 +1,14 @@
 'use client';
 
 import { SelectionOutline } from './SelectionOutline.jsx';
-import { useSelectionStore } from '@/runtime/stores/useSelectionStore.js';
+import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useCanvasContext } from '@/ui/canvas/CanvasContext.jsx';
 import { useAvailability } from '@/ui/availability/useAvailability';
 import { Availability } from '@/ui/availability/availability';
 import { Capability } from '@/ui/capabilities/capabilityVocabulary';
 
 export default function SelectionLayer() {
-    const selected = useSelectionStore((s) => s.selectedIds);
+    const selected = useRuntimeStore((s) => s.selection?.ids || []);
     const { zoomTier } = useCanvasContext();
     const availability = useAvailability({ readCaps: [Capability.NODE_SELECT] });
 

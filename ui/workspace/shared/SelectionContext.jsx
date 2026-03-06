@@ -1,30 +1,43 @@
 'use client';
 
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useMemo } from 'react';
+import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
+import {
+  SELECTION_ADD,
+  SELECTION_CLEAR,
+  SELECTION_REMOVE,
+  SELECTION_SET,
+} from '@/core/events/selectionEvents.js';
 
 const SelectionContext = createContext(null);
 
 export function SelectionProvider({ children }) {
-  const [selectedIds, setSelectedIds] = useState(new Set());
+  const selectionIds = useRuntimeStore((s) => s.selection?.ids || []);
+  const selectedIds = useMemo(() => new Set(selectionIds), [selectionIds]);
+  const { dispatch } = useDispatcher();
 
   function selectSingle(id) {
-    setSelectedIds(new Set([id]));
+    if (!id) return;
+    dispatch({ type: SELECTION_SET, payload: { ids: [id] } });
   }
 
   function setSelection(ids) {
-    setSelectedIds(new Set(ids));
+    const nextIds = Array.from(ids || []);
+    dispatch({ type: SELECTION_SET, payload: { ids: nextIds } });
   }
 
   function toggle(id) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+    if (!id) return;
+    if (selectedIds.has(id)) {
+      dispatch({ type: SELECTION_REMOVE, payload: { id } });
+      return;
+    }
+    dispatch({ type: SELECTION_ADD, payload: { id } });
   }
 
   function clear() {
-    setSelectedIds(new Set());
+    dispatch({ type: SELECTION_CLEAR });
   }
 
   return (

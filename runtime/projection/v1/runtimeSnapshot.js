@@ -15,6 +15,9 @@ export function getRuntimeSnapshot() {
         activeStateId: state.activeStateId,
         activeComponentId: state.activeComponentId,
         timeline: state.timeline,
+        selection: {
+            ids: state.selection?.ids || [],
+        },
         isReplaying: __getIsReplayingInternal(),
     };
 }

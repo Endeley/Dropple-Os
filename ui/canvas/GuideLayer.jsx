@@ -5,11 +5,11 @@ import InsertionLine from './InsertionLine.jsx';
 import FrameRulers from './FrameRulers.jsx';
 import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
 import { useWorkspaceProjection } from '@/runtime/projection';
-import { useSelectionStore } from '@/runtime/stores/useSelectionStore.js';
+import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 
 export default function GuideLayer() {
     const nodes = useCharacterRenderNodes();
-    const selectedIds = useSelectionStore((s) => s.selectedIds);
+    const selectedIds = useRuntimeStore((s) => s.selection?.ids || []);
     const viewport = useWorkspaceProjection((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
 
     let selectedFrame = null;

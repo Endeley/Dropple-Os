@@ -19,7 +19,7 @@ import { registerEditEventBridge } from '@/ui/bridges/editEventBridge.js';
 
 export function registerSessionBindings(dispatcher) {
     const dispatch = dispatcher?.dispatch;
-    registerNodeDragBridge();
+    registerNodeDragBridge(dispatch);
     registerNodeCreateBridge(dispatch);
     registerNodeUpdateBridge(dispatcher);
     registerViewportBridge(dispatcher);

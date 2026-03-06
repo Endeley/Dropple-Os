@@ -10,6 +10,8 @@ import {
   getActiveSessionType,
 } from '@/runtime/interactions/input/inputSessionManager.js';
 import { SELECTION_SET, SELECTION_CLEAR } from '@/core/events/selectionEvents.js';
+import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions.js';
+import { resolveToolHandler } from '@/runtime/tools/toolHandlers.js';
 
 export function useCanvasInteractions({ getRuntimeState, dispatch, getActiveToolId, getWorldPointFromEvent }) {
   const sessionRef = useRef(createInteractionSession());
@@ -47,38 +49,39 @@ export function useCanvasInteractions({ getRuntimeState, dispatch, getActiveTool
         dispatch({ type: SELECTION_SET, payload: { ids: [hit.id] } });
       }
 
-      if (toolId === 'move') {
-        beginSession({
-          type: 'move',
-          payload: {
-            nodeIds,
-            startPointer: worldPoint,
-          },
-        });
-        return;
-      }
+      const toolDef = TOOL_DEFINITION_BY_ID[toolId] || { id: toolId };
+      const handler = resolveToolHandler(toolDef);
 
-      if (toolId === 'resize') {
-        beginSession({
-          type: 'resize',
-          payload: {
-            nodeIds,
-            handleId: 'se',
-            pointerWorld: worldPoint,
-          },
-        });
-        return;
-      }
+      if (typeof handler === 'function') {
+        const sessionPayload = {
+          nodeIds,
+          ...(toolId === 'move' ? { startPointer: worldPoint } : null),
+          ...(toolId === 'resize' ? { handleId: 'se', pointerWorld: worldPoint } : null),
+          ...(toolId === 'rotate' ? { startPointerWorld: worldPoint } : null),
+        };
 
-      if (toolId === 'rotate') {
-        beginSession({
-          type: 'rotate',
-          payload: {
-            nodeIds,
-            startPointerWorld: worldPoint,
-          },
+        const intent = handler(toolDef, {
+          sessionType: toolId,
+          sessionPayload,
+          nodeIds,
+          hitNodeId: hit.id,
+          selectionIds,
+          pointerWorld: worldPoint,
+          additive: e.shiftKey,
         });
-        return;
+
+        if (intent?.type === 'session/start') {
+          beginSession({
+            type: intent.payload?.sessionType,
+            payload: intent.payload?.sessionPayload || {},
+          });
+          return;
+        }
+
+        if (intent && typeof dispatch === 'function') {
+          dispatch(intent);
+          return;
+        }
       }
     }
 
