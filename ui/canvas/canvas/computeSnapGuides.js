@@ -63,18 +63,18 @@ export function computeSnapGuides({ movingNode, nodes, zoomTier }) {
         };
 
         // X-axis alignment (vertical guides)
-        checkX(m.left, s.left, 'edge', t, t + h);
-        checkX(m.left, s.right, 'edge', t, t + h);
-        checkX(m.right, s.left, 'edge', t, t + h);
-        checkX(m.right, s.right, 'edge', t, t + h);
-        checkX(m.cx, s.cx, 'center', t, t + h);
+        checkX(m.left, s.left, 'edge', t, t + h, node.id);
+        checkX(m.left, s.right, 'edge', t, t + h, node.id);
+        checkX(m.right, s.left, 'edge', t, t + h, node.id);
+        checkX(m.right, s.right, 'edge', t, t + h, node.id);
+        checkX(m.cx, s.cx, 'center', t, t + h, node.id);
 
         // Y-axis alignment (horizontal guides)
-        checkY(m.top, s.top, 'edge', l, l + w);
-        checkY(m.top, s.bottom, 'edge', l, l + w);
-        checkY(m.bottom, s.top, 'edge', l, l + w);
-        checkY(m.bottom, s.bottom, 'edge', l, l + w);
-        checkY(m.cy, s.cy, 'center', l, l + w);
+        checkY(m.top, s.top, 'edge', l, l + w, node.id);
+        checkY(m.top, s.bottom, 'edge', l, l + w, node.id);
+        checkY(m.bottom, s.top, 'edge', l, l + w, node.id);
+        checkY(m.bottom, s.bottom, 'edge', l, l + w, node.id);
+        checkY(m.cy, s.cy, 'center', l, l + w, node.id);
     }
 
     const siblingPool = candidateNodes;
@@ -101,7 +101,7 @@ export function computeSnapGuides({ movingNode, nodes, zoomTier }) {
         })
     );
 
-    function checkX(a, b, kind, from, to) {
+    function checkX(a, b, kind, from, to, sourceNodeId) {
         if (Math.abs(a - b) <= SNAP_THRESHOLD) {
             const distance = Math.abs(a - b);
             pushUnique({
@@ -110,13 +110,14 @@ export function computeSnapGuides({ movingNode, nodes, zoomTier }) {
                 from,
                 to,
                 kind,
+                sourceNodeId: sourceNodeId ?? null,
                 _priority: GUIDE_PRIORITY[kind] || 0,
                 _distance: distance,
             });
         }
     }
 
-    function checkY(a, b, kind, from, to) {
+    function checkY(a, b, kind, from, to, sourceNodeId) {
         if (Math.abs(a - b) <= SNAP_THRESHOLD) {
             const distance = Math.abs(a - b);
             pushUnique({
@@ -125,6 +126,7 @@ export function computeSnapGuides({ movingNode, nodes, zoomTier }) {
                 from,
                 to,
                 kind,
+                sourceNodeId: sourceNodeId ?? null,
                 _priority: GUIDE_PRIORITY[kind] || 0,
                 _distance: distance,
             });
@@ -137,7 +139,8 @@ export function computeSnapGuides({ movingNode, nodes, zoomTier }) {
     }
 
     const prioritized = applyGuidePriority(guides);
-    return applyZoomTierSuppression(prioritized, zoomTier);
+    const filtered = applyZoomTierSuppression(prioritized, zoomTier);
+    return filtered.map(toEngineGuide).filter(Boolean);
 }
 
 function computeSpacingGuides({ moving, siblings, axis, epsilon }) {
@@ -201,6 +204,7 @@ function computeSpacingGuides({ moving, siblings, axis, epsilon }) {
             from,
             to,
             gap: Math.round((gapPrev + gapNext) / 2),
+            sourceNodeId: null,
             _priority: GUIDE_PRIORITY.spacing,
             _distance: Math.abs(gapPrev - gapNext),
         });
@@ -240,4 +244,22 @@ function applyZoomTierSuppression(guides, zoomTier) {
     const allowed = ALLOWED_KINDS_BY_TIER[zoomTier];
     if (!allowed || allowed.size === 0) return [];
     return guides.filter((guide) => allowed.has(guide.kind));
+}
+
+function toEngineGuide(guide) {
+    if (guide?.axis === 'x') {
+        return {
+            type: 'vertical',
+            x: guide.value,
+            sourceNodeId: guide.sourceNodeId ?? null,
+        };
+    }
+    if (guide?.axis === 'y') {
+        return {
+            type: 'horizontal',
+            y: guide.value,
+            sourceNodeId: guide.sourceNodeId ?? null,
+        };
+    }
+    return null;
 }

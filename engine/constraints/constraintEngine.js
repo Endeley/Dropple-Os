@@ -1,5 +1,5 @@
 import { computeSelectionBounds } from '../../domain/geometry/selectionBounds.js';
-import { computeSnapCandidates, resolveSnapDelta, buildSnapGuides } from './snapEngine';
+import { resolveSnap } from './snapEngine.js';
 
 // Pure constraint evaluation helpers.
 // No side effects, no global state.
@@ -36,31 +36,40 @@ export function applyMoveConstraints({ delta, nodes, siblings = [], canvas, opti
     let blendedDelta = { ...delta };
 
     if (snapRadius > 0) {
-        const movingBounds = {
-            x: bounds.minX + delta.x,
-            y: bounds.minY + delta.y,
-            width: bounds.width,
-            height: bounds.height,
-        };
-
         const targets = Array.isArray(options.snapTargets) ? options.snapTargets : siblings;
         const movingIds = new Set(nodes.map((node) => node.id));
         const filteredTargets = targets.filter((node) => !movingIds.has(node.id));
 
-        const candidates = computeSnapCandidates({
-            movingBounds,
-            targets: filteredTargets,
-            snapRadius,
+        const pointerWorld = {
+            x: bounds.minX + delta.x,
+            y: bounds.minY + delta.y,
+        };
+
+        const candidates = filteredTargets.map((node) => ({
+            nodeId: node.id,
+            bounds: {
+                x: node.x ?? node.layout?.x ?? 0,
+                y: node.y ?? node.layout?.y ?? 0,
+                width: node.width ?? node.layout?.width ?? 0,
+                height: node.height ?? node.layout?.height ?? 0,
+            },
+        }));
+
+        const { snappedPoint, guides: snapGuides } = resolveSnap({
+            pointerWorld,
+            nodeBounds: bounds,
+            candidates,
+            gridSize: options.gridSize ?? null,
+            threshold: snapRadius,
         });
 
-        const { delta: snapDelta, primaryX, primaryY } = resolveSnapDelta({ candidates });
+        blendedDelta = {
+            x: snappedPoint.x - bounds.minX,
+            y: snappedPoint.y - bounds.minY,
+        };
 
-        if (primaryX || primaryY) {
-            blendedDelta = {
-                x: delta.x + snapDelta.x,
-                y: delta.y + snapDelta.y,
-            };
-            guides.push(...buildSnapGuides({ primaryX, primaryY }));
+        if (snapGuides?.length) {
+            guides.push(...snapGuides);
         }
     }
 

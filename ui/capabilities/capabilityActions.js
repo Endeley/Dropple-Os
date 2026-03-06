@@ -1,92 +1,100 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { alignNodes, distributeNodes } from '@/ui/alignment/alignmentUtils';
 
-function applyLayoutUpdates({ updates, emit, intentType, source }) {
-    if (!updates || updates.length === 0) return [];
+function emitAlignIntent({ nodeIds, alignment, source }) {
+    if (!Array.isArray(nodeIds) || nodeIds.length < 2) return [];
 
     canvasBus.emit('intent.edit.begin', {
-        type: intentType,
-        ids: updates.map((u) => u.id),
+        type: 'align',
+        ids: nodeIds,
         source: source || 'toolbar',
     });
 
-    updates.forEach(({ id, layout }) => {
-        emit?.({
-            type: 'node.layout.move',
-            payload: {
-                nodeId: id,
-                x: layout.x,
-                y: layout.y,
-            },
-        });
+    canvasBus.emit('intent.align', {
+        alignment,
+        nodeIds,
+        source: source || 'toolbar',
     });
 
-    if (intentType) {
-        canvasBus.emit('intent.edit.commit', {
-            type: intentType,
-            ids: updates.map((u) => u.id),
-            source: source || 'toolbar',
-        });
-    }
+    canvasBus.emit('intent.edit.commit', {
+        type: 'align',
+        ids: nodeIds,
+        source: source || 'toolbar',
+    });
 
-    return updates;
+    return nodeIds;
+}
+
+function emitDistributeIntent({ nodeIds, axis, source }) {
+    if (!Array.isArray(nodeIds) || nodeIds.length < 3) return [];
+
+    canvasBus.emit('intent.edit.begin', {
+        type: 'distribute',
+        ids: nodeIds,
+        source: source || 'toolbar',
+    });
+
+    canvasBus.emit('intent.distribute', {
+        axis,
+        nodeIds,
+        source: source || 'toolbar',
+    });
+
+    canvasBus.emit('intent.edit.commit', {
+        type: 'distribute',
+        ids: nodeIds,
+        source: source || 'toolbar',
+    });
+
+    return nodeIds;
 }
 
 export const CapabilityActions = {
-    alignLeft(nodes, emit) {
-        return applyLayoutUpdates({
-            updates: alignNodes(nodes, 'x', 'start'),
-            emit,
-            intentType: 'align',
+    alignLeft(nodeIds, _emit) {
+        return emitAlignIntent({
+            nodeIds,
+            alignment: 'alignLeft',
         });
     },
-    alignCenterX(nodes, emit) {
-        return applyLayoutUpdates({
-            updates: alignNodes(nodes, 'x', 'center'),
-            emit,
-            intentType: 'align',
+    alignCenterX(nodeIds, _emit) {
+        return emitAlignIntent({
+            nodeIds,
+            alignment: 'alignCenterX',
         });
     },
-    alignRight(nodes, emit) {
-        return applyLayoutUpdates({
-            updates: alignNodes(nodes, 'x', 'end'),
-            emit,
-            intentType: 'align',
+    alignRight(nodeIds, _emit) {
+        return emitAlignIntent({
+            nodeIds,
+            alignment: 'alignRight',
         });
     },
-    alignTop(nodes, emit) {
-        return applyLayoutUpdates({
-            updates: alignNodes(nodes, 'y', 'start'),
-            emit,
-            intentType: 'align',
+    alignTop(nodeIds, _emit) {
+        return emitAlignIntent({
+            nodeIds,
+            alignment: 'alignTop',
         });
     },
-    alignCenterY(nodes, emit) {
-        return applyLayoutUpdates({
-            updates: alignNodes(nodes, 'y', 'center'),
-            emit,
-            intentType: 'align',
+    alignCenterY(nodeIds, _emit) {
+        return emitAlignIntent({
+            nodeIds,
+            alignment: 'alignCenterY',
         });
     },
-    alignBottom(nodes, emit) {
-        return applyLayoutUpdates({
-            updates: alignNodes(nodes, 'y', 'end'),
-            emit,
-            intentType: 'align',
+    alignBottom(nodeIds, _emit) {
+        return emitAlignIntent({
+            nodeIds,
+            alignment: 'alignBottom',
         });
     },
-    distributeX(nodes, emit) {
-        return applyLayoutUpdates({
-            updates: distributeNodes(nodes, 'x'),
-            emit,
-            intentType: 'distribute',
+    distributeX(nodeIds, _emit) {
+        return emitDistributeIntent({
+            nodeIds,
+            axis: 'x',
         });
     },
-    distributeY(nodes, emit) {
-        return applyLayoutUpdates({
-            updates: distributeNodes(nodes, 'y'),
-            emit,
-            intentType: 'distribute',
+    distributeY(nodeIds, _emit) {
+        return emitDistributeIntent({
+            nodeIds,
+            axis: 'y',
         });
     },
 };

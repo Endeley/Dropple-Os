@@ -1,4 +1,6 @@
 import { applyEvent } from '../../core/events/applyEvent.js';
+import { alignNodes } from '@/engine/alignment/alignNodes.js';
+import { distributeNodes } from '@/engine/alignment/distributeNodes.js';
 
 import { createAnimationController } from '../animation/animationController.js';
 import { createPlaybackController } from '../animation/playbackController.js';
@@ -459,6 +461,46 @@ export function createEventDispatcher({
                     }
 
                     return runtimeState;
+                }
+
+                if (rawEvent.type === EventTypes.ALIGN_NODES) {
+                    const runtimeState = __getRuntimeStateInternal();
+                    const nodeIds = Array.isArray(rawEvent.payload?.nodeIds)
+                        ? rawEvent.payload.nodeIds
+                        : [];
+                    if (nodeIds.length < 2) return runtimeState;
+
+                    const nodes = nodeIds
+                        .map((id) => runtimeState?.nodes?.[id])
+                        .filter(Boolean);
+
+                    const updates = alignNodes(nodes, rawEvent.payload?.alignment);
+                    if (!updates.length) return runtimeState;
+
+                    return await dispatch({
+                        type: 'node.layout.bulk',
+                        payload: { updates },
+                    });
+                }
+
+                if (rawEvent.type === EventTypes.DISTRIBUTE_NODES) {
+                    const runtimeState = __getRuntimeStateInternal();
+                    const nodeIds = Array.isArray(rawEvent.payload?.nodeIds)
+                        ? rawEvent.payload.nodeIds
+                        : [];
+                    if (nodeIds.length < 3) return runtimeState;
+
+                    const nodes = nodeIds
+                        .map((id) => runtimeState?.nodes?.[id])
+                        .filter(Boolean);
+
+                    const updates = distributeNodes(nodes, rawEvent.payload?.axis);
+                    if (!updates.length) return runtimeState;
+
+                    return await dispatch({
+                        type: 'node.layout.bulk',
+                        payload: { updates },
+                    });
                 }
 
                 const prev = __getRuntimeStateInternal();

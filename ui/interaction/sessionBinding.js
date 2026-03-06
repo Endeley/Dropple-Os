@@ -16,6 +16,7 @@ import { registerSessionBridge } from '@/ui/bridges/sessionBridge.js';
 import { registerSessionCommitBridge } from '@/ui/bridges/sessionCommitBridge.js';
 import { registerAnimationKeyframeBridge } from '@/ui/bridges/animationKeyframeBridge.js';
 import { registerEditEventBridge } from '@/ui/bridges/editEventBridge.js';
+import { registerAlignmentBridge } from '@/ui/bridges/alignmentBridge.js';
 
 export function registerSessionBindings(dispatcher) {
     const dispatch = dispatcher?.dispatch;
@@ -32,6 +33,7 @@ export function registerSessionBindings(dispatcher) {
     registerSessionCommitBridge(dispatch);
     registerAnimationKeyframeBridge(dispatch);
     registerEditEventBridge(dispatch);
+    registerAlignmentBridge(dispatcher);
 }
 
 const sessionManager = new InputSessionManager(canvasBus);

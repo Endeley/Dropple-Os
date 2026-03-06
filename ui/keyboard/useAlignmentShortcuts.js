@@ -24,15 +24,12 @@ export function useAlignmentShortcuts({ enabled = true, emit, getState }) {
             const mod = isMac ? e.metaKey : e.ctrlKey;
             if (!mod) return;
 
-            const state = getState?.();
-            const nodes = state?.nodes || {};
-
             const selected =
                 selectedIds && selectedIds.size > 1
-                    ? Array.from(selectedIds).map((id) => nodes[id]).filter(Boolean)
+                    ? Array.from(selectedIds)
                     : null;
 
-            if (!selected) return;
+            if (!selected || selected.length < 2) return;
 
             switch (e.key) {
                 case 'ArrowLeft':

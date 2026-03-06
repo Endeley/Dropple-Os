@@ -120,6 +120,41 @@ export function layoutReducers(state, event) {
             };
         }
 
+        case 'node.layout.bulk': {
+            const { updates } = payload || {};
+            if (!Array.isArray(updates) || updates.length === 0) return state;
+
+            const nextNodes = { ...state.nodes };
+
+            updates.forEach((update) => {
+                const nodeId = update?.id;
+                if (!nodeId) return;
+                const node = nextNodes[nodeId];
+                if (!node) return;
+
+                const prevLayout = node.layout || {};
+                const nextLayout = {
+                    ...prevLayout,
+                    ...(update.layout || {}),
+                };
+
+                if (update.x != null) nextLayout.x = update.x;
+                if (update.y != null) nextLayout.y = update.y;
+                if (update.width != null) nextLayout.width = update.width;
+                if (update.height != null) nextLayout.height = update.height;
+
+                nextNodes[nodeId] = {
+                    ...node,
+                    layout: nextLayout,
+                };
+            });
+
+            return {
+                ...state,
+                nodes: nextNodes,
+            };
+        }
+
         case 'node.layout.setConstraint': {
             const { nodeId, constraint } = payload;
             const node = state.nodes[nodeId];

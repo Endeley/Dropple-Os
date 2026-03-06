@@ -188,10 +188,7 @@ export default function CanvasStage({
     if (isReadOnly) return;
     e.preventDefault();
 
-    const selected =
-      selectedIds && selectedIds.size > 1
-        ? Array.from(selectedIds).map((id) => state.nodes[id]).filter(Boolean)
-        : [];
+    const selected = selectedIds ? Array.from(selectedIds) : [];
     const enabled = selected.length > 1;
     const hasNodes = Object.keys(state.nodes || {}).length > 0;
     const canShowImport = canImport;

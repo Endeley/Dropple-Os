@@ -35,10 +35,7 @@ export default function Toolbar({
 
   const state = getState?.();
   const nodes = state?.nodes || {};
-  const selected =
-    selectedIds && selectedIds.size > 1
-      ? Array.from(selectedIds).map((id) => nodes[id]).filter(Boolean)
-      : [];
+  const selected = selectedIds ? Array.from(selectedIds) : [];
   const enabled = selected.length > 1;
   const hasNodes = Object.keys(nodes).length > 0;
   const showDocumentActions = canPersist;
