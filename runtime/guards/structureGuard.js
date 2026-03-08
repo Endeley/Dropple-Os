@@ -34,7 +34,9 @@ export function applyStructureGuard(event) {
         type !== EventTypes.NODE_ATTACH &&
         type !== EventTypes.NODE_DETACH &&
         type !== EventTypes.NODE_REPARENT &&
-        type !== EventTypes.NODE_REORDER
+        type !== EventTypes.NODE_REORDER &&
+        type !== EventTypes.NODE_WRAP &&
+        type !== EventTypes.NODE_UNWRAP
     ) {
         return event;
     }
@@ -69,6 +71,27 @@ export function applyStructureGuard(event) {
         const children = Array.isArray(container.children) ? container.children : [];
         if (!ids.every((id) => children.includes(id))) return null;
 
+        return event;
+    }
+
+    if (type === EventTypes.NODE_WRAP) {
+        const wrapperId = payload?.wrapperNode?.id;
+        if (!wrapperId || nodes[wrapperId]) return null;
+
+        const parentIds = ids.map((id) => nodes[id]?.parentId ?? null);
+        const firstParentId = parentIds[0] ?? null;
+        const sameParent = parentIds.every((parentId) => parentId === firstParentId);
+        if (!sameParent) return null;
+
+        return event;
+    }
+
+    if (type === EventTypes.NODE_UNWRAP) {
+        const nodeId = payload?.nodeId;
+        const wrapper = nodeId ? nodes[nodeId] : null;
+        if (!wrapper) return null;
+        if (!wrapper.parentId) return null;
+        if (!Array.isArray(wrapper.children) || wrapper.children.length === 0) return null;
         return event;
     }
 

@@ -9,6 +9,8 @@ const LAYOUT_EVENTS = new Set([
     EventTypes.NODE_DETACH,
     EventTypes.NODE_REPARENT,
     EventTypes.NODE_REORDER,
+    EventTypes.NODE_WRAP,
+    EventTypes.NODE_UNWRAP,
     EventTypes.NODE_RESIZE,
 ]);
 

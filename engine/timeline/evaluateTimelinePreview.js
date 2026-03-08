@@ -3,6 +3,8 @@ import { attachNode } from '@/core/structure/attachNode.js';
 import { detachNode } from '@/core/structure/detachNode.js';
 import { reparentNode } from '@/core/structure/reparentNode.js';
 import { reorderNode } from '@/core/structure/reorderNode.js';
+import { wrapNodes } from '@/core/structure/wrapNodes.js';
+import { unwrapNode } from '@/core/structure/unwrapNode.js';
 
 const defaultLayout = Object.freeze({
     mode: 'none',
@@ -183,6 +185,34 @@ function applyPreviewEvent(state, event) {
                     nodeId: payload?.nodeId,
                     index: payload?.index,
                 }),
+            };
+        }
+
+        case EventTypes.NODE_WRAP: {
+            const next = wrapNodes({
+                nodes: state.nodes || {},
+                rootIds: state.rootIds || [],
+                ...payload,
+            });
+
+            return {
+                ...state,
+                nodes: next.nodes,
+                rootIds: next.rootIds,
+            };
+        }
+
+        case EventTypes.NODE_UNWRAP: {
+            const next = unwrapNode({
+                nodes: state.nodes || {},
+                rootIds: state.rootIds || [],
+                ...payload,
+            });
+
+            return {
+                ...state,
+                nodes: next.nodes,
+                rootIds: next.rootIds,
             };
         }
 

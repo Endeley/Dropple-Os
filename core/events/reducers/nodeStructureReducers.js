@@ -3,6 +3,8 @@ import { attachNode } from '@/core/structure/attachNode.js';
 import { detachNode } from '@/core/structure/detachNode.js';
 import { reparentNode } from '@/core/structure/reparentNode.js';
 import { reorderNode } from '@/core/structure/reorderNode.js';
+import { wrapNodes } from '@/core/structure/wrapNodes.js';
+import { unwrapNode } from '@/core/structure/unwrapNode.js';
 
 export function nodeStructureReducers(state, event) {
     const { type, payload } = event;
@@ -78,6 +80,42 @@ export function nodeStructureReducers(state, event) {
             return {
                 ...state,
                 nodes: nextNodes,
+            };
+        }
+
+        case EventTypes.NODE_WRAP: {
+            const next = wrapNodes({
+                nodes: state.nodes,
+                rootIds: state.rootIds,
+                ...payload,
+            });
+
+            if (next.nodes === state.nodes && next.rootIds === state.rootIds) {
+                return state;
+            }
+
+            return {
+                ...state,
+                nodes: next.nodes,
+                rootIds: next.rootIds,
+            };
+        }
+
+        case EventTypes.NODE_UNWRAP: {
+            const next = unwrapNode({
+                nodes: state.nodes,
+                rootIds: state.rootIds,
+                ...payload,
+            });
+
+            if (next.nodes === state.nodes && next.rootIds === state.rootIds) {
+                return state;
+            }
+
+            return {
+                ...state,
+                nodes: next.nodes,
+                rootIds: next.rootIds,
             };
         }
 

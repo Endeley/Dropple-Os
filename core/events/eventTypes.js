@@ -13,6 +13,8 @@ export const EventTypes = Object.freeze({
     NODE_DETACH: 'node/detach',
     NODE_REPARENT: 'node/reparent',
     NODE_REORDER: 'node/reorder',
+    NODE_WRAP: 'node/wrap',
+    NODE_UNWRAP: 'node/unwrap',
 
     // Layout & transform
     NODE_MOVE: 'node/move',
