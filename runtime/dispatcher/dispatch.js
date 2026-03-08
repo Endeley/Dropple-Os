@@ -29,6 +29,7 @@ import {
 import { emitPerfEvent } from '../instrumentation/perfEvents.js';
 import { applyTimelineGuard } from '../guards/timelineGuard.js';
 import { applyAnimationGuard } from '../guards/animationGuard.js';
+import { applyStructureGuard } from '../guards/structureGuard.js';
 import { EventSequencer } from '../events/EventSequencer.js';
 import { createEventId } from '../events/createEventId.js';
 
@@ -435,6 +436,9 @@ export function createEventDispatcher({
                 const animationGuarded = applyAnimationGuard(guarded);
                 if (!animationGuarded) return __getRuntimeStateInternal();
 
+                const structureGuarded = applyStructureGuard(animationGuarded);
+                if (!structureGuarded) return __getRuntimeStateInternal();
+
                 // Interaction execution
                 if (rawEvent.type === 'interaction/execute') {
                     const runtimeState = __getRuntimeStateInternal();
@@ -566,7 +570,7 @@ export function createEventDispatcher({
 
                 const prev = __getRuntimeStateInternal();
                 didExecute = true;
-                let next = applyEvent(prev, animationGuarded);
+                let next = applyEvent(prev, structureGuarded);
                 if (rawEvent?.type === EventTypes.NODE_CREATE) {
                     console.log('[dispatcher] post-reduction NODE_CREATE nextState.nodes:', next?.nodes);
                 }

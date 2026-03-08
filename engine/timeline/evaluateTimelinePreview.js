@@ -1,4 +1,8 @@
 import { EventTypes } from '@/core/events/eventTypes.js';
+import { attachNode } from '@/core/structure/attachNode.js';
+import { detachNode } from '@/core/structure/detachNode.js';
+import { reparentNode } from '@/core/structure/reparentNode.js';
+import { reorderNode } from '@/core/structure/reorderNode.js';
 
 const defaultLayout = Object.freeze({
     mode: 'none',
@@ -128,65 +132,57 @@ function applyPreviewEvent(state, event) {
         }
 
         case EventTypes.NODE_ATTACH: {
-            const { parentId, childId, childIds, index } = payload;
-            const ids = childIds || (childId ? [childId] : []);
-            const parent = state.nodes?.[parentId];
-            if (!parent || !ids.length) return state;
-
-            const existing = parent.children || [];
-            const filtered = existing.filter((id) => !ids.includes(id));
-            const clampedIndex =
-                typeof index === 'number'
-                    ? Math.max(0, Math.min(index, filtered.length))
-                    : filtered.length;
-            const nextChildren = [
-                ...filtered.slice(0, clampedIndex),
-                ...ids,
-                ...filtered.slice(clampedIndex),
-            ];
-
-            const nextNodes = {
-                ...(state.nodes || {}),
-                [parentId]: { ...parent, children: nextChildren },
-            };
-
-            ids.forEach((id) => {
-                const child = state.nodes?.[id];
-                if (!child) return;
-                nextNodes[id] = { ...child, parentId };
+            const next = attachNode({
+                nodes: state.nodes || {},
+                rootIds: state.rootIds || [],
+                ...payload,
             });
 
             return {
                 ...state,
-                nodes: nextNodes,
-                rootIds: (state.rootIds || []).filter((id) => !ids.includes(id)),
+                nodes: next.nodes,
+                rootIds: next.rootIds,
+            };
+        }
+
+        case EventTypes.NODE_DETACH: {
+            const next = detachNode({
+                nodes: state.nodes || {},
+                rootIds: state.rootIds || [],
+                ...payload,
+            });
+
+            return {
+                ...state,
+                nodes: next.nodes,
+                rootIds: next.rootIds,
+            };
+        }
+
+        case EventTypes.NODE_REPARENT: {
+            const next = reparentNode({
+                nodes: state.nodes || {},
+                rootIds: state.rootIds || [],
+                ...payload,
+            });
+
+            return {
+                ...state,
+                nodes: next.nodes,
+                rootIds: next.rootIds,
             };
         }
 
         case EventTypes.NODE_REORDER: {
-            const { containerId, nodeIds = [], index } = payload;
-            const container = state.nodes?.[containerId];
-            if (!container) return state;
-
-            const existing = container.children || [];
-            const moving = existing.filter((id) => nodeIds.includes(id));
-            const remaining = existing.filter((id) => !nodeIds.includes(id));
-            const clampedIndex = Math.max(0, Math.min(index ?? 0, remaining.length));
-            const nextChildren = [
-                ...remaining.slice(0, clampedIndex),
-                ...moving,
-                ...remaining.slice(clampedIndex),
-            ];
-
             return {
                 ...state,
-                nodes: {
-                    ...(state.nodes || {}),
-                    [containerId]: {
-                        ...container,
-                        children: nextChildren,
-                    },
-                },
+                nodes: reorderNode({
+                    nodes: state.nodes || {},
+                    containerId: payload?.containerId,
+                    nodeIds: payload?.nodeIds,
+                    nodeId: payload?.nodeId,
+                    index: payload?.index,
+                }),
             };
         }
 

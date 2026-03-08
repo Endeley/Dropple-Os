@@ -19,6 +19,7 @@ export const uxIntentMap = Object.freeze({
     [EventTypes.NODE_DELETE]: UXIntent.HARD_UNSAFE,
     [EventTypes.NODE_ATTACH]: UXIntent.HARD_UNSAFE,
     [EventTypes.NODE_DETACH]: UXIntent.HARD_UNSAFE,
+    [EventTypes.NODE_REPARENT]: UXIntent.HARD_UNSAFE,
     [EventTypes.NODE_REORDER]: UXIntent.HARD_UNSAFE,
     [EventTypes.NODE_MOVE]: UXIntent.HARD_UNSAFE,
     [EventTypes.NODE_RESIZE]: UXIntent.HARD_UNSAFE,

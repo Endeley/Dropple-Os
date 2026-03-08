@@ -11,6 +11,7 @@ export const EventTypes = Object.freeze({
     // Tree structure
     NODE_ATTACH: 'node/attach',
     NODE_DETACH: 'node/detach',
+    NODE_REPARENT: 'node/reparent',
     NODE_REORDER: 'node/reorder',
 
     // Layout & transform

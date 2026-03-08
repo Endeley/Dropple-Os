@@ -1,5 +1,6 @@
 import { EventTypes } from '../../core/events/eventTypes.js';
 import { computeSelectionBounds } from '../../domain/geometry/selectionBounds.js';
+import { createMoveNodeEvent } from '../commands/structure/moveNode.js';
 
 function buildKeyframeIntentsForNodes(nodeIds, { position, size, rotation } = {}, context) {
     if (!Array.isArray(nodeIds) || nodeIds.length === 0) return [];
@@ -103,18 +104,14 @@ export function createSessionCommitActions({ event, context }) {
     }
 
     if (payload.type === 'reparent') {
-        actions.dispatchEvents.push({
-            type: EventTypes.NODE_DETACH,
-            payload: { ids: payload.nodeIds },
+        const moveEvent = createMoveNodeEvent({
+            nodeIds: payload.nodeIds,
+            parentId: payload.to,
+            index: payload.index,
         });
-        actions.dispatchEvents.push({
-            type: EventTypes.NODE_ATTACH,
-            payload: {
-                parentId: payload.to,
-                childIds: payload.nodeIds,
-                index: payload.index,
-            },
-        });
+        if (moveEvent) {
+            actions.dispatchEvents.push(moveEvent);
+        }
         return actions;
     }
 
