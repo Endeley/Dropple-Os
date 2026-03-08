@@ -27,8 +27,8 @@ const LAYERS = [
     { name: 'core', prefix: 'design/' },
     { name: 'core', prefix: 'contracts/' },
     { name: 'core', prefix: 'validation/' },
-    { name: 'core', prefix: 'workspaces/' },
     { name: 'core', prefix: 'canvas/' },
+    { name: 'workspace', prefix: 'workspaces/' },
 
     { name: 'engine', prefix: 'engine/' },
 
@@ -36,20 +36,20 @@ const LAYERS = [
     { name: 'runtime', prefix: 'runtime/dispatcher/' },
 
     { name: 'runtime', prefix: 'runtime/' },
-
+    { name: 'workspace', prefix: 'workspace/' },
+    { name: 'infrastructure', prefix: 'infrastructure/' },
     { name: 'ui', prefix: 'ui/' },
     { name: 'product', prefix: 'app/' },
-    { name: 'product', prefix: 'infrastructure/' },
-    { name: 'product', prefix: 'persistence/' },
-    { name: 'product', prefix: 'workspace/' },
 ];
 
 const ALLOWED_ZONE_IMPORTS = {
     core: [],
     engine: ['core'],
     runtime: ['core', 'engine'],
-    ui: ['runtime', 'core'],
-    product: ['ui', 'runtime', 'engine', 'core'],
+    infrastructure: ['core'],
+    workspace: ['runtime', 'engine', 'infrastructure', 'core'],
+    ui: ['workspace', 'runtime', 'engine', 'infrastructure', 'core'],
+    product: ['ui', 'workspace', 'runtime', 'engine', 'infrastructure', 'core'],
 };
 
 const PROJECTION_PREFIX = 'runtime/projection/';

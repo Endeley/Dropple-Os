@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { getRuntimeState, getRuntimeError } from '@/runtime/state/runtimeState';
-import { useSaveCurrentDocument } from '@/persistence/saveCurrentDocument';
+import { useSaveCurrentDocument } from '@/runtime/persistence/saveCurrentDocument.js';
 
 /**
  * Debounced autosave for document snapshots.

@@ -2,7 +2,7 @@
 
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import { createLocalDocumentSnapshot } from '@/persistence/localDocumentSchema';
+import { createLocalDocumentSnapshot } from '@/infrastructure/persistence/localDocumentSchema.js';
 import { generateThumbnail } from '@/gallery/generateThumbnail';
 
 function dataUrlToBlob(dataUrl) {

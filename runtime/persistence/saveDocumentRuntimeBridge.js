@@ -1,5 +1,5 @@
 import { getRuntimeState } from '@/runtime/state/runtimeState';
-import { useSaveCurrentDocument } from '@/persistence/saveCurrentDocument';
+import { useSaveCurrentDocument } from '@/runtime/persistence/saveCurrentDocument.js';
 
 export function useSaveDocumentRuntimeBridge() {
     const saveCurrentDocument = useSaveCurrentDocument();

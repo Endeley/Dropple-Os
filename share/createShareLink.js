@@ -1,4 +1,4 @@
-import { createLocalDocumentSnapshot } from '@/persistence/localDocumentSchema';
+import { createLocalDocumentSnapshot } from '@/infrastructure/persistence/localDocumentSchema.js';
 
 function encodePayload(payload) {
   const json = JSON.stringify(payload);

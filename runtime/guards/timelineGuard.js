@@ -1,4 +1,3 @@
-import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
 import { getRuntimeState } from '../state/runtimeState.js';
 
 /**
@@ -7,11 +6,12 @@ import { getRuntimeState } from '../state/runtimeState.js';
 export function applyTimelineGuard(event) {
     const runtimeState = getRuntimeState();
     const workspaceId = runtimeState?.workspace?.id ?? 'graphic';
-    const policy = resolveWorkspacePolicy(workspaceId);
+    const workspacePolicy = runtimeState?.workspace?.policy ?? null;
+    const timelinePolicy = runtimeState?.workspace?.timeline ?? workspacePolicy?.timeline ?? null;
 
-    if (!policy || !policy.timeline) return event;
+    if (!timelinePolicy) return event;
 
-    const { mode } = policy.timeline || {};
+    const { mode } = timelinePolicy || {};
 
     // Timeline REQUIRED but event has no time context
     if (mode === 'required') {

@@ -1,5 +1,5 @@
-import { hydrateLocalDocumentSnapshot } from '@/persistence/localDocumentSchema';
-import { saveDocumentSnapshot } from '@/persistence/documentCommands';
+import { hydrateLocalDocumentSnapshot } from '@/infrastructure/persistence/localDocumentSchema.js';
+import { saveDocumentSnapshot } from '@/infrastructure/persistence/documentCommands.js';
 
 export function openServerDocument(
   snapshot,

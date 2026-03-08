@@ -4,11 +4,14 @@ import { useEffect, useRef } from 'react';
 import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { hydrateRuntimeSnapshot } from '@/runtime/commands/hydrateRuntimeSnapshot.js';
-import { createLocalDocumentSnapshot, hydrateLocalDocumentSnapshot } from '@/persistence/localDocumentSchema.js';
-import { loadLocalDocument, saveLocalDocument } from '@/persistence/localDocumentStore.js';
-import { getActiveDocument, setActiveDocument } from '@/persistence/activeDocument.js';
-import { loadRegistry } from '@/persistence/documentRegistry.js';
-import { loadDocumentSnapshot, saveDocumentSnapshot } from '@/persistence/documentCommands.js';
+import {
+    createLocalDocumentSnapshot,
+    hydrateLocalDocumentSnapshot,
+} from '@/infrastructure/persistence/localDocumentSchema.js';
+import { loadLocalDocument, saveLocalDocument } from '@/infrastructure/persistence/localDocumentStore.js';
+import { getActiveDocument, setActiveDocument } from '@/infrastructure/persistence/activeDocument.js';
+import { loadRegistry } from '@/infrastructure/persistence/documentRegistry.js';
+import { loadDocumentSnapshot, saveDocumentSnapshot } from '@/infrastructure/persistence/documentCommands.js';
 
 export function PersistenceBridge({
     enabled = true,

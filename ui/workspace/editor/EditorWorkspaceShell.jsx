@@ -13,7 +13,7 @@ import { EducationCursorProvider } from '@/education/EducationCursorContext';
 import TemplateGeneratorOverlay from '@/templates/TemplateGeneratorOverlay';
 import { useTemplateGenerator } from '@/templates/useTemplateGenerator';
 import { canvasBus } from '../../eventBus/canvasBus.js';
-import { loadRegistry } from '@/persistence/documentRegistry.js';
+import { loadRegistry } from '@/infrastructure/persistence/documentRegistry.js';
 import { useDocumentRole } from '@/collab/useDocumentRole';
 import { usePresence } from '@/collab/usePresence';
 import { useGalleryIdentity } from '@/gallery/useGalleryIdentity';

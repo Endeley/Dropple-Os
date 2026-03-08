@@ -1,5 +1,5 @@
 import { getRuntimeState } from '@/runtime/state/runtimeState';
-import { useAppendRuntimeEvents } from '@/persistence/appendRuntimeEvents';
+import { useAppendRuntimeEvents } from '@/runtime/persistence/appendRuntimeEvents.js';
 
 export function useAppendEventsRuntimeBridge() {
     const appendRuntimeEvents = useAppendRuntimeEvents();

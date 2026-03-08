@@ -5,7 +5,7 @@ import {
     computeRootIds,
     deepFreeze,
     DEFAULT_RUNTIME_STATE,
-} from '@/persistence/worldState.js';
+} from '@/runtime/persistence/worldState.js';
 import { getRuntimeState } from '@/runtime/state/runtimeState';
 import { applyViewportUpdate } from '@/runtime/state/workspaceRuntime.js';
 import { getRuntimeDispatcher } from '@/runtime/dispatcher/dispatcherHandle.js';

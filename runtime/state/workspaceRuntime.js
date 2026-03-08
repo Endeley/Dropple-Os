@@ -1,15 +1,18 @@
 import { DefaultCanvasPolicy } from '@/core/contracts/CanvasPolicy.js';
-import { resolveCanvasSurface } from '@/workspaces/registry/canvasSurfacePolicy.js';
 
 const DEFAULT_WORKSPACE_ID = 'graphic';
 const DEFAULT_VIEWPORT = { x: 0, y: 0, scale: 1 };
+const DEFAULT_CANVAS_SURFACE = {
+  type: 'smooth',
+  snap: false,
+};
 
 export function createDefaultWorkspaceState() {
   return {
     id: DEFAULT_WORKSPACE_ID,
     canvasPolicy: DefaultCanvasPolicy,
     viewport: { ...DEFAULT_VIEWPORT },
-    canvasSurface: resolveCanvasSurface({ id: DEFAULT_WORKSPACE_ID }),
+    canvasSurface: { ...DEFAULT_CANVAS_SURFACE },
     policy: null,
     ui: null,
     timeline: null,
@@ -32,7 +35,7 @@ function resolveCanvasSurfaceFromDef(workspaceDef, fallbackId) {
   const surface =
     workspaceDef?.canvas?.surface ?? workspaceDef?.canvasSurface ?? null;
   if (surface) return surface;
-  return resolveCanvasSurface(workspaceDef ?? { id: fallbackId });
+  return { ...DEFAULT_CANVAS_SURFACE };
 }
 
 export function applyWorkspaceActivation(current, workspaceDef) {

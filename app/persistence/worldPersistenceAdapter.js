@@ -1,4 +1,4 @@
-import { WorldStore } from '../../persistence/worldStore.js';
+import { WorldStore } from '../../runtime/persistence/worldStore.js';
 
 export const worldPersistenceAdapter = {
     load(workspaceId) {

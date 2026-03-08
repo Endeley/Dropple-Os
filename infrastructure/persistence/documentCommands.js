@@ -1,4 +1,7 @@
-import { createLocalDocumentSnapshot, hydrateLocalDocumentSnapshot } from './localDocumentSchema';
+import {
+  createLocalDocumentSnapshot,
+  hydrateLocalDocumentSnapshot,
+} from '@/infrastructure/persistence/localDocumentSchema.js';
 import { saveDocumentFile, loadDocumentFile } from './documentFiles';
 import { addToRegistry } from './documentRegistry';
 import { setActiveDocument } from './activeDocument';

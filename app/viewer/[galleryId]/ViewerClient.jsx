@@ -7,7 +7,7 @@ import CanvasStage from '@/ui/layout/CanvasStage';
 import TimelineBar from '@/ui/layout/TimelineBar';
 import { SelectionProvider } from '@/ui/workspace/shared/SelectionContext';
 import { ModeProvider } from '@/ui/workspace/shared/ModeContext';
-import { hydrateLocalDocumentSnapshot } from '@/persistence/localDocumentSchema';
+import { hydrateLocalDocumentSnapshot } from '@/infrastructure/persistence/localDocumentSchema.js';
 import { useViewerControls } from '@/viewer/useViewerControls';
 import { ViewerToolbar } from '@/viewer/ViewerToolbar';
 import { ViewerStage } from '@/viewer/ViewerStage';
