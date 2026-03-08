@@ -8,7 +8,7 @@ import {
   updatePointer,
   endSession,
   getActiveSessionType,
-} from '@/runtime/interactions/input/inputSessionManager.js';
+} from '@/runtime/interactions/input/InputSessionManager.js';
 import { SELECTION_SET, SELECTION_CLEAR } from '@/core/events/selectionEvents.js';
 import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions.js';
 import { resolveToolHandler } from '@/runtime/tools/toolHandlers.js';

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { WorkspaceRegistry } from '@/workspaces/registry';
 import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy';
+import { DispatcherProvider } from '@/runtime/boundary/DispatcherProvider.jsx';
 import { WorkspaceLayout } from './WorkspaceLayout';
 import { GridProvider } from './GridContext';
 import { ClipboardProvider } from './ClipboardContext';
@@ -11,19 +12,15 @@ import { getDesignStateAtCursor } from '@/runtime/replay/getDesignStateAtCursor'
 import { EducationCursorProvider } from '@/education/EducationCursorContext';
 import TemplateGeneratorOverlay from '@/templates/TemplateGeneratorOverlay';
 import { useTemplateGenerator } from '@/templates/useTemplateGenerator';
-import { createLocalDocumentSnapshot, hydrateLocalDocumentSnapshot } from '@/persistence/localDocumentSchema';
-import { loadLocalDocument, saveLocalDocument } from '@/persistence/localDocumentStore';
 import { canvasBus } from '../../eventBus/canvasBus.js';
-import { getActiveDocument, setActiveDocument } from '@/persistence/activeDocument';
-import { loadRegistry } from '@/persistence/documentRegistry';
-import { loadDocumentSnapshot, saveDocumentSnapshot } from '@/persistence/documentCommands';
-import { readJSONFile } from '@/import/importJSON';
-import { parseSVG } from '@/import/svg/parseSVG';
+import { loadRegistry } from '@/persistence/documentRegistry.js';
 import { useDocumentRole } from '@/collab/useDocumentRole';
 import { usePresence } from '@/collab/usePresence';
 import { useGalleryIdentity } from '@/gallery/useGalleryIdentity';
 import { useIntentPreview } from '@/collab/useIntentPreview';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { PersistenceBridge } from '@/ui/bridges/PersistenceBridge.jsx';
+import { SessionGroupingBridge } from '@/ui/interactions/sessionGrouping.js';
 
 const MODE_ALIASES = {
     design: 'graphic',
@@ -150,8 +147,6 @@ export function EditorWorkspaceShell({
     const [recentDocs, setRecentDocs] = useState(() => loadRegistry());
     const skipAutoLayoutOnce = useRef(initialEvents.length > 0);
     const emit = useCallback((event) => canvasBus.emit(event), []);
-    const saveTimerRef = useRef(null);
-    const editGroupRef = useRef({ id: null });
 
     const documentRole = useDocumentRole(documentId);
     const effectiveReadOnly = readOnly || documentRole === 'viewer';
@@ -182,91 +177,6 @@ export function EditorWorkspaceShell({
         adapter?.ui?.editing !== false &&
         adapter?.id !== 'review' &&
         !(adapter?.id === 'education' && educationReadOnly);
-
-    /* ---------------- canvas grouping ---------------- */
-
-    useEffect(() => {
-        function beginGroup() {
-            if (!editGroupRef.current.id) {
-                editGroupRef.current.id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `group-${Math.random().toString(36).slice(2, 10)}`;
-            }
-        }
-
-        function endGroup() {
-            editGroupRef.current.id = null;
-        }
-
-        canvasBus.on('session.start', beginGroup);
-        canvasBus.on('intent.edit.begin', beginGroup);
-        canvasBus.on('intent.edit.commit', endGroup);
-        canvasBus.on('session.commit', endGroup);
-        canvasBus.on('session.cancel', endGroup);
-
-        return () => {
-            canvasBus.off('session.start', beginGroup);
-            canvasBus.off('intent.edit.begin', beginGroup);
-            canvasBus.off('intent.edit.commit', endGroup);
-            canvasBus.off('session.commit', endGroup);
-            canvasBus.off('session.cancel', endGroup);
-        };
-    }, []);
-
-    useEffect(() => {
-        useRuntimeStore.setState({
-            events: initialEvents,
-            cursorIndex: initialCursorIndex,
-        });
-    }, [initialEvents, initialCursorIndex]);
-
-    /* ---------------- snapshot / persistence ---------------- */
-
-    const applySnapshot = useCallback((snapshot) => {
-        const nextEvents = snapshot.events || [];
-        const maxIndex = nextEvents.length - 1;
-        useRuntimeStore.setState({
-            events: nextEvents,
-            cursorIndex: Math.max(-1, Math.min(maxIndex, snapshot.cursorIndex ?? -1)),
-        });
-        if ((snapshot.events || []).length > 0) {
-            skipAutoLayoutOnce.current = true;
-        }
-    }, []);
-
-    useEffect(() => {
-        if (!persistenceEnabled) {
-            return;
-        }
-
-        const activeId = initialDocumentId || getActiveDocument();
-        if (activeId) {
-            const loaded = loadDocumentSnapshot(activeId);
-            if (loaded?.snapshot) {
-                setTimeout(() => {
-                    applySnapshot(loaded.snapshot);
-                    setDocumentId(activeId);
-                    setDocumentName(loaded.name || 'Untitled');
-                    setActiveDocument(activeId);
-                    setTimeout(() => setHydrated(true), 0);
-                }, 0);
-                return;
-            }
-        }
-
-        const hydratedSnapshot = hydrateLocalDocumentSnapshot(loadLocalDocument());
-        if (hydratedSnapshot) {
-            setTimeout(() => {
-                applySnapshot(hydratedSnapshot);
-            }, 0);
-        }
-
-        setTimeout(() => setHydrated(true), 0);
-    }, [persistenceEnabled, applySnapshot, initialDocumentId]);
-
-    useEffect(() => {
-        if (!persistenceEnabled) {
-            setTimeout(() => setHydrated(true), 0);
-        }
-    }, [persistenceEnabled]);
 
     /* ---------------- layout & seed ---------------- */
 
@@ -328,17 +238,35 @@ export function EditorWorkspaceShell({
     );
 
     return (
-        <GridProvider>
-            <ClipboardProvider>
-                {modeId === 'education' ? (
-                    <EducationCursorProvider role={educationRole} initialLocked={educationInitialLocked}>
-                        {workspace}
-                    </EducationCursorProvider>
-                ) : (
-                    workspace
-                )}
-                <TemplateGeneratorOverlay open={templateGen.open} onClose={templateGen.closeGenerator} state={replayState} events={events} mode={adapter} />
-            </ClipboardProvider>
-        </GridProvider>
+        <DispatcherProvider
+            workspaceId={adapter.workspaceId}
+            branchId="main"
+            profile={adapter.profile ?? 'design'}>
+            <PersistenceBridge
+                enabled={persistenceEnabled}
+                initialDocumentId={initialDocumentId}
+                initialEvents={initialEvents}
+                initialCursorIndex={initialCursorIndex}
+                documentId={documentId}
+                documentName={documentName}
+                onDocumentIdChange={setDocumentId}
+                onDocumentNameChange={setDocumentName}
+                onRecentDocsChange={setRecentDocs}
+                onHydratedChange={setHydrated}
+            />
+            <SessionGroupingBridge />
+            <GridProvider>
+                <ClipboardProvider>
+                    {modeId === 'education' ? (
+                        <EducationCursorProvider role={educationRole} initialLocked={educationInitialLocked}>
+                            {workspace}
+                        </EducationCursorProvider>
+                    ) : (
+                        workspace
+                    )}
+                    <TemplateGeneratorOverlay open={templateGen.open} onClose={templateGen.closeGenerator} state={replayState} events={events} mode={adapter} />
+                </ClipboardProvider>
+            </GridProvider>
+        </DispatcherProvider>
     );
 }

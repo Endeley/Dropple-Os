@@ -2,7 +2,6 @@
 
 import { useCallback, useMemo } from 'react';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { nodeUpdateIntent } from '@/ui/inspector/nodeUpdateIntent.js';
 import { InspectorSection } from '@/ui/inspector/InspectorSection.jsx';
 import { NodeHeaderPanel } from '@/ui/inspector/NodeHeaderPanel.jsx';

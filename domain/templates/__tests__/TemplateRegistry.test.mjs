@@ -82,7 +82,12 @@ try {
     ...certifiedB,
     certification: {
       ...certifiedB.certification,
-      signature: certifiedB.certification.signature.slice(0, -1) + '0',
+      signature: (() => {
+        const original = certifiedB.certification.signature;
+        const last = original.slice(-1);
+        const flipped = last === '0' ? '1' : '0';
+        return original.slice(0, -1) + flipped;
+      })(),
     },
   };
   let tamperOk = false;

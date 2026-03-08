@@ -6,6 +6,7 @@ import { WorkspaceCanvasRoot } from '@/ui/workspace/WorkspaceCanvasRoot.jsx';
 import { WorkspaceSessionsRoot } from './DispatcherProvider/Sessions/WorkspaceSessionsRoot.jsx';
 import { WorkspaceBridgesRoot } from './DispatcherProvider/Bridges/WorkspaceBridgesRoot.jsx';
 import { SelectionProvider } from '@/ui/workspace/shared/SelectionContext';
+import { WorkspaceShell } from '@/ui/workspace/shell/WorkspaceShell.jsx';
 
 /**
  * WorkspaceRoot
@@ -21,6 +22,7 @@ export function WorkspaceRoot({
     profile = 'design', // expected: 'design' | 'ux-validation'
     modeId = null,
     uxEnforcementTier = 2,
+    workspace = null,
     children = null,
 }) {
     const isUXMode = profile === 'ux-validation';
@@ -63,9 +65,13 @@ export function WorkspaceRoot({
                     {children ?? (
                         <>
                             <WorkspaceBridgesRoot />
-                            <WorkspaceSessionsRoot modeId={modeId} />
+                            <WorkspaceSessionsRoot modeId={modeId ?? workspace?.id ?? null} />
                             <WorkspaceUIRoot />
-                            <WorkspaceCanvasRoot />
+                            {workspace ? (
+                                <WorkspaceShell workspace={workspace} />
+                            ) : (
+                                <WorkspaceCanvasRoot />
+                            )}
                         </>
                     )}
                 </div>

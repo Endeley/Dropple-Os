@@ -2,7 +2,6 @@ import { canvasBus } from '../eventBus/canvasBus.js';
 import { getRuntimeSnapshot, getWorkspaceProjection } from '@/runtime/projection';
 import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useAutoKeyframeStore } from '@/runtime/stores/useAutoKeyframeStore.js';
 import { commitTimelineKeyframe } from '@/runtime/timeline/commitTimelineKeyframe';
 import { isAutoLayoutChild } from '@/engine/layout/isAutoLayoutChild';

@@ -7,7 +7,6 @@ import { UIUXCanvasStage } from './UIUXCanvasStage.jsx';
 import { PanelRenderer } from '@/ui/workspace/shell/PanelRenderer.jsx';
 import { WorkspaceSessionsRoot } from '@/ui/workspace/root/DispatcherProvider/Sessions/WorkspaceSessionsRoot.jsx';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 
 /**
  * UXWorkspaceShell

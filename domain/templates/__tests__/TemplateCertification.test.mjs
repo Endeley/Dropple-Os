@@ -48,7 +48,12 @@ const tamperedSignature = {
   ...certified,
   certification: {
     ...certified.certification,
-    signature: certified.certification.signature.slice(0, -1) + '0',
+    signature: (() => {
+      const original = certified.certification.signature;
+      const last = original.slice(-1);
+      const flipped = last === '0' ? '1' : '0';
+      return original.slice(0, -1) + flipped;
+    })(),
   },
 };
 const tamperedSignatureResult = verifyTemplateCertification({

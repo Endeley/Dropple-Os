@@ -8,7 +8,6 @@ import { PanelRenderer } from '@/ui/workspace/shell/PanelRenderer.jsx';
 import { WorkspaceSessionsRoot } from '@/ui/workspace/root/DispatcherProvider/Sessions/WorkspaceSessionsRoot.jsx';
 import { nodeUpdateIntent } from '@/ui/inspector/nodeUpdateIntent.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { CertifiedTemplatesPanel } from '@/ui/workspace/ux/panels/CertifiedTemplatesPanel.jsx';
 
 /**
