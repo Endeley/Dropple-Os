@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { WorkspaceRegistry } from '@/workspaces/registry';
 import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy';
 import { WorkspaceLayout } from './WorkspaceLayout';
@@ -23,6 +23,7 @@ import { useDocumentRole } from '@/collab/useDocumentRole';
 import { usePresence } from '@/collab/usePresence';
 import { useGalleryIdentity } from '@/gallery/useGalleryIdentity';
 import { useIntentPreview } from '@/collab/useIntentPreview';
+import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 
 const MODE_ALIASES = {
     design: 'graphic',
@@ -140,8 +141,9 @@ export function EditorWorkspaceShell({
     const adapter = resolveWorkspaceAdapter(modeId);
     const templateGen = useTemplateGenerator();
 
-    const [events, setEvents] = useState(() => initialEvents);
-    const [cursorIndex, setCursorIndex] = useState(initialCursorIndex);
+    const events = useRuntimeStore((s) => s.events);
+    const cursorIndex = useRuntimeStore((s) => s.cursorIndex);
+    const setCursorIndex = useRuntimeStore((s) => s.setCursorIndex);
     const [hydrated, setHydrated] = useState(false);
     const [documentId, setDocumentId] = useState(null);
     const [documentName, setDocumentName] = useState('Untitled');
@@ -209,26 +211,22 @@ export function EditorWorkspaceShell({
         };
     }, []);
 
-    /* ---------------- event subscription ---------------- */
-
     useEffect(() => {
-        return canvasBus.subscribe((event) => {
-            setEvents((prev) => {
-                const groupId = editGroupRef.current.id;
-                const nextEvent = groupId ? { ...event, groupId } : event;
-                const next = [...prev, nextEvent];
-                setCursorIndex(next.length - 1);
-                return next;
-            });
+        useRuntimeStore.setState({
+            events: initialEvents,
+            cursorIndex: initialCursorIndex,
         });
-    }, []);
+    }, [initialEvents, initialCursorIndex]);
 
     /* ---------------- snapshot / persistence ---------------- */
 
     const applySnapshot = useCallback((snapshot) => {
-        setEvents(snapshot.events || []);
-        const maxIndex = (snapshot.events || []).length - 1;
-        setCursorIndex(Math.max(-1, Math.min(maxIndex, snapshot.cursorIndex ?? -1)));
+        const nextEvents = snapshot.events || [];
+        const maxIndex = nextEvents.length - 1;
+        useRuntimeStore.setState({
+            events: nextEvents,
+            cursorIndex: Math.max(-1, Math.min(maxIndex, snapshot.cursorIndex ?? -1)),
+        });
         if ((snapshot.events || []).length > 0) {
             skipAutoLayoutOnce.current = true;
         }

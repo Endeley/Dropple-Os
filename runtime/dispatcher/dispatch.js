@@ -9,6 +9,7 @@ import { interpolateNodes } from '../animation/interpolateNodes.js';
 import { easeOutCubic } from '../animation/easing.js';
 
 import { useAnimatedRuntimeStore } from '../stores/useAnimatedRuntimeStore.js';
+import { useRuntimeStore } from '../stores/useRuntimeStore.js';
 import { syncRuntimeToZustand } from '../projection/zustandBridge.js';
 import { createHistory } from './history.js';
 
@@ -598,6 +599,11 @@ export function createEventDispatcher({
 
                 const committed = commit(next);
                 history.push(cloneState(__getRuntimeStateInternal()));
+                const store = useRuntimeStore.getState();
+                useRuntimeStore.setState({
+                    events: [...store.events, event],
+                    cursorIndex: store.events.length,
+                });
                 return committed;
             } catch (err) {
                 console.error('[Dispatcher error]', err, rawEvent);
@@ -641,6 +647,7 @@ export function createEventDispatcher({
             history.reset();
             sequencer.reset();
             __resetRuntimeStateInternal();
+            useRuntimeStore.setState({ events: [], cursorIndex: -1 });
             useAnimatedRuntimeStore.setState({ nodes: {}, rootIds: [] }, false);
         });
     }

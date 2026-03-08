@@ -5,6 +5,7 @@ function buildTemplate() {
   return {
     id: 'behavior-template',
     version: '1.0.0',
+    mode: 'animation',
     graph: {
       baseStateId: 'state:base',
       states: [

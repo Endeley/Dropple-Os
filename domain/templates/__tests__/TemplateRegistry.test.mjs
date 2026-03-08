@@ -8,6 +8,7 @@ function buildTemplate({ id, version }) {
   return {
     id,
     version,
+    mode: 'animation',
     graph: {
       baseStateId: 'state:base',
       states: [

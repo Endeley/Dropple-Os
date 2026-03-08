@@ -1,5 +1,7 @@
 // NOTE: Tests defined but not executed yet.
 // Runner setup is deferred intentionally.
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { exportAnimation } from '../exportAnimation.js';
 
 describe('exportAnimation (Phase 4D)', () => {
@@ -46,6 +48,6 @@ describe('exportAnimation (Phase 4D)', () => {
     const a = exportAnimation({ state, format: 'css' });
     const b = exportAnimation({ state, format: 'css' });
 
-    expect(a.normalized).toBe(b.normalized);
+    assert.equal(a.normalized, b.normalized);
   });
 });

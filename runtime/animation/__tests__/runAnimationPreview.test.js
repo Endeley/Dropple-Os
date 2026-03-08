@@ -1,5 +1,7 @@
 // NOTE: Tests defined but not executed yet.
 // Runner setup is deferred intentionally.
+import { beforeEach, describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { runAnimationPreview } from '../runAnimationPreview.js';
 import { useAnimatedRuntimeStore } from '../../stores/useAnimatedRuntimeStore.js';
 import { getRuntimeState } from '../../state/runtimeState.js';
@@ -66,8 +68,8 @@ describe('runAnimationPreview (illusion only)', () => {
     const after = getRuntimeState();
     const animated = useAnimatedRuntimeStore.getState();
 
-    expect(after).toEqual(before);
-    expect(animated.nodes.nodeA.opacity).toBeDefined();
+    assert.deepEqual(after, before);
+    assert.notEqual(animated.nodes.nodeA.opacity, undefined);
   });
 
   it('cancel clears preview state', () => {
@@ -79,7 +81,7 @@ describe('runAnimationPreview (illusion only)', () => {
     preview.cancel();
 
     const animated = useAnimatedRuntimeStore.getState();
-    expect(animated.nodes).toEqual({});
+    assert.deepEqual(animated.nodes, {});
   });
 
   it('does not alter runtime nodes after cancel', () => {
@@ -91,6 +93,6 @@ describe('runAnimationPreview (illusion only)', () => {
     preview.cancel();
 
     const runtime = getRuntimeState();
-    expect(runtime.nodes.nodeA.opacity).toBe(0.2);
+    assert.equal(runtime.nodes.nodeA.opacity, 0.2);
   });
 });

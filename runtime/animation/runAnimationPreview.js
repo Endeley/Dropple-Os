@@ -50,11 +50,11 @@ export function runAnimationPreview({
         evaluateAtTime(timeMs);
         return {
             cancel() {
-                const truth = getRuntimeState();
                 useAnimatedRuntimeStore.setState(
                     {
-                        nodes: truth?.nodes || {},
-                        rootIds: truth?.rootIds || [],
+                        nodes: {},
+                        rootIds: [],
+                        cameraTransform: null,
                     },
                     false
                 );
@@ -99,12 +99,11 @@ export function runAnimationPreview({
         cancel() {
             cleanup();
 
-            // Restore truth projection
-            const truth = getRuntimeState();
             useAnimatedRuntimeStore.setState(
                 {
-                    nodes: truth?.nodes || {},
-                    rootIds: truth?.rootIds || [],
+                    nodes: {},
+                    rootIds: [],
+                    cameraTransform: null,
                 },
                 false
             );

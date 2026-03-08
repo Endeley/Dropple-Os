@@ -6,7 +6,7 @@ import { create } from 'zustand';
  * Read-only mirror of runtime state for React.
  * ❗ NEVER mutate from UI.
  */
-export const useRuntimeStore = create(() => ({
+export const useRuntimeStore = create((set) => ({
     nodes: {},
     rootIds: [],
     workspace: null,
@@ -18,4 +18,13 @@ export const useRuntimeStore = create(() => ({
     shotId: null,
     shotTimeMs: null,
     evalStatus: 'NO_SHOT',
+
+    // Event log mirror
+    events: [],
+    cursorIndex: -1,
+
+    setCursorIndex: (index) =>
+        set(() => ({
+            cursorIndex: index,
+        })),
 }));

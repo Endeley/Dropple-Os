@@ -3,39 +3,11 @@ import { InputSessionManager } from '@/runtime/interactions/input/InputSessionMa
 import { getWorkspaceProjection } from '@/runtime/projection';
 import { screenToWorld } from '@/canvas/transform/screenToWorld.js';
 import { setAimTarget } from '@/runtime/characters/characterRegistry.js';
-import { registerNodeDragBridge } from '@/ui/bridges/nodeDragBridge.js';
-import { registerNodeCreateBridge } from '@/ui/bridges/nodeCreateBridge.js';
-import { registerNodeUpdateBridge } from '@/ui/bridges/nodeUpdateBridge.js';
-import { registerViewportBridge } from '@/ui/bridges/viewportBridge.js';
-import { registerWorkspaceBridge } from '@/ui/bridges/workspaceBridge.js';
-import { registerCanvasSurfaceBridge } from '@/ui/bridges/canvasSurfaceBridge.js';
-import { registerTimelineBridge } from '@/ui/bridges/timelineBridge.js';
-import { registerHistoryBridge } from '@/ui/bridges/historyBridge.js';
-import { registerGroupSessionBridge } from '@/ui/bridges/groupSessionBridge.js';
-import { registerSessionBridge } from '@/ui/bridges/sessionBridge.js';
-import { registerSessionCommitBridge } from '@/ui/bridges/sessionCommitBridge.js';
-import { registerAnimationKeyframeBridge } from '@/ui/bridges/animationKeyframeBridge.js';
-import { registerEditEventBridge } from '@/ui/bridges/editEventBridge.js';
-import { registerAlignmentBridge } from '@/ui/bridges/alignmentBridge.js';
-import { registerLayoutConvertBridge } from '@/ui/bridges/layoutConvertBridge.js';
 
-export function registerSessionBindings(dispatcher) {
-    const dispatch = dispatcher?.dispatch;
-    registerNodeDragBridge(dispatch);
-    registerNodeCreateBridge(dispatch);
-    registerNodeUpdateBridge(dispatcher);
-    registerViewportBridge(dispatcher);
-    registerWorkspaceBridge(dispatcher);
-    registerCanvasSurfaceBridge(dispatch);
-    registerTimelineBridge(dispatcher);
-    registerHistoryBridge(dispatcher);
-    registerGroupSessionBridge();
-    registerSessionBridge();
-    registerSessionCommitBridge(dispatch);
-    registerAnimationKeyframeBridge(dispatch);
-    registerEditEventBridge(dispatch);
-    registerAlignmentBridge(dispatcher);
-    registerLayoutConvertBridge(dispatcher);
+export function registerSessionBindings() {
+    // Step 2: bridge registration now lives in WorkspaceBridgesRoot.
+    // This module keeps only pointer/session lifecycle side effects.
+    return () => {};
 }
 
 const sessionManager = new InputSessionManager(canvasBus);

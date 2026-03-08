@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { WorkspaceRegistry } from "../../../workspaces/registry";
-import { WorkspaceShell } from "./WorkspaceShell";
+import { WorkspaceRoot } from "@/ui/workspace/root/WorkspaceRoot.jsx";
 
 export function ModeLoader({ mode }) {
   const key = (mode || "").toLowerCase();
@@ -24,5 +24,12 @@ export function ModeLoader({ mode }) {
     );
   }
 
-  return <WorkspaceShell workspace={workspace} />;
+  return (
+    <WorkspaceRoot
+      modeId={workspace.id}
+      workspaceId={workspace.id}
+      profile={workspace.profile ?? "design"}
+      workspace={workspace}
+    />
+  );
 }
