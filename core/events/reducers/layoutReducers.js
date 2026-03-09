@@ -1,6 +1,7 @@
 // core/events/reducers/layoutReducers.js
 
 import { EventTypes } from '../eventTypes.js';
+import { markLayoutDirty } from './layoutDirtyHelpers.js';
 
 export function layoutReducers(state, event) {
     const { type, payload } = event;
@@ -13,7 +14,7 @@ export function layoutReducers(state, event) {
 
             const prevLayout = node.layout || {};
 
-            return {
+            return markLayoutDirty({
                 ...state,
                 nodes: {
                     ...state.nodes,
@@ -26,7 +27,9 @@ export function layoutReducers(state, event) {
                         },
                     },
                 },
-            };
+            }, {
+                nodeIds: [id],
+            });
         }
 
         case 'node.layout.move': {
@@ -36,7 +39,7 @@ export function layoutReducers(state, event) {
 
             const prevLayout = node.layout || {};
 
-            return {
+            return markLayoutDirty({
                 ...state,
                 nodes: {
                     ...state.nodes,
@@ -49,7 +52,9 @@ export function layoutReducers(state, event) {
                         },
                     },
                 },
-            };
+            }, {
+                nodeIds: [nodeId],
+            });
         }
 
         case EventTypes.NODE_RESIZE: {
@@ -59,7 +64,7 @@ export function layoutReducers(state, event) {
 
             const prevLayout = node.layout || {};
 
-            return {
+            return markLayoutDirty({
                 ...state,
                 nodes: {
                     ...state.nodes,
@@ -72,7 +77,9 @@ export function layoutReducers(state, event) {
                         },
                     },
                 },
-            };
+            }, {
+                nodeIds: [id],
+            });
         }
 
         case 'node.layout.resize': {
@@ -82,7 +89,7 @@ export function layoutReducers(state, event) {
 
             const prevLayout = node.layout || {};
 
-            return {
+            return markLayoutDirty({
                 ...state,
                 nodes: {
                     ...state.nodes,
@@ -95,7 +102,9 @@ export function layoutReducers(state, event) {
                         },
                     },
                 },
-            };
+            }, {
+                nodeIds: [nodeId],
+            });
         }
 
         case 'node.layout.update': {
@@ -105,7 +114,7 @@ export function layoutReducers(state, event) {
 
             const prevLayout = node.layout || {};
 
-            return {
+            return markLayoutDirty({
                 ...state,
                 nodes: {
                     ...state.nodes,
@@ -117,7 +126,9 @@ export function layoutReducers(state, event) {
                         },
                     },
                 },
-            };
+            }, {
+                nodeIds: [nodeId],
+            });
         }
 
         case 'node.layout.bulk': {
@@ -149,10 +160,12 @@ export function layoutReducers(state, event) {
                 };
             });
 
-            return {
+            return markLayoutDirty({
                 ...state,
                 nodes: nextNodes,
-            };
+            }, {
+                nodeIds: updates.map((update) => update?.id),
+            });
         }
 
         case 'node.layout.setConstraint': {
@@ -163,7 +176,7 @@ export function layoutReducers(state, event) {
             const prevLayout = node.layout || {};
             const prevConstraints = prevLayout.constraints || {};
 
-            return {
+            return markLayoutDirty({
                 ...state,
                 nodes: {
                     ...state.nodes,
@@ -178,7 +191,9 @@ export function layoutReducers(state, event) {
                         },
                     },
                 },
-            };
+            }, {
+                nodeIds: [nodeId],
+            });
         }
 
         case 'node.layout.clearConstraint': {
@@ -191,7 +206,7 @@ export function layoutReducers(state, event) {
             const nextConstraints = { ...prevConstraints };
             delete nextConstraints[key];
 
-            return {
+            return markLayoutDirty({
                 ...state,
                 nodes: {
                     ...state.nodes,
@@ -203,7 +218,9 @@ export function layoutReducers(state, event) {
                         },
                     },
                 },
-            };
+            }, {
+                nodeIds: [nodeId],
+            });
         }
 
         case 'node.layout.setAutoLayout': {
@@ -234,7 +251,7 @@ export function layoutReducers(state, event) {
                           ...config,
                       };
 
-            return {
+            return markLayoutDirty({
                 ...state,
                 nodes: {
                     ...state.nodes,
@@ -246,7 +263,9 @@ export function layoutReducers(state, event) {
                         },
                     },
                 },
-            };
+            }, {
+                nodeIds: [nodeId],
+            });
         }
 
         case 'node.layout.clearAutoLayout': {
@@ -256,7 +275,7 @@ export function layoutReducers(state, event) {
 
             const prevLayout = node.layout || {};
 
-            return {
+            return markLayoutDirty({
                 ...state,
                 nodes: {
                     ...state.nodes,
@@ -268,7 +287,9 @@ export function layoutReducers(state, event) {
                         },
                     },
                 },
-            };
+            }, {
+                nodeIds: [nodeId],
+            });
         }
 
         default:

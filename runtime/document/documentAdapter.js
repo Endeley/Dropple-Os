@@ -1,3 +1,5 @@
+// runtime/document/documentAdapter.js
+
 const DEFAULT_LAYOUT_NODE = Object.freeze({
     mode: 'free',
     container: null,
@@ -38,29 +40,29 @@ const DEFAULT_LAYOUT_NODE = Object.freeze({
     },
 });
 
-export function getDocument(runtimeState: any) {
+export function getDocument(runtimeState) {
     return runtimeState?.document ?? null;
 }
 
-export function getSceneGraph(runtimeState: any) {
+export function getSceneGraph(runtimeState) {
     return runtimeState?.document?.sceneGraph ?? runtimeState?.sceneGraph ?? null;
 }
 
-export function getNode(runtimeState: any, nodeId: string) {
+export function getNode(runtimeState, nodeId) {
     const graph = getSceneGraph(runtimeState);
     return graph?.nodes?.[nodeId] ?? null;
 }
 
-export function getLayout(runtimeState: any) {
+export function getLayout(runtimeState) {
     return runtimeState?.document?.layout ?? null;
 }
 
-export function getLayoutNode(runtimeState: any, nodeId: string) {
+export function getLayoutNode(runtimeState, nodeId) {
     const layout = getLayout(runtimeState);
     return layout?.nodes?.[nodeId] ?? null;
 }
 
-export function resolveLayoutNode(runtimeState: any, nodeId: string) {
+export function resolveLayoutNode(runtimeState, nodeId) {
     const layoutNode = getLayoutNode(runtimeState, nodeId);
     if (!layoutNode) {
         return {
@@ -114,6 +116,6 @@ export function resolveLayoutNode(runtimeState: any, nodeId: string) {
     };
 }
 
-export function isContainer(runtimeState: any, nodeId: string) {
+export function isContainer(runtimeState, nodeId) {
     return resolveLayoutNode(runtimeState, nodeId).container != null;
 }

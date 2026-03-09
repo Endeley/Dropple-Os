@@ -41,6 +41,7 @@ import { EventTypes } from '@/core/events/eventTypes.js';
 import { resolveBehaviorTrigger } from '@/core/behavior/resolveBehaviorTrigger.js';
 
 import { applyLayoutPass } from '../layout/applyLayoutPass.js';
+import { shouldRunLayout } from '../layout/shouldRunLayout.js';
 import { observeUXIntent } from './ux/observeUXIntent.js';
 import { createUXWarningEmitter } from './ux/emitUXWarning.js';
 import { emitUXWarningEvent } from './ux/uxWarningBus.js';
@@ -126,32 +127,46 @@ export function createEventDispatcher({
         dispatchEvent: dispatch,
     });
 
-    function commit(nextState, { animate = true } = {}) {
+    function commit(nextState, { animate = true, event = null } = {}) {
         const prev = __getRuntimeStateInternal();
         const ensured = __ensureDefaultWorkspaceInternal(
             __ensureDefaultTimelineInternal(nextState)
         );
+        const layoutApplied = __getIsReplayingInternal() || !shouldRunLayout({
+            event,
+            runtimeState: ensured,
+        })
+            ? {
+                  nextState: ensured,
+                  derived: {
+                      nodes: ensured?.nodes ?? {},
+                      rootIds: ensured?.rootIds ?? [],
+                  },
+              }
+            : applyLayoutPass(ensured);
+        const committedState = layoutApplied?.nextState ?? ensured;
 
-        __setRuntimeStateInternal(ensured, 'dispatcher');
+        __setRuntimeStateInternal(committedState, 'dispatcher');
 
         if (!isHeadless && animate && !isReplaying) {
             playbackController.play({
                 fromState: prev,
-                toState: ensured,
+                toState: committedState,
             });
         } else {
             playbackController.cancel();
         }
 
-        syncRuntimeToZustand(ensured);
+        syncRuntimeToZustand(committedState);
+        useAnimatedRuntimeStore.setState(
+            layoutApplied?.derived ?? {
+                nodes: committedState?.nodes ?? {},
+                rootIds: committedState?.rootIds ?? [],
+            },
+            false,
+        );
 
-        // Derived layout ONLY
-        if (!__getIsReplayingInternal()) {
-            const derived = applyLayoutPass(ensured);
-            useAnimatedRuntimeStore.setState(derived, false);
-        }
-
-        return ensured;
+        return committedState;
     }
 
     function setReplaying(value) {
@@ -359,7 +374,7 @@ export function createEventDispatcher({
                         ...current,
                         workspace: nextWorkspace,
                     };
-                    return commit(nextState, { animate: false });
+                    return commit(nextState, { animate: false, event });
                 }
 
                 if (event?.type === EventTypes.WORKSPACE_SET_VIEWPORT) {
@@ -372,7 +387,7 @@ export function createEventDispatcher({
                         ...current,
                         workspace: nextWorkspace,
                     };
-                    return commit(nextState, { animate: false });
+                    return commit(nextState, { animate: false, event });
                 }
 
                 if (event?.type === EventTypes.WORKSPACE_SET_CANVAS_SURFACE) {
@@ -385,7 +400,7 @@ export function createEventDispatcher({
                         ...current,
                         workspace: nextWorkspace,
                     };
-                    return commit(nextState, { animate: false });
+                    return commit(nextState, { animate: false, event });
                 }
 
                 if (event?.type === EventTypes.SHOT_SET_ACTIVE) {
@@ -601,7 +616,7 @@ export function createEventDispatcher({
                     return prev;
                 }
 
-                const committed = commit(next);
+                const committed = commit(next, { event });
                 history.push(cloneState(__getRuntimeStateInternal()));
                 const store = useRuntimeStore.getState();
                 useRuntimeStore.setState({

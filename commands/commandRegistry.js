@@ -5,6 +5,7 @@ import { createShareLink } from '@/share/createShareLink';
 import { createEmbedCodeFromPreset } from '@/share/createEmbedCode';
 import { CapabilityActions } from '@/ui/capabilities/capabilityActions';
 import { publishCurrentDocument } from '@/gallery/publishToGallery';
+import { runToolCommand } from '@/ui/interactions/toolController';
 
 async function copyToClipboard(text) {
   if (navigator?.clipboard?.writeText) {
@@ -21,13 +22,69 @@ async function copyToClipboard(text) {
 export function buildCommands({
   emit,
   nodes = {},
+  selectedIds = [],
   events = [],
   cursorIndex = -1,
   selected = [],
   mode,
+  workspaceId = 'graphic',
   publishToServer,
 }) {
   return [
+    {
+      id: 'groupSelection',
+      title: 'Group',
+      category: 'Edit',
+      modes: ['graphic', 'ui', 'animation'],
+      keywords: ['group', 'wrap', 'selection'],
+      requiresSelection: 'multi',
+      run: () => {
+        return runToolCommand({
+          commandId: 'group',
+          getRuntimeState: () => ({
+            workspaceId,
+            document: {
+              sceneGraph: {
+                nodes,
+                rootIds: [],
+              },
+            },
+            nodes,
+            selection: {
+              ids: selectedIds,
+            },
+          }),
+          dispatch: emit,
+        });
+      },
+    },
+    {
+      id: 'unwrapSelection',
+      title: 'Ungroup',
+      category: 'Edit',
+      modes: ['graphic', 'ui', 'animation'],
+      keywords: ['ungroup', 'unwrap', 'selection'],
+      requiresSelection: true,
+      run: () => {
+        return runToolCommand({
+          commandId: 'ungroup',
+          getRuntimeState: () => ({
+            workspaceId,
+            document: {
+              sceneGraph: {
+                nodes,
+                rootIds: [],
+              },
+            },
+            nodes,
+            selection: {
+              ids: selectedIds,
+            },
+          }),
+          dispatch: emit,
+        });
+      },
+    },
     {
       id: 'export-json',
       title: 'Export JSON',

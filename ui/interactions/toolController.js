@@ -4,6 +4,72 @@ import {
   SELECTION_ADD,
   SELECTION_CLEAR,
 } from '@/core/events/selectionEvents.js';
+import { canRunWorkspaceCommand } from '@/ui/capabilities/workspaceCapabilities';
+import { getSceneGraph } from '@/runtime/document/documentAdapter';
+import { wrapSelection } from '@/runtime/commands/structure/wrapSelection';
+import { unwrapNodeCommand } from '@/runtime/commands/structure/unwrapNode';
+
+function buildCommandRuntimeState(runtimeState, selectedIds) {
+  return {
+    ...runtimeState,
+    selection: {
+      ids: selectedIds,
+    },
+  };
+}
+
+export function runToolCommand({ commandId, getRuntimeState, dispatch }) {
+  if (typeof getRuntimeState !== 'function') return null;
+  if (typeof dispatch !== 'function') return null;
+
+  const runtimeState = getRuntimeState();
+  const workspaceId =
+    runtimeState?.workspace?.id ??
+    runtimeState?.workspaceId ??
+    'graphic';
+  const selectedIds = Array.isArray(runtimeState?.selection?.ids)
+    ? runtimeState.selection.ids.filter(Boolean)
+    : [];
+  const graph = getSceneGraph(runtimeState);
+  const nodes = graph?.nodes || runtimeState?.nodes || {};
+
+  if (!canRunWorkspaceCommand(workspaceId, commandId)) {
+    return null;
+  }
+
+  if (commandId === 'group') {
+    if (selectedIds.length < 2) return null;
+
+    const parentIds = selectedIds.map((id) => nodes[id]?.parentId ?? null);
+    const parentId = parentIds[0] ?? null;
+    const sameParent = parentIds.every((id) => id === parentId);
+    if (!sameParent) return null;
+
+    return wrapSelection({
+      runtimeState: buildCommandRuntimeState(runtimeState, selectedIds),
+      nodeIds: selectedIds,
+      wrapperNode: {
+        id: `group_${crypto.randomUUID()}`,
+        type: 'group',
+      },
+      parentId,
+      dispatch,
+    });
+  }
+
+  if (commandId === 'ungroup') {
+    const nodeId = selectedIds[0];
+    if (!nodeId) return null;
+
+    return unwrapNodeCommand({
+      runtimeState: buildCommandRuntimeState(runtimeState, selectedIds),
+      nodeId,
+      dispatch,
+    });
+  }
+
+  return null;
+}
 
 export function createToolController({ getRuntimeState, dispatch }) {
   if (typeof getRuntimeState !== 'function') throw new Error('getRuntimeState required');
@@ -120,6 +186,18 @@ export function createToolController({ getRuntimeState, dispatch }) {
       session.hitNodeId = null;
       session.previewDelta = { dx: 0, dy: 0 };
       session.selectionBox = null;
+    },
+
+    runCommand(commandId) {
+      return runToolCommand({ commandId, getRuntimeState, dispatch });
+    },
+
+    group() {
+      return runToolCommand({ commandId: 'group', getRuntimeState, dispatch });
+    },
+
+    ungroup() {
+      return runToolCommand({ commandId: 'ungroup', getRuntimeState, dispatch });
     },
   };
 }

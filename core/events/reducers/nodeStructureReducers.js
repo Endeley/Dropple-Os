@@ -5,123 +5,159 @@ import { reparentNode } from '@/core/structure/reparentNode.js';
 import { reorderNode } from '@/core/structure/reorderNode.js';
 import { wrapNodes } from '@/core/structure/wrapNodes.js';
 import { unwrapNode } from '@/core/structure/unwrapNode.js';
+import { markLayoutDirty } from './layoutDirtyHelpers.js';
+
+function getSceneGraph(state) {
+    const documentGraph = state?.document?.sceneGraph;
+    return {
+        nodes: documentGraph?.nodes ?? state?.nodes ?? {},
+        rootIds: documentGraph?.rootIds ?? state?.rootIds ?? [],
+    };
+}
+
+function applySceneGraph(state, nextGraph) {
+    const document = state?.document
+        ? {
+              ...state.document,
+              sceneGraph: nextGraph,
+          }
+        : state?.document;
+
+    return {
+        ...state,
+        document,
+        nodes: nextGraph.nodes,
+        rootIds: nextGraph.rootIds,
+    };
+}
 
 export function nodeStructureReducers(state, event) {
     const { type, payload } = event;
+    const graph = getSceneGraph(state);
 
     switch (type) {
         case EventTypes.NODE_ATTACH: {
             const next = attachNode({
-                nodes: state.nodes,
-                rootIds: state.rootIds,
+                nodes: graph.nodes,
+                rootIds: graph.rootIds,
                 ...payload,
             });
 
-            if (next.nodes === state.nodes && next.rootIds === state.rootIds) {
+            if (next.nodes === graph.nodes && next.rootIds === graph.rootIds) {
                 return state;
             }
 
-            return {
-                ...state,
-                nodes: next.nodes,
-                rootIds: next.rootIds,
-            };
+            return markLayoutDirty(applySceneGraph(state, next), {
+                nodeIds: [
+                    payload?.parentId,
+                    ...(payload?.childIds ?? payload?.nodeIds ?? [payload?.childId ?? payload?.nodeId]),
+                ],
+            });
         }
 
         case EventTypes.NODE_DETACH: {
             const next = detachNode({
-                nodes: state.nodes,
-                rootIds: state.rootIds,
+                nodes: graph.nodes,
+                rootIds: graph.rootIds,
                 ...payload,
             });
 
-            if (next.nodes === state.nodes && next.rootIds === state.rootIds) {
+            if (next.nodes === graph.nodes && next.rootIds === graph.rootIds) {
                 return state;
             }
 
-            return {
-                ...state,
-                nodes: next.nodes,
-                rootIds: next.rootIds,
-            };
+            return markLayoutDirty(applySceneGraph(state, next), {
+                nodeIds: payload?.ids ?? payload?.nodeIds ?? [payload?.nodeId],
+            });
         }
 
         case EventTypes.NODE_REPARENT: {
             const next = reparentNode({
-                nodes: state.nodes,
-                rootIds: state.rootIds,
+                nodes: graph.nodes,
+                rootIds: graph.rootIds,
                 ...payload,
             });
 
-            if (next.nodes === state.nodes && next.rootIds === state.rootIds) {
+            if (next.nodes === graph.nodes && next.rootIds === graph.rootIds) {
                 return state;
             }
 
-            return {
-                ...state,
-                nodes: next.nodes,
-                rootIds: next.rootIds,
-            };
+            return markLayoutDirty(applySceneGraph(state, next), {
+                nodeIds: [
+                    payload?.parentId,
+                    ...(payload?.nodeIds ?? [payload?.nodeId]),
+                ],
+            });
         }
 
         case EventTypes.NODE_REORDER: {
             const nextNodes = reorderNode({
-                nodes: state.nodes,
+                nodes: graph.nodes,
                 containerId: payload?.containerId,
                 nodeIds: payload?.nodeIds,
                 nodeId: payload?.nodeId,
                 index: payload?.index,
             });
 
-            if (nextNodes === state.nodes) {
+            if (nextNodes === graph.nodes) {
                 return state;
             }
 
-            return {
-                ...state,
+            return markLayoutDirty(applySceneGraph(state, {
                 nodes: nextNodes,
-            };
+                rootIds: graph.rootIds,
+            }), {
+                nodeIds: [
+                    payload?.containerId,
+                    ...(payload?.nodeIds ?? [payload?.nodeId]),
+                ],
+            });
         }
 
         case EventTypes.NODE_WRAP: {
             const next = wrapNodes({
-                nodes: state.nodes,
-                rootIds: state.rootIds,
+                nodes: graph.nodes,
+                rootIds: graph.rootIds,
                 ...payload,
             });
 
-            if (next.nodes === state.nodes && next.rootIds === state.rootIds) {
+            if (next.nodes === graph.nodes && next.rootIds === graph.rootIds) {
                 return state;
             }
 
-            return {
-                ...state,
-                nodes: next.nodes,
-                rootIds: next.rootIds,
-            };
+            return markLayoutDirty(applySceneGraph(state, next), {
+                nodeIds: [
+                    payload?.parentId,
+                    payload?.wrapperNode?.id,
+                    ...(payload?.nodeIds ?? []),
+                ],
+            });
         }
 
         case EventTypes.NODE_UNWRAP: {
             const next = unwrapNode({
-                nodes: state.nodes,
-                rootIds: state.rootIds,
+                nodes: graph.nodes,
+                rootIds: graph.rootIds,
                 ...payload,
             });
 
-            if (next.nodes === state.nodes && next.rootIds === state.rootIds) {
+            if (next.nodes === graph.nodes && next.rootIds === graph.rootIds) {
                 return state;
             }
 
-            return {
-                ...state,
-                nodes: next.nodes,
-                rootIds: next.rootIds,
-            };
+            const wrapperNode = graph.nodes[payload?.nodeId];
+            return markLayoutDirty(applySceneGraph(state, next), {
+                nodeIds: [
+                    payload?.nodeId,
+                    wrapperNode?.parentId,
+                    ...(wrapperNode?.children ?? []),
+                ],
+            });
         }
 
         case 'node.children.reorder': {
             const { parentId, fromIndex, toIndex } = payload;
-            const parent = state.nodes[parentId];
+            const parent = graph.nodes[parentId];
             if (!parent) return state;
 
             const children = [...(parent.children || [])];
@@ -137,16 +173,18 @@ export function nodeStructureReducers(state, event) {
             const [moved] = children.splice(fromIndex, 1);
             children.splice(toIndex, 0, moved);
 
-            return {
-                ...state,
+            return markLayoutDirty(applySceneGraph(state, {
                 nodes: {
-                    ...state.nodes,
+                    ...graph.nodes,
                     [parentId]: {
                         ...parent,
                         children,
                     },
                 },
-            };
+                rootIds: graph.rootIds,
+            }), {
+                nodeIds: [parentId],
+            });
         }
 
         default:

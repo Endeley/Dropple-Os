@@ -17,6 +17,7 @@ import { useEducationCursor } from '@/education/EducationCursorContext';
 import { getEducationAtCursor } from '@/education/selectEducationState';
 import { ContextMenu } from '@/ui/context/ContextMenu';
 import { useContextMenu } from '@/ui/context/useContextMenu';
+import { runToolCommand } from '@/ui/interactions/toolController';
 import { CapabilityActions } from '@/ui/capabilities/capabilityActions';
 import { exportJSON } from '@/runtime/export/exportJSON';
 import { exportSVG } from '@/runtime/export/svg/exportSVG';
@@ -190,6 +191,7 @@ export default function CanvasStage({
 
     const selected = selectedIds ? Array.from(selectedIds) : [];
     const enabled = selected.length > 1;
+    const singleSelected = selected.length === 1;
     const hasNodes = Object.keys(state.nodes || {}).length > 0;
     const canShowImport = canImport;
 
@@ -207,6 +209,51 @@ export default function CanvasStage({
         { type: 'separator' },
         { key: 'distribute-x', label: 'Distribute Horizontally', disabled: !enabled, onClick: () => CapabilityActions.distributeX(selected, emit) },
         { key: 'distribute-y', label: 'Distribute Vertically', disabled: !enabled, onClick: () => CapabilityActions.distributeY(selected, emit) },
+        { type: 'separator' },
+        {
+          key: 'group-selection',
+          label: 'Group',
+          disabled: !enabled,
+          onClick: () =>
+            runToolCommand({
+              commandId: 'group',
+              getRuntimeState: () => ({
+                workspaceId: adapter?.workspaceId || adapter?.id || 'graphic',
+                document: {
+                  sceneGraph: {
+                    nodes: state.nodes || {},
+                    rootIds: state.rootIds || [],
+                  },
+                },
+                nodes: state.nodes || {},
+                rootIds: state.rootIds || [],
+                selection: { ids: selected },
+              }),
+              dispatch: emit,
+            }),
+        },
+        {
+          key: 'ungroup-selection',
+          label: 'Ungroup',
+          disabled: !singleSelected,
+          onClick: () =>
+            runToolCommand({
+              commandId: 'ungroup',
+              getRuntimeState: () => ({
+                workspaceId: adapter?.workspaceId || adapter?.id || 'graphic',
+                document: {
+                  sceneGraph: {
+                    nodes: state.nodes || {},
+                    rootIds: state.rootIds || [],
+                  },
+                },
+                nodes: state.nodes || {},
+                rootIds: state.rootIds || [],
+                selection: { ids: selected },
+              }),
+              dispatch: emit,
+            }),
+        },
         { type: 'separator' },
         { key: 'export-json', label: 'Export JSON', disabled: !hasNodes, onClick: () => runExportGate({ onProceed: () => exportJSON({ nodes: state.nodes, events, cursor }) }) },
         { key: 'export-svg', label: 'Export SVG', disabled: !hasNodes, onClick: () => runExportGate({ onProceed: () => exportSVG({ nodes: state.nodes }) }) },

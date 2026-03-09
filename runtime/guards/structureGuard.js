@@ -1,4 +1,5 @@
 import { EventTypes } from '@/core/events/eventTypes.js';
+import { getSceneGraph } from '@/runtime/document/documentAdapter';
 import { getRuntimeState } from '../state/runtimeState.js';
 
 function normalizeNodeIds(payload = {}) {
@@ -42,7 +43,8 @@ export function applyStructureGuard(event) {
     }
 
     const state = getRuntimeState();
-    const nodes = state?.nodes || {};
+    const graph = getSceneGraph(state);
+    const nodes = graph?.nodes || {};
     const payload = event?.payload || {};
     const ids = normalizeNodeIds(payload);
 

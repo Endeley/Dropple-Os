@@ -1,7 +1,7 @@
 // branching/merge/simulateMergeState.js
 
 import { replayEvents } from '@/runtime/dispatcher/replayEvents.js';
-import { applyLayoutPass } from '@/runtime/layout/applyLayoutPass';
+import { applyLayoutPass } from '@/runtime/layout/applyLayoutPass.js';
 
 /**
  * Simulate applying events to a state (no mutation).
@@ -13,7 +13,7 @@ export function simulateMergeState({ baseState, events }) {
         events,
         initialState: baseState,
         onEvent(state) {
-            return applyLayoutPass(state);
+            return applyLayoutPass(state).nextState;
         },
     });
 }

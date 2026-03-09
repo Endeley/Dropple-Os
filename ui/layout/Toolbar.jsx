@@ -10,6 +10,7 @@ import { runExportGate } from '@/ui/export/exportGateClient.js';
 import { createShareLink } from '@/share/createShareLink';
 import { createEmbedCode } from '@/share/createEmbedCode';
 import { colors, spacing, radius } from '@/ui/tokens';
+import { runToolCommand } from '@/ui/interactions/toolController';
 
 export default function Toolbar({
   mode,
@@ -37,6 +38,7 @@ export default function Toolbar({
   const nodes = state?.nodes || {};
   const selected = selectedIds ? Array.from(selectedIds) : [];
   const enabled = selected.length > 1;
+  const singleSelected = selected.length === 1;
   const hasNodes = Object.keys(nodes).length > 0;
   const showDocumentActions = canPersist;
   const showImportActions = canImport;
@@ -195,6 +197,74 @@ export default function Toolbar({
           </button>
         </>
       )}
+      <button
+        disabled={!enabled}
+        onClick={() =>
+          runToolCommand({
+            commandId: 'group',
+            getRuntimeState: () => ({
+              workspaceId: mode?.workspaceId || mode?.id || 'graphic',
+              document: {
+                sceneGraph: {
+                  nodes,
+                  rootIds: state?.rootIds || [],
+                },
+              },
+              nodes,
+              rootIds: state?.rootIds || [],
+              selection: { ids: selected },
+            }),
+            dispatch: emit,
+          })
+        }
+        title="Group selection"
+        style={{
+          minWidth: 32,
+          height: 32,
+          padding: `0 ${spacing.sm}px`,
+          border: `1px solid ${colors.border}`,
+          borderRadius: radius.sm,
+          background: '#fff',
+          fontSize: 12,
+          opacity: enabled ? 1 : 0.5,
+        }}
+      >
+        Group
+      </button>
+      <button
+        disabled={!singleSelected}
+        onClick={() =>
+          runToolCommand({
+            commandId: 'ungroup',
+            getRuntimeState: () => ({
+              workspaceId: mode?.workspaceId || mode?.id || 'graphic',
+              document: {
+                sceneGraph: {
+                  nodes,
+                  rootIds: state?.rootIds || [],
+                },
+              },
+              nodes,
+              rootIds: state?.rootIds || [],
+              selection: { ids: selected },
+            }),
+            dispatch: emit,
+          })
+        }
+        title="Ungroup selection"
+        style={{
+          minWidth: 32,
+          height: 32,
+          padding: `0 ${spacing.sm}px`,
+          border: `1px solid ${colors.border}`,
+          borderRadius: radius.sm,
+          background: '#fff',
+          fontSize: 12,
+          opacity: singleSelected ? 1 : 0.5,
+        }}
+      >
+        Ungroup
+      </button>
       <button
         disabled={!enabled}
         onClick={() => CapabilityActions.alignLeft(selected, emit)}

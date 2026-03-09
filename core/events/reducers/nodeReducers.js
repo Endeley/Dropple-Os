@@ -1,6 +1,7 @@
 // core/events/reducers/nodeReducers.js
 
 import { EventTypes } from "../eventTypes.js";
+import { markLayoutDirty } from "./layoutDirtyHelpers.js";
 
 const defaultLayout = Object.freeze({
   mode: "none",
@@ -23,8 +24,33 @@ function normalizeAngle(angle) {
   return a;
 }
 
+function getSceneGraph(state) {
+  const documentGraph = state?.document?.sceneGraph;
+  return {
+    nodes: documentGraph?.nodes ?? state?.nodes ?? {},
+    rootIds: documentGraph?.rootIds ?? state?.rootIds ?? [],
+  };
+}
+
+function applySceneGraph(state, nextGraph) {
+  const document = state?.document
+    ? {
+        ...state.document,
+        sceneGraph: nextGraph,
+      }
+    : state?.document;
+
+  return {
+    ...state,
+    document,
+    nodes: nextGraph.nodes,
+    rootIds: nextGraph.rootIds,
+  };
+}
+
 export function nodeReducers(state, event) {
   const { type, payload } = event;
+  const graph = getSceneGraph(state);
 
   switch (type) {
     case EventTypes.NODE_CREATE: {
@@ -41,23 +67,25 @@ export function nodeReducers(state, event) {
         layoutChild: { ...defaultLayoutChild, ...(baseNode.layoutChild || {}) },
       };
 
-      const nextRootIds = state.rootIds.includes(node.id)
-        ? state.rootIds
-        : [...state.rootIds, node.id];
+      const nextRootIds = graph.rootIds.includes(node.id)
+        ? graph.rootIds
+        : [...graph.rootIds, node.id];
 
-      return {
-        ...state,
+      const nextState = applySceneGraph(state, {
         nodes: {
-          ...state.nodes,
+          ...graph.nodes,
           [node.id]: nextNode,
         },
         rootIds: nextRootIds,
-      };
+      });
+      return markLayoutDirty(nextState, {
+        nodeIds: [node.id],
+      });
     }
 
     case EventTypes.NODE_UPDATE: {
       const { id, patch } = payload;
-      const prev = state.nodes[id];
+      const prev = graph.nodes[id];
       if (!prev) return state;
 
       if (process.env.NODE_ENV !== 'production') {
@@ -68,10 +96,9 @@ export function nodeReducers(state, event) {
         }
       }
 
-      return {
-        ...state,
+      return applySceneGraph(state, {
         nodes: {
-          ...state.nodes,
+          ...graph.nodes,
           [id]: {
             ...prev,
 
@@ -89,51 +116,56 @@ export function nodeReducers(state, event) {
             },
           },
         },
-      };
+        rootIds: graph.rootIds,
+      });
     }
 
     case EventTypes.NODE_DELETE: {
       const { id } = payload;
-      if (!state.nodes[id]) return state;
+      if (!graph.nodes[id]) return state;
 
-      const nextNodes = { ...state.nodes };
+      const nextNodes = { ...graph.nodes };
       delete nextNodes[id];
 
-      return {
-        ...state,
+      const nextState = applySceneGraph(state, {
         nodes: nextNodes,
-        rootIds: state.rootIds.filter((rootId) => rootId !== id),
-      };
+        rootIds: graph.rootIds.filter((rootId) => rootId !== id),
+      });
+      return markLayoutDirty(nextState, {
+        nodeIds: [id],
+      });
     }
 
     case 'node.content.update':
     case 'text.content.update':
     case 'image.source.update': {
       const { nodeId, content } = payload;
-      const prev = state.nodes[nodeId];
+      const prev = graph.nodes[nodeId];
       if (!prev) return state;
 
-      return {
-        ...state,
+      const nextState = applySceneGraph(state, {
         nodes: {
-          ...state.nodes,
+          ...graph.nodes,
           [nodeId]: {
             ...prev,
             content,
           },
         },
-      };
+        rootIds: graph.rootIds,
+      });
+      return markLayoutDirty(nextState, {
+        nodeIds: [nodeId],
+      });
     }
 
     case 'node.props.update': {
       const { nodeId, props } = payload;
-      const prev = state.nodes[nodeId];
+      const prev = graph.nodes[nodeId];
       if (!prev) return state;
 
-      return {
-        ...state,
+      return applySceneGraph(state, {
         nodes: {
-          ...state.nodes,
+          ...graph.nodes,
           [nodeId]: {
             ...prev,
             props: {
@@ -142,7 +174,8 @@ export function nodeReducers(state, event) {
             },
           },
         },
-      };
+        rootIds: graph.rootIds,
+      });
     }
 
     case EventTypes.NODE_ROTATE: {
@@ -150,7 +183,7 @@ export function nodeReducers(state, event) {
       if (!Array.isArray(nodeIds) || nodeIds.length === 0) return state;
       const delta = rotation ?? 0;
 
-      const nextNodes = { ...state.nodes };
+      const nextNodes = { ...graph.nodes };
       nodeIds.forEach((id) => {
         const prev = nextNodes[id];
         if (!prev) return;
@@ -161,10 +194,10 @@ export function nodeReducers(state, event) {
         };
       });
 
-      return {
-        ...state,
+      return applySceneGraph(state, {
         nodes: nextNodes,
-      };
+        rootIds: graph.rootIds,
+      });
     }
 
     default:

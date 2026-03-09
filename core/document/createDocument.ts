@@ -18,8 +18,17 @@ export function createEmptyDocument(): DroppleDocument {
         },
 
         layout: {
-            containers: {},
-            constraints: {},
+            version: 1,
+            nodes: {},
+            computed: {},
+            dirty: {
+                nodeIds: [],
+                fullPass: false,
+                revision: 0,
+            },
+            metadata: {
+                schemaVersion: 1,
+            },
         },
 
         components: {

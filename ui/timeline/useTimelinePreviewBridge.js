@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { samplePreviewState } from './samplePreviewState.js';
+import { getSceneGraph } from '@/runtime/document/documentAdapter.js';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
 import { selectRenderState } from '@/runtime/projection';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
@@ -16,6 +17,7 @@ export function useTimelinePreviewBridge(timelineOverride) {
     useEffect(() => {
         const runtimeState = selectRenderState();
         if (!runtimeState) return;
+        const graph = getSceneGraph(runtimeState);
 
         const timeline = timelineOverride || runtimeState.timeline?.timelines?.default;
 
@@ -39,8 +41,8 @@ export function useTimelinePreviewBridge(timelineOverride) {
         // Snap back to authoritative runtime state when not scrubbing.
         useAnimatedRuntimeStore.setState(
             {
-                nodes: runtimeState.nodes || {},
-                rootIds: runtimeState.rootIds || [],
+                nodes: graph?.nodes || {},
+                rootIds: graph?.rootIds || [],
             },
             false
         );

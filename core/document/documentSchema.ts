@@ -71,20 +71,110 @@ export type MotionBinding = Record<string, unknown>;
 export type ComponentBinding = Record<string, unknown>;
 
 export type LayoutSystem = {
-    containers: Record<NodeId, LayoutContainer>;
-    constraints: Record<NodeId, LayoutConstraints>;
+    version: 1;
+    nodes: Record<NodeId, LayoutNode>;
+    computed: Record<NodeId, ComputedLayout>;
+    dirty: LayoutDirtyState;
+    metadata: LayoutMetadata;
 };
 
-export type LayoutContainer = {
-    mode: 'absolute' | 'stack' | 'flex' | 'grid';
-    gap?: number;
+export type LayoutNode = {
+    mode: 'free' | 'flow' | 'grid' | 'constraint';
+    container: LayoutContainerConfig | null;
+    sizing: LayoutSizing;
+    alignSelf: LayoutSelfAlignment;
+    constraints: LayoutConstraints;
+    offsetLeft?: number;
+    offsetRight?: number;
+    offsetTop?: number;
+    offsetBottom?: number;
+    participation: LayoutParticipation;
+};
+
+export type LayoutContainerConfig = {
+    type: 'row' | 'column' | 'grid';
+    wrap: boolean;
+    gap: LayoutGap;
+    padding: LayoutPadding;
+    align: LayoutAlignment;
+};
+
+export type LayoutGap = {
+    main: number;
+    cross: number;
+};
+
+export type LayoutPadding = {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+};
+
+export type LayoutAlignment = {
+    main: 'start' | 'center' | 'end' | 'space-between';
+    cross: 'start' | 'center' | 'end' | 'stretch';
+};
+
+export type LayoutSizing = {
+    width: LayoutAxisSizing;
+    height: LayoutAxisSizing;
+    minWidth: number | null;
+    maxWidth: number | null;
+    minHeight: number | null;
+    maxHeight: number | null;
+    aspectRatio: number | null;
+};
+
+export type LayoutAxisSizing = {
+    mode: 'fixed' | 'hug' | 'fill' | 'percent';
+    value: number | null;
+};
+
+export type LayoutSelfAlignment = {
+    main: 'auto' | 'start' | 'center' | 'end' | 'stretch';
+    cross: 'auto' | 'start' | 'center' | 'end' | 'stretch';
+};
+
+export type ComputedLayout = {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    contentBox: LayoutBox;
+    paddingBox: LayoutBox;
+    revision: number;
+};
+
+export type LayoutDirtyState = {
+    nodeIds: NodeId[];
+    fullPass: boolean;
+    revision: number;
+};
+
+export type LayoutMetadata = {
+    schemaVersion: 1;
+};
+
+export type LayoutBox = {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
 };
 
 export type LayoutConstraints = {
-    left?: boolean;
-    right?: boolean;
-    top?: boolean;
-    bottom?: boolean;
+    left: boolean;
+    right: boolean;
+    top: boolean;
+    bottom: boolean;
+    centerX: boolean;
+    centerY: boolean;
+};
+
+export type LayoutParticipation = {
+    absoluteInContainer: boolean;
+    excluded: boolean;
 };
 
 export type ComponentSystem = {

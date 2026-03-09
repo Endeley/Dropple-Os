@@ -1,4 +1,4 @@
-import { Capability } from './capabilityVocabulary';
+import { Capability } from './capabilityVocabulary.js';
 
 const GLOBAL_CAPS = [
   Capability.VIEWPORT_PAN,
@@ -11,6 +11,8 @@ export const WORKSPACE_CAPABILITIES = Object.freeze({
   graphic: new Set([
     Capability.NODE_READ,
     Capability.NODE_SELECT,
+    Capability.NODE_GROUP,
+    Capability.NODE_UNGROUP,
 
     Capability.LAYOUT_READ,
     Capability.STYLE_READ,
@@ -25,6 +27,8 @@ export const WORKSPACE_CAPABILITIES = Object.freeze({
     Capability.NODE_CREATE,
     Capability.NODE_DELETE,
     Capability.NODE_DUPLICATE,
+    Capability.NODE_GROUP,
+    Capability.NODE_UNGROUP,
 
     Capability.LAYOUT_READ,
     Capability.LAYOUT_WRITE,
@@ -90,6 +94,39 @@ export const WORKSPACE_CAPABILITIES = Object.freeze({
   ]),
 });
 
+export const WORKSPACE_COMMAND_CAPABILITIES = Object.freeze({
+  graphic: Object.freeze({
+    group: true,
+    ungroup: true,
+  }),
+  uiux: Object.freeze({
+    group: true,
+    ungroup: true,
+  }),
+  prototype: Object.freeze({
+    group: false,
+    ungroup: false,
+  }),
+  motion: Object.freeze({
+    group: false,
+    ungroup: false,
+  }),
+  dev: Object.freeze({
+    group: false,
+    ungroup: false,
+  }),
+  animation: Object.freeze({
+    group: false,
+    ungroup: false,
+  }),
+});
+
 export function getWorkspaceCapabilities(workspaceId) {
   return WORKSPACE_CAPABILITIES[workspaceId] || new Set(GLOBAL_CAPS);
+}
+
+export function canRunWorkspaceCommand(workspaceId, commandId) {
+  const commandCaps = WORKSPACE_COMMAND_CAPABILITIES[workspaceId];
+  if (!commandCaps) return false;
+  return commandCaps[commandId] === true;
 }

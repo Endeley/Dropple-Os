@@ -17,6 +17,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { registerWorkspaceTools } from '@/ui/interaction/toolRegistration';
 import { useKeyboardNudge } from '@/ui/keyboard/useKeyboardNudge';
 import { useAlignmentShortcuts } from '@/ui/keyboard/useAlignmentShortcuts';
+import { useGroupShortcuts } from '@/ui/keyboard/useGroupShortcuts';
 import { useModeOnboarding } from '@/onboarding/useModeOnboarding';
 import { ModeHint } from '@/onboarding/ModeHint';
 import { FilePicker } from '@/ui/files/FilePicker';
@@ -125,7 +126,7 @@ function WorkspaceLayoutInner({
 
   const replayState = useMemo(() => getState(), [getState]);
   const selected = useMemo(() => {
-    if (!selectedIds || selectedIds.size <= 1) return [];
+    if (!selectedIds || selectedIds.size === 0) return [];
     return Array.from(selectedIds)
       .map((id) => replayState.nodes?.[id])
       .filter(Boolean);
@@ -136,10 +137,12 @@ function WorkspaceLayoutInner({
       buildCommands({
         emit,
         nodes: replayState.nodes || {},
+        selectedIds: selectedIds ? Array.from(selectedIds) : [],
         events,
         cursorIndex: cursor.index,
         selected,
         mode: hintMode || mode,
+        workspaceId: adapter?.workspaceId || adapter?.id || 'graphic',
         publishToServer,
       }),
     [
@@ -147,6 +150,7 @@ function WorkspaceLayoutInner({
       events,
       cursor.index,
       replayState.nodes,
+      selectedIds,
       selected,
       hintMode,
       mode,
@@ -180,6 +184,14 @@ function WorkspaceLayoutInner({
     enabled: keyboardEnabled,
     emit,
     getState,
+  });
+
+  useGroupShortcuts({
+    enabled: keyboardEnabled,
+    selectedIds,
+    emit,
+    getState,
+    workspaceId: adapter?.workspaceId || adapter?.id || 'graphic',
   });
 
   useEffect(() => {
