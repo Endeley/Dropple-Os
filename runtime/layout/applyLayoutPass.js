@@ -1,4 +1,5 @@
 import { evaluateLayout } from '@/engine/layout/evaluateLayout.js';
+import { evaluateLayoutIncremental } from './evaluateLayoutIncremental.js';
 import {
     getLayout,
     getSceneGraph,
@@ -96,8 +97,18 @@ export function applyLayoutPass(runtimeState) {
         dirtyNodes: dirty.nodeIds ?? [],
         fullPass: dirty.fullPass === true,
     });
+    const layoutResult =
+        dirty.fullPass === true
+            ? result
+            : evaluateLayoutIncremental({
+                  dirtyNodeIds: dirty.nodeIds ?? [],
+                  sceneGraph,
+                  layoutNodes,
+                  nodeGeometry,
+                  previousComputed: layout.computed ?? {},
+              });
 
-    const computed = result.computed ?? {};
+    const computed = layoutResult.computed ?? {};
     const derivedNodes = applyComputedToNodes(sceneGraph.nodes, computed);
     const nextState = {
         ...runtimeState,
@@ -123,7 +134,7 @@ export function applyLayoutPass(runtimeState) {
             nodes: derivedNodes,
             rootIds: sceneGraph.rootIds ?? [],
         },
-        diagnostics: result.diagnostics ?? [],
-        affectedNodes: result.affectedNodes ?? [],
+        diagnostics: layoutResult.diagnostics ?? [],
+        affectedNodes: layoutResult.affectedNodes ?? [],
     };
 }
