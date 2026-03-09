@@ -1,4 +1,5 @@
 import { resolveFlowContainer } from './resolveFlowContainer.js';
+import { resolveGridContainer } from './resolveGridContainer.js';
 import { resolveConstraintNode } from './resolveConstraintNode.js';
 import { buildComputedLayout } from './layoutTypes.js';
 
@@ -81,17 +82,24 @@ export function layoutChildren({
         const layoutNode = layoutNodes?.[nodeId];
         if (!layoutNode) return;
 
-        if (layoutNode.mode === 'grid') {
-            diagnostics.push({
-                nodeId,
-                level: 'info',
-                message: 'Grid layout not implemented in v1 layout engine.',
+        if (layoutNode.mode === 'flow' && layoutNode.container) {
+            const result = resolveFlowContainer({
+                containerId: nodeId,
+                sceneGraph,
+                layoutNodes,
+                computed,
+                measured,
             });
+
+            computed = result.computed;
+            affectedNodes.add(nodeId);
+            result.affectedNodes.forEach((affectedId) => affectedNodes.add(affectedId));
+            result.diagnostics.forEach((item) => diagnostics.push(item));
             return;
         }
 
-        if (layoutNode.mode === 'flow' && layoutNode.container) {
-            const result = resolveFlowContainer({
+        if (layoutNode.mode === 'grid' && layoutNode.container?.type === 'grid') {
+            const result = resolveGridContainer({
                 containerId: nodeId,
                 sceneGraph,
                 layoutNodes,

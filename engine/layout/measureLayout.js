@@ -46,6 +46,22 @@ function isFlowParticipant(layoutNode) {
     return true;
 }
 
+function isGridParticipant(layoutNode) {
+    if (!layoutNode || layoutNode.mode !== 'grid') return false;
+    if (layoutNode.participation?.excluded) return false;
+    if (layoutNode.participation?.absoluteInContainer) return false;
+    return true;
+}
+
+function getGridConfig(container) {
+    return {
+        columns: Math.max(1, Math.floor(container?.columns ?? 1)),
+        rows: container?.rows ?? 'auto',
+        columnGap: container?.columnGap ?? container?.gap?.main ?? 0,
+        rowGap: container?.rowGap ?? container?.gap?.cross ?? 0,
+    };
+}
+
 export function measureLayout({
     sceneGraph,
     layoutNodes = {},
@@ -110,12 +126,47 @@ export function measureLayout({
             if (layoutNode.sizing?.height?.mode === 'hug') {
                 height = hugHeight;
             }
-        } else if (layoutNode?.mode === 'grid') {
-            diagnostics.push({
-                nodeId,
-                level: 'info',
-                message: 'Grid measurement not implemented in v1 layout engine.',
+        } else if (layoutNode?.mode === 'grid' && layoutNode.container && node) {
+            const padding = getPadding(layoutNode.container);
+            const { columns, columnGap, rowGap } = getGridConfig(layoutNode.container);
+            const children = Array.isArray(node.children) ? node.children : [];
+            const participants = children
+                .map((childId) => ({
+                    childId,
+                    layoutNode: layoutNodes?.[childId],
+                    measured: measureNode(childId),
+                }))
+                .filter((item) => isGridParticipant(item.layoutNode));
+
+            const rows = Math.max(1, Math.ceil(participants.length / columns));
+            const columnWidths = Array.from({ length: columns }, () => 0);
+            const rowHeights = Array.from({ length: rows }, () => 0);
+
+            participants.forEach((item, index) => {
+                const row = Math.floor(index / columns);
+                const column = index % columns;
+                columnWidths[column] = Math.max(columnWidths[column], item.measured.width);
+                rowHeights[row] = Math.max(rowHeights[row], item.measured.height);
             });
+
+            const hugWidth =
+                padding.left +
+                columnWidths.reduce((sum, value) => sum + value, 0) +
+                Math.max(0, columns - 1) * columnGap +
+                padding.right;
+            const hugHeight =
+                padding.top +
+                rowHeights.reduce((sum, value) => sum + value, 0) +
+                Math.max(0, rows - 1) * rowGap +
+                padding.bottom;
+
+            if (layoutNode.sizing?.width?.mode === 'hug') {
+                width = hugWidth;
+            }
+
+            if (layoutNode.sizing?.height?.mode === 'hug') {
+                height = hugHeight;
+            }
         }
 
         measured[nodeId] = {

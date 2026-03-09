@@ -97,6 +97,10 @@ export type LayoutContainerConfig = {
     gap: LayoutGap;
     padding: LayoutPadding;
     align: LayoutAlignment;
+    columns?: number;
+    rows?: number | 'auto';
+    columnGap?: number;
+    rowGap?: number;
 };
 
 export type LayoutGap = {
