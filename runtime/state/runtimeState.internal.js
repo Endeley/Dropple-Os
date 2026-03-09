@@ -1,11 +1,58 @@
 import { createTimeline } from '@/timeline/schema/timeline.js';
 import { createDefaultWorkspaceState } from './workspaceRuntime.js';
 
+function createInitialDocument() {
+  const now = Date.now();
+
+  return {
+    meta: {
+      id: crypto.randomUUID(),
+      name: 'Untitled',
+      version: 1,
+      createdAt: now,
+      updatedAt: now,
+    },
+    sceneGraph: {
+      rootIds: [],
+      nodes: {},
+    },
+    layout: {
+      containers: {},
+      constraints: {},
+    },
+    components: {
+      definitions: {},
+      instances: {},
+    },
+    motion: {
+      clips: {},
+    },
+    scenes: {
+      scenes: {},
+      activeSceneId: undefined,
+    },
+    assets: {
+      images: {},
+      videos: {},
+      audio: {},
+    },
+    exports: {
+      targets: [],
+    },
+  };
+}
+
 export const initialRuntimeState = {
+  document: createInitialDocument(),
   nodes: {},
   rootIds: [],
+  sceneGraph: null,
   timeline: null,
+  history: null,
   workspace: createDefaultWorkspaceState(),
+  playback: {
+    isPlaying: false,
+  },
   activeStateId: null,
   activeComponentId: null,
   selection: {
