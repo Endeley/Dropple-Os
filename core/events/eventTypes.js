@@ -78,6 +78,14 @@ export const EventTypes = Object.freeze({
     ANIMATION_KEYFRAME_UPDATE: 'animation/keyframe/update',
     ANIMATION_KEYFRAME_DELETE: 'animation/keyframe/delete',
 
+    // Canonical motion document mutations
+    MOTION_CLIP_CREATE: 'motion/clipCreate',
+    MOTION_CLIP_UPDATE: 'motion/clipUpdate',
+    MOTION_CLIP_DELETE: 'motion/clipDelete',
+    MOTION_KEYFRAME_ADD: 'motion/keyframeAdd',
+    MOTION_KEYFRAME_UPDATE: 'motion/keyframeUpdate',
+    MOTION_KEYFRAME_DELETE: 'motion/keyframeDelete',
+
     // ─────────────────────────────
     // Transitions (between states)
     // ─────────────────────────────

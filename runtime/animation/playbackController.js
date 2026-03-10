@@ -3,7 +3,7 @@
 import { getRuntimeState } from '../state/runtimeState.js';
 import { useAnimatedRuntimeStore } from '../stores/useAnimatedRuntimeStore.js';
 import { resolveShotForTime } from '../scene/resolveShotForTime.js';
-import { getCameraTransformAtTime } from '@/core/scene/cameraPlayback.v1';
+import { getCameraTransformAtTime } from '@/core/scene/cameraPlayback.v1.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 
 export function createPlaybackController({ animationController, dispatchEvent }) {

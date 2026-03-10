@@ -104,7 +104,7 @@ function normalizeShotTimelines(project: ProjectV2): ProjectV2 {
                 changed = true;
                 return {
                     ...shot,
-                    timeline: shot.timeline.animations,
+                    timeline: shot.timeline.motion ?? shot.timeline.animations,
                 };
             }
 

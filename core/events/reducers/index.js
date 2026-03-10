@@ -9,7 +9,7 @@ import { transitionReducers } from "./transitionReducers.js";
 import { stateReducers } from "./stateReducers.js";
 import { componentStateReducers } from "./componentStateReducers.js";
 import { interactionReducers } from "./interactionReducers.js";
-import { animationReducers } from "./animationReducers.js";
+import { motionReducers } from "./motionReducers.js";
 import { behaviorReducers } from "./behaviorReducers.js";
 import { selectionReducer } from "./selectionReducers.js";
 import { viewportReducer } from "./viewportReducer.js";
@@ -19,7 +19,7 @@ export function rootReducer(state, event) {
   next = stateReducers(next, event);
   next = componentStateReducers(next, event);
   next = interactionReducers(next, event);
-  next = animationReducers(next, event);
+  next = motionReducers(next, event);
   next = behaviorReducers(next, event);
   next = selectionReducer(next, event);
   next = viewportReducer(next, event);

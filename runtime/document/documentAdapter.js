@@ -57,6 +57,18 @@ export function getLayout(runtimeState) {
     return runtimeState?.document?.layout ?? null;
 }
 
+export function getMotionDocument(runtimeState) {
+    return runtimeState?.document?.motion ?? null;
+}
+
+export function getMotionClip(runtimeState, clipId) {
+    return getMotionDocument(runtimeState)?.clips?.[clipId] ?? null;
+}
+
+export function getMotionClips(runtimeState) {
+    return Object.values(getMotionDocument(runtimeState)?.clips ?? {});
+}
+
 export function getLayoutNode(runtimeState, nodeId) {
     const layout = getLayout(runtimeState);
     return layout?.nodes?.[nodeId] ?? null;

@@ -1,7 +1,7 @@
-import { evaluateTimeline } from '@/timeline/evaluateTimeline';
+import { evaluateMotion } from '@/engine/animation/evaluateMotion.js';
 import { useAnimatedRuntimeStore } from '../stores/useAnimatedRuntimeStore.js';
 import { getRuntimeState } from '../state/runtimeState.js';
-import { getCameraTransformAtTime } from '@/core/scene/cameraPlayback.v1';
+import { getCameraTransformAtTime } from '@/core/scene/cameraPlayback.v1.js';
 
 export function runAnimationPreview({
     fromState,
@@ -23,13 +23,18 @@ export function runAnimationPreview({
     }
 
     function evaluateAtTime(time) {
-        const animationSource = designState?.timeline?.animations || timeline;
-        const projectedState = evaluateTimeline({
-            animations: animationSource,
-            timeMs: time,
-            baseState: designState || fromState,
+        const baseState = designState || fromState;
+        const motionResult = evaluateMotion(baseState?.document, time);
+        const projectedNodes = {
+            ...(baseState?.nodes || {}),
+        };
+
+        Object.entries(motionResult).forEach(([nodeId, patch]) => {
+            projectedNodes[nodeId] = {
+                ...(projectedNodes[nodeId] || {}),
+                ...patch,
+            };
         });
-        const projectedNodes = projectedState?.nodes || {};
 
         const cameraTrack = getRuntimeState()?.scene?.camera ?? null;
         const cameraTransform = cameraTrack
@@ -39,7 +44,7 @@ export function runAnimationPreview({
         useAnimatedRuntimeStore.setState(
             {
                 nodes: projectedNodes,
-                rootIds: fromState?.rootIds || [],
+                rootIds: baseState?.rootIds || [],
                 cameraTransform,
             },
             false

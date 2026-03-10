@@ -7,36 +7,31 @@
  * 🔒 Read-only
  */
 export function exportCSS(state) {
-    if (!state?.timeline) return '';
-
-    const timelines = state.timeline.timelines ?? {};
-    const timeline = timelines.default;
-    if (!timeline) return '';
+    const clips = Object.values(state?.document?.motion?.clips ?? {});
+    if (!clips.length) return '';
 
     let css = '';
     let keyframeIndex = 0;
 
-    for (const track of timeline.tracks ?? []) {
-        for (const clip of track.clips ?? []) {
-            const keyframes = clip.keyframes ?? [];
-            if (keyframes.length === 0) continue;
+    for (const clip of clips) {
+        const keyframes = (clip.keyframes || []).slice().sort((a, b) => a.t - b.t);
+        if (keyframes.length === 0) continue;
 
-            const name = `kf_${track.target}_${track.property}_${keyframeIndex++}`;
+        const duration = keyframes[keyframes.length - 1]?.t ?? 0;
+        const name = `kf_${clip.target}_${clip.property}_${keyframeIndex++}`;
 
-            css += `@keyframes ${name} {\n`;
+        css += `@keyframes ${name} {\n`;
 
-            for (const kf of keyframes) {
-                const pct = timeline.duration > 0 ? Math.round((kf.time / timeline.duration) * 100) : 0;
-
-                css += `  ${pct}% { ${track.property}: ${formatValue(track.property, kf.value)}; }\n`;
-            }
-
-            css += `}\n\n`;
-
-            css += `#${track.target} {\n`;
-            css += `  animation: ${name} ${timeline.duration}ms linear;\n`;
-            css += `}\n\n`;
+        for (const keyframe of keyframes) {
+            const pct = duration > 0 ? Math.round((keyframe.t / duration) * 100) : 0;
+            css += `  ${pct}% { ${clip.property}: ${formatValue(clip.property, keyframe.v)}; }\n`;
         }
+
+        css += `}\n\n`;
+
+        css += `#${clip.target} {\n`;
+        css += `  animation: ${name} ${duration}ms linear;\n`;
+        css += `}\n\n`;
     }
 
     return css.trim();

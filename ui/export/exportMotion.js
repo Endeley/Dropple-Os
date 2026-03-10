@@ -2,11 +2,11 @@ import { compileTimelineToIR } from '@/runtime/animation/compileTimelineToIR.js'
 import { exportWebAnimation } from '@/runtime/animation/exporters/exportWebAnimation.js';
 
 /**
- * Exports motion intent from a timeline into Web Animations configs.
+ * Exports motion intent from the canonical motion document into Web Animations configs.
  * Pure function: returns array of { target, keyframes, options }.
  */
-export function exportMotion({ timeline }) {
-    if (!timeline) return [];
-    const ir = compileTimelineToIR(timeline);
-    return ir.map((anim) => exportWebAnimation(anim, { duration: timeline.duration }));
+export function exportMotion({ motion }) {
+    if (!motion) return [];
+    const ir = compileTimelineToIR(motion);
+    return ir.map((anim) => exportWebAnimation(anim, { duration: undefined }));
 }

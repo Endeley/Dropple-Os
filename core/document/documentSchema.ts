@@ -193,22 +193,18 @@ export type MotionSystem = {
     clips: Record<string, MotionClip>;
 };
 
+export type MotionKeyframe = {
+    id?: string;
+    t: number;
+    v: number | string | Record<string, unknown>;
+    easing?: string;
+};
+
 export type MotionClip = {
     id: string;
-    duration: number;
-    tracks: MotionTrack[];
-};
-
-export type MotionTrack = {
-    nodeId: string;
-    channel: string;
-    keyframes: Keyframe[];
-};
-
-export type Keyframe = {
-    time: number;
-    value: number | string;
-    easing?: string;
+    target: string;
+    property: string;
+    keyframes: MotionKeyframe[];
 };
 
 export type SceneSystem = {

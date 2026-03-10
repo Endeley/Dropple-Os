@@ -12,8 +12,8 @@ import { normalizeAnimationExport } from './normalizeAnimationExport.js';
  * @returns {{ output: any, normalized: any }}
  */
 export function exportAnimation({ state, format }) {
-  const animations = state?.timeline?.animations;
-  if (!animations) {
+  const motion = state?.document?.motion;
+  if (!motion) {
     return { output: null, normalized: null };
   }
 
@@ -21,11 +21,11 @@ export function exportAnimation({ state, format }) {
 
   switch (format) {
     case 'css':
-      output = exportCSSKeyframes({ animations });
+      output = exportCSSKeyframes({ motion });
       break;
 
     case 'waapi':
-      output = exportWAAPI({ animations });
+      output = exportWAAPI({ motion });
       break;
 
     default:

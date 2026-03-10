@@ -12,46 +12,25 @@ const dispatcher = createEventDispatcher();
 describe('runAnimationPreview (illusion only)', () => {
   beforeEach(() => {
     dispatcher.hydrateRuntimeState({
-      nodes: {
-        nodeA: { opacity: 0.2 },
-      },
-      rootIds: ['nodeA'],
-      timeline: {
-        animations: {
+      document: {
+        motion: {
           clips: {
             clip1: {
               id: 'clip1',
-              durationMs: 300,
-              trackIds: ['track1'],
-            },
-          },
-          tracks: {
-            track1: {
-              id: 'track1',
-              clipId: 'clip1',
-              nodeId: 'nodeA',
+              target: 'nodeA',
               property: 'opacity',
-              keyframeIds: ['kf1', 'kf2'],
-            },
-          },
-          keyframes: {
-            kf1: {
-              id: 'kf1',
-              trackId: 'track1',
-              timeMs: 0,
-              value: 0,
-              easing: 'linear',
-            },
-            kf2: {
-              id: 'kf2',
-              trackId: 'track1',
-              timeMs: 300,
-              value: 1,
-              easing: 'linear',
+              keyframes: [
+                { id: 'kf1', t: 0, v: 0, easing: 'linear' },
+                { id: 'kf2', t: 300, v: 1, easing: 'linear' },
+              ],
             },
           },
         },
       },
+      nodes: {
+        nodeA: { opacity: 0.2 },
+      },
+      rootIds: ['nodeA'],
     }, { animate: false });
 
     useAnimatedRuntimeStore.setState({ nodes: {}, rootIds: [] }, false);

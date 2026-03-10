@@ -35,6 +35,8 @@
     "runtime:statehash:test": "node --import ./bench/register-alias-loader.mjs runtime/__tests__/runtimeStateHash.test.mjs",
     "runtime:resize:session:test": "node --import ./bench/register-alias-loader.mjs runtime/__tests__/resizeSessionDeterminism.test.mjs && node --import ./bench/register-alias-loader.mjs runtime/__tests__/resizeSessionCommitBridge.test.mjs",
     "ui:interactions:test": "node --import ./bench/register-alias-loader.mjs ui/interactions/__tests__/toolController.test.mjs",
+    "test:kernel": "node --import ./tests/register-test-loaders.mjs --test tests/kernel/*.test.ts",
+    "test:architecture": "node --import ./tests/register-test-loaders.mjs --test tests/architecture/dispatcherOwnership.test.ts",
     "determinism": "NODE_ENV=test node scripts/determinismGate.mjs",
     "ci:determinism": "npm run determinism",
     "template:verify-all": "NODE_ENV=test node scripts/templateVerifyAll.mjs"

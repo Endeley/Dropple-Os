@@ -2,39 +2,34 @@
  * Export animations to Web Animations API format.
  *
  * @param {Object} params
- * @param {Object} params.animations
+ * @param {Object} params.motion
  */
-export function exportWAAPI({ animations }) {
+export function exportWAAPI({ motion }) {
   const clips = [];
 
-  for (const clip of Object.values(animations.clips)) {
-    const tracks = [];
-
-    for (const trackId of clip.trackIds) {
-      const track = animations.tracks[trackId];
-      if (!track) continue;
-
-      const keyframes = track.keyframeIds
-        .map((id) => animations.keyframes[id])
-        .filter(Boolean)
-        .sort((a, b) => a.timeMs - b.timeMs)
-        .map((kf) => ({
-          offset: kf.timeMs / clip.durationMs,
-          value: kf.value,
-          easing: kf.easing,
-        }));
-
-      tracks.push({
-        nodeId: track.nodeId,
-        property: track.property,
-        keyframes,
-      });
-    }
-
+  for (const clip of Object.values(motion?.clips || {})) {
+    const duration = (clip.keyframes || []).reduce(
+      (max, keyframe) => Math.max(max, keyframe?.t || 0),
+      0,
+    );
+    const keyframes = (clip.keyframes || [])
+      .slice()
+      .sort((a, b) => a.t - b.t)
+      .map((kf) => ({
+        offset: duration > 0 ? kf.t / duration : 0,
+        value: kf.v,
+        easing: kf.easing,
+      }));
     clips.push({
       id: clip.id,
-      duration: clip.durationMs,
-      tracks,
+      duration,
+      tracks: [
+        {
+          nodeId: clip.target,
+          property: clip.property,
+          keyframes,
+        },
+      ],
     });
   }
 

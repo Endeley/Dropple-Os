@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { WorkspaceRegistry } from '@/workspaces/registry';
 import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy';
-import { DispatcherProvider } from '@/runtime/boundary/DispatcherProvider.jsx';
 import { WorkspaceLayout } from './WorkspaceLayout';
 import { GridProvider } from './GridContext';
 import { ClipboardProvider } from './ClipboardContext';
@@ -238,10 +237,7 @@ export function EditorWorkspaceShell({
     );
 
     return (
-        <DispatcherProvider
-            workspaceId={adapter.workspaceId}
-            branchId="main"
-            profile={adapter.profile ?? 'design'}>
+        <>
             <PersistenceBridge
                 enabled={persistenceEnabled}
                 initialDocumentId={initialDocumentId}
@@ -267,6 +263,6 @@ export function EditorWorkspaceShell({
                     <TemplateGeneratorOverlay open={templateGen.open} onClose={templateGen.closeGenerator} state={replayState} events={events} mode={adapter} />
                 </ClipboardProvider>
             </GridProvider>
-        </DispatcherProvider>
+        </>
     );
 }
