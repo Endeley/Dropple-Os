@@ -4,6 +4,7 @@ export function ensureSceneCache(runtime) {
             computed: {},
             layoutRoots: new Map(),
             dependencyGraph: null,
+            spatialIndex: null,
         };
         return runtime.scene;
     }
@@ -20,6 +21,10 @@ export function ensureSceneCache(runtime) {
         runtime.scene.dependencyGraph = null;
     }
 
+    if (!Object.prototype.hasOwnProperty.call(runtime.scene, 'spatialIndex')) {
+        runtime.scene.spatialIndex = null;
+    }
+
     return runtime.scene;
 }
 
@@ -29,4 +34,5 @@ export function clearSceneCache(runtime) {
     scene.computed = {};
     scene.layoutRoots = new Map();
     scene.dependencyGraph = null;
+    scene.spatialIndex = null;
 }

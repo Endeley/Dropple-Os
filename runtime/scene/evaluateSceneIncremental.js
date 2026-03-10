@@ -7,6 +7,7 @@ import { ensureSceneCache } from './sceneCache.js';
 import { evaluateNode } from './evaluateNode.js';
 import { resolveLayoutRoots } from '@/runtime/layout/resolveLayoutRoots.js';
 import { evaluateLayoutRoots } from '@/runtime/layout/evaluateLayoutRoots.js';
+import { buildSpatialIndex } from '@/runtime/spatial/index.js';
 
 export function evaluateSceneIncremental({ event, document, runtime = {} }) {
     const scene = ensureSceneCache(runtime);
@@ -36,6 +37,8 @@ export function evaluateSceneIncremental({ event, document, runtime = {} }) {
             });
         }
     }
+
+    scene.spatialIndex = buildSpatialIndex(scene, 128);
 
     return runtime;
 }

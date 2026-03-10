@@ -75,6 +75,7 @@ export const initialRuntimeState = {
     computed: {},
     layoutRoots: new Map(),
     dependencyGraph: null,
+    spatialIndex: null,
   },
   __isReplaying: false,
 };
