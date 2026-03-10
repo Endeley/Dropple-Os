@@ -42,6 +42,7 @@ import { resolveBehaviorTrigger } from '@/core/behavior/resolveBehaviorTrigger.j
 
 import { applyLayoutPass } from '../layout/applyLayoutPass.js';
 import { shouldRunLayout } from '../layout/shouldRunLayout.js';
+import { evaluateSceneIncremental } from '@/runtime/scene/index.js';
 import { observeUXIntent } from './ux/observeUXIntent.js';
 import { createUXWarningEmitter } from './ux/emitUXWarning.js';
 import { emitUXWarningEvent } from './ux/uxWarningBus.js';
@@ -589,6 +590,11 @@ export function createEventDispatcher({
                 if (rawEvent?.type === EventTypes.NODE_CREATE) {
                     console.log('[dispatcher] post-reduction NODE_CREATE nextState.nodes:', next?.nodes);
                 }
+                evaluateSceneIncremental({
+                    event: structureGuarded,
+                    document: next?.document,
+                    runtime: next,
+                });
                 next = __ensureDefaultTimelineInternal(next);
 
                 if (next === prev) return next;
