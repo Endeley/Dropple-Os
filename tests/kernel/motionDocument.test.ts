@@ -1,24 +1,52 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { animationReducers } from '@/core/events/reducers/animationReducers.js';
+import { createEventDispatcher } from '@/runtime/dispatcher/dispatch.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { initialRuntimeState } from '@/runtime/state/runtimeState.internal.js';
 
-test('animation reducer writes motion truth into document.motion', () => {
-    const state = structuredClone(initialRuntimeState);
+test('motion events write truth into document.motion through the dispatcher', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(structuredClone(initialRuntimeState), { animate: false });
 
-    const next = animationReducers(state, {
-        type: EventTypes.ANIMATION_KEYFRAME_CREATE,
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
         payload: {
-            clipId: 'clip-1',
-            nodeId: 'node-1',
-            property: 'opacity',
-            timeMs: 120,
-            value: 0.5,
-            easing: 'ease-in',
+            workspaceDef: {
+                id: 'graphic',
+                policy: {
+                    mutation: 'allow',
+                    capabilities: ['node:create'],
+                },
+            },
         },
     });
+
+    await dispatcher.dispatch({
+        type: EventTypes.MOTION_CLIP_CREATE,
+        payload: {
+            clip: {
+                id: 'clip-1',
+                target: 'node-1',
+                property: 'opacity',
+                keyframes: [],
+            },
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.MOTION_KEYFRAME_ADD,
+        payload: {
+            clipId: 'clip-1',
+            keyframe: {
+                id: 'kf-clip-1-120',
+                t: 120,
+                v: 0.5,
+                easing: 'ease-in',
+            },
+        },
+    });
+    const next = dispatcher.getState();
 
     assert.deepEqual(next.document.motion.clips['clip-1'], {
         id: 'clip-1',
