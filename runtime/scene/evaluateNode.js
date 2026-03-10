@@ -1,19 +1,19 @@
+import { ensureSceneCache } from './sceneCache.js';
+
 export function evaluateNode({ nodeId, document, runtime }) {
-    if (!runtime.computed) {
-        runtime.computed = {};
-    }
+    const scene = ensureSceneCache(runtime);
 
     const node = document?.sceneGraph?.nodes?.[nodeId];
     if (!node) return;
 
-    const base = runtime.computed[nodeId] || {
+    const base = scene.computed[nodeId] || {
         x: 0,
         y: 0,
         width: 0,
         height: 0,
     };
 
-    runtime.computed[nodeId] = {
+    scene.computed[nodeId] = {
         ...base,
     };
 }

@@ -72,6 +72,9 @@ export const initialRuntimeState = {
     activeSceneId: null,
     activeShotId: null,
     camera: null,
+    computed: {},
+    layoutRoots: new Map(),
+    dependencyGraph: null,
   },
   __isReplaying: false,
 };

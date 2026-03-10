@@ -46,8 +46,8 @@ test('incremental evaluator only computes dirty nodes in deterministic order', (
         runtime: {},
     });
 
-    assert.deepEqual(Object.keys(runtime.computed), ['root']);
-    assert.deepEqual(runtime.computed.root, {
+    assert.deepEqual(Object.keys(runtime.scene.computed), ['root']);
+    assert.deepEqual(runtime.scene.computed.root, {
         x: 0,
         y: 0,
         width: 0,
