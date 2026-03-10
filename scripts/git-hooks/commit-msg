@@ -1,0 +1,10 @@
+#!/bin/bash
+
+COMMIT_MSG=$(cat "$1")
+
+if ! [[ $COMMIT_MSG =~ ^(feat|fix|refactor|perf|test|docs|chore|arch|determinism|export)\((kernel|layout|animation|runtime|dispatcher|projection|export|ui|canvas|timeline|compiler|engine)\):\ .+ ]]; then
+  echo "Invalid commit format."
+  echo "Use: type(scope): message"
+  echo "Allowed scopes: kernel, layout, animation, runtime, dispatcher, projection, export, ui, canvas, timeline, compiler, engine"
+  exit 1
+fi

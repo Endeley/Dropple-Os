@@ -1,0 +1,15 @@
+type(scope): short summary
+
+# Explain WHY this change was made.
+
+# What changed:
+# - item
+# - item
+
+# Safety checks:
+# - kernel tests
+# - determinism gate
+# - arch law gate
+
+# Phase:
+# phase-x.x (optional)
