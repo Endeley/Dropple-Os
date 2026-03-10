@@ -5,6 +5,8 @@ import { propagateDirtyNodes } from './propagateDirtyNodes.js';
 import { buildLayoutRootIndex } from './layoutRootIndex.js';
 import { ensureSceneCache } from './sceneCache.js';
 import { evaluateNode } from './evaluateNode.js';
+import { resolveLayoutRoots } from '@/runtime/layout/resolveLayoutRoots.js';
+import { evaluateLayoutRoots } from '@/runtime/layout/evaluateLayoutRoots.js';
 
 export function evaluateSceneIncremental({ event, document, runtime = {} }) {
     const scene = ensureSceneCache(runtime);
@@ -17,6 +19,12 @@ export function evaluateSceneIncremental({ event, document, runtime = {} }) {
             ? scene.layoutRoots
             : buildLayoutRootIndex(document);
     const propagated = propagateDirtyNodes(dirty, graph);
+    const layoutRoots = resolveLayoutRoots(propagated, scene.layoutRoots);
+    evaluateLayoutRoots({
+        roots: layoutRoots,
+        document,
+        runtime,
+    });
     const order = topologicalSort(graph);
 
     for (const nodeId of order) {

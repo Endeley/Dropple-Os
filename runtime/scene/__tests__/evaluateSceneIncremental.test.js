@@ -26,7 +26,7 @@ test('dependency graph and topo order are deterministic', () => {
     assert.deepEqual(orderB, orderA);
 });
 
-test('incremental evaluator only computes dirty nodes in deterministic order', () => {
+test('incremental evaluator computes layout-root subtrees in deterministic order', () => {
     const document = {
         sceneGraph: {
             nodes: {
@@ -46,7 +46,7 @@ test('incremental evaluator only computes dirty nodes in deterministic order', (
         runtime: {},
     });
 
-    assert.deepEqual(Object.keys(runtime.scene.computed), ['root']);
+    assert.deepEqual(Object.keys(runtime.scene.computed).sort(), ['a', 'b', 'root']);
     assert.deepEqual(runtime.scene.computed.root, {
         x: 0,
         y: 0,
