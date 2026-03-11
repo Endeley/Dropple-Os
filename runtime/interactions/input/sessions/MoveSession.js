@@ -1,9 +1,19 @@
 import { nanoid } from 'nanoid';
+import { applyConstraints } from '@/runtime/constraints/applyConstraints.js';
 import { computeMoveDelta } from '@/runtime/transforms/computeMoveDelta.js';
 
 export class MoveSession {
     constructor(config = {}) {
-        const { nodeIds, startPointer, transforms = null, bounds = null, snapTargets = [], snapToGrid = false } = config;
+        const {
+            nodeIds,
+            nodes = [],
+            startPointer,
+            transforms = null,
+            bounds = null,
+            snapTargets = [],
+            snapToGrid = false,
+            parentBounds = null,
+        } = config;
         if (!Array.isArray(nodeIds) || nodeIds.length === 0) {
             throw new Error('[MoveSession] nodeIds required');
         }
@@ -11,12 +21,14 @@ export class MoveSession {
         this.id = nanoid();
         this.type = 'move';
         this.nodeIds = nodeIds;
+        this.nodes = nodes;
         this.startPointer = startPointer;
         this.currentPointer = startPointer;
         this.startTransforms = transforms;
         this.bounds = bounds;
         this.snapTargets = snapTargets;
         this.snapToGrid = snapToGrid;
+        this.parentBounds = parentBounds;
         this.delta = { dx: 0, dy: 0 };
         this.guides = [];
     }
@@ -45,6 +57,19 @@ export class MoveSession {
             this.snapTargets,
             { snapToGrid: this.snapToGrid },
         );
+        if (this.nodes.length === 1 && this.parentBounds) {
+            const [constrained] = applyConstraints(this.nodes, this.parentBounds, {
+                dx: this.delta.dx,
+                dy: this.delta.dy,
+            });
+            if (constrained?.delta) {
+                this.delta = {
+                    ...this.delta,
+                    dx: constrained.delta.dx ?? this.delta.dx,
+                    dy: constrained.delta.dy ?? this.delta.dy,
+                };
+            }
+        }
         this.guides = this.delta.guides ?? [];
         return this.delta;
     }

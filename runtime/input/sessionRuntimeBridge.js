@@ -6,6 +6,13 @@ import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { getRuntimeState } from '@/runtime/state/runtimeState.js';
 import { computeSnapTargets } from '@/runtime/snapping/computeSnapTargets.js';
 
+function resolveParentBounds(sceneComputed, nodes) {
+    const parentId = nodes.length === 1 ? nodes[0]?.parentId ?? null : null;
+    if (!parentId) return null;
+
+    return sceneComputed?.[parentId]?.worldBounds ?? null;
+}
+
 export function createSessionFromIntent({ sessionType, payload, nodesById = {} }) {
     if (!payload) return null;
     const projection = useRuntimeStore.getState();
@@ -14,15 +21,18 @@ export function createSessionFromIntent({ sessionType, payload, nodesById = {} }
 
     if (sessionType === 'move') {
         const nodeIds = Array.isArray(payload.nodeIds) ? payload.nodeIds : [];
+        const nodes = nodeIds.map((id) => nodesById[id]).filter(Boolean);
         const snapTargets = computeSnapTargets(sceneComputed, nodeIds);
 
         return new MoveSession({
             nodeIds,
+            nodes,
             startPointer: payload.startPointer ?? payload.pointer ?? payload.pointerWorld,
             transforms: payload.transforms ?? null,
             bounds: payload.bounds ?? projection?.selectionBounds?.bounds ?? null,
             snapTargets,
             snapToGrid: payload.snapToGrid ?? false,
+            parentBounds: resolveParentBounds(sceneComputed, nodes),
         });
     }
 
@@ -39,6 +49,7 @@ export function createSessionFromIntent({ sessionType, payload, nodesById = {} }
             handle: payload.handle,
             bounds: payload.bounds ?? projection?.selectionBounds?.bounds ?? null,
             snapTargets: computeSnapTargets(sceneComputed, nodeIds),
+            parentBounds: resolveParentBounds(sceneComputed, nodes),
         });
     }
 
