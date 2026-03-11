@@ -12,6 +12,7 @@ test.beforeEach(() => {
         sceneGraph: null,
         scene: null,
         selection: { ids: [], primary: null, count: 0 },
+        clipboard: { count: 0, hasData: false },
         selectionBounds: { bounds: null, center: null },
         transformAnchors: { pivot: null, resizeAnchors: null, rotateAnchor: null },
         guides: [],
@@ -38,6 +39,10 @@ test('projection sync does not mutate runtime truth', () => {
         },
         rootIds: ['frameA'],
         selection: { ids: new Set(['frameA']), primary: 'frameA' },
+        clipboard: {
+            nodes: [{ id: 'clip-a' }],
+            rootIds: ['clip-a'],
+        },
         scene: {
             computed: {
                 frameA: {
@@ -61,6 +66,7 @@ test('projection sync does not mutate runtime truth', () => {
     assert.deepEqual(projection.selection.ids, ['frameA']);
     assert.equal(projection.selection.primary, 'frameA');
     assert.equal(projection.selection.count, 1);
+    assert.deepEqual(projection.clipboard, { count: 1, hasData: true });
     assert.deepEqual(projection.selectionBounds.bounds, {
         x: 10,
         y: 20,

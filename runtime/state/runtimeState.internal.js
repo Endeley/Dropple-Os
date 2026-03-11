@@ -68,6 +68,10 @@ export const initialRuntimeState = {
     ids: new Set(),
     primary: null,
   },
+  clipboard: {
+    nodes: [],
+    rootIds: [],
+  },
   // 🔹 Narrative slice (runtime only)
   scene: {
     activeSceneId: null,

@@ -19,6 +19,7 @@ function resetStores() {
         sceneGraph: null,
         scene: null,
         selection: { ids: [], primary: null, count: 0 },
+        clipboard: { count: 0, hasData: false },
         selectionBounds: { bounds: null, center: null },
         transformAnchors: { pivot: null, resizeAnchors: null, rotateAnchor: null },
         guides: [],
@@ -99,5 +100,27 @@ test('selection events update runtime state without entering persisted event mir
 
     assert.deepEqual(Array.from(next.selection.ids), ['node-1']);
     assert.equal(next.selection.primary, 'node-1');
+    assert.deepEqual(useRuntimeStore.getState().events, []);
+});
+
+test('clipboard system events update runtime clipboard without entering persisted event mirrors', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });
+
+    const next = await dispatcher.dispatch({
+        type: EventTypes.CLIPBOARD_SET,
+        payload: {
+            clipboard: {
+                nodes: [{ id: 'node-1', type: 'frame' }],
+                rootIds: ['node-1'],
+            },
+        },
+    });
+
+    assert.equal(next.clipboard.nodes.length, 1);
+    assert.deepEqual(useRuntimeStore.getState().clipboard, {
+        count: 1,
+        hasData: true,
+    });
     assert.deepEqual(useRuntimeStore.getState().events, []);
 });

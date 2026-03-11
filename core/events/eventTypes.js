@@ -30,6 +30,8 @@ export const EventTypes = Object.freeze({
     SELECTION_TOGGLE: 'SELECTION_TOGGLE',
     SELECTION_ADD: 'SELECTION_ADD',
     SELECTION_REMOVE: 'SELECTION_REMOVE',
+    CLIPBOARD_SET: 'CLIPBOARD_SET',
+    CLIPBOARD_CLEAR: 'CLIPBOARD_CLEAR',
 
     // ─────────────────────────────
     // State identity (Phase 1½)

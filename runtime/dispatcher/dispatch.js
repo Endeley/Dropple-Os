@@ -69,6 +69,8 @@ const SYSTEM_EVENTS = new Set([
     EventTypes.SELECTION_TOGGLE,
     EventTypes.SELECTION_ADD,
     EventTypes.SELECTION_REMOVE,
+    EventTypes.CLIPBOARD_SET,
+    EventTypes.CLIPBOARD_CLEAR,
     EventTypes.SHOT_SET_ACTIVE,
     EventTypes.CLOCK_SEEK,
     EventTypes.CLOCK_PLAY,
@@ -306,6 +308,8 @@ export function createEventDispatcher({
                     event.type === EventTypes.SELECTION_TOGGLE ||
                     event.type === EventTypes.SELECTION_ADD ||
                     event.type === EventTypes.SELECTION_REMOVE ||
+                    event.type === EventTypes.CLIPBOARD_SET ||
+                    event.type === EventTypes.CLIPBOARD_CLEAR ||
                     event.type === EventTypes.WORKSPACE_SET_ACTIVE ||
                     event.type === EventTypes.WORKSPACE_SET_VIEWPORT ||
                     event.type === EventTypes.WORKSPACE_SET_CANVAS_SURFACE
@@ -408,6 +412,30 @@ export function createEventDispatcher({
                     const nextState = {
                         ...current,
                         workspace: nextWorkspace,
+                    };
+                    return commit(nextState, { animate: false, event });
+                }
+
+                if (event?.type === EventTypes.CLIPBOARD_SET) {
+                    const current = __getRuntimeStateInternal() ?? initialRuntimeState;
+                    const nextState = {
+                        ...current,
+                        clipboard: {
+                            nodes: structuredClone(event?.payload?.clipboard?.nodes ?? []),
+                            rootIds: [...(event?.payload?.clipboard?.rootIds ?? [])],
+                        },
+                    };
+                    return commit(nextState, { animate: false, event });
+                }
+
+                if (event?.type === EventTypes.CLIPBOARD_CLEAR) {
+                    const current = __getRuntimeStateInternal() ?? initialRuntimeState;
+                    const nextState = {
+                        ...current,
+                        clipboard: {
+                            nodes: [],
+                            rootIds: [],
+                        },
                     };
                     return commit(nextState, { animate: false, event });
                 }

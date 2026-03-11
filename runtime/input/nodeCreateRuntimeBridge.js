@@ -1,8 +1,8 @@
-import { nanoid } from 'nanoid';
 import { EventTypes } from '../../core/events/eventTypes.js';
 import { createNode } from '../../core/nodes/createNode.js';
 import { normalizeNodeShape } from '../../design/state/normalizeNodeShape.js';
 import { canProjectToCanonicalNode } from '../../validation/canProjectToCanonicalNode.js';
+import { generateNodeId } from '@/runtime/nodes/generateNodeId.js';
 
 function finiteOr(value, fallback) {
     return Number.isFinite(value) ? value : fallback;
@@ -40,7 +40,7 @@ export function createNodeCreateEvent(intent) {
 
     const node = createNode(
         normalizeNodeShape({
-            id: id || `node-${nanoid()}`,
+            id: id || generateNodeId(),
             type,
             parentId,
             props,
