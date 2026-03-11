@@ -11,7 +11,9 @@ export function ensureSceneCache(runtime) {
             layoutRoots: new Map(),
             dependencyGraph: null,
             evaluationOrder: null,
+            evaluationLayers: null,
             spatialIndex: createSpatialIndex(128),
+            partitions: null,
         };
         return runtime.scene;
     }
@@ -37,6 +39,14 @@ export function ensureSceneCache(runtime) {
         runtime.scene.evaluationOrder = null;
     }
 
+    if (!Object.prototype.hasOwnProperty.call(runtime.scene, 'evaluationLayers')) {
+        runtime.scene.evaluationLayers = null;
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(runtime.scene, 'partitions')) {
+        runtime.scene.partitions = null;
+    }
+
     if (!runtime.scene.spatialIndex?.cells || !runtime.scene.spatialIndex?.nodeBounds) {
         runtime.scene.spatialIndex = createSpatialIndex(128);
     }
@@ -55,5 +65,7 @@ export function clearSceneCache(runtime) {
     scene.layoutRoots = new Map();
     scene.dependencyGraph = null;
     scene.evaluationOrder = null;
+    scene.evaluationLayers = null;
     scene.spatialIndex = createSpatialIndex(128);
+    scene.partitions = null;
 }

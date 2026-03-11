@@ -1,6 +1,12 @@
 export { computeDirtyDomains } from './computeDirtyNodes.js';
 export { collectDirtyNodes } from './collectDirtyNodes.js';
 export { buildDependencyGraph } from './buildDependencyGraph.js';
+export { buildEvaluationLayers } from './buildEvaluationLayers.js';
+export { buildScenePartitions } from './partition/buildScenePartitions.js';
+export { assignNodeToPartition } from './partition/assignNodeToPartition.js';
+export { collectDirtyPartitions } from './partition/collectDirtyPartitions.js';
+export { partitionDependencyGraph } from './partition/partitionDependencyGraph.js';
+export { partitionProjection } from './partition/partitionProjection.js';
 export { orderDirtyNodes } from './orderDirtyNodes.js';
 export { topologicalSort } from './topologicalSort.js';
 export { propagateDirtyNodes } from './propagateDirtyNodes.js';

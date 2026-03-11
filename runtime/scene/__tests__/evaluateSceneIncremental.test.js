@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
     buildDependencyGraph,
+    buildEvaluationLayers,
     topologicalSort,
     evaluateSceneIncremental,
 } from '@/runtime/scene/index.js';
@@ -24,6 +25,32 @@ test('dependency graph and topo order are deterministic', () => {
 
     assert.deepEqual(orderA, ['a', 'b', 'root']);
     assert.deepEqual(orderB, orderA);
+});
+
+test('evaluation layers are deterministic and parent-first', () => {
+    const document = {
+        sceneGraph: {
+            nodes: {
+                root: { id: 'root', children: ['frameB', 'frameA'] },
+                frameA: { id: 'frameA', parentId: 'root', children: ['rect2', 'rect1'] },
+                frameB: { id: 'frameB', parentId: 'root', children: ['rect3'] },
+                rect1: { id: 'rect1', parentId: 'frameA', children: [] },
+                rect2: { id: 'rect2', parentId: 'frameA', children: [] },
+                rect3: { id: 'rect3', parentId: 'frameB', children: [] },
+            },
+        },
+    };
+
+    const graph = buildDependencyGraph(document);
+    const layersA = buildEvaluationLayers(graph);
+    const layersB = buildEvaluationLayers(graph);
+
+    assert.deepEqual(layersA, [
+        ['root'],
+        ['frameA', 'frameB'],
+        ['rect1', 'rect2', 'rect3'],
+    ]);
+    assert.deepEqual(layersB, layersA);
 });
 
 test('incremental evaluator computes layout-root subtrees in deterministic order', () => {
@@ -133,7 +160,9 @@ test('incremental evaluator caches evaluation order and invalidates it on struct
     });
 
     const firstOrder = runtime.scene.evaluationOrder;
+    const firstLayers = runtime.scene.evaluationLayers;
     assert.deepEqual(firstOrder, ['a', 'b', 'root']);
+    assert.deepEqual(firstLayers, [['root'], ['a', 'b']]);
 
     evaluateSceneIncremental({
         event: {
@@ -145,6 +174,7 @@ test('incremental evaluator caches evaluation order and invalidates it on struct
     });
 
     assert.equal(runtime.scene.evaluationOrder, firstOrder);
+    assert.equal(runtime.scene.evaluationLayers, firstLayers);
 
     const documentB = {
         sceneGraph: {
@@ -167,5 +197,7 @@ test('incremental evaluator caches evaluation order and invalidates it on struct
     });
 
     assert.notEqual(runtime.scene.evaluationOrder, firstOrder);
+    assert.notEqual(runtime.scene.evaluationLayers, firstLayers);
     assert.deepEqual(runtime.scene.evaluationOrder, ['a', 'b', 'c', 'root']);
+    assert.deepEqual(runtime.scene.evaluationLayers, [['root'], ['a', 'b', 'c']]);
 });
