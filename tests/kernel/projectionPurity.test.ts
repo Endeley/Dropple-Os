@@ -11,7 +11,8 @@ test.beforeEach(() => {
         workspace: null,
         sceneGraph: null,
         scene: null,
-        selection: { ids: [] },
+        selection: { ids: [], primary: null, count: 0 },
+        selectionBounds: { bounds: null, center: null },
         frameTime: 0,
         evaluatedScene: null,
         shotId: null,
@@ -34,7 +35,15 @@ test('projection sync does not mutate runtime truth', () => {
             },
         },
         rootIds: ['frameA'],
-        selection: { ids: ['frameA'] },
+        selection: { ids: new Set(['frameA']), primary: 'frameA' },
+        scene: {
+            computed: {
+                frameA: {
+                    id: 'frameA',
+                    worldBounds: { x: 10, y: 20, width: 80, height: 40 },
+                },
+            },
+        },
         workspace: { id: 'graphic' },
     };
 
@@ -48,4 +57,16 @@ test('projection sync does not mutate runtime truth', () => {
     assert.equal(projection.nodes.frameA.id, 'frameA');
     assert.deepEqual(projection.rootIds, ['frameA']);
     assert.deepEqual(projection.selection.ids, ['frameA']);
+    assert.equal(projection.selection.primary, 'frameA');
+    assert.equal(projection.selection.count, 1);
+    assert.deepEqual(projection.selectionBounds.bounds, {
+        x: 10,
+        y: 20,
+        width: 80,
+        height: 40,
+    });
+    assert.deepEqual(projection.selectionBounds.center, {
+        x: 50,
+        y: 40,
+    });
 });

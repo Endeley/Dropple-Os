@@ -6,18 +6,18 @@ import { canvasBus } from './eventBus/canvasBus.js';
 import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
 import { NodeView } from './NodeView.jsx';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext';
-import { computeSelectionBounds } from '@/ui/selection/selectionBounds.js';
 import { SelectionBox } from '@/ui/selection/SelectionBox.jsx';
 
 export default function Canvas() {
     const nodes = useRuntimeStore((s) => s.nodes);
+    const projectedSelectionBounds = useRuntimeStore((s) => s.selectionBounds?.bounds ?? null);
     const nodeList = Object.values(nodes);
 
     const { selectedIds, selectSingle, setSelection, clear } = useSelection();
     const selectedNodes = selectedIds ? nodeList.filter((node) => selectedIds.has(node.id)) : [];
     const unselectedNodes = selectedIds ? nodeList.filter((node) => !selectedIds.has(node.id)) : nodeList;
 
-    const selectionBounds = selectedNodes.length > 1 ? computeSelectionBounds(selectedNodes) : null;
+    const selectionBounds = selectedNodes.length > 1 ? projectedSelectionBounds : null;
     const resizeDisabled = selectedNodes.some((node) => node?.resizeLocked);
 
     const containerRef = useRef(null);

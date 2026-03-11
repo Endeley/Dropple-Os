@@ -3,12 +3,10 @@
 import { createContext, useContext, useMemo } from 'react';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
-import {
-  SELECTION_ADD,
-  SELECTION_CLEAR,
-  SELECTION_REMOVE,
-  SELECTION_SET,
-} from '@/core/events/selectionEvents.js';
+import { clearSelection } from '@/runtime/selection/clearSelection.js';
+import { setSelection as createSetSelection } from '@/runtime/selection/setSelection.js';
+import { selectNode } from '@/runtime/selection/selectNode.js';
+import { toggleNode } from '@/runtime/selection/toggleNode.js';
 
 const SelectionContext = createContext(null);
 
@@ -19,25 +17,21 @@ export function SelectionProvider({ children }) {
 
   function selectSingle(id) {
     if (!id) return;
-    dispatch({ type: SELECTION_SET, payload: { ids: [id] } });
+    dispatch(selectNode(id));
   }
 
   function setSelection(ids) {
     const nextIds = Array.from(ids || []);
-    dispatch({ type: SELECTION_SET, payload: { ids: nextIds } });
+    dispatch(createSetSelection(nextIds));
   }
 
   function toggle(id) {
     if (!id) return;
-    if (selectedIds.has(id)) {
-      dispatch({ type: SELECTION_REMOVE, payload: { id } });
-      return;
-    }
-    dispatch({ type: SELECTION_ADD, payload: { id } });
+    dispatch(toggleNode(id));
   }
 
   function clear() {
-    dispatch({ type: SELECTION_CLEAR });
+    dispatch(clearSelection());
   }
 
   return (

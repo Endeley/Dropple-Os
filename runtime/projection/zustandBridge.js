@@ -2,6 +2,8 @@
 
 import { useRuntimeStore } from '../stores/useRuntimeStore.js';
 import { computeIsAutoLayoutChild } from '../layout/computeIsAutoLayoutChild.js';
+import { selectionProjection } from '@/runtime/selection/selectionProjection.js';
+import { selectionBoundsProjection } from '@/runtime/selectionBounds/selectionBoundsProjection.js';
 
 /**
  * Syncs authoritative runtime state into Zustand (read-only mirror).
@@ -13,7 +15,8 @@ export function syncRuntimeToZustand(nextState) {
             {
                 nodes: {},
                 rootIds: [],
-                selection: { ids: [] },
+                selection: { ids: [], primary: null, count: 0 },
+                selectionBounds: { bounds: null, center: null },
             },
             false
         );
@@ -38,7 +41,8 @@ export function syncRuntimeToZustand(nextState) {
         nodes: projectedNodes,
         rootIds: nextState.rootIds,
         workspace: nextState.workspace ?? null,
-        selection: { ids: nextState.selection?.ids || [] },
+        selection: selectionProjection(nextState),
+        selectionBounds: selectionBoundsProjection(nextState),
     };
 
     if (prev.sceneGraph !== nextState.sceneGraph) {

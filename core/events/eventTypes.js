@@ -25,7 +25,11 @@ export const EventTypes = Object.freeze({
     LAYOUT_CONVERT: 'layout/convert',
 
     // Selection
-    SELECTION_SET: 'selection/set',
+    SELECTION_SET: 'SELECTION_SET',
+    SELECTION_CLEAR: 'SELECTION_CLEAR',
+    SELECTION_TOGGLE: 'SELECTION_TOGGLE',
+    SELECTION_ADD: 'SELECTION_ADD',
+    SELECTION_REMOVE: 'SELECTION_REMOVE',
 
     // ─────────────────────────────
     // State identity (Phase 1½)

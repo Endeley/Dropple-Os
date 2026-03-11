@@ -1,4 +1,6 @@
-import { SELECTION_ADD, SELECTION_CLEAR, SELECTION_REMOVE, SELECTION_SET } from '@/core/events/selectionEvents.js';
+import { clearSelection } from '@/runtime/selection/clearSelection.js';
+import { selectNode } from '@/runtime/selection/selectNode.js';
+import { toggleNode } from '@/runtime/selection/toggleNode.js';
 
 export const TOOL_HANDLERS = Object.freeze({
     createNode: createNodeIntent,
@@ -51,18 +53,10 @@ export function utilityIntent(tool, ctx = {}) {
 
     if (ctx?.hitNodeId) {
         if (ctx.additive) {
-            return {
-                type: SELECTION_ADD,
-                payload: { id: ctx.hitNodeId },
-            };
+            return toggleNode(ctx.hitNodeId);
         }
-        return {
-            type: SELECTION_SET,
-            payload: { ids: [ctx.hitNodeId] },
-        };
+        return selectNode(ctx.hitNodeId);
     }
 
-    return {
-        type: SELECTION_CLEAR,
-    };
+    return clearSelection();
 }

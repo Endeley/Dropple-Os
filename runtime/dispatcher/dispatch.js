@@ -65,6 +65,10 @@ const SYSTEM_EVENTS = new Set([
     EventTypes.WORKSPACE_SET_VIEWPORT,
     EventTypes.WORKSPACE_SET_CANVAS_SURFACE,
     EventTypes.SELECTION_SET,
+    EventTypes.SELECTION_CLEAR,
+    EventTypes.SELECTION_TOGGLE,
+    EventTypes.SELECTION_ADD,
+    EventTypes.SELECTION_REMOVE,
     EventTypes.SHOT_SET_ACTIVE,
     EventTypes.CLOCK_SEEK,
     EventTypes.CLOCK_PLAY,
@@ -298,6 +302,10 @@ export function createEventDispatcher({
                 const requiredCaps = INTENT_CAPS[event.type] ?? [];
                 const mutationType =
                     event.type === EventTypes.SELECTION_SET ||
+                    event.type === EventTypes.SELECTION_CLEAR ||
+                    event.type === EventTypes.SELECTION_TOGGLE ||
+                    event.type === EventTypes.SELECTION_ADD ||
+                    event.type === EventTypes.SELECTION_REMOVE ||
                     event.type === EventTypes.WORKSPACE_SET_ACTIVE ||
                     event.type === EventTypes.WORKSPACE_SET_VIEWPORT ||
                     event.type === EventTypes.WORKSPACE_SET_CANVAS_SURFACE
@@ -623,12 +631,14 @@ export function createEventDispatcher({
                 }
 
                 const committed = commit(next, { event });
-                history.push(cloneState(__getRuntimeStateInternal()));
-                const store = useRuntimeStore.getState();
-                useRuntimeStore.setState({
-                    events: [...store.events, event],
-                    cursorIndex: store.events.length,
-                });
+                if (!SYSTEM_EVENTS.has(event.type)) {
+                    history.push(cloneState(__getRuntimeStateInternal()));
+                    const store = useRuntimeStore.getState();
+                    useRuntimeStore.setState({
+                        events: [...store.events, event],
+                        cursorIndex: store.events.length,
+                    });
+                }
                 return committed;
             } catch (err) {
                 console.error('[Dispatcher error]', err, rawEvent);

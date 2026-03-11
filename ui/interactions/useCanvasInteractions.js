@@ -9,7 +9,8 @@ import {
   endSession,
   getActiveSessionType,
 } from '@/runtime/interactions/input/InputSessionManager.js';
-import { SELECTION_SET, SELECTION_CLEAR } from '@/core/events/selectionEvents.js';
+import { clearSelection } from '@/runtime/selection/clearSelection.js';
+import { selectNode } from '@/runtime/selection/selectNode.js';
 import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions.js';
 import { resolveToolHandler } from '@/runtime/tools/toolHandlers.js';
 
@@ -37,7 +38,7 @@ export function useCanvasInteractions({ getRuntimeState, dispatch, getActiveTool
       let hit = hitTestNode(runtimeState, worldPoint);
       if (!hit?.id) {
         if (toolId === 'move' && typeof dispatch === 'function') {
-          dispatch({ type: SELECTION_CLEAR });
+          dispatch(clearSelection());
         }
         return;
       }
@@ -60,11 +61,11 @@ export function useCanvasInteractions({ getRuntimeState, dispatch, getActiveTool
         }
       }
 
-      const selectionIds = runtimeState?.selection?.ids || [];
+      const selectionIds = Array.from(runtimeState?.selection?.ids ?? []);
       const nodeIds = resolveSessionNodeIds(selectionIds, hit.id);
 
       if (typeof dispatch === 'function' && !selectionIds.includes(hit.id)) {
-        dispatch({ type: SELECTION_SET, payload: { ids: [hit.id] } });
+        dispatch(selectNode(hit.id));
       }
 
       const toolDef = TOOL_DEFINITION_BY_ID[toolId] || { id: toolId };

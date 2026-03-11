@@ -25,6 +25,8 @@ test('initial runtime state keeps the canonical kernel slices', () => {
         'scenes',
     ]);
     assert.ok(initialRuntimeState.selection);
+    assert.ok(initialRuntimeState.selection.ids instanceof Set);
+    assert.equal(initialRuntimeState.selection.primary, null);
     assert.ok(initialRuntimeState.workspace);
     assert.equal(initialRuntimeState.__isReplaying, false);
 });

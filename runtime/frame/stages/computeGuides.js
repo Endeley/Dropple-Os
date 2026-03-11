@@ -6,7 +6,7 @@ export function computeGuidesStage(context) {
   const renderGraph = context.renderGraph;
   if (!renderGraph?.nodes) return context;
 
-  const selectionIds = context.runtimeState?.selection?.ids || [];
+  const selectionIds = Array.from(context.runtimeState?.selection?.ids ?? []);
   const selectedNodes = selectionIds.length
     ? renderGraph.nodes.filter((node) => selectionIds.includes(node.id))
     : [];

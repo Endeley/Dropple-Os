@@ -65,7 +65,8 @@ export const initialRuntimeState = {
   activeStateId: null,
   activeComponentId: null,
   selection: {
-    ids: [],
+    ids: new Set(),
+    primary: null,
   },
   // 🔹 Narrative slice (runtime only)
   scene: {

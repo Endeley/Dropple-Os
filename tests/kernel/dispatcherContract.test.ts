@@ -18,7 +18,8 @@ function resetStores() {
         workspace: null,
         sceneGraph: null,
         scene: null,
-        selection: { ids: [] },
+        selection: { ids: [], primary: null, count: 0 },
+        selectionBounds: { bounds: null, center: null },
         frameTime: 0,
         evaluatedScene: null,
         shotId: null,
@@ -82,5 +83,19 @@ test('dispatcher rejects pre-assigned event ids', async () => {
         /Illegal event: event IDs may only be assigned by dispatcher/,
     );
 
+    assert.deepEqual(useRuntimeStore.getState().events, []);
+});
+
+test('selection events update runtime state without entering persisted event mirrors', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });
+
+    const next = await dispatcher.dispatch({
+        type: EventTypes.SELECTION_SET,
+        payload: { ids: ['node-1'], primary: 'node-1' },
+    });
+
+    assert.deepEqual(Array.from(next.selection.ids), ['node-1']);
+    assert.equal(next.selection.primary, 'node-1');
     assert.deepEqual(useRuntimeStore.getState().events, []);
 });

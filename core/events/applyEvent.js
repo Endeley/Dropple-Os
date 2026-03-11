@@ -26,7 +26,8 @@ const initialState = Object.freeze({
         page: Object.freeze([]),
     }),
     selection: Object.freeze({
-        ids: Object.freeze([]),
+        ids: new Set(),
+        primary: null,
     }),
 });
 

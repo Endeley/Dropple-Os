@@ -37,5 +37,6 @@ test('replay preserves canonical scene graph and selection outputs', () => {
 
     assert.ok(state.nodes.root);
     assert.deepEqual(state.rootIds, ['root']);
-    assert.deepEqual(state.selection.ids, ['root']);
+    assert.deepEqual(Array.from(state.selection.ids), ['root']);
+    assert.equal(state.selection.primary, null);
 });

@@ -1,7 +1,7 @@
 export function buildSelectionOverlay(context) {
   const { runtimeState, renderGraph } = context;
 
-  const ids = runtimeState.selection?.ids || [];
+  const ids = Array.from(runtimeState.selection?.ids ?? []);
 
   if (!ids.length) {
     return context;

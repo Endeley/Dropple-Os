@@ -4,6 +4,7 @@ import {
     __getRuntimeStateInternal,
     __getIsReplayingInternal,
 } from '../../state/runtimeState.internal.js';
+import { selectionProjection } from '@/runtime/selection/selectionProjection.js';
 
 export function getRuntimeSnapshot() {
     const state = __getRuntimeStateInternal();
@@ -15,9 +16,7 @@ export function getRuntimeSnapshot() {
         activeStateId: state.activeStateId,
         activeComponentId: state.activeComponentId,
         timeline: state.timeline,
-        selection: {
-            ids: state.selection?.ids || [],
-        },
+        selection: selectionProjection(state),
         isReplaying: __getIsReplayingInternal(),
     };
 }

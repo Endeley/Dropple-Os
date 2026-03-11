@@ -77,5 +77,6 @@ test('hydrated persistence data replays back into the same design truth', () => 
 
     assert.ok(state.nodes['persisted-node']);
     assert.deepEqual(state.rootIds, ['persisted-node']);
-    assert.deepEqual(state.selection.ids, ['persisted-node']);
+    assert.deepEqual(Array.from(state.selection.ids), ['persisted-node']);
+    assert.equal(state.selection.primary, null);
 });

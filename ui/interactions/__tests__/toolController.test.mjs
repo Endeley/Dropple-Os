@@ -9,6 +9,10 @@ const runtimeState = {
   nodes: {
     a: { id: 'a', type: 'frame', x: 0, y: 0, width: 100, height: 100 },
   },
+  selection: {
+    ids: new Set(),
+    primary: null,
+  },
 };
 
 const events = [];
@@ -20,7 +24,7 @@ const session = createInteractionSession();
 
 controller.onPointerDown(session, { x: 10, y: 10 }, 1, 'move');
 assert(events.length === 1, 'selection should dispatch on pointer down');
-assert(events[0].type === 'selection/set', 'selection event type mismatch');
+assert(events[0].type === 'SELECTION_SET', 'selection event type mismatch');
 assert(events[0].payload.ids[0] === 'a', 'selection should pick node a');
 
 controller.onPointerMove(session, { x: 20, y: 25 });

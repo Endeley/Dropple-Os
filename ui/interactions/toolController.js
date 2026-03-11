@@ -1,9 +1,9 @@
-import { hitTestNode, getNodeRect } from './hitTestNode.js';
-import {
-  SELECTION_SET,
-  SELECTION_ADD,
-  SELECTION_CLEAR,
-} from '@/core/events/selectionEvents.js';
+import { hitTestNode } from './hitTestNode.js';
+import { hitTestPoint } from '@/runtime/hitTest/hitTestPoint.js';
+import { clearSelection } from '@/runtime/selection/clearSelection.js';
+import { selectBounds } from '@/runtime/selection/selectBounds.js';
+import { selectNode } from '@/runtime/selection/selectNode.js';
+import { toggleNode } from '@/runtime/selection/toggleNode.js';
 import { canRunWorkspaceCommand } from '@/ui/capabilities/workspaceCapabilities';
 import { getSceneGraph } from '@/runtime/document/documentAdapter';
 import { wrapSelection } from '@/runtime/commands/structure/wrapSelection';
@@ -13,7 +13,8 @@ function buildCommandRuntimeState(runtimeState, selectedIds) {
   return {
     ...runtimeState,
     selection: {
-      ids: selectedIds,
+      ids: new Set(selectedIds),
+      primary: selectedIds[0] ?? null,
     },
   };
 }
@@ -27,9 +28,7 @@ export function runToolCommand({ commandId, getRuntimeState, dispatch }) {
     runtimeState?.workspace?.id ??
     runtimeState?.workspaceId ??
     'graphic';
-  const selectedIds = Array.isArray(runtimeState?.selection?.ids)
-    ? runtimeState.selection.ids.filter(Boolean)
-    : [];
+  const selectedIds = Array.from(runtimeState?.selection?.ids ?? []).filter(Boolean);
   const graph = getSceneGraph(runtimeState);
   const nodes = graph?.nodes || runtimeState?.nodes || {};
 
@@ -86,27 +85,27 @@ export function createToolController({ getRuntimeState, dispatch }) {
       session.lastWorld = worldPoint;
       session.previewDelta = { dx: 0, dy: 0 };
 
-      const hit = hitTestNode(runtimeState, worldPoint);
-      session.hitNodeId = hit?.id || null;
+      const pointHit = hitTestPoint({
+        runtime: runtimeState,
+        x: worldPoint.x,
+        y: worldPoint.y,
+      });
+      const fallbackHit = pointHit ? null : hitTestNode(runtimeState, worldPoint);
+      session.hitNodeId =
+        typeof pointHit === 'string'
+          ? pointHit
+          : pointHit?.id || fallbackHit?.id || null;
 
       session.selectionBox = null;
 
       if (session.hitNodeId) {
         if (options.additive) {
-          dispatch({
-            type: SELECTION_ADD,
-            payload: { id: session.hitNodeId },
-          });
+          dispatch(toggleNode(session.hitNodeId));
         } else {
-          dispatch({
-            type: SELECTION_SET,
-            payload: { ids: [session.hitNodeId] },
-          });
+          dispatch(selectNode(session.hitNodeId));
         }
       } else {
-        dispatch({
-          type: SELECTION_CLEAR,
-        });
+        dispatch(clearSelection());
         if (session.toolId === 'select') {
           session.selectionBox = {
             startX: worldPoint.x,
@@ -141,34 +140,18 @@ export function createToolController({ getRuntimeState, dispatch }) {
 
       if (session.selectionBox) {
         const box = session.selectionBox;
-        const minX = Math.min(box.startX, box.endX);
-        const minY = Math.min(box.startY, box.endY);
-        const maxX = Math.max(box.startX, box.endX);
-        const maxY = Math.max(box.startY, box.endY);
-
         const runtimeState = getRuntimeState();
-        const nodes = Object.values(runtimeState?.nodes || {});
-        const selected = [];
+        const event = selectBounds(runtimeState, {
+          x: Math.min(box.startX, box.endX),
+          y: Math.min(box.startY, box.endY),
+          width: Math.abs(box.endX - box.startX),
+          height: Math.abs(box.endY - box.startY),
+        });
 
-        for (const node of nodes) {
-          const rect = getNodeRect(node);
-          if (rect.width <= 0 || rect.height <= 0) continue;
-          const intersects = !(
-            rect.x > maxX ||
-            rect.x + rect.width < minX ||
-            rect.y > maxY ||
-            rect.y + rect.height < minY
-          );
-          if (intersects) selected.push(node.id);
-        }
-
-        if (selected.length) {
-          dispatch({
-            type: SELECTION_SET,
-            payload: { ids: selected },
-          });
+        if (event.payload.ids.length) {
+          dispatch(event);
         } else {
-          dispatch({ type: SELECTION_CLEAR });
+          dispatch(clearSelection());
         }
       }
 
