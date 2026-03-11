@@ -3,6 +3,7 @@
 import { useRuntimeStore } from '../stores/useRuntimeStore.js';
 import { computeIsAutoLayoutChild } from '../layout/computeIsAutoLayoutChild.js';
 import { clipboardProjection } from '@/runtime/clipboard/clipboardProjection.js';
+import { groupProjection } from '@/runtime/grouping/groupProjection.js';
 import { selectionProjection } from '@/runtime/selection/selectionProjection.js';
 import { selectionBoundsProjection } from '@/runtime/selectionBounds/selectionBoundsProjection.js';
 import { transformAnchorProjection } from '@/runtime/transforms/transformAnchorProjection.js';
@@ -20,6 +21,7 @@ export function syncRuntimeToZustand(nextState) {
                 rootIds: [],
                 selection: { ids: [], primary: null, count: 0 },
                 clipboard: { count: 0, hasData: false },
+                grouping: { count: 0 },
                 selectionBounds: { bounds: null, center: null },
                 transformAnchors: {
                     pivot: null,
@@ -54,6 +56,7 @@ export function syncRuntimeToZustand(nextState) {
         workspace: nextState.workspace ?? null,
         selection: selectionProjection(nextState),
         clipboard: clipboardProjection(nextState),
+        grouping: groupProjection(nextState),
         selectionBounds,
         transformAnchors: transformAnchorProjection(selectionBounds),
         guides: guideProjection(nextState, selectionBounds),

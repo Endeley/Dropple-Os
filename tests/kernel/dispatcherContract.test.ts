@@ -20,6 +20,7 @@ function resetStores() {
         scene: null,
         selection: { ids: [], primary: null, count: 0 },
         clipboard: { count: 0, hasData: false },
+        grouping: { count: 0 },
         selectionBounds: { bounds: null, center: null },
         transformAnchors: { pivot: null, resizeAnchors: null, rotateAnchor: null },
         guides: [],
