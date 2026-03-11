@@ -54,7 +54,6 @@ export function nodeReducers(state, event) {
 
   switch (type) {
     case EventTypes.NODE_CREATE: {
-      console.log('[nodeReducers] received NODE_CREATE:', event);
       const { node } = payload;
       const baseNode = {
         children: [],

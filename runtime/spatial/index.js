@@ -1,6 +1,10 @@
 export { createSpatialIndex } from './createSpatialIndex.js';
 export { buildSpatialIndex } from './buildSpatialIndex.js';
-export { queryPoint } from './queryPoint.js';
-export { queryBounds } from './queryBounds.js';
 export { getCellKey } from './getCellKey.js';
+export { getCellsForBounds } from './getCellsForBounds.js';
 export { indexNodeBounds } from './indexNodeBounds.js';
+export { insertNodeIntoIndex } from './insertNodeIntoIndex.js';
+export { queryBounds } from './queryBounds.js';
+export { queryPoint } from './queryPoint.js';
+export { removeNodeFromIndex } from './removeNodeFromIndex.js';
+export { updateSpatialIndex } from './updateSpatialIndex.js';

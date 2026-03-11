@@ -10,7 +10,7 @@ export function buildSpatialIndex(runtimeScene, cellSize = 128) {
         const entry = computed[nodeId];
         if (!entry) continue;
 
-        const bounds = {
+        const bounds = entry.worldBounds ?? {
             x: entry.x ?? 0,
             y: entry.y ?? 0,
             width: entry.width ?? 0,

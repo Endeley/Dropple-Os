@@ -325,12 +325,6 @@ export function createEventDispatcher({
                         : 'mutate';
 
                 if (!SYSTEM_EVENTS.has(event.type)) {
-                    console.log('DEBUG WORKSPACE', {
-                        workspaceId,
-                        requiredCaps,
-                        policyCaps: policy?.policy?.capabilities,
-                        mutation: policy?.policy?.mutation,
-                    });
                     const verdict = checkWorkspacePolicy({
                         workspace,
                         requiredCaps,
@@ -350,34 +344,7 @@ export function createEventDispatcher({
                     }
                 }
 
-                if (event?.type === EventTypes.NODE_CREATE) {
-                    console.log('[DISPATCH NODE_CREATE]', event);
-                }
-
                 if (event?.type === EventTypes.WORKSPACE_SET_ACTIVE) {
-                    if (process.env.NODE_ENV === 'development') {
-                        console.log('[WORKSPACE_SET_ACTIVE]', {
-                            id: event?.payload?.id,
-                            workspaceDef: event?.payload?.workspaceDef?.id,
-                            hasPolicy: Boolean(event?.payload?.workspaceDef?.policy),
-                            policyCapsSize: event?.payload?.workspaceDef?.policy?.capabilities
-                                ? event.payload.workspaceDef.policy.capabilities.length ??
-                                  event.payload.workspaceDef.policy.capabilities.size ??
-                                  null
-                                : null,
-                        });
-                    } else {
-                        console.log('[WORKSPACE_SET_ACTIVE]', {
-                            id: event?.payload?.id,
-                            workspaceDef: event?.payload?.workspaceDef?.id,
-                            hasPolicy: Boolean(event?.payload?.workspaceDef?.policy),
-                            policyCapsSize: event?.payload?.workspaceDef?.policy?.capabilities
-                                ? event.payload.workspaceDef.policy.capabilities.length ??
-                                  event.payload.workspaceDef.policy.capabilities.size ??
-                                  null
-                                : null,
-                        });
-                    }
                     const current = __getRuntimeStateInternal() ?? initialRuntimeState;
                     const nextWorkspace = applyWorkspaceActivation(
                         current.workspace,
@@ -623,9 +590,6 @@ export function createEventDispatcher({
                 const prev = __getRuntimeStateInternal();
                 didExecute = true;
                 let next = applyEvent(prev, structureGuarded);
-                if (rawEvent?.type === EventTypes.NODE_CREATE) {
-                    console.log('[dispatcher] post-reduction NODE_CREATE nextState.nodes:', next?.nodes);
-                }
                 evaluateSceneIncremental({
                     event: structureGuarded,
                     document: next?.document,

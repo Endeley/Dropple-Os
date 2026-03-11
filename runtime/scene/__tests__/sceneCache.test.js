@@ -8,8 +8,13 @@ test('scene cache initializes deterministically', () => {
     const scene = ensureSceneCache(runtime);
 
     assert.ok(scene.computed);
+    assert.ok(scene.transformDirty instanceof Set);
+    assert.ok(scene.layoutDirty instanceof Set);
+    assert.ok(scene.paintDirty instanceof Set);
+    assert.ok(scene.indexDirty instanceof Set);
     assert.ok(scene.layoutRoots);
     assert.equal(scene.dependencyGraph, null);
+    assert.equal(scene.evaluationOrder, null);
 });
 
 test('scene cache clears correctly', () => {
@@ -17,8 +22,17 @@ test('scene cache clears correctly', () => {
     const scene = ensureSceneCache(runtime);
 
     scene.computed.a = { x: 1 };
+    scene.transformDirty.add('a');
+    scene.layoutDirty.add('a');
+    scene.paintDirty.add('a');
+    scene.indexDirty.add('a');
 
     clearSceneCache(runtime);
 
     assert.deepEqual(runtime.scene.computed, {});
+    assert.equal(runtime.scene.transformDirty.size, 0);
+    assert.equal(runtime.scene.layoutDirty.size, 0);
+    assert.equal(runtime.scene.paintDirty.size, 0);
+    assert.equal(runtime.scene.indexDirty.size, 0);
+    assert.equal(runtime.scene.evaluationOrder, null);
 });
