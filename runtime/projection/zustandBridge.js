@@ -4,6 +4,7 @@ import { useRuntimeStore } from '../stores/useRuntimeStore.js';
 import { computeIsAutoLayoutChild } from '../layout/computeIsAutoLayoutChild.js';
 import { selectionProjection } from '@/runtime/selection/selectionProjection.js';
 import { selectionBoundsProjection } from '@/runtime/selectionBounds/selectionBoundsProjection.js';
+import { transformAnchorProjection } from '@/runtime/transforms/transformAnchorProjection.js';
 
 /**
  * Syncs authoritative runtime state into Zustand (read-only mirror).
@@ -17,6 +18,11 @@ export function syncRuntimeToZustand(nextState) {
                 rootIds: [],
                 selection: { ids: [], primary: null, count: 0 },
                 selectionBounds: { bounds: null, center: null },
+                transformAnchors: {
+                    pivot: null,
+                    resizeAnchors: null,
+                    rotateAnchor: null,
+                },
             },
             false
         );
@@ -37,12 +43,14 @@ export function syncRuntimeToZustand(nextState) {
         };
     });
 
+    const selectionBounds = selectionBoundsProjection(nextState);
     const nextProjection = {
         nodes: projectedNodes,
         rootIds: nextState.rootIds,
         workspace: nextState.workspace ?? null,
         selection: selectionProjection(nextState),
-        selectionBounds: selectionBoundsProjection(nextState),
+        selectionBounds,
+        transformAnchors: transformAnchorProjection(selectionBounds),
     };
 
     if (prev.sceneGraph !== nextState.sceneGraph) {

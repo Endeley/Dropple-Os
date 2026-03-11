@@ -13,6 +13,7 @@ test.beforeEach(() => {
         scene: null,
         selection: { ids: [], primary: null, count: 0 },
         selectionBounds: { bounds: null, center: null },
+        transformAnchors: { pivot: null, resizeAnchors: null, rotateAnchor: null },
         frameTime: 0,
         evaluatedScene: null,
         shotId: null,
@@ -68,5 +69,17 @@ test('projection sync does not mutate runtime truth', () => {
     assert.deepEqual(projection.selectionBounds.center, {
         x: 50,
         y: 40,
+    });
+    assert.deepEqual(projection.transformAnchors.pivot, {
+        x: 50,
+        y: 40,
+    });
+    assert.deepEqual(projection.transformAnchors.rotateAnchor, {
+        x: 50,
+        y: -4,
+    });
+    assert.deepEqual(projection.transformAnchors.resizeAnchors?.se, {
+        x: 90,
+        y: 60,
     });
 });
