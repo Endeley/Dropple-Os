@@ -11,7 +11,7 @@ import { computeRotationDelta } from '@/runtime/transforms/computeRotationDelta.
 test('move delta is deterministic from pointer path', () => {
     assert.deepEqual(
         computeMoveDelta({ x: 0, y: 0 }, { x: 10, y: 5 }),
-        { dx: 10, dy: 5 },
+        { dx: 10, dy: 5, guides: [] },
     );
 
     const session = new MoveSession({
@@ -19,7 +19,7 @@ test('move delta is deterministic from pointer path', () => {
         startPointer: { x: 0, y: 0 },
     });
 
-    assert.deepEqual(session.update({ x: 10, y: 5 }), { dx: 10, dy: 5 });
+    assert.deepEqual(session.update({ x: 10, y: 5 }), { dx: 10, dy: 5, guides: [] });
     assert.deepEqual(session.commit(), {
         type: 'move',
         nodeIds: ['A'],
@@ -39,6 +39,7 @@ test('resize delta computes deterministically for handles', () => {
             resize: { width: 10, height: 5 },
             delta: { x: 0, y: 0 },
             bounds: { x: 0, y: 0, width: 110, height: 105 },
+            guides: [],
         },
     );
 
@@ -53,6 +54,7 @@ test('resize delta computes deterministically for handles', () => {
             resize: { width: -10, height: -5 },
             delta: { x: 10, y: 5 },
             bounds: { x: 10, y: 5, width: 90, height: 95 },
+            guides: [],
         },
     );
 });

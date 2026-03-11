@@ -1,3 +1,6 @@
+import { computeAlignmentGuides } from '@/runtime/snapping/computeAlignmentGuides.js';
+import { computeSnapDelta } from '@/runtime/snapping/computeSnapDelta.js';
+
 function clampToMinimum(startBounds, resize, delta) {
     const nextWidth = startBounds.width + resize.width;
     const nextHeight = startBounds.height + resize.height;
@@ -19,12 +22,19 @@ function clampToMinimum(startBounds, resize, delta) {
     }
 }
 
-export function computeResizeDelta(startPointer, pointer, startBounds, handle = 'se') {
+export function computeResizeDelta(
+    startPointer,
+    pointer,
+    startBounds,
+    handle = 'se',
+    targets = [],
+) {
     if (!startPointer || !pointer || !startBounds) {
         return {
             resize: { width: 0, height: 0 },
             delta: { x: 0, y: 0 },
             bounds: null,
+            guides: [],
         };
     }
 
@@ -50,14 +60,45 @@ export function computeResizeDelta(startPointer, pointer, startBounds, handle = 
 
     clampToMinimum(startBounds, resize, delta);
 
+    const bounds = {
+        x: startBounds.x + delta.x,
+        y: startBounds.y + delta.y,
+        width: Math.max(1, startBounds.width + resize.width),
+        height: Math.max(1, startBounds.height + resize.height),
+    };
+    const snap = computeSnapDelta(bounds, targets);
+
+    if (snap.snapX !== 0) {
+        if (handle.includes('w') && !handle.includes('e')) {
+            delta.x += snap.snapX;
+            resize.width -= snap.snapX;
+        } else {
+            resize.width += snap.snapX;
+        }
+    }
+
+    if (snap.snapY !== 0) {
+        if (handle.includes('n') && !handle.includes('s')) {
+            delta.y += snap.snapY;
+            resize.height -= snap.snapY;
+        } else {
+            resize.height += snap.snapY;
+        }
+    }
+
+    clampToMinimum(startBounds, resize, delta);
+
+    const snappedBounds = {
+        x: startBounds.x + delta.x,
+        y: startBounds.y + delta.y,
+        width: Math.max(1, startBounds.width + resize.width),
+        height: Math.max(1, startBounds.height + resize.height),
+    };
+
     return {
         resize,
         delta,
-        bounds: {
-            x: startBounds.x + delta.x,
-            y: startBounds.y + delta.y,
-            width: Math.max(1, startBounds.width + resize.width),
-            height: Math.max(1, startBounds.height + resize.height),
-        },
+        bounds: snappedBounds,
+        guides: computeAlignmentGuides(snappedBounds, targets),
     };
 }

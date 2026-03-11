@@ -2,7 +2,7 @@ import { computeResizeDelta } from '@/runtime/transforms/computeResizeDelta.js';
 
 export class ResizeSession {
     constructor(config = {}) {
-        const { nodeIds, nodes = [], startPointer, handle = 'se', bounds = null } = config;
+        const { nodeIds, nodes = [], startPointer, handle = 'se', bounds = null, snapTargets = [] } = config;
         if (!Array.isArray(nodeIds) || nodeIds.length === 0) {
             throw new Error('[ResizeSession] nodeIds required');
         }
@@ -16,8 +16,10 @@ export class ResizeSession {
         this.currentPointer = startPointer;
         this.startBounds = bounds;
         this.bounds = bounds;
+        this.snapTargets = snapTargets;
         this.delta = { x: 0, y: 0 };
         this.resize = { width: 0, height: 0 };
+        this.guides = [];
     }
 
     onBegin(payload) {
@@ -52,11 +54,13 @@ export class ResizeSession {
             this.currentPointer,
             this.startBounds,
             this.handle,
+            this.snapTargets,
         );
 
         this.resize = result.resize;
         this.delta = result.delta;
         this.bounds = result.bounds;
+        this.guides = result.guides ?? [];
         return result;
     }
 
@@ -75,7 +79,7 @@ export class ResizeSession {
             kind: 'resize',
             nodeId: this.nodeIds[0] ?? null,
             previewBoundsWorld: this.bounds,
-            snapGuides: [],
+            snapGuides: this.guides,
         };
     }
 

@@ -3,7 +3,7 @@ import { computeMoveDelta } from '@/runtime/transforms/computeMoveDelta.js';
 
 export class MoveSession {
     constructor(config = {}) {
-        const { nodeIds, startPointer, transforms = null } = config;
+        const { nodeIds, startPointer, transforms = null, bounds = null, snapTargets = [], snapToGrid = false } = config;
         if (!Array.isArray(nodeIds) || nodeIds.length === 0) {
             throw new Error('[MoveSession] nodeIds required');
         }
@@ -14,7 +14,11 @@ export class MoveSession {
         this.startPointer = startPointer;
         this.currentPointer = startPointer;
         this.startTransforms = transforms;
+        this.bounds = bounds;
+        this.snapTargets = snapTargets;
+        this.snapToGrid = snapToGrid;
         this.delta = { dx: 0, dy: 0 };
+        this.guides = [];
     }
 
     start(_event) {}
@@ -34,7 +38,14 @@ export class MoveSession {
         }
 
         this.currentPointer = { x, y };
-        this.delta = computeMoveDelta(this.startPointer, this.currentPointer);
+        this.delta = computeMoveDelta(
+            this.startPointer,
+            this.currentPointer,
+            this.bounds,
+            this.snapTargets,
+            { snapToGrid: this.snapToGrid },
+        );
+        this.guides = this.delta.guides ?? [];
         return this.delta;
     }
 
@@ -57,7 +68,7 @@ export class MoveSession {
                 dx: this.delta.dx,
                 dy: this.delta.dy,
             },
-            snapGuides: [],
+            snapGuides: this.guides,
         };
     }
 
@@ -65,7 +76,10 @@ export class MoveSession {
         return {
             type: 'move',
             nodeIds: this.nodeIds,
-            delta: this.delta,
+            delta: {
+                dx: this.delta.dx,
+                dy: this.delta.dy,
+            },
         };
     }
 
