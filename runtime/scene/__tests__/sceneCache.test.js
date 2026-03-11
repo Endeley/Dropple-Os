@@ -14,9 +14,13 @@ test('scene cache initializes deterministically', () => {
     assert.ok(scene.indexDirty instanceof Set);
     assert.ok(scene.layoutRoots);
     assert.equal(scene.dependencyGraph, null);
+    assert.equal(scene.segments, null);
+    assert.equal(scene.nodeToSegment, null);
+    assert.equal(scene.segmentGraph, null);
     assert.equal(scene.evaluationOrder, null);
     assert.equal(scene.evaluationLayers, null);
     assert.equal(scene.partitions, null);
+    assert.equal(scene.nodeToPartition, null);
 });
 
 test('scene cache clears correctly', () => {
@@ -36,7 +40,11 @@ test('scene cache clears correctly', () => {
     assert.equal(runtime.scene.layoutDirty.size, 0);
     assert.equal(runtime.scene.paintDirty.size, 0);
     assert.equal(runtime.scene.indexDirty.size, 0);
+    assert.equal(runtime.scene.segments, null);
+    assert.equal(runtime.scene.nodeToSegment, null);
+    assert.equal(runtime.scene.segmentGraph, null);
     assert.equal(runtime.scene.evaluationOrder, null);
     assert.equal(runtime.scene.evaluationLayers, null);
     assert.equal(runtime.scene.partitions, null);
+    assert.equal(runtime.scene.nodeToPartition, null);
 });

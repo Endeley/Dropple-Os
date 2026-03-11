@@ -22,16 +22,28 @@ export function buildScenePartitions(document) {
               .filter((nodeId) => !nodes[nodeId]?.parentId)
               .sort();
     const partitions = new Map();
+    const nodeToPartition = new Map();
 
     rootIds.forEach((rootId, index) => {
-        partitions.set(`p${index}`, {
+        const partitionId = `p${index}`;
+        const partitionNodes = collectSubtree(nodes, rootId);
+
+        partitions.set(partitionId, {
             id: `p${index}`,
             root: rootId,
-            nodes: collectSubtree(nodes, rootId),
+            nodes: partitionNodes,
             bounds: null,
+            visible: true,
             dirty: false,
         });
+
+        for (const nodeId of partitionNodes) {
+            nodeToPartition.set(nodeId, partitionId);
+        }
     });
 
-    return partitions;
+    return {
+        partitions,
+        nodeToPartition,
+    };
 }

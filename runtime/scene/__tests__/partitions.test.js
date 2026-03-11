@@ -4,8 +4,10 @@ import assert from 'node:assert/strict';
 import {
     assignNodeToPartition,
     buildScenePartitions,
+    collectVisiblePartitions,
     collectDirtyPartitions,
     evaluateSceneIncremental,
+    updatePartitionBounds,
 } from '@/runtime/scene/index.js';
 
 function createDocument() {
@@ -24,15 +26,21 @@ function createDocument() {
 }
 
 test('buildScenePartitions creates deterministic root-subtree partitions', () => {
-    const partitions = buildScenePartitions(createDocument());
+    const { partitions, nodeToPartition } = buildScenePartitions(createDocument());
 
     assert.deepEqual([...partitions.keys()], ['p0', 'p1']);
     assert.deepEqual([...partitions.get('p0').nodes].sort(), ['a1', 'a2', 'frameA']);
     assert.deepEqual([...partitions.get('p1').nodes].sort(), ['b1', 'frameB']);
+    assert.equal(nodeToPartition.get('a1'), 'p0');
+    assert.equal(nodeToPartition.get('b1'), 'p1');
 });
 
 test('assignNodeToPartition resolves nodes to their partition', () => {
-    const scene = { partitions: buildScenePartitions(createDocument()) };
+    const partitionData = buildScenePartitions(createDocument());
+    const scene = {
+        partitions: partitionData.partitions,
+        nodeToPartition: partitionData.nodeToPartition,
+    };
 
     assert.equal(assignNodeToPartition(scene, 'a2'), 'p0');
     assert.equal(assignNodeToPartition(scene, 'b1'), 'p1');
@@ -40,7 +48,11 @@ test('assignNodeToPartition resolves nodes to their partition', () => {
 });
 
 test('collectDirtyPartitions marks only touched partitions', () => {
-    const scene = { partitions: buildScenePartitions(createDocument()) };
+    const partitionData = buildScenePartitions(createDocument());
+    const scene = {
+        partitions: partitionData.partitions,
+        nodeToPartition: partitionData.nodeToPartition,
+    };
     const dirty = collectDirtyPartitions(scene, new Set(['a1', 'a2']));
 
     assert.deepEqual([...dirty], ['p0']);
@@ -59,6 +71,7 @@ test('incremental evaluator caches partitions and invalidates them on structural
     });
 
     const firstPartitions = runtime.scene.partitions;
+    const firstNodeToPartition = runtime.scene.nodeToPartition;
     assert.ok(firstPartitions instanceof Map);
     assert.equal(firstPartitions.size, 2);
 
@@ -69,6 +82,7 @@ test('incremental evaluator caches partitions and invalidates them on structural
     });
 
     assert.equal(runtime.scene.partitions, firstPartitions);
+    assert.equal(runtime.scene.nodeToPartition, firstNodeToPartition);
 
     const documentB = {
         sceneGraph: {
@@ -87,5 +101,59 @@ test('incremental evaluator caches partitions and invalidates them on structural
     });
 
     assert.notEqual(runtime.scene.partitions, firstPartitions);
+    assert.notEqual(runtime.scene.nodeToPartition, firstNodeToPartition);
     assert.equal(runtime.scene.partitions.size, 3);
+});
+
+test('updatePartitionBounds derives bounds from computed geometry', () => {
+    const scene = {
+        computed: {
+            frameA: { worldBounds: { x: 0, y: 0, width: 20, height: 20 } },
+            a1: { worldBounds: { x: 40, y: 10, width: 10, height: 10 } },
+            a2: { worldBounds: { x: 20, y: 20, width: 10, height: 10 } },
+        },
+        partitions: new Map([
+            [
+                'p0',
+                {
+                    id: 'p0',
+                    nodes: new Set(['frameA', 'a1', 'a2']),
+                    bounds: null,
+                    visible: true,
+                    dirty: false,
+                },
+            ],
+        ]),
+    };
+
+    updatePartitionBounds(scene);
+
+    assert.deepEqual(scene.partitions.get('p0').bounds, {
+        x: 0,
+        y: 0,
+        width: 50,
+        height: 30,
+    });
+});
+
+test('collectVisiblePartitions marks visible partitions from viewport bounds', () => {
+    const scene = {
+        partitions: new Map([
+            ['p0', { id: 'p0', bounds: { x: 0, y: 0, width: 50, height: 50 }, visible: true }],
+            ['p1', { id: 'p1', bounds: { x: 500, y: 500, width: 50, height: 50 }, visible: true }],
+            ['p2', { id: 'p2', bounds: null, visible: true }],
+        ]),
+    };
+
+    const visible = collectVisiblePartitions(scene, {
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 100,
+    });
+
+    assert.deepEqual([...visible].sort(), ['p0', 'p2']);
+    assert.equal(scene.partitions.get('p0').visible, true);
+    assert.equal(scene.partitions.get('p1').visible, false);
+    assert.equal(scene.partitions.get('p2').visible, true);
 });

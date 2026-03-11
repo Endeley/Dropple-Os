@@ -91,3 +91,41 @@ test('resolveHitTest dispatches to point and bounds handlers', () => {
         ['a'],
     );
 });
+
+test('hit testing narrows candidates by visible partitions when nodeToPartition is available', () => {
+    const runtime = {
+        workspace: {
+            viewport: { x: 0, y: 0, width: 200, height: 200 },
+        },
+        document: {
+            nodes: {
+                a: {},
+                b: {},
+            },
+        },
+        scene: {
+            nodeToPartition: new Map([
+                ['a', 'p0'],
+                ['b', 'p1'],
+            ]),
+            partitions: new Map([
+                ['p0', { id: 'p0', bounds: { x: 0, y: 0, width: 100, height: 100 } }],
+                ['p1', { id: 'p1', bounds: { x: 500, y: 500, width: 100, height: 100 } }],
+            ]),
+            computed: {
+                a: { x: 0, y: 0, width: 100, height: 100, zIndex: 1 },
+                b: { x: 0, y: 0, width: 100, height: 100, zIndex: 2 },
+            },
+        },
+    };
+
+    runtime.scene.spatialIndex = buildSpatialIndex(runtime.scene, 64);
+
+    const hit = hitTestPoint({
+        runtime,
+        x: 10,
+        y: 10,
+    });
+
+    assert.equal(hit, 'a');
+});
