@@ -1,5 +1,6 @@
 import { getRuntimeState } from '@/runtime/state/runtimeState.js';
 import { createSessionFromIntent } from '@/runtime/input/sessionRuntimeBridge.js';
+import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 
 let activeSession = null;
 let activeSessionType = null;
@@ -18,21 +19,31 @@ export function beginSession({ type, payload }) {
 
   const runtimeState = getRuntimeState();
   const nodesById = runtimeState?.nodes || {};
+  const projection = useRuntimeStore.getState();
 
   const sessionPayload = { ...(payload || {}) };
+  if (type === 'move') {
+    sessionPayload.startPointer =
+      payload?.startPointer ?? payload?.pointer ?? payload?.pointerWorld;
+  }
   if (type === 'resize') {
     if (Array.isArray(payload?.nodeIds) && payload.nodeIds.length) {
       sessionPayload.nodeIds = payload.nodeIds;
     } else {
       sessionPayload.nodeIds = [payload?.nodeId].filter(Boolean);
     }
-    sessionPayload.startPointer = payload?.pointerWorld;
+    sessionPayload.startPointer =
+      payload?.startPointer ?? payload?.pointerWorld ?? payload?.pointer;
     sessionPayload.handle = payload?.handleId;
+    sessionPayload.bounds = payload?.bounds ?? projection?.selectionBounds?.bounds ?? null;
   }
   if (type === 'rotate') {
     if (!sessionPayload.nodeIds && payload?.nodeId) {
       sessionPayload.nodeIds = [payload.nodeId];
     }
+    sessionPayload.startPointerWorld =
+      payload?.startPointerWorld ?? payload?.pointerWorld ?? payload?.pointer;
+    sessionPayload.pivot = payload?.pivot ?? projection?.transformAnchors?.pivot ?? null;
   }
 
   const session = createSessionFromIntent({

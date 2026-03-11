@@ -1,85 +1,71 @@
-import { computeSelectionBounds } from '@/domain/geometry/selectionBounds.js';
-
-const TAU = Math.PI * 2;
-
-function normalizeAngle(angle) {
-  let a = angle;
-  while (a > Math.PI) a -= TAU;
-  while (a < -Math.PI) a += TAU;
-  return a;
-}
+import { computeRotationDelta } from '@/runtime/transforms/computeRotationDelta.js';
 
 export class RotateSession {
-  constructor({ nodeIds, nodes, startPointerWorld, centerWorld }) {
-    if (!Array.isArray(nodeIds) || nodeIds.length === 0) {
-      throw new Error('[RotateSession] nodeIds required');
+    constructor(config = {}) {
+        const {
+            nodeIds,
+            nodes = [],
+            startPointerWorld,
+            centerWorld = null,
+            pivot = null,
+        } = config;
+        if (!Array.isArray(nodeIds) || nodeIds.length === 0) {
+            throw new Error('[RotateSession] nodeIds required');
+        }
+
+        this.id = `rotate:${nodeIds.join(',')}`;
+        this.type = 'rotate';
+        this.nodeIds = nodeIds;
+        this.nodes = nodes;
+        this.centerWorld = pivot ?? centerWorld;
+        this.startPointerWorld = startPointerWorld;
+        this.currentPointerWorld = startPointerWorld;
+        this.rotationDelta = 0;
     }
 
-    this.id = `rotate:${nodeIds.join(',')}`;
-    this.type = 'rotate';
-
-    this.nodeIds = nodeIds;
-    this.nodes = nodes || [];
-    if (centerWorld) {
-      this.centerWorld = centerWorld;
-    } else {
-      const bounds = computeSelectionBounds(this.nodes);
-      this.centerWorld = {
-        x: bounds.minX + bounds.width / 2,
-        y: bounds.minY + bounds.height / 2,
-      };
+    onPointerMove(pointerWorld) {
+        if (!pointerWorld) return;
+        this.currentPointerWorld = pointerWorld;
+        this.rotationDelta = computeRotationDelta(
+            this.startPointerWorld,
+            this.currentPointerWorld,
+            this.centerWorld,
+        ).rotation;
     }
 
-    this.startPointerWorld = startPointerWorld;
-    this.currentPointerWorld = startPointerWorld;
-
-    this.startAngle = this.computeAngle(startPointerWorld);
-    this.rotationDelta = 0;
-  }
-
-  computeAngle(pointerWorld) {
-    const dx = pointerWorld.x - this.centerWorld.x;
-    const dy = pointerWorld.y - this.centerWorld.y;
-    return Math.atan2(dy, dx);
-  }
-
-  onPointerMove(pointerWorld) {
-    if (!pointerWorld) return;
-    this.currentPointerWorld = pointerWorld;
-
-    const currentAngle = this.computeAngle(pointerWorld);
-    const delta = currentAngle - this.startAngle;
-    this.rotationDelta = normalizeAngle(delta);
-  }
-
-  onPointerUp(pointerWorld) {
-    if (pointerWorld) {
-      this.currentPointerWorld = pointerWorld;
+    onPointerUp(pointerWorld) {
+        if (pointerWorld?.x != null && pointerWorld?.y != null) {
+            this.currentPointerWorld = pointerWorld;
+        }
+        this.rotationDelta = computeRotationDelta(
+            this.startPointerWorld,
+            this.currentPointerWorld,
+            this.centerWorld,
+        ).rotation;
     }
-    const currentAngle = this.computeAngle(this.currentPointerWorld);
-    const delta = currentAngle - this.startAngle;
-    this.rotationDelta = normalizeAngle(delta);
-  }
 
-  getPreview() {
-    return {
-      kind: 'rotate',
-      nodeIds: this.nodeIds,
-      rotationDelta: this.rotationDelta,
-      centerWorld: this.centerWorld,
-      snapGuides: [],
-    };
-  }
+    getPreview() {
+        return {
+            kind: 'rotate',
+            nodeIds: this.nodeIds,
+            rotationDelta: this.rotationDelta,
+            centerWorld: this.centerWorld,
+            snapGuides: [],
+        };
+    }
 
-  getCommitPayload() {
-    return {
-      type: 'rotate',
-      nodeIds: this.nodeIds,
-      rotationDelta: this.rotationDelta,
-    };
-  }
+    getCommitPayload() {
+        return {
+            type: 'rotate',
+            nodeIds: this.nodeIds,
+            rotationDelta: this.rotationDelta,
+            rotation: this.rotationDelta,
+        };
+    }
 
-  commit() {
-    return this.getCommitPayload();
-  }
+    commit() {
+        return this.getCommitPayload();
+    }
+
+    cancel() {}
 }

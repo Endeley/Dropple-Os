@@ -133,6 +133,8 @@ export function createSessionCommitActions({ event, context }) {
 
     if (sessionType === 'move' && payload.type === 'move') {
         const { nodeIds, delta } = payload;
+        const xDelta = delta?.x ?? delta?.dx ?? 0;
+        const yDelta = delta?.y ?? delta?.dy ?? 0;
 
         (nodeIds || []).forEach((id) => {
             const node = nodesById[id];
@@ -142,8 +144,8 @@ export function createSessionCommitActions({ event, context }) {
                 type: EventTypes.NODE_MOVE,
                 payload: {
                     id,
-                    xDelta: delta.x,
-                    yDelta: delta.y,
+                    xDelta,
+                    yDelta,
                 },
             });
         });
