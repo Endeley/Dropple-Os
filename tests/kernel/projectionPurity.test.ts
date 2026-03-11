@@ -14,6 +14,7 @@ test.beforeEach(() => {
         selection: { ids: [], primary: null, count: 0 },
         selectionBounds: { bounds: null, center: null },
         transformAnchors: { pivot: null, resizeAnchors: null, rotateAnchor: null },
+        guides: [],
         frameTime: 0,
         evaluatedScene: null,
         shotId: null,
@@ -82,4 +83,5 @@ test('projection sync does not mutate runtime truth', () => {
         x: 90,
         y: 60,
     });
+    assert.ok(Array.isArray(projection.guides));
 });

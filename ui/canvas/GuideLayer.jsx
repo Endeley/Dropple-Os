@@ -12,6 +12,7 @@ import { getPreview } from '@/runtime/interactions/input/InputSessionManager.js'
 export default function GuideLayer() {
     const nodes = useCharacterRenderNodes();
     const selectedIds = useRuntimeStore((s) => s.selection?.ids || []);
+    const guides = useRuntimeStore((s) => s.guides || []);
     const viewport = useWorkspaceProjection((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
     const [reorderPreview, setReorderPreview] = useState(null);
     const lastPreviewRef = useRef(null);
@@ -51,7 +52,7 @@ export default function GuideLayer() {
 
     return (
         <>
-            <CanvasSnapGuides />
+            <CanvasSnapGuides guides={guides} />
             {selectedFrame && <FrameRulers frame={selectedFrame} viewport={viewport} />}
             {reorderPreview && (
                 <InsertionLine containerId={reorderPreview.containerId} index={reorderPreview.index} />

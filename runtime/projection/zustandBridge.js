@@ -5,6 +5,7 @@ import { computeIsAutoLayoutChild } from '../layout/computeIsAutoLayoutChild.js'
 import { selectionProjection } from '@/runtime/selection/selectionProjection.js';
 import { selectionBoundsProjection } from '@/runtime/selectionBounds/selectionBoundsProjection.js';
 import { transformAnchorProjection } from '@/runtime/transforms/transformAnchorProjection.js';
+import { guideProjection } from '@/runtime/guides/guideProjection.js';
 
 /**
  * Syncs authoritative runtime state into Zustand (read-only mirror).
@@ -23,6 +24,7 @@ export function syncRuntimeToZustand(nextState) {
                     resizeAnchors: null,
                     rotateAnchor: null,
                 },
+                guides: [],
             },
             false
         );
@@ -51,6 +53,7 @@ export function syncRuntimeToZustand(nextState) {
         selection: selectionProjection(nextState),
         selectionBounds,
         transformAnchors: transformAnchorProjection(selectionBounds),
+        guides: guideProjection(nextState, selectionBounds),
     };
 
     if (prev.sceneGraph !== nextState.sceneGraph) {

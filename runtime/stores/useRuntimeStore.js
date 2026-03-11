@@ -15,6 +15,7 @@ export const useRuntimeStore = create((set) => ({
     selection: { ids: [], primary: null, count: 0 },
     selectionBounds: { bounds: null, center: null },
     transformAnchors: { pivot: null, resizeAnchors: null, rotateAnchor: null },
+    guides: [],
     frameTime: 0,
     evaluatedScene: null,
     shotId: null,
