@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-12T15:32:55.263Z",
+  "generatedAt": "2026-03-12T16:05:24.748Z",
   "statusScale": [
     "MISSING",
     "PARTIAL",
@@ -373,7 +373,7 @@
     "componentRuntime": {
       "description": "Canonical component, instance, variant, and override runtime",
       "group": "authoringRuntime",
-      "critical": true,
+      "critical": false,
       "order": 150,
       "status": "MISSING",
       "dependencies": [
