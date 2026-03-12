@@ -1,0 +1,72 @@
+{
+  "dispatcher": [],
+  "reducers": [
+    "dispatcher"
+  ],
+  "replay": [
+    "dispatcher",
+    "reducers"
+  ],
+  "determinismGate": [
+    "dispatcher",
+    "reducers",
+    "replay"
+  ],
+  "documentModel": [
+    "dispatcher",
+    "reducers"
+  ],
+  "sceneEvaluation": [
+    "documentModel"
+  ],
+  "spatialIndex": [
+    "sceneEvaluation"
+  ],
+  "hitTesting": [
+    "spatialIndex"
+  ],
+  "selection": [
+    "hitTesting"
+  ],
+  "interactionRuntime": [
+    "selection"
+  ],
+  "previewRuntime": [
+    "interactionRuntime"
+  ],
+  "snapping": [
+    "previewRuntime"
+  ],
+  "guides": [
+    "previewRuntime"
+  ],
+  "constraints": [
+    "previewRuntime"
+  ],
+  "componentRuntime": [
+    "documentModel"
+  ],
+  "dataRuntime": [
+    "componentRuntime"
+  ],
+  "appRuntime": [
+    "dataRuntime"
+  ],
+  "compilerIR": [
+    "appRuntime"
+  ],
+  "reactCompiler": [
+    "compilerIR"
+  ],
+  "deployment": [
+    "reactCompiler"
+  ],
+  "collaboration": [
+    "documentModel",
+    "replay"
+  ],
+  "aiRuntime": [
+    "appRuntime",
+    "compilerIR"
+  ]
+}

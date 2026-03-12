@@ -1,5 +1,7 @@
 import { createTimeline } from '@/timeline/schema/timeline.js';
 import { createDefaultWorkspaceState } from './workspaceRuntime.js';
+import { initialInteractionState } from '@/runtime/interactionEngine/state/interactionState.js';
+import { createPreviewState } from '@/runtime/state/previewState.js';
 
 function createInitialDocument() {
   const now = Date.now();
@@ -72,6 +74,8 @@ export const initialRuntimeState = {
     nodes: [],
     rootIds: [],
   },
+  interaction: initialInteractionState(),
+  preview: createPreviewState(),
   // 🔹 Narrative slice (runtime only)
   scene: {
     activeSceneId: null,

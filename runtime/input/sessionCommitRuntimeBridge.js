@@ -1,4 +1,5 @@
 import { EventTypes } from '../../core/events/eventTypes.js';
+import { VIEWPORT_PAN, VIEWPORT_ZOOM } from '@/core/events/viewportEvents.js';
 import { computeSelectionBounds } from '../../domain/geometry/selectionBounds.js';
 import { createMoveNodeEvent } from '../commands/structure/moveNode.js';
 
@@ -127,6 +128,38 @@ export function createSessionCommitActions({ event, context }) {
                     value,
                 });
             });
+        });
+        return actions;
+    }
+
+    if (payload.type === 'viewport-pan') {
+        const dx = payload?.delta?.dx ?? 0;
+        const dy = payload?.delta?.dy ?? 0;
+        actions.dispatchEvents.push({
+            type: VIEWPORT_PAN,
+            payload: { dx, dy },
+        });
+        return actions;
+    }
+
+    if (payload.type === 'viewport-zoom') {
+        actions.dispatchEvents.push({
+            type: VIEWPORT_ZOOM,
+            payload: {
+                scale: payload.scale ?? 1,
+                anchor: payload.anchor ?? null,
+            },
+        });
+        return actions;
+    }
+
+    if (payload.type === 'selection-set') {
+        actions.dispatchEvents.push({
+            type: EventTypes.SELECTION_SET,
+            payload: {
+                ids: payload.ids ?? [],
+                primary: payload.primary ?? null,
+            },
         });
         return actions;
     }

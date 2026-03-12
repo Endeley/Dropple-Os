@@ -26,6 +26,15 @@ jobs:
       - name: Architecture Gate
         run: npm run arch
 
+      - name: Architecture Monitor
+        run: npm run architecture:monitor
+
+      - name: Architecture CI Gate
+        run: npm run architecture:ci
+
+      - name: Architecture Drift Check
+        run: npm run architecture:drift
+
       - name: Runtime Map Test
         run: npm run runtime:map:test
 

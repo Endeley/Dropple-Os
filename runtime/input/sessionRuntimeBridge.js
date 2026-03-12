@@ -1,6 +1,4 @@
-import { MoveSession } from '../interactions/input/sessions/MoveSession.js';
-import { ResizeSession } from '../interactions/input/sessions/ResizeSession.js';
-import { RotateSession } from '../interactions/input/sessions/RotateSession.js';
+import { createInteractionManager } from '@/runtime/interactions/interactionManager.js';
 import { isAutoLayoutChild } from '@/engine/layout/isAutoLayoutChild.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { getRuntimeState } from '@/runtime/state/runtimeState.js';
@@ -18,13 +16,16 @@ export function createSessionFromIntent({ sessionType, payload, nodesById = {} }
     const projection = useRuntimeStore.getState();
     const runtimeState = getRuntimeState();
     const sceneComputed = runtimeState?.scene?.computed ?? {};
+    const interactionManager = createInteractionManager({
+        runtime: runtimeState,
+    });
 
     if (sessionType === 'move') {
         const nodeIds = Array.isArray(payload.nodeIds) ? payload.nodeIds : [];
         const nodes = nodeIds.map((id) => nodesById[id]).filter(Boolean);
         const snapTargets = computeSnapTargets(sceneComputed, nodeIds);
 
-        return new MoveSession({
+        return interactionManager.createSession('move', {
             nodeIds,
             nodes,
             startPointer: payload.startPointer ?? payload.pointer ?? payload.pointerWorld,
@@ -42,7 +43,7 @@ export function createSessionFromIntent({ sessionType, payload, nodesById = {} }
         const blocked = nodes.some((node) => isAutoLayoutChild(node, nodesById));
         if (blocked) return null;
 
-        return new ResizeSession({
+        return interactionManager.createSession('resize', {
             nodeIds,
             nodes,
             startPointer: payload.startPointer ?? payload.pointer ?? payload.pointerWorld,
@@ -58,12 +59,33 @@ export function createSessionFromIntent({ sessionType, payload, nodesById = {} }
             ? payload.nodeIds
             : [payload.nodeId].filter(Boolean);
 
-        return new RotateSession({
+        return interactionManager.createSession('rotate', {
             nodeIds,
             nodes: nodeIds.map((id) => nodesById[id]).filter(Boolean),
             startPointerWorld: payload.startPointerWorld ?? payload.pointerWorld ?? payload.pointer,
             centerWorld: payload.centerWorld,
             pivot: payload.pivot ?? projection?.transformAnchors?.pivot ?? null,
+        });
+    }
+
+    if (sessionType === 'pan') {
+        return interactionManager.createSession('pan', {
+            startPointer: payload.startPointer ?? payload.pointer ?? payload.pointerWorld,
+            viewport: runtimeState?.workspace?.viewport ?? null,
+        });
+    }
+
+    if (sessionType === 'zoom') {
+        return interactionManager.createSession('zoom', {
+            startPointer: payload.startPointer ?? payload.pointer ?? payload.pointerWorld,
+            viewport: runtimeState?.workspace?.viewport ?? null,
+        });
+    }
+
+    if (sessionType === 'marquee') {
+        return interactionManager.createSession('marquee', {
+            startPointer: payload.startPointer ?? payload.pointer ?? payload.pointerWorld,
+            runtime: runtimeState,
         });
     }
 

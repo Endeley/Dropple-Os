@@ -1,0 +1,11 @@
+{
+  "generatedAt": "2026-03-12T15:15:35.469Z",
+  "nextTargets": [
+    {
+      "system": "componentRuntime",
+      "description": "Canonical component, instance, variant, and override runtime",
+      "status": "MISSING",
+      "critical": true
+    }
+  ]
+}

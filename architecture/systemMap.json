@@ -1,0 +1,382 @@
+{
+  "dispatcher": {
+    "description": "Canonical mutation gateway for runtime and document state",
+    "group": "foundation",
+    "critical": true,
+    "order": 10,
+    "requiredFiles": [
+      "runtime/dispatcher/dispatch.js"
+    ],
+    "requiredTests": [
+      "tests/kernel/dispatcherContract.test.ts",
+      "tests/architecture/dispatcherOwnership.test.ts"
+    ],
+    "optionalFiles": []
+  },
+  "reducers": {
+    "description": "Pure reducer layer for document and runtime mutation",
+    "group": "foundation",
+    "critical": true,
+    "order": 20,
+    "requiredFiles": [
+      "core/events/reducers/index.js",
+      "core/events/reducers/nodeReducers.js"
+    ],
+    "requiredTests": [
+      "tests/kernel/dispatcherContract.test.ts",
+      "tests/kernel/stateShape.test.ts"
+    ],
+    "optionalFiles": []
+  },
+  "replay": {
+    "description": "Deterministic event replay and cursor-based state reconstruction",
+    "group": "foundation",
+    "critical": true,
+    "order": 30,
+    "requiredFiles": [
+      "runtime/replay/useReplayState.js",
+      "runtime/replay/getDesignStateAtCursor.js"
+    ],
+    "requiredTests": [
+      "tests/kernel/replayDeterminism.test.ts",
+      "runtime/__tests__/runtimeReplayDeterminism.test.mjs"
+    ],
+    "optionalFiles": []
+  },
+  "determinismGate": {
+    "description": "Repository-level determinism verification gate",
+    "group": "foundation",
+    "critical": true,
+    "order": 40,
+    "requiredFiles": [
+      "scripts/determinismGate.mjs",
+      "runtime/utils/hashRuntimeState.js"
+    ],
+    "requiredTests": [
+      "tests/kernel/replayDeterminism.test.ts",
+      "runtime/__tests__/runtimeStateHash.test.mjs"
+    ],
+    "optionalFiles": []
+  },
+  "documentModel": {
+    "description": "Canonical persisted design truth contracts and schema",
+    "group": "foundation",
+    "critical": true,
+    "order": 50,
+    "requiredFiles": [
+      "core/document/createDocument.ts",
+      "core/document/documentSchema.ts",
+      "core/contracts/sceneGraph.v1.ts"
+    ],
+    "requiredTests": [
+      "tests/kernel/stateShape.test.ts",
+      "tests/kernel/persistenceRoundtrip.test.ts"
+    ],
+    "optionalFiles": [
+      "core/contracts/project.v2.ts"
+    ]
+  },
+  "sceneEvaluation": {
+    "description": "Incremental deterministic scene evaluation runtime",
+    "group": "sceneRuntime",
+    "critical": true,
+    "order": 60,
+    "requiredFiles": [
+      "runtime/scene/evaluateSceneIncremental.js",
+      "runtime/scene/buildDependencyGraph.js",
+      "runtime/scene/buildEvaluationLayers.js",
+      "runtime/scene/sceneCache.js"
+    ],
+    "requiredTests": [
+      "runtime/scene/__tests__/evaluateSceneIncremental.test.js",
+      "runtime/scene/__tests__/scheduler.test.js",
+      "runtime/scene/__tests__/dirtyDomains.test.js"
+    ],
+    "optionalFiles": [
+      "runtime/scene/graph/buildSegments.js",
+      "runtime/scene/partition/buildScenePartitions.js"
+    ]
+  },
+  "spatialIndex": {
+    "description": "Incremental runtime spatial lookup engine",
+    "group": "sceneRuntime",
+    "critical": true,
+    "order": 70,
+    "requiredFiles": [
+      "runtime/spatial/createSpatialIndex.js",
+      "runtime/spatial/updateSpatialIndex.js",
+      "runtime/spatial/queryPoint.js",
+      "runtime/spatial/queryBounds.js"
+    ],
+    "requiredTests": [
+      "runtime/spatial/__tests__/spatialIndex.test.js",
+      "runtime/spatial/__tests__/updateSpatialIndex.test.js"
+    ],
+    "optionalFiles": []
+  },
+  "hitTesting": {
+    "description": "Point and bounds hit testing over computed runtime geometry",
+    "group": "sceneRuntime",
+    "critical": true,
+    "order": 80,
+    "requiredFiles": [
+      "runtime/hitTest/hitTestPoint.js",
+      "runtime/hitTest/hitTestBounds.js",
+      "runtime/hitTest/resolveTopNode.js"
+    ],
+    "requiredTests": [
+      "runtime/hitTest/__tests__/hitTest.test.js"
+    ],
+    "optionalFiles": [
+      "runtime/hitTest/filterCandidatesByPartitions.js"
+    ]
+  },
+  "selection": {
+    "description": "Canonical runtime selection truth and projection",
+    "group": "sceneRuntime",
+    "critical": true,
+    "order": 90,
+    "requiredFiles": [
+      "runtime/selection/selectionReducer.js",
+      "runtime/selection/selectNode.js",
+      "runtime/selection/selectBounds.js",
+      "runtime/selection/selectionProjection.js"
+    ],
+    "requiredTests": [
+      "tests/selection.test.js"
+    ],
+    "optionalFiles": [
+      "runtime/selection/validateSelection.js"
+    ]
+  },
+  "interactionRuntime": {
+    "description": "Editor interaction session runtime for direct manipulation",
+    "group": "sceneRuntime",
+    "critical": true,
+    "order": 100,
+    "requiredFiles": [
+      "runtime/interactions/input/InputSessionManager.js",
+      "runtime/interactions/input/sessions/MoveSession.js",
+      "runtime/interactions/input/sessions/ResizeSession.js",
+      "runtime/interactions/input/sessions/RotateSession.js",
+      "runtime/input/sessionRuntimeBridge.js",
+      "runtime/input/sessionCommitRuntimeBridge.js"
+    ],
+    "requiredTests": [
+      "tests/transformSessions.test.js",
+      "runtime/__tests__/resizeSessionDeterminism.test.mjs",
+      "runtime/__tests__/resizeSessionCommitBridge.test.mjs"
+    ],
+    "optionalFiles": [
+      "runtime/interactionEngine/engine.js",
+      "runtime/interactionEngine/interactionGraph.js",
+      "runtime/interactionEngine/graphExecutor.js",
+      "runtime/interactionEngine/intentResolver.js",
+      "runtime/interactionEngine/interactionRegistry.js",
+      "runtime/interactionEngine/state/interactionState.js",
+      "runtime/interactionEngine/state/previewState.js",
+      "runtime/interactions/input/sessions/PanSession.js",
+      "runtime/interactions/input/sessions/ZoomSession.js",
+      "runtime/interactions/input/sessions/MarqueeSession.js",
+      "runtime/interactions/interactionManager.js"
+    ]
+  },
+  "previewRuntime": {
+    "description": "Canonical runtime preview state and overlay staging",
+    "group": "sceneRuntime",
+    "critical": true,
+    "order": 110,
+    "requiredFiles": [
+      "runtime/frame/stages/applySessionPreview.js",
+      "runtime/frame/stages/applyPreviewTransforms.js",
+      "runtime/frame/stages/buildSelectionOverlay.js"
+    ],
+    "requiredTests": [
+      "tests/interactionEngine.test.js"
+    ],
+    "optionalFiles": [
+      "runtime/preview/index.js",
+      "runtime/state/previewState.js",
+      "runtime/interactionEngine/state/previewState.js"
+    ]
+  },
+  "snapping": {
+    "description": "Deterministic snap target and delta engine",
+    "group": "sceneRuntime",
+    "critical": false,
+    "order": 120,
+    "requiredFiles": [
+      "runtime/snapping/computeSnapTargets.js",
+      "runtime/snapping/computeSnapDelta.js",
+      "runtime/snapping/computeGridSnap.js"
+    ],
+    "requiredTests": [
+      "tests/snapEngine.test.js"
+    ],
+    "optionalFiles": [
+      "runtime/snapping/computeAlignmentGuides.js"
+    ]
+  },
+  "guides": {
+    "description": "Guide derivation and projection for alignment feedback",
+    "group": "sceneRuntime",
+    "critical": false,
+    "order": 130,
+    "requiredFiles": [
+      "runtime/guides/computeGuides.js",
+      "runtime/guides/guideProjection.js"
+    ],
+    "requiredTests": [
+      "tests/guides.test.js"
+    ],
+    "optionalFiles": [
+      "runtime/guides/computeSpacingGuides.js"
+    ]
+  },
+  "constraints": {
+    "description": "Constraint math for transform and layout behavior",
+    "group": "sceneRuntime",
+    "critical": false,
+    "order": 140,
+    "requiredFiles": [
+      "runtime/constraints/computeConstraints.js",
+      "runtime/constraints/applyConstraints.js"
+    ],
+    "requiredTests": [
+      "tests/constraints.test.js"
+    ],
+    "optionalFiles": [
+      "runtime/constraints/constraintProjection.js"
+    ]
+  },
+  "componentRuntime": {
+    "description": "Canonical component, instance, variant, and override runtime",
+    "group": "authoringRuntime",
+    "critical": true,
+    "order": 150,
+    "requiredFiles": [
+      "runtime/components/index.js"
+    ],
+    "requiredTests": [
+      "tests/components.test.js"
+    ],
+    "optionalFiles": [
+      "runtime/components/instanceReducer.js",
+      "runtime/components/componentProjection.js"
+    ]
+  },
+  "dataRuntime": {
+    "description": "Data binding and computed value runtime for designs and apps",
+    "group": "authoringRuntime",
+    "critical": true,
+    "order": 160,
+    "requiredFiles": [
+      "runtime/data/index.js"
+    ],
+    "requiredTests": [
+      "tests/dataRuntime.test.js"
+    ],
+    "optionalFiles": [
+      "runtime/data/bindings.js",
+      "runtime/data/computedValues.js"
+    ]
+  },
+  "appRuntime": {
+    "description": "Application runtime for navigation, component logic, and state transitions",
+    "group": "authoringRuntime",
+    "critical": true,
+    "order": 170,
+    "requiredFiles": [
+      "runtime/appRuntime/index.js"
+    ],
+    "requiredTests": [
+      "tests/appRuntime.test.js"
+    ],
+    "optionalFiles": [
+      "runtime/appRuntime/navigation.js",
+      "runtime/appRuntime/stateMachine.js"
+    ]
+  },
+  "compilerIR": {
+    "description": "Canonical intermediate representation for compiler targets",
+    "group": "platform",
+    "critical": true,
+    "order": 180,
+    "requiredFiles": [
+      "core/ir/DesignIR.js",
+      "core/ir/ComponentIR.js",
+      "engine/ir/extractDesignIR.js",
+      "engine/ir/extractComponentIR.js"
+    ],
+    "requiredTests": [
+      "engine/__tests__/templateCompiler.test.mjs"
+    ],
+    "optionalFiles": [
+      "core/ir/SemanticIR.js",
+      "engine/ir/extractSemanticIR.js"
+    ]
+  },
+  "reactCompiler": {
+    "description": "Framework compiler target for React applications",
+    "group": "platform",
+    "critical": true,
+    "order": 190,
+    "requiredFiles": [
+      "engine/export/react/exportReact.js"
+    ],
+    "requiredTests": [
+      "engine/__tests__/reactCompiler.test.mjs"
+    ],
+    "optionalFiles": [
+      "translate/pseudoCodeToReact.js"
+    ]
+  },
+  "deployment": {
+    "description": "Project generation and deployment packaging pipeline",
+    "group": "platform",
+    "critical": true,
+    "order": 200,
+    "requiredFiles": [
+      "engine/deploy/index.js"
+    ],
+    "requiredTests": [
+      "engine/__tests__/deployment.test.mjs"
+    ],
+    "optionalFiles": [
+      "runtime/export/static/buildStaticHTML.js",
+      "runtime/export/wordpress/buildWordPressTheme.js"
+    ]
+  },
+  "collaboration": {
+    "description": "Real-time collaboration stack for presence and concurrent editing",
+    "group": "platform",
+    "critical": true,
+    "order": 210,
+    "requiredFiles": [
+      "collab/usePresence.js",
+      "collab/useLiveCursors.js",
+      "convex/streamEvents.js",
+      "convex/updatePresence.js"
+    ],
+    "requiredTests": [],
+    "optionalFiles": [
+      "collab/mergeEvents.js",
+      "collab/optimistic/optimisticStore.js"
+    ]
+  },
+  "aiRuntime": {
+    "description": "AI-assisted generation and execution layer grounded in canonical design truth",
+    "group": "platform",
+    "critical": false,
+    "order": 220,
+    "requiredFiles": [
+      "ai/README.md",
+      "ai/prompts/ccmAuthorPrompt.ts"
+    ],
+    "requiredTests": [],
+    "optionalFiles": [
+      "ai/generation/generateTemplateArtifact.ts",
+      "education/ai/ExplanationAgent.js"
+    ]
+  }
+}
