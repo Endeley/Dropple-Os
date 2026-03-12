@@ -1,11 +1,4 @@
 {
-  "generatedAt": "2026-03-12T17:54:25.150Z",
-  "nextTargets": [
-    {
-      "system": "deployment",
-      "description": "Project generation and deployment packaging pipeline",
-      "status": "MISSING",
-      "critical": false
-    }
-  ]
+  "generatedAt": "2026-03-12T19:55:54.244Z",
+  "nextTargets": []
 }

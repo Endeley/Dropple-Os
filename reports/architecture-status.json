@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-12T17:54:24.843Z",
+  "generatedAt": "2026-03-12T19:55:53.929Z",
   "statusScale": [
     "MISSING",
     "PARTIAL",
@@ -502,7 +502,7 @@
       "group": "platform",
       "critical": false,
       "order": 200,
-      "status": "MISSING",
+      "status": "INTEGRATED",
       "dependencies": [
         "reactCompiler"
       ],
@@ -517,12 +517,8 @@
         "runtime/export/static/buildStaticHTML.js",
         "runtime/export/wordpress/buildWordPressTheme.js"
       ],
-      "missingRequiredFiles": [
-        "engine/deploy/index.js"
-      ],
-      "missingRequiredTests": [
-        "engine/__tests__/deployment.test.mjs"
-      ],
+      "missingRequiredFiles": [],
+      "missingRequiredTests": [],
       "missingOptionalFiles": []
     },
     "collaboration": {

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-12T17:54:24.997Z",
+  "generatedAt": "2026-03-12T19:55:54.084Z",
   "weights": {
     "MISSING": 0,
     "PARTIAL": 40,
@@ -9,7 +9,7 @@
     "foundation": 70,
     "sceneRuntime": 70,
     "authoringRuntime": 70,
-    "platform": 60
+    "platform": 70
   },
-  "total": 68
+  "total": 70
 }
