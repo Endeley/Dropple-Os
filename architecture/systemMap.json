@@ -268,7 +268,7 @@
   "dataRuntime": {
     "description": "Data binding and computed value runtime for designs and apps",
     "group": "authoringRuntime",
-    "critical": true,
+    "critical": false,
     "order": 160,
     "requiredFiles": [
       "runtime/data/index.js"
@@ -284,7 +284,7 @@
   "appRuntime": {
     "description": "Application runtime for navigation, component logic, and state transitions",
     "group": "authoringRuntime",
-    "critical": true,
+    "critical": false,
     "order": 170,
     "requiredFiles": [
       "runtime/appRuntime/index.js"
@@ -319,7 +319,7 @@
   "reactCompiler": {
     "description": "Framework compiler target for React applications",
     "group": "platform",
-    "critical": true,
+    "critical": false,
     "order": 190,
     "requiredFiles": [
       "engine/export/react/exportReact.js"
@@ -334,7 +334,7 @@
   "deployment": {
     "description": "Project generation and deployment packaging pipeline",
     "group": "platform",
-    "critical": true,
+    "critical": false,
     "order": 200,
     "requiredFiles": [
       "engine/deploy/index.js"

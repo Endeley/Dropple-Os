@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-12T15:15:35.278Z",
+  "generatedAt": "2026-03-12T15:32:55.263Z",
   "statusScale": [
     "MISSING",
     "PARTIAL",
@@ -404,7 +404,7 @@
     "dataRuntime": {
       "description": "Data binding and computed value runtime for designs and apps",
       "group": "authoringRuntime",
-      "critical": true,
+      "critical": false,
       "order": 160,
       "status": "MISSING",
       "dependencies": [
@@ -437,7 +437,7 @@
     "appRuntime": {
       "description": "Application runtime for navigation, component logic, and state transitions",
       "group": "authoringRuntime",
-      "critical": true,
+      "critical": false,
       "order": 170,
       "status": "MISSING",
       "dependencies": [
@@ -499,7 +499,7 @@
     "reactCompiler": {
       "description": "Framework compiler target for React applications",
       "group": "platform",
-      "critical": true,
+      "critical": false,
       "order": 190,
       "status": "MISSING",
       "dependencies": [
@@ -528,7 +528,7 @@
     "deployment": {
       "description": "Project generation and deployment packaging pipeline",
       "group": "platform",
-      "critical": true,
+      "critical": false,
       "order": 200,
       "status": "MISSING",
       "dependencies": [

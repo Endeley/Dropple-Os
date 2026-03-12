@@ -13,6 +13,6 @@ export function workspaceRoutes() {
     branding: { label: "Branding", href: "/workspace/branding" },
     document: { label: "Document", href: "/workspace/document" },
     translate: { label: "Translate", href: "/workspace/translate" },
-    conversion: { label: "Translate", href: "/workspace/conversion" },
+    conversion: { label: "Conversion", href: "/workspace/conversion" },
   };
 }
