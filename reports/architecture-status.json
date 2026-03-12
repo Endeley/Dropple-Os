@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-12T16:05:24.748Z",
+  "generatedAt": "2026-03-12T17:54:24.843Z",
   "statusScale": [
     "MISSING",
     "PARTIAL",
@@ -375,44 +375,38 @@
       "group": "authoringRuntime",
       "critical": false,
       "order": 150,
-      "status": "MISSING",
+      "status": "INTEGRATED",
       "dependencies": [
         "documentModel"
       ],
       "blockedBy": [],
       "requiredFiles": [
-        "runtime/components/index.js"
+        "runtime/components/index.js",
+        "core/events/reducers/componentStateReducers.js",
+        "runtime/components/componentEvaluation.js",
+        "runtime/components/instanceResolver.js",
+        "runtime/components/overrideResolver.js"
       ],
       "requiredTests": [
         "tests/components.test.js"
       ],
       "optionalFiles": [
-        "runtime/components/instanceReducer.js",
         "runtime/components/componentProjection.js"
       ],
-      "missingRequiredFiles": [
-        "runtime/components/index.js"
-      ],
-      "missingRequiredTests": [
-        "tests/components.test.js"
-      ],
-      "missingOptionalFiles": [
-        "runtime/components/instanceReducer.js",
-        "runtime/components/componentProjection.js"
-      ]
+      "missingRequiredFiles": [],
+      "missingRequiredTests": [],
+      "missingOptionalFiles": []
     },
     "dataRuntime": {
       "description": "Data binding and computed value runtime for designs and apps",
       "group": "authoringRuntime",
       "critical": false,
       "order": 160,
-      "status": "MISSING",
+      "status": "INTEGRATED",
       "dependencies": [
         "componentRuntime"
       ],
-      "blockedBy": [
-        "componentRuntime"
-      ],
+      "blockedBy": [],
       "requiredFiles": [
         "runtime/data/index.js"
       ],
@@ -423,29 +417,20 @@
         "runtime/data/bindings.js",
         "runtime/data/computedValues.js"
       ],
-      "missingRequiredFiles": [
-        "runtime/data/index.js"
-      ],
-      "missingRequiredTests": [
-        "tests/dataRuntime.test.js"
-      ],
-      "missingOptionalFiles": [
-        "runtime/data/bindings.js",
-        "runtime/data/computedValues.js"
-      ]
+      "missingRequiredFiles": [],
+      "missingRequiredTests": [],
+      "missingOptionalFiles": []
     },
     "appRuntime": {
       "description": "Application runtime for navigation, component logic, and state transitions",
       "group": "authoringRuntime",
       "critical": false,
       "order": 170,
-      "status": "MISSING",
+      "status": "INTEGRATED",
       "dependencies": [
         "dataRuntime"
       ],
-      "blockedBy": [
-        "dataRuntime"
-      ],
+      "blockedBy": [],
       "requiredFiles": [
         "runtime/appRuntime/index.js"
       ],
@@ -456,37 +441,30 @@
         "runtime/appRuntime/navigation.js",
         "runtime/appRuntime/stateMachine.js"
       ],
-      "missingRequiredFiles": [
-        "runtime/appRuntime/index.js"
-      ],
-      "missingRequiredTests": [
-        "tests/appRuntime.test.js"
-      ],
-      "missingOptionalFiles": [
-        "runtime/appRuntime/navigation.js",
-        "runtime/appRuntime/stateMachine.js"
-      ]
+      "missingRequiredFiles": [],
+      "missingRequiredTests": [],
+      "missingOptionalFiles": []
     },
     "compilerIR": {
       "description": "Canonical intermediate representation for compiler targets",
       "group": "platform",
       "critical": true,
       "order": 180,
-      "status": "PARTIAL",
+      "status": "INTEGRATED",
       "dependencies": [
         "appRuntime"
       ],
-      "blockedBy": [
-        "appRuntime"
-      ],
+      "blockedBy": [],
       "requiredFiles": [
         "core/ir/DesignIR.js",
         "core/ir/ComponentIR.js",
         "engine/ir/extractDesignIR.js",
-        "engine/ir/extractComponentIR.js"
+        "engine/ir/extractComponentIR.js",
+        "engine/ir/validateIR.js"
       ],
       "requiredTests": [
-        "engine/__tests__/templateCompiler.test.mjs"
+        "engine/__tests__/templateCompiler.test.mjs",
+        "engine/__tests__/irValidation.test.mjs"
       ],
       "optionalFiles": [
         "core/ir/SemanticIR.js",
@@ -501,13 +479,11 @@
       "group": "platform",
       "critical": false,
       "order": 190,
-      "status": "MISSING",
+      "status": "INTEGRATED",
       "dependencies": [
         "compilerIR"
       ],
-      "blockedBy": [
-        "compilerIR"
-      ],
+      "blockedBy": [],
       "requiredFiles": [
         "engine/export/react/exportReact.js"
       ],
@@ -517,12 +493,8 @@
       "optionalFiles": [
         "translate/pseudoCodeToReact.js"
       ],
-      "missingRequiredFiles": [
-        "engine/export/react/exportReact.js"
-      ],
-      "missingRequiredTests": [
-        "engine/__tests__/reactCompiler.test.mjs"
-      ],
+      "missingRequiredFiles": [],
+      "missingRequiredTests": [],
       "missingOptionalFiles": []
     },
     "deployment": {
@@ -534,9 +506,7 @@
       "dependencies": [
         "reactCompiler"
       ],
-      "blockedBy": [
-        "reactCompiler"
-      ],
+      "blockedBy": [],
       "requiredFiles": [
         "engine/deploy/index.js"
       ],
@@ -586,15 +556,12 @@
       "group": "platform",
       "critical": false,
       "order": 220,
-      "status": "PARTIAL",
+      "status": "INTEGRATED",
       "dependencies": [
         "appRuntime",
         "compilerIR"
       ],
-      "blockedBy": [
-        "appRuntime",
-        "compilerIR"
-      ],
+      "blockedBy": [],
       "requiredFiles": [
         "ai/README.md",
         "ai/prompts/ccmAuthorPrompt.ts"

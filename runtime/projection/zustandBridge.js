@@ -3,6 +3,7 @@
 import { useRuntimeStore } from '../stores/useRuntimeStore.js';
 import { computeIsAutoLayoutChild } from '../layout/computeIsAutoLayoutChild.js';
 import { clipboardProjection } from '@/runtime/clipboard/clipboardProjection.js';
+import { componentProjection } from '@/runtime/components/componentProjection.js';
 import { groupProjection } from '@/runtime/grouping/groupProjection.js';
 import { selectionProjection } from '@/runtime/selection/selectionProjection.js';
 import { selectionBoundsProjection } from '@/runtime/selectionBounds/selectionBoundsProjection.js';
@@ -29,6 +30,30 @@ export function syncRuntimeToZustand(nextState) {
                     rotateAnchor: null,
                 },
                 guides: [],
+                components: {
+                    index: {
+                        definitions: {},
+                        instances: {},
+                        instanceOverrides: {},
+                    },
+                    resolvedInstances: {},
+                    counts: {
+                        definitions: 0,
+                        instances: 0,
+                        resolvedInstances: 0,
+                    },
+                },
+                data: {
+                    resolvedBindings: {},
+                    resolvedValues: {},
+                },
+                app: {
+                    screens: {},
+                    currentScreen: null,
+                    resolvedScreen: null,
+                    state: {},
+                    flows: {},
+                },
             },
             false
         );
@@ -60,6 +85,15 @@ export function syncRuntimeToZustand(nextState) {
         selectionBounds,
         transformAnchors: transformAnchorProjection(selectionBounds),
         guides: guideProjection(nextState, selectionBounds),
+        components: componentProjection(nextState),
+        data: nextState.data ?? { resolvedBindings: {}, resolvedValues: {} },
+        app: nextState.app ?? {
+            screens: {},
+            currentScreen: null,
+            resolvedScreen: null,
+            state: {},
+            flows: {},
+        },
     };
 
     if (prev.sceneGraph !== nextState.sceneGraph) {

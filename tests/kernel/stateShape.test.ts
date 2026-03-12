@@ -15,7 +15,9 @@ test.beforeEach(() => {
 test('initial runtime state keeps the canonical kernel slices', () => {
     assert.ok(initialRuntimeState.document);
     assert.deepEqual(Object.keys(initialRuntimeState.document).sort(), [
+        'app',
         'assets',
+        'bindings',
         'components',
         'exports',
         'layout',
@@ -23,6 +25,7 @@ test('initial runtime state keeps the canonical kernel slices', () => {
         'motion',
         'sceneGraph',
         'scenes',
+        'variables',
     ]);
     assert.ok(initialRuntimeState.selection);
     assert.ok(initialRuntimeState.selection.ids instanceof Set);
@@ -47,4 +50,8 @@ test('runtime internal state accepts a canonical document envelope', () => {
     assert.equal(state.document.meta.id, document.meta.id);
     assert.deepEqual(state.document.sceneGraph.rootIds, []);
     assert.deepEqual(state.document.motion.clips, {});
+    assert.deepEqual(state.document.app.screens, {});
+    assert.equal(state.document.app.currentScreen, null);
+    assert.deepEqual(state.document.variables, {});
+    assert.deepEqual(state.document.bindings, {});
 });

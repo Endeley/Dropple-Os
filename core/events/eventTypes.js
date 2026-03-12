@@ -63,6 +63,10 @@ export const EventTypes = Object.freeze({
     // ─────────────────────────────
     // Component identity (Phase 1¾)
     // ─────────────────────────────
+    COMPONENT_CREATE: 'component/create',
+    COMPONENT_INSTANCE_CREATE: 'component/instance/create',
+    COMPONENT_INSTANCE_DETACH: 'component/instance/detach',
+    COMPONENT_INSTANCE_OVERRIDE_SET: 'component/instance/override/set',
     COMPONENT_SET_ACTIVE: 'component/set-active',
 
     // ─────────────────────────────

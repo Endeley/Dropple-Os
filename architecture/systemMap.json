@@ -255,13 +255,16 @@
     "critical": false,
     "order": 150,
     "requiredFiles": [
-      "runtime/components/index.js"
+      "runtime/components/index.js",
+      "core/events/reducers/componentStateReducers.js",
+      "runtime/components/componentEvaluation.js",
+      "runtime/components/instanceResolver.js",
+      "runtime/components/overrideResolver.js"
     ],
     "requiredTests": [
       "tests/components.test.js"
     ],
     "optionalFiles": [
-      "runtime/components/instanceReducer.js",
       "runtime/components/componentProjection.js"
     ]
   },
@@ -306,10 +309,12 @@
       "core/ir/DesignIR.js",
       "core/ir/ComponentIR.js",
       "engine/ir/extractDesignIR.js",
-      "engine/ir/extractComponentIR.js"
+      "engine/ir/extractComponentIR.js",
+      "engine/ir/validateIR.js"
     ],
     "requiredTests": [
-      "engine/__tests__/templateCompiler.test.mjs"
+      "engine/__tests__/templateCompiler.test.mjs",
+      "engine/__tests__/irValidation.test.mjs"
     ],
     "optionalFiles": [
       "core/ir/SemanticIR.js",

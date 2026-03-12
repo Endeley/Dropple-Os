@@ -184,10 +184,21 @@ export type LayoutParticipation = {
 export type ComponentSystem = {
     definitions: Record<string, ComponentDefinition>;
     instances: Record<string, ComponentInstance>;
+    instanceOverrides: Record<string, ComponentInstanceOverrides>;
 };
 
-export type ComponentDefinition = Record<string, unknown>;
-export type ComponentInstance = Record<string, unknown>;
+export type ComponentDefinition = {
+    rootNodeId: NodeId;
+};
+
+export type ComponentInstance = {
+    componentId: string;
+};
+
+export type ComponentInstanceOverrides = Record<
+    NodeId,
+    Record<string, unknown>
+>;
 
 export type MotionSystem = {
     clips: Record<string, MotionClip>;

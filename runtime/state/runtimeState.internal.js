@@ -34,7 +34,16 @@ function createInitialDocument() {
     components: {
       definitions: {},
       instances: {},
+      instanceOverrides: {},
     },
+    app: {
+      currentScreen: null,
+      screens: {},
+      state: {},
+      flows: {},
+    },
+    variables: {},
+    bindings: {},
     motion: {
       clips: {},
     },
@@ -73,6 +82,21 @@ export const initialRuntimeState = {
   clipboard: {
     nodes: [],
     rootIds: [],
+  },
+  components: {
+    index: {},
+    resolvedInstances: {},
+  },
+  data: {
+    resolvedBindings: {},
+    resolvedValues: {},
+  },
+  app: {
+    screens: {},
+    currentScreen: null,
+    resolvedScreen: null,
+    state: {},
+    flows: {},
   },
   interaction: initialInteractionState(),
   preview: createPreviewState(),

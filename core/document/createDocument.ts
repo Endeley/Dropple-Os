@@ -34,6 +34,7 @@ export function createEmptyDocument(): DroppleDocument {
         components: {
             definitions: {},
             instances: {},
+            instanceOverrides: {},
         },
 
         motion: {

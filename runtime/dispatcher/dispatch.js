@@ -43,6 +43,9 @@ import { resolveBehaviorTrigger } from '@/core/behavior/resolveBehaviorTrigger.j
 import { applyLayoutPass } from '../layout/applyLayoutPass.js';
 import { shouldRunLayout } from '../layout/shouldRunLayout.js';
 import { evaluateSceneIncremental } from '@/runtime/scene/index.js';
+import { evaluateComponents } from '@/runtime/components/index.js';
+import { evaluateData } from '@/runtime/data/index.js';
+import { evaluateAppRuntime } from '@/runtime/appRuntime/index.js';
 import { observeUXIntent } from './ux/observeUXIntent.js';
 import { createUXWarningEmitter } from './ux/emitUXWarning.js';
 import { emitUXWarningEvent } from './ux/uxWarningBus.js';
@@ -590,6 +593,9 @@ export function createEventDispatcher({
                 const prev = __getRuntimeStateInternal();
                 didExecute = true;
                 let next = applyEvent(prev, structureGuarded);
+                next = evaluateData(next?.document, next);
+                next = evaluateComponents(next?.document, next);
+                next = evaluateAppRuntime(next?.document, next);
                 evaluateSceneIncremental({
                     event: structureGuarded,
                     document: next?.document,
