@@ -1,6 +1,6 @@
 // branching/merge/simulateMergeState.js
 
-import { replayEvents } from '@/runtime/dispatcher/replayEvents.js';
+import { replayEvents } from '@/core/persistence/replayEngine.js';
 import { applyLayoutPass } from '@/runtime/layout/applyLayoutPass.js';
 
 /**

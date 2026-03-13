@@ -3,21 +3,18 @@
 import { useEffect, useMemo } from 'react';
 import { registerSessionBindings } from '@/ui/interaction/sessionBinding.js';
 import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
-import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
-import { adaptWorkspaceToContractV1 } from '@/core/contracts/adaptWorkspaceToContractV1.js';
 import { workspaceIntentSetActive } from '@/ui/workspace/workspaceIntent.js';
+import {
+  getWorkspaceContractDefinition,
+  resolveWorkspaceId,
+} from '@/ui/bridges/workspaceActivationFacade.js';
 
 export function WorkspaceSessionsRoot({ modeId = null }) {
   const dispatcher = useDispatcher();
-  const normalizedId = useMemo(
-    () => (modeId ? String(modeId).toLowerCase() : null),
-    [modeId]
-  );
+  const normalizedId = useMemo(() => (modeId ? resolveWorkspaceId(modeId) : null), [modeId]);
   const workspaceDef = useMemo(() => {
     if (!normalizedId) return null;
-    const resolved = resolveWorkspacePolicy(normalizedId);
-    if (!resolved || resolved?.error) return null;
-    return adaptWorkspaceToContractV1(resolved);
+    return getWorkspaceContractDefinition(normalizedId);
   }, [normalizedId]);
 
   useEffect(() => {

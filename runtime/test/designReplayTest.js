@@ -1,4 +1,4 @@
-import { replayEvents } from '@/runtime/dispatcher/replayEvents.js';
+import { replayEvents } from '@/core/persistence/replayEngine.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 
 const events = [

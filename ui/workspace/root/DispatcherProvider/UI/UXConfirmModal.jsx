@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    respondUXConfirmation,
-    subscribeUXConfirmRequests,
-} from '@/runtime/dispatcher/ux/uxConfirmBus.js';
+    resolveUXConfirmation as respondUXConfirmation,
+    subscribeUXConfirmState as subscribeUXConfirmRequests,
+} from '@/ui/bridges/uxConfirmRuntimeFacade.js';
 
 const TITLE_COPY = 'Confirm Structural Change';
 const BODY_COPY =

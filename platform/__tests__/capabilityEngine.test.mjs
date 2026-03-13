@@ -4,6 +4,16 @@ import assert from 'node:assert/strict';
 import {
     activateWorkspaceCapabilities,
 } from '@/platform/capabilities/capabilityRuntime.js';
+import { resolveWorkspaceActivationContract } from '@/platform/capabilities/workspaceActivation.js';
+import {
+    createGlobalCapabilityContext,
+    createWorkspaceCapabilityContext,
+} from '@/platform/capabilities/capabilityContext.js';
+import {
+    getWorkspaceDefinition,
+    listWorkspaceDefinitions,
+    resolveWorkspaceId,
+} from '@/platform/workspaces/index.js';
 import {
     clearCapabilityRegistry,
     registerCapability,
@@ -85,4 +95,92 @@ test('plugins can register capabilities consumed by workspace policy', async () 
     assert.deepEqual([...active.tools], ['physicsBrush']);
     assert.deepEqual([...active.nodes], ['rigidBody']);
     assert.equal(getRegisteredTools()[0].id, 'physicsBrush');
+});
+
+test('capability contexts expose only enabled capability surfaces', () => {
+    resetCapabilityPlatform();
+
+    registerCapability({
+        id: 'layout',
+        runtimeServices: {
+            evaluateLayout: 'layout-service',
+        },
+        selectors: {
+            selectLayout: 'layout-selector',
+        },
+    });
+
+    registerCapability({
+        id: 'vector',
+        runtimeServices: {
+            createVector: 'vector-service',
+        },
+    });
+
+    registerWorkspacePolicy({
+        workspace: 'graphic',
+        capabilities: ['vector'],
+    });
+
+    const globalContext = createGlobalCapabilityContext();
+    const workspaceContext = createWorkspaceCapabilityContext('graphic');
+
+    assert.equal(globalContext.has('layout'), true);
+    assert.equal(globalContext.get('layout').runtimeServices.evaluateLayout, 'layout-service');
+    assert.deepEqual(globalContext.list(), ['layout', 'vector']);
+
+    assert.equal(workspaceContext.has('vector'), true);
+    assert.equal(workspaceContext.has('layout'), false);
+    assert.throws(() => workspaceContext.get('layout'), /Capability not enabled/);
+});
+
+test('workspace registry can seed capability activation without parallel policy wiring', () => {
+    resetCapabilityPlatform();
+
+    registerCapability({
+        id: 'node:create',
+        tools: ['frame'],
+    });
+    registerCapability({
+        id: 'node:mutate',
+        tools: ['move', 'resize', 'text', 'image', 'shape'],
+    });
+    registerCapability({
+        id: 'vector:create',
+        nodes: ['vector'],
+    });
+    registerCapability({
+        id: 'vector:mutate',
+        permissions: ['vector:edit'],
+    });
+    registerCapability({
+        id: 'vector:delete',
+        permissions: ['vector:delete'],
+    });
+    registerCapability({
+        id: 'timeline:view',
+        panels: ['TimelinePanel'],
+    });
+
+    const active = activateWorkspaceCapabilities('graphic');
+    const contract = resolveWorkspaceActivationContract('graphic');
+
+    assert.equal(active.capabilities.has('node:create'), true);
+    assert.equal(active.capabilities.has('vector:create'), true);
+    assert.equal(contract.workspace, 'graphic');
+    assert.equal(contract.tools.has('select'), true);
+    assert.equal(contract.tools.has('frame'), true);
+    assert.equal(contract.permissions.has('vector:edit'), true);
+    assert.equal(contract.allowedEventTypes.size > 0, true);
+    assert.equal(contract.canvasPolicy, null);
+});
+
+test('platform workspace registry resolves canonical workspace definitions', () => {
+    const definition = getWorkspaceDefinition('design');
+    const workspaceList = listWorkspaceDefinitions();
+
+    assert.equal(resolveWorkspaceId('design'), 'graphic');
+    assert.equal(definition.id, 'graphic');
+    assert.equal(Array.isArray(workspaceList), true);
+    assert.equal(workspaceList.length > 0, true);
 });

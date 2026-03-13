@@ -6,6 +6,7 @@ import { createSessionCommitActions } from '@/runtime/input/sessionCommitRuntime
 import { __resetRuntimeStateInternal, __setRuntimeStateInternal, initialRuntimeState } from '@/runtime/state/runtimeState.internal.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { VIEWPORT_PAN, VIEWPORT_ZOOM } from '@/core/events/viewportEvents.js';
+import { createCanonicalDocumentEnvelope } from '@/core/persistence/documentEnvelope.js';
 
 function seedRuntime(overrides = {}) {
     __resetRuntimeStateInternal();
@@ -79,19 +80,19 @@ test('session runtime bridge creates zoom session and commit bridge emits viewpo
 });
 
 test('session runtime bridge creates marquee session and commit bridge emits selection set', () => {
-    seedRuntime({
-        document: {
-            ...initialRuntimeState.document,
-            sceneGraph: {
-                rootIds: ['node-1'],
-                nodes: {
-                    'node-1': {
-                        id: 'node-1',
-                        hidden: false,
-                    },
-                },
+    const document = createCanonicalDocumentEnvelope();
+    document.sceneGraph = {
+        rootIds: ['node-1'],
+        nodes: {
+            'node-1': {
+                id: 'node-1',
+                hidden: false,
             },
         },
+    };
+
+    seedRuntime({
+        document,
         scene: {
             spatialIndex: {
                 cellSize: 128,

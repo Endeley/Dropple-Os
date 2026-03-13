@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-03-13T14:28:42.527Z",
+  "generatedAt": "2026-03-13T21:05:00.435Z",
   "scale": "0-100 maturity",
   "groups": {
     "foundation": 80,
     "sceneRuntime": 80,
     "authoringRuntime": 80,
-    "platform": 70
+    "platform": 80
   },
-  "total": 77,
-  "maturity": "PARTIAL"
+  "total": 80,
+  "maturity": "INTEGRATED"
 }

@@ -1,6 +1,6 @@
-import { replayEvents } from '../dispatcher/replayEvents.js';
+import { replayEvents } from '../../core/persistence/replayEngine.js';
 import { EventTypes } from '../../core/events/eventTypes.js';
-import { hashRuntimeState } from '../utils/hashRuntimeState.js';
+import { hashRuntimeState } from '../../core/persistence/hashDocument.js';
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);

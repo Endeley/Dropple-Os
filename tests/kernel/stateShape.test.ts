@@ -7,6 +7,11 @@ import {
     __setRuntimeStateInternal,
     __getRuntimeStateInternal,
 } from '@/runtime/state/runtimeState.internal.js';
+import {
+    CANONICAL_DOCUMENT_SLICES,
+    createCanonicalDocumentEnvelope,
+    withDocumentEnvelope,
+} from '@/core/persistence/documentEnvelope.js';
 
 test.beforeEach(() => {
     __resetRuntimeStateInternal();
@@ -14,19 +19,7 @@ test.beforeEach(() => {
 
 test('initial runtime state keeps the canonical kernel slices', () => {
     assert.ok(initialRuntimeState.document);
-    assert.deepEqual(Object.keys(initialRuntimeState.document).sort(), [
-        'app',
-        'assets',
-        'bindings',
-        'components',
-        'exports',
-        'layout',
-        'meta',
-        'motion',
-        'sceneGraph',
-        'scenes',
-        'variables',
-    ]);
+    assert.deepEqual(Object.keys(initialRuntimeState.document).sort(), [...CANONICAL_DOCUMENT_SLICES].sort());
     assert.ok(initialRuntimeState.selection);
     assert.ok(initialRuntimeState.selection.ids instanceof Set);
     assert.equal(initialRuntimeState.selection.primary, null);
@@ -37,11 +30,11 @@ test('initial runtime state keeps the canonical kernel slices', () => {
 });
 
 test('runtime internal state accepts a canonical document envelope', () => {
-    const document = structuredClone(initialRuntimeState.document);
+    const document = createCanonicalDocumentEnvelope();
     __setRuntimeStateInternal(
         {
             ...initialRuntimeState,
-            document,
+            ...withDocumentEnvelope(document),
         },
         'dispatcher',
     );

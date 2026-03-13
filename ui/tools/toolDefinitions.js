@@ -1,5 +1,5 @@
 import { TOOL_CAPABILITIES as BASE_TOOL_CAPABILITIES } from '@/ui/capabilities/toolCapabilities';
-import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy';
+import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
 
 export const TOOL_BUS_TOPICS = Object.freeze({
   select: 'tool.select',
@@ -89,14 +89,14 @@ function resolveWorkspaceTools(workspaceId) {
   const normalizedId = normalizeWorkspaceId(workspaceId);
   if (!normalizedId) return [];
 
-  const policy = resolveWorkspacePolicy(normalizedId);
+  const activation = getWorkspaceActivation(normalizedId);
   const fallback = FALLBACK_WORKSPACE_TOOLS[normalizedId] || null;
 
-  if (policy?.error) {
+  if (!activation) {
     return fallback || [];
   }
 
-  const policyTools = Array.isArray(policy?.allowedTools) ? policy.allowedTools : [];
+  const policyTools = Array.isArray(activation?.tools) ? activation.tools : [];
 
   if (!policyTools.length) {
     return fallback || [];

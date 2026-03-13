@@ -9,31 +9,33 @@ import {
     frontierSegmentSchedule,
     schedulePartitions,
 } from '@/runtime/scene/index.js';
+import { createCanonicalDocumentEnvelope } from '@/core/persistence/documentEnvelope.js';
 
 function createDocument() {
-    return {
-        sceneGraph: {
-            nodes: {
-                root: {
-                    id: 'root',
-                    children: ['a', 'b'],
-                    props: { transform: { x: 10, y: 20 } },
-                },
-                a: {
-                    id: 'a',
-                    parentId: 'root',
-                    children: [],
-                    props: { transform: { x: 5, y: 0 }, size: { width: 10, height: 10 } },
-                },
-                b: {
-                    id: 'b',
-                    parentId: 'root',
-                    children: [],
-                    props: { transform: { x: 0, y: 7 }, size: { width: 20, height: 10 } },
-                },
+    const document = createCanonicalDocumentEnvelope();
+    document.sceneGraph = {
+        rootIds: ['root'],
+        nodes: {
+            root: {
+                id: 'root',
+                children: ['a', 'b'],
+                props: { transform: { x: 10, y: 20 } },
+            },
+            a: {
+                id: 'a',
+                parentId: 'root',
+                children: [],
+                props: { transform: { x: 5, y: 0 }, size: { width: 10, height: 10 } },
+            },
+            b: {
+                id: 'b',
+                parentId: 'root',
+                children: [],
+                props: { transform: { x: 0, y: 7 }, size: { width: 20, height: 10 } },
             },
         },
     };
+    return document;
 }
 
 test('evaluateSegment evaluates nodes in segment order and returns results', () => {

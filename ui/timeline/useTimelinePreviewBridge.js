@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
 import { samplePreviewState } from './samplePreviewState.js';
-import { getSceneGraph } from '@/runtime/document/documentAdapter.js';
-import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
-import { selectRenderState } from '@/runtime/projection';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
+import {
+    getSceneGraph,
+    selectRenderState,
+    useAnimatedRuntimeStore,
+    useRuntimeStore,
+    useTimelineStore,
+} from '@/ui/bridges/timelinePreviewRuntimeBridge.js';
 
 /**
  * Bridges UI scrubbing into the animated render store.

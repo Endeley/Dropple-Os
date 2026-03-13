@@ -1,12 +1,9 @@
-import { compileTimelineToIR } from '@/runtime/animation/compileTimelineToIR.js';
-import { exportWebAnimation } from '@/runtime/animation/exporters/exportWebAnimation.js';
+import { exportMotionBridge } from '@/ui/bridges/exportMotionBridge.js';
 
 /**
  * Exports motion intent from the canonical motion document into Web Animations configs.
  * Pure function: returns array of { target, keyframes, options }.
  */
 export function exportMotion({ motion }) {
-    if (!motion) return [];
-    const ir = compileTimelineToIR(motion);
-    return ir.map((anim) => exportWebAnimation(anim, { duration: undefined }));
+    return exportMotionBridge({ motion });
 }

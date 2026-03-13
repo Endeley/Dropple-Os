@@ -97,3 +97,29 @@ test('plugin sandbox returns frozen projection snapshots', async () => {
 
     assert.equal(getAllPlugins().length, 1);
 });
+
+test('plugin install receives capability context instead of importing engines directly', async () => {
+    resetPluginPlatform();
+
+    const pluginModule = async () => ({
+        id: 'capability-aware-plugin',
+        install({ capabilities, registerCapability }) {
+            registerCapability({
+                id: 'vector',
+                runtimeServices: {
+                    createVector: 'vector-service',
+                },
+            });
+
+            assert.equal(capabilities.has('vector'), true);
+            assert.equal(capabilities.get('vector').runtimeServices.createVector, 'vector-service');
+        },
+    });
+
+    await startPluginHost(
+        [{ id: 'capability-aware-plugin', module: pluginModule }],
+        () => ({}),
+    );
+
+    assert.equal(getAllPlugins().length, 1);
+});

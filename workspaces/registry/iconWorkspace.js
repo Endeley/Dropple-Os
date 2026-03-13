@@ -1,9 +1,11 @@
+import { EventTypes } from '@/core/events/eventTypes.js';
+
 export const iconWorkspace = {
     id: "icons",
     label: "Icon Design",
     status: "active",
 
-    engines: ["nodeTree", "layout"],
+    engines: ["nodeTree", "layout", "vector"],
 
     ir: {
         design: true,
@@ -37,7 +39,11 @@ export const iconWorkspace = {
         codegen: false,
     },
 
-    allowedEventTypes: [],
+    allowedEventTypes: [
+        EventTypes.VECTOR_CREATE,
+        EventTypes.VECTOR_UPDATE,
+        EventTypes.VECTOR_DELETE,
+    ],
 
     export: {
         formats: ["svg", "icon-font"],

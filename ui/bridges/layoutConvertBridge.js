@@ -1,5 +1,5 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { createLayoutConvertEvent } from '@/runtime/input/layoutConvertRuntimeBridge.js';
+import { createLayoutConvertBridgeEvent } from '@/ui/bridges/intentEventFacade.js';
 
 let registered = false;
 
@@ -10,7 +10,7 @@ export function registerLayoutConvertBridge(dispatcher) {
     const dispatch = dispatcher?.dispatch;
 
     const onConvert = (intent) => {
-        const event = createLayoutConvertEvent(intent);
+        const event = createLayoutConvertBridgeEvent(intent);
         if (!event) return;
         if (typeof dispatch === 'function') {
             dispatch(event);

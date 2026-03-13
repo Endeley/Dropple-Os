@@ -19,9 +19,9 @@ export function compileProject(ir, options = {}) {
 
     if (hasDesignSystem) {
         compileDesignTokens(context);
+        compileThemes(context);
         compileDesignComponents(context);
         compileVariants(context);
-        compileThemes(context);
     }
 
     generateComponents(context);

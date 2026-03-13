@@ -6,6 +6,10 @@ export const INTENT_CAPS = {
   [EventTypes.NODE_UPDATE]: ['node:mutate'],
   [EventTypes.NODE_DELETE]: ['node:delete'],
   [EventTypes.LAYOUT_CONVERT]: ['node:create'],
+  [EventTypes.VECTOR_CREATE]: ['vector:create'],
+  [EventTypes.VECTOR_UPDATE]: ['vector:mutate'],
+  [EventTypes.VECTOR_DELETE]: ['vector:delete'],
+  [EventTypes.AI_REQUEST_ENQUEUE]: ['ai:generate'],
   [EventTypes.STATE_MACHINE_TRANSITION]: ['app:state-machine'],
   [EventTypes.NAVIGATION_NAVIGATE]: ['app:navigate'],
 

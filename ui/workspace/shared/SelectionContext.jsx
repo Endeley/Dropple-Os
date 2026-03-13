@@ -3,10 +3,12 @@
 import { createContext, useContext, useMemo } from 'react';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
-import { clearSelection } from '@/runtime/selection/clearSelection.js';
-import { setSelection as createSetSelection } from '@/runtime/selection/setSelection.js';
-import { selectNode } from '@/runtime/selection/selectNode.js';
-import { toggleNode } from '@/runtime/selection/toggleNode.js';
+import {
+  clearSelection,
+  selectNode,
+  setSelection as createSetSelection,
+  toggleNode,
+} from '@/ui/bridges/selectionRuntimeFacade.js';
 
 const SelectionContext = createContext(null);
 

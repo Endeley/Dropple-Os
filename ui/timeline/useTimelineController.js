@@ -8,8 +8,8 @@ import {
   redoTimeline,
   checkoutSnapshot,
   setSnapshotLabel,
-} from '@/runtime/timeline/trackControllerBridge.js';
-import { projectTimeline } from '@/runtime/projection/timelineProjection.js';
+  projectTimeline,
+} from '@/ui/bridges/timelineControllerBridge.js';
 
 export function useTimelineController(initialTimeline) {
   const [controller, setController] = useState(() =>

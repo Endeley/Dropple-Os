@@ -102,6 +102,12 @@
     "replay",
     "capabilityEngine"
   ],
+  "vectorEngine": [
+    "documentModel",
+    "dispatcher",
+    "reducers",
+    "capabilityEngine"
+  ],
   "aiRuntime": [
     "appRuntime",
     "compilerIR",

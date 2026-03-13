@@ -2,6 +2,8 @@ export function createCompilerContext(ir, options = {}) {
     return {
         ir,
         target: options.target || 'react',
+        workspace: options.workspace || null,
+        options,
 
         structure: null,
         layout: null,

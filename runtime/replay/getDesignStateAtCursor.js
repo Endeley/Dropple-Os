@@ -1,6 +1,6 @@
 import { resolveCursor } from '../cursor/resolveCursor.js';
 import { getEventsUpToCursor } from '../events/getEventsUpToCursor.js';
-import { replayEvents } from '@/runtime/dispatcher/replayEvents.js';
+import { replayEvents } from '@/core/persistence/replayEngine.js';
 
 export function getDesignStateAtCursor({
   events,

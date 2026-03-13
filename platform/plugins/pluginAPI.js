@@ -1,5 +1,6 @@
 import { registerPlugin } from './pluginRegistry.js';
 import { registerCapability } from '@/platform/capabilities/capabilityRegistry.js';
+import { createGlobalCapabilityContext } from '@/platform/capabilities/capabilityContext.js';
 
 const tools = new Map();
 const panels = new Map();
@@ -87,6 +88,7 @@ export function installPlugin(plugin, sandbox) {
     if (typeof plugin.install === 'function') {
         plugin.install({
             sandbox,
+            capabilities: createGlobalCapabilityContext(),
             registerCapability,
             registerTool,
             registerPanel,

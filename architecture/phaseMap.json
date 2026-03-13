@@ -144,6 +144,11 @@
     "stage": "collaboration-runtime",
     "layer": "platform"
   },
+  "vectorEngine": {
+    "phase": "phase2",
+    "stage": "asset-vector-icon-system",
+    "layer": "platform"
+  },
   "aiRuntime": {
     "phase": "phase2",
     "stage": "application-runtime-depth",

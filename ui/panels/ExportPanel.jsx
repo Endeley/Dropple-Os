@@ -1,9 +1,8 @@
 'use client';
 
 import { exportTimelineToCSS } from '@/timeline/export/cssExporter.js';
-import { executeExportWithPreflight } from '@/runtime/export/executeExport.js';
-import { buildEvaluationInputs } from '@/runtime/animation/buildEvaluationInputs.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { exportCSSAnimation } from '@/ui/bridges/exportAnimationBridge.js';
 
 /**
  * Minimal export UI. Proof-of-concept only.
@@ -18,15 +17,9 @@ export default function ExportPanel({ timeline }) {
     }));
 
     function onExportCSS() {
-        const inputs = buildEvaluationInputs(runtimeState || {});
-        const shot = {
-            shotTimeline: inputs.shotTimeline,
-            sceneGraph: inputs.sceneGraphTree,
-            activeShotId: inputs.activeShotId,
-            presentHash: null,
-        };
-
-        const result = executeExportWithPreflight(shot, timeline, {
+        const result = exportCSSAnimation({
+            runtimeState,
+            timeline,
             performExport: () => exportTimelineToCSS(timeline),
         });
 

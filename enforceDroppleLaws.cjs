@@ -36,6 +36,7 @@ const LAYERS = [
     { name: 'runtime', prefix: 'runtime/dispatcher/' },
 
     { name: 'runtime', prefix: 'runtime/' },
+    { name: 'platform', prefix: 'platform/' },
     { name: 'workspace', prefix: 'workspace/' },
     { name: 'infrastructure', prefix: 'infrastructure/' },
     { name: 'ui', prefix: 'ui/' },
@@ -46,10 +47,11 @@ const ALLOWED_ZONE_IMPORTS = {
     core: [],
     engine: ['core'],
     runtime: ['core', 'engine'],
+    platform: ['workspace', 'core', 'engine', 'runtime'],
     infrastructure: ['core'],
-    workspace: ['runtime', 'engine', 'infrastructure', 'core'],
-    ui: ['workspace', 'runtime', 'engine', 'infrastructure', 'core'],
-    product: ['ui', 'workspace', 'runtime', 'engine', 'infrastructure', 'core'],
+    workspace: ['platform', 'runtime', 'engine', 'infrastructure', 'core'],
+    ui: ['platform', 'workspace', 'runtime', 'engine', 'infrastructure', 'core'],
+    product: ['ui', 'platform', 'workspace', 'runtime', 'engine', 'infrastructure', 'core'],
 };
 
 const PROJECTION_PREFIX = 'runtime/projection/';
@@ -61,6 +63,9 @@ const MUTATION_FUNNEL_IMPORTS = [
     'core/mutationContext.js',
 ];
 const MUTATION_FUNNEL_PREFIX = 'runtime/dispatcher/';
+const MUTATION_FUNNEL_ALLOWED_IMPORTERS = new Set([
+    'core/persistence/replayEngine.js',
+]);
 
 const UI_RUNTIME_STATE_PREFIX = 'runtime/state/';
 const UI_PROJECTION_INTERNAL_PREFIX = 'runtime/projection/v1/internal/';
@@ -98,11 +103,12 @@ const PANEL_DISALLOWED_EXACT = new Set([
     'core/mutationContext.js',
 ]);
 
-const ZONE_ENTRYPOINTS = new Set(['@core', '@engine', '@runtime', '@workspace', '@ui']);
+const ZONE_ENTRYPOINTS = new Set(['@core', '@engine', '@runtime', '@platform', '@workspace', '@ui']);
 const ZONE_DEEP_PREFIXES = [
     '@core/',
     '@engine/',
     '@runtime/',
+    '@platform/',
     '@workspace/',
     '@ui/',
 ];
@@ -261,10 +267,11 @@ function run() {
 
             if (
                 MUTATION_FUNNEL_IMPORTS.some((blocked) => resolved.startsWith(blocked)) &&
-                !f.path.startsWith(MUTATION_FUNNEL_PREFIX)
+                !f.path.startsWith(MUTATION_FUNNEL_PREFIX) &&
+                !MUTATION_FUNNEL_ALLOWED_IMPORTERS.has(f.path)
             ) {
                 console.error(
-                    `MUTATION FUNNEL VIOLATION: ${f.path} must not import ${resolved} (only runtime/dispatcher allowed)`
+                    `MUTATION FUNNEL VIOLATION: ${f.path} must not import ${resolved} (only runtime/dispatcher or approved replay entrypoints allowed)`
                 );
                 violationCount += 1;
                 process.exit(1);

@@ -75,10 +75,17 @@ const SYSTEM_EVENTS = new Set([
     EventTypes.CLIPBOARD_SET,
     EventTypes.CLIPBOARD_CLEAR,
     EventTypes.SHOT_SET_ACTIVE,
+    EventTypes.AI_REQUEST_ENQUEUE,
+    EventTypes.AI_REQUEST_COMPLETE,
+    EventTypes.AI_REQUEST_FAIL,
     EventTypes.CLOCK_SEEK,
     EventTypes.CLOCK_PLAY,
     EventTypes.CLOCK_PAUSE,
 ]);
+
+function isCollaborationRuntimeEvent(eventType) {
+    return typeof eventType === 'string' && eventType.startsWith('collaboration/');
+}
 
 function cloneState(state) {
     if (typeof structuredClone === 'function') {
@@ -305,6 +312,7 @@ export function createEventDispatcher({
                 const workspaceId = workspace?.id ?? 'graphic';
                 const policy = workspace;
                 const requiredCaps = INTENT_CAPS[event.type] ?? [];
+                const collaborationRuntimeEvent = isCollaborationRuntimeEvent(event.type);
                 const mutationType =
                     event.type === EventTypes.SELECTION_SET ||
                     event.type === EventTypes.SELECTION_CLEAR ||
@@ -327,7 +335,7 @@ export function createEventDispatcher({
                         ? 'delete'
                         : 'mutate';
 
-                if (!SYSTEM_EVENTS.has(event.type)) {
+                if (!SYSTEM_EVENTS.has(event.type) && !collaborationRuntimeEvent) {
                     const verdict = checkWorkspacePolicy({
                         workspace,
                         requiredCaps,
@@ -629,7 +637,7 @@ export function createEventDispatcher({
                 }
 
                 const committed = commit(next, { event });
-                if (!SYSTEM_EVENTS.has(event.type)) {
+                if (!SYSTEM_EVENTS.has(event.type) && !collaborationRuntimeEvent) {
                     history.push(cloneState(__getRuntimeStateInternal()));
                     const store = useRuntimeStore.getState();
                     useRuntimeStore.setState({

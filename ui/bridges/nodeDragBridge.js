@@ -1,9 +1,6 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
-import { getNearestSnapshot } from '@/runtime/input/spatial/nearestSnapshot.js';
-import { createNodeDragSessionIntent } from '@/runtime/input/nodeDragRuntimeBridge.js';
 import { SELECTION_SET } from '@/core/events/selectionEvents.js';
+import { createNodeDragBridgeResult } from '@/ui/bridges/interactionSessionBridge.js';
 
 let _unsub = null;
 
@@ -11,21 +8,7 @@ export function registerNodeDragBridge(dispatch) {
     if (_unsub) return _unsub;
 
     const handler = (intent) => {
-        const selectionIds = useRuntimeStore.getState().selection?.ids || [];
-        const runtime = useRuntimeStore.getState();
-        const animated = useAnimatedRuntimeStore.getState();
-
-        const nodesById = runtime?.nodes && Object.keys(runtime.nodes).length > 0
-            ? runtime.nodes
-            : animated?.nodes || {};
-
-        const result = createNodeDragSessionIntent({
-            intent,
-            selectedIds: selectionIds,
-            nodesById,
-            nearestSnapshot: getNearestSnapshot?.(),
-            zoomTier: intent?.zoomTier ?? 'normal',
-        });
+        const result = createNodeDragBridgeResult({ intent });
 
         if (!result) return;
 

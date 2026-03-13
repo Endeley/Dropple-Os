@@ -1,6 +1,5 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { createSessionFromIntent } from '@/runtime/input/sessionRuntimeBridge.js';
+import { createSessionBridgeSession } from '@/ui/bridges/interactionSessionBridge.js';
 
 let _unsub = null;
 
@@ -8,14 +7,7 @@ export function registerSessionBridge() {
     if (_unsub) return _unsub;
 
     const handler = ({ sessionType, payload, originalEvent }) => {
-        const runtimeState = useRuntimeStore.getState();
-        const nodesById = runtimeState?.nodes || {};
-
-        const session = createSessionFromIntent({
-            sessionType,
-            payload,
-            nodesById,
-        });
+        const session = createSessionBridgeSession({ sessionType, payload });
 
         if (!session) return;
 

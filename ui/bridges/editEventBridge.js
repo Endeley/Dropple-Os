@@ -1,5 +1,5 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { createEditEvent } from '@/runtime/input/editEventRuntimeBridge.js';
+import { createEditBridgeEvent } from '@/ui/bridges/intentEventFacade.js';
 
 let registered = false;
 
@@ -8,7 +8,7 @@ export function registerEditEventBridge(dispatch) {
     registered = true;
 
     const onCommit = (intent) => {
-        const event = createEditEvent(intent);
+        const event = createEditBridgeEvent(intent);
         if (!event) return;
         if (typeof dispatch === 'function') {
             dispatch(event);

@@ -1,11 +1,8 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
-import { getNearestSnapshot } from '@/runtime/input/spatial/nearestSnapshot.js';
 import {
-    createGroupMoveSession,
-    createGroupResizeSession,
-} from '@/runtime/input/groupSessionRuntimeBridge.js';
+    createGroupMoveBridgeSession,
+    createGroupResizeBridgeSession,
+} from '@/ui/bridges/interactionSessionBridge.js';
 
 let _unsubMove = null;
 let _unsubResize = null;
@@ -16,16 +13,10 @@ export function registerGroupSessionBridge() {
     _unsubMove = canvasBus.on(
         'intent.group.move.start',
         ({ nodeIds, pointer, modifiers, originalEvent }) => {
-            const runtime = useRuntimeStore.getState();
-            const animated = useAnimatedRuntimeStore.getState();
-
-            const session = createGroupMoveSession({
+            const session = createGroupMoveBridgeSession({
                 nodeIds,
                 pointer,
                 modifiers,
-                nodesById: runtime?.nodes || {},
-                animatedNodesById: animated?.nodes || {},
-                nearestSnapshot: getNearestSnapshot?.(),
                 zoomTier: 'normal',
             });
 
@@ -38,14 +29,11 @@ export function registerGroupSessionBridge() {
     _unsubResize = canvasBus.on(
         'intent.group.resize.start',
         ({ nodeIds, pointer, handle, modifiers, originalEvent }) => {
-            const runtime = useRuntimeStore.getState();
-
-            const session = createGroupResizeSession({
+            const session = createGroupResizeBridgeSession({
                 nodeIds,
                 pointer,
                 handle,
                 modifiers,
-                nodesById: runtime?.nodes || {},
             });
 
             if (!session) return;

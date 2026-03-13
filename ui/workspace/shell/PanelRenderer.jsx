@@ -1,13 +1,13 @@
 'use client';
 
-import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy';
 import { PanelRegistry } from '@/ui/panels/PanelRegistry';
+import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
 
 export function PanelRenderer({ workspaceId, node, emit, extraPanels = [] }) {
-    const policy = resolveWorkspacePolicy(workspaceId);
-    if (!policy || policy?.error) return null;
+    const activation = getWorkspaceActivation(workspaceId);
+    if (!activation) return null;
 
-    const panels = Array.isArray(policy.panels) ? policy.panels : [];
+    const panels = Array.isArray(activation.panels) ? activation.panels : [];
     const extras = Array.isArray(extraPanels) ? extraPanels : [];
 
     return (

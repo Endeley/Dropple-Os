@@ -54,8 +54,18 @@ export function syncRuntimeToZustand(nextState) {
                     state: {},
                     flows: {},
                 },
+                vectors: {},
                 stateMachines: {},
                 navigation: {},
+                collaboration: {
+                    session: null,
+                    presence: [],
+                    cursors: [],
+                },
+                ai: {
+                    requests: [],
+                    latestRequest: null,
+                },
             },
             false
         );
@@ -96,8 +106,31 @@ export function syncRuntimeToZustand(nextState) {
             state: {},
             flows: {},
         },
+        vectors: nextState.vectors ?? nextState.document?.vectors ?? {},
         stateMachines: nextState.stateMachines ?? {},
         navigation: nextState.navigation ?? {},
+        collaboration: {
+            session: nextState.collaboration?.session ?? null,
+            presence: Object.values(nextState.collaboration?.presence ?? {}).sort((a, b) =>
+                String(a?.id ?? '').localeCompare(String(b?.id ?? ''))
+            ),
+            cursors: Object.entries(nextState.collaboration?.cursors ?? {})
+                .map(([userId, cursor]) => ({
+                    userId,
+                    ...cursor,
+                }))
+                .sort((a, b) => String(a.userId).localeCompare(String(b.userId))),
+        },
+        ai: {
+            requests: (nextState.ai?.order ?? [])
+                .map((requestId) => nextState.ai?.requests?.[requestId] ?? null)
+                .filter(Boolean),
+            latestRequest: (() => {
+                const order = nextState.ai?.order ?? [];
+                const latestId = order.length ? order[order.length - 1] : null;
+                return latestId ? nextState.ai?.requests?.[latestId] ?? null : null;
+            })(),
+        },
     };
 
     if (prev.sceneGraph !== nextState.sceneGraph) {

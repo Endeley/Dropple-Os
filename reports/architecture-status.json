@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-13T14:28:43.040Z",
+  "generatedAt": "2026-03-13T21:05:04.665Z",
   "statusScale": [
     "MISSING",
     "SCAFFOLDED",
@@ -900,7 +900,7 @@
       }
     },
     "designSystemCompiler": {
-      "description": "Design token, theme, and design-system generation pipeline",
+      "description": "Expanded design system generator for tokens, themes, variants, components, and React library output",
       "group": "platform",
       "phase": "phase2",
       "stage": "design-system-generator",
@@ -914,28 +914,35 @@
       ],
       "blockedBy": [],
       "requiredFiles": [
-        "engine/compiler/designSystem/compileDesignTokens.js",
-        "engine/compiler/designSystem/compileComponents.js",
-        "engine/compiler/designSystem/compileThemes.js",
-        "engine/compiler/designSystem/reactComponentGenerator.js"
+        "engine/compiler/designSystem/tokenCompiler.js",
+        "engine/compiler/designSystem/themeCompiler.js",
+        "engine/compiler/designSystem/variantCompiler.js",
+        "engine/compiler/designSystem/componentCompiler.js",
+        "engine/compiler/designSystem/libraryGenerator.js",
+        "engine/compiler/designSystem/reactDesignSystemTarget.js"
       ],
       "requiredTests": [
         "engine/__tests__/designSystemCompiler.test.mjs"
       ],
       "optionalFiles": [
-        "engine/compiler/designSystem/cssVariableGenerator.js"
+        "engine/compiler/designSystem/cssVariableGenerator.js",
+        "engine/compiler/designSystem/compileDesignTokens.js",
+        "engine/compiler/designSystem/compileComponents.js",
+        "engine/compiler/designSystem/compileThemes.js",
+        "engine/compiler/designSystem/compileVariants.js",
+        "engine/compiler/designSystem/reactComponentGenerator.js"
       ],
       "verifyCommands": [],
       "missingRequiredFiles": [],
       "missingRequiredTests": [],
       "missingOptionalFiles": [],
       "evidence": {
-        "requiredFilesPresent": 4,
-        "requiredFilesTotal": 4,
+        "requiredFilesPresent": 6,
+        "requiredFilesTotal": 6,
         "requiredTestsPresent": 1,
         "requiredTestsTotal": 1,
-        "optionalFilesPresent": 1,
-        "optionalFilesTotal": 1,
+        "optionalFilesPresent": 6,
+        "optionalFilesTotal": 6,
         "verifyCommandsTotal": 0
       }
     },
@@ -1161,8 +1168,8 @@
       "layer": "platform",
       "critical": true,
       "order": 210,
-      "status": "SCAFFOLDED",
-      "score": 30,
+      "status": "INTEGRATED",
+      "score": 80,
       "dependencies": [
         "documentModel",
         "replay",
@@ -1170,10 +1177,12 @@
       ],
       "blockedBy": [],
       "requiredFiles": [
-        "collab/usePresence.js",
-        "collab/useLiveCursors.js",
-        "convex/streamEvents.js",
-        "convex/updatePresence.js"
+        "platform/collaboration/collaborationSession.js",
+        "platform/collaboration/eventSyncEngine.js",
+        "platform/collaboration/presenceRuntime.js",
+        "platform/collaboration/cursorRuntime.js",
+        "platform/collaboration/conflictResolver.js",
+        "core/events/reducers/collaborationReducers.js"
       ],
       "requiredTests": [
         "collab/__tests__/presenceRuntime.test.mjs"
@@ -1184,17 +1193,59 @@
       ],
       "verifyCommands": [],
       "missingRequiredFiles": [],
-      "missingRequiredTests": [
-        "collab/__tests__/presenceRuntime.test.mjs"
-      ],
+      "missingRequiredTests": [],
       "missingOptionalFiles": [],
       "evidence": {
-        "requiredFilesPresent": 4,
-        "requiredFilesTotal": 4,
-        "requiredTestsPresent": 0,
+        "requiredFilesPresent": 6,
+        "requiredFilesTotal": 6,
+        "requiredTestsPresent": 1,
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 2,
         "optionalFilesTotal": 2,
+        "verifyCommandsTotal": 0
+      }
+    },
+    "vectorEngine": {
+      "description": "Document-owned vector, icon, and SVG geometry engine for graphic-capable workspaces",
+      "group": "platform",
+      "phase": "phase2",
+      "stage": "asset-vector-icon-system",
+      "layer": "platform",
+      "critical": true,
+      "order": 215,
+      "status": "INTEGRATED",
+      "score": 80,
+      "dependencies": [
+        "documentModel",
+        "dispatcher",
+        "reducers",
+        "capabilityEngine"
+      ],
+      "blockedBy": [],
+      "requiredFiles": [
+        "engine/vector/vectorRegistry.js",
+        "engine/vector/vectorReducer.js",
+        "engine/vector/vectorRuntime.js",
+        "engine/vector/pathEngine.js",
+        "engine/vector/booleanEngine.js",
+        "engine/vector/vectorSelectors.js",
+        "core/events/reducers/vectorReducers.js"
+      ],
+      "requiredTests": [
+        "engine/__tests__/vectorEngine.test.mjs"
+      ],
+      "optionalFiles": [],
+      "verifyCommands": [],
+      "missingRequiredFiles": [],
+      "missingRequiredTests": [],
+      "missingOptionalFiles": [],
+      "evidence": {
+        "requiredFilesPresent": 7,
+        "requiredFilesTotal": 7,
+        "requiredTestsPresent": 1,
+        "requiredTestsTotal": 1,
+        "optionalFilesPresent": 0,
+        "optionalFilesTotal": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -1206,8 +1257,8 @@
       "layer": "platform",
       "critical": false,
       "order": 220,
-      "status": "SCAFFOLDED",
-      "score": 30,
+      "status": "INTEGRATED",
+      "score": 80,
       "dependencies": [
         "appRuntime",
         "compilerIR",
@@ -1216,28 +1267,29 @@
       "blockedBy": [],
       "requiredFiles": [
         "ai/README.md",
-        "ai/prompts/ccmAuthorPrompt.ts"
+        "ai/prompts/ccmAuthorPrompt.ts",
+        "ai/runtime/aiRuntime.js",
+        "core/events/reducers/aiReducers.js"
       ],
       "requiredTests": [
         "ai/__tests__/runtimeGeneration.test.mjs"
       ],
       "optionalFiles": [
+        "ai/runtime/aiSelectors.js",
         "ai/generation/generateTemplateArtifact.ts",
         "education/ai/ExplanationAgent.js"
       ],
       "verifyCommands": [],
       "missingRequiredFiles": [],
-      "missingRequiredTests": [
-        "ai/__tests__/runtimeGeneration.test.mjs"
-      ],
+      "missingRequiredTests": [],
       "missingOptionalFiles": [],
       "evidence": {
-        "requiredFilesPresent": 2,
-        "requiredFilesTotal": 2,
-        "requiredTestsPresent": 0,
+        "requiredFilesPresent": 4,
+        "requiredFilesTotal": 4,
+        "requiredTestsPresent": 1,
         "requiredTestsTotal": 1,
-        "optionalFilesPresent": 2,
-        "optionalFilesTotal": 2,
+        "optionalFilesPresent": 3,
+        "optionalFilesTotal": 3,
         "verifyCommandsTotal": 0
       }
     }

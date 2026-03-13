@@ -1,9 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { selectIsReplaying, useWorkspaceProjection } from '@/runtime/projection';
-import { runAnimationPreview } from '@/runtime/animation/runAnimationPreview.js';
-import { cancelAnimationPreview } from '@/runtime/animation/cancelAnimationPreview.js';
 import TimelineScrubber from './TimelineScrubber.jsx';
 import TimelinePlayhead from './TimelinePlayhead.jsx';
 import TimelineTrackList from './TimelineTrackList.jsx';
@@ -13,15 +10,24 @@ import { ShotHUD } from './ShotHUD.jsx';
 import { useTimelineController } from './useTimelineController.js';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext.jsx';
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
-import { collectKeyframeTimes, getNearestKeyframeTime, getNextKeyframeTime, getPrevKeyframeTime } from '@/runtime/timeline/keyframeTimeUtils.js';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import {
   timelineIntentClockPause,
   timelineIntentClockPlay,
   timelineIntentClockSeek,
 } from '@/ui/timeline/timelineIntent.js';
-import { TrackActions } from '@/runtime/timeline/trackControllerBridge.js';
+import {
+  TrackActions,
+  cancelAnimationPreview,
+  collectKeyframeTimes,
+  getNearestKeyframeTime,
+  getNextKeyframeTime,
+  getPrevKeyframeTime,
+  runAnimationPreview,
+  selectIsReplaying,
+  useRuntimeStore,
+  useTimelineStore,
+  useWorkspaceProjection,
+} from '@/ui/bridges/timelinePanelBridge.js';
 
 export default function TimelinePanel({ designState }) {
   const workspaceId = useWorkspaceProjection((s) => s.id);

@@ -39,6 +39,21 @@ function hasCreateTool(ws) {
   return tools.some((tool) => CREATE_TOOLS.has(tool));
 }
 
+function supportsVectorAuthoring(ws) {
+  const tools = ws?.tools ?? ws?.ui?.tools ?? [];
+  const nodes = ws?.nodes ?? [];
+  const formats = ws?.export?.formats ?? [];
+
+  return (
+    tools.includes('path') ||
+    tools.includes('shape') ||
+    nodes.includes('vector') ||
+    nodes.includes('shape') ||
+    formats.includes('svg') ||
+    formats.includes('icon-font')
+  );
+}
+
 export function adaptWorkspaceToContractV1(ws) {
   const name = ws.label ?? ws.name ?? ws.id;
   const kind = inferCanvasKind(ws);
@@ -80,6 +95,9 @@ export function adaptWorkspaceToContractV1(ws) {
   if (tools.includes('image')) caps.push('node:type:image');
   if (tools.includes('shape')) caps.push('node:type:shape');
   if (tools.includes('path')) caps.push('node:path', 'path:edit');
+  if (supportsVectorAuthoring(ws)) {
+    caps.push('vector:create', 'vector:mutate', 'vector:delete');
+  }
 
   // timeline policy
   const timelineEnabled =
@@ -105,6 +123,12 @@ export function adaptWorkspaceToContractV1(ws) {
     caps.push('animation:enabled');
   } else {
     denies.push('animation:enabled');
+  }
+
+  if (ws.capabilities?.codegen) {
+    caps.push('ai:generate');
+  } else {
+    denies.push('ai:generate');
   }
 
   // nesting / shapes

@@ -1,8 +1,10 @@
 // NOTE: This file is runtime/UI glue. Pure timeline evaluation lives elsewhere.
-import { flattenTimeline } from '@/runtime/timeline/flattenTimeline.js';
-import { evaluateTimelinePreview } from '@/runtime/projection';
-import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
-import { getRuntimeSnapshot } from '@/runtime/projection';
+import {
+    evaluateTimelinePreview,
+    flattenTimeline,
+    getRuntimeSnapshot,
+    useAnimatedRuntimeStore,
+} from '@/ui/bridges/timelinePreviewRuntimeBridge.js';
 
 /**
  * Applies timeline intent as a preview into the animated render store.

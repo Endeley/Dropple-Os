@@ -39,6 +39,20 @@ export const EventTypes = Object.freeze({
     STATE_SET: 'state/set',
     STATE_MACHINE_TRANSITION: 'state-machine/transition',
     NAVIGATION_NAVIGATE: 'navigation/navigate',
+    VECTOR_CREATE: 'vector/create',
+    VECTOR_UPDATE: 'vector/update',
+    VECTOR_DELETE: 'vector/delete',
+    COLLABORATION_SESSION_START: 'collaboration/session/start',
+    COLLABORATION_SESSION_END: 'collaboration/session/end',
+    COLLABORATION_SESSION_USER_JOIN: 'collaboration/session/user/join',
+    COLLABORATION_SESSION_USER_LEAVE: 'collaboration/session/user/leave',
+    COLLABORATION_PRESENCE_UPDATE: 'collaboration/presence/update',
+    COLLABORATION_PRESENCE_REMOVE: 'collaboration/presence/remove',
+    COLLABORATION_CURSOR_UPDATE: 'collaboration/cursor/update',
+    COLLABORATION_CURSOR_REMOVE: 'collaboration/cursor/remove',
+    AI_REQUEST_ENQUEUE: 'ai/request/enqueue',
+    AI_REQUEST_COMPLETE: 'ai/request/complete',
+    AI_REQUEST_FAIL: 'ai/request/fail',
 
     // ─────────────────────────────
     // Behavior graph (Phase B1)

@@ -46,7 +46,7 @@
     "test:core:all": "npm run test:engine:all && npm run test:runtime:all",
     "test:all": "npm run test:core:all && npm run test:kernel && npm run test:architecture && npm run ui:interactions:test",
     "test:kernel": "node --import ./tests/register-test-loaders.mjs --test tests/kernel/*.test.ts",
-    "test:architecture": "node --import ./tests/register-test-loaders.mjs --test tests/architecture/dispatcherOwnership.test.ts",
+  "test:architecture": "node --import ./tests/register-test-loaders.mjs --test tests/architecture/*.test.ts",
     "determinism": "NODE_ENV=test node scripts/determinismGate.mjs",
     "ci:determinism": "npm run determinism",
     "template:verify-all": "NODE_ENV=test node scripts/templateVerifyAll.mjs",

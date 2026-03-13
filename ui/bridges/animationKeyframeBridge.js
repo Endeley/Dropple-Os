@@ -1,5 +1,5 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { createAnimationKeyframeEvent } from '@/runtime/input/animationKeyframeRuntimeBridge.js';
+import { createAnimationKeyframeBridgeEvent } from '@/ui/bridges/intentEventFacade.js';
 
 let _unsub = null;
 
@@ -11,7 +11,7 @@ export function registerAnimationKeyframeBridge(dispatch) {
     if (_unsub) return _unsub;
 
     const handler = (intent) => {
-        const event = createAnimationKeyframeEvent(intent);
+        const event = createAnimationKeyframeBridgeEvent(intent);
         if (!event) return;
         if (typeof dispatch === 'function') {
             dispatch(event);

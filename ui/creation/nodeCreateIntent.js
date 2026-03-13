@@ -1,6 +1,6 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
 import { getWorkspaceProjection } from '@/runtime/projection';
-import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
+import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
 
 const DEFAULT_BOUNDS = { x: 0, y: 0, width: 160, height: 100 };
 const MIN_SIZE = 1;
@@ -42,13 +42,13 @@ function resolveWorkspace() {
     const projection = getWorkspaceProjection?.();
     const workspaceId = projection?.id ?? null;
     if (!workspaceId) return null;
-    return resolveWorkspacePolicy(workspaceId);
+    return getWorkspaceActivation(workspaceId);
 }
 
 function isCreationAllowed(workspace, type) {
     if (!workspace) return true;
-    const caps = workspace.capabilities || {};
-    if (caps['node:create'] === false) return false;
+    const caps = workspace.capabilities instanceof Set ? workspace.capabilities : new Set();
+    if (!caps.has('node:create') && caps.size > 0) return false;
     const tools = new Set(workspace.tools || []);
     if (tools.size === 0) return true;
     return tools.has(type);

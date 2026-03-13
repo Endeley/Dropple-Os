@@ -1,7 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useRef } from 'react';
-import { serializeWorld, hydrateWorld, roundTripWorldState } from '@/runtime/persistence/worldRuntimeBridge.js';
+import {
+    serializeWorld,
+    hydrateWorld,
+    roundTripWorldState,
+} from '@/ui/bridges/worldPersistenceRuntimeFacade.js';
 
 const SAVE_DEBOUNCE_MS = 300;
 const CAMERA_THROTTLE_MS = 200;

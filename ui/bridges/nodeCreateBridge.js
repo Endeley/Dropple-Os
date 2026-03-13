@@ -1,5 +1,5 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { createNodeCreateEvent } from '@/runtime/input/nodeCreateRuntimeBridge.js';
+import { createNodeCreateBridgeEvent } from '@/ui/bridges/intentEventFacade.js';
 
 let _unsub = null;
 
@@ -8,7 +8,7 @@ export function registerNodeCreateBridge(dispatch) {
 
     const handler = (intent) => {
         console.log('BRIDGE RECEIVED:', intent);
-        const result = createNodeCreateEvent(intent);
+        const result = createNodeCreateBridgeEvent(intent);
         if (!result) return;
 
         if (process.env.NODE_ENV === 'development' && !result.projectionOk) {

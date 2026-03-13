@@ -1,4 +1,4 @@
-import { runEditorFrame } from '@/runtime/frame/runEditorFrame.js';
+import { runEditorFrame } from '@/ui/bridges/canvasRuntimeFacade.js';
 
 export function runCanvasLoop({
   getRuntimeState,

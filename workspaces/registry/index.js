@@ -1,18 +1,18 @@
-import { graphicWorkspace } from './graphicWorkspace';
-import { uiuxWorkspace } from './uiuxWorkspace';
-import { animationWorkspace } from './animationWorkspace';
-import { videoWorkspace } from './videoWorkspace';
-import { podcastWorkspace } from './podcastWorkspace';
-import { materialWorkspace } from './materialWorkspace';
-import { iconWorkspace } from './iconWorkspace';
-import { devWorkspace } from './devWorkspace';
-import { educationWorkspace } from './educationWorkspace';
-import { aiWorkspace } from './aiWorkspace';
-import { brandingWorkspace } from './brandingWorkspace';
-import { documentWorkspace } from './documentWorkspace';
-import { conversionWorkspace } from './conversionWorkspace';
-import { translateWorkspace } from './translateWorkspace';
-import { reviewWorkspace } from './reviewWorkspace';
+import { graphicWorkspace } from './graphicWorkspace.js';
+import { uiuxWorkspace } from './uiuxWorkspace.js';
+import { animationWorkspace } from './animationWorkspace.js';
+import { videoWorkspace } from './videoWorkspace.js';
+import { podcastWorkspace } from './podcastWorkspace.js';
+import { materialWorkspace } from './materialWorkspace.js';
+import { iconWorkspace } from './iconWorkspace.js';
+import { devWorkspace } from './devWorkspace.js';
+import { educationWorkspace } from './educationWorkspace.js';
+import { aiWorkspace } from './aiWorkspace.js';
+import { brandingWorkspace } from './brandingWorkspace.js';
+import { documentWorkspace } from './documentWorkspace.js';
+import { conversionWorkspace } from './conversionWorkspace.js';
+import { translateWorkspace } from './translateWorkspace.js';
+import { reviewWorkspace } from './reviewWorkspace.js';
 import { adaptWorkspaceToContractV1 } from '@/core/contracts/adaptWorkspaceToContractV1.js';
 
 export const WorkspaceRegistry = {

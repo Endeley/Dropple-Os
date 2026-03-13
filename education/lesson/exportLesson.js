@@ -1,6 +1,6 @@
 import { createLessonExport } from './LessonSchema.js';
 import { selectLessonRange } from './selectLessonRange.js';
-import { replayEvents } from '@/runtime/dispatcher/replayEvents.js';
+import { replayEvents } from '@/core/persistence/replayEngine.js';
 
 export async function exportLesson({
   runId,

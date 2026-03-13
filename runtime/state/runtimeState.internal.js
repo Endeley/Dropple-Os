@@ -2,68 +2,10 @@ import { createTimeline } from '@/timeline/schema/timeline.js';
 import { createDefaultWorkspaceState } from './workspaceRuntime.js';
 import { initialInteractionState } from '@/runtime/interactionEngine/state/interactionState.js';
 import { createPreviewState } from '@/runtime/state/previewState.js';
-
-function createInitialDocument() {
-  const now = Date.now();
-
-  return {
-    meta: {
-      id: crypto.randomUUID(),
-      name: 'Untitled',
-      version: 1,
-      createdAt: now,
-      updatedAt: now,
-    },
-    sceneGraph: {
-      rootIds: [],
-      nodes: {},
-    },
-    layout: {
-      version: 1,
-      nodes: {},
-      computed: {},
-      dirty: {
-        nodeIds: [],
-        fullPass: false,
-        revision: 0,
-      },
-      metadata: {
-        schemaVersion: 1,
-      },
-    },
-    components: {
-      definitions: {},
-      instances: {},
-      instanceOverrides: {},
-    },
-    app: {
-      currentScreen: null,
-      screens: {},
-      state: {},
-      flows: {},
-    },
-    variables: {},
-    bindings: {},
-    motion: {
-      clips: {},
-    },
-    scenes: {
-      scenes: {},
-      activeSceneId: undefined,
-    },
-    assets: {
-      images: {},
-      videos: {},
-      audio: {},
-    },
-    exports: {
-      targets: [],
-    },
-  };
-}
+import { createCanonicalDocumentEnvelope } from '@/core/persistence/documentEnvelope.js';
 
 export const initialRuntimeState = {
-  document: createInitialDocument(),
+  document: createCanonicalDocumentEnvelope(),
   nodes: {},
   rootIds: [],
   sceneGraph: null,
@@ -98,8 +40,18 @@ export const initialRuntimeState = {
     state: {},
     flows: {},
   },
+  vectors: {},
   stateMachines: {},
   navigation: {},
+  collaboration: {
+    session: null,
+    presence: {},
+    cursors: {},
+  },
+  ai: {
+    requests: {},
+    order: [],
+  },
   interaction: initialInteractionState(),
   preview: createPreviewState(),
   // 🔹 Narrative slice (runtime only)

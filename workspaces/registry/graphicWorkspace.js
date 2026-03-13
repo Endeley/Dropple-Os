@@ -6,7 +6,7 @@ export const graphicWorkspace = {
     label: 'Graphic Design',
     status: 'active',
 
-    engines: ['nodeTree', 'layout'],
+    engines: ['nodeTree', 'layout', 'vector'],
     tools: ['select', 'move', 'resize', 'text', 'shape', 'image'],
     panels: [
         'NodeHeaderPanel',
@@ -48,6 +48,9 @@ export const graphicWorkspace = {
         EventTypes.NODE_MOVE,
         EventTypes.NODE_RESIZE,
         EventTypes.NODE_REORDER,
+        EventTypes.VECTOR_CREATE,
+        EventTypes.VECTOR_UPDATE,
+        EventTypes.VECTOR_DELETE,
 
         // Selection
         EventTypes.SELECTION_SET,

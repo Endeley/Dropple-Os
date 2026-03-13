@@ -5,29 +5,30 @@ import { clipboardProjection } from '@/runtime/clipboard/clipboardProjection.js'
 import { copySelection } from '@/runtime/clipboard/copySelection.js';
 import { duplicateSelection } from '@/runtime/clipboard/duplicateSelection.js';
 import { pasteClipboard } from '@/runtime/clipboard/pasteClipboard.js';
+import { createCanonicalDocumentEnvelope } from '@/core/persistence/documentEnvelope.js';
 
 function createDocument() {
-    return {
-        sceneGraph: {
-            rootIds: ['frame-1'],
-            nodes: {
-                'frame-1': {
-                    id: 'frame-1',
-                    type: 'frame',
-                    parentId: null,
-                    children: ['text-1'],
-                    props: { transform: { x: 0, y: 0 } },
-                },
-                'text-1': {
-                    id: 'text-1',
-                    type: 'text',
-                    parentId: 'frame-1',
-                    children: [],
-                    props: { transform: { x: 10, y: 10 } },
-                },
+    const document = createCanonicalDocumentEnvelope();
+    document.sceneGraph = {
+        rootIds: ['frame-1'],
+        nodes: {
+            'frame-1': {
+                id: 'frame-1',
+                type: 'frame',
+                parentId: null,
+                children: ['text-1'],
+                props: { transform: { x: 0, y: 0 } },
+            },
+            'text-1': {
+                id: 'text-1',
+                type: 'text',
+                parentId: 'frame-1',
+                children: [],
+                props: { transform: { x: 10, y: 10 } },
             },
         },
     };
+    return document;
 }
 
 function createDispatcher(document = createDocument()) {

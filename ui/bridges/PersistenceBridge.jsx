@@ -2,8 +2,6 @@
 
 import { useEffect, useRef } from 'react';
 import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { hydrateRuntimeSnapshot } from '@/runtime/commands/hydrateRuntimeSnapshot.js';
 import {
     createLocalDocumentSnapshot,
     hydrateLocalDocumentSnapshot,
@@ -12,6 +10,10 @@ import { loadLocalDocument, saveLocalDocument } from '@/infrastructure/persisten
 import { getActiveDocument, setActiveDocument } from '@/infrastructure/persistence/activeDocument.js';
 import { loadRegistry } from '@/infrastructure/persistence/documentRegistry.js';
 import { loadDocumentSnapshot, saveDocumentSnapshot } from '@/infrastructure/persistence/documentCommands.js';
+import {
+    hydratePersistenceSnapshot,
+    usePersistenceBridgeState,
+} from '@/ui/bridges/persistenceRuntimeFacade.js';
 
 export function PersistenceBridge({
     enabled = true,
@@ -26,8 +28,8 @@ export function PersistenceBridge({
     onHydratedChange,
 }) {
     const dispatcher = useDispatcher();
-    const events = useRuntimeStore((s) => s.events);
-    const cursorIndex = useRuntimeStore((s) => s.cursorIndex);
+    const events = usePersistenceBridgeState((s) => s.events);
+    const cursorIndex = usePersistenceBridgeState((s) => s.cursorIndex);
     const autosaveTimerRef = useRef(null);
 
     useEffect(() => {
@@ -37,7 +39,7 @@ export function PersistenceBridge({
     useEffect(() => {
         if (!dispatcher?.hydrateRuntimeState) return;
 
-        hydrateRuntimeSnapshot({
+        hydratePersistenceSnapshot({
             dispatcher,
             snapshot: {
                 events: initialEvents,
@@ -57,7 +59,7 @@ export function PersistenceBridge({
         if (activeId) {
             const loaded = loadDocumentSnapshot(activeId);
             if (loaded?.snapshot) {
-                hydrateRuntimeSnapshot({
+                hydratePersistenceSnapshot({
                     dispatcher,
                     snapshot: loaded.snapshot,
                     animate: false,
@@ -72,7 +74,7 @@ export function PersistenceBridge({
 
         const hydratedSnapshot = hydrateLocalDocumentSnapshot(loadLocalDocument());
         if (hydratedSnapshot) {
-            hydrateRuntimeSnapshot({
+            hydratePersistenceSnapshot({
                 dispatcher,
                 snapshot: hydratedSnapshot,
                 animate: false,

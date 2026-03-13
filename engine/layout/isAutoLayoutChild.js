@@ -1,5 +1,1 @@
-export function isAutoLayoutChild(node, nodesById) {
-    if (!node?.parentId) return false;
-    const parent = nodesById?.[node.parentId];
-    return Boolean(parent?.layout?.autoLayout);
-}
+export { isAutoLayoutChild } from '@/runtime/layout/isAutoLayoutChild.js';

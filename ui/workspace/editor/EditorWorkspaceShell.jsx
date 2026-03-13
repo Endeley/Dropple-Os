@@ -1,8 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { WorkspaceRegistry } from '@/workspaces/registry';
-import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy';
 import { WorkspaceLayout } from './WorkspaceLayout';
 import { GridProvider } from './GridContext';
 import { ClipboardProvider } from './ClipboardContext';
@@ -20,10 +18,7 @@ import { useIntentPreview } from '@/collab/useIntentPreview';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { PersistenceBridge } from '@/ui/bridges/PersistenceBridge.jsx';
 import { SessionGroupingBridge } from '@/ui/interactions/sessionGrouping.js';
-
-const MODE_ALIASES = {
-    design: 'graphic',
-};
+import { getWorkspaceAdapter, resolveWorkspaceId } from '@/ui/bridges/workspaceActivationFacade.js';
 
 const PANEL_LEFT = new Set(['SubmissionInfoPanel', 'LessonOutlinePanel']);
 const PANEL_RIGHT = new Set([
@@ -37,14 +32,6 @@ const PANEL_RIGHT = new Set([
 ]);
 const PANEL_TOP = new Set(['EducationToolbar', 'ReviewToolbar']);
 const PANEL_BOTTOM = new Set(['TimelineBar']);
-
-function resolveWorkspaceId(modeId) {
-    if (!modeId) return 'graphic';
-    const key = String(modeId);
-    if (WorkspaceRegistry[key]) return key;
-    if (MODE_ALIASES[key]) return MODE_ALIASES[key];
-    return 'graphic';
-}
 
 function mapPanels(panels = []) {
     const layout = {
@@ -78,42 +65,10 @@ function mapPanels(panels = []) {
 }
 
 function resolveWorkspaceAdapter(modeId) {
-    const workspaceId = resolveWorkspaceId(modeId);
-    const policy = resolveWorkspacePolicy(workspaceId);
-
-    const workspace = WorkspaceRegistry[workspaceId];
-    if (!workspace || policy?.error) {
-        return {
-            id: modeId || workspaceId,
-            label: modeId || workspaceId,
-            workspaceId,
-            capabilities: {},
-            panels: mapPanels([]),
-            interactions: { keyboard: true, pointer: true },
-            ui: { editing: true },
-        };
-    }
-
-    const isEducation = modeId === 'education';
-    const isReview = modeId === 'review';
-    const editingEnabled = policy?.capabilities?.editing !== false;
-
+    const adapter = getWorkspaceAdapter(modeId);
     return {
-        id: modeId || workspaceId,
-        label: workspace.label || modeId || workspaceId,
-        workspaceId,
-        profile: workspace.profile,
-        capabilities: policy.capabilities || {},
-        timeline: policy.timeline || null,
-        allowedEventTypes: policy.allowedEventTypes || null,
-        panels: mapPanels(workspace.panels || []),
-        interactions: {
-            keyboard: !isEducation && !isReview,
-            pointer: !isEducation && !isReview,
-        },
-        ui: {
-            editing: editingEnabled && !isEducation && !isReview,
-        },
+        ...adapter,
+        panels: mapPanels(adapter?.panels || []),
     };
 }
 

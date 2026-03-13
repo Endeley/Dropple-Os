@@ -4,7 +4,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import CanvasRoot from '@/ui/canvas/CanvasRoot.jsx';
 import { Controls } from '@/ui/Controls.jsx';
 
-import { WorkspaceRegistry } from '@/workspaces/registry';
+import { listWorkspaceDefinitions } from '@/platform/workspaces';
 
 // 🔹 UX Workspace (read-only UI)
 import { UXWorkspaceShell } from '@/ui/workspace/ux/UXWorkspaceShell';
@@ -56,7 +56,7 @@ export function WorkspaceShell({ workspace }) {
                             border: '1px solid #d1d5db',
                             background: '#fff',
                         }}>
-                        {Object.entries(WorkspaceRegistry).map(([id, ws]) => (
+                        {listWorkspaceDefinitions().map(([id, ws]) => (
                             <option key={id} value={id}>
                                 {ws.label}
                             </option>

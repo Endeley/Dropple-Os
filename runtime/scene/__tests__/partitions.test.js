@@ -9,20 +9,21 @@ import {
     evaluateSceneIncremental,
     updatePartitionBounds,
 } from '@/runtime/scene/index.js';
+import { createCanonicalDocumentEnvelope } from '@/core/persistence/documentEnvelope.js';
 
 function createDocument() {
-    return {
-        sceneGraph: {
-            rootIds: ['frameA', 'frameB'],
-            nodes: {
-                frameA: { id: 'frameA', children: ['a1', 'a2'] },
-                a1: { id: 'a1', parentId: 'frameA', children: [] },
-                a2: { id: 'a2', parentId: 'frameA', children: [] },
-                frameB: { id: 'frameB', children: ['b1'] },
-                b1: { id: 'b1', parentId: 'frameB', children: [] },
-            },
+    const document = createCanonicalDocumentEnvelope();
+    document.sceneGraph = {
+        rootIds: ['frameA', 'frameB'],
+        nodes: {
+            frameA: { id: 'frameA', children: ['a1', 'a2'] },
+            a1: { id: 'a1', parentId: 'frameA', children: [] },
+            a2: { id: 'a2', parentId: 'frameA', children: [] },
+            frameB: { id: 'frameB', children: ['b1'] },
+            b1: { id: 'b1', parentId: 'frameB', children: [] },
         },
     };
+    return document;
 }
 
 test('buildScenePartitions creates deterministic root-subtree partitions', () => {
@@ -84,13 +85,12 @@ test('incremental evaluator caches partitions and invalidates them on structural
     assert.equal(runtime.scene.partitions, firstPartitions);
     assert.equal(runtime.scene.nodeToPartition, firstNodeToPartition);
 
-    const documentB = {
-        sceneGraph: {
-            rootIds: ['frameA', 'frameB', 'frameC'],
-            nodes: {
-                ...documentA.sceneGraph.nodes,
-                frameC: { id: 'frameC', children: [] },
-            },
+    const documentB = createCanonicalDocumentEnvelope();
+    documentB.sceneGraph = {
+        rootIds: ['frameA', 'frameB', 'frameC'],
+        nodes: {
+            ...documentA.sceneGraph.nodes,
+            frameC: { id: 'frameC', children: [] },
         },
     };
 

@@ -14,10 +14,9 @@ import SelectionLayer from './SelectionLayer.jsx';
 import RemoteCursors from './RemoteCursors.jsx';
 import RemoteSelections from './RemoteSelections.jsx';
 
-import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
 import { getRuntimeSnapshot } from '@/runtime/projection';
 import TimelinePanel from '@/ui/timeline/TimelinePanel.jsx';
-import { perfStart, perfEnd } from '@/runtime/instrumentation/perfTracker.js';
+import { perfStart, perfEnd } from '@/ui/bridges/canvasRuntimeFacade.js';
 import { useWorkspaceProjection } from '@/runtime/projection';
 import { CanvasSurface } from '@/ui/canvas/surface/CanvasSurface.jsx';
 import { WorldOriginMarker } from '@/ui/canvas/WorldOriginMarker.jsx';
@@ -34,6 +33,7 @@ import { useToolStore } from '@/ui/state/useToolStore.js';
 import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions';
 import { useCanvasInteractions } from '@/ui/interactions/useCanvasInteractions.js';
 import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
+import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
 
 /** precision safety */
 const MIN_EFFECTIVE_ZOOM = 0.0005;
@@ -45,7 +45,7 @@ export default function CanvasRoot({ workspaceId }) {
 
     const workspaceState = getWorkspaceProjection();
     const resolvedWorkspaceId = workspaceId ?? workspaceState?.id;
-    const workspace = resolveWorkspacePolicy(resolvedWorkspaceId);
+    const workspace = getWorkspaceActivation(resolvedWorkspaceId);
     const designState = getRuntimeSnapshot();
 
     const viewport = useWorkspaceProjection((s) => s.viewport);

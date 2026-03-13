@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-13T14:28:42.871Z",
+  "generatedAt": "2026-03-13T21:05:00.751Z",
   "phases": {
     "phase1": {
       "score": 80,
@@ -198,33 +198,33 @@
       }
     },
     "phase2": {
-      "score": 70,
-      "status": "PARTIAL",
-      "systemCount": 12,
+      "score": 80,
+      "status": "INTEGRATED",
+      "systemCount": 13,
       "statusCounts": {
         "MISSING": 0,
-        "SCAFFOLDED": 2,
+        "SCAFFOLDED": 0,
         "PARTIAL": 0,
-        "INTEGRATED": 10,
+        "INTEGRATED": 13,
         "VERIFIED": 0
       },
       "stages": {
         "application-runtime-depth": {
-          "score": 63,
-          "status": "PARTIAL",
+          "score": 80,
+          "status": "INTEGRATED",
           "systemCount": 3,
           "statusCounts": {
             "MISSING": 0,
-            "SCAFFOLDED": 1,
+            "SCAFFOLDED": 0,
             "PARTIAL": 0,
-            "INTEGRATED": 2,
+            "INTEGRATED": 3,
             "VERIFIED": 0
           },
           "systems": [
             {
               "system": "aiRuntime",
-              "status": "SCAFFOLDED",
-              "score": 30,
+              "status": "INTEGRATED",
+              "score": 80,
               "critical": false,
               "group": "platform"
             },
@@ -371,21 +371,42 @@
           ]
         },
         "collaboration-runtime": {
-          "score": 30,
-          "status": "SCAFFOLDED",
+          "score": 80,
+          "status": "INTEGRATED",
           "systemCount": 1,
           "statusCounts": {
             "MISSING": 0,
-            "SCAFFOLDED": 1,
+            "SCAFFOLDED": 0,
             "PARTIAL": 0,
-            "INTEGRATED": 0,
+            "INTEGRATED": 1,
             "VERIFIED": 0
           },
           "systems": [
             {
               "system": "collaboration",
-              "status": "SCAFFOLDED",
-              "score": 30,
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": true,
+              "group": "platform"
+            }
+          ]
+        },
+        "asset-vector-icon-system": {
+          "score": 80,
+          "status": "INTEGRATED",
+          "systemCount": 1,
+          "statusCounts": {
+            "MISSING": 0,
+            "SCAFFOLDED": 0,
+            "PARTIAL": 0,
+            "INTEGRATED": 1,
+            "VERIFIED": 0
+          },
+          "systems": [
+            {
+              "system": "vectorEngine",
+              "status": "INTEGRATED",
+              "score": 80,
               "critical": true,
               "group": "platform"
             }

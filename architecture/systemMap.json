@@ -358,21 +358,28 @@
     ]
   },
   "designSystemCompiler": {
-    "description": "Design token, theme, and design-system generation pipeline",
+    "description": "Expanded design system generator for tokens, themes, variants, components, and React library output",
     "group": "platform",
     "critical": false,
     "order": 187,
     "requiredFiles": [
-      "engine/compiler/designSystem/compileDesignTokens.js",
-      "engine/compiler/designSystem/compileComponents.js",
-      "engine/compiler/designSystem/compileThemes.js",
-      "engine/compiler/designSystem/reactComponentGenerator.js"
+      "engine/compiler/designSystem/tokenCompiler.js",
+      "engine/compiler/designSystem/themeCompiler.js",
+      "engine/compiler/designSystem/variantCompiler.js",
+      "engine/compiler/designSystem/componentCompiler.js",
+      "engine/compiler/designSystem/libraryGenerator.js",
+      "engine/compiler/designSystem/reactDesignSystemTarget.js"
     ],
     "requiredTests": [
       "engine/__tests__/designSystemCompiler.test.mjs"
     ],
     "optionalFiles": [
-      "engine/compiler/designSystem/cssVariableGenerator.js"
+      "engine/compiler/designSystem/cssVariableGenerator.js",
+      "engine/compiler/designSystem/compileDesignTokens.js",
+      "engine/compiler/designSystem/compileComponents.js",
+      "engine/compiler/designSystem/compileThemes.js",
+      "engine/compiler/designSystem/compileVariants.js",
+      "engine/compiler/designSystem/reactComponentGenerator.js"
     ]
   },
   "applicationCompiler": {
@@ -444,10 +451,12 @@
     "critical": true,
     "order": 210,
     "requiredFiles": [
-      "collab/usePresence.js",
-      "collab/useLiveCursors.js",
-      "convex/streamEvents.js",
-      "convex/updatePresence.js"
+      "platform/collaboration/collaborationSession.js",
+      "platform/collaboration/eventSyncEngine.js",
+      "platform/collaboration/presenceRuntime.js",
+      "platform/collaboration/cursorRuntime.js",
+      "platform/collaboration/conflictResolver.js",
+      "core/events/reducers/collaborationReducers.js"
     ],
     "requiredTests": [
       "collab/__tests__/presenceRuntime.test.mjs"
@@ -457,6 +466,25 @@
       "collab/optimistic/optimisticStore.js"
     ]
   },
+  "vectorEngine": {
+    "description": "Document-owned vector, icon, and SVG geometry engine for graphic-capable workspaces",
+    "group": "platform",
+    "critical": true,
+    "order": 215,
+    "requiredFiles": [
+      "engine/vector/vectorRegistry.js",
+      "engine/vector/vectorReducer.js",
+      "engine/vector/vectorRuntime.js",
+      "engine/vector/pathEngine.js",
+      "engine/vector/booleanEngine.js",
+      "engine/vector/vectorSelectors.js",
+      "core/events/reducers/vectorReducers.js"
+    ],
+    "requiredTests": [
+      "engine/__tests__/vectorEngine.test.mjs"
+    ],
+    "optionalFiles": []
+  },
   "aiRuntime": {
     "description": "AI-assisted generation and execution layer grounded in canonical design truth",
     "group": "platform",
@@ -464,12 +492,15 @@
     "order": 220,
     "requiredFiles": [
       "ai/README.md",
-      "ai/prompts/ccmAuthorPrompt.ts"
+      "ai/prompts/ccmAuthorPrompt.ts",
+      "ai/runtime/aiRuntime.js",
+      "core/events/reducers/aiReducers.js"
     ],
     "requiredTests": [
       "ai/__tests__/runtimeGeneration.test.mjs"
     ],
     "optionalFiles": [
+      "ai/runtime/aiSelectors.js",
       "ai/generation/generateTemplateArtifact.ts",
       "education/ai/ExplanationAgent.js"
     ]

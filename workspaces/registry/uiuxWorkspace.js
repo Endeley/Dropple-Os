@@ -1,3 +1,4 @@
+import { EventTypes } from '@/core/events/eventTypes.js';
 import { createTimelineCapability } from './timelineCapability.js';
 import { DefaultCanvasPolicy } from '@/core/contracts/CanvasPolicy.js';
 
@@ -26,8 +27,8 @@ export const uiuxWorkspace = {
         snap: false,
     },
 
-    engines: ['nodeTree', 'layout', 'constraints', 'autoLayout'],
-    tools: ['select', 'move', 'resize', 'text', 'image', 'frame', 'shape'],
+    engines: ['nodeTree', 'layout', 'constraints', 'autoLayout', 'vector'],
+    tools: ['select', 'move', 'resize', 'text', 'image', 'frame', 'shape', 'path'],
     panels: [
         'NodeHeaderPanel',
         'SemanticsPanel',
@@ -56,7 +57,11 @@ export const uiuxWorkspace = {
         autoLayoutParents: ['container'],
     },
 
-    allowedEventTypes: [],
+    allowedEventTypes: [
+        EventTypes.VECTOR_CREATE,
+        EventTypes.VECTOR_UPDATE,
+        EventTypes.VECTOR_DELETE,
+    ],
 
     timeline: createTimelineCapability({
         readOnly: true,

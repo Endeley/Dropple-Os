@@ -5,14 +5,13 @@ import { hitTestNode, getNodeRect, pointInRect } from './hitTestNode.js';
 import { canvasBus } from '@/ui/eventBus/canvasBus.js';
 import {
   beginSession,
-  updatePointer,
   endSession,
   getActiveSessionType,
-} from '@/runtime/interactions/input/InputSessionManager.js';
-import { clearSelection } from '@/runtime/selection/clearSelection.js';
-import { selectNode } from '@/runtime/selection/selectNode.js';
+  resolveToolHandler,
+  updatePointer,
+} from '@/ui/bridges/inputSessionRuntimeFacade.js';
+import { clearSelection, selectNode } from '@/ui/bridges/selectionRuntimeFacade.js';
 import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions.js';
-import { resolveToolHandler } from '@/runtime/tools/toolHandlers.js';
 
 export function useCanvasInteractions({ getRuntimeState, dispatch, getActiveToolId, getWorldPointFromEvent }) {
   const sessionRef = useRef(createInteractionSession());

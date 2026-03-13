@@ -7,7 +7,7 @@ import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRender
 import { useWorkspaceProjection } from '@/runtime/projection';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useEffect, useRef, useState } from 'react';
-import { getPreview } from '@/runtime/interactions/input/InputSessionManager.js';
+import { getPreview } from '@/ui/bridges/inputSessionRuntimeFacade.js';
 
 export default function GuideLayer() {
     const nodes = useCharacterRenderNodes();

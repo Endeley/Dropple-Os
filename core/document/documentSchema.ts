@@ -14,6 +14,10 @@ export type DroppleDocument = {
     sceneGraph: SceneGraph;
     layout: LayoutSystem;
     components: ComponentSystem;
+    app: AppSystem;
+    vectors: VectorSystem;
+    variables: VariableSystem;
+    bindings: BindingSystem;
     motion: MotionSystem;
     scenes: SceneSystem;
     assets: AssetSystem;
@@ -74,8 +78,15 @@ export type LayoutSystem = {
     version: 1;
     nodes: Record<NodeId, LayoutNode>;
     computed: Record<NodeId, ComputedLayout>;
+    breakpoints?: LayoutBreakpoints;
     dirty: LayoutDirtyState;
     metadata: LayoutMetadata;
+};
+
+export type LayoutBreakpoints = {
+    mobile: number;
+    tablet: number;
+    desktop: number;
 };
 
 export type LayoutNode = {
@@ -186,6 +197,17 @@ export type ComponentSystem = {
     instances: Record<string, ComponentInstance>;
     instanceOverrides: Record<string, ComponentInstanceOverrides>;
 };
+
+export type AppSystem = {
+    currentScreen: string | null;
+    screens: Record<string, unknown>;
+    state: Record<string, unknown>;
+    flows: Record<string, unknown>;
+};
+
+export type VectorSystem = Record<string, unknown>;
+export type VariableSystem = Record<string, unknown>;
+export type BindingSystem = Record<string, unknown>;
 
 export type ComponentDefinition = {
     rootNodeId: NodeId;

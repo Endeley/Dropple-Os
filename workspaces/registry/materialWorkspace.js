@@ -1,9 +1,11 @@
+import { EventTypes } from '@/core/events/eventTypes.js';
+
 export const materialWorkspace = {
     id: "material",
     label: "Material UI System",
     status: "active",
 
-    engines: ["nodeTree", "layout", "tokens"],
+    engines: ["nodeTree", "layout", "tokens", "vector"],
 
     ir: {
         design: true,
@@ -23,7 +25,7 @@ export const materialWorkspace = {
         tracks: [],
     },
 
-    nodes: ["component", "variant"],
+    nodes: ["component", "variant", "vector"],
 
     tools: ["component", "variant", "token"],
     panels: ["NodeHeaderPanel", "LayoutInspector", "ContentPanel"],
@@ -37,7 +39,11 @@ export const materialWorkspace = {
         codegen: false,
     },
 
-    allowedEventTypes: [],
+    allowedEventTypes: [
+        EventTypes.VECTOR_CREATE,
+        EventTypes.VECTOR_UPDATE,
+        EventTypes.VECTOR_DELETE,
+    ],
 
     export: {
         formats: ["design-tokens", "ui-kit"],

@@ -29,8 +29,14 @@ const initialState = Object.freeze({
         ids: new Set(),
         primary: null,
     }),
+    vectors: Object.freeze({}),
     stateMachines: Object.freeze({}),
     navigation: Object.freeze({}),
+    collaboration: Object.freeze({
+        session: null,
+        presence: Object.freeze({}),
+        cursors: Object.freeze({}),
+    }),
 });
 
 function ensureDefaultTimeline(state) {

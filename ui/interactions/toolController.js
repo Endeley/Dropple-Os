@@ -1,13 +1,15 @@
 import { hitTestNode } from './hitTestNode.js';
-import { hitTestPoint } from '@/runtime/hitTest/hitTestPoint.js';
-import { clearSelection } from '@/runtime/selection/clearSelection.js';
-import { selectBounds } from '@/runtime/selection/selectBounds.js';
-import { selectNode } from '@/runtime/selection/selectNode.js';
-import { toggleNode } from '@/runtime/selection/toggleNode.js';
 import { canRunWorkspaceCommand } from '@/ui/capabilities/workspaceCapabilities';
-import { getSceneGraph } from '@/runtime/document/documentAdapter';
-import { wrapSelection } from '@/runtime/commands/structure/wrapSelection';
-import { unwrapNodeCommand } from '@/runtime/commands/structure/unwrapNode';
+import {
+  clearSelection,
+  getSceneGraph,
+  hitTestPoint,
+  selectBounds,
+  selectNode,
+  toggleNode,
+  unwrapNodeCommand,
+  wrapSelection,
+} from '@/ui/bridges/selectionRuntimeFacade.js';
 
 function buildCommandRuntimeState(runtimeState, selectedIds) {
   return {

@@ -1,9 +1,11 @@
+import { EventTypes } from '@/core/events/eventTypes.js';
+
 export const brandingWorkspace = {
     id: "branding",
     label: "Branding Kits",
     status: "active",
 
-    engines: ["brand", "tokens", "rules"],
+    engines: ["brand", "tokens", "rules", "vector"],
 
     ir: {
         design: true,
@@ -23,9 +25,9 @@ export const brandingWorkspace = {
         tracks: [],
     },
 
-    nodes: [],
+    nodes: ["vector", "shape"],
 
-    tools: ["edit", "apply", "validate"],
+    tools: ["edit", "apply", "validate", "path", "shape"],
 
     panels: [
         "NodeHeaderPanel",
@@ -36,7 +38,7 @@ export const brandingWorkspace = {
     ],
 
     capabilities: {
-        canvas: false,
+        canvas: true,
         timeline: false,
         animation: false,
         audio: false,
@@ -44,7 +46,11 @@ export const brandingWorkspace = {
         codegen: false,
     },
 
-    allowedEventTypes: [],
+    allowedEventTypes: [
+        EventTypes.VECTOR_CREATE,
+        EventTypes.VECTOR_UPDATE,
+        EventTypes.VECTOR_DELETE,
+    ],
 
     export: {
         formats: ["brand-kit", "tokens", "pdf"],

@@ -5,40 +5,43 @@ import { EventTypes } from '@/core/events/eventTypes.js';
 import { createEventDispatcher } from '@/runtime/dispatcher/dispatch.js';
 import { evaluateComponents } from '@/runtime/components/index.js';
 import { initialRuntimeState } from '@/runtime/state/runtimeState.internal.js';
+import { createCanonicalDocumentEnvelope } from '@/core/persistence/documentEnvelope.js';
 
 function createState() {
-    return structuredClone({
-        ...initialRuntimeState,
-        document: {
-            ...structuredClone(initialRuntimeState.document),
-            sceneGraph: {
-                rootIds: ['frame-1'],
-                nodes: {
-                    'frame-1': {
-                        id: 'frame-1',
-                        type: 'frame',
-                        parentId: null,
-                        children: ['text-1'],
-                        props: { transform: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 } },
-                    },
-                    'text-1': {
-                        id: 'text-1',
-                        type: 'text',
-                        parentId: 'frame-1',
-                        children: [],
-                        props: {
-                            transform: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 },
-                            content: 'Button',
-                        },
-                    },
+    const document = createCanonicalDocumentEnvelope();
+
+    document.sceneGraph = {
+        rootIds: ['frame-1'],
+        nodes: {
+            'frame-1': {
+                id: 'frame-1',
+                type: 'frame',
+                parentId: null,
+                children: ['text-1'],
+                props: { transform: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 } },
+            },
+            'text-1': {
+                id: 'text-1',
+                type: 'text',
+                parentId: 'frame-1',
+                children: [],
+                props: {
+                    transform: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 },
+                    content: 'Button',
                 },
             },
-            components: {
-                definitions: {},
-                instances: {},
-                instanceOverrides: {},
-            },
         },
+    };
+
+    document.components = {
+        definitions: {},
+        instances: {},
+        instanceOverrides: {},
+    };
+
+    return structuredClone({
+        ...initialRuntimeState,
+        document,
         components: {
             index: {},
             resolvedInstances: {},
