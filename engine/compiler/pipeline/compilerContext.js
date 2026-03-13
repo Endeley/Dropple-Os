@@ -8,6 +8,7 @@ export function createCompilerContext(ir, options = {}) {
         styles: null,
         components: null,
         screens: null,
+        application: null,
         designTokens: null,
         designComponents: null,
         designVariants: null,

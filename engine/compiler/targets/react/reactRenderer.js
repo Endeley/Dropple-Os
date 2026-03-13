@@ -2,20 +2,26 @@ import { resolveReactTag } from './reactComponents.js';
 import { buildLayoutProps } from './reactLayout.js';
 import { buildStyleClass } from './reactStyles.js';
 import { compileLayoutPrimitive } from '../../layout/layoutPrimitives.js';
+import { buildReactEventProps, buildReactInteractionMap } from './reactInteractions.js';
 
-export function renderReactTree(structure, layout, styles) {
-    const context = {
-        layout,
-        styles,
+export function renderReactTree(structure, compilerContext) {
+    const renderContext = {
+        layout: compilerContext.layout || {},
+        styles: compilerContext.styles || {},
+        application: compilerContext.application || {},
         buildClassName: buildStyleClass,
     };
-    return structure.map((node) => renderNode(node, context, 2)).join('\n');
+    const interactionMap = buildReactInteractionMap(renderContext);
+    return structure
+        .map((node) => renderNode(node, renderContext, interactionMap, 2))
+        .join('\n');
 }
 
-function renderNode(node, context, depth) {
+function renderNode(node, context, interactionMap, depth) {
     const primitive = compileLayoutPrimitive(node, context, {
         depth,
-        renderChild: (child, nextContext, nextDepth) => renderNode(child, nextContext, nextDepth),
+        renderChild: (child, nextContext, nextDepth) =>
+            renderNode(child, nextContext, interactionMap, nextDepth),
     });
 
     if (primitive) {
@@ -27,9 +33,10 @@ function renderNode(node, context, depth) {
     const attributes = joinAttributes([
         `className="${buildStyleClass(node.id)}"`,
         buildLayoutProps(node.id, context.layout),
+        buildReactEventProps(node.id, context, { interactionMap }),
     ]);
     const children = (node.children || [])
-        .map((child) => renderNode(child, context, depth + 1))
+        .map((child) => renderNode(child, context, interactionMap, depth + 1))
         .join('\n');
 
     if (!children) {

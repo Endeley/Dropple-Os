@@ -1,10 +1,15 @@
 import { buildReactStyles } from '../targets/react/reactStyles.js';
+import { buildReactState, buildReactStateProps } from '../targets/react/reactState.js';
+import { buildReactNavigation } from '../targets/react/reactNavigation.js';
 
 export function generateProject(context) {
     const files = {};
+    const navigation = buildReactNavigation(context, {
+        routeProps: buildReactStateProps(context, 'local'),
+    });
 
-    files['App.jsx'] = generateApp(context);
-    files['routes.jsx'] = generateRoutes(context);
+    files['App.jsx'] = generateApp(context, navigation);
+    files['routes.jsx'] = generateRoutes(navigation);
     files['styles.css'] = buildReactStyles(context.styles || {});
 
     for (const [name, component] of Object.entries(context.components || {})) {
@@ -21,19 +26,21 @@ export function generateProject(context) {
     return files;
 }
 
-function generateApp(context) {
-    const screens = Object.keys(context.screens || {}).sort();
-    const imports = screens
-        .map((screen) => `import ${screen} from "./screens/${screen}.jsx";`)
-        .join('\n');
-    const first = screens[0];
-    const body = first ? `    <${first} />` : '    <div />';
+function generateApp(context, navigation) {
+    const stateCode = buildReactState(context);
+    const fallback = Object.keys(context.screens || {}).sort()[0];
+    const body = navigation.routes.length
+        ? navigation.router
+        : fallback
+            ? `    <${fallback} ${buildReactStateProps(context, 'local')} />`
+            : '    <div />';
 
     return `
-import "./styles.css";
-${imports ? `\n${imports}` : ''}
+import React from "react";
+${navigation.routes.length ? 'import { BrowserRouter, Routes, Route } from "react-router-dom";\n' : ''}${navigation.imports ? `${navigation.imports}\n` : ''}import "./styles.css";
 
 export default function App() {
+  ${stateCode || ''}
   return (
 ${body}
   );
@@ -41,13 +48,10 @@ ${body}
 `.trimStart();
 }
 
-function generateRoutes(context) {
-    const screens = Object.keys(context.screens || {}).sort();
-    const imports = screens
-        .map((screen) => `import ${screen} from "./screens/${screen}.jsx";`)
-        .join('\n');
-    const routes = screens
-        .map((screen) => `  { path: "/${toRoutePath(screen)}", component: ${screen} },`)
+function generateRoutes(navigation) {
+    const imports = navigation.imports;
+    const routes = navigation.routes
+        .map((route) => `  { id: "${route.id}", path: "${route.path}", component: ${route.component} },`)
         .join('\n');
 
     return `
@@ -57,10 +61,4 @@ export const routes = [
 ${routes}
 ];
 `.trimStart();
-}
-
-function toRoutePath(screen) {
-    return screen.replace(/Screen$/, '').replace(/[A-Z]/g, (match, index) =>
-        `${index === 0 ? '' : '-'}${match.toLowerCase()}`,
-    );
 }

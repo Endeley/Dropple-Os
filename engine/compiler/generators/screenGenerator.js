@@ -3,14 +3,16 @@ import { buildLayoutProps } from '../targets/react/reactLayout.js';
 import { buildStyleClass } from '../targets/react/reactStyles.js';
 import { resolveReactTag } from '../targets/react/reactComponents.js';
 import { compileLayoutPrimitive, isLayoutPrimitiveNode } from '../layout/layoutPrimitives.js';
+import { buildReactEventProps, buildReactInteractionMap } from '../targets/react/reactInteractions.js';
 
 export function generateScreens(context) {
     const screens = {};
     const rootNodes = (context.structure || []).filter((node) => node.type === 'screen');
+    const interactionMap = buildReactInteractionMap(context);
 
     for (const screen of rootNodes) {
         const name = resolveScreenName(screen.id);
-        screens[name] = generateScreenFile(name, screen, context);
+        screens[name] = generateScreenFile(name, screen, context, interactionMap);
     }
 
     context.screens = screens;
@@ -18,15 +20,18 @@ export function generateScreens(context) {
     return screens;
 }
 
-function generateScreenFile(name, screen, context) {
+function generateScreenFile(name, screen, context, interactionMap) {
     const componentImports = collectComponentImports(screen, context);
     const imports = componentImports.join('\n');
-    const body = renderScreenNode(screen, context, 2, true);
+    const body = renderScreenNode(screen, context, interactionMap, 2, true);
+    const needsNavigate = Object.values(interactionMap).some((items) =>
+        items.some((interaction) => interaction.action?.type === 'navigate'),
+    );
 
     return `
-${imports}
-
-export default function ${name}() {
+${needsNavigate ? 'import { useNavigate } from "react-router-dom";\n' : ''}${imports}
+export default function ${name}(props) {
+  ${needsNavigate ? 'const navigate = useNavigate();' : ''}
   return (
 ${body}
   );
@@ -53,14 +58,19 @@ function collectComponentImports(screen, context) {
     return Array.from(imports.values()).sort();
 }
 
-function renderScreenNode(node, context, depth, isRoot = false) {
+function renderScreenNode(node, context, interactionMap, depth, isRoot = false) {
     const primitive = compileLayoutPrimitive(node, {
         layout: context.layout || {},
         buildClassName: buildStyleClass,
     }, {
         depth,
         renderChild: (child, nextContext, nextDepth) =>
-            renderScreenChild(child, { ...context, layout: nextContext.layout }, nextDepth),
+            renderScreenChild(
+                child,
+                { ...context, layout: nextContext.layout },
+                interactionMap,
+                nextDepth,
+            ),
     });
 
     if (primitive) {
@@ -69,7 +79,7 @@ function renderScreenNode(node, context, depth, isRoot = false) {
 
     const indent = ' '.repeat(depth * 2);
     const children = (node.children || [])
-        .map((child) => renderScreenChild(child, context, depth + 1))
+        .map((child) => renderScreenChild(child, context, interactionMap, depth + 1))
         .join('\n');
     const className = buildStyleClass(node.id);
     const layoutProps = buildLayoutProps(node.id, context.layout || {});
@@ -77,6 +87,10 @@ function renderScreenNode(node, context, depth, isRoot = false) {
     const attributes = joinAttributes([
         `className="${className}"`,
         layoutProps,
+        buildReactEventProps(node.id, context, {
+            interactionMap,
+            stateAccessor: 'props',
+        }),
     ]);
 
     if (!children) {
@@ -86,15 +100,19 @@ function renderScreenNode(node, context, depth, isRoot = false) {
     return `${indent}<${tag}${attributes}>\n${children}\n${indent}</${tag}>`;
 }
 
-function renderScreenChild(node, context, depth) {
+function renderScreenChild(node, context, interactionMap, depth) {
     const indent = ' '.repeat(depth * 2);
 
     if (isLayoutPrimitiveNode(node, { layout: context.layout || {} })) {
-        return renderScreenNode(node, context, depth, false);
+        return renderScreenNode(node, context, interactionMap, depth, false);
     }
 
     const name = resolveComponentName(node);
-    return `${indent}<${name} />`;
+    const eventProps = buildReactEventProps(node.id, context, {
+        interactionMap,
+        stateAccessor: 'props',
+    });
+    return `${indent}<${name}${eventProps ? ` ${eventProps}` : ''} />`;
 }
 
 function walkChildren(children, visitor) {

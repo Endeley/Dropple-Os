@@ -2,13 +2,15 @@ import { resolveComponentName, resolveReactTag } from '../targets/react/reactCom
 import { buildReactStyles, buildStyleClass } from '../targets/react/reactStyles.js';
 import { buildLayoutProps } from '../targets/react/reactLayout.js';
 import { compileLayoutPrimitive, isLayoutPrimitiveNode } from '../layout/layoutPrimitives.js';
+import { buildReactEventProps, buildReactInteractionMap } from '../targets/react/reactInteractions.js';
 
 export function generateComponents(context) {
     const structure = context.structure || [];
     const registry = new Map();
+    const interactionMap = buildReactInteractionMap(context);
 
     for (const node of structure) {
-        registerComponents(node, registry, context);
+        registerComponents(node, registry, context, interactionMap);
     }
 
     const components = Object.fromEntries(
@@ -22,9 +24,9 @@ export function generateComponents(context) {
     return components;
 }
 
-function registerComponents(node, registry, context) {
+function registerComponents(node, registry, context, interactionMap) {
     for (const child of node.children || []) {
-        registerComponents(child, registry, context);
+        registerComponents(child, registry, context, interactionMap);
     }
 
     if (!isReusableComponentNode(node)) {
@@ -37,15 +39,15 @@ function registerComponents(node, registry, context) {
     }
 
     registry.set(name, {
-        jsx: generateComponentFile(name, node, context),
+        jsx: generateComponentFile(name, node, context, interactionMap),
         css: buildNodeCss(node, context),
     });
 }
 
-function generateComponentFile(name, node, context) {
+function generateComponentFile(name, node, context, interactionMap) {
     const childComponents = collectChildComponentImports(node);
     const imports = ['import "./' + name + '.css";', ...childComponents].join('\n');
-    const body = renderComponentNode(node, context, 2, true);
+    const body = renderComponentNode(node, context, interactionMap, 2, true);
 
     return `
 ${imports}
@@ -76,14 +78,19 @@ function collectChildComponentImports(node) {
     return Array.from(imports.values()).sort();
 }
 
-function renderComponentNode(node, context, depth, isRoot = false) {
+function renderComponentNode(node, context, interactionMap, depth, isRoot = false) {
     const primitive = compileLayoutPrimitive(node, {
         layout: context.layout || {},
         buildClassName: buildStyleClass,
     }, {
         depth,
         renderChild: (child, nextContext, nextDepth) =>
-            renderComponentChild(child, { ...context, layout: nextContext.layout }, nextDepth),
+            renderComponentChild(
+                child,
+                { ...context, layout: nextContext.layout },
+                interactionMap,
+                nextDepth,
+            ),
     });
 
     if (primitive) {
@@ -94,12 +101,16 @@ function renderComponentNode(node, context, depth, isRoot = false) {
     const layoutProps = buildLayoutProps(node.id, context.layout || {});
     const className = buildStyleClass(node.id);
     const children = (node.children || [])
-        .map((child) => renderComponentChild(child, context, depth + 1))
+        .map((child) => renderComponentChild(child, context, interactionMap, depth + 1))
         .join('\n');
     const tag = isRoot ? 'div' : resolveReactTag(node);
     const attributes = joinAttributes([
         `className="${className}"`,
         layoutProps,
+        isRoot ? '{...props}' : buildReactEventProps(node.id, context, {
+            interactionMap,
+            stateAccessor: 'props',
+        }),
     ]);
 
     if (!children) {
@@ -109,19 +120,23 @@ function renderComponentNode(node, context, depth, isRoot = false) {
     return `${indent}<${tag}${attributes}>\n${children}\n${indent}</${tag}>`;
 }
 
-function renderComponentChild(node, context, depth) {
+function renderComponentChild(node, context, interactionMap, depth) {
     const indent = ' '.repeat(depth * 2);
 
     if (isLayoutPrimitiveNode(node, { layout: context.layout || {} })) {
-        return renderComponentNode(node, context, depth, false);
+        return renderComponentNode(node, context, interactionMap, depth, false);
     }
 
     if (isReusableComponentNode(node)) {
         const name = resolveComponentName(node);
-        return `${indent}<${name} />`;
+        const eventProps = buildReactEventProps(node.id, context, {
+            interactionMap,
+            stateAccessor: 'props',
+        });
+        return `${indent}<${name}${eventProps ? ` ${eventProps}` : ''} />`;
     }
 
-    return renderComponentNode(node, context, depth, false);
+    return renderComponentNode(node, context, interactionMap, depth, false);
 }
 
 function buildNodeCss(node, context) {
