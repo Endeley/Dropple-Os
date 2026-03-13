@@ -24,6 +24,10 @@ export function buildReactStateProps(context, scope = 'local') {
         .join(' ');
 }
 
+export function getReactStateSlices(context) {
+    return Object.keys(context.application?.state || {}).sort();
+}
+
 function propertyAccess(scope, name) {
     return scope === 'props' ? `props.${name}` : name;
 }

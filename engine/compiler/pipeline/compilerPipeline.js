@@ -7,6 +7,10 @@ import { createApplicationCompilerContext } from '../application/applicationCont
 import { compileInteractions } from '../application/compileInteractions.js';
 import { compileNavigation } from '../application/compileNavigation.js';
 import { compileState } from '../application/compileState.js';
+import { createFormCompilerContext } from '../application/forms/formContext.js';
+import { compileForms } from '../application/forms/compileForms.js';
+import { createDataCompilerContext } from '../application/data/dataContext.js';
+import { compileDataSources } from '../application/data/compileDataSources.js';
 
 export function runCompilerPipeline(context) {
     compileStructure(context);
@@ -15,9 +19,13 @@ export function runCompilerPipeline(context) {
     compileComponents(context);
     compileBindings(context);
     createApplicationCompilerContext(context);
+    createFormCompilerContext(context);
+    createDataCompilerContext(context);
     compileInteractions(context);
     compileNavigation(context);
     compileState(context);
+    compileForms(context);
+    compileDataSources(context);
 
     return context;
 }

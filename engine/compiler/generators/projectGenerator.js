@@ -1,11 +1,28 @@
 import { buildReactStyles } from '../targets/react/reactStyles.js';
 import { buildReactState, buildReactStateProps } from '../targets/react/reactState.js';
 import { buildReactNavigation } from '../targets/react/reactNavigation.js';
+import {
+    buildReactForms,
+    buildReactFormProps,
+    buildReactFormSubmitHandlers,
+} from '../targets/react/reactForms.js';
+import {
+    buildReactDataSources,
+    buildReactDataEffects,
+    buildReactDataProps,
+} from '../targets/react/reactDataSources.js';
 
 export function generateProject(context) {
     const files = {};
+    const routeProps = [
+        buildReactStateProps(context, 'local'),
+        buildReactFormProps(context, 'local'),
+        buildReactDataProps(context, 'local'),
+    ]
+        .filter(Boolean)
+        .join(' ');
     const navigation = buildReactNavigation(context, {
-        routeProps: buildReactStateProps(context, 'local'),
+        routeProps,
     });
 
     files['App.jsx'] = generateApp(context, navigation);
@@ -28,11 +45,17 @@ export function generateProject(context) {
 
 function generateApp(context, navigation) {
     const stateCode = buildReactState(context);
+    const formStateCode = buildReactForms(context);
+    const formSubmitHandlers = buildReactFormSubmitHandlers(context, {
+        navigateAccessor: 'navigate',
+    });
+    const dataState = buildReactDataSources(context);
+    const dataEffects = buildReactDataEffects(context);
     const fallback = Object.keys(context.screens || {}).sort()[0];
     const body = navigation.routes.length
         ? navigation.router
         : fallback
-            ? `    <${fallback} ${buildReactStateProps(context, 'local')} />`
+            ? `    <${fallback} ${buildReactStateProps(context, 'local')} ${buildReactFormProps(context, 'local')} ${buildReactDataProps(context, 'local')} />`
             : '    <div />';
 
     return `
@@ -41,6 +64,10 @@ ${navigation.routes.length ? 'import { BrowserRouter, Routes, Route } from "reac
 
 export default function App() {
   ${stateCode || ''}
+  ${formStateCode || ''}
+  ${formSubmitHandlers || ''}
+  ${dataState || ''}
+  ${dataEffects || ''}
   return (
 ${body}
   );

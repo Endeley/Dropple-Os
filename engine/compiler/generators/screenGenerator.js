@@ -4,6 +4,7 @@ import { buildStyleClass } from '../targets/react/reactStyles.js';
 import { resolveReactTag } from '../targets/react/reactComponents.js';
 import { compileLayoutPrimitive, isLayoutPrimitiveNode } from '../layout/layoutPrimitives.js';
 import { buildReactEventProps, buildReactInteractionMap } from '../targets/react/reactInteractions.js';
+import { buildReactFormNodeProps } from '../targets/react/reactForms.js';
 
 export function generateScreens(context) {
     const screens = {};
@@ -24,14 +25,14 @@ function generateScreenFile(name, screen, context, interactionMap) {
     const componentImports = collectComponentImports(screen, context);
     const imports = componentImports.join('\n');
     const body = renderScreenNode(screen, context, interactionMap, 2, true);
-    const needsNavigate = Object.values(interactionMap).some((items) =>
-        items.some((interaction) => interaction.action?.type === 'navigate'),
-    );
+    const needsNavigate = hasNavigationUsage(context, interactionMap);
+    const formHandlers = buildScreenFormHandlers(context);
 
     return `
 ${needsNavigate ? 'import { useNavigate } from "react-router-dom";\n' : ''}${imports}
 export default function ${name}(props) {
   ${needsNavigate ? 'const navigate = useNavigate();' : ''}
+  ${formHandlers || ''}
   return (
 ${body}
   );
@@ -91,6 +92,10 @@ function renderScreenNode(node, context, interactionMap, depth, isRoot = false) 
             interactionMap,
             stateAccessor: 'props',
         }),
+        buildReactFormNodeProps(node, context, {
+            stateAccessor: 'props',
+            submitAccessor: `handle${capitalize(node.id)}Submit`,
+        }),
     ]);
 
     if (!children) {
@@ -112,7 +117,11 @@ function renderScreenChild(node, context, interactionMap, depth) {
         interactionMap,
         stateAccessor: 'props',
     });
-    return `${indent}<${name}${eventProps ? ` ${eventProps}` : ''} />`;
+    const formProps = buildReactFormNodeProps(node, context, {
+        stateAccessor: 'props',
+        submitAccessor: `handle${capitalize(node.id)}Submit`,
+    });
+    return `${indent}<${name}${eventProps ? ` ${eventProps}` : ''}${formProps ? ` ${formProps}` : ''} />`;
 }
 
 function walkChildren(children, visitor) {
@@ -125,4 +134,33 @@ function walkChildren(children, visitor) {
 function joinAttributes(parts) {
     const value = parts.filter(Boolean).join(' ');
     return value ? ` ${value}` : '';
+}
+
+function hasNavigationUsage(context, interactionMap) {
+    if (
+        Object.values(interactionMap).some((items) =>
+            items.some((interaction) => interaction.action?.type === 'navigate'),
+        )
+    ) {
+        return true;
+    }
+
+    return (context.application?.forms || []).some(
+        (form) => form.submit?.action?.type === 'navigate',
+    );
+}
+
+function buildScreenFormHandlers(context) {
+    return (context.application?.forms || [])
+        .map(
+            (form) =>
+                form.submit?.action?.type === 'navigate'
+                    ? `function handle${capitalize(form.id)}Submit(e) {\n    return props.handle${capitalize(form.id)}Submit(e, navigate);\n  }`
+                    : `function handle${capitalize(form.id)}Submit(e) {\n    return props.handle${capitalize(form.id)}Submit(e);\n  }`,
+        )
+        .join('\n  ');
+}
+
+function capitalize(value) {
+    return value.charAt(0).toUpperCase() + value.slice(1);
 }

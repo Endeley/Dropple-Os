@@ -70,6 +70,7 @@ function normalizeNode(entry) {
         constraints: entry.constraints || null,
         styles: entry.styles || {},
         props: entry.props || {},
+        binding: normalizeBinding(entry.binding),
         children: Array.isArray(entry.children) ? entry.children : [],
     };
 }
@@ -82,6 +83,7 @@ function buildTree(nodes) {
                 id: node.id,
                 type: node.type,
                 props: node.props,
+                binding: node.binding,
                 children: [],
             },
         ]),
@@ -103,4 +105,14 @@ function buildTree(nodes) {
     return nodes
         .filter((node) => !childIds.has(node.id))
         .map((node) => nestedById.get(node.id));
+}
+
+function normalizeBinding(binding) {
+    if (!binding || typeof binding !== 'object' || Array.isArray(binding)) {
+        return null;
+    }
+
+    return Object.fromEntries(
+        Object.entries(binding).sort(([left], [right]) => left.localeCompare(right)),
+    );
 }

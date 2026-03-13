@@ -2,6 +2,16 @@ export function resolveReactTag(node) {
     switch (String(node?.type || '').toLowerCase()) {
         case 'button':
             return 'button';
+        case 'input':
+            return 'input';
+        case 'textarea':
+            return 'textarea';
+        case 'select':
+            return 'select';
+        case 'form':
+            return 'form';
+        case 'label':
+            return 'label';
         case 'text':
         case 'span':
             return 'span';

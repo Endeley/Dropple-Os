@@ -39,6 +39,14 @@ export function buildReactHandler(interaction, options = {}) {
         return `() => ${navigateAccessor}(${JSON.stringify(action.to)})`;
     }
 
+    if (interaction.event === 'input' && action.formId && action.field) {
+        const setter = stateAccessor === 'props'
+            ? `props.set${capitalize(action.formId)}`
+            : `set${capitalize(action.formId)}`;
+
+        return `(e) => ${setter}((prev) => ({ ...prev, ${JSON.stringify(action.field)}: e.target.value }))`;
+    }
+
     return '() => {}';
 }
 
@@ -53,6 +61,10 @@ export function buildReactEventProps(nodeId, context, options = {}) {
             }
 
             if (interaction.event === 'change') {
+                return `onChange={${buildReactHandler(interaction, options)}}`;
+            }
+
+            if (interaction.event === 'input') {
                 return `onChange={${buildReactHandler(interaction, options)}}`;
             }
 

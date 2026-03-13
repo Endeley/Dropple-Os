@@ -3,6 +3,7 @@ import { buildReactStyles, buildStyleClass } from '../targets/react/reactStyles.
 import { buildLayoutProps } from '../targets/react/reactLayout.js';
 import { compileLayoutPrimitive, isLayoutPrimitiveNode } from '../layout/layoutPrimitives.js';
 import { buildReactEventProps, buildReactInteractionMap } from '../targets/react/reactInteractions.js';
+import { buildReactFormNodeProps } from '../targets/react/reactForms.js';
 
 export function generateComponents(context) {
     const structure = context.structure || [];
@@ -103,12 +104,16 @@ function renderComponentNode(node, context, interactionMap, depth, isRoot = fals
     const children = (node.children || [])
         .map((child) => renderComponentChild(child, context, interactionMap, depth + 1))
         .join('\n');
-    const tag = isRoot ? 'div' : resolveReactTag(node);
+    const resolvedTag = resolveReactTag(node);
+    const tag = isRoot && resolvedTag === 'div' ? 'div' : resolvedTag;
     const attributes = joinAttributes([
         `className="${className}"`,
         layoutProps,
         isRoot ? '{...props}' : buildReactEventProps(node.id, context, {
             interactionMap,
+            stateAccessor: 'props',
+        }),
+        isRoot ? '' : buildReactFormNodeProps(node, context, {
             stateAccessor: 'props',
         }),
     ]);
@@ -133,7 +138,10 @@ function renderComponentChild(node, context, interactionMap, depth) {
             interactionMap,
             stateAccessor: 'props',
         });
-        return `${indent}<${name}${eventProps ? ` ${eventProps}` : ''} />`;
+        const formProps = buildReactFormNodeProps(node, context, {
+            stateAccessor: 'props',
+        });
+        return `${indent}<${name}${eventProps ? ` ${eventProps}` : ''}${formProps ? ` ${formProps}` : ''} />`;
     }
 
     return renderComponentNode(node, context, interactionMap, depth, false);
