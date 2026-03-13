@@ -321,18 +321,104 @@
       "engine/ir/extractSemanticIR.js"
     ]
   },
+  "compilerPipeline": {
+    "description": "Deterministic compiler pipeline and shared compilation context",
+    "group": "platform",
+    "critical": true,
+    "order": 185,
+    "requiredFiles": [
+      "engine/compiler/pipeline/compilerPipeline.js",
+      "engine/compiler/pipeline/compilerContext.js",
+      "engine/compiler/compileProject.js"
+    ],
+    "requiredTests": [
+      "engine/__tests__/compilerPipeline.test.mjs"
+    ],
+    "optionalFiles": [
+      "engine/compiler/index.js"
+    ]
+  },
+  "layoutSystem": {
+    "description": "Semantic layout primitives and style compilation for generated applications",
+    "group": "platform",
+    "critical": false,
+    "order": 186,
+    "requiredFiles": [
+      "engine/compiler/compilers/compileLayout.js",
+      "engine/compiler/layout/layoutPrimitives.js",
+      "engine/compiler/targets/react/reactLayout.js"
+    ],
+    "requiredTests": [
+      "engine/__tests__/componentGenerator.test.mjs"
+    ],
+    "optionalFiles": [
+      "engine/compiler/targets/react/reactStyles.js",
+      "engine/compiler/layout/stackCompiler.js",
+      "engine/compiler/layout/gridCompiler.js"
+    ]
+  },
+  "designSystemCompiler": {
+    "description": "Design token, theme, and design-system generation pipeline",
+    "group": "platform",
+    "critical": false,
+    "order": 187,
+    "requiredFiles": [
+      "engine/compiler/designSystem/compileDesignTokens.js",
+      "engine/compiler/designSystem/compileComponents.js",
+      "engine/compiler/designSystem/compileThemes.js",
+      "engine/compiler/designSystem/reactComponentGenerator.js"
+    ],
+    "requiredTests": [
+      "engine/__tests__/designSystemCompiler.test.mjs"
+    ],
+    "optionalFiles": [
+      "engine/compiler/designSystem/cssVariableGenerator.js"
+    ]
+  },
+  "applicationCompiler": {
+    "description": "Deterministic application compiler for state, navigation, interactions, forms, data, and workflows",
+    "group": "platform",
+    "critical": true,
+    "order": 188,
+    "requiredFiles": [
+      "engine/compiler/application/applicationContext.js",
+      "engine/compiler/application/compileState.js",
+      "engine/compiler/application/compileNavigation.js",
+      "engine/compiler/application/compileInteractions.js",
+      "engine/compiler/application/forms/compileForms.js",
+      "engine/compiler/application/data/compileDataSources.js",
+      "engine/compiler/application/workflows/compileWorkflows.js"
+    ],
+    "requiredTests": [
+      "engine/__tests__/applicationCompiler.test.mjs",
+      "engine/__tests__/formCompiler.test.mjs",
+      "engine/__tests__/dataCompiler.test.mjs",
+      "engine/__tests__/workflowCompiler.test.mjs"
+    ],
+    "optionalFiles": [
+      "engine/compiler/targets/react/reactState.js",
+      "engine/compiler/targets/react/reactNavigation.js",
+      "engine/compiler/targets/react/reactInteractions.js",
+      "engine/compiler/targets/react/reactForms.js",
+      "engine/compiler/targets/react/reactDataSources.js",
+      "engine/compiler/targets/react/reactWorkflows.js"
+    ]
+  },
   "reactCompiler": {
     "description": "Framework compiler target for React applications",
     "group": "platform",
     "critical": false,
     "order": 190,
     "requiredFiles": [
-      "engine/export/react/exportReact.js"
+      "engine/compiler/targets/react/reactTarget.js",
+      "engine/compiler/targets/react/reactRenderer.js",
+      "engine/compiler/generators/projectGenerator.js"
     ],
     "requiredTests": [
       "engine/__tests__/reactCompiler.test.mjs"
     ],
     "optionalFiles": [
+      "engine/compiler/targets/react/reactComponents.js",
       "translate/pseudoCodeToReact.js"
     ]
   },
@@ -363,7 +449,9 @@
       "convex/streamEvents.js",
       "convex/updatePresence.js"
     ],
-    "requiredTests": [],
+    "requiredTests": [
+      "collab/__tests__/presenceRuntime.test.mjs"
+    ],
     "optionalFiles": [
       "collab/mergeEvents.js",
       "collab/optimistic/optimisticStore.js"
@@ -378,10 +466,81 @@
       "ai/README.md",
       "ai/prompts/ccmAuthorPrompt.ts"
     ],
-    "requiredTests": [],
+    "requiredTests": [
+      "ai/__tests__/runtimeGeneration.test.mjs"
+    ],
     "optionalFiles": [
       "ai/generation/generateTemplateArtifact.ts",
       "education/ai/ExplanationAgent.js"
     ]
+  },
+  "stateMachineRuntime": {
+    "description": "Dispatcher-driven state machine runtime for deterministic application flows",
+    "group": "authoringRuntime",
+    "critical": false,
+    "order": 171,
+    "requiredFiles": [
+      "runtime/stateMachines/stateMachineRuntime.js",
+      "runtime/stateMachines/stateMachineRegistry.js",
+      "core/events/reducers/stateMachineReducers.js"
+    ],
+    "requiredTests": [
+      "runtime/__tests__/stateMachineRuntime.test.mjs"
+    ],
+    "optionalFiles": [
+      "runtime/stateMachines/stateMachineSelectors.js"
+    ]
+  },
+  "navigationRuntime": {
+    "description": "Dispatcher-driven navigation graph runtime and selectors",
+    "group": "authoringRuntime",
+    "critical": false,
+    "order": 172,
+    "requiredFiles": [
+      "runtime/navigation/navigationRuntime.js",
+      "runtime/navigation/navigationRegistry.js",
+      "core/events/reducers/navigationReducers.js"
+    ],
+    "requiredTests": [
+      "runtime/__tests__/navigationRuntime.test.mjs"
+    ],
+    "optionalFiles": [
+      "runtime/navigation/navigationSelectors.js"
+    ]
+  },
+  "pluginPlatform": {
+    "description": "Sandboxed plugin host and extension API aligned with dispatcher law",
+    "group": "platform",
+    "critical": false,
+    "order": 205,
+    "requiredFiles": [
+      "platform/plugins/pluginHost.js",
+      "platform/plugins/pluginAPI.js",
+      "platform/plugins/pluginSandbox.js",
+      "platform/plugins/pluginRegistry.js"
+    ],
+    "requiredTests": [
+      "platform/__tests__/pluginPlatform.test.mjs"
+    ],
+    "optionalFiles": [
+      "platform/plugins/pluginLoader.js",
+      "platform/plugins/pluginTypes.js"
+    ]
+  },
+  "capabilityEngine": {
+    "description": "Workspace-scoped capability resolution for tools, nodes, compilers, and plugin activation",
+    "group": "platform",
+    "critical": false,
+    "order": 206,
+    "requiredFiles": [
+      "platform/capabilities/capabilityRegistry.js",
+      "platform/capabilities/capabilityResolver.js",
+      "platform/capabilities/workspacePolicy.js",
+      "platform/capabilities/capabilityRuntime.js"
+    ],
+    "requiredTests": [
+      "platform/__tests__/capabilityEngine.test.mjs"
+    ],
+    "optionalFiles": []
   }
 }

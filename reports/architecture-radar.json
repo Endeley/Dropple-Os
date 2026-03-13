@@ -1,4 +1,21 @@
 {
-  "generatedAt": "2026-03-13T08:58:18.549Z",
-  "nextTargets": []
+  "generatedAt": "2026-03-13T14:28:42.691Z",
+  "nextTargets": [
+    {
+      "system": "collaboration",
+      "description": "Real-time collaboration stack for presence and concurrent editing",
+      "status": "SCAFFOLDED",
+      "critical": true,
+      "phase": "phase2",
+      "stage": "collaboration-runtime"
+    },
+    {
+      "system": "aiRuntime",
+      "description": "AI-assisted generation and execution layer grounded in canonical design truth",
+      "status": "SCAFFOLDED",
+      "critical": false,
+      "phase": "phase2",
+      "stage": "application-runtime-depth"
+    }
+  ]
 }

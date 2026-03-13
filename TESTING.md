@@ -13,6 +13,7 @@ npm run test:runtime:all
 npm run test:core:all
 npm run test:all
 npm run validate:all
+npm run architecture:phase
 ```
 
 ## What To Use
@@ -33,6 +34,15 @@ Before release or deeper validation:
 
 ```bash
 npm run validate:all
+
+For living architecture tracking:
+
+```bash
+npm run architecture:monitor
+npm run architecture:score
+npm run architecture:radar
+npm run architecture:phase
+```
 ```
 
 ## Script Meanings

@@ -16,6 +16,7 @@
     "architecture:monitor": "node scripts/architectureMonitor.mjs",
     "architecture:score": "node scripts/architectureScore.mjs",
     "architecture:radar": "node scripts/architectureRadar.mjs",
+    "architecture:phase": "node scripts/architecturePhaseProgress.mjs",
     "architecture:ci": "node scripts/architectureCi.mjs",
     "architecture:drift": "node scripts/architectureDrift.mjs",
     "engine:test": "node engine/evaluation/evaluateScene.fixture.test.mjs",

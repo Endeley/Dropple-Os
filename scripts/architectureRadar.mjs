@@ -13,6 +13,9 @@ const candidates = Object.entries(statusReport.systems)
     if (leftEntry.critical !== rightEntry.critical) {
       return leftEntry.critical ? -1 : 1;
     }
+    if (leftEntry.score !== rightEntry.score) {
+      return leftEntry.score - rightEntry.score;
+    }
     return compareSystems(systemMap, leftId, rightId);
   });
 
@@ -20,7 +23,9 @@ const nextTargets = candidates.map(([systemId, entry]) => ({
   system: systemId,
   description: entry.description,
   status: entry.status,
-  critical: entry.critical
+  critical: entry.critical,
+  phase: entry.phase,
+  stage: entry.stage
 }));
 
 const report = {
@@ -39,7 +44,7 @@ if (nextTargets.length === 0) {
   console.log('Recommended Next Systems');
   console.log('');
   nextTargets.forEach((target, index) => {
-    console.log(`${index + 1}. ${target.system} — ${target.status}${target.critical ? ' [critical]' : ''}`);
+    console.log(`${index + 1}. ${target.system} — ${target.status}${target.critical ? ' [critical]' : ''} [${target.phase}/${target.stage}]`);
   });
 }
 

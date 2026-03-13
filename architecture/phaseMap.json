@@ -1,0 +1,152 @@
+{
+  "dispatcher": {
+    "phase": "phase1",
+    "stage": "core-platform-architecture",
+    "layer": "foundation"
+  },
+  "reducers": {
+    "phase": "phase1",
+    "stage": "core-platform-architecture",
+    "layer": "foundation"
+  },
+  "replay": {
+    "phase": "phase1",
+    "stage": "core-platform-architecture",
+    "layer": "foundation"
+  },
+  "determinismGate": {
+    "phase": "phase1",
+    "stage": "core-platform-architecture",
+    "layer": "foundation"
+  },
+  "documentModel": {
+    "phase": "phase1",
+    "stage": "core-platform-architecture",
+    "layer": "foundation"
+  },
+  "sceneEvaluation": {
+    "phase": "phase1",
+    "stage": "scene-runtime-foundation",
+    "layer": "sceneRuntime"
+  },
+  "spatialIndex": {
+    "phase": "phase1",
+    "stage": "scene-runtime-foundation",
+    "layer": "sceneRuntime"
+  },
+  "hitTesting": {
+    "phase": "phase1",
+    "stage": "scene-runtime-foundation",
+    "layer": "sceneRuntime"
+  },
+  "selection": {
+    "phase": "phase1",
+    "stage": "scene-runtime-foundation",
+    "layer": "sceneRuntime"
+  },
+  "interactionRuntime": {
+    "phase": "phase1",
+    "stage": "scene-runtime-foundation",
+    "layer": "sceneRuntime"
+  },
+  "previewRuntime": {
+    "phase": "phase1",
+    "stage": "scene-runtime-foundation",
+    "layer": "sceneRuntime"
+  },
+  "snapping": {
+    "phase": "phase1",
+    "stage": "scene-runtime-foundation",
+    "layer": "sceneRuntime"
+  },
+  "guides": {
+    "phase": "phase1",
+    "stage": "scene-runtime-foundation",
+    "layer": "sceneRuntime"
+  },
+  "constraints": {
+    "phase": "phase1",
+    "stage": "scene-runtime-foundation",
+    "layer": "sceneRuntime"
+  },
+  "componentRuntime": {
+    "phase": "phase1",
+    "stage": "authoring-runtime-foundation",
+    "layer": "authoringRuntime"
+  },
+  "dataRuntime": {
+    "phase": "phase1",
+    "stage": "authoring-runtime-foundation",
+    "layer": "authoringRuntime"
+  },
+  "appRuntime": {
+    "phase": "phase1",
+    "stage": "authoring-runtime-foundation",
+    "layer": "authoringRuntime"
+  },
+  "stateMachineRuntime": {
+    "phase": "phase2",
+    "stage": "application-runtime-depth",
+    "layer": "authoringRuntime"
+  },
+  "navigationRuntime": {
+    "phase": "phase2",
+    "stage": "application-runtime-depth",
+    "layer": "authoringRuntime"
+  },
+  "compilerIR": {
+    "phase": "phase1",
+    "stage": "compiler-foundation",
+    "layer": "platform"
+  },
+  "compilerPipeline": {
+    "phase": "phase2",
+    "stage": "compiler-depth",
+    "layer": "platform"
+  },
+  "layoutSystem": {
+    "phase": "phase2",
+    "stage": "layout-and-styling-system",
+    "layer": "platform"
+  },
+  "designSystemCompiler": {
+    "phase": "phase2",
+    "stage": "design-system-generator",
+    "layer": "platform"
+  },
+  "applicationCompiler": {
+    "phase": "phase2",
+    "stage": "compiler-depth",
+    "layer": "platform"
+  },
+  "reactCompiler": {
+    "phase": "phase2",
+    "stage": "compiler-depth",
+    "layer": "platform"
+  },
+  "deployment": {
+    "phase": "phase2",
+    "stage": "compiler-depth",
+    "layer": "platform"
+  },
+  "pluginPlatform": {
+    "phase": "phase2",
+    "stage": "plugin-platform",
+    "layer": "platform"
+  },
+  "capabilityEngine": {
+    "phase": "phase2",
+    "stage": "workspace-layer",
+    "layer": "platform"
+  },
+  "collaboration": {
+    "phase": "phase2",
+    "stage": "collaboration-runtime",
+    "layer": "platform"
+  },
+  "aiRuntime": {
+    "phase": "phase2",
+    "stage": "application-runtime-depth",
+    "layer": "platform"
+  }
+}

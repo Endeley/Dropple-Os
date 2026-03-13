@@ -52,21 +52,59 @@
   "appRuntime": [
     "dataRuntime"
   ],
+  "stateMachineRuntime": [
+    "appRuntime",
+    "dispatcher",
+    "reducers"
+  ],
+  "navigationRuntime": [
+    "stateMachineRuntime",
+    "appRuntime",
+    "dispatcher",
+    "reducers"
+  ],
   "compilerIR": [
     "appRuntime"
   ],
+  "compilerPipeline": [
+    "compilerIR",
+    "appRuntime"
+  ],
+  "layoutSystem": [
+    "compilerPipeline"
+  ],
+  "designSystemCompiler": [
+    "compilerPipeline"
+  ],
+  "applicationCompiler": [
+    "compilerPipeline",
+    "appRuntime"
+  ],
   "reactCompiler": [
-    "compilerIR"
+    "compilerIR",
+    "compilerPipeline",
+    "layoutSystem",
+    "designSystemCompiler",
+    "applicationCompiler"
   ],
   "deployment": [
     "reactCompiler"
   ],
+  "pluginPlatform": [
+    "dispatcher",
+    "compilerIR"
+  ],
+  "capabilityEngine": [
+    "pluginPlatform"
+  ],
   "collaboration": [
     "documentModel",
-    "replay"
+    "replay",
+    "capabilityEngine"
   ],
   "aiRuntime": [
     "appRuntime",
-    "compilerIR"
+    "compilerIR",
+    "applicationCompiler"
   ]
 }

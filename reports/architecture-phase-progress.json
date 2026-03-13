@@ -1,0 +1,397 @@
+{
+  "generatedAt": "2026-03-13T14:28:42.871Z",
+  "phases": {
+    "phase1": {
+      "score": 80,
+      "status": "INTEGRATED",
+      "systemCount": 18,
+      "statusCounts": {
+        "MISSING": 0,
+        "SCAFFOLDED": 0,
+        "PARTIAL": 0,
+        "INTEGRATED": 18,
+        "VERIFIED": 0
+      },
+      "stages": {
+        "core-platform-architecture": {
+          "score": 80,
+          "status": "INTEGRATED",
+          "systemCount": 5,
+          "statusCounts": {
+            "MISSING": 0,
+            "SCAFFOLDED": 0,
+            "PARTIAL": 0,
+            "INTEGRATED": 5,
+            "VERIFIED": 0
+          },
+          "systems": [
+            {
+              "system": "determinismGate",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": true,
+              "group": "foundation"
+            },
+            {
+              "system": "dispatcher",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": true,
+              "group": "foundation"
+            },
+            {
+              "system": "documentModel",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": true,
+              "group": "foundation"
+            },
+            {
+              "system": "reducers",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": true,
+              "group": "foundation"
+            },
+            {
+              "system": "replay",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": true,
+              "group": "foundation"
+            }
+          ]
+        },
+        "scene-runtime-foundation": {
+          "score": 80,
+          "status": "INTEGRATED",
+          "systemCount": 9,
+          "statusCounts": {
+            "MISSING": 0,
+            "SCAFFOLDED": 0,
+            "PARTIAL": 0,
+            "INTEGRATED": 9,
+            "VERIFIED": 0
+          },
+          "systems": [
+            {
+              "system": "constraints",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": false,
+              "group": "sceneRuntime"
+            },
+            {
+              "system": "guides",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": false,
+              "group": "sceneRuntime"
+            },
+            {
+              "system": "hitTesting",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": true,
+              "group": "sceneRuntime"
+            },
+            {
+              "system": "interactionRuntime",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": true,
+              "group": "sceneRuntime"
+            },
+            {
+              "system": "previewRuntime",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": true,
+              "group": "sceneRuntime"
+            },
+            {
+              "system": "sceneEvaluation",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": true,
+              "group": "sceneRuntime"
+            },
+            {
+              "system": "selection",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": true,
+              "group": "sceneRuntime"
+            },
+            {
+              "system": "snapping",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": false,
+              "group": "sceneRuntime"
+            },
+            {
+              "system": "spatialIndex",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": true,
+              "group": "sceneRuntime"
+            }
+          ]
+        },
+        "authoring-runtime-foundation": {
+          "score": 80,
+          "status": "INTEGRATED",
+          "systemCount": 3,
+          "statusCounts": {
+            "MISSING": 0,
+            "SCAFFOLDED": 0,
+            "PARTIAL": 0,
+            "INTEGRATED": 3,
+            "VERIFIED": 0
+          },
+          "systems": [
+            {
+              "system": "appRuntime",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": false,
+              "group": "authoringRuntime"
+            },
+            {
+              "system": "componentRuntime",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": false,
+              "group": "authoringRuntime"
+            },
+            {
+              "system": "dataRuntime",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": false,
+              "group": "authoringRuntime"
+            }
+          ]
+        },
+        "compiler-foundation": {
+          "score": 80,
+          "status": "INTEGRATED",
+          "systemCount": 1,
+          "statusCounts": {
+            "MISSING": 0,
+            "SCAFFOLDED": 0,
+            "PARTIAL": 0,
+            "INTEGRATED": 1,
+            "VERIFIED": 0
+          },
+          "systems": [
+            {
+              "system": "compilerIR",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": true,
+              "group": "platform"
+            }
+          ]
+        }
+      }
+    },
+    "phase2": {
+      "score": 70,
+      "status": "PARTIAL",
+      "systemCount": 12,
+      "statusCounts": {
+        "MISSING": 0,
+        "SCAFFOLDED": 2,
+        "PARTIAL": 0,
+        "INTEGRATED": 10,
+        "VERIFIED": 0
+      },
+      "stages": {
+        "application-runtime-depth": {
+          "score": 63,
+          "status": "PARTIAL",
+          "systemCount": 3,
+          "statusCounts": {
+            "MISSING": 0,
+            "SCAFFOLDED": 1,
+            "PARTIAL": 0,
+            "INTEGRATED": 2,
+            "VERIFIED": 0
+          },
+          "systems": [
+            {
+              "system": "aiRuntime",
+              "status": "SCAFFOLDED",
+              "score": 30,
+              "critical": false,
+              "group": "platform"
+            },
+            {
+              "system": "navigationRuntime",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": false,
+              "group": "authoringRuntime"
+            },
+            {
+              "system": "stateMachineRuntime",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": false,
+              "group": "authoringRuntime"
+            }
+          ]
+        },
+        "compiler-depth": {
+          "score": 80,
+          "status": "INTEGRATED",
+          "systemCount": 4,
+          "statusCounts": {
+            "MISSING": 0,
+            "SCAFFOLDED": 0,
+            "PARTIAL": 0,
+            "INTEGRATED": 4,
+            "VERIFIED": 0
+          },
+          "systems": [
+            {
+              "system": "applicationCompiler",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": true,
+              "group": "platform"
+            },
+            {
+              "system": "compilerPipeline",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": true,
+              "group": "platform"
+            },
+            {
+              "system": "deployment",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": false,
+              "group": "platform"
+            },
+            {
+              "system": "reactCompiler",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": false,
+              "group": "platform"
+            }
+          ]
+        },
+        "layout-and-styling-system": {
+          "score": 80,
+          "status": "INTEGRATED",
+          "systemCount": 1,
+          "statusCounts": {
+            "MISSING": 0,
+            "SCAFFOLDED": 0,
+            "PARTIAL": 0,
+            "INTEGRATED": 1,
+            "VERIFIED": 0
+          },
+          "systems": [
+            {
+              "system": "layoutSystem",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": false,
+              "group": "platform"
+            }
+          ]
+        },
+        "design-system-generator": {
+          "score": 80,
+          "status": "INTEGRATED",
+          "systemCount": 1,
+          "statusCounts": {
+            "MISSING": 0,
+            "SCAFFOLDED": 0,
+            "PARTIAL": 0,
+            "INTEGRATED": 1,
+            "VERIFIED": 0
+          },
+          "systems": [
+            {
+              "system": "designSystemCompiler",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": false,
+              "group": "platform"
+            }
+          ]
+        },
+        "plugin-platform": {
+          "score": 80,
+          "status": "INTEGRATED",
+          "systemCount": 1,
+          "statusCounts": {
+            "MISSING": 0,
+            "SCAFFOLDED": 0,
+            "PARTIAL": 0,
+            "INTEGRATED": 1,
+            "VERIFIED": 0
+          },
+          "systems": [
+            {
+              "system": "pluginPlatform",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": false,
+              "group": "platform"
+            }
+          ]
+        },
+        "workspace-layer": {
+          "score": 80,
+          "status": "INTEGRATED",
+          "systemCount": 1,
+          "statusCounts": {
+            "MISSING": 0,
+            "SCAFFOLDED": 0,
+            "PARTIAL": 0,
+            "INTEGRATED": 1,
+            "VERIFIED": 0
+          },
+          "systems": [
+            {
+              "system": "capabilityEngine",
+              "status": "INTEGRATED",
+              "score": 80,
+              "critical": false,
+              "group": "platform"
+            }
+          ]
+        },
+        "collaboration-runtime": {
+          "score": 30,
+          "status": "SCAFFOLDED",
+          "systemCount": 1,
+          "statusCounts": {
+            "MISSING": 0,
+            "SCAFFOLDED": 1,
+            "PARTIAL": 0,
+            "INTEGRATED": 0,
+            "VERIFIED": 0
+          },
+          "systems": [
+            {
+              "system": "collaboration",
+              "status": "SCAFFOLDED",
+              "score": 30,
+              "critical": true,
+              "group": "platform"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
