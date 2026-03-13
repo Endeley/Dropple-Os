@@ -2,7 +2,7 @@ import { getRuntimeSnapshot, getWorkspaceProjection } from '@/runtime/projection
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useAutoKeyframeStore } from '@/runtime/stores/useAutoKeyframeStore.js';
 import { commitTimelineKeyframe } from '@/runtime/timeline/commitTimelineKeyframe';
-import { isAutoLayoutChild } from '@/runtime/layout/isAutoLayoutChild.js';
+import { isAutoLayoutChild } from '@/runtime/layout/index.js';
 import { createSessionCommitActions } from '@/runtime/input/sessionCommitRuntimeBridge.js';
 import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
 

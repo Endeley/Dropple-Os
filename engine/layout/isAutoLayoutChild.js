@@ -1,1 +1,1 @@
-export { isAutoLayoutChild } from '@/runtime/layout/isAutoLayoutChild.js';
+export { isAutoLayoutChild } from '@/runtime/layout/index.js';

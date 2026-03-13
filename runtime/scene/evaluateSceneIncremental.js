@@ -12,8 +12,7 @@ import { collectDirtyPartitions } from './partition/collectDirtyPartitions.js';
 import { collectVisiblePartitions } from './partition/collectVisiblePartitions.js';
 import { updatePartitionBounds } from './partition/updatePartitionBounds.js';
 import { schedulePartitions } from './scheduler/schedulePartitions.js';
-import { resolveLayoutRoots } from '@/runtime/layout/resolveLayoutRoots.js';
-import { evaluateLayoutRoots } from '@/runtime/layout/evaluateLayoutRoots.js';
+import { evaluateLayoutRoots, resolveLayoutRoots } from '@/runtime/layout/index.js';
 import { updateSpatialIndex } from '@/runtime/spatial/index.js';
 
 function isStructuralEvent(eventType) {

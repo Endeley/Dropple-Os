@@ -12,7 +12,7 @@ import ReviewToolbar from '@/review/ReviewToolbar';
 import { SelectionProvider, useSelection } from './SelectionContext';
 import { ModeProvider, useMode } from './ModeContext';
 import { useKeyboardShortcuts } from '@/ui/interaction/useKeyboardShortcuts';
-import { getDesignStateAtCursor } from '@/runtime/replay/getDesignStateAtCursor';
+import { getDesignStateAtCursor } from '@/core/persistence/index.js';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { registerWorkspaceTools } from '@/ui/interaction/toolRegistration';
 import { useKeyboardNudge } from '@/ui/keyboard/useKeyboardNudge';

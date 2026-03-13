@@ -1,15 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createInteractionEngine } from '@/runtime/interactionEngine/engine.js';
+import { createInteractionEngine } from '@/runtime/interactionEngine/index.js';
 import {
   INTERACTIONS,
   registerInteraction,
   interactionRegistry,
-} from '@/runtime/interactionEngine/interactionRegistry.js';
-import { InteractionGraph, GraphNode } from '@/runtime/interactionEngine/interactionGraph.js';
-import { initialInteractionState } from '@/runtime/interactionEngine/state/interactionState.js';
-import { initialPreviewState } from '@/runtime/interactionEngine/state/previewState.js';
+  InteractionGraph,
+  GraphNode,
+  initialInteractionState,
+  initialPreviewState,
+} from '@/runtime/interactionEngine/index.js';
 
 test('interaction engine start/update/commit flows through runtime interaction and preview state', () => {
   const runtime = {

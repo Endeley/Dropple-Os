@@ -1,5 +1,5 @@
 import { createCursor } from '../runtime/cursor/createCursor.js';
-import { getDesignStateAtCursor } from '../runtime/replay/getDesignStateAtCursor.js';
+import { getDesignStateAtCursor } from '../core/persistence/index.js';
 import { renderDesignCanvas } from '../canvas/render/renderDesignCanvas.js';
 import { renderSelection } from '../interaction/renderSelection.js';
 import { renderResizeHandles } from '../interaction/renderResizeHandles.js';

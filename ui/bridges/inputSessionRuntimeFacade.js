@@ -4,7 +4,7 @@ import {
   endSession,
   getActiveSessionType,
   getPreview,
-} from '@/runtime/interactions/input/InputSessionManager.js';
+} from '@/runtime/interactions/index.js';
 import { resolveToolHandler } from '@/runtime/tools/toolHandlers.js';
 
 export {

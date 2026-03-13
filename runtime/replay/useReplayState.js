@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { getDesignStateAtCursor } from '@/runtime/replay/getDesignStateAtCursor';
+import { getDesignStateAtCursor } from '@/core/persistence/index.js';
 
 export function useReplayState({ events, cursor }) {
   const cursorIndex = cursor?.index ?? -1;

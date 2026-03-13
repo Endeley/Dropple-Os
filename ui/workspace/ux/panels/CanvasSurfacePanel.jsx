@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { CanvasSurfaceTypes } from '@/workspaces/registry/canvasSurfacePolicy.js';
+import { CanvasSurfaceTypes } from '@/platform/workspaces';
 import { useWorkspaceProjection } from '@/runtime/projection';
 import { canvasSurfaceIntentSet } from '@/ui/workspace/canvasSurfaceIntent.js';
 

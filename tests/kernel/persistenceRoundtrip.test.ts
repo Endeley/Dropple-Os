@@ -6,7 +6,7 @@ import {
     hydrateLocalDocumentSnapshot,
     LOCAL_DOCUMENT_VERSION,
 } from '@/infrastructure/persistence/localDocumentSchema.js';
-import { getDesignStateAtCursor } from '@/runtime/replay/getDesignStateAtCursor.js';
+import { getDesignStateAtCursor } from '@/core/persistence/index.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 
 test('local persistence roundtrip preserves the event log envelope', () => {

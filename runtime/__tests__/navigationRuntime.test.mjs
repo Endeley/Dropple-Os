@@ -4,14 +4,12 @@ import assert from 'node:assert/strict';
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { createEventDispatcher } from '@/runtime/dispatcher/dispatch.js';
 import {
-    registerNavigationGraph,
     clearNavigationGraphs,
-} from '@/runtime/navigation/navigationRegistry.js';
-import { navigate } from '@/runtime/navigation/navigationRuntime.js';
-import {
     getCurrentScreen,
     getNavigationState,
-} from '@/runtime/navigation/navigationSelectors.js';
+    navigate,
+    registerNavigationGraph,
+} from '@/runtime/navigation/index.js';
 
 test('navigation runtime dispatches navigation through the dispatcher', async () => {
     clearNavigationGraphs();

@@ -1,5 +1,5 @@
-import { createInteractionManager } from '@/runtime/interactions/interactionManager.js';
-import { isAutoLayoutChild } from '@/runtime/layout/isAutoLayoutChild.js';
+import { createInteractionManager } from '@/runtime/interactions/index.js';
+import { isAutoLayoutChild } from '@/runtime/layout/index.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { getRuntimeState } from '@/runtime/state/runtimeState.js';
 import { computeSnapTargets } from '@/runtime/snapping/computeSnapTargets.js';

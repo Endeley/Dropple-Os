@@ -8,7 +8,7 @@
  */
 
 import { useMemo } from 'react';
-import { getDesignStateAtCursor } from '@/runtime/replay/getDesignStateAtCursor';
+import { getDesignStateAtCursor } from '@/core/persistence/index.js';
 
 export function UXSelectionInsightPanel({
     events = [],

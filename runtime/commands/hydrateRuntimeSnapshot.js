@@ -1,4 +1,4 @@
-import { getDesignStateAtCursor } from '@/runtime/replay/getDesignStateAtCursor.js';
+import { getDesignStateAtCursor } from '@/core/persistence/index.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 
 export function hydrateRuntimeSnapshot({

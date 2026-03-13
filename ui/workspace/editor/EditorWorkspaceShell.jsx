@@ -5,7 +5,7 @@ import { WorkspaceLayout } from './WorkspaceLayout';
 import { GridProvider } from './GridContext';
 import { ClipboardProvider } from './ClipboardContext';
 import { applyAutoLayoutIfNeeded } from './useAutoLayoutCommit';
-import { getDesignStateAtCursor } from '@/runtime/replay/getDesignStateAtCursor';
+import { getDesignStateAtCursor } from '@/core/persistence/index.js';
 import { EducationCursorProvider } from '@/education/EducationCursorContext';
 import TemplateGeneratorOverlay from '@/templates/TemplateGeneratorOverlay';
 import { useTemplateGenerator } from '@/templates/useTemplateGenerator';

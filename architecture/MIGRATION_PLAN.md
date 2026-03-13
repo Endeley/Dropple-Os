@@ -90,6 +90,22 @@ Why this is aligned:
 - workspace activation is capability-driven
 - plugin access already routes through capability-facing APIs
 
+### Workspace Registry and Activation Surface
+
+Current files:
+
+- `platform/workspaces/workspaceRegistry.js`
+- `platform/workspaces/workspaceEngine.js`
+- `platform/workspaces/canvasSurfacePolicy.js`
+- `platform/workspaces/index.js`
+- `ui/bridges/workspaceActivationFacade.js`
+
+Why this is aligned:
+
+- there is now a canonical platform-owned workspace surface
+- direct UI imports of `workspaces/registry` have been removed
+- non-workspace modules are now blocked from importing workspace registry internals directly
+
 ### Plugins
 
 Current files:
@@ -133,55 +149,38 @@ Why this is aligned:
 - AI acts through events and runtime state
 - AI is tracked in architecture status as integrated
 
-## Needs Consolidation
+### Selectors and Projection Read Models
 
-### Persistence and Replay
+Current files:
 
-Current state:
+- `runtime/projection/selectors/runtimeSelectors.js`
+- `runtime/projection/selectors/sceneSelectors.js`
+- `runtime/projection/selectors/appSelectors.js`
+- `runtime/projection/selectors/index.js`
+- `runtime/projection/index.js`
 
-- replay and hashing are split across `runtime/dispatcher`, `runtime/replay`, `runtime/utils`, and tests
+Why this is aligned:
 
-Relevant files:
+- selectors now have a canonical projection-layer home
+- app, scene, and runtime selectors are exposed through a stable barrel
+- non-core modules are blocked from importing legacy selector entrypoints directly
 
-- `runtime/dispatcher/replayEvents.js`
-- `runtime/replay/useReplayState.js`
-- `runtime/replay/getDesignStateAtCursor.js`
-- `runtime/utils/hashCanonicalDocument.js`
-- `runtime/utils/hashRuntimeState.js`
+### Persistence and Replay Surface
 
-Target direction:
+Current files:
 
 - `core/persistence/documentEnvelope.js`
 - `core/persistence/replayEngine.js`
 - `core/persistence/hashDocument.js`
+- `core/persistence/index.js`
 
-Refactor note:
+Why this is aligned:
 
-- consolidate behavior first
-- do not change replay semantics while moving files
+- the canonical persistence surface now exists in `core`
+- replay/hash callers have already started migrating to it
+- canonical document-envelope helpers now define the persisted shape
 
-### Selectors and Projection Read Models
-
-Current state:
-
-- selector logic is split across `runtime/projection/**`, `runtime/projection/v1/**`, `core/scene/selectors.v1.*`, and runtime-specific helpers
-
-Relevant files:
-
-- `runtime/projection/selectRenderState.js`
-- `runtime/projection/v1/selectors.js`
-- `runtime/projection/v1/useWorkspaceProjection.js`
-- `core/scene/selectors.v1.ts`
-- `core/scene/selectors.v1.js`
-
-Target direction:
-
-- `runtime/projection/selectors/*`
-
-Refactor note:
-
-- make selectors a first-class boundary
-- keep them read-only and side-effect free
+## Needs Consolidation
 
 ### Runtime Folder Shape
 
@@ -192,7 +191,8 @@ Current state:
 Examples:
 
 - scene evaluation lives across `runtime/scene/**`, `runtime/frame/**`, and `runtime/layout/**`
-- state machines and navigation are separate already, but target naming still needs normalization
+- state machines and navigation are now normalized behind canonical subsystem barrels
+- layout now has a canonical subsystem barrel, but deeper grouping is still historical
 - interaction code spans `runtime/interactions`, `runtime/input`, `runtime/interactionEngine`, and bridge-facing runtime modules
 
 Target direction:
@@ -208,7 +208,7 @@ Refactor note:
 
 Current state:
 
-- workspace registry, route definitions, and activation contracts are still split
+- workspace policy files still live under `workspaces/registry/**`, but the canonical access path is now `platform/workspaces/*`
 
 Relevant files:
 
@@ -216,8 +216,9 @@ Relevant files:
 - `workspaces/registry/routes.js`
 - `workspaces/registry/resolveWorkspacePolicy.js`
 - `workspaces/registry/*.js`
-- `platform/capabilities/workspaceActivation.js`
-- `platform/capabilities/workspaceRegistryBridge.js`
+- `platform/workspaces/workspaceRegistry.js`
+- `platform/workspaces/workspaceEngine.js`
+- `platform/workspaces/index.js`
 
 Target direction:
 
@@ -227,7 +228,7 @@ Target direction:
 
 Refactor note:
 
-- keep one canonical registry/activation path
+- keep `platform/workspaces/*` as the canonical registry/activation path
 - workspace policies should remain policy-only, not engine owners
 
 ### UI Folder Normalization
@@ -314,24 +315,27 @@ Move only when:
 
 ## Safe First Refactors
 
-### 1. Normalize Selectors
+### 1. Finish Runtime Folder-Shape Cleanup
 
 Current sources:
 
-- `runtime/projection/v1/selectors.js`
-- `core/scene/selectors.v1.ts`
-- `runtime/projection/selectRenderState.js`
+- `runtime/scene/**`
+- `runtime/layout/**`
+- `runtime/frame/**`
+- `runtime/interactions/**`
+- `runtime/input/**`
+- `runtime/interactionEngine/**`
 
 Safe outcome:
 
-- centralize into `runtime/projection/selectors/*`
+- clearer subsystem barrels and fewer deep non-runtime imports
 
 Guardrails:
 
-- selectors remain read-only
-- no selector may mutate state or perform IO
+- keep adding canonical `index.js` surfaces before deeper moves
+- restrict new non-runtime deep imports as each subsystem is normalized
 
-### 2. Consolidate Replay and Hashing
+### 2. Finish Persistence Caller Migration
 
 Current sources:
 
@@ -339,17 +343,18 @@ Current sources:
 - `runtime/replay/useReplayState.js`
 - `runtime/utils/hashCanonicalDocument.js`
 - `runtime/utils/hashRuntimeState.js`
+- remaining ad hoc document-envelope builders
 
 Safe outcome:
 
-- clearer persistence/replay module boundaries
+- `core/persistence/*` becomes the only canonical persistence surface
 
 Guardrails:
 
 - replay equivalence tests must stay green
 - deterministic hash behavior must not change
 
-### 3. Normalize Workspace Registry
+### 3. Normalize Remaining Workspace Compatibility Paths
 
 Current sources:
 
@@ -359,7 +364,7 @@ Current sources:
 
 Safe outcome:
 
-- one canonical workspace registry and one activation contract
+- legacy workspace paths become compatibility-only, not active app surfaces
 
 Guardrails:
 
@@ -431,13 +436,12 @@ Purpose:
 
 ## Recommended Migration Order
 
-1. normalize selectors into an explicit projection selector layer
-2. consolidate replay/hash/persistence boundaries
-3. normalize workspace registry and activation shape
-4. clean runtime folder shape by subsystem, one domain at a time
-5. normalize UI naming after bridge boundaries are stable
-6. expand engine surfaces where shared deterministic logic is real
-7. only then consider dispatcher physical relocation if still useful
+1. clean runtime folder shape by subsystem, one domain at a time
+2. finish persistence caller migration onto `core/persistence/*`
+3. normalize remaining workspace compatibility paths
+4. normalize UI naming after bridge boundaries are stable
+5. expand engine surfaces where shared deterministic logic is real
+6. only then consider dispatcher physical relocation if still useful
 
 ## Refactor Rules
 

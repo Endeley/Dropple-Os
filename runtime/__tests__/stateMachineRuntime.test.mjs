@@ -3,9 +3,12 @@ import assert from 'node:assert/strict';
 
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { createEventDispatcher } from '@/runtime/dispatcher/dispatch.js';
-import { registerStateMachine, clearStateMachines } from '@/runtime/stateMachines/stateMachineRegistry.js';
-import { transition } from '@/runtime/stateMachines/stateMachineRuntime.js';
-import { getMachineState } from '@/runtime/stateMachines/stateMachineSelectors.js';
+import {
+    clearStateMachines,
+    getMachineState,
+    registerStateMachine,
+    transition,
+} from '@/runtime/stateMachines/index.js';
 
 test('state machine transition dispatches through runtime dispatcher', async () => {
     clearStateMachines();

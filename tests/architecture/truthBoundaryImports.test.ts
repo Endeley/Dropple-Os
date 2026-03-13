@@ -177,3 +177,202 @@ test('non-core modules do not import legacy selector entrypoints directly', () =
 
     assert.deepEqual(violations, []);
 });
+
+test('non-workspace modules do not import workspace registry internals directly', () => {
+    const scopes = ['ui', 'platform', 'ai', 'tests', 'runtime'];
+    const violations = [];
+
+    for (const scope of scopes) {
+        const scopeRoot = path.join(ROOT, scope);
+        if (!fs.existsSync(scopeRoot)) continue;
+
+        const files = walk(scopeRoot, scope);
+        for (const file of files) {
+            const normalized = file.relPath.replaceAll('\\', '/');
+
+            if (normalized === 'platform/workspaces/workspaceRegistry.js') continue;
+            if (normalized === 'platform/workspaces/canvasSurfacePolicy.js') continue;
+            if (normalized === 'platform/capabilities/workspaceRegistryBridge.js') continue;
+            if (normalized.startsWith('tests/')) continue;
+
+            const content = fs.readFileSync(file.fullPath, 'utf8');
+            const lines = content.split('\n');
+            lines.forEach((line, index) => {
+                if (!line.includes('import') && !line.includes('import(')) return;
+                if (/workspaces\/registry(\/|['"])/.test(line)) {
+                    violations.push(`${file.relPath}:${index + 1}: ${line.trim()}`);
+                }
+            });
+        }
+    }
+
+    assert.deepEqual(violations, []);
+});
+
+test('runtime navigation and state machine subsystems stay structurally separate', () => {
+    const scopes = [
+        {
+            root: path.join(ROOT, 'runtime/navigation'),
+            relBase: 'runtime/navigation',
+            forbidden: /runtime\/stateMachines\//,
+        },
+        {
+            root: path.join(ROOT, 'runtime/stateMachines'),
+            relBase: 'runtime/stateMachines',
+            forbidden: /runtime\/navigation\//,
+        },
+    ];
+
+    const violations = [];
+
+    for (const scope of scopes) {
+        if (!fs.existsSync(scope.root)) continue;
+
+        const files = walk(scope.root, scope.relBase);
+        for (const file of files) {
+            const content = fs.readFileSync(file.fullPath, 'utf8');
+            const lines = content.split('\n');
+            lines.forEach((line, index) => {
+                if (!line.includes('import') && !line.includes('import(')) return;
+                if (scope.forbidden.test(line)) {
+                    violations.push(`${file.relPath}:${index + 1}: ${line.trim()}`);
+                }
+            });
+        }
+    }
+
+    assert.deepEqual(violations, []);
+});
+
+test('non-runtime modules do not import deep navigation or state-machine internals directly', () => {
+    const scopes = ['ui', 'platform', 'ai', 'tests', 'core'];
+    const violations = [];
+
+    for (const scope of scopes) {
+        const scopeRoot = path.join(ROOT, scope);
+        if (!fs.existsSync(scopeRoot)) continue;
+
+        const files = walk(scopeRoot, scope);
+        for (const file of files) {
+            const normalized = file.relPath.replaceAll('\\', '/');
+
+            if (normalized.startsWith('tests/')) continue;
+            if (normalized === 'runtime/projection/selectors/appSelectors.js') continue;
+
+            const content = fs.readFileSync(file.fullPath, 'utf8');
+            const lines = content.split('\n');
+            lines.forEach((line, index) => {
+                if (!line.includes('import') && !line.includes('import(')) return;
+                const hitsDeepNavigation =
+                    /runtime\/navigation\//.test(line) && !/runtime\/navigation\/index\.js/.test(line);
+                const hitsDeepStateMachines =
+                    /runtime\/stateMachines\//.test(line) &&
+                    !/runtime\/stateMachines\/index\.js/.test(line);
+
+                if (hitsDeepNavigation || hitsDeepStateMachines) {
+                    violations.push(`${file.relPath}:${index + 1}: ${line.trim()}`);
+                }
+            });
+        }
+    }
+
+    assert.deepEqual(violations, []);
+});
+
+test('non-runtime modules do not import deep layout internals directly', () => {
+    const scopes = ['ui', 'platform', 'ai', 'tests', 'core', 'engine', 'branching'];
+    const violations = [];
+
+    for (const scope of scopes) {
+        const scopeRoot = path.join(ROOT, scope);
+        if (!fs.existsSync(scopeRoot)) continue;
+
+        const files = walk(scopeRoot, scope);
+        for (const file of files) {
+            const normalized = file.relPath.replaceAll('\\', '/');
+
+            if (normalized.startsWith('tests/')) continue;
+
+            const content = fs.readFileSync(file.fullPath, 'utf8');
+            const lines = content.split('\n');
+            lines.forEach((line, index) => {
+                if (!line.includes('import') && !line.includes('import(')) return;
+                const hitsDeepLayout =
+                    /runtime\/layout\//.test(line) && !/runtime\/layout\/index\.js/.test(line);
+
+                if (hitsDeepLayout) {
+                    violations.push(`${file.relPath}:${index + 1}: ${line.trim()}`);
+                }
+            });
+        }
+    }
+
+    assert.deepEqual(violations, []);
+});
+
+test('non-runtime modules do not import deep scene internals directly', () => {
+    const scopes = ['ui', 'platform', 'ai', 'tests', 'core', 'engine', 'branching'];
+    const violations = [];
+
+    for (const scope of scopes) {
+        const scopeRoot = path.join(ROOT, scope);
+        if (!fs.existsSync(scopeRoot)) continue;
+
+        const files = walk(scopeRoot, scope);
+        for (const file of files) {
+            const normalized = file.relPath.replaceAll('\\', '/');
+
+            if (normalized.startsWith('tests/')) continue;
+
+            const content = fs.readFileSync(file.fullPath, 'utf8');
+            const lines = content.split('\n');
+            lines.forEach((line, index) => {
+                if (!line.includes('import') && !line.includes('import(')) return;
+                const hitsDeepScene =
+                    /runtime\/scene\//.test(line) && !/runtime\/scene\/index\.js/.test(line);
+
+                if (hitsDeepScene) {
+                    violations.push(`${file.relPath}:${index + 1}: ${line.trim()}`);
+                }
+            });
+        }
+    }
+
+    assert.deepEqual(violations, []);
+});
+
+test('non-runtime modules do not import deep interaction internals directly', () => {
+    const scopes = ['ui', 'platform', 'ai', 'tests', 'core', 'engine', 'branching'];
+    const violations = [];
+
+    for (const scope of scopes) {
+        const scopeRoot = path.join(ROOT, scope);
+        if (!fs.existsSync(scopeRoot)) continue;
+
+        const files = walk(scopeRoot, scope);
+        for (const file of files) {
+            const normalized = file.relPath.replaceAll('\\', '/');
+
+            if (normalized.startsWith('tests/')) continue;
+
+            const content = fs.readFileSync(file.fullPath, 'utf8');
+            const lines = content.split('\n');
+            lines.forEach((line, index) => {
+                if (!line.includes('import') && !line.includes('import(')) return;
+
+                const hitsDeepInteractions =
+                    /runtime\/interactions\//.test(line) &&
+                    !/runtime\/interactions\/index\.js/.test(line);
+                const hitsDeepInteractionEngine =
+                    /runtime\/interactionEngine\//.test(line) &&
+                    !/runtime\/interactionEngine\/index\.js/.test(line);
+
+                if (hitsDeepInteractions || hitsDeepInteractionEngine) {
+                    violations.push(`${file.relPath}:${index + 1}: ${line.trim()}`);
+                }
+            });
+        }
+    }
+
+    assert.deepEqual(violations, []);
+});

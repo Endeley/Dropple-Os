@@ -42,7 +42,7 @@ import { resolveBehaviorTrigger } from '@/core/behavior/resolveBehaviorTrigger.j
 
 import { applyLayoutPass } from '../layout/applyLayoutPass.js';
 import { shouldRunLayout } from '../layout/shouldRunLayout.js';
-import { evaluateSceneIncremental } from '@/runtime/scene/index.js';
+import { evaluateSceneIncremental } from '@/runtime/evaluation/index.js';
 import { evaluateComponents } from '@/runtime/components/index.js';
 import { evaluateData } from '@/runtime/data/index.js';
 import { evaluateAppRuntime } from '@/runtime/appRuntime/index.js';
