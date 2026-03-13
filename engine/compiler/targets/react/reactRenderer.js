@@ -1,39 +1,30 @@
-import { renderReactLayout } from './reactLayout.js';
-import { renderReactStyles } from './reactStyles.js';
+import { resolveReactTag } from './reactComponents.js';
+import { buildLayoutProps } from './reactLayout.js';
+import { buildStyleClass } from './reactStyles.js';
 
-export function renderReactProject(context) {
-    const components = (context.structure || [])
-        .map((node) => {
-            const style = {
-                ...renderReactLayout(node.id, context.layout || {}),
-                ...renderReactStyles(node.id, context.styles || {}),
-            };
-            const styleProp = serializeStyle(style);
+export function renderReactTree(structure, layout, styles) {
+    return structure.map((node) => renderNode(node, layout, styles, 2)).join('\n');
+}
 
-            return `      <div id="${node.id}"${styleProp}></div>`;
-        })
+function renderNode(node, layout, styles, depth) {
+    const indent = ' '.repeat(depth * 2);
+    const tag = resolveReactTag(node);
+    const attributes = joinAttributes([
+        `className="${buildStyleClass(node.id)}"`,
+        buildLayoutProps(node.id, layout),
+    ]);
+    const children = (node.children || [])
+        .map((child) => renderNode(child, layout, styles, depth + 1))
         .join('\n');
 
-    return `
-export default function App() {
-  return (
-    <div>
-${components}
-    </div>
-  );
-}
-`.trimStart();
-}
-
-function serializeStyle(style) {
-    const entries = Object.entries(style);
-    if (entries.length === 0) {
-        return '';
+    if (!children) {
+        return `${indent}<${tag}${attributes} />`;
     }
 
-    const body = entries
-        .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
-        .join(', ');
+    return `${indent}<${tag}${attributes}>\n${children}\n${indent}</${tag}>`;
+}
 
-    return ` style={{ ${body} }}`;
+function joinAttributes(parts) {
+    const value = parts.filter(Boolean).join(' ');
+    return value ? ` ${value}` : '';
 }

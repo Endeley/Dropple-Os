@@ -7,6 +7,7 @@ export function createCompilerContext(ir, options = {}) {
         layout: null,
         styles: null,
         components: null,
+        screens: null,
         bindings: null,
         interactions: null,
         navigation: null,

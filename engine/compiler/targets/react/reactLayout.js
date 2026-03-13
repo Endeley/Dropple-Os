@@ -1,11 +1,21 @@
-export function renderReactLayout(nodeId, layoutMap) {
+export function buildLayoutProps(nodeId, layoutMap) {
     const layout = layoutMap[nodeId];
 
     if (!layout) {
-        return {};
+        return '';
     }
 
-    return {
-        position: layout.layout === 'absolute' ? 'absolute' : 'relative',
-    };
+    if (layout.layout === 'stack') {
+        return 'style={{ display: "flex", flexDirection: "column" }}';
+    }
+
+    if (layout.layout === 'row') {
+        return 'style={{ display: "flex", flexDirection: "row" }}';
+    }
+
+    if (layout.layout === 'grid') {
+        return 'style={{ display: "grid" }}';
+    }
+
+    return '';
 }

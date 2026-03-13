@@ -1,25 +1,27 @@
 export function compileStructure(context) {
-    const nodes = collectNodes(context.ir);
-    const byId = new Map(nodes.map((node) => [node.id, node]));
+    const normalizedNodes = normalizeNodes(context.ir);
 
-    const tree = nodes.map((node) => ({
-        id: node.id,
-        type: node.type,
-        children: normalizeChildren(node.children, byId),
-    }));
-
-    context.structure = tree;
+    context.structure = buildTree(normalizedNodes);
+    context.metadata.normalizedNodes = normalizedNodes;
+    context.metadata.nodeMap = Object.fromEntries(
+        normalizedNodes.map((node) => [node.id, node]),
+    );
 }
 
-function collectNodes(ir) {
+function normalizeNodes(ir) {
+    const nodeMap = new Map();
+    const orderedIds = [];
+
+    for (const entry of listRootEntries(ir)) {
+        registerNode(entry, nodeMap, orderedIds);
+    }
+
+    return orderedIds.map((id) => nodeMap.get(id));
+}
+
+function listRootEntries(ir) {
     if (Array.isArray(ir?.nodes)) {
-        return ir.nodes
-            .filter((node) => node && node.id)
-            .map((node) => ({
-                id: node.id,
-                type: node.type || 'div',
-                children: Array.isArray(node.children) ? [...node.children] : [],
-            }));
+        return ir.nodes;
     }
 
     const sceneNodes = ir?.scene?.nodes;
@@ -29,16 +31,76 @@ function collectNodes(ir) {
 
     return Object.keys(sceneNodes)
         .sort()
-        .map((id) => {
-            const node = sceneNodes[id] || {};
-            return {
-                id,
-                type: node.type || 'div',
-                children: Array.isArray(node.children) ? [...node.children] : [],
-            };
-        });
+        .map((id) => ({
+            id,
+            ...sceneNodes[id],
+        }));
 }
 
-function normalizeChildren(children, byId) {
-    return children.filter((childId) => byId.has(childId));
+function registerNode(entry, nodeMap, orderedIds) {
+    const node = normalizeNode(entry);
+    if (!node) {
+        return;
+    }
+
+    if (!nodeMap.has(node.id)) {
+        orderedIds.push(node.id);
+    }
+
+    nodeMap.set(node.id, node);
+
+    for (const childEntry of node.children) {
+        registerNode(childEntry, nodeMap, orderedIds);
+    }
+}
+
+function normalizeNode(entry) {
+    if (!entry || typeof entry !== 'object') {
+        return null;
+    }
+
+    if (!entry.id) {
+        return null;
+    }
+
+    return {
+        id: entry.id,
+        type: entry.type || 'div',
+        layout: entry.layout || null,
+        constraints: entry.constraints || null,
+        styles: entry.styles || {},
+        props: entry.props || {},
+        children: Array.isArray(entry.children) ? entry.children : [],
+    };
+}
+
+function buildTree(nodes) {
+    const nestedById = new Map(
+        nodes.map((node) => [
+            node.id,
+            {
+                id: node.id,
+                type: node.type,
+                props: node.props,
+                children: [],
+            },
+        ]),
+    );
+    const childIds = new Set();
+
+    for (const node of nodes) {
+        const nestedNode = nestedById.get(node.id);
+        nestedNode.children = node.children
+            .map((child) => (typeof child === 'string' ? child : child?.id))
+            .filter(Boolean)
+            .map((childId) => {
+                childIds.add(childId);
+                return nestedById.get(childId);
+            })
+            .filter(Boolean);
+    }
+
+    return nodes
+        .filter((node) => !childIds.has(node.id))
+        .map((node) => nestedById.get(node.id));
 }
