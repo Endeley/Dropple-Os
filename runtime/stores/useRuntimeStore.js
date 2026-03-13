@@ -18,6 +18,8 @@ export const useRuntimeStore = create((set) => ({
     components: { index: {}, resolvedInstances: {} },
     data: { resolvedBindings: {}, resolvedValues: {} },
     app: { screens: {}, currentScreen: null, resolvedScreen: null, state: {}, flows: {} },
+    stateMachines: {},
+    navigation: {},
     selectionBounds: { bounds: null, center: null },
     transformAnchors: { pivot: null, resizeAnchors: null, rotateAnchor: null },
     guides: [],

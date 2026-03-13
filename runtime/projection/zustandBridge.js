@@ -54,6 +54,8 @@ export function syncRuntimeToZustand(nextState) {
                     state: {},
                     flows: {},
                 },
+                stateMachines: {},
+                navigation: {},
             },
             false
         );
@@ -94,6 +96,8 @@ export function syncRuntimeToZustand(nextState) {
             state: {},
             flows: {},
         },
+        stateMachines: nextState.stateMachines ?? {},
+        navigation: nextState.navigation ?? {},
     };
 
     if (prev.sceneGraph !== nextState.sceneGraph) {

@@ -1,6 +1,8 @@
-export function resolveNavigation(app) {
+export function resolveNavigation(app, runtime) {
     const screens = app?.screens ?? {};
-    const currentScreen = app?.currentScreen ?? null;
+    const runtimeNavigation = runtime?.navigation ?? {};
+    const firstGraph = Object.values(runtimeNavigation)[0] ?? null;
+    const currentScreen = firstGraph?.current ?? app?.currentScreen ?? null;
     const resolvedScreen =
         currentScreen && screens[currentScreen] ? screens[currentScreen] : null;
 
@@ -9,5 +11,6 @@ export function resolveNavigation(app) {
         currentScreen,
         resolvedScreen,
         flows: app?.flows ?? {},
+        navigation: runtimeNavigation,
     };
 }

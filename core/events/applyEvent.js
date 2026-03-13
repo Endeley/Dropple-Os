@@ -29,6 +29,8 @@ const initialState = Object.freeze({
         ids: new Set(),
         primary: null,
     }),
+    stateMachines: Object.freeze({}),
+    navigation: Object.freeze({}),
 });
 
 function ensureDefaultTimeline(state) {

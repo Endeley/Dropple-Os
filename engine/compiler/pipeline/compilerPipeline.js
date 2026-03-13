@@ -11,6 +11,8 @@ import { createFormCompilerContext } from '../application/forms/formContext.js';
 import { compileForms } from '../application/forms/compileForms.js';
 import { createDataCompilerContext } from '../application/data/dataContext.js';
 import { compileDataSources } from '../application/data/compileDataSources.js';
+import { createWorkflowCompilerContext } from '../application/workflows/workflowContext.js';
+import { compileWorkflows } from '../application/workflows/compileWorkflows.js';
 
 export function runCompilerPipeline(context) {
     compileStructure(context);
@@ -21,11 +23,13 @@ export function runCompilerPipeline(context) {
     createApplicationCompilerContext(context);
     createFormCompilerContext(context);
     createDataCompilerContext(context);
+    createWorkflowCompilerContext(context);
     compileInteractions(context);
     compileNavigation(context);
     compileState(context);
     compileForms(context);
     compileDataSources(context);
+    compileWorkflows(context);
 
     return context;
 }

@@ -3,7 +3,7 @@ import { resolveAppState } from './stateMachine.js';
 
 export function evaluateAppRuntime(document, runtime) {
     const app = document?.app ?? {};
-    const navigation = resolveNavigation(app);
+    const navigation = resolveNavigation(app, runtime);
     const state = resolveAppState(app);
 
     return {

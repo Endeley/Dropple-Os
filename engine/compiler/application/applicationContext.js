@@ -4,6 +4,7 @@ export function createApplicationCompilerContext(context) {
         state: {},
         forms: [],
         dataSources: [],
+        workflows: [],
         navigation: {
             routes: [],
             initialRoute: null,

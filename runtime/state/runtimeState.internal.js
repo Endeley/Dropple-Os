@@ -98,6 +98,8 @@ export const initialRuntimeState = {
     state: {},
     flows: {},
   },
+  stateMachines: {},
+  navigation: {},
   interaction: initialInteractionState(),
   preview: createPreviewState(),
   // 🔹 Narrative slice (runtime only)

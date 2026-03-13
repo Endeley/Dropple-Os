@@ -6,6 +6,8 @@ export const INTENT_CAPS = {
   [EventTypes.NODE_UPDATE]: ['node:mutate'],
   [EventTypes.NODE_DELETE]: ['node:delete'],
   [EventTypes.LAYOUT_CONVERT]: ['node:create'],
+  [EventTypes.STATE_MACHINE_TRANSITION]: ['app:state-machine'],
+  [EventTypes.NAVIGATION_NAVIGATE]: ['app:navigate'],
 
   // behavior authoring (v1)
   [EventTypes.BEHAVIOR_STATE_CREATE]: ['node:mutate'],

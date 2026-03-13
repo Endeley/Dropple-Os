@@ -37,6 +37,8 @@ export const EventTypes = Object.freeze({
     // State identity (Phase 1½)
     // ─────────────────────────────
     STATE_SET: 'state/set',
+    STATE_MACHINE_TRANSITION: 'state-machine/transition',
+    NAVIGATION_NAVIGATE: 'navigation/navigate',
 
     // ─────────────────────────────
     // Behavior graph (Phase B1)

@@ -5,6 +5,8 @@ import { resolveReactTag } from '../targets/react/reactComponents.js';
 import { compileLayoutPrimitive, isLayoutPrimitiveNode } from '../layout/layoutPrimitives.js';
 import { buildReactEventProps, buildReactInteractionMap } from '../targets/react/reactInteractions.js';
 import { buildReactFormNodeProps } from '../targets/react/reactForms.js';
+import { buildReactWorkflows } from '../targets/react/reactWorkflows.js';
+import { buildWorkflowBindings, findWorkflowByForm } from '../targets/react/reactWorkflowBindings.js';
 
 export function generateScreens(context) {
     const screens = {};
@@ -27,11 +29,15 @@ function generateScreenFile(name, screen, context, interactionMap) {
     const body = renderScreenNode(screen, context, interactionMap, 2, true);
     const needsNavigate = hasNavigationUsage(context, interactionMap);
     const formHandlers = buildScreenFormHandlers(context);
+    const workflows = buildReactWorkflows(context, { navigateAccessor: 'navigate' });
+    const workflowBindings = buildWorkflowBindings(context, { scope: 'props' });
 
     return `
 ${needsNavigate ? 'import { useNavigate } from "react-router-dom";\n' : ''}${imports}
 export default function ${name}(props) {
   ${needsNavigate ? 'const navigate = useNavigate();' : ''}
+  ${workflows || ''}
+  ${workflowBindings || ''}
   ${formHandlers || ''}
   return (
 ${body}
@@ -153,10 +159,16 @@ function hasNavigationUsage(context, interactionMap) {
 function buildScreenFormHandlers(context) {
     return (context.application?.forms || [])
         .map(
-            (form) =>
-                form.submit?.action?.type === 'navigate'
+            (form) => {
+                const workflow = findWorkflowByForm(context, form.id);
+                if (workflow) {
+                    return `function handle${capitalize(form.id)}Submit(e) {\n    return handle${capitalize(form.id)}Workflow(e);\n  }`;
+                }
+
+                return form.submit?.action?.type === 'navigate'
                     ? `function handle${capitalize(form.id)}Submit(e) {\n    return props.handle${capitalize(form.id)}Submit(e, navigate);\n  }`
-                    : `function handle${capitalize(form.id)}Submit(e) {\n    return props.handle${capitalize(form.id)}Submit(e);\n  }`,
+                    : `function handle${capitalize(form.id)}Submit(e) {\n    return props.handle${capitalize(form.id)}Submit(e);\n  }`;
+            },
         )
         .join('\n  ');
 }

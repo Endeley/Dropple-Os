@@ -11,6 +11,8 @@ import { componentStateReducers } from "./componentStateReducers.js";
 import { interactionReducers } from "./interactionReducers.js";
 import { motionReducers } from "./motionReducers.js";
 import { behaviorReducers } from "./behaviorReducers.js";
+import { stateMachineReducers } from "./stateMachineReducers.js";
+import { navigationReducers } from "./navigationReducers.js";
 import { selectionReducer } from "./selectionReducers.js";
 import { viewportReducer } from "./viewportReducer.js";
 
@@ -21,6 +23,8 @@ export function rootReducer(state, event) {
   next = interactionReducers(next, event);
   next = motionReducers(next, event);
   next = behaviorReducers(next, event);
+  next = stateMachineReducers(next, event);
+  next = navigationReducers(next, event);
   next = selectionReducer(next, event);
   next = viewportReducer(next, event);
   next = nodeReducers(next, event);
