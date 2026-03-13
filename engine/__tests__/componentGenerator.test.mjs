@@ -28,3 +28,29 @@ test('component generator emits reusable component folders and screen files', ()
         ],
     );
 });
+
+test('layout primitives render inline without becoming component imports', () => {
+    const files = compileProject({
+        nodes: [
+            {
+                id: 'home',
+                type: 'screen',
+                children: [
+                    {
+                        id: 'root',
+                        type: 'Stack',
+                        layout: { type: 'stack', gap: 20, align: 'center' },
+                        children: [{ id: 'button', type: 'Button' }],
+                    },
+                ],
+            },
+        ],
+    });
+
+    assert.match(
+        files['screens/HomeScreen.jsx'],
+        /<div className="node-root" style=\{\{ display: "flex", flexDirection: "column", gap: "20px", alignItems: "center" \}\}>/,
+    );
+    assert.doesNotMatch(files['screens/HomeScreen.jsx'], /import Stack from/);
+    assert.ok(files['components/Button/Button.jsx']);
+});

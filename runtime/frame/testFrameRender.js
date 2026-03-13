@@ -1,17 +1,22 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
 import { runEditorFrame } from './runEditorFrame.js';
 
-const runtimeState = {
-  nodes: {
-    a: { id: 'a', type: 'frame' },
-    b: { id: 'b', type: 'text' },
-  },
-};
+test('frame pipeline renderer bridge tolerates headless execution', () => {
+  const runtimeState = {
+    nodes: {
+      a: { id: 'a', type: 'frame' },
+      b: { id: 'b', type: 'text' },
+    },
+  };
 
-runEditorFrame({
-  runtimeState,
-  time: 0,
-  input: {},
-  canvasContext: null,
+  assert.doesNotThrow(() => {
+    runEditorFrame({
+      runtimeState,
+      time: 0,
+      input: {},
+      canvasContext: null,
+    });
+  });
 });
-
-console.log('FRAME PIPELINE  RENDERER BRIDGE OK');

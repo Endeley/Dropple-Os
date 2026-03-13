@@ -1,5 +1,5 @@
 export function resolveReactTag(node) {
-    switch (node?.type) {
+    switch (String(node?.type || '').toLowerCase()) {
         case 'button':
             return 'button';
         case 'text':

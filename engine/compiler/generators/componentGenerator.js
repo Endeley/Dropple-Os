@@ -1,6 +1,7 @@
 import { resolveComponentName, resolveReactTag } from '../targets/react/reactComponents.js';
 import { buildReactStyles, buildStyleClass } from '../targets/react/reactStyles.js';
 import { buildLayoutProps } from '../targets/react/reactLayout.js';
+import { compileLayoutPrimitive, isLayoutPrimitiveNode } from '../layout/layoutPrimitives.js';
 
 export function generateComponents(context) {
     const structure = context.structure || [];
@@ -76,6 +77,19 @@ function collectChildComponentImports(node) {
 }
 
 function renderComponentNode(node, context, depth, isRoot = false) {
+    const primitive = compileLayoutPrimitive(node, {
+        layout: context.layout || {},
+        buildClassName: buildStyleClass,
+    }, {
+        depth,
+        renderChild: (child, nextContext, nextDepth) =>
+            renderComponentChild(child, { ...context, layout: nextContext.layout }, nextDepth),
+    });
+
+    if (primitive) {
+        return primitive;
+    }
+
     const indent = ' '.repeat(depth * 2);
     const layoutProps = buildLayoutProps(node.id, context.layout || {});
     const className = buildStyleClass(node.id);
@@ -97,6 +111,10 @@ function renderComponentNode(node, context, depth, isRoot = false) {
 
 function renderComponentChild(node, context, depth) {
     const indent = ' '.repeat(depth * 2);
+
+    if (isLayoutPrimitiveNode(node, { layout: context.layout || {} })) {
+        return renderComponentNode(node, context, depth, false);
+    }
 
     if (isReusableComponentNode(node)) {
         const name = resolveComponentName(node);
@@ -127,5 +145,10 @@ function joinAttributes(parts) {
 }
 
 function isReusableComponentNode(node) {
-    return Boolean(node && node.type && node.type !== 'screen');
+    return Boolean(
+        node &&
+            node.type &&
+            node.type !== 'screen' &&
+            !isLayoutPrimitiveNode(node, { layout: { [node.id]: { type: node.type } } }),
+    );
 }

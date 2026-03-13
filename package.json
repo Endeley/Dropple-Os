@@ -40,11 +40,16 @@
     "runtime:statehash:test": "node --import ./bench/register-alias-loader.mjs runtime/__tests__/runtimeStateHash.test.mjs",
     "runtime:resize:session:test": "node --import ./bench/register-alias-loader.mjs runtime/__tests__/resizeSessionDeterminism.test.mjs && node --import ./bench/register-alias-loader.mjs runtime/__tests__/resizeSessionCommitBridge.test.mjs",
     "ui:interactions:test": "node --import ./bench/register-alias-loader.mjs ui/interactions/__tests__/toolController.test.mjs",
+    "test:engine:all": "node --import ./bench/register-alias-loader.mjs --test $(rg --files -g '*test*.mjs' -g '*test*.js' engine)",
+    "test:runtime:all": "node --import ./bench/register-alias-loader.mjs --test $(rg --files -g '*test*.mjs' -g '*test*.js' runtime)",
+    "test:core:all": "npm run test:engine:all && npm run test:runtime:all",
+    "test:all": "npm run test:core:all && npm run test:kernel && npm run test:architecture && npm run ui:interactions:test",
     "test:kernel": "node --import ./tests/register-test-loaders.mjs --test tests/kernel/*.test.ts",
     "test:architecture": "node --import ./tests/register-test-loaders.mjs --test tests/architecture/dispatcherOwnership.test.ts",
     "determinism": "NODE_ENV=test node scripts/determinismGate.mjs",
     "ci:determinism": "npm run determinism",
-    "template:verify-all": "NODE_ENV=test node scripts/templateVerifyAll.mjs"
+    "template:verify-all": "NODE_ENV=test node scripts/templateVerifyAll.mjs",
+    "validate:all": "npm run test:all && npm run determinism && npm run template:verify-all && npm run architecture:ci"
   },
   "dependencies": {
     "@stackframe/stack": "^2.8.56",
