@@ -51,6 +51,12 @@ function mergeWorkspaceCapabilities(definition, activation) {
         animation:
             definition?.capabilities?.animation === true ||
             activation?.capabilities?.has('animation') === true,
+        rigging:
+            definition?.capabilities?.rigging === true ||
+            activation?.capabilities?.has('rig:author') === true,
+        sequencer:
+            definition?.capabilities?.sequencer === true ||
+            activation?.capabilities?.has('sequencer:author') === true,
         editing: definition?.readonly ? false : definition?.capabilities?.editing ?? true,
     };
 }

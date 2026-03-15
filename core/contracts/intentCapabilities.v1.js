@@ -10,6 +10,11 @@ export const INTENT_CAPS = {
   [EventTypes.VECTOR_UPDATE]: ['vector:mutate'],
   [EventTypes.VECTOR_DELETE]: ['vector:delete'],
   [EventTypes.AI_REQUEST_ENQUEUE]: ['ai:generate'],
+  [EventTypes.STATE_MACHINE_CREATE]: ['state-machine:author'],
+  [EventTypes.STATE_MACHINE_UPDATE]: ['state-machine:author'],
+  [EventTypes.STATE_MACHINE_DELETE]: ['state-machine:author'],
+  [EventTypes.STATE_MACHINE_SET_ACTIVE]: ['state-machine:author'],
+  [EventTypes.STATE_MACHINE_PARAMETER_SET]: ['state-machine:author'],
   [EventTypes.STATE_MACHINE_TRANSITION]: ['app:state-machine'],
   [EventTypes.NAVIGATION_NAVIGATE]: ['app:navigate'],
 
@@ -28,4 +33,28 @@ export const INTENT_CAPS = {
   [EventTypes.ANIMATION_KEYFRAME_ADD]: ['keyframe:create'],
   [EventTypes.ANIMATION_KEYFRAME_UPDATE]: ['keyframe:mutate'],
   [EventTypes.ANIMATION_KEYFRAME_DELETE]: ['keyframe:mutate'],
+
+  // rigging
+  [EventTypes.RIG_CREATE]: ['rig:author'],
+  [EventTypes.RIG_UPDATE]: ['rig:author'],
+  [EventTypes.RIG_DELETE]: ['rig:author'],
+  [EventTypes.RIG_SET_ACTIVE]: ['rig:author'],
+  [EventTypes.RIG_CONTROLLER_CREATE]: ['rig:author'],
+  [EventTypes.RIG_CONTROLLER_UPDATE]: ['rig:author'],
+  [EventTypes.RIG_CONTROLLER_DELETE]: ['rig:author'],
+  [EventTypes.RIG_CONSTRAINT_CREATE]: ['rig:author'],
+  [EventTypes.RIG_CONSTRAINT_UPDATE]: ['rig:author'],
+  [EventTypes.RIG_CONSTRAINT_DELETE]: ['rig:author'],
+
+  // sequencer
+  [EventTypes.SEQUENCE_CREATE]: ['sequencer:author'],
+  [EventTypes.SEQUENCE_UPDATE]: ['sequencer:author'],
+  [EventTypes.SEQUENCE_DELETE]: ['sequencer:author'],
+  [EventTypes.SEQUENCE_SET_ACTIVE]: ['sequencer:author'],
+  [EventTypes.SEQUENCE_TRACK_CREATE]: ['sequencer:author'],
+  [EventTypes.SEQUENCE_TRACK_UPDATE]: ['sequencer:author'],
+  [EventTypes.SEQUENCE_TRACK_DELETE]: ['sequencer:author'],
+  [EventTypes.SEQUENCE_CLIP_CREATE]: ['sequencer:author'],
+  [EventTypes.SEQUENCE_CLIP_UPDATE]: ['sequencer:author'],
+  [EventTypes.SEQUENCE_CLIP_DELETE]: ['sequencer:author'],
 };

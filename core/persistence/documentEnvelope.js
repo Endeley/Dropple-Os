@@ -7,8 +7,11 @@ export const CANONICAL_DOCUMENT_SLICES = Object.freeze([
     'layout',
     'meta',
     'motion',
+    'rigs',
     'sceneGraph',
     'scenes',
+    'sequences',
+    'stateMachines',
     'variables',
     'vectors',
 ]);
@@ -66,9 +69,21 @@ export function createCanonicalDocumentEnvelope({
         motion: {
             clips: {},
         },
+        rigs: {
+            rigs: {},
+            activeRigId: null,
+        },
         scenes: {
             scenes: {},
             activeSceneId: undefined,
+        },
+        sequences: {
+            sequences: {},
+            activeSequenceId: null,
+        },
+        stateMachines: {
+            machines: {},
+            activeMachineId: null,
         },
         assets: {
             images: {},

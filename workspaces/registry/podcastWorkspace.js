@@ -1,3 +1,4 @@
+import { EventTypes } from '@/core/events/eventTypes.js';
 import { createTimelineCapability } from "./timelineCapability.js";
 
 export const podcastWorkspace = {
@@ -15,12 +16,24 @@ export const podcastWorkspace = {
         canvas: false,
         timeline: true,
         animation: false,
+        sequencer: true,
         audio: true,
         video: false,
         codegen: false,
     },
 
-    allowedEventTypes: [],
+    allowedEventTypes: [
+        EventTypes.SEQUENCE_CREATE,
+        EventTypes.SEQUENCE_UPDATE,
+        EventTypes.SEQUENCE_DELETE,
+        EventTypes.SEQUENCE_SET_ACTIVE,
+        EventTypes.SEQUENCE_TRACK_CREATE,
+        EventTypes.SEQUENCE_TRACK_UPDATE,
+        EventTypes.SEQUENCE_TRACK_DELETE,
+        EventTypes.SEQUENCE_CLIP_CREATE,
+        EventTypes.SEQUENCE_CLIP_UPDATE,
+        EventTypes.SEQUENCE_CLIP_DELETE,
+    ],
 
     timeline: createTimelineCapability({
         readOnly: false,

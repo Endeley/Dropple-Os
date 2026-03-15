@@ -1,3 +1,4 @@
+import { EventTypes } from '@/core/events/eventTypes.js';
 import { createTimelineCapability } from './timelineCapability.js';
 
 export const mediaWorkspace = {
@@ -13,6 +14,9 @@ export const mediaWorkspace = {
         canvas: true,
         timeline: true,
         animation: true,
+        rigging: true,
+        sequencer: true,
+        stateMachines: true,
         audio: true,
         video: true,
         codegen: false,
@@ -27,7 +31,34 @@ export const mediaWorkspace = {
         formats: ['mp4', 'gif', 'lottie', 'mp3', 'wav'],
     },
 
-    allowedEventTypes: [],
+    allowedEventTypes: [
+        EventTypes.RIG_CREATE,
+        EventTypes.RIG_UPDATE,
+        EventTypes.RIG_DELETE,
+        EventTypes.RIG_SET_ACTIVE,
+        EventTypes.RIG_CONTROLLER_CREATE,
+        EventTypes.RIG_CONTROLLER_UPDATE,
+        EventTypes.RIG_CONTROLLER_DELETE,
+        EventTypes.RIG_CONSTRAINT_CREATE,
+        EventTypes.RIG_CONSTRAINT_UPDATE,
+        EventTypes.RIG_CONSTRAINT_DELETE,
+        EventTypes.SEQUENCE_CREATE,
+        EventTypes.SEQUENCE_UPDATE,
+        EventTypes.SEQUENCE_DELETE,
+        EventTypes.SEQUENCE_SET_ACTIVE,
+        EventTypes.SEQUENCE_TRACK_CREATE,
+        EventTypes.SEQUENCE_TRACK_UPDATE,
+        EventTypes.SEQUENCE_TRACK_DELETE,
+        EventTypes.SEQUENCE_CLIP_CREATE,
+        EventTypes.SEQUENCE_CLIP_UPDATE,
+        EventTypes.SEQUENCE_CLIP_DELETE,
+        EventTypes.STATE_MACHINE_CREATE,
+        EventTypes.STATE_MACHINE_UPDATE,
+        EventTypes.STATE_MACHINE_DELETE,
+        EventTypes.STATE_MACHINE_SET_ACTIVE,
+        EventTypes.STATE_MACHINE_PARAMETER_SET,
+        EventTypes.STATE_MACHINE_TRANSITION,
+    ],
 
     media: {
         defaultMode: 'animation',

@@ -21,7 +21,7 @@ function tick(now) {
 
     const runtime = getRuntimeState();
     const { sceneGraphTree, shotTimeline, activeShotId, cameraTransform } =
-        buildEvaluationInputs(runtime);
+        buildEvaluationInputs(runtime, { timeMs: clock.time });
 
     evaluateFrameAt(clock.time, {
         reason: 'clock-tick',
@@ -57,7 +57,7 @@ export function seek(time) {
     clock.lastTick = null;
     const runtime = getRuntimeState();
     const { sceneGraphTree, shotTimeline, activeShotId, cameraTransform } =
-        buildEvaluationInputs(runtime);
+        buildEvaluationInputs(runtime, { timeMs: clock.time });
 
     evaluateFrameAt(clock.time, {
         reason: 'seek',

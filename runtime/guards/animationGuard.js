@@ -14,6 +14,11 @@ const ALLOWED_ANIMATION_PROPERTIES = new Set([
 const ALLOWED_ANIMATION_AUTHORING_PROPERTIES = new Set([
     'layout.x',
     'layout.y',
+    'transform.x',
+    'transform.y',
+    'rotation',
+    'scale',
+    'opacity',
 ]);
 
 const animationEventTypes = new Set([

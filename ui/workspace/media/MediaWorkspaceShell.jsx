@@ -7,6 +7,7 @@ import {
 } from '@/platform/workspaces';
 import { MediaModeSwitcher } from './MediaModeSwitcher.jsx';
 import { getMediaModeConfig } from './mediaModes.js';
+import { RigControllerOverlay } from '@/ui/rigging/RigControllerOverlay.jsx';
 import { MediaBrowserPanel } from './shared/MediaBrowserPanel.jsx';
 import { MediaInspectorPanel } from './shared/MediaInspectorPanel.jsx';
 import { MediaTimelinePanel } from './shared/MediaTimelinePanel.jsx';
@@ -87,6 +88,7 @@ export function MediaWorkspaceShell(props) {
                 <MediaTransportBar mode={modeConfig} />
                 <MediaTimelinePanel mode={modeConfig} />
             </div>
+            {activeMode === 'animation' ? <RigControllerOverlay /> : null}
             <EditorWorkspaceShell {...props} modeId={activeMode} />
         </div>
     );

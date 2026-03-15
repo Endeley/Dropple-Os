@@ -1,4 +1,5 @@
 import { buildSceneTree } from '../../domain/scene/buildSceneTree.js';
+import { projectActiveSequenceView } from '@/runtime/projection/selectors/sequenceSelectors.js';
 
 function buildShotTimeline(sceneGraph, activeSceneId) {
     if (!sceneGraph || !Array.isArray(sceneGraph.scenes)) {
@@ -46,7 +47,26 @@ function buildShotTimeline(sceneGraph, activeSceneId) {
     return { shots };
 }
 
-export function buildEvaluationInputs(runtimeState) {
+function buildSequenceCameraTransform(runtimeState, timeMs) {
+    const sequenceView = projectActiveSequenceView(runtimeState?.document, { timeMs });
+    const cameraNodeRef = sequenceView?.activeCamera?.cameraNodeRef ?? null;
+    if (!cameraNodeRef) return null;
+
+    const node = runtimeState?.nodes?.[cameraNodeRef] ?? null;
+    const transform = node?.props?.transform ?? {};
+
+    return {
+        x: Number(transform.x ?? 0),
+        y: Number(transform.y ?? 0),
+        zoom: Number(transform.scale ?? transform.zoom ?? 1),
+        rotation: Number(transform.rotation ?? 0),
+        nodeRef: cameraNodeRef,
+        clipId: sequenceView?.activeCamera?.clipId ?? null,
+        sequenceId: sequenceView?.sequenceId ?? null,
+    };
+}
+
+export function buildEvaluationInputs(runtimeState, { timeMs = 0 } = {}) {
     const nodesById = runtimeState?.nodes ?? null;
     const rootIds = runtimeState?.rootIds ?? null;
     const sceneGraph = runtimeState?.sceneGraph ?? null;
@@ -67,11 +87,12 @@ export function buildEvaluationInputs(runtimeState) {
     const sceneGraphTree = root ? [root] : [];
     const shotTimeline = buildShotTimeline(sceneGraph, activeSceneId);
     const activeShotId = sceneActiveShotId || graphActiveShotId || null;
+    const cameraTransform = buildSequenceCameraTransform(runtimeState, timeMs);
 
     return {
         sceneGraphTree,
         shotTimeline,
         activeShotId,
-        cameraTransform: null,
+        cameraTransform,
     };
 }

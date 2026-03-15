@@ -9,7 +9,11 @@ export async function transition(machineId, target, { dispatcher } = {}) {
         throw new Error(`Unknown state machine ${machineId}`);
     }
 
-    if (!machine.states.includes(target)) {
+    const states = Array.isArray(machine.states)
+        ? machine.states.map((state) => (typeof state === 'string' ? state : state?.id))
+        : [];
+
+    if (!states.includes(target)) {
         throw new Error(`Invalid state ${target}`);
     }
 

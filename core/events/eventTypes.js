@@ -37,6 +37,11 @@ export const EventTypes = Object.freeze({
     // State identity (Phase 1½)
     // ─────────────────────────────
     STATE_SET: 'state/set',
+    STATE_MACHINE_CREATE: 'state-machine/create',
+    STATE_MACHINE_UPDATE: 'state-machine/update',
+    STATE_MACHINE_DELETE: 'state-machine/delete',
+    STATE_MACHINE_SET_ACTIVE: 'state-machine/set-active',
+    STATE_MACHINE_PARAMETER_SET: 'state-machine/parameter/set',
     STATE_MACHINE_TRANSITION: 'state-machine/transition',
     NAVIGATION_NAVIGATE: 'navigation/navigate',
     VECTOR_CREATE: 'vector/create',
@@ -111,6 +116,30 @@ export const EventTypes = Object.freeze({
     MOTION_KEYFRAME_ADD: 'motion/keyframeAdd',
     MOTION_KEYFRAME_UPDATE: 'motion/keyframeUpdate',
     MOTION_KEYFRAME_DELETE: 'motion/keyframeDelete',
+
+    // Rigging
+    RIG_CREATE: 'rig/create',
+    RIG_UPDATE: 'rig/update',
+    RIG_DELETE: 'rig/delete',
+    RIG_SET_ACTIVE: 'rig/set-active',
+    RIG_CONTROLLER_CREATE: 'rig/controller/create',
+    RIG_CONTROLLER_UPDATE: 'rig/controller/update',
+    RIG_CONTROLLER_DELETE: 'rig/controller/delete',
+    RIG_CONSTRAINT_CREATE: 'rig/constraint/create',
+    RIG_CONSTRAINT_UPDATE: 'rig/constraint/update',
+    RIG_CONSTRAINT_DELETE: 'rig/constraint/delete',
+
+    // Sequencer
+    SEQUENCE_CREATE: 'sequence/create',
+    SEQUENCE_UPDATE: 'sequence/update',
+    SEQUENCE_DELETE: 'sequence/delete',
+    SEQUENCE_SET_ACTIVE: 'sequence/set-active',
+    SEQUENCE_TRACK_CREATE: 'sequence/track/create',
+    SEQUENCE_TRACK_UPDATE: 'sequence/track/update',
+    SEQUENCE_TRACK_DELETE: 'sequence/track/delete',
+    SEQUENCE_CLIP_CREATE: 'sequence/clip/create',
+    SEQUENCE_CLIP_UPDATE: 'sequence/clip/update',
+    SEQUENCE_CLIP_DELETE: 'sequence/clip/delete',
 
     // ─────────────────────────────
     // Transitions (between states)

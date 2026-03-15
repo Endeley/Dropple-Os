@@ -28,3 +28,7 @@ export function selectIsReplaying() {
 export function selectRenderState() {
     return getRuntimeSnapshot();
 }
+
+export function selectSequencerPreview() {
+    return getRuntimeSnapshot()?.sequencer ?? null;
+}

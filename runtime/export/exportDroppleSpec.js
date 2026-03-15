@@ -8,7 +8,7 @@ import { validateDroppleSpec } from './validateDroppleSpec';
  */
 export function exportDroppleSpec(workspace) {
     const timeline = workspace?.timeline?.timelines?.default ?? null;
-    const inputs = buildEvaluationInputs(workspace);
+    const inputs = buildEvaluationInputs(workspace, { timeMs: 0 });
     const shot = {
         shotTimeline: inputs.shotTimeline,
         sceneGraph: inputs.sceneGraphTree,

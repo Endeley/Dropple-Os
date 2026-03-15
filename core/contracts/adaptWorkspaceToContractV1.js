@@ -126,6 +126,24 @@ export function adaptWorkspaceToContractV1(ws) {
     denies.push('animation:enabled');
   }
 
+  if (ws.capabilities?.rigging) {
+    caps.push('rig:author');
+  } else {
+    denies.push('rig:author');
+  }
+
+  if (ws.capabilities?.sequencer) {
+    caps.push('sequencer:author');
+  } else {
+    denies.push('sequencer:author');
+  }
+
+  if (ws.capabilities?.stateMachines) {
+    caps.push('state-machine:author', 'app:state-machine');
+  } else {
+    denies.push('state-machine:author', 'app:state-machine');
+  }
+
   if (ws.capabilities?.codegen) {
     caps.push('ai:generate');
   } else {
