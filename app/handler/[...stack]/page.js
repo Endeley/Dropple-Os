@@ -1,4 +1,4 @@
-import { StackHandler } from "@stackframe/stack";
+import StackHandlerClient from './StackHandlerClient';
 
 const CHECKOUT_ENABLED =
   process.env.NEXT_PUBLIC_STACK_CHECKOUT_ENABLED === "true";
@@ -8,5 +8,5 @@ export default function Handler() {
     return null;
   }
 
-  return <StackHandler fullPage />;
+  return <StackHandlerClient />;
 }

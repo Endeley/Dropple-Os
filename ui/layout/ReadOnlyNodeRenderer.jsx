@@ -2,15 +2,15 @@
 
 import { useRef, useState } from 'react';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext';
-import { computeSnapGuides } from '@/ui/canvas/computeSnapGuides';
-import { resolveResizeSnap, resolveSnap } from '@/ui/canvas/resolveSnap';
+import { computeSnapGuides } from '@/ui/canvas/canvas/computeSnapGuides.js';
+import { resolveResizeSnap, resolveSnap } from '@/ui/canvas/canvas/resolveSnap.js';
 import { useGrid } from '@/ui/workspace/shared/GridContext';
 import {
   resolveGridSnapPosition,
   resolveGridSnapSize,
-} from '@/ui/canvas/resolveGridSnap';
-import { useInteractionModifiers } from '@/ui/interaction/useInteractionModifiers';
-import { modifiersAllowed } from '@/ui/interaction/isModifierAllowed';
+} from '@/ui/canvas/canvas/resolveGridSnap.js';
+import { useInteractionModifiers } from '@/ui/interaction/interaction/useInteractionModifiers.js';
+import { modifiersAllowed } from '@/ui/interaction/interaction/isModifierAllowed.js';
 import { serializeSelection } from '@/ui/workspace/shared/serializeSelection';
 import { pasteFromClipboard } from '@/ui/workspace/shared/pasteFromClipboard';
 import {

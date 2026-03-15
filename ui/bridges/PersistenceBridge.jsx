@@ -31,13 +31,24 @@ export function PersistenceBridge({
     const events = usePersistenceBridgeState((s) => s.events);
     const cursorIndex = usePersistenceBridgeState((s) => s.cursorIndex);
     const autosaveTimerRef = useRef(null);
+    const seededInitialSnapshotRef = useRef(false);
+    const restoredPersistenceRef = useRef(false);
 
     useEffect(() => {
         onRecentDocsChange?.(loadRegistry());
     }, [onRecentDocsChange]);
 
     useEffect(() => {
-        if (!dispatcher?.hydrateRuntimeState) return;
+        if (!dispatcher?.hydrateRuntimeState || seededInitialSnapshotRef.current) return;
+
+        const hasInitialSnapshot =
+            Array.isArray(initialEvents) && initialEvents.length > 0;
+        const hasExplicitCursor = typeof initialCursorIndex === 'number' && initialCursorIndex >= 0;
+
+        if (!hasInitialSnapshot && !hasExplicitCursor) {
+            seededInitialSnapshotRef.current = true;
+            return;
+        }
 
         hydratePersistenceSnapshot({
             dispatcher,
@@ -47,10 +58,14 @@ export function PersistenceBridge({
             },
             animate: false,
         });
+        seededInitialSnapshotRef.current = true;
     }, [dispatcher, initialEvents, initialCursorIndex]);
 
     useEffect(() => {
+        if (!dispatcher?.hydrateRuntimeState || restoredPersistenceRef.current) return;
+
         if (!enabled) {
+            restoredPersistenceRef.current = true;
             onHydratedChange?.(true);
             return;
         }
@@ -67,6 +82,7 @@ export function PersistenceBridge({
                 onDocumentIdChange?.(activeId);
                 onDocumentNameChange?.(loaded.name || 'Untitled');
                 setActiveDocument(activeId);
+                restoredPersistenceRef.current = true;
                 onHydratedChange?.(true);
                 return;
             }
@@ -81,6 +97,7 @@ export function PersistenceBridge({
             });
         }
 
+        restoredPersistenceRef.current = true;
         onHydratedChange?.(true);
     }, [
         dispatcher,

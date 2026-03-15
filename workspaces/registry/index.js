@@ -1,4 +1,5 @@
 import { graphicWorkspace } from './graphicWorkspace.js';
+import { mediaWorkspace } from './mediaWorkspace.js';
 import { uiuxWorkspace } from './uiuxWorkspace.js';
 import { animationWorkspace } from './animationWorkspace.js';
 import { videoWorkspace } from './videoWorkspace.js';
@@ -17,6 +18,7 @@ import { adaptWorkspaceToContractV1 } from '@/core/contracts/adaptWorkspaceToCon
 
 export const WorkspaceRegistry = {
     graphic: adaptWorkspaceToContractV1(graphicWorkspace),
+    media: adaptWorkspaceToContractV1(mediaWorkspace),
     uiux: adaptWorkspaceToContractV1(uiuxWorkspace),
     animation: adaptWorkspaceToContractV1(animationWorkspace),
     video: adaptWorkspaceToContractV1(videoWorkspace),

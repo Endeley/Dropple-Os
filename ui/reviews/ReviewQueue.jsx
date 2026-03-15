@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import { Card, CardContent, CardHeader } from '@/ui/controls/card';
-import { Badge } from '@/ui/controls/badge';
+import { Card, CardContent, CardHeader } from '@/ui/controls/ui/card.jsx';
+import { Badge } from '@/ui/controls/ui/badge.jsx';
 
 const statusStyles = {
   submitted: 'bg-yellow-100 text-yellow-800',

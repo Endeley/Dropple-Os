@@ -6,6 +6,7 @@ function toArray(maybeSetOrArray) {
 }
 
 function inferCanvasKind(ws) {
+  if (ws.id === 'media') return 'animation';
   if (ws.id === 'animation') return 'animation';
   if (ws.id === 'icons') return 'icon';
   if (ws.id === 'document') return 'document';

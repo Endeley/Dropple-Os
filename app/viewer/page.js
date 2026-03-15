@@ -3,7 +3,8 @@
 import { useMemo, useState } from 'react';
 import CanvasStage from '@/ui/layout/CanvasStage';
 import TimelineBar from '@/ui/layout/TimelineBar';
-import { SelectionProvider } from '@/ui/workspace/shared/SelectionContext';
+import { WorkspaceRoot } from '@/ui/workspace/root/WorkspaceRoot.jsx';
+import { GridProvider } from '@/ui/workspace/shared/GridContext';
 import { ModeProvider } from '@/ui/workspace/shared/ModeContext';
 import { hydrateLocalDocumentSnapshot } from '@/infrastructure/persistence/localDocumentSchema.js';
 import { useViewerControls } from '@/viewer/useViewerControls';
@@ -51,31 +52,33 @@ export default function ViewerPage() {
   const cursor = { index: cursorIndex };
 
   return (
-    <SelectionProvider>
-      <ModeProvider value="viewer">
-        <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ position: 'relative', flex: 1 }}>
-            {params.controls && <ViewerToolbar {...controls} />}
-            <ViewerStage zoom={controls.zoom} bg={controls.bg}>
-              <CanvasStage
-                adapter={adapter}
+    <WorkspaceRoot profile="design">
+      <GridProvider>
+        <ModeProvider value="viewer">
+          <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ position: 'relative', flex: 1 }}>
+              {params.controls && <ViewerToolbar {...controls} />}
+              <ViewerStage zoom={controls.zoom} bg={controls.bg}>
+                <CanvasStage
+                  adapter={adapter}
+                  events={events}
+                  cursor={cursor}
+                  emit={() => {}}
+                  educationReadOnly
+                  canImport={false}
+                />
+              </ViewerStage>
+            </div>
+            {params.timeline && (
+              <TimelineBar
                 events={events}
                 cursor={cursor}
-                emit={() => {}}
-                educationReadOnly
-                canImport={false}
+                setCursorIndex={setCursorIndex}
               />
-            </ViewerStage>
+            )}
           </div>
-          {params.timeline && (
-            <TimelineBar
-              events={events}
-              cursor={cursor}
-              setCursorIndex={setCursorIndex}
-            />
-          )}
-        </div>
-      </ModeProvider>
-    </SelectionProvider>
+        </ModeProvider>
+      </GridProvider>
+    </WorkspaceRoot>
   );
 }

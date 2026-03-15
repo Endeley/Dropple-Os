@@ -7,6 +7,7 @@
     "arch": "node enforceDroppleLaws.cjs",
     "dev": "next dev",
     "build": "next build",
+    "build:smoke": "next build",
     "start": "next start",
     "lint": "eslint",
     "enforce:laws": "node enforceDroppleLaws.cjs",
@@ -47,10 +48,12 @@
     "test:all": "npm run test:core:all && npm run test:kernel && npm run test:architecture && npm run ui:interactions:test",
     "test:kernel": "node --import ./tests/register-test-loaders.mjs --test tests/kernel/*.test.ts",
   "test:architecture": "node --import ./tests/register-test-loaders.mjs --test tests/architecture/*.test.ts",
+    "test:routes:smoke": "playwright test tests/e2e/workspace-routes.smoke.spec.js",
     "determinism": "NODE_ENV=test node scripts/determinismGate.mjs",
     "ci:determinism": "npm run determinism",
     "template:verify-all": "NODE_ENV=test node scripts/templateVerifyAll.mjs",
-    "validate:all": "npm run test:all && npm run determinism && npm run template:verify-all && npm run architecture:ci"
+    "validate:all": "npm run test:all && npm run determinism && npm run template:verify-all && npm run architecture:ci",
+    "validate:app": "npm run build:smoke && npm run test:routes:smoke"
   },
   "dependencies": {
     "@stackframe/stack": "^2.8.56",
@@ -59,7 +62,7 @@
     "dotenv": "^17.3.1",
     "lucide-react": "^0.562.0",
     "nanoid": "^5.1.6",
-    "next": "^16.1.1",
+    "next": "15.5.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "uuid": "^11.1.0",
@@ -72,7 +75,8 @@
     "@types/react": "^19.2.7",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9.39.2",
-    "eslint-config-next": "^16.1.1",
+    "eslint-config-next": "15.5.0",
+    "postcss": "^8.4.49",
     "tailwindcss": "^4.1.18"
   }
 }

@@ -1,6 +1,7 @@
 export function workspaceRoutes() {
   return {
     graphic: { label: "Graphic", href: "/workspace/graphic" },
+    media: { label: "Media", href: "/workspace/media" },
     uiux: { label: "UI/UX", href: "/workspace/uiux" },
     animation: { label: "Animation", href: "/workspace/animation" },
     video: { label: "Video", href: "/workspace/video" },

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import { Button } from '@/ui/controls/button';
+import { Button } from '@/ui/controls/ui/button.jsx';
 import { safeMutation } from '@/utils/safeMutation';
 
 export default function IssueCertificateButton({ assessmentId, status }) {

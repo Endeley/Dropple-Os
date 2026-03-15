@@ -2,12 +2,11 @@
 
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import { Card, CardContent, CardHeader } from '@/ui/controls/card';
-import { Badge } from '@/ui/controls/badge';
+import { Card, CardContent, CardHeader } from '@/ui/controls/ui/card.jsx';
+import { Badge } from '@/ui/controls/ui/badge.jsx';
 
 export default function VerifyCertificatePage({ params }) {
   const { certificateId } = params;
-
   const result = useQuery(api.certificates.verifyCertificate, {
     certificateId,
   });

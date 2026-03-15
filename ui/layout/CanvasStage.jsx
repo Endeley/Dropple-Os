@@ -4,13 +4,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useReplayState } from '@/runtime/replay/useReplayState';
 import ReadOnlyNodeRenderer from './ReadOnlyNodeRenderer';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext';
-import SnapGuidesOverlay from '@/ui/canvas/SnapGuidesOverlay';
-import { AutoLayoutOverlayLayer } from '@/ui/canvas/AutoLayoutOverlayLayer';
-import { shouldShowAutoLayoutOverlay } from '@/ui/canvas/useAutoLayoutOverlayVisibility';
-import { PaddingOverlay } from '@/ui/canvas/overlays/PaddingOverlay';
-import { GapOverlay } from '@/ui/canvas/overlays/GapOverlay';
-import { GridOverlay } from '@/ui/canvas/overlays/GridOverlay';
-import { ReorderIndicator } from '@/ui/canvas/overlays/ReorderIndicator';
+import SnapGuidesOverlay from '@/ui/canvas/canvas/SnapGuidesOverlay.jsx';
+import { AutoLayoutOverlayLayer } from '@/ui/canvas/canvas/AutoLayoutOverlayLayer.jsx';
+import { shouldShowAutoLayoutOverlay } from '@/ui/canvas/canvas/useAutoLayoutOverlayVisibility.js';
+import { PaddingOverlay } from '@/ui/canvas/canvas/overlays/PaddingOverlay.jsx';
+import { GapOverlay } from '@/ui/canvas/canvas/overlays/GapOverlay.jsx';
+import { GridOverlay } from '@/ui/canvas/canvas/overlays/GridOverlay.jsx';
+import { ReorderIndicator } from '@/ui/canvas/canvas/overlays/ReorderIndicator.jsx';
 import { colors } from '@/ui/tokens';
 import { AnnotationOverlay } from '@/education/AnnotationOverlay';
 import { useEducationCursor } from '@/education/EducationCursorContext';
@@ -88,7 +88,7 @@ export default function CanvasStage({
     ? state.nodes[reorderPreview.parentId]
     : null;
   const { menu, openMenu, closeMenu } = useContextMenu();
-  const updateCursor = useMutation(api.updateCursor);
+  const updateCursor = useMutation(api.updateCursor.updateCursor);
   const cursorEmitter = useMemo(
     () =>
       throttle((x, y) => {
@@ -147,7 +147,9 @@ export default function CanvasStage({
   }
 
   function onWheel(e) {
-    e.preventDefault();
+    if (e.cancelable) {
+      e.preventDefault();
+    }
 
     const zoomFactor = 0.001;
     const nextZoom = Math.min(

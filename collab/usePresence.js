@@ -14,8 +14,8 @@ import { api } from '@/convex/_generated/api';
  * - trigger document mutations
  */
 export function usePresence({ docId, enabled = true }) {
-    const update = useMutation(api.updatePresence);
-    const presence = useQuery(api.getPresence, docId ? { docId } : 'skip');
+    const update = useMutation(api.updatePresence.updatePresence);
+    const presence = useQuery(api.getPresence.getPresence, docId ? { docId } : 'skip');
 
     useEffect(() => {
         if (!docId || !enabled) return;

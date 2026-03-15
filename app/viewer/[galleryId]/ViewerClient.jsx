@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from 'convex/react';
 import CanvasStage from '@/ui/layout/CanvasStage';
 import TimelineBar from '@/ui/layout/TimelineBar';
-import { SelectionProvider } from '@/ui/workspace/shared/SelectionContext';
+import { WorkspaceRoot } from '@/ui/workspace/root/WorkspaceRoot.jsx';
+import { GridProvider } from '@/ui/workspace/shared/GridContext';
 import { ModeProvider } from '@/ui/workspace/shared/ModeContext';
 import { hydrateLocalDocumentSnapshot } from '@/infrastructure/persistence/localDocumentSchema.js';
 import { useViewerControls } from '@/viewer/useViewerControls';
@@ -107,63 +108,65 @@ export default function ViewerClient({ snapshot, meta }) {
   }
 
   return (
-    <SelectionProvider>
-      <ModeProvider value="viewer">
-        <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ position: 'relative', flex: 1 }}>
-            {paramsConfig.controls && <ViewerToolbar {...controls} />}
-            {isOwner && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 52,
-                  right: 8,
-                  zIndex: 10,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                }}
-              >
-                {stats && (
-                  <div style={{ fontSize: 12, color: '#6b7280' }}>
-                    👁 {stats.views} · Forked {stats.forks}
-                  </div>
-                )}
-                <button
-                  onClick={handleOpenInEditor}
+    <WorkspaceRoot profile="design">
+      <GridProvider>
+        <ModeProvider value="viewer">
+          <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ position: 'relative', flex: 1 }}>
+              {paramsConfig.controls && <ViewerToolbar {...controls} />}
+              {isOwner && (
+                <div
                   style={{
-                    padding: '6px 10px',
-                    fontSize: 13,
-                    borderRadius: 6,
-                    border: '1px solid #e5e7eb',
-                    background: '#ffffff',
-                    cursor: 'pointer',
+                    position: 'absolute',
+                    top: 52,
+                    right: 8,
+                    zIndex: 10,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
                   }}
                 >
-                  Open in editor
-                </button>
-              </div>
-            )}
-            <ViewerStage zoom={controls.zoom} bg={controls.bg}>
-              <CanvasStage
-                adapter={adapter}
+                  {stats && (
+                    <div style={{ fontSize: 12, color: '#6b7280' }}>
+                      👁 {stats.views} · Forked {stats.forks}
+                    </div>
+                  )}
+                  <button
+                    onClick={handleOpenInEditor}
+                    style={{
+                      padding: '6px 10px',
+                      fontSize: 13,
+                      borderRadius: 6,
+                      border: '1px solid #e5e7eb',
+                      background: '#ffffff',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Open in editor
+                  </button>
+                </div>
+              )}
+              <ViewerStage zoom={controls.zoom} bg={controls.bg}>
+                <CanvasStage
+                  adapter={adapter}
+                  events={events}
+                  cursor={cursor}
+                  emit={() => {}}
+                  educationReadOnly
+                  canImport={false}
+                />
+              </ViewerStage>
+            </div>
+            {paramsConfig.timeline && (
+              <TimelineBar
                 events={events}
                 cursor={cursor}
-                emit={() => {}}
-                educationReadOnly
-                canImport={false}
+                setCursorIndex={setCursorIndex}
               />
-            </ViewerStage>
+            )}
           </div>
-          {paramsConfig.timeline && (
-            <TimelineBar
-              events={events}
-              cursor={cursor}
-              setCursorIndex={setCursorIndex}
-            />
-          )}
-        </div>
-      </ModeProvider>
-    </SelectionProvider>
+        </ModeProvider>
+      </GridProvider>
+    </WorkspaceRoot>
   );
 }

@@ -8,10 +8,10 @@ import { ReviewerErrorBoundary } from '@/ui/shared/guards/ReviewerErrorBoundary'
 import ConfirmDecision from '@/ui/reviews/ConfirmDecision';
 import IssueCertificateButton from '@/ui/reviews/IssueCertificateButton';
 import { safeMutation } from '@/utils/safeMutation';
-import { Badge } from '@/ui/controls/badge';
-import { Card, CardContent, CardHeader } from '@/ui/controls/card';
-import { Button } from '@/ui/controls/button';
-import { Textarea } from '@/ui/controls/textarea';
+import { Badge } from '@/ui/controls/ui/badge.jsx';
+import { Card, CardContent, CardHeader } from '@/ui/controls/ui/card.jsx';
+import { Button } from '@/ui/controls/ui/button.jsx';
+import { Textarea } from '@/ui/controls/ui/textarea.jsx';
 
 const statusStyles = {
   submitted: 'bg-yellow-100 text-yellow-800',
@@ -144,22 +144,22 @@ export default function ReviewDetailPage({ params }) {
                         />
                       </div>
 
-                    {assessment.status === 'submitted' ? (
-                      <Button
-                        className="w-full"
-                        onClick={handleStartReview}
-                        disabled={!canStartReview}
-                      >
-                        Start Review
-                      </Button>
-                    ) : null}
-                    <IssueCertificateButton
-                      assessmentId={assessment._id}
-                      status={assessment.status}
-                    />
-                  </CardContent>
-                </Card>
-              </div>
+                      {assessment.status === 'submitted' ? (
+                        <Button
+                          className="w-full"
+                          onClick={handleStartReview}
+                          disabled={!canStartReview}
+                        >
+                          Start Review
+                        </Button>
+                      ) : null}
+                      <IssueCertificateButton
+                        assessmentId={assessment._id}
+                        status={assessment.status}
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </>
           )}

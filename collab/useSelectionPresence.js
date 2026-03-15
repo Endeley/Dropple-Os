@@ -12,8 +12,8 @@ import { useSelectionStore } from '@/runtime/stores/useSelectionStore.js';
  * 🔒 No engine coupling
  */
 export function useSelectionPresence({ docId, userId }) {
-    const updateSelection = useMutation(api.updateSelection);
-    const presence = useQuery(api.getPresence, { docId }) ?? [];
+    const updateSelection = useMutation(api.updateSelection.updateSelection);
+    const presence = useQuery(api.getPresence.getPresence, { docId }) ?? [];
 
     const selectedIds = useSelectionStore((s) => s.selectedIds ?? []);
 

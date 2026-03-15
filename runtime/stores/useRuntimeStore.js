@@ -7,11 +7,14 @@ import { create } from 'zustand';
  * ❗ NEVER mutate from UI.
  */
 export const useRuntimeStore = create((set) => ({
+    document: null,
     nodes: {},
     rootIds: [],
     workspace: null,
     sceneGraph: null,
     scene: null,
+    timeline: null,
+    playback: { isPlaying: false },
     selection: { ids: [], primary: null, count: 0 },
     clipboard: { count: 0, hasData: false },
     grouping: { count: 0 },

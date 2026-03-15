@@ -1,10 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { WorkspaceLayout } from './WorkspaceLayout';
-import { GridProvider } from './GridContext';
-import { ClipboardProvider } from './ClipboardContext';
-import { applyAutoLayoutIfNeeded } from './useAutoLayoutCommit';
+import { WorkspaceLayout } from '../shared/WorkspaceLayout.jsx';
+import { GridProvider } from '../shared/GridContext.jsx';
+import { ClipboardProvider } from '../shared/ClipboardContext.jsx';
+import { applyAutoLayoutIfNeeded } from '../shared/useAutoLayoutCommit.js';
 import { getDesignStateAtCursor } from '@/core/persistence/index.js';
 import { EducationCursorProvider } from '@/education/EducationCursorContext';
 import TemplateGeneratorOverlay from '@/templates/TemplateGeneratorOverlay';

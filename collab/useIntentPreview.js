@@ -15,8 +15,8 @@ import { canvasBus } from '../ui/eventBus/canvasBus.js';
  * - imply ownership
  */
 export function useIntentPreview({ docId, enabled = true, selfUserId = null }) {
-    const updateIntent = useMutation(api.updateIntent);
-    const presence = useQuery(api.getPresence, docId ? { docId } : 'skip') ?? [];
+    const updateIntent = useMutation(api.updateIntent.updateIntent);
+    const presence = useQuery(api.getPresence.getPresence, docId ? { docId } : 'skip') ?? [];
     const lastIntentRef = useRef(null);
 
     // Broadcast local preview intents

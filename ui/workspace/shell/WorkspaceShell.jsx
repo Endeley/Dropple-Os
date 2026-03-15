@@ -5,6 +5,8 @@ import CanvasRoot from '@/ui/canvas/CanvasRoot.jsx';
 import { Controls } from '@/ui/Controls.jsx';
 
 import { listWorkspaceDefinitions } from '@/platform/workspaces';
+import { isMediaWorkspaceId } from '@/platform/workspaces/mediaWorkspace.js';
+import { MediaWorkspaceShell } from '@/ui/workspace/media/MediaWorkspaceShell.jsx';
 
 // 🔹 UX Workspace (read-only UI)
 import { UXWorkspaceShell } from '@/ui/workspace/ux/UXWorkspaceShell';
@@ -28,6 +30,10 @@ export function WorkspaceShell({ workspace }) {
     const capabilities = workspace.capabilities || {};
     const isUX =
         workspace.profile === 'ux-validation' || workspace.profile === 'uiux-authoring';
+
+    if (isMediaWorkspaceId(workspace.id)) {
+        return <MediaWorkspaceShell workspace={workspace} modeId={workspace.id} />;
+    }
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>

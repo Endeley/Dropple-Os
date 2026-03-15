@@ -15,8 +15,8 @@ import { throttle } from '@/collab/throttle';
  * - influence selection or transforms
  */
 export function useLiveCursors({ docId, enabled = true, toCanvasCoords }) {
-    const updateCursor = useMutation(api.updateCursor);
-    const presence = useQuery(api.getPresence, { docId }) ?? [];
+    const updateCursor = useMutation(api.updateCursor.updateCursor);
+    const presence = useQuery(api.getPresence.getPresence, { docId }) ?? [];
 
     useEffect(() => {
         if (!docId || !enabled || !toCanvasCoords) return;

@@ -12,3 +12,13 @@ export {
 } from './workspaceEngine.js';
 
 export { CanvasSurfaceTypes } from './canvasSurfacePolicy.js';
+
+export {
+    MEDIA_DEFAULT_MODE,
+    MEDIA_MODE_IDS,
+    MEDIA_WORKSPACE_ID,
+    getMediaWorkspaceDefinition,
+    isMediaWorkspaceId,
+    listMediaWorkspaceModes,
+    resolveMediaWorkspaceMode,
+} from './mediaWorkspace.js';

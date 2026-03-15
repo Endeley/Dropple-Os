@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/ui/controls/button';
+import { Button } from '@/ui/controls/ui/button.jsx';
 
 export default function ConfirmDecision({ label, onConfirm, disabled, variant }) {
   const [armed, setArmed] = useState(false);

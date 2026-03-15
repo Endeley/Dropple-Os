@@ -20,6 +20,9 @@ export function syncRuntimeToZustand(nextState) {
             {
                 nodes: {},
                 rootIds: [],
+                document: null,
+                timeline: null,
+                playback: { isPlaying: false },
                 selection: { ids: [], primary: null, count: 0 },
                 clipboard: { count: 0, hasData: false },
                 grouping: { count: 0 },
@@ -90,7 +93,10 @@ export function syncRuntimeToZustand(nextState) {
     const nextProjection = {
         nodes: projectedNodes,
         rootIds: nextState.rootIds,
+        document: nextState.document ?? null,
         workspace: nextState.workspace ?? null,
+        timeline: nextState.timeline ?? null,
+        playback: nextState.playback ?? { isPlaying: false },
         selection: selectionProjection(nextState),
         clipboard: clipboardProjection(nextState),
         grouping: groupProjection(nextState),

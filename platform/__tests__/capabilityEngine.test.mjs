@@ -177,10 +177,15 @@ test('workspace registry can seed capability activation without parallel policy 
 
 test('platform workspace registry resolves canonical workspace definitions', () => {
     const definition = getWorkspaceDefinition('design');
+    const mediaDefinition = getWorkspaceDefinition('media');
+    const animationDefinition = getWorkspaceDefinition('animation');
     const workspaceList = listWorkspaceDefinitions();
 
     assert.equal(resolveWorkspaceId('design'), 'graphic');
     assert.equal(definition.id, 'graphic');
+    assert.equal(resolveWorkspaceId('media'), 'media');
+    assert.equal(mediaDefinition.id, 'media');
+    assert.equal(animationDefinition.id, 'animation');
     assert.equal(Array.isArray(workspaceList), true);
     assert.equal(workspaceList.length > 0, true);
 });

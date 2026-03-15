@@ -11,7 +11,7 @@ import { EducationToolbar } from '@/education/EducationToolbar';
 import ReviewToolbar from '@/review/ReviewToolbar';
 import { SelectionProvider, useSelection } from './SelectionContext';
 import { ModeProvider, useMode } from './ModeContext';
-import { useKeyboardShortcuts } from '@/ui/interaction/useKeyboardShortcuts';
+import { useKeyboardShortcuts } from '@/ui/interaction/interaction/useKeyboardShortcuts.js';
 import { getDesignStateAtCursor } from '@/core/persistence/index.js';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { registerWorkspaceTools } from '@/ui/interaction/toolRegistration';
@@ -124,7 +124,7 @@ function WorkspaceLayoutInner({
     });
   }, [events, cursor.index]);
 
-  const replayState = useMemo(() => getState(), [getState]);
+  const replayState = useMemo(() => getState() ?? { nodes: {} }, [getState]);
   const selected = useMemo(() => {
     if (!selectedIds || selectedIds.size === 0) return [];
     return Array.from(selectedIds)
@@ -356,12 +356,16 @@ export function WorkspaceLayout({
   canImport = true,
   onOpenTemplateGenerator,
   educationReadOnly = false,
+  readOnly = false,
+  documentRole = null,
+  documentId = null,
   reviewSubmission,
   reviewRubric,
   onReviewDecision,
   onReviewCriteriaChange,
   reviewerId,
   presence,
+  intents,
 }) {
   return (
     <SelectionProvider>
@@ -385,12 +389,16 @@ export function WorkspaceLayout({
           canImport={canImport}
           onOpenTemplateGenerator={onOpenTemplateGenerator}
           educationReadOnly={educationReadOnly}
+          readOnly={readOnly}
+          documentRole={documentRole}
+          documentId={documentId}
           reviewSubmission={reviewSubmission}
           reviewRubric={reviewRubric}
           onReviewDecision={onReviewDecision}
           onReviewCriteriaChange={onReviewCriteriaChange}
           reviewerId={reviewerId}
           presence={presence}
+          intents={intents}
         />
       </ModeProvider>
     </SelectionProvider>
