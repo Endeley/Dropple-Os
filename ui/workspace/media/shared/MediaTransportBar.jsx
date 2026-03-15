@@ -8,6 +8,11 @@ import {
     selectMediaPlayback,
     selectMediaTimeline,
 } from '@/runtime/projection/selectors/mediaSelectors.js';
+import {
+    timelineIntentClockPause,
+    timelineIntentClockPlay,
+    timelineIntentClockSeek,
+} from '@/ui/timeline/timelineIntent.js';
 
 function cardStyle() {
     return {
@@ -28,6 +33,21 @@ export function MediaTransportBar({ mode }) {
         () => projectMediaPlaybackState({ playback: playbackState, cursorIndex, timeline }),
         [playbackState, cursorIndex, timeline]
     );
+    const duration = Math.max(0, playback.duration);
+    const currentFrame = Math.max(0, playback.time);
+
+    function seekTo(frame) {
+        const nextFrame = Math.max(0, Math.min(duration, Math.round(frame)));
+        timelineIntentClockSeek({ time: nextFrame });
+    }
+
+    function handlePlayPause() {
+        if (playback.playing) {
+            timelineIntentClockPause();
+            return;
+        }
+        timelineIntentClockPlay();
+    }
 
     return (
         <div style={cardStyle()}>
@@ -46,25 +66,63 @@ export function MediaTransportBar({ mode }) {
                         {mode.label} playback and review
                     </div>
                     <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
-                        {playback.playing ? 'Playing' : 'Paused'} · frame {playback.time} / {playback.duration}
+                        {playback.playing ? 'Playing' : 'Paused'} · frame {currentFrame} / {duration}
                     </div>
                 </div>
                 <div style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
-                    {['rewind', 'play', 'pause', 'step'].map((control) => (
-                        <button
-                            key={control}
-                            type='button'
-                            style={{
-                                border: '1px solid #cbd5e1',
-                                borderRadius: 999,
-                                background: '#fff',
-                                padding: '6px 10px',
-                                fontSize: 12,
-                                color: '#334155',
-                            }}>
-                            {control}
-                        </button>
-                    ))}
+                    <button
+                        type='button'
+                        onClick={() => seekTo(0)}
+                        style={{
+                            border: '1px solid #cbd5e1',
+                            borderRadius: 999,
+                            background: '#fff',
+                            padding: '6px 10px',
+                            fontSize: 12,
+                            color: '#334155',
+                        }}>
+                        Rewind
+                    </button>
+                    <button
+                        type='button'
+                        onClick={() => seekTo(currentFrame - 1)}
+                        style={{
+                            border: '1px solid #cbd5e1',
+                            borderRadius: 999,
+                            background: '#fff',
+                            padding: '6px 10px',
+                            fontSize: 12,
+                            color: '#334155',
+                        }}>
+                        Prev
+                    </button>
+                    <button
+                        type='button'
+                        onClick={handlePlayPause}
+                        style={{
+                            border: '1px solid #94a3b8',
+                            borderRadius: 999,
+                            background: '#0f172a',
+                            padding: '6px 12px',
+                            fontSize: 12,
+                            color: '#f8fafc',
+                            fontWeight: 700,
+                        }}>
+                        {playback.playing ? 'Pause' : 'Play'}
+                    </button>
+                    <button
+                        type='button'
+                        onClick={() => seekTo(currentFrame + 1)}
+                        style={{
+                            border: '1px solid #cbd5e1',
+                            borderRadius: 999,
+                            background: '#fff',
+                            padding: '6px 10px',
+                            fontSize: 12,
+                            color: '#334155',
+                        }}>
+                        Next
+                    </button>
                 </div>
             </div>
         </div>
