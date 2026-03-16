@@ -27,9 +27,18 @@ export function projectBlendedChannelsToControllerValues(blendedChannels) {
 }
 
 export function evaluateAnimationFrame(runtime) {
-    const timelineClips = runtime?.animation?.timelineClips ?? [];
-    const stateMachineClips = runtime?.animation?.stateClips ?? runtime?.animation?.stateMachineClips ?? [];
-    const choreographyClips = evaluateChoreography(runtime?.snapshot ?? runtime ?? {});
+    const rigId = runtime?.rigId ?? null;
+    const timelineClips = (runtime?.animation?.timelineClips ?? []).filter(
+        (clip) => !clip?.rigId || !rigId || clip.rigId === rigId
+    );
+    const stateMachineClips = (
+        runtime?.animation?.stateClips ??
+        runtime?.animation?.stateMachineClips ??
+        []
+    ).filter((clip) => !clip?.rigId || !rigId || clip.rigId === rigId);
+    const choreographyClips = evaluateChoreography(runtime?.snapshot ?? runtime ?? {}).filter(
+        (clip) => !clip?.rigId || !rigId || clip.rigId === rigId
+    );
     const blendedChannels = evaluateAnimationBlend({
         timelineClips: [...timelineClips, ...choreographyClips],
         stateMachineClips,

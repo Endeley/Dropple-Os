@@ -201,3 +201,70 @@ test('incremental evaluator caches evaluation order and invalidates it on struct
     assert.deepEqual(runtime.scene.evaluationOrder, ['a', 'b', 'c', 'root']);
     assert.deepEqual(runtime.scene.evaluationLayers, [['root'], ['a', 'b', 'c']]);
 });
+
+test('incremental evaluator applies runtime animation transforms into scene computed output', () => {
+    const document = {
+        rigs: [
+            {
+                id: 'heroRig',
+                controllers: [
+                    {
+                        id: 'ctrl-hand',
+                        nodeId: 'hand-node',
+                        channels: ['x', 'y', 'rotation'],
+                    },
+                ],
+                constraints: {
+                    handFollow: {
+                        id: 'handFollow',
+                        type: 'parent',
+                        parentControllerId: 'ctrl-hand',
+                        childNode: 'child',
+                    },
+                },
+            },
+        ],
+        motion: {
+            'hand-node': {
+                x: { keyframes: [{ frame: 0, value: 50 }] },
+                y: { keyframes: [{ frame: 0, value: 80 }] },
+                rotation: { keyframes: [{ frame: 0, value: 0 }] },
+            },
+        },
+        sceneGraph: {
+            nodes: {
+                root: { id: 'root', children: ['child'] },
+                child: {
+                    id: 'child',
+                    parentId: 'root',
+                    children: [],
+                    props: {
+                        size: { width: 10, height: 10 },
+                    },
+                },
+            },
+        },
+    };
+
+    const runtime = evaluateSceneIncremental({
+        event: {
+            type: 'clock/seek',
+            payload: { time: 0 },
+        },
+        document,
+        runtime: {
+            playback: {
+                frame: 0,
+            },
+        },
+    });
+
+    assert.deepEqual(runtime.scene.computed.transforms, {
+        child: {
+            x: 50,
+            y: 80,
+            rotation: 0,
+        },
+    });
+    assert.deepEqual(runtime.scene.computed.child.worldTransform, [1, 0, 0, 1, 50, 80]);
+});

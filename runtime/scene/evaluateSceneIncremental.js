@@ -14,6 +14,13 @@ import { updatePartitionBounds } from './partition/updatePartitionBounds.js';
 import { schedulePartitions } from './scheduler/schedulePartitions.js';
 import { evaluateLayoutRoots, resolveLayoutRoots } from '@/runtime/layout/index.js';
 import { updateSpatialIndex } from '@/runtime/spatial/index.js';
+import { computeWorldBounds } from './computeWorldBounds.js';
+import {
+    multiplyMatrix,
+    rotationMatrix,
+    translationMatrix,
+} from '../math/matrix2d.js';
+import { evaluateSceneAnimation } from '@/runtime/animation/evaluateSceneAnimation.js';
 
 function isStructuralEvent(eventType) {
     return (
@@ -49,6 +56,44 @@ function resolveViewportBounds(runtime) {
         width: Infinity,
         height: Infinity,
     };
+}
+
+function applyAnimationTransformsToScene({ document, scene, transforms }) {
+    const sceneNodes = document?.sceneGraph?.nodes ?? {};
+    Object.defineProperty(scene.computed, 'transforms', {
+        value: transforms,
+        writable: true,
+        configurable: true,
+        enumerable: false,
+    });
+
+    for (const [nodeId, transform] of Object.entries(transforms || {})) {
+        const node = sceneNodes[nodeId];
+        if (!node) continue;
+
+        const x = Number(transform?.x ?? 0);
+        const y = Number(transform?.y ?? 0);
+        const rotation = Number(transform?.rotation ?? 0);
+        const worldTransform = multiplyMatrix(
+            translationMatrix(x, y),
+            rotationMatrix(rotation)
+        );
+        const worldBounds = computeWorldBounds(node, worldTransform);
+        const previous = scene.computed[nodeId] ?? {};
+
+        scene.computed[nodeId] = {
+            ...previous,
+            id: nodeId,
+            parentId: node?.parentId ?? previous?.parentId ?? null,
+            worldTransform,
+            worldBounds,
+            x: worldBounds.x,
+            y: worldBounds.y,
+            width: worldBounds.width,
+            height: worldBounds.height,
+        };
+        scene.indexDirty.add(nodeId);
+    }
 }
 
 export function evaluateSceneIncremental({ event, document, runtime = {} }) {
@@ -148,6 +193,27 @@ export function evaluateSceneIncremental({ event, document, runtime = {} }) {
     if (scene.paintDirty.size > 0) {
         scene.paintDirty.clear();
     }
+
+    applyAnimationTransformsToScene({
+        document,
+        scene,
+        transforms: evaluateSceneAnimation(
+            {
+                document,
+                runtime,
+                playback: runtime?.playback ?? null,
+                cursorIndex: runtime?.cursorIndex ?? null,
+            },
+            {
+                event,
+                frame:
+                    runtime?.playback?.frame ??
+                    runtime?.playback?.time ??
+                    runtime?.cursorIndex ??
+                    null,
+            }
+        ),
+    });
 
     if (scene.indexDirty.size > 0) {
         updateSpatialIndex(scene, [...scene.indexDirty]);
