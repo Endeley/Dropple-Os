@@ -3,10 +3,9 @@
 import { useMemo } from 'react';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import {
-    projectRigControllerOverlayNodes,
     projectRigControllerTimelineTracks,
-    selectActiveRig,
-} from '@/runtime/projection/selectors/rigSelectors.js';
+} from '@/runtime/projection/selectors/rigControllerSelectors.js';
+import { projectRigControllerOverlayNodes } from '@/runtime/projection/selectors/rigControllerOverlaySelectors.js';
 import { useMediaTimelineSelectionStore } from '@/ui/workspace/media/shared/useMediaTimelineSelectionStore.js';
 
 function overlayCardStyle(selected) {
@@ -34,20 +33,33 @@ function overlayCardStyle(selected) {
 
 export function RigControllerOverlay() {
     const document = useRuntimeStore((state) => state.document);
-    const nodes = useRuntimeStore((state) => state.nodes);
-    const activeRig = useRuntimeStore(selectActiveRig);
+    const scene = useRuntimeStore((state) => state.scene);
     const selectedTrackId = useMediaTimelineSelectionStore((state) => state.selectedTrackId);
     const selectTrack = useMediaTimelineSelectionStore((state) => state.selectTrack);
     const controllerTracks = useMemo(
-        () => projectRigControllerTimelineTracks(activeRig, document?.motion),
-        [activeRig, document?.motion]
+        () =>
+            projectRigControllerTimelineTracks({
+                document,
+            }).flatMap((rigGroup) =>
+                (rigGroup?.tracks || []).map((controllerGroup) => ({
+                    controllerId: controllerGroup?.controllerId ?? null,
+                    trackId: controllerGroup?.tracks?.[0]?.id ?? null,
+                }))
+            ),
+        [document]
     );
     const overlayNodes = useMemo(
-        () => projectRigControllerOverlayNodes(activeRig, nodes),
-        [activeRig, nodes]
+        () =>
+            projectRigControllerOverlayNodes({
+                document,
+                runtime: {
+                    scene,
+                },
+            }),
+        [document, scene]
     );
 
-    if (!activeRig || !overlayNodes.length) return null;
+    if (!overlayNodes.length) return null;
 
     return (
         <div
@@ -60,17 +72,17 @@ export function RigControllerOverlay() {
             }}>
             {overlayNodes.map((controller) => {
                 const relatedTrack = controllerTracks.find(
-                    (track) => track.controllerId === controller.id
+                    (track) => track.controllerId === controller.controllerId
                 );
-                const selected = relatedTrack?.id === selectedTrackId;
+                const selected = relatedTrack?.trackId === selectedTrackId;
 
                 return (
                     <button
                         key={controller.id}
                         type='button'
                         onClick={() => {
-                            if (relatedTrack?.id) {
-                                selectTrack(relatedTrack.id);
+                            if (relatedTrack?.trackId) {
+                                selectTrack(relatedTrack.trackId);
                             }
                         }}
                         style={{

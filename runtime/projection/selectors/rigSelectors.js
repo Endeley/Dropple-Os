@@ -7,30 +7,61 @@ function stableCompare(left, right) {
     return String(left ?? '').localeCompare(String(right ?? ''));
 }
 
+function isObject(value) {
+    return Boolean(value) && typeof value === 'object';
+}
+
+function toRigList(rigState) {
+    if (Array.isArray(rigState)) return rigState;
+    if (Array.isArray(rigState?.rigs)) return rigState.rigs;
+    if (isObject(rigState?.rigs)) return Object.values(rigState.rigs);
+    if (isObject(rigState)) return Object.values(rigState);
+    return [];
+}
+
+function toControllerList(rig) {
+    if (Array.isArray(rig?.controllers)) return rig.controllers;
+    if (isObject(rig?.controllers)) return Object.values(rig.controllers);
+    return [];
+}
+
 export function selectRigState(state) {
     return state?.document?.rigs ?? EMPTY_RIG_STATE;
 }
 
 export function selectRigMap(state) {
-    return selectRigState(state).rigs ?? EMPTY_RIG_STATE.rigs;
+    const rigState = selectRigState(state);
+    if (isObject(rigState?.rigs)) return rigState.rigs;
+    if (!Array.isArray(rigState)) return EMPTY_RIG_STATE.rigs;
+
+    return Object.fromEntries(
+        rigState
+            .filter((rig) => rig?.id)
+            .map((rig) => [rig.id, rig])
+    );
 }
 
 export function selectActiveRigId(state) {
-    return selectRigState(state).activeRigId ?? null;
+    const rigState = selectRigState(state);
+    if (rigState?.activeRigId) return rigState.activeRigId;
+    if (Array.isArray(rigState)) return rigState[0]?.id ?? null;
+    return null;
 }
 
 export function selectActiveRig(state) {
-    const rigs = selectRigMap(state);
+    const rigState = selectRigState(state);
     const activeRigId = selectActiveRigId(state);
-    return activeRigId ? rigs[activeRigId] ?? null : null;
+    if (!activeRigId) return null;
+
+    return toRigList(rigState).find((rig) => rig?.id === activeRigId) ?? null;
 }
 
 export function projectRigs(rigState) {
-    return Object.values(rigState?.rigs || {}).sort((left, right) => stableCompare(left?.id, right?.id));
+    return toRigList(rigState).sort((left, right) => stableCompare(left?.id, right?.id));
 }
 
 export function projectRigControllers(rig) {
-    return Object.values(rig?.controllers || {}).sort((left, right) => stableCompare(left?.id, right?.id));
+    return toControllerList(rig).sort((left, right) => stableCompare(left?.id, right?.id));
 }
 
 export function projectRigConstraints(rig) {
