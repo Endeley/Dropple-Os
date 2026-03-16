@@ -37,7 +37,7 @@
     "engine:track:group:test": "node engine/__tests__/trackGrouping.test.mjs",
     "engine:timeline:dag:test": "node engine/__tests__/snapshotDag.test.mjs",
     "engine:timeline:label:test": "node engine/__tests__/snapshotLabeling.test.mjs",
-    "runtime:map:test": "node runtime/animation/buildEvaluationInputs.fixture.test.mjs",
+    "runtime:map:test": "node --import ./bench/register-alias-loader.mjs runtime/animation/buildEvaluationInputs.fixture.test.mjs",
     "runtime:replay:test": "node --import ./bench/register-alias-loader.mjs runtime/__tests__/runtimeReplayDeterminism.test.mjs",
     "runtime:statehash:test": "node --import ./bench/register-alias-loader.mjs runtime/__tests__/runtimeStateHash.test.mjs",
     "runtime:resize:session:test": "node --import ./bench/register-alias-loader.mjs runtime/__tests__/resizeSessionDeterminism.test.mjs && node --import ./bench/register-alias-loader.mjs runtime/__tests__/resizeSessionCommitBridge.test.mjs",
