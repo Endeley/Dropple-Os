@@ -1,4 +1,4 @@
-import { evaluateSequence } from '@/runtime/sequencer/evaluation/evaluateSequence.js';
+import { evaluateSequence } from '../../sequencer/evaluation/evaluateSequence.js';
 
 export function selectSequenceState(document) {
     return document?.sequences ?? { sequences: {}, activeSequenceId: null };

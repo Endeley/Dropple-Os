@@ -1,5 +1,5 @@
 import { buildSceneTree } from '../../domain/scene/buildSceneTree.js';
-import { projectActiveSequenceView } from '@/runtime/projection/selectors/sequenceSelectors.js';
+import { projectActiveSequenceView } from '../projection/selectors/sequenceSelectors.js';
 
 function buildShotTimeline(sceneGraph, activeSceneId) {
     if (!sceneGraph || !Array.isArray(sceneGraph.scenes)) {
