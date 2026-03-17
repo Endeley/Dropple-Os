@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { WorkspaceShell } from '@/ui/workspace/shared/WorkspaceShell';
+import { WorkspaceRoot } from '@/ui/workspace/root/WorkspaceRoot.jsx';
 import { mockTemplates } from '@/marketplace/mockTemplates';
 import { createWorkspaceFromTemplate } from '@/workspace/createFromTemplate';
 import { mockLessons } from '@/marketplace/mockLessons';
@@ -38,11 +39,17 @@ export default function WorkspaceNewPage() {
     : -1;
 
   return (
-    <WorkspaceShell
+    <WorkspaceRoot
       modeId={workspace.mode}
-      initialEvents={workspace.events}
-      initialCursorIndex={initialCursorIndex}
-      disableSeed={workspace.events.length > 0}
-    />
+      workspaceId={workspace.mode}
+      profile='design'
+    >
+      <WorkspaceShell
+        modeId={workspace.mode}
+        initialEvents={workspace.events}
+        initialCursorIndex={initialCursorIndex}
+        disableSeed={workspace.events.length > 0}
+      />
+    </WorkspaceRoot>
   );
 }

@@ -2,6 +2,14 @@ import { test, expect } from '@playwright/test';
 
 const ROUTES = [
   {
+    path: '/',
+    expected: 'Dropple OS',
+  },
+  {
+    path: '/marketplace',
+    expected: 'Templates',
+  },
+  {
     path: '/workspace/graphic',
     expected: 'Undo',
   },
@@ -20,6 +28,10 @@ const ROUTES = [
   {
     path: '/workspace/podcast',
     expected: 'Media Workspace',
+  },
+  {
+    path: '/workspace/new',
+    expected: 'Undo',
   },
 ];
 

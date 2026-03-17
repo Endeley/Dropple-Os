@@ -31,6 +31,9 @@ export function evaluateAnimationFrame(runtime) {
     const timelineClips = (runtime?.animation?.timelineClips ?? []).filter(
         (clip) => !clip?.rigId || !rigId || clip.rigId === rigId
     );
+    const layers = (runtime?.animation?.layers ?? []).filter(
+        (clip) => !clip?.rigId || !rigId || clip.rigId === rigId
+    );
     const stateMachineClips = (
         runtime?.animation?.stateClips ??
         runtime?.animation?.stateMachineClips ??
@@ -39,7 +42,18 @@ export function evaluateAnimationFrame(runtime) {
     const choreographyClips = evaluateChoreography(runtime?.snapshot ?? runtime ?? {}).filter(
         (clip) => !clip?.rigId || !rigId || clip.rigId === rigId
     );
+    const blendedLayers = layers.length
+        ? [
+              ...layers,
+              ...choreographyClips.map((clip) => ({
+                  ...clip,
+                  intent: clip?.intent ?? 'base',
+                  priority: Number.isFinite(clip?.priority) ? Number(clip.priority) : 0,
+              })),
+          ]
+        : null;
     const blendedChannels = evaluateAnimationBlend({
+        layers: blendedLayers,
         timelineClips: [...timelineClips, ...choreographyClips],
         stateMachineClips,
     });

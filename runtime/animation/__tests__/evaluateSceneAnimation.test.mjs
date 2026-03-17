@@ -144,3 +144,77 @@ test('evaluateSceneAnimation includes graph layers in rig animation evaluation',
         },
     });
 });
+
+test('evaluateSceneAnimation passes state-machine parameters into graph parameter nodes', () => {
+    const snapshot = {
+        document: {
+            rigs: [
+                {
+                    id: 'heroRig',
+                    controllers: [
+                        {
+                            id: 'ctrl-hand',
+                            nodeId: 'hand-node',
+                            channels: ['x'],
+                        },
+                    ],
+                    constraints: {
+                        handFollow: {
+                            id: 'handFollow',
+                            type: 'parent',
+                            parentControllerId: 'ctrl-hand',
+                            childNode: 'hand-bone',
+                        },
+                    },
+                },
+            ],
+            motion: {},
+            stateMachines: {
+                locomotion: {
+                    states: [
+                        {
+                            id: 'run',
+                            parameters: {
+                                speed: 9,
+                            },
+                        },
+                    ],
+                },
+            },
+            graphs: [
+                {
+                    id: 'heroGraph',
+                    rigId: 'heroRig',
+                    nodes: [
+                        {
+                            id: 'speedParam',
+                            type: 'parameter',
+                            name: 'speed',
+                            default: 0,
+                            controllerId: 'ctrl-hand',
+                            channel: 'x',
+                        },
+                    ],
+                    output: 'speedParam',
+                },
+            ],
+            choreography: {},
+        },
+        runtime: {
+            stateMachines: {
+                locomotion: { current: 'run' },
+            },
+            scene: {
+                computed: {},
+            },
+        },
+    };
+
+    const transforms = evaluateSceneAnimation(snapshot, { frame: 0 });
+
+    assert.deepEqual(transforms, {
+        'hand-bone': {
+            x: 9,
+        },
+    });
+});

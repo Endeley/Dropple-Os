@@ -2,6 +2,8 @@ import { evaluateAnimationFrame } from './evaluateAnimationFrame.js';
 import { evaluateRig } from '../rigging/evaluation/evaluateRig.js';
 import { lerp, safeNumber } from './blending/blendUtils.js';
 import { evaluateGraphs } from './graph/graphRuntime.js';
+import { resolveAnimationLayers } from './layers/resolveAnimationLayers.js';
+import { applyStateMachineParameters } from './state/applyStateMachineParameters.js';
 
 function getDocumentRigs(document) {
     if (Array.isArray(document?.rigs)) return document.rigs;
@@ -137,6 +139,14 @@ export function evaluateSceneAnimation(snapshot, context = {}) {
     const frame = getCurrentFrame(snapshot, context);
     const sceneNodeTransforms = getSceneNodeTransforms(runtime?.scene);
     const animationRuntime = runtime?.animation || {};
+    const parameters = {
+        ...(context?.parameters || {}),
+        ...applyStateMachineParameters({
+            document,
+            runtime,
+            frame,
+        }),
+    };
     const graphLayers = evaluateGraphs(
         {
             document,
@@ -144,10 +154,12 @@ export function evaluateSceneAnimation(snapshot, context = {}) {
             playback: snapshot?.playback,
             cursorIndex: snapshot?.cursorIndex,
             frame,
+            parameters,
         },
         {
             ...context,
             frame,
+            parameters,
         }
     );
     const transforms = {};
@@ -161,6 +173,15 @@ export function evaluateSceneAnimation(snapshot, context = {}) {
             motion,
             frame,
         });
+        const resolvedLayers = resolveAnimationLayers({
+            timeline: [
+                ...sampledTimelineClips,
+                ...(animationRuntime?.timelineClips || []),
+            ],
+            stateMachine:
+                animationRuntime?.stateMachineClips ?? animationRuntime?.stateClips ?? [],
+            graph: graphLayers,
+        });
 
         const animationFrame = evaluateAnimationFrame({
             ...runtime,
@@ -168,11 +189,7 @@ export function evaluateSceneAnimation(snapshot, context = {}) {
             rigId,
             animation: {
                 ...animationRuntime,
-                timelineClips: [
-                    ...sampledTimelineClips,
-                    ...graphLayers,
-                    ...(animationRuntime?.timelineClips || []),
-                ],
+                layers: resolvedLayers,
             },
         });
 

@@ -85,6 +85,36 @@ test('evaluateAnimationBlend sorts clips deterministically before blending', () 
     assert.equal(left['arm_CTRL:rotateX'], 35);
 });
 
+test('evaluateAnimationBlend respects resolved layer priority before ids', () => {
+    const result = evaluateAnimationBlend({
+        layers: [
+            {
+                id: 'z-graph',
+                priority: 2,
+                mode: 'add',
+                weight: 1,
+                channels: [{ controllerId: 'arm_CTRL', channel: 'rotateX', value: 5 }],
+            },
+            {
+                id: 'a-state',
+                priority: 1,
+                mode: 'replace',
+                weight: 1,
+                channels: [{ controllerId: 'arm_CTRL', channel: 'rotateX', value: 20 }],
+            },
+            {
+                id: 'm-timeline',
+                priority: 0,
+                mode: 'replace',
+                weight: 1,
+                channels: [{ controllerId: 'arm_CTRL', channel: 'rotateX', value: 10 }],
+            },
+        ],
+    });
+
+    assert.equal(result['arm_CTRL:rotateX'], 25);
+});
+
 test('evaluateAnimationFrame returns blended channels and rig-ready controller values', () => {
     const result = evaluateAnimationFrame({
         snapshot: {
