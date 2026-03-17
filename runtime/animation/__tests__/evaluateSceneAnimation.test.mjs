@@ -86,3 +86,61 @@ test('evaluateSceneAnimation samples rig motion and returns constrained node tra
         },
     });
 });
+
+test('evaluateSceneAnimation includes graph layers in rig animation evaluation', () => {
+    const snapshot = {
+        document: {
+            rigs: [
+                {
+                    id: 'heroRig',
+                    controllers: [
+                        {
+                            id: 'ctrl-hand',
+                            nodeId: 'hand-node',
+                            channels: ['x'],
+                        },
+                    ],
+                    constraints: {
+                        handFollow: {
+                            id: 'handFollow',
+                            type: 'parent',
+                            parentControllerId: 'ctrl-hand',
+                            childNode: 'hand-bone',
+                        },
+                    },
+                },
+            ],
+            motion: {},
+            graphs: [
+                {
+                    id: 'heroGraph',
+                    rigId: 'heroRig',
+                    nodes: [
+                        {
+                            id: 'handX',
+                            type: 'value',
+                            controllerId: 'ctrl-hand',
+                            channel: 'x',
+                            value: 42,
+                        },
+                    ],
+                    output: 'handX',
+                },
+            ],
+            choreography: {},
+        },
+        runtime: {
+            scene: {
+                computed: {},
+            },
+        },
+    };
+
+    const transforms = evaluateSceneAnimation(snapshot, { frame: 0 });
+
+    assert.deepEqual(transforms, {
+        'hand-bone': {
+            x: 42,
+        },
+    });
+});

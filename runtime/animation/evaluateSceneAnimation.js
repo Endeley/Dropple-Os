@@ -1,6 +1,7 @@
 import { evaluateAnimationFrame } from './evaluateAnimationFrame.js';
 import { evaluateRig } from '../rigging/evaluation/evaluateRig.js';
 import { lerp, safeNumber } from './blending/blendUtils.js';
+import { evaluateGraphs } from './graph/graphRuntime.js';
 
 function getDocumentRigs(document) {
     if (Array.isArray(document?.rigs)) return document.rigs;
@@ -136,6 +137,19 @@ export function evaluateSceneAnimation(snapshot, context = {}) {
     const frame = getCurrentFrame(snapshot, context);
     const sceneNodeTransforms = getSceneNodeTransforms(runtime?.scene);
     const animationRuntime = runtime?.animation || {};
+    const graphLayers = evaluateGraphs(
+        {
+            document,
+            runtime,
+            playback: snapshot?.playback,
+            cursorIndex: snapshot?.cursorIndex,
+            frame,
+        },
+        {
+            ...context,
+            frame,
+        }
+    );
     const transforms = {};
 
     for (const rig of rigs) {
@@ -156,6 +170,7 @@ export function evaluateSceneAnimation(snapshot, context = {}) {
                 ...animationRuntime,
                 timelineClips: [
                     ...sampledTimelineClips,
+                    ...graphLayers,
                     ...(animationRuntime?.timelineClips || []),
                 ],
             },
