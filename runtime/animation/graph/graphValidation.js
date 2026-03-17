@@ -1,3 +1,5 @@
+import { validateGraphParameters } from './validateGraphParameters.js';
+
 function getGraphNodes(graph) {
     if (Array.isArray(graph?.nodes)) return graph.nodes;
 
@@ -72,6 +74,8 @@ export function validateGraph(graph) {
     if (!graphId) {
         throw new Error('Animation graph is missing id');
     }
+
+    validateGraphParameters(graph);
 
     const nodes = getGraphNodes(graph);
     if (!nodes.length) {

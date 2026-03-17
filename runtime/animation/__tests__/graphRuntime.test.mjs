@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { evaluateGraphs } from '../graph/graphRuntime.js';
+import { resolveGraphParameters } from '../graph/resolveGraphParameters.js';
 
 test('evaluateGraphs returns graph layers in deterministic graph id order', () => {
     const runtime = {};
@@ -83,4 +84,49 @@ test('evaluateGraphs reuses cached compiled graphs for the same source object', 
 
     assert.equal(runtime.__graphCache.get('characterGraph'), compiled);
     assert.deepEqual(second, first);
+});
+
+test('evaluateGraphs resolves parameters per graph before evaluation', () => {
+    const result = evaluateGraphs(
+        {
+            document: {
+                graphs: [
+                    {
+                        id: 'clampedGraph',
+                        parameters: {
+                            speed: { type: 'number', min: 0, max: 1, default: 0.25 },
+                        },
+                        nodes: [
+                            {
+                                id: 'speedParam',
+                                type: 'parameter',
+                                name: 'speed',
+                                controllerId: 'arm_CTRL',
+                                channel: 'rotateX',
+                            },
+                        ],
+                        output: 'speedParam',
+                    },
+                ],
+            },
+            runtime: {},
+        },
+        {
+            parameters: { speed: 5 },
+        }
+    );
+
+    assert.equal(result.length, 1);
+    assert.equal(result[0].channels[0].value, 1);
+    assert.deepEqual(
+        { ...resolveGraphParameters({
+            graph: {
+                parameters: {
+                    speed: { type: 'number', min: 0, max: 1, default: 0.25 },
+                },
+            },
+            injected: { speed: 5 },
+        }) },
+        { speed: 1 }
+    );
 });

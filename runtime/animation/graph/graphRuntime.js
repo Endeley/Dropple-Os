@@ -1,5 +1,6 @@
 import { compileGraph } from './graphCompiler.js';
 import { evaluateGraph } from './graphEvaluation.js';
+import { resolveGraphParameters } from './resolveGraphParameters.js';
 
 function stableCompare(left, right) {
     return String(left ?? '').localeCompare(String(right ?? ''));
@@ -62,10 +63,15 @@ export function evaluateGraphs(snapshot, context = {}) {
 
     for (const graph of graphs) {
         const compiled = getCompiledGraph(graph, cache);
+        const parameters = resolveGraphParameters({
+            graph,
+            injected: context?.parameters,
+        });
         const graphLayers = evaluateGraph(compiled, {
             ...context,
             snapshot,
             graphId: graph.id,
+            parameters,
         });
 
         for (const layer of graphLayers) {

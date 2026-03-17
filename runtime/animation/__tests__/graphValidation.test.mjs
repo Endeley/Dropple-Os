@@ -112,3 +112,18 @@ test('validateGraph throws when node ids are duplicated', () => {
         /Duplicate animation graph node id: idle/
     );
 });
+
+test('validateGraph rejects invalid graph parameter definitions', () => {
+    assert.throws(
+        () =>
+            validateGraph({
+                id: 'characterGraph',
+                parameters: {
+                    speed: { type: 'vector' },
+                },
+                nodes: [{ id: 'idle', type: 'clip' }],
+                output: 'idle',
+            }),
+        /Parameter "speed" has unsupported type "vector"/
+    );
+});
