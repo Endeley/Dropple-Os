@@ -218,3 +218,144 @@ test('evaluateSceneAnimation passes state-machine parameters into graph paramete
         },
     });
 });
+
+test('evaluateSceneAnimation resolves graph authority per rig deterministically', () => {
+    const snapshot = {
+        document: {
+            rigs: [
+                {
+                    id: 'heroRig',
+                    controllers: [
+                        {
+                            id: 'ctrl-hand',
+                            nodeId: 'hand-node',
+                            channels: ['x'],
+                        },
+                    ],
+                    constraints: {
+                        handFollow: {
+                            id: 'handFollow',
+                            type: 'parent',
+                            parentControllerId: 'ctrl-hand',
+                            childNode: 'hand-bone',
+                        },
+                    },
+                },
+            ],
+            motion: {},
+            graphs: [
+                {
+                    id: 'lowGraph',
+                    rigId: 'heroRig',
+                    nodes: [
+                        {
+                            id: 'lowValue',
+                            type: 'value',
+                            controllerId: 'ctrl-hand',
+                            channel: 'x',
+                            value: 5,
+                        },
+                    ],
+                    output: 'lowValue',
+                },
+                {
+                    id: 'highGraph',
+                    rigId: 'heroRig',
+                    nodes: [
+                        {
+                            id: 'highValue',
+                            type: 'value',
+                            controllerId: 'ctrl-hand',
+                            channel: 'x',
+                            value: 12,
+                        },
+                    ],
+                    output: 'highValue',
+                },
+            ],
+        },
+        runtime: {
+            scene: {
+                computed: {},
+            },
+        },
+    };
+
+    const left = evaluateSceneAnimation(snapshot, {
+        frame: 0,
+        graphLayerMeta: {
+            'graph:highGraph:layer:0': { priority: 10 },
+            'graph:lowGraph:layer:0': { priority: 1 },
+        },
+    });
+    const right = evaluateSceneAnimation(snapshot, {
+        frame: 0,
+        graphLayerMeta: {
+            'graph:lowGraph:layer:0': { priority: 1 },
+            'graph:highGraph:layer:0': { priority: 10 },
+        },
+    });
+
+    assert.deepEqual(left, right);
+    assert.deepEqual(left, {
+        'hand-bone': {
+            x: 12,
+        },
+    });
+});
+
+test('evaluateSceneAnimation applies document constraint stack after rig evaluation', () => {
+    const snapshot = {
+        document: {
+            rigs: [
+                {
+                    id: 'heroRig',
+                    controllers: [
+                        {
+                            id: 'ctrl-hand',
+                            nodeId: 'hand-node',
+                            channels: ['rotation'],
+                        },
+                    ],
+                    constraints: {
+                        handFollow: {
+                            id: 'handFollow',
+                            type: 'parent',
+                            parentControllerId: 'ctrl-hand',
+                            childNode: 'hand-bone',
+                        },
+                    },
+                },
+            ],
+            motion: {
+                'hand-node': {
+                    rotation: {
+                        keyframes: [{ frame: 0, value: 10 }],
+                    },
+                },
+            },
+            constraints: [
+                {
+                    id: 'limitHand',
+                    type: 'limitRotation',
+                    target: 'hand-bone',
+                    min: -1,
+                    max: 1,
+                },
+            ],
+        },
+        runtime: {
+            scene: {
+                computed: {},
+            },
+        },
+    };
+
+    const transforms = evaluateSceneAnimation(snapshot, { frame: 0 });
+
+    assert.deepEqual(transforms, {
+        'hand-bone': {
+            rotation: 1,
+        },
+    });
+});

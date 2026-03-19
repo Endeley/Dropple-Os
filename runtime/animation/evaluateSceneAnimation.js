@@ -2,6 +2,9 @@ import { evaluateAnimationFrame } from './evaluateAnimationFrame.js';
 import { evaluateRig } from '../rigging/evaluation/evaluateRig.js';
 import { lerp, safeNumber } from './blending/blendUtils.js';
 import { evaluateGraphs } from './graph/graphRuntime.js';
+import { applyGraphModifiers } from './graph/applyGraphModifiers.js';
+import { resolveLayerAuthority } from './graph/resolveLayerAuthority.js';
+import { applyConstraintStack } from './constraints/applyConstraintStack.js';
 import { resolveAnimationLayers } from './layers/resolveAnimationLayers.js';
 import { applyStateMachineParameters } from './state/applyStateMachineParameters.js';
 
@@ -131,11 +134,21 @@ function getSceneNodeTransforms(scene) {
     return transforms;
 }
 
+function getDocumentConstraints(document) {
+    if (Array.isArray(document?.constraints)) return document.constraints;
+
+    const constraints = document?.constraints;
+    return constraints && typeof constraints === 'object'
+        ? Object.values(constraints)
+        : [];
+}
+
 export function evaluateSceneAnimation(snapshot, context = {}) {
     const document = snapshot?.document || {};
     const runtime = snapshot?.runtime || snapshot || {};
     const rigs = getDocumentRigs(document);
     const motion = document?.motion || {};
+    const constraints = getDocumentConstraints(document);
     const frame = getCurrentFrame(snapshot, context);
     const sceneNodeTransforms = getSceneNodeTransforms(runtime?.scene);
     const animationRuntime = runtime?.animation || {};
@@ -147,7 +160,7 @@ export function evaluateSceneAnimation(snapshot, context = {}) {
             frame,
         }),
     };
-    const graphLayers = evaluateGraphs(
+    const graphLayersRaw = evaluateGraphs(
         {
             document,
             runtime,
@@ -162,6 +175,7 @@ export function evaluateSceneAnimation(snapshot, context = {}) {
             parameters,
         }
     );
+    const graphLayers = applyGraphModifiers(graphLayersRaw, context);
     const transforms = {};
 
     for (const rig of rigs) {
@@ -173,6 +187,20 @@ export function evaluateSceneAnimation(snapshot, context = {}) {
             motion,
             frame,
         });
+        const graphChannels = resolveLayerAuthority(
+            graphLayers.filter((layer) => !layer?.rigId || layer.rigId === rigId)
+        );
+        const graphAuthorityLayers = graphChannels.length
+            ? [
+                  {
+                      id: `graph-authority:${rigId}`,
+                      rigId,
+                      priority: 2,
+                      mode: 'replace',
+                      channels: graphChannels,
+                  },
+              ]
+            : [];
         const resolvedLayers = resolveAnimationLayers({
             timeline: [
                 ...sampledTimelineClips,
@@ -180,7 +208,7 @@ export function evaluateSceneAnimation(snapshot, context = {}) {
             ],
             stateMachine:
                 animationRuntime?.stateMachineClips ?? animationRuntime?.stateClips ?? [],
-            graph: graphLayers,
+            graph: graphAuthorityLayers,
         });
 
         const animationFrame = evaluateAnimationFrame({
@@ -198,8 +226,13 @@ export function evaluateSceneAnimation(snapshot, context = {}) {
             controllerValues: animationFrame?.controllerValues || {},
             nodeTransforms: sceneNodeTransforms,
         });
+        const constrainedNodes = applyConstraintStack(
+            rigResult?.constrainedNodes || {},
+            constraints,
+            context
+        );
 
-        Object.assign(transforms, rigResult?.constrainedNodes || {});
+        Object.assign(transforms, constrainedNodes);
     }
 
     return transforms;

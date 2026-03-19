@@ -7,6 +7,8 @@ test('getNodeEvaluator resolves math and procedural node evaluators', () => {
     assert.equal(typeof getNodeEvaluator('value'), 'function');
     assert.equal(typeof getNodeEvaluator('sin'), 'function');
     assert.equal(typeof getNodeEvaluator('ease'), 'function');
+    assert.equal(typeof getNodeEvaluator('ik'), 'function');
+    assert.equal(typeof getNodeEvaluator('spring'), 'function');
     assert.equal(typeof getNodeEvaluator('clamp'), 'function');
 });
 
