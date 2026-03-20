@@ -29,7 +29,7 @@ function safeDispatch(context, action, capability) {
 export const CAPABILITY_COMPONENTS = Object.freeze({
     graph: Object.freeze({
         id: 'graph',
-        tools: Object.freeze(['select', 'move', 'pan', 'frame', 'shape']),
+        tools: Object.freeze(['select', 'move', 'resize', 'rotate', 'pan', 'frame', 'shape']),
         ui: Object.freeze({
             surfacePanels: Object.freeze([
                 Object.freeze({
@@ -45,7 +45,7 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
                     context,
                     registerTools({
                         source: 'graph',
-                        tools: ['select', 'move', 'pan', 'frame', 'shape'],
+                        tools: ['select', 'move', 'resize', 'rotate', 'pan', 'frame', 'shape'],
                     }),
                     'graph',
                 );

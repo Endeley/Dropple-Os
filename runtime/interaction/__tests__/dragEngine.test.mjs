@@ -65,3 +65,33 @@ test('computeDragDelta snaps to grid before apply when enabled', () => {
 
     assert.deepEqual(delta, { dx: 10, dy: 10 });
 });
+
+test('computeDragDelta axis-locks to the dominant direction when enabled', () => {
+    const delta = computeDragDelta(
+        {
+            startPointer: { x: 10, y: 15 },
+            currentPointer: { x: 30, y: 22 },
+        },
+        {
+            axisLock: true,
+        },
+    );
+
+    assert.deepEqual(delta, { dx: 20, dy: 0 });
+});
+
+test('computeDragDelta applies axis lock before snapping', () => {
+    const delta = computeDragDelta(
+        {
+            startPointer: { x: 10, y: 15 },
+            currentPointer: { x: 18, y: 31 },
+        },
+        {
+            axisLock: true,
+            snap: true,
+            snapOptions: { grid: 10 },
+        },
+    );
+
+    assert.deepEqual(delta, { dx: 0, dy: 20 });
+});

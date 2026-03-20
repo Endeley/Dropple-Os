@@ -11,14 +11,20 @@ export function computeDragDelta(dragState, options = {}) {
     let dx = currentPointer.x - startPointer.x;
     let dy = currentPointer.y - startPointer.y;
 
-    if (options.snap === true) {
-        const snapped = snapDelta({ dx, dy }, options.snapOptions);
-        if (snapped && Number.isFinite(snapped.dx) && Number.isFinite(snapped.dy)) {
-            dx = snapped.dx;
-            dy = snapped.dy;
+    if (options.axisLock === true) {
+        if (Math.abs(dx) > Math.abs(dy)) {
+            dy = 0;
+        } else {
+            dx = 0;
         }
-    } else if (typeof options.snap === 'function') {
-        const snapped = options.snap({ dx, dy });
+    }
+
+    if (options.snap) {
+        const snapped =
+            typeof options.snap === 'function'
+                ? options.snap({ dx, dy }, options.snapOptions)
+                : snapDelta({ dx, dy }, options.snapOptions);
+
         if (snapped && Number.isFinite(snapped.dx) && Number.isFinite(snapped.dy)) {
             dx = snapped.dx;
             dy = snapped.dy;

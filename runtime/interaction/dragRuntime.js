@@ -5,6 +5,8 @@ export const initialDragState = Object.freeze({
     startPointer: null,
     currentPointer: null,
     origin: null,
+    meta: null,
+    guides: [],
 });
 
 export function startDrag(state, payload = {}) {
@@ -16,15 +18,27 @@ export function startDrag(state, payload = {}) {
         startPointer: payload.pointer ?? null,
         currentPointer: payload.pointer ?? null,
         origin: payload.origin ?? null,
+        meta: payload.meta ?? null,
+        guides: Array.isArray(payload.guides) ? [...payload.guides] : [],
     };
 }
 
-export function updateDrag(state, pointer) {
+export function updateDrag(state, payload) {
     if (!state?.active) return state ?? initialDragState;
+
+    const pointer =
+        payload && typeof payload === 'object' && !Array.isArray(payload) && 'pointer' in payload
+            ? payload.pointer
+            : payload;
+    const guides =
+        payload && typeof payload === 'object' && !Array.isArray(payload) && 'guides' in payload
+            ? payload.guides
+            : state.guides;
 
     return {
         ...state,
         currentPointer: pointer ?? null,
+        guides: Array.isArray(guides) ? [...guides] : [],
     };
 }
 

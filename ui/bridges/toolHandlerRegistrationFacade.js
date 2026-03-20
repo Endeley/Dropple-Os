@@ -1,23 +1,27 @@
 import { createNodeCreateEvent } from '@/runtime/input/nodeCreateRuntimeBridge.js';
+import { computeSelectionBounds } from '@/domain/geometry/selectionBounds.js';
 import {
     registerToolHandler,
     unregisterToolHandler,
 } from '@/runtime/tools/toolController.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { computeDragDelta } from '@/runtime/interaction/dragEngine.js';
+import { computeGuides } from '@/runtime/guides/computeGuides.js';
 import { hitTestPoint } from '@/runtime/hitTest/hitTestPoint.js';
+import { computeSnapTargets } from '@/runtime/snapping/computeSnapTargets.js';
 import { clearSelection } from '@/runtime/selection/clearSelection.js';
 import { selectNode } from '@/runtime/selection/selectNode.js';
 import { toggleNode } from '@/runtime/selection/toggleNode.js';
+import { computeResizeDelta } from '@/runtime/transforms/computeResizeDelta.js';
+import { computeRotateAnchor } from '@/runtime/transforms/computeRotateAnchor.js';
+import { computeRotationDelta } from '@/runtime/transforms/computeRotationDelta.js';
+import { computeResizeAnchors } from '@/runtime/transforms/computeResizeAnchors.js';
 import { canvasBus } from '@/ui/eventBus/canvasBus.js';
 import {
-    beginSession,
     endSession,
     getActiveSessionType,
-    resolveToolHandler,
     updatePointer,
 } from '@/ui/bridges/inputSessionRuntimeFacade.js';
-import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions.js';
 import { resolveSessionNodeIds } from '@/ui/interactions/toolController.js';
 
 function getNodeRect(node) {
@@ -80,6 +84,135 @@ function resolvePrimaryHit(runtimeState, worldPoint) {
     }
 
     return hitTestNode(runtimeState, worldPoint);
+}
+
+function deriveDraggedBounds(nodeIds, origin, nodesById, dx, dy) {
+    if (!Array.isArray(nodeIds) || nodeIds.length === 0) return null;
+
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    for (const nodeId of nodeIds) {
+        const node = nodesById?.[nodeId];
+        const start = origin?.[nodeId];
+        if (!node || !start) continue;
+
+        const layout = node.layout ?? {};
+        const x = (start.x ?? 0) + dx;
+        const y = (start.y ?? 0) + dy;
+        const width = layout.width ?? node.width ?? 0;
+        const height = layout.height ?? node.height ?? 0;
+
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x + width);
+        maxY = Math.max(maxY, y + height);
+    }
+
+    if (!Number.isFinite(minX)) return null;
+
+    return {
+        x: minX,
+        y: minY,
+        width: maxX - minX,
+        height: maxY - minY,
+    };
+}
+
+function deriveSelectionBounds(nodeIds, nodesById) {
+    const nodes = (nodeIds ?? [])
+        .map((nodeId) => nodesById?.[nodeId])
+        .filter(Boolean)
+        .map((node) => {
+            const layout = node.layout ?? {};
+            return {
+                id: node.id,
+                x: layout.x ?? node.x ?? 0,
+                y: layout.y ?? node.y ?? 0,
+                width: layout.width ?? node.width ?? 0,
+                height: layout.height ?? node.height ?? 0,
+            };
+        });
+
+    if (!nodes.length) return null;
+
+    const bounds = computeSelectionBounds(nodes);
+    return {
+        x: bounds.minX,
+        y: bounds.minY,
+        width: bounds.width,
+        height: bounds.height,
+    };
+}
+
+function deriveParentBounds(nodeId, nodesById) {
+    const node = nodeId ? nodesById?.[nodeId] : null;
+    const parent = node?.parentId ? nodesById?.[node.parentId] : null;
+    if (!parent) return null;
+    return getNodeRect(parent);
+}
+
+function resolveResizeHandle(bounds, worldPoint) {
+    const anchors = computeResizeAnchors(bounds);
+    if (!anchors || !worldPoint) return 'se';
+
+    let closestHandle = 'se';
+    let closestDistance = Infinity;
+
+    for (const [handle, anchor] of Object.entries(anchors)) {
+        const dx = anchor.x - worldPoint.x;
+        const dy = anchor.y - worldPoint.y;
+        const distance = dx * dx + dy * dy;
+        if (distance < closestDistance) {
+            closestDistance = distance;
+            closestHandle = handle;
+        }
+    }
+
+    return closestHandle;
+}
+
+function normalizeAngle(angle) {
+    const tau = Math.PI * 2;
+    let next = angle;
+    while (next > Math.PI) next -= tau;
+    while (next < -Math.PI) next += tau;
+    return next;
+}
+
+function buildResizedLayoutUpdates(nodeIds, origin, startBounds, resizeResult) {
+    if (!Array.isArray(nodeIds) || !nodeIds.length || !startBounds || !resizeResult) {
+        return [];
+    }
+
+    const resizeDelta = resizeResult.resize ?? { width: 0, height: 0 };
+    const offset = resizeResult.delta ?? { x: 0, y: 0 };
+    const nextWidth = Math.max(1, startBounds.width + resizeDelta.width);
+    const nextHeight = Math.max(1, startBounds.height + resizeDelta.height);
+    const scaleX = startBounds.width === 0 ? 1 : nextWidth / startBounds.width;
+    const scaleY = startBounds.height === 0 ? 1 : nextHeight / startBounds.height;
+    const originX = startBounds.x + offset.x;
+    const originY = startBounds.y + offset.y;
+
+    return nodeIds.flatMap((nodeId) => {
+        const start = origin?.[nodeId];
+        if (!start) return [];
+
+        const relX = startBounds.width === 0 ? 0 : (start.x - startBounds.x) / startBounds.width;
+        const relY = startBounds.height === 0 ? 0 : (start.y - startBounds.y) / startBounds.height;
+
+        return [{
+            id: nodeId,
+            layout: {
+                x: originX + relX * nextWidth,
+                y: originY + relY * nextHeight,
+                width: start.width * scaleX,
+                height: start.height * scaleY,
+            },
+        }];
+    });
 }
 
 function selectToolHandler(input, context) {
@@ -168,19 +301,31 @@ function moveToolHandler(input, context) {
 
     if (input.type === 'pointermove') {
         if (drag?.active && drag.type === 'move') {
-            dispatcher.dispatch({
-                type: EventTypes.DRAG_UPDATE,
-                payload: {
-                    pointer: worldPoint,
-                },
-            });
-
             const { dx, dy } = computeDragDelta({
                 ...drag,
                 currentPointer: worldPoint,
             }, {
                 snap: true,
                 snapOptions: { grid: 10 },
+                axisLock: input.event?.shiftKey === true,
+            });
+            const guides = computeGuides(
+                deriveDraggedBounds(
+                    drag.nodeIds ?? [],
+                    drag.origin ?? {},
+                    runtimeState?.nodes ?? {},
+                    dx,
+                    dy,
+                ),
+                computeSnapTargets(runtimeState?.scene?.computed ?? {}, drag.nodeIds ?? []),
+            );
+
+            dispatcher.dispatch({
+                type: EventTypes.DRAG_UPDATE,
+                payload: {
+                    pointer: worldPoint,
+                    guides,
+                },
             });
 
             for (const nodeId of drag.nodeIds ?? []) {
@@ -228,6 +373,196 @@ function moveToolHandler(input, context) {
     return null;
 }
 
+function resizeToolHandler(input, context) {
+    const runtimeState = context.state;
+    const dispatcher = context.dispatcher;
+    const worldPoint = input.worldPoint;
+    if (!runtimeState || !dispatcher || !worldPoint) return null;
+
+    const drag = runtimeState?.interaction?.drag ?? null;
+    const nodesById = runtimeState?.nodes ?? {};
+
+    if (input.type === 'pointerdown') {
+        const hit = resolvePrimaryHit(runtimeState, worldPoint);
+        if (!hit?.id) return null;
+
+        const selectionIds = Array.from(runtimeState?.selection?.ids ?? []);
+        const nodeIds = resolveSessionNodeIds(selectionIds, hit.id);
+        const bounds = deriveSelectionBounds(nodeIds, nodesById);
+        if (!bounds) return null;
+
+        if (!selectionIds.includes(hit.id)) {
+            dispatcher.dispatch(selectNode(hit.id));
+        }
+
+        const origin = Object.fromEntries(
+            nodeIds.map((nodeId) => {
+                const node = nodesById?.[nodeId];
+                const layout = node?.layout ?? {};
+                return [nodeId, {
+                    x: layout.x ?? node?.x ?? 0,
+                    y: layout.y ?? node?.y ?? 0,
+                    width: layout.width ?? node?.width ?? 0,
+                    height: layout.height ?? node?.height ?? 0,
+                }];
+            }),
+        );
+
+        dispatcher.dispatch({
+            type: EventTypes.DRAG_START,
+            payload: {
+                type: 'resize',
+                nodeIds,
+                pointer: worldPoint,
+                origin,
+                meta: {
+                    handle: resolveResizeHandle(bounds, worldPoint),
+                    bounds,
+                    parentBounds: nodeIds.length === 1 ? deriveParentBounds(nodeIds[0], nodesById) : null,
+                },
+            },
+        });
+
+        return { handled: true };
+    }
+
+    if (input.type === 'pointermove') {
+        if (!drag?.active || drag.type !== 'resize') return null;
+
+        const nextDrag = {
+            ...drag,
+            currentPointer: worldPoint,
+        };
+        const resizeResult = computeResizeDelta(
+            nextDrag.startPointer,
+            nextDrag.currentPointer,
+            drag.meta?.bounds ?? null,
+            drag.meta?.handle ?? 'se',
+            computeSnapTargets(runtimeState?.scene?.computed ?? {}, drag.nodeIds ?? []),
+        );
+
+        dispatcher.dispatch({
+            type: EventTypes.DRAG_UPDATE,
+            payload: {
+                pointer: worldPoint,
+                guides: resizeResult.guides ?? [],
+            },
+        });
+
+        const updates = buildResizedLayoutUpdates(
+            drag.nodeIds ?? [],
+            drag.origin ?? {},
+            drag.meta?.bounds ?? null,
+            resizeResult,
+        );
+
+        if (updates.length > 0) {
+            dispatcher.dispatch({
+                type: 'node.layout.bulk',
+                payload: { updates },
+            });
+        }
+
+        return { handled: true };
+    }
+
+    if (input.type === 'pointerup') {
+        if (!drag?.active || drag.type !== 'resize') return null;
+        dispatcher.dispatch({
+            type: EventTypes.DRAG_END,
+        });
+        return { handled: true };
+    }
+
+    return null;
+}
+
+function rotateToolHandler(input, context) {
+    const runtimeState = context.state;
+    const dispatcher = context.dispatcher;
+    const worldPoint = input.worldPoint;
+    if (!runtimeState || !dispatcher || !worldPoint) return null;
+
+    const drag = runtimeState?.interaction?.drag ?? null;
+    const nodesById = runtimeState?.nodes ?? {};
+
+    if (input.type === 'pointerdown') {
+        const hit = resolvePrimaryHit(runtimeState, worldPoint);
+        if (!hit?.id) return null;
+
+        const selectionIds = Array.from(runtimeState?.selection?.ids ?? []);
+        const nodeIds = resolveSessionNodeIds(selectionIds, hit.id);
+        const bounds = deriveSelectionBounds(nodeIds, nodesById);
+        const pivot = computeRotateAnchor(bounds);
+        if (!bounds || !pivot) return null;
+
+        if (!selectionIds.includes(hit.id)) {
+            dispatcher.dispatch(selectNode(hit.id));
+        }
+
+        dispatcher.dispatch({
+            type: EventTypes.DRAG_START,
+            payload: {
+                type: 'rotate',
+                nodeIds,
+                pointer: worldPoint,
+                meta: {
+                    pivot,
+                },
+            },
+        });
+
+        return { handled: true };
+    }
+
+    if (input.type === 'pointermove') {
+        if (!drag?.active || drag.type !== 'rotate') return null;
+
+        const pivot = drag.meta?.pivot ?? null;
+        const previousRotation = computeRotationDelta(
+            drag.startPointer,
+            drag.currentPointer,
+            pivot,
+        ).rotation;
+        const nextRotation = computeRotationDelta(
+            drag.startPointer,
+            worldPoint,
+            pivot,
+        ).rotation;
+        const deltaRotation = normalizeAngle(nextRotation - previousRotation);
+
+        dispatcher.dispatch({
+            type: EventTypes.DRAG_UPDATE,
+            payload: {
+                pointer: worldPoint,
+                guides: [],
+            },
+        });
+
+        if (deltaRotation !== 0) {
+            dispatcher.dispatch({
+                type: EventTypes.NODE_ROTATE,
+                payload: {
+                    nodeIds: drag.nodeIds ?? [],
+                    rotation: deltaRotation,
+                },
+            });
+        }
+
+        return { handled: true };
+    }
+
+    if (input.type === 'pointerup') {
+        if (!drag?.active || drag.type !== 'rotate') return null;
+        dispatcher.dispatch({
+            type: EventTypes.DRAG_END,
+        });
+        return { handled: true };
+    }
+
+    return null;
+}
+
 function shapeToolHandler(input, context) {
     if (input.type !== EventTypes.INPUT_CREATE_COMMIT) return null;
 
@@ -246,11 +581,15 @@ function shapeToolHandler(input, context) {
 export function registerDefaultGraphToolHandlers() {
     registerToolHandler('select', selectToolHandler);
     registerToolHandler('move', moveToolHandler);
+    registerToolHandler('resize', resizeToolHandler);
+    registerToolHandler('rotate', rotateToolHandler);
     registerToolHandler('shape', shapeToolHandler);
 }
 
 export function unregisterDefaultGraphToolHandlers() {
     unregisterToolHandler('select');
     unregisterToolHandler('move');
+    unregisterToolHandler('resize');
+    unregisterToolHandler('rotate');
     unregisterToolHandler('shape');
 }
