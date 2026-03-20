@@ -129,6 +129,15 @@ export const EventTypes = Object.freeze({
     RIG_CONSTRAINT_UPDATE: 'rig/constraint/update',
     RIG_CONSTRAINT_DELETE: 'rig/constraint/delete',
 
+    // Graph authoring
+    GRAPH_NODE_ADD: 'graph/node/add',
+    GRAPH_NODE_UPDATE: 'graph/node/update',
+    GRAPH_NODE_DELETE: 'graph/node/delete',
+    GRAPH_CONNECT: 'graph/connect',
+    GRAPH_DISCONNECT: 'graph/disconnect',
+    GRAPH_OUTPUT_SET: 'graph/output/set',
+    GRAPH_PARAMETER_UPDATE: 'graph/parameter/update',
+
     // Sequencer
     SEQUENCE_CREATE: 'sequence/create',
     SEQUENCE_UPDATE: 'sequence/update',

@@ -1,6 +1,8 @@
 'use client';
 
 import { useMemo } from 'react';
+import { EventTypes } from '@/core/events/eventTypes.js';
+import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import {
     selectActiveGraph,
@@ -13,6 +15,7 @@ import { useGraphInteraction } from './useGraphInteraction.js';
 
 export function GraphCanvas() {
     const interaction = useGraphInteraction();
+    const dispatcher = useDispatcher();
     const document = useRuntimeStore((state) => state.document);
     const activeGraphId = useRuntimeStore(
         (state) =>
@@ -66,6 +69,34 @@ export function GraphCanvas() {
         }));
     }, [edges, interaction.draggingNode, nodes]);
 
+    function commitNodeDrag() {
+        const drag = interaction.draggingNode;
+        const graphId = activeGraph?.id ?? activeGraphId ?? null;
+
+        if (!drag || !graphId) return;
+
+        if (drag.previewX === drag.originX && drag.previewY === drag.originY) {
+            interaction.endNodeDrag();
+            return;
+        }
+
+        void dispatcher.dispatch({
+            type: EventTypes.GRAPH_NODE_UPDATE,
+            payload: {
+                graphId,
+                nodeId: drag.id,
+                patch: {
+                    position: {
+                        x: drag.previewX,
+                        y: drag.previewY,
+                    },
+                },
+            },
+        });
+
+        interaction.endNodeDrag();
+    }
+
     function handleWheel(event) {
         event.preventDefault();
         interaction.updateZoom(event.deltaY);
@@ -90,7 +121,7 @@ export function GraphCanvas() {
 
     function handleMouseUp() {
         interaction.endPan();
-        interaction.endNodeDrag();
+        commitNodeDrag();
     }
 
     return (
@@ -168,6 +199,7 @@ export function GraphCanvas() {
                                     key={node.id}
                                     node={node}
                                     interaction={interaction}
+                                    onCommitNodeDrag={commitNodeDrag}
                                 />
                             ))}
                         </div>

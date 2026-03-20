@@ -11,6 +11,7 @@ import { componentStateReducers } from "./componentStateReducers.js";
 import { interactionReducers } from "./interactionReducers.js";
 import { motionReducers } from "./motionReducers.js";
 import { rigReducers } from "./rigReducers.js";
+import { graphReducers } from "./graphReducers.js";
 import { sequenceReducers } from "./sequenceReducers.js";
 import { behaviorReducers } from "./behaviorReducers.js";
 import { stateMachineReducers } from "./stateMachineReducers.js";
@@ -51,6 +52,10 @@ export function rootReducer(state, event) {
   });
   next = applyOwnedReducer(next, event, rigReducers, 'rigReducers', {
     allowedDocumentSlices: ['rigs'],
+    allowedRuntimeSlices: [],
+  });
+  next = applyOwnedReducer(next, event, graphReducers, 'graphReducers', {
+    allowedDocumentSlices: ['graphs'],
     allowedRuntimeSlices: [],
   });
   next = applyOwnedReducer(next, event, sequenceReducers, 'sequenceReducers', {

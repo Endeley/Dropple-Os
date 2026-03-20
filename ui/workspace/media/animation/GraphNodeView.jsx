@@ -1,6 +1,6 @@
 'use client';
 
-export function GraphNodeView({ node, interaction }) {
+export function GraphNodeView({ node, interaction, onCommitNodeDrag }) {
     const isSelected = interaction?.selectedNodeId === node.id;
     const isHovered = interaction?.hoverNodeId === node.id;
     const dragPreview =
@@ -21,7 +21,7 @@ export function GraphNodeView({ node, interaction }) {
 
     function handleMouseUp(event) {
         event.stopPropagation();
-        interaction?.endNodeDrag();
+        onCommitNodeDrag?.();
     }
 
     return (
