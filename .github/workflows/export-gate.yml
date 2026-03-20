@@ -7,6 +7,10 @@ on:
       - main
       - release/**
 
+concurrency:
+  group: export-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   export-gate-pr:
     if: github.event_name == 'pull_request'
@@ -16,12 +20,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 18
+          node-version: '20.19.0'
           cache: npm
 
       - name: Install dependencies
@@ -57,12 +61,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 18
+          node-version: '20.19.0'
           cache: npm
 
       - name: Install dependencies

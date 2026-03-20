@@ -1,23 +1,28 @@
-name: Dropple CI
+name: CI
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build-and-validate:
+  fast-ci:
+    name: Fast CI (Architecture + Determinism)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: '20.19.0'
           cache: 'npm'
 
       - name: Install dependencies
@@ -29,10 +34,10 @@ jobs:
       - name: Architecture Monitor
         run: npm run architecture:monitor
 
-      - name: Architecture CI Gate
+      - name: Architecture CI
         run: npm run architecture:ci
 
-      - name: Architecture Drift Check
+      - name: Architecture Drift
         run: npm run architecture:drift
 
       - name: Runtime Map Test
@@ -44,7 +49,7 @@ jobs:
       - name: Runtime State Hash Stability
         run: npm run runtime:statehash:test
 
-      - name: Determinism Gate
+      - name: Determinism
         run: npm run determinism
 
       - name: Template Verification
@@ -52,3 +57,79 @@ jobs:
         env:
           ENGINE_VERSION: ${{ secrets.ENGINE_VERSION }}
           ROOT_PUBLIC_KEY: ${{ secrets.ROOT_PUBLIC_KEY }}
+
+  core-tests:
+    name: Core Tests (Engine + Runtime + Kernel)
+    runs-on: ubuntu-latest
+    needs: fast-ci
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20.19.0'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run all tests
+        run: npm run test:all
+
+      - name: Runtime system tests
+        run: npm run test:system:runtime
+
+  app-smoke:
+    name: App Validation (Workspace + Routing)
+    runs-on: ubuntu-latest
+    needs: core-tests
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20.19.0'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Validate app
+        run: npm run validate:app
+
+  full-repo-gate:
+    name: Full Repo Validation
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: app-smoke
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20.19.0'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Validate all
+        run: npm run validate:all
