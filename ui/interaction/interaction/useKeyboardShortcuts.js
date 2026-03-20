@@ -5,6 +5,7 @@ import { serializeSelection } from '@/ui/workspace/shared/serializeSelection';
 import { pasteFromClipboard } from '@/ui/workspace/shared/pasteFromClipboard';
 import { useClipboard } from '@/ui/workspace/shared/ClipboardContext';
 import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
+import { handleKeyboardEvent } from '@/ui/bridges/keyboardEngineFacade.js';
 
 export function useKeyboardShortcuts({
   enabled = true,
@@ -19,60 +20,67 @@ export function useKeyboardShortcuts({
 
   useEffect(() => {
     if (!enabled) return;
-    function onKeyDown(e) {
-      const isMac = navigator.platform.includes('Mac');
-      const mod = isMac ? e.metaKey : e.ctrlKey;
-
-      if (mod && e.key.toLowerCase() === 'c') {
-        e.preventDefault();
-        const snapshot = serializeSelection({
-          state: getState(),
-          selectedIds,
-        });
-        clipboard.copy(snapshot);
-        return;
-      }
-
-      if (mod && e.key === 'z' && !e.shiftKey) {
-        e.preventDefault();
-        undo();
-        return;
-      }
-
-      if (mod && e.key === 'z' && e.shiftKey) {
-        e.preventDefault();
-        redo();
-        return;
-      }
-
-      if (mod && e.key.toLowerCase() === 'd') {
-        e.preventDefault();
-        duplicateSelection();
-        return;
-      }
-
-      if (mod && e.key.toLowerCase() === 'v') {
-        e.preventDefault();
-        const newIds = pasteFromClipboard({
-          clipboard: clipboard.clipboard,
-          emit,
-        });
-        setSelection(new Set(newIds));
-        return;
-      }
-
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        e.preventDefault();
-        deleteSelection();
-      }
-    }
-
     function deleteSelection() {
       selectedIds.forEach((id) => {
         emit({
           type: 'node.delete',
           payload: { nodeId: id },
         });
+      });
+    }
+
+    function onKeyDown(e) {
+      handleKeyboardEvent(e, {
+        fallbackHandler(input) {
+          const isMac = navigator.platform.includes('Mac');
+          const mod = isMac ? input.modifiers.meta : input.modifiers.ctrl;
+
+          if (mod && input.key.toLowerCase() === 'c') {
+            e.preventDefault();
+            const snapshot = serializeSelection({
+              state: getState(),
+              selectedIds,
+            });
+            clipboard.copy(snapshot);
+            return 'handled';
+          }
+
+          if (mod && input.key === 'z' && !input.modifiers.shift) {
+            e.preventDefault();
+            undo();
+            return 'handled';
+          }
+
+          if (mod && input.key === 'z' && input.modifiers.shift) {
+            e.preventDefault();
+            redo();
+            return 'handled';
+          }
+
+          if (mod && input.key.toLowerCase() === 'd') {
+            e.preventDefault();
+            duplicateSelection();
+            return 'handled';
+          }
+
+          if (mod && input.key.toLowerCase() === 'v') {
+            e.preventDefault();
+            const newIds = pasteFromClipboard({
+              clipboard: clipboard.clipboard,
+              emit,
+            });
+            setSelection(new Set(newIds));
+            return 'handled';
+          }
+
+          if (input.key === 'Delete' || input.key === 'Backspace') {
+            e.preventDefault();
+            deleteSelection();
+            return 'handled';
+          }
+
+          return null;
+        },
       });
     }
 

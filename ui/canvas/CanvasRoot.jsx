@@ -34,6 +34,7 @@ import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions';
 import { useCanvasInteractions } from '@/ui/interactions/useCanvasInteractions.js';
 import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
 import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
+import { handleInputEvent } from '@/ui/bridges/inputEngineFacade.js';
 
 /** precision safety */
 const MIN_EFFECTIVE_ZOOM = 0.0005;
@@ -199,11 +200,34 @@ export default function CanvasRoot({ workspaceId }) {
                 const snapshot = getRuntimeSnapshot();
                 const rootId = snapshot?.rootIds?.[0] ?? null;
 
-                nodeCreateIntent({
-                    type: toolDef.nodeType,
-                    bounds,
-                    parentId: rootId,
-                });
+                const handled = handleInputEvent(
+                    {
+                        type: 'createcommit',
+                        event: e,
+                        worldPoint: start,
+                        bounds,
+                        nodeType: toolDef.nodeType,
+                        parentId: rootId,
+                    },
+                    {
+                        fallbackHandler() {
+                            nodeCreateIntent({
+                                type: toolDef.nodeType,
+                                bounds,
+                                parentId: rootId,
+                            });
+                            return 'handled';
+                        },
+                    },
+                );
+
+                if (!handled) {
+                    nodeCreateIntent({
+                        type: toolDef.nodeType,
+                        bounds,
+                        parentId: rootId,
+                    });
+                }
             }
 
             setCreateSession(null);

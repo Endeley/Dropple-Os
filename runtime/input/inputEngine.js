@@ -24,7 +24,10 @@ export function handleInputEvent(input, options = {}) {
             : null) ?? getToolHandler(tool);
 
     if (typeof handler === 'function') {
-        return handler(input, context);
+        const result = handler(input, context);
+        if (result !== null && result !== undefined) {
+            return result;
+        }
     }
 
     return typeof options.fallbackHandler === 'function'

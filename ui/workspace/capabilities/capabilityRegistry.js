@@ -6,6 +6,10 @@ import {
     registerTools,
     unregisterTools,
 } from '@/runtime/actions/toolActions.js';
+import {
+    registerDefaultGraphToolHandlers,
+    unregisterDefaultGraphToolHandlers,
+} from '@/ui/bridges/toolHandlerRegistrationFacade.js';
 
 function safeDispatch(context, action, capability) {
     try {
@@ -36,6 +40,7 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
         }),
         lifecycle: Object.freeze({
             onMount(context) {
+                registerDefaultGraphToolHandlers();
                 safeDispatch(
                     context,
                     registerTools({
@@ -46,6 +51,7 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
                 );
             },
             onUnmount(context) {
+                unregisterDefaultGraphToolHandlers();
                 safeDispatch(
                     context,
                     unregisterTools({
