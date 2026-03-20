@@ -14,7 +14,7 @@ import { MediaTransportBar } from './shared/MediaTransportBar.jsx';
 import { ModeSwitcher } from '@/ui/workspace/shared/ModeSwitcher.jsx';
 import { WorkspaceSwitcher } from '@/ui/workspace/shared/WorkspaceSwitcher.jsx';
 import { useWorkspaceNavigation } from '@/ui/workspace/shared/useWorkspaceNavigation.js';
-import { GraphEditorPanel } from './animation/GraphEditorPanel.jsx';
+import { useWorkspaceCapabilities } from '@/ui/workspace/useWorkspaceCapabilities.js';
 
 export function MediaWorkspaceShell(props) {
     const requestedMode = props.modeId ?? props.workspace?.id ?? MEDIA_WORKSPACE_ID;
@@ -23,6 +23,10 @@ export function MediaWorkspaceShell(props) {
     const workspaceContext = props.workspaceContext ?? null;
     const activeWorkspace = workspaceContext?.workspace ?? MEDIA_WORKSPACE_ID;
     const { goToMode, goToWorkspace } = useWorkspaceNavigation();
+    const { surfacePanels, overlays } = useWorkspaceCapabilities({
+        workspace: activeWorkspace,
+        mode: activeMode,
+    });
 
     return (
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -72,11 +76,13 @@ export function MediaWorkspaceShell(props) {
                     height: 360,
                     pointerEvents: 'none',
                 }}>
-                {activeMode === 'animation' ? (
-                    <div style={{ width: '100%', height: '100%', pointerEvents: 'auto' }}>
-                        <GraphEditorPanel />
+                {surfacePanels.map((Panel, index) => (
+                    <div
+                        key={`${Panel.displayName ?? Panel.name ?? 'surface-panel'}-${index}`}
+                        style={{ width: '100%', height: '100%', pointerEvents: 'auto' }}>
+                        <Panel />
                     </div>
-                ) : null}
+                ))}
             </div>
             <div
                 style={{
@@ -118,7 +124,9 @@ export function MediaWorkspaceShell(props) {
                 <MediaTransportBar mode={modeConfig} />
                 <MediaTimelinePanel mode={modeConfig} />
             </div>
-            {activeMode === 'animation' ? <RigControllerOverlay /> : null}
+            {overlays.map((Overlay, index) => (
+                <Overlay key={`${Overlay.displayName ?? Overlay.name ?? 'overlay'}-${index}`} />
+            ))}
             <EditorWorkspaceShell {...props} modeId={activeMode} />
         </div>
     );

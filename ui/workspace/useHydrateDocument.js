@@ -1,5 +1,4 @@
 import { replayBranch } from '@/runtime/replay/replayBranch.js';
-import { bootWorkspaceDocument } from '@/runtime/workspaces/index.js';
 
 /**
  * Runtime orchestration hook.
@@ -9,7 +8,7 @@ import { bootWorkspaceDocument } from '@/runtime/workspaces/index.js';
  * - Deterministic replay
  * - Hydration
  */
-export function useHydrateDocument(dispatcher, { workspace = null, mode = null } = {}) {
+export function useHydrateDocument(dispatcher) {
     function hydrateFromSnapshot(snapshot) {
         if (!snapshot) return;
         if (!dispatcher) {
@@ -69,17 +68,7 @@ export function useHydrateDocument(dispatcher, { workspace = null, mode = null }
             markers: markers ?? [],
         };
 
-        dispatcher.hydrateRuntimeState(
-            {
-                ...hydrated,
-                document: bootWorkspaceDocument({
-                    document: hydrated.document,
-                    workspace,
-                    mode,
-                }),
-            },
-            { animate: false },
-        );
+        dispatcher.hydrateRuntimeState(hydrated, { animate: false });
     }
 
     return hydrateFromSnapshot;
