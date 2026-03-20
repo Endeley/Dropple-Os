@@ -19,6 +19,7 @@ import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { PersistenceBridge } from '@/ui/bridges/PersistenceBridge.jsx';
 import { SessionGroupingBridge } from '@/ui/interactions/sessionGrouping.js';
 import { getWorkspaceAdapter, resolveWorkspaceId } from '@/ui/bridges/workspaceActivationFacade.js';
+import { resolveWorkspaceContext } from '@/platform/workspaces/resolveWorkspaceContext.js';
 
 const PANEL_LEFT = new Set(['SubmissionInfoPanel', 'LessonOutlinePanel']);
 const PANEL_RIGHT = new Set([
@@ -90,6 +91,10 @@ export function EditorWorkspaceShell({
     reviewerId,
 }) {
     const adapter = resolveWorkspaceAdapter(modeId);
+    const workspaceContext = useMemo(
+        () => resolveWorkspaceContext({ mode: modeId }),
+        [modeId],
+    );
     const templateGen = useTemplateGenerator();
 
     const events = useRuntimeStore((s) => s.events);
@@ -204,6 +209,8 @@ export function EditorWorkspaceShell({
                 onDocumentNameChange={setDocumentName}
                 onRecentDocsChange={setRecentDocs}
                 onHydratedChange={setHydrated}
+                workspace={workspaceContext.workspace}
+                mode={workspaceContext.mode}
             />
             <SessionGroupingBridge />
             <GridProvider>

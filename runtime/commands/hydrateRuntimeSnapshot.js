@@ -1,10 +1,13 @@
 import { getDesignStateAtCursor } from '@/core/persistence/index.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { bootWorkspaceDocument } from '@/runtime/workspaces/index.js';
 
 export function hydrateRuntimeSnapshot({
     dispatcher,
     snapshot,
     animate = false,
+    workspace,
+    mode,
 } = {}) {
     const events = Array.isArray(snapshot?.events) ? snapshot.events : [];
     const maxIndex = events.length - 1;
@@ -23,11 +26,28 @@ export function hydrateRuntimeSnapshot({
         uptoIndex: cursorIndex,
     });
 
-    dispatcher?.hydrateRuntimeState?.(runtimeSnapshot, { animate });
+    const nextDocument =
+        runtimeSnapshot?.document && typeof runtimeSnapshot.document === 'object'
+            ? bootWorkspaceDocument({
+                  document: runtimeSnapshot.document,
+                  workspace,
+                  mode,
+              })
+            : runtimeSnapshot?.document;
+
+    const nextRuntimeSnapshot =
+        nextDocument === runtimeSnapshot?.document
+            ? runtimeSnapshot
+            : {
+                  ...runtimeSnapshot,
+                  document: nextDocument,
+              };
+
+    dispatcher?.hydrateRuntimeState?.(nextRuntimeSnapshot, { animate });
 
     return {
         events,
         cursorIndex,
-        runtimeSnapshot,
+        runtimeSnapshot: nextRuntimeSnapshot,
     };
 }

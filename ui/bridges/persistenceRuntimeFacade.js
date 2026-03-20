@@ -5,10 +5,18 @@ export function usePersistenceBridgeState(selector) {
     return useRuntimeStore(selector);
 }
 
-export function hydratePersistenceSnapshot({ dispatcher, snapshot, animate = false }) {
+export function hydratePersistenceSnapshot({
+    dispatcher,
+    snapshot,
+    animate = false,
+    workspace,
+    mode,
+}) {
     return hydrateRuntimeSnapshot({
         dispatcher,
         snapshot,
         animate,
+        workspace,
+        mode,
     });
 }

@@ -26,6 +26,8 @@ export function PersistenceBridge({
     onDocumentNameChange,
     onRecentDocsChange,
     onHydratedChange,
+    workspace = null,
+    mode = null,
 }) {
     const dispatcher = useDispatcher();
     const events = usePersistenceBridgeState((s) => s.events);
@@ -57,6 +59,8 @@ export function PersistenceBridge({
                 cursorIndex: initialCursorIndex,
             },
             animate: false,
+            workspace,
+            mode,
         });
         seededInitialSnapshotRef.current = true;
     }, [dispatcher, initialEvents, initialCursorIndex]);
@@ -78,6 +82,8 @@ export function PersistenceBridge({
                     dispatcher,
                     snapshot: loaded.snapshot,
                     animate: false,
+                    workspace,
+                    mode,
                 });
                 onDocumentIdChange?.(activeId);
                 onDocumentNameChange?.(loaded.name || 'Untitled');
@@ -94,6 +100,8 @@ export function PersistenceBridge({
                 dispatcher,
                 snapshot: hydratedSnapshot,
                 animate: false,
+                workspace,
+                mode,
             });
         }
 
@@ -106,6 +114,8 @@ export function PersistenceBridge({
         onDocumentIdChange,
         onDocumentNameChange,
         onHydratedChange,
+        workspace,
+        mode,
     ]);
 
     useEffect(() => {
