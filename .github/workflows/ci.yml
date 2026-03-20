@@ -52,12 +52,6 @@ jobs:
       - name: Determinism
         run: npm run determinism
 
-      - name: Template Verification
-        run: npm run template:verify-all
-        env:
-          ENGINE_VERSION: ${{ secrets.ENGINE_VERSION }}
-          ROOT_PUBLIC_KEY: ${{ secrets.ROOT_PUBLIC_KEY }}
-
   core-tests:
     name: Core Tests (Engine + Runtime + Kernel)
     runs-on: ubuntu-latest
@@ -133,3 +127,29 @@ jobs:
 
       - name: Validate all
         run: npm run validate:all
+
+  release-trust-gate:
+    name: Release Trust Validation
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: full-repo-gate
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20.19.0'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate release trust
+        run: npm run validate:release
+        env:
+          ENGINE_VERSION: ${{ secrets.ENGINE_VERSION }}
+          ROOT_PUBLIC_KEY: ${{ secrets.ROOT_PUBLIC_KEY }}

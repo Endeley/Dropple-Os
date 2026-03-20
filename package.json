@@ -55,7 +55,8 @@
     "determinism": "NODE_ENV=test node scripts/determinismGate.mjs",
     "ci:determinism": "npm run determinism",
     "template:verify-all": "NODE_ENV=test node scripts/templateVerifyAll.mjs",
-    "validate:all": "npm run test:all && npm run test:system:all && npm run determinism && npm run template:verify-all && npm run architecture:ci",
+    "validate:all": "npm run test:all && npm run test:system:all && npm run determinism && npm run architecture:ci",
+    "validate:release": "npm run validate:all && npm run template:verify-all",
     "validate:app": "npm run build:smoke && npm run test:routes:smoke"
   },
   "dependencies": {
