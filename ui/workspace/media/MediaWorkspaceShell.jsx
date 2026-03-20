@@ -127,7 +127,11 @@ export function MediaWorkspaceShell(props) {
             {overlays.map((Overlay, index) => (
                 <Overlay key={`${Overlay.displayName ?? Overlay.name ?? 'overlay'}-${index}`} />
             ))}
-            <EditorWorkspaceShell {...props} modeId={activeMode} />
+            <EditorWorkspaceShell
+                {...props}
+                modeId={activeMode}
+                workspaceContext={workspaceContext}
+            />
         </div>
     );
 }

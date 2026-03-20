@@ -3,6 +3,7 @@ import { createDefaultWorkspaceState } from './workspaceRuntime.js';
 import { initialInteractionState } from '@/runtime/interactionEngine/state/interactionState.js';
 import { createPreviewState } from '@/runtime/state/previewState.js';
 import { createCanonicalDocumentEnvelope } from '@/core/persistence/documentEnvelope.js';
+import { initialToolRuntimeState } from '@/runtime/tools/toolRuntime.js';
 
 export const initialRuntimeState = {
   document: createCanonicalDocumentEnvelope(),
@@ -51,6 +52,9 @@ export const initialRuntimeState = {
   ai: {
     requests: {},
     order: [],
+  },
+  tools: {
+    ...initialToolRuntimeState,
   },
   interaction: initialInteractionState(),
   preview: createPreviewState(),

@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { resolveWorkspaceCapabilities } from '@/runtime/workspaces/index.js';
-import { CAPABILITY_COMPONENTS } from './capabilities/capabilityRegistry.js';
+import { CAPABILITY_REGISTRY } from './capabilities/capabilityRegistry.js';
 import { resolveCapabilityComponents } from './capabilities/resolveCapabilityComponents.js';
 
 const EMPTY_COMPONENTS = Object.freeze({
@@ -19,7 +19,7 @@ export function useWorkspaceCapabilities({ workspace, mode } = {}) {
         }
         const { surfacePanels, overlays } = resolveCapabilityComponents(
             capabilities,
-            CAPABILITY_COMPONENTS,
+            CAPABILITY_REGISTRY,
         );
 
         return {

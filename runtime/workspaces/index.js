@@ -6,3 +6,4 @@ export {
 export { createDefaultSlice } from './defaultDocumentSlices.js';
 export { bootWorkspaceDocument } from './bootWorkspaceDocument.js';
 export { resolveWorkspaceCapabilities } from './resolveWorkspaceCapabilities.js';
+export { createCapabilityContext } from './createCapabilityContext.js';

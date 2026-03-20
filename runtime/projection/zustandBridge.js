@@ -9,6 +9,7 @@ import { selectionProjection } from '@/runtime/selection/selectionProjection.js'
 import { selectionBoundsProjection } from '@/runtime/selectionBounds/selectionBoundsProjection.js';
 import { transformAnchorProjection } from '@/runtime/transforms/transformAnchorProjection.js';
 import { guideProjection } from '@/runtime/guides/guideProjection.js';
+import { selectActiveTool, selectVisibleTools } from '@/runtime/selectors/toolSelectors.js';
 
 /**
  * Syncs authoritative runtime state into Zustand (read-only mirror).
@@ -68,6 +69,11 @@ export function syncRuntimeToZustand(nextState) {
                 ai: {
                     requests: [],
                     latestRequest: null,
+                },
+                tools: {
+                    activeTool: 'select',
+                    registeredTools: {},
+                    visibleTools: [],
                 },
             },
             false
@@ -136,6 +142,11 @@ export function syncRuntimeToZustand(nextState) {
                 const latestId = order.length ? order[order.length - 1] : null;
                 return latestId ? nextState.ai?.requests?.[latestId] ?? null : null;
             })(),
+        },
+        tools: {
+            activeTool: selectActiveTool(nextState),
+            registeredTools: nextState.tools?.registeredTools ?? {},
+            visibleTools: selectVisibleTools(nextState),
         },
     };
 

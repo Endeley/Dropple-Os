@@ -26,6 +26,7 @@ export const useRuntimeStore = create((set) => ({
     navigation: {},
     collaboration: { session: null, presence: [], cursors: [] },
     ai: { requests: [], latestRequest: null },
+    tools: { activeTool: 'select', registeredTools: {}, visibleTools: [] },
     selectionBounds: { bounds: null, center: null },
     transformAnchors: { pivot: null, resizeAnchors: null, rotateAnchor: null },
     guides: [],

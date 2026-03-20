@@ -61,12 +61,21 @@ import {
     applyViewportUpdate,
     applyCanvasSurfaceUpdate,
 } from '../state/workspaceRuntime.js';
+import {
+    initialToolRuntimeState,
+    registerToolSource,
+    setRuntimeActiveTool,
+    unregisterToolSource,
+} from '@/runtime/tools/toolRuntime.js';
 
 // System-level projection events (never domain mutations)
 const SYSTEM_EVENTS = new Set([
     EventTypes.WORKSPACE_SET_ACTIVE,
     EventTypes.WORKSPACE_SET_VIEWPORT,
     EventTypes.WORKSPACE_SET_CANVAS_SURFACE,
+    EventTypes.TOOLS_REGISTER,
+    EventTypes.TOOLS_UNREGISTER,
+    EventTypes.TOOL_SET_ACTIVE,
     EventTypes.SELECTION_SET,
     EventTypes.SELECTION_CLEAR,
     EventTypes.SELECTION_TOGGLE,
@@ -390,6 +399,42 @@ export function createEventDispatcher({
                     const nextState = {
                         ...current,
                         workspace: nextWorkspace,
+                    };
+                    return commit(nextState, { animate: false, event });
+                }
+
+                if (event?.type === EventTypes.TOOLS_REGISTER) {
+                    const current = __getRuntimeStateInternal() ?? initialRuntimeState;
+                    const nextState = {
+                        ...current,
+                        tools: registerToolSource(
+                            current.tools ?? initialToolRuntimeState,
+                            event?.payload,
+                        ),
+                    };
+                    return commit(nextState, { animate: false, event });
+                }
+
+                if (event?.type === EventTypes.TOOLS_UNREGISTER) {
+                    const current = __getRuntimeStateInternal() ?? initialRuntimeState;
+                    const nextState = {
+                        ...current,
+                        tools: unregisterToolSource(
+                            current.tools ?? initialToolRuntimeState,
+                            event?.payload,
+                        ),
+                    };
+                    return commit(nextState, { animate: false, event });
+                }
+
+                if (event?.type === EventTypes.TOOL_SET_ACTIVE) {
+                    const current = __getRuntimeStateInternal() ?? initialRuntimeState;
+                    const nextState = {
+                        ...current,
+                        tools: setRuntimeActiveTool(
+                            current.tools ?? initialToolRuntimeState,
+                            event?.payload,
+                        ),
                     };
                     return commit(nextState, { animate: false, event });
                 }

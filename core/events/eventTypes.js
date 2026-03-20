@@ -170,6 +170,9 @@ export const EventTypes = Object.freeze({
     WORKSPACE_SET_ACTIVE: 'workspace/set-active',
     WORKSPACE_SET_VIEWPORT: 'workspace/viewport/set',
     WORKSPACE_SET_CANVAS_SURFACE: 'workspace/canvas-surface/set',
+    TOOLS_REGISTER: 'tools/register',
+    TOOLS_UNREGISTER: 'tools/unregister',
+    TOOL_SET_ACTIVE: 'tools/set-active',
 
     // ─────────────────────────────
     // Scene (runtime projection state)

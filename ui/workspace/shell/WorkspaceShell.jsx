@@ -5,6 +5,7 @@ import { Controls } from '@/ui/Controls.jsx';
 
 import { isMediaWorkspaceId } from '@/platform/workspaces/mediaWorkspace.js';
 import { MediaWorkspaceShell } from '@/ui/workspace/media/MediaWorkspaceShell.jsx';
+import { EditorWorkspaceShell } from '@/ui/workspace/editor/EditorWorkspaceShell.jsx';
 import { ModeSwitcher } from '@/ui/workspace/shared/ModeSwitcher.jsx';
 import { WorkspaceSwitcher } from '@/ui/workspace/shared/WorkspaceSwitcher.jsx';
 import { useWorkspaceNavigation } from '@/ui/workspace/shared/useWorkspaceNavigation.js';
@@ -35,6 +36,16 @@ export function WorkspaceShell({ workspace, modeId = null, workspaceContext = nu
     if (isMediaWorkspaceId(workspace.id)) {
         return (
             <MediaWorkspaceShell
+                workspace={workspace}
+                modeId={activeMode}
+                workspaceContext={workspaceContext}
+            />
+        );
+    }
+
+    if (!isUX) {
+        return (
+            <EditorWorkspaceShell
                 workspace={workspace}
                 modeId={activeMode}
                 workspaceContext={workspaceContext}

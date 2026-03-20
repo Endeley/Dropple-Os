@@ -8,10 +8,12 @@ test('capability components resolve in ascending priority order', async () => {
 
     const result = resolveCapabilityComponents(['timeline'], {
         timeline: {
-            surfacePanels: [
-                { component: ZetaPanel, priority: 40 },
-                { component: AlphaPanel, priority: 5 },
-            ],
+            ui: {
+                surfacePanels: [
+                    { component: ZetaPanel, priority: 40 },
+                    { component: AlphaPanel, priority: 5 },
+                ],
+            },
         },
     });
     assert.deepEqual(result.surfacePanels, [AlphaPanel, ZetaPanel]);
@@ -23,12 +25,16 @@ test('capability components dedupe duplicate injected panels', async () => {
 
     const result = resolveCapabilityComponents(['graph', 'timeline'], {
         graph: {
-            surfacePanels: [{ component: SharedPanel, priority: 10 }],
-            overlays: [{ component: SharedOverlay, priority: 20 }],
+            ui: {
+                surfacePanels: [{ component: SharedPanel, priority: 10 }],
+                overlays: [{ component: SharedOverlay, priority: 20 }],
+            },
         },
         timeline: {
-            surfacePanels: [{ component: SharedPanel, priority: 5 }],
-            overlays: [{ component: SharedOverlay, priority: 5 }],
+            ui: {
+                surfacePanels: [{ component: SharedPanel, priority: 5 }],
+                overlays: [{ component: SharedOverlay, priority: 5 }],
+            },
         },
     });
 
@@ -44,10 +50,12 @@ test('capability components use component name as deterministic tie-breaker', as
 
     const result = resolveCapabilityComponents(['graph'], {
         graph: {
-            surfacePanels: [
-                { component: BetaPanel, priority: 20 },
-                { component: AlphaPanel, priority: 20 },
-            ],
+            ui: {
+                surfacePanels: [
+                    { component: BetaPanel, priority: 20 },
+                    { component: AlphaPanel, priority: 20 },
+                ],
+            },
         },
     });
 

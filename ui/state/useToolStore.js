@@ -1,6 +1,14 @@
-import { create } from 'zustand';
+import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import {
+    selectActiveTool,
+    selectVisibleTools,
+} from '@/runtime/selectors/toolSelectors.js';
 
-export const useToolStore = create((set) => ({
-    activeTool: 'select',
-    setActiveTool: (toolId) => set({ activeTool: toolId }),
-}));
+export function useToolStore(selector) {
+    const runtimeProjection = useRuntimeStore((state) => ({
+        activeTool: selectActiveTool(state),
+        visibleTools: selectVisibleTools(state),
+    }));
+
+    return typeof selector === 'function' ? selector(runtimeProjection) : runtimeProjection;
+}

@@ -2,9 +2,10 @@
 
 import { useMemo } from 'react';
 import { useWorkspaceProjection } from '@/runtime/projection';
-import { getWorkspaceCapabilities } from '@/ui/capabilities/workspaceCapabilities';
-import { getVisibleToolsForWorkspace } from '@/ui/tools/toolDefinitions';
 import { useToolStore } from '@/ui/state/useToolStore.js';
+import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
+import { setActiveTool } from '@/runtime/actions/toolActions.js';
+import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions.js';
 
 const TOOL_ICONS = {
   select: (
@@ -75,22 +76,13 @@ function ToolButton({ label, id, active, onSelect }) {
 export function UIUXToolRail() {
   const workspaceId = useWorkspaceProjection((state) => state.id) || 'uiux';
   const activeTool = useToolStore((s) => s.activeTool);
-  const setActiveTool = useToolStore((s) => s.setActiveTool);
-  const capabilitySet = useMemo(
-    () => getWorkspaceCapabilities(workspaceId),
-    [workspaceId]
-  );
-  const tools = useMemo(
-    () =>
-      getVisibleToolsForWorkspace({
-        workspaceId,
-        capabilitySet,
-      }),
-    [workspaceId, capabilitySet]
-  );
+  const tools = useToolStore((s) => s.visibleTools);
+  const dispatcher = useDispatcher();
   const grouped = useMemo(() => {
     const map = new Map();
-    tools.forEach((tool) => {
+    tools.forEach((toolId) => {
+      const tool = TOOL_DEFINITION_BY_ID[toolId];
+      if (!tool) return;
       if (!map.has(tool.group)) {
         map.set(tool.group, []);
       }
@@ -109,7 +101,7 @@ export function UIUXToolRail() {
               id={tool.id}
               label={tool.label}
               active={activeTool === tool.id}
-              onSelect={() => setActiveTool(tool.id)}
+              onSelect={() => dispatcher.dispatch(setActiveTool(tool.id))}
             />
           ))}
         </div>

@@ -20,6 +20,9 @@ import { PersistenceBridge } from '@/ui/bridges/PersistenceBridge.jsx';
 import { SessionGroupingBridge } from '@/ui/interactions/sessionGrouping.js';
 import { getWorkspaceAdapter, resolveWorkspaceId } from '@/ui/bridges/workspaceActivationFacade.js';
 import { resolveWorkspaceContext } from '@/platform/workspaces/resolveWorkspaceContext.js';
+import { useWorkspaceCapabilities } from '@/ui/workspace/useWorkspaceCapabilities.js';
+import { useCapabilityLifecycle } from '@/ui/workspace/useCapabilityLifecycle.js';
+import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
 
 const PANEL_LEFT = new Set(['SubmissionInfoPanel', 'LessonOutlinePanel']);
 const PANEL_RIGHT = new Set([
@@ -75,6 +78,7 @@ function resolveWorkspaceAdapter(modeId) {
 
 export function EditorWorkspaceShell({
     modeId,
+    workspaceContext: providedWorkspaceContext = null,
     educationRole = 'teacher',
     educationInitialLocked = true,
     educationReadOnly = false,
@@ -92,9 +96,14 @@ export function EditorWorkspaceShell({
 }) {
     const adapter = resolveWorkspaceAdapter(modeId);
     const workspaceContext = useMemo(
-        () => resolveWorkspaceContext({ mode: modeId }),
-        [modeId],
+        () => providedWorkspaceContext ?? resolveWorkspaceContext({ workspace: modeId }),
+        [modeId, providedWorkspaceContext],
     );
+    const dispatcher = useDispatcher();
+    const { capabilities } = useWorkspaceCapabilities({
+        workspace: workspaceContext.workspace,
+        mode: workspaceContext.mode,
+    });
     const templateGen = useTemplateGenerator();
 
     const events = useRuntimeStore((s) => s.events);
@@ -136,6 +145,13 @@ export function EditorWorkspaceShell({
         adapter?.ui?.editing !== false &&
         adapter?.id !== 'review' &&
         !(adapter?.id === 'education' && educationReadOnly);
+
+    useCapabilityLifecycle({
+        capabilities,
+        dispatcher,
+        workspace: workspaceContext.workspace,
+        mode: workspaceContext.mode,
+    });
 
     /* ---------------- layout & seed ---------------- */
 

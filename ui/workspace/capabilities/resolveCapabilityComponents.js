@@ -7,9 +7,10 @@ export function resolveCapabilityComponents(capabilities, registry) {
     for (const capability of capabilities) {
         const definition = registry[capability];
         if (!definition) continue;
+        const ui = definition.ui || {};
 
-        if (Array.isArray(definition.surfacePanels)) {
-            for (const entry of definition.surfacePanels) {
+        if (Array.isArray(ui.surfacePanels)) {
+            for (const entry of ui.surfacePanels) {
                 const component = entry?.component ?? null;
                 if (!component || seenSurfacePanels.has(component)) continue;
 
@@ -21,8 +22,8 @@ export function resolveCapabilityComponents(capabilities, registry) {
             }
         }
 
-        if (Array.isArray(definition.overlays)) {
-            for (const entry of definition.overlays) {
+        if (Array.isArray(ui.overlays)) {
+            for (const entry of ui.overlays) {
                 const component = entry?.component ?? null;
                 if (!component || seenOverlays.has(component)) continue;
 
