@@ -1,101 +1,151 @@
 'use client';
 
-import { useMemo } from 'react';
-import { EventTypes } from '@/core/events/eventTypes.js';
-import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import {
-    selectActiveGraph,
-    selectGraphEdges,
-    selectGraphNodes,
-} from '@/runtime/projection/selectors/graphSelectors.js';
+import { useMemo, useRef } from 'react';
 import { GraphEdgeView } from './GraphEdgeView.jsx';
 import { GraphNodeView } from './GraphNodeView.jsx';
-import { useGraphInteraction } from './useGraphInteraction.js';
+import { getVisibleInputs } from './graphNodePorts.js';
 
-export function GraphCanvas() {
-    const interaction = useGraphInteraction();
-    const dispatcher = useDispatcher();
-    const document = useRuntimeStore((state) => state.document);
-    const activeGraphId = useRuntimeStore(
-        (state) =>
-            state.animation?.activeGraphId ??
-            state.workspace?.activeGraphId ??
-            state.document?.activeGraphId ??
-            null,
-    );
-
-    const projectionState = useMemo(
-        () => ({
-            document,
-            animation: {
-                activeGraphId,
-            },
-        }),
-        [activeGraphId, document],
-    );
-
-    const activeGraph = useMemo(() => selectActiveGraph(projectionState), [projectionState]);
-    const nodes = useMemo(() => selectGraphNodes(projectionState), [projectionState]);
-    const edges = useMemo(() => selectGraphEdges(projectionState), [projectionState]);
+export function GraphCanvas({
+    activeGraph,
+    activeGraphId,
+    nodes,
+    edges,
+    interaction,
+    connectionInteraction,
+    canConnect,
+    onCommitNodeDrag,
+    onCommitConnection,
+    onDisconnectEdge,
+}) {
+    const canvasBodyRef = useRef(null);
     const { viewport } = interaction;
 
-    const graphEdges = useMemo(() => {
-        const nodeCenter = (node) => {
-            const dragPreview =
-                interaction.draggingNode?.id === node.id
-                    ? {
-                          x: interaction.draggingNode.previewX,
-                          y: interaction.draggingNode.previewY,
-                      }
-                    : null;
-            const x = dragPreview?.x ?? node.position.x;
-            const y = dragPreview?.y ?? node.position.y;
+    function toLocalGraphPoint(clientX, clientY) {
+        const rect = canvasBodyRef.current?.getBoundingClientRect();
+        if (!rect) {
+            return { x: clientX, y: clientY };
+        }
 
-            return {
-                x: x + 60,
-                y: y + 32,
-            };
+        return {
+            x: (clientX - rect.left - viewport.x) / viewport.zoom,
+            y: (clientY - rect.top - viewport.y) / viewport.zoom,
         };
+    }
 
-        const nodePositions = new Map(
-            nodes.map((node) => [node.id, nodeCenter(node)]),
-        );
+    function getRenderedNodePosition(node) {
+        const dragPreview =
+            interaction.draggingNode?.id === node.id
+                ? {
+                      x: interaction.draggingNode.previewX,
+                      y: interaction.draggingNode.previewY,
+                  }
+                : null;
+
+        return {
+            x: dragPreview?.x ?? node.position.x,
+            y: dragPreview?.y ?? node.position.y,
+        };
+    }
+
+    function getOutputPortPosition(node) {
+        const position = getRenderedNodePosition(node);
+        return {
+            x: position.x + 120,
+            y: position.y + 56,
+        };
+    }
+
+    function getInputPortPosition(node, inputName) {
+        const inputs = getVisibleInputs(node);
+        const index = Math.max(0, inputs.indexOf(inputName));
+        const position = getRenderedNodePosition(node);
+
+        return {
+            x: position.x + 17,
+            y: position.y + 61 + index * 20,
+        };
+    }
+
+    const graphEdges = useMemo(() => {
+        const nodePositions = new Map(nodes.map((node) => [node.id, node]));
 
         return edges.map((edge) => ({
             ...edge,
-            sourcePosition: nodePositions.get(edge.from) ?? { x: 0, y: 0 },
-            targetPosition: nodePositions.get(edge.to) ?? { x: 100, y: 100 },
+            sourcePosition: nodePositions.get(edge.from)
+                ? getOutputPortPosition(nodePositions.get(edge.from))
+                : { x: 0, y: 0 },
+            targetPosition: nodePositions.get(edge.to)
+                ? getInputPortPosition(nodePositions.get(edge.to), edge.input)
+                : { x: 100, y: 100 },
         }));
     }, [edges, interaction.draggingNode, nodes]);
 
-    function commitNodeDrag() {
-        const drag = interaction.draggingNode;
-        const graphId = activeGraph?.id ?? activeGraphId ?? null;
+    const snappedConnectionTarget = useMemo(() => {
+        const connection = connectionInteraction.connection;
+        if (!connection || !activeGraph) return null;
 
-        if (!drag || !graphId) return;
+        let best = null;
+        const snapRadius = 20;
+        const maxDistanceSq = snapRadius * snapRadius;
 
-        if (drag.previewX === drag.originX && drag.previewY === drag.originY) {
-            interaction.endNodeDrag();
-            return;
+        for (const node of nodes) {
+            for (const inputName of getVisibleInputs(node)) {
+                if (
+                    !canConnect?.({
+                        from: connection.fromNodeId,
+                        to: node.id,
+                        input: inputName,
+                    })
+                ) {
+                    continue;
+                }
+
+                const port = getInputPortPosition(node, inputName);
+                const dx = port.x - connection.pointerX;
+                const dy = port.y - connection.pointerY;
+                const distanceSq = dx * dx + dy * dy;
+
+                if (distanceSq > maxDistanceSq) continue;
+                if (!best || distanceSq < best.distanceSq) {
+                    best = {
+                        nodeId: node.id,
+                        input: inputName,
+                        position: port,
+                        distanceSq,
+                    };
+                }
+            }
         }
 
-        void dispatcher.dispatch({
-            type: EventTypes.GRAPH_NODE_UPDATE,
-            payload: {
-                graphId,
-                nodeId: drag.id,
-                patch: {
-                    position: {
-                        x: drag.previewX,
-                        y: drag.previewY,
-                    },
-                },
-            },
-        });
+        return best;
+    }, [activeGraph, canConnect, connectionInteraction.connection, interaction.draggingNode, nodes]);
 
-        interaction.endNodeDrag();
-    }
+    const previewEdge = useMemo(() => {
+        if (!connectionInteraction.connection) return null;
+
+        const sourceNode = nodes.find(
+            (node) => node.id === connectionInteraction.connection.fromNodeId,
+        );
+
+        if (!sourceNode) return null;
+
+        const source = getOutputPortPosition(sourceNode);
+        const target = snappedConnectionTarget?.position ?? {
+            x: connectionInteraction.connection.pointerX,
+            y: connectionInteraction.connection.pointerY,
+        };
+
+        return {
+            sourcePosition: {
+                x: source.x,
+                y: source.y,
+            },
+            targetPosition: {
+                x: target.x,
+                y: target.y,
+            },
+        };
+    }, [connectionInteraction.connection, interaction.draggingNode, nodes, snappedConnectionTarget]);
 
     function handleWheel(event) {
         event.preventDefault();
@@ -109,6 +159,12 @@ export function GraphCanvas() {
     }
 
     function handleMouseMove(event) {
+        if (connectionInteraction.connection) {
+            const point = toLocalGraphPoint(event.clientX, event.clientY);
+            connectionInteraction.updateConnection(point.x, point.y);
+            return;
+        }
+
         if (interaction.draggingNode) {
             interaction.updateNodeDrag(event.clientX, event.clientY);
             return;
@@ -120,8 +176,17 @@ export function GraphCanvas() {
     }
 
     function handleMouseUp() {
+        if (connectionInteraction.connection && snappedConnectionTarget) {
+            onCommitConnection?.({
+                from: connectionInteraction.connection.fromNodeId,
+                to: snappedConnectionTarget.nodeId,
+                input: snappedConnectionTarget.input,
+            });
+        }
+
+        connectionInteraction.endConnection();
         interaction.endPan();
-        commitNodeDrag();
+        onCommitNodeDrag?.();
     }
 
     return (
@@ -137,11 +202,6 @@ export function GraphCanvas() {
                 width: '100%',
                 height: '100%',
                 overflow: 'hidden',
-                borderRadius: 18,
-                border: '1px solid rgba(148, 163, 184, 0.2)',
-                background:
-                    'linear-gradient(180deg, rgba(15, 23, 42, 0.94) 0%, rgba(15, 23, 42, 0.84) 100%)',
-                backdropFilter: 'blur(12px)',
             }}>
             <div
                 style={{
@@ -156,7 +216,7 @@ export function GraphCanvas() {
                     Graph
                 </div>
                 <div style={{ fontSize: 12, color: '#94a3b8' }}>
-                    {activeGraph?.id ?? 'No active graph'}
+                    {activeGraph?.id ?? activeGraphId ?? 'No active graph'}
                 </div>
             </div>
 
@@ -168,11 +228,15 @@ export function GraphCanvas() {
                         height: 'calc(100% - 49px)',
                         color: '#94a3b8',
                         fontSize: 13,
+                        padding: 24,
+                        textAlign: 'center',
                     }}>
-                    No graph nodes to display.
+                    Use the node library to add graph nodes to the active animation graph.
                 </div>
             ) : (
-                <div style={{ position: 'relative', width: '100%', height: 'calc(100% - 49px)' }}>
+                <div
+                    ref={canvasBodyRef}
+                    style={{ position: 'relative', width: '100%', height: 'calc(100% - 49px)' }}>
                     <div
                         style={{
                             position: 'absolute',
@@ -190,16 +254,37 @@ export function GraphCanvas() {
                                 overflow: 'visible',
                             }}>
                             {graphEdges.map((edge) => (
-                                <GraphEdgeView key={edge.id} edge={edge} />
+                                <GraphEdgeView
+                                    key={edge.id}
+                                    edge={edge}
+                                    stroke='rgba(148, 163, 184, 0.6)'
+                                    onClick={(event) => {
+                                        event.stopPropagation();
+                                        onDisconnectEdge?.(edge);
+                                    }}
+                                />
                             ))}
+                            {previewEdge ? (
+                                <GraphEdgeView edge={previewEdge} stroke='#60a5fa' dashed />
+                            ) : null}
                         </svg>
                         <div style={{ position: 'absolute', inset: 0 }}>
                             {nodes.map((node) => (
                                 <GraphNodeView
                                     key={node.id}
                                     node={node}
-                                    interaction={interaction}
-                                    onCommitNodeDrag={commitNodeDrag}
+                                    interaction={{
+                                        ...interaction,
+                                        connection: connectionInteraction.connection,
+                                        startConnection: (nodeId, clientX, clientY) => {
+                                            const point = toLocalGraphPoint(clientX, clientY);
+                                            connectionInteraction.startConnection(nodeId, point.x, point.y);
+                                        },
+                                        endConnection: connectionInteraction.endConnection,
+                                        commitConnection: onCommitConnection,
+                                        canConnect,
+                                    }}
+                                    onCommitNodeDrag={onCommitNodeDrag}
                                 />
                             ))}
                         </div>

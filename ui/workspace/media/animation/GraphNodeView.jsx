@@ -1,8 +1,13 @@
 'use client';
 
+import { getConnectionValue } from './graphConnectionGuards.js';
+import { getVisibleInputs } from './graphNodePorts.js';
+
 export function GraphNodeView({ node, interaction, onCommitNodeDrag }) {
     const isSelected = interaction?.selectedNodeId === node.id;
     const isHovered = interaction?.hoverNodeId === node.id;
+    const visibleInputs = getVisibleInputs(node);
+    const activeConnection = interaction?.connection ?? null;
     const dragPreview =
         interaction?.draggingNode?.id === node.id
             ? {
@@ -24,6 +29,53 @@ export function GraphNodeView({ node, interaction, onCommitNodeDrag }) {
         onCommitNodeDrag?.();
     }
 
+    function handleOutputMouseDown(event) {
+        event.stopPropagation();
+        interaction?.startConnection?.(
+            node.id,
+            event.clientX,
+            event.clientY,
+        );
+    }
+
+    function handleInputMouseUp(event, inputName) {
+        event.stopPropagation();
+
+        const connection = activeConnection;
+        if (!connection) return;
+
+        interaction?.commitConnection?.({
+            from: connection.fromNodeId,
+            to: node.id,
+            input: inputName,
+        });
+        interaction?.endConnection?.();
+    }
+
+    function getInputState(inputName) {
+        const currentSource = getConnectionValue(node, inputName);
+        const valid =
+            activeConnection &&
+            interaction?.canConnect?.({
+                from: activeConnection.fromNodeId,
+                to: node.id,
+                input: inputName,
+            });
+
+        return {
+            currentSource,
+            valid: Boolean(valid),
+        };
+    }
+
+    const nodeHasValidTarget = visibleInputs.some((inputName) =>
+        interaction?.canConnect?.({
+            from: activeConnection?.fromNodeId,
+            to: node.id,
+            input: inputName,
+        }),
+    );
+
     return (
         <div
             onMouseDown={handleMouseDown}
@@ -36,7 +88,9 @@ export function GraphNodeView({ node, interaction, onCommitNodeDrag }) {
                 top: y,
                 minWidth: 120,
                 borderRadius: 12,
-                border: isSelected
+                border: activeConnection && nodeHasValidTarget
+                    ? '2px solid #22c55e'
+                    : isSelected
                     ? '2px solid #60a5fa'
                     : isHovered
                       ? '1px solid rgba(96, 165, 250, 0.72)'
@@ -47,6 +101,7 @@ export function GraphNodeView({ node, interaction, onCommitNodeDrag }) {
                 overflow: 'hidden',
                 cursor: interaction?.draggingNode?.id === node.id ? 'grabbing' : 'grab',
                 transform: isHovered && !isSelected ? 'translateY(-1px)' : 'none',
+                opacity: activeConnection && !nodeHasValidTarget && activeConnection.fromNodeId !== node.id ? 0.4 : 1,
             }}>
             <div
                 style={{
@@ -67,6 +122,67 @@ export function GraphNodeView({ node, interaction, onCommitNodeDrag }) {
                     fontWeight: 600,
                 }}>
                 {node.id}
+            </div>
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    padding: '0 10px 10px',
+                    gap: 12,
+                }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 6,
+                    }}>
+                    {visibleInputs.map((inputName) => (
+                        (() => {
+                            const { currentSource, valid } = getInputState(inputName);
+
+                            return (
+                                <button
+                                    key={inputName}
+                                    type='button'
+                                    onMouseUp={(event) => handleInputMouseUp(event, inputName)}
+                                    title={inputName}
+                                    style={{
+                                        width: 14,
+                                        height: 14,
+                                        padding: 0,
+                                        border: valid
+                                            ? '2px solid #22c55e'
+                                            : currentSource
+                                              ? '1px solid #22c55e'
+                                              : '1px solid rgba(148, 163, 184, 0.3)',
+                                        borderRadius: 999,
+                                        background: currentSource
+                                            ? '#22c55e'
+                                            : valid
+                                              ? '#60a5fa'
+                                              : 'rgba(148, 163, 184, 0.5)',
+                                        cursor: 'pointer',
+                                    }}
+                                />
+                            );
+                        })()
+                    ))}
+                </div>
+                <button
+                    type='button'
+                    onMouseDown={handleOutputMouseDown}
+                    title='output'
+                    style={{
+                        width: 16,
+                        height: 16,
+                        padding: 0,
+                        border: 'none',
+                        borderRadius: 999,
+                        background: '#60a5fa',
+                        cursor: 'crosshair',
+                    }}
+                />
             </div>
         </div>
     );

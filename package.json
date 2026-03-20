@@ -66,8 +66,8 @@
     "lucide-react": "^0.562.0",
     "nanoid": "^5.1.6",
     "next": "^15.5.9",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "uuid": "^11.1.0",
     "zustand": "^5.0.9"
   },
@@ -80,6 +80,7 @@
     "eslint": "^9.39.2",
     "eslint-config-next": "15.5.0",
     "postcss": "^8.4.49",
-    "tailwindcss": "^4.1.18"
+    "tailwindcss": "^4.1.18",
+    "type-check": "^0.4.0"
   }
 }

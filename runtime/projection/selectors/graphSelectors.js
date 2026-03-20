@@ -111,6 +111,7 @@ export function selectGraphNodes(state) {
 
     return nodes
         .map((node, index) => ({
+            ...node,
             id: node?.id ?? `graph-node-${index}`,
             type: node?.type ?? 'node',
             inputs: normalizeNodeInputs(node),
@@ -149,5 +150,6 @@ export function selectGraphEdges(state) {
 }
 
 export function selectGraphErrors(state) {
-    return state?.animation?.graphErrors ?? state?.runtime?.animation?.graphErrors ?? [];
+    return state?.animation?.graphErrors ?? state?.runtime?.animation?.graphErrors ?? EMPTY_GRAPH_ERRORS;
 }
+const EMPTY_GRAPH_ERRORS = [];

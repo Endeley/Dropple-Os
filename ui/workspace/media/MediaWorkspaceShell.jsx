@@ -14,7 +14,7 @@ import { MediaTransportBar } from './shared/MediaTransportBar.jsx';
 import { ModeSwitcher } from '@/ui/workspace/shared/ModeSwitcher.jsx';
 import { WorkspaceSwitcher } from '@/ui/workspace/shared/WorkspaceSwitcher.jsx';
 import { useWorkspaceNavigation } from '@/ui/workspace/shared/useWorkspaceNavigation.js';
-import { GraphCanvas } from './animation/GraphCanvas.jsx';
+import { GraphEditorPanel } from './animation/GraphEditorPanel.jsx';
 
 export function MediaWorkspaceShell(props) {
     const requestedMode = props.modeId ?? props.workspace?.id ?? MEDIA_WORKSPACE_ID;
@@ -66,16 +66,15 @@ export function MediaWorkspaceShell(props) {
                 style={{
                     position: 'absolute',
                     top: 72,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
+                    left: 288,
+                    right: 312,
                     zIndex: 1040,
-                    width: 520,
-                    height: 280,
+                    height: 360,
                     pointerEvents: 'none',
                 }}>
                 {activeMode === 'animation' ? (
                     <div style={{ width: '100%', height: '100%', pointerEvents: 'auto' }}>
-                        <GraphCanvas />
+                        <GraphEditorPanel />
                     </div>
                 ) : null}
             </div>
