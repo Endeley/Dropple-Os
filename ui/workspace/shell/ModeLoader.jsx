@@ -4,20 +4,23 @@ import { useEffect } from "react";
 import {
   getWorkspaceDefinition,
   getWorkspaceRegistry,
-  resolveWorkspaceId,
+  resolveWorkspaceContext,
 } from "@/platform/workspaces";
 import { WorkspaceRoot } from "@/ui/workspace/root/WorkspaceRoot.jsx";
 
-export function ModeLoader({ mode }) {
-  const key = resolveWorkspaceId((mode || "").toLowerCase());
-  const workspace = getWorkspaceDefinition(key);
+export function ModeLoader({ mode, queryMode = null }) {
+  const context = resolveWorkspaceContext({
+    workspace: (mode || "").toLowerCase(),
+    mode: (queryMode || "").toLowerCase(),
+  });
+  const workspace = getWorkspaceDefinition(context.definitionId);
   const workspaceRegistry = getWorkspaceRegistry();
 
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {
-      console.log("[ModeLoader] mode:", mode, "key:", key, "workspace:", workspace?.id);
+      console.log("[ModeLoader] mode:", mode, "queryMode:", queryMode, "context:", context, "workspace:", workspace?.id);
     }
-  }, [workspace, key, mode]);
+  }, [workspace, context, mode, queryMode]);
 
   if (!workspace) {
     const available = Object.keys(workspaceRegistry);
@@ -31,10 +34,11 @@ export function ModeLoader({ mode }) {
 
   return (
     <WorkspaceRoot
-      modeId={workspace.id}
-      workspaceId={workspace.id}
+      modeId={context.mode ?? workspace.id}
+      workspaceId={context.definitionId ?? workspace.id}
       profile={workspace.profile ?? "design"}
       workspace={workspace}
+      workspaceContext={context}
     />
   );
 }

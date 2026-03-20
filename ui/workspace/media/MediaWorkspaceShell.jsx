@@ -5,18 +5,24 @@ import {
     MEDIA_WORKSPACE_ID,
     resolveMediaWorkspaceMode,
 } from '@/platform/workspaces';
-import { MediaModeSwitcher } from './MediaModeSwitcher.jsx';
 import { getMediaModeConfig } from './mediaModes.js';
 import { RigControllerOverlay } from '@/ui/rigging/RigControllerOverlay.jsx';
 import { MediaBrowserPanel } from './shared/MediaBrowserPanel.jsx';
 import { MediaInspectorPanel } from './shared/MediaInspectorPanel.jsx';
 import { MediaTimelinePanel } from './shared/MediaTimelinePanel.jsx';
 import { MediaTransportBar } from './shared/MediaTransportBar.jsx';
+import { ModeSwitcher } from '@/ui/workspace/shared/ModeSwitcher.jsx';
+import { WorkspaceSwitcher } from '@/ui/workspace/shared/WorkspaceSwitcher.jsx';
+import { useWorkspaceNavigation } from '@/ui/workspace/shared/useWorkspaceNavigation.js';
+import { GraphCanvas } from './animation/GraphCanvas.jsx';
 
 export function MediaWorkspaceShell(props) {
     const requestedMode = props.modeId ?? props.workspace?.id ?? MEDIA_WORKSPACE_ID;
     const activeMode = resolveMediaWorkspaceMode(requestedMode);
     const modeConfig = getMediaModeConfig(activeMode);
+    const workspaceContext = props.workspaceContext ?? null;
+    const activeWorkspace = workspaceContext?.workspace ?? MEDIA_WORKSPACE_ID;
+    const { goToMode, goToWorkspace } = useWorkspaceNavigation();
 
     return (
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -44,9 +50,34 @@ export function MediaWorkspaceShell(props) {
                         textTransform: 'uppercase',
                         backdropFilter: 'blur(10px)',
                     }}>
-                    Media Workspace
+                    {`${workspaceContext?.label ?? 'Media'} Workspace`}
                 </div>
-                <MediaModeSwitcher activeMode={activeMode} />
+                <WorkspaceSwitcher
+                    activeWorkspace={activeWorkspace}
+                    onChange={goToWorkspace}
+                />
+                <ModeSwitcher
+                    workspace={activeWorkspace}
+                    activeMode={activeMode}
+                    onChange={(nextMode) => goToMode(activeWorkspace, nextMode)}
+                />
+            </div>
+            <div
+                style={{
+                    position: 'absolute',
+                    top: 72,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 1040,
+                    width: 520,
+                    height: 280,
+                    pointerEvents: 'none',
+                }}>
+                {activeMode === 'animation' ? (
+                    <div style={{ width: '100%', height: '100%', pointerEvents: 'auto' }}>
+                        <GraphCanvas />
+                    </div>
+                ) : null}
             </div>
             <div
                 style={{

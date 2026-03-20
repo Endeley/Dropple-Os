@@ -1,12 +1,13 @@
 'use client';
 
-import { useRouter, usePathname } from 'next/navigation';
 import CanvasRoot from '@/ui/canvas/CanvasRoot.jsx';
 import { Controls } from '@/ui/Controls.jsx';
 
-import { listWorkspaceDefinitions } from '@/platform/workspaces';
 import { isMediaWorkspaceId } from '@/platform/workspaces/mediaWorkspace.js';
 import { MediaWorkspaceShell } from '@/ui/workspace/media/MediaWorkspaceShell.jsx';
+import { ModeSwitcher } from '@/ui/workspace/shared/ModeSwitcher.jsx';
+import { WorkspaceSwitcher } from '@/ui/workspace/shared/WorkspaceSwitcher.jsx';
+import { useWorkspaceNavigation } from '@/ui/workspace/shared/useWorkspaceNavigation.js';
 
 // 🔹 UX Workspace (read-only UI)
 import { UXWorkspaceShell } from '@/ui/workspace/ux/UXWorkspaceShell';
@@ -23,16 +24,22 @@ import { UIUXAuthoringShell } from '@/ui/workspace/ux/UIUXAuthoringShell.jsx';
  * UX Workspace is mounted here when:
  *   workspace.profile === 'ux-validation'
  */
-export function WorkspaceShell({ workspace }) {
-    const router = useRouter();
-    const pathname = usePathname();
-
+export function WorkspaceShell({ workspace, modeId = null, workspaceContext = null }) {
     const capabilities = workspace.capabilities || {};
     const isUX =
         workspace.profile === 'ux-validation' || workspace.profile === 'uiux-authoring';
+    const { goToMode, goToWorkspace } = useWorkspaceNavigation();
+    const activeWorkspace = workspaceContext?.workspace ?? 'design';
+    const activeMode = workspaceContext?.mode ?? modeId ?? workspace.id;
 
     if (isMediaWorkspaceId(workspace.id)) {
-        return <MediaWorkspaceShell workspace={workspace} modeId={workspace.id} />;
+        return (
+            <MediaWorkspaceShell
+                workspace={workspace}
+                modeId={activeMode}
+                workspaceContext={workspaceContext}
+            />
+        );
     }
 
     return (
@@ -49,25 +56,18 @@ export function WorkspaceShell({ workspace }) {
                     background: '#f8fafc',
                 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <strong style={{ fontSize: 14 }}>{workspace.label}</strong>
-
-                    {/* Mode Switcher */}
-                    <select
-                        value={workspace.id}
-                        onChange={(e) => router.push(`/workspace/${e.target.value}`)}
-                        style={{
-                            fontSize: 12,
-                            padding: '4px 6px',
-                            borderRadius: 4,
-                            border: '1px solid #d1d5db',
-                            background: '#fff',
-                        }}>
-                        {listWorkspaceDefinitions().map(([id, ws]) => (
-                            <option key={id} value={id}>
-                                {ws.label}
-                            </option>
-                        ))}
-                    </select>
+                    <strong style={{ fontSize: 14 }}>
+                        {workspaceContext?.label ?? workspace.label}
+                    </strong>
+                    <WorkspaceSwitcher
+                        activeWorkspace={activeWorkspace}
+                        onChange={goToWorkspace}
+                    />
+                    <ModeSwitcher
+                        workspace={activeWorkspace}
+                        activeMode={activeMode}
+                        onChange={(nextMode) => goToMode(activeWorkspace, nextMode)}
+                    />
                 </div>
 
                 {/* Optional workspace nav (if defined) */}

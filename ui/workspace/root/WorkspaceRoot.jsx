@@ -23,6 +23,7 @@ export function WorkspaceRoot({
     modeId = null,
     uxEnforcementTier = 2,
     workspace = null,
+    workspaceContext = null,
     children = null,
 }) {
     const isUXMode = profile === 'ux-validation';
@@ -68,7 +69,11 @@ export function WorkspaceRoot({
                             <WorkspaceSessionsRoot modeId={modeId ?? workspace?.id ?? null} />
                             <WorkspaceUIRoot />
                             {workspace ? (
-                                <WorkspaceShell workspace={workspace} />
+                                <WorkspaceShell
+                                    workspace={workspace}
+                                    modeId={modeId}
+                                    workspaceContext={workspaceContext}
+                                />
                             ) : (
                                 <WorkspaceCanvasRoot />
                             )}

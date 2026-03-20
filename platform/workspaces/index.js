@@ -5,6 +5,9 @@ export {
     listWorkspaceDefinitions,
     resolveWorkspaceId,
 } from './workspaceRegistry.js';
+export { CANONICAL_WORKSPACES } from './canonicalRegistry.js';
+export { LEGACY_WORKSPACE_MAP } from './legacyMapping.js';
+export { resolveWorkspaceContext } from './resolveWorkspaceContext.js';
 
 export {
     getResolvedWorkspaceDefinition,

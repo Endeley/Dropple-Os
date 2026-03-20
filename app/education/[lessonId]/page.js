@@ -2,6 +2,7 @@
 
 import { mockLessons } from '@/marketplace/mockLessons';
 import { WorkspaceShell } from '@/ui/workspace/shared/WorkspaceShell';
+import { WorkspaceRoot } from '@/ui/workspace/root/WorkspaceRoot.jsx';
 import { normalizeEvents, snapshotToEvents } from '@/education/lessonEvents';
 
 export default function LessonPlaybackPage({ params }) {
@@ -17,14 +18,16 @@ export default function LessonPlaybackPage({ params }) {
   const events = [...snapshotEvents, ...timelineEvents, ...educationEvents];
 
   return (
-    <WorkspaceShell
-      modeId="education"
-      educationRole="teacher"
-      educationInitialLocked={true}
-      educationReadOnly={true}
-      initialEvents={events}
-      initialCursorIndex={-1}
-      disableSeed={true}
-    />
+    <WorkspaceRoot modeId="education" workspaceId="education" profile="design">
+      <WorkspaceShell
+        modeId="education"
+        educationRole="teacher"
+        educationInitialLocked={true}
+        educationReadOnly={true}
+        initialEvents={events}
+        initialCursorIndex={-1}
+        disableSeed={true}
+      />
+    </WorkspaceRoot>
   );
 }

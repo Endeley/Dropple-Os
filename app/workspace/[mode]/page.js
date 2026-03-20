@@ -1,6 +1,7 @@
 import { ModeLoader } from '../../../ui/workspace/shell/ModeLoader';
 
-export default async function WorkspacePage({ params }) {
+export default async function WorkspacePage({ params, searchParams }) {
     const { mode } = await params;
-    return <ModeLoader mode={mode} />;
+    const resolvedSearchParams = (await searchParams) ?? {};
+    return <ModeLoader mode={mode} queryMode={resolvedSearchParams.mode ?? null} />;
 }
