@@ -1,3 +1,5 @@
+import { initialDragState } from '@/runtime/interaction/dragRuntime.js';
+
 export const initialInteractionState = () => ({
   activeInteraction: null,
   phase: 'idle',
@@ -5,6 +7,7 @@ export const initialInteractionState = () => ({
   pointerCurrent: null,
   nodeIds: [],
   graph: null,
+  drag: initialDragState,
 });
 
 export function setActiveInteraction(runtime, type, payload = {}) {

@@ -25,12 +25,12 @@ test('input engine resolves active tool from dispatcher state and routes to hand
     setRuntimeDispatcher(dispatcher);
     registerToolHandler('select', (input, context) => {
         calls.push({ input, context });
-        return 'handled';
+        return { handled: true };
     });
 
     const result = handleInputEvent({ type: 'pointerdown' });
 
-    assert.equal(result, 'handled');
+    assert.equal(result.handled, true);
     assert.equal(calls.length, 1);
     assert.equal(calls[0].context.tool, 'select');
     assert.equal(calls[0].context.dispatcher, dispatcher);
@@ -58,12 +58,18 @@ test('input engine falls back when no registered handler exists', () => {
         { type: 'pointerdown' },
         {
             fallbackHandler(input, context) {
-                return `${context.tool}:${input.type}`;
+                return {
+                    handled: true,
+                    tool: context.tool,
+                    inputType: input.type,
+                };
             },
         },
     );
 
-    assert.equal(result, 'select:pointerdown');
+    assert.equal(result.handled, true);
+    assert.equal(result.tool, 'select');
+    assert.equal(result.inputType, 'pointerdown');
 
     setRuntimeDispatcher(null);
     __resetToolHandlers();
@@ -89,12 +95,18 @@ test('input engine falls back when a registered handler declines the event', () 
         { type: 'pointermove' },
         {
             fallbackHandler(input, context) {
-                return `${context.tool}:${input.type}`;
+                return {
+                    handled: true,
+                    tool: context.tool,
+                    inputType: input.type,
+                };
             },
         },
     );
 
-    assert.equal(result, 'select:pointermove');
+    assert.equal(result.handled, true);
+    assert.equal(result.tool, 'select');
+    assert.equal(result.inputType, 'pointermove');
 
     setRuntimeDispatcher(null);
     __resetToolHandlers();
@@ -114,7 +126,10 @@ test('keyboard engine normalizes key metadata before routing', () => {
     };
 
     setRuntimeDispatcher(dispatcher);
-    registerToolHandler('select', (input) => input);
+    registerToolHandler('select', (input) => ({
+        handled: true,
+        ...input,
+    }));
 
     const result = handleKeyboardEvent({
         key: 'Delete',

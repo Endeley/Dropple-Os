@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext';
 import { canvasBus } from '../eventBus/canvasBus.js';
+import { handleKeyboardEvent } from '@/ui/bridges/keyboardEngineFacade.js';
 
 export function useKeyboardNudge({ enabled = true, emit, getState }) {
   const { selectedIds } = useSelection();
@@ -12,74 +13,85 @@ export function useKeyboardNudge({ enabled = true, emit, getState }) {
     if (!enabled) return;
 
     function onKeyDown(e) {
-      const tag = e.target?.tagName;
-      if (
-        tag === 'INPUT' ||
-        tag === 'TEXTAREA' ||
-        e.target?.isContentEditable
-      ) {
-        return;
-      }
+      handleKeyboardEvent(e, {
+        fallbackHandler(input) {
+          const tag = input.event?.target?.tagName;
+          if (
+            tag === 'INPUT' ||
+            tag === 'TEXTAREA' ||
+            input.event?.target?.isContentEditable
+          ) {
+            return null;
+          }
 
-      if (!selectedIds || selectedIds.size === 0) return;
+          if (!selectedIds || selectedIds.size === 0) return null;
 
-      const base = e.shiftKey && e.altKey ? 5 : e.shiftKey ? 10 : e.altKey ? 0.5 : 1;
+          const base = input.modifiers.shift && input.modifiers.alt ? 5 : input.modifiers.shift ? 10 : input.modifiers.alt ? 0.5 : 1;
 
-      let dx = 0;
-      let dy = 0;
+          let dx = 0;
+          let dy = 0;
 
-      switch (e.key) {
-        case 'ArrowLeft':
-          dx = -base;
-          break;
-        case 'ArrowRight':
-          dx = base;
-          break;
-        case 'ArrowUp':
-          dy = -base;
-          break;
-        case 'ArrowDown':
-          dy = base;
-          break;
-        default:
-          return;
-      }
+          switch (input.key) {
+            case 'ArrowLeft':
+              dx = -base;
+              break;
+            case 'ArrowRight':
+              dx = base;
+              break;
+            case 'ArrowUp':
+              dy = -base;
+              break;
+            case 'ArrowDown':
+              dy = base;
+              break;
+            default:
+              return null;
+          }
 
-      e.preventDefault();
+          e.preventDefault();
 
-      if (!groupActiveRef.current) {
-        groupActiveRef.current = true;
-        canvasBus.emit('intent.edit.begin', { source: 'keyboard.nudge' });
-      }
+          if (!groupActiveRef.current) {
+            groupActiveRef.current = true;
+            canvasBus.emit('intent.edit.begin', { source: 'keyboard.nudge' });
+          }
 
-      const state = getState?.();
-      const nodes = state?.nodes || {};
+          const state = getState?.();
+          const nodes = state?.nodes || {};
 
-      selectedIds.forEach((id) => {
-        const node = nodes[id];
-        if (!node) return;
+          selectedIds.forEach((id) => {
+            const node = nodes[id];
+            if (!node) return;
 
-        const layout = node.layout || {};
+            const layout = node.layout || {};
 
-        emit?.({
-          type: 'node.layout.move',
-          payload: {
-            nodeId: id,
-            x: (layout.x || 0) + dx,
-            y: (layout.y || 0) + dy,
-          },
-        });
+            emit?.({
+              type: 'node.layout.move',
+              payload: {
+                nodeId: id,
+                x: (layout.x || 0) + dx,
+                y: (layout.y || 0) + dy,
+              },
+            });
+          });
+
+          return { handled: true };
+        },
       });
     }
 
     function onKeyUp(e) {
-      if (!e.key.startsWith('Arrow')) return;
-      if (!groupActiveRef.current) return;
-      groupActiveRef.current = false;
-      canvasBus.emit('intent.edit.commit', {
-        type: 'move',
-        ids: Array.from(selectedIds || []),
-        source: 'keyboard.nudge',
+      handleKeyboardEvent(e, {
+        fallbackHandler(input) {
+          if (!input.key.startsWith('Arrow')) return null;
+          if (!groupActiveRef.current) return null;
+          groupActiveRef.current = false;
+          canvasBus.emit('intent.edit.commit', {
+            type: 'move',
+            ids: Array.from(selectedIds || []),
+            source: 'keyboard.nudge',
+          });
+          return { handled: true };
+        },
       });
     }
 

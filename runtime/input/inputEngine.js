@@ -3,6 +3,10 @@ import { selectActiveTool } from '@/runtime/selectors/toolSelectors.js';
 import { shouldHandleInput } from './inputPolicy.js';
 import { getToolHandler } from '@/runtime/tools/toolController.js';
 
+export function isHandledResult(result) {
+    return Boolean(result && typeof result === 'object' && result.handled === true);
+}
+
 export function handleInputEvent(input, options = {}) {
     const dispatcher = options.dispatcher ?? getRuntimeDispatcher();
     const state = options.state ?? dispatcher?.getState?.();
@@ -23,14 +27,34 @@ export function handleInputEvent(input, options = {}) {
             ? options.resolveToolHandler(tool)
             : null) ?? getToolHandler(tool);
 
+    let result = null;
+
     if (typeof handler === 'function') {
-        const result = handler(input, context);
-        if (result !== null && result !== undefined) {
+        result = handler(input, context);
+        if (isHandledResult(result)) {
+            if (process.env.NODE_ENV === 'development') {
+                console.debug('[InputEngine]', {
+                    input,
+                    tool,
+                    handled: true,
+                });
+            }
             return result;
         }
     }
 
-    return typeof options.fallbackHandler === 'function'
-        ? options.fallbackHandler(input, context)
-        : null;
+    const fallbackResult =
+        typeof options.fallbackHandler === 'function'
+            ? options.fallbackHandler(input, context)
+            : null;
+
+    if (process.env.NODE_ENV === 'development') {
+        console.debug('[InputEngine]', {
+            input,
+            tool,
+            handled: isHandledResult(fallbackResult),
+        });
+    }
+
+    return isHandledResult(fallbackResult) ? fallbackResult : null;
 }

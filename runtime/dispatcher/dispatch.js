@@ -67,6 +67,12 @@ import {
     setRuntimeActiveTool,
     unregisterToolSource,
 } from '@/runtime/tools/toolRuntime.js';
+import {
+    endDrag,
+    initialDragState,
+    startDrag,
+    updateDrag,
+} from '@/runtime/interaction/dragRuntime.js';
 
 // System-level projection events (never domain mutations)
 const SYSTEM_EVENTS = new Set([
@@ -76,6 +82,9 @@ const SYSTEM_EVENTS = new Set([
     EventTypes.TOOLS_REGISTER,
     EventTypes.TOOLS_UNREGISTER,
     EventTypes.TOOL_SET_ACTIVE,
+    EventTypes.DRAG_START,
+    EventTypes.DRAG_UPDATE,
+    EventTypes.DRAG_END,
     EventTypes.SELECTION_SET,
     EventTypes.SELECTION_CLEAR,
     EventTypes.SELECTION_TOGGLE,
@@ -435,6 +444,48 @@ export function createEventDispatcher({
                             current.tools ?? initialToolRuntimeState,
                             event?.payload,
                         ),
+                    };
+                    return commit(nextState, { animate: false, event });
+                }
+
+                if (event?.type === EventTypes.DRAG_START) {
+                    const current = __getRuntimeStateInternal() ?? initialRuntimeState;
+                    const nextState = {
+                        ...current,
+                        interaction: {
+                            ...(current.interaction ?? {}),
+                            drag: startDrag(
+                                current.interaction?.drag ?? initialDragState,
+                                event?.payload,
+                            ),
+                        },
+                    };
+                    return commit(nextState, { animate: false, event });
+                }
+
+                if (event?.type === EventTypes.DRAG_UPDATE) {
+                    const current = __getRuntimeStateInternal() ?? initialRuntimeState;
+                    const nextState = {
+                        ...current,
+                        interaction: {
+                            ...(current.interaction ?? {}),
+                            drag: updateDrag(
+                                current.interaction?.drag ?? initialDragState,
+                                event?.payload?.pointer,
+                            ),
+                        },
+                    };
+                    return commit(nextState, { animate: false, event });
+                }
+
+                if (event?.type === EventTypes.DRAG_END) {
+                    const current = __getRuntimeStateInternal() ?? initialRuntimeState;
+                    const nextState = {
+                        ...current,
+                        interaction: {
+                            ...(current.interaction ?? {}),
+                            drag: endDrag(current.interaction?.drag ?? initialDragState),
+                        },
                     };
                     return commit(nextState, { animate: false, event });
                 }

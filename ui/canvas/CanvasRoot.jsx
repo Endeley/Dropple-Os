@@ -28,6 +28,7 @@ import { getZoomTier } from '@/runtime/canvas/zoomTiers.js';
 import { CanvasProvider } from '@/ui/canvas/CanvasContext.jsx';
 import { canvasBus } from '../eventBus/canvasBus.js';
 import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
+import { EventTypes } from '@/core/events/eventTypes.js';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
 import { useToolStore } from '@/ui/state/useToolStore.js';
 import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions';
@@ -202,7 +203,7 @@ export default function CanvasRoot({ workspaceId }) {
 
                 const handled = handleInputEvent(
                     {
-                        type: 'createcommit',
+                        type: EventTypes.INPUT_CREATE_COMMIT,
                         event: e,
                         worldPoint: start,
                         bounds,
@@ -216,7 +217,7 @@ export default function CanvasRoot({ workspaceId }) {
                                 bounds,
                                 parentId: rootId,
                             });
-                            return 'handled';
+                            return { handled: true };
                         },
                     },
                 );

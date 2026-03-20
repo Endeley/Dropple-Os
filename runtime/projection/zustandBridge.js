@@ -75,6 +75,7 @@ export function syncRuntimeToZustand(nextState) {
                     registeredTools: {},
                     visibleTools: [],
                 },
+                interaction: null,
             },
             false
         );
@@ -148,6 +149,7 @@ export function syncRuntimeToZustand(nextState) {
             registeredTools: nextState.tools?.registeredTools ?? {},
             visibleTools: selectVisibleTools(nextState),
         },
+        interaction: nextState.interaction ?? null,
     };
 
     if (prev.sceneGraph !== nextState.sceneGraph) {

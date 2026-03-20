@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { runToolCommand } from '@/ui/interactions/toolController';
+import { handleKeyboardEvent } from '@/ui/bridges/keyboardEngineFacade.js';
 
 export function useGroupShortcuts({
   enabled = true,
@@ -14,38 +15,43 @@ export function useGroupShortcuts({
     if (!enabled) return;
 
     function onKeyDown(e) {
-      const tag = e.target?.tagName;
-      if (
-        tag === 'INPUT' ||
-        tag === 'TEXTAREA' ||
-        e.target?.isContentEditable
-      ) {
-        return;
-      }
+      handleKeyboardEvent(e, {
+        fallbackHandler(input) {
+          const tag = input.event?.target?.tagName;
+          if (
+            tag === 'INPUT' ||
+            tag === 'TEXTAREA' ||
+            input.event?.target?.isContentEditable
+          ) {
+            return null;
+          }
 
-      const isMac = navigator.platform.includes('Mac');
-      const mod = isMac ? e.metaKey : e.ctrlKey;
-      if (!mod || e.key.toLowerCase() !== 'g') return;
+          const isMac = navigator.platform.includes('Mac');
+          const mod = isMac ? input.modifiers.meta : input.modifiers.ctrl;
+          if (!mod || input.key.toLowerCase() !== 'g') return null;
 
-      const state = getState?.();
-      e.preventDefault();
-      runToolCommand({
-        commandId: e.shiftKey ? 'ungroup' : 'group',
-        getRuntimeState: () => ({
-          workspaceId,
-          document: {
-            sceneGraph: {
+          const state = getState?.();
+          e.preventDefault();
+          runToolCommand({
+            commandId: input.modifiers.shift ? 'ungroup' : 'group',
+            getRuntimeState: () => ({
+              workspaceId,
+              document: {
+                sceneGraph: {
+                  nodes: state?.nodes || {},
+                  rootIds: state?.rootIds || [],
+                },
+              },
               nodes: state?.nodes || {},
               rootIds: state?.rootIds || [],
-            },
-          },
-          nodes: state?.nodes || {},
-          rootIds: state?.rootIds || [],
-          selection: {
-            ids: selectedIds ? Array.from(selectedIds) : [],
-          },
-        }),
-        dispatch: emit,
+              selection: {
+                ids: selectedIds ? Array.from(selectedIds) : [],
+              },
+            }),
+            dispatch: emit,
+          });
+          return { handled: true };
+        },
       });
     }
 

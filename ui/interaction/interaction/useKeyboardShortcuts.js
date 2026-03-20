@@ -42,25 +42,25 @@ export function useKeyboardShortcuts({
               selectedIds,
             });
             clipboard.copy(snapshot);
-            return 'handled';
+            return { handled: true };
           }
 
           if (mod && input.key === 'z' && !input.modifiers.shift) {
             e.preventDefault();
             undo();
-            return 'handled';
+            return { handled: true };
           }
 
           if (mod && input.key === 'z' && input.modifiers.shift) {
             e.preventDefault();
             redo();
-            return 'handled';
+            return { handled: true };
           }
 
           if (mod && input.key.toLowerCase() === 'd') {
             e.preventDefault();
             duplicateSelection();
-            return 'handled';
+            return { handled: true };
           }
 
           if (mod && input.key.toLowerCase() === 'v') {
@@ -70,13 +70,13 @@ export function useKeyboardShortcuts({
               emit,
             });
             setSelection(new Set(newIds));
-            return 'handled';
+            return { handled: true };
           }
 
           if (input.key === 'Delete' || input.key === 'Backspace') {
             e.preventDefault();
             deleteSelection();
-            return 'handled';
+            return { handled: true };
           }
 
           return null;

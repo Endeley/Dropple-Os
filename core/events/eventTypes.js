@@ -173,6 +173,10 @@ export const EventTypes = Object.freeze({
     TOOLS_REGISTER: 'tools/register',
     TOOLS_UNREGISTER: 'tools/unregister',
     TOOL_SET_ACTIVE: 'tools/set-active',
+    INPUT_CREATE_COMMIT: 'input/create-commit',
+    DRAG_START: 'interaction/drag/start',
+    DRAG_UPDATE: 'interaction/drag/update',
+    DRAG_END: 'interaction/drag/end',
 
     // ─────────────────────────────
     // Scene (runtime projection state)

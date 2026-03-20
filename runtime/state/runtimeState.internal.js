@@ -160,5 +160,11 @@ export function __ensureDefaultWorkspaceInternal(state) {
       workspace: createDefaultWorkspaceState(),
     };
   }
+  if (!state?.interaction) {
+    return {
+      ...state,
+      interaction: initialInteractionState(),
+    };
+  }
   return state;
 }
