@@ -19,6 +19,7 @@ const LAYOUT_EVENTS = new Set([
     'image.source.update',
     'node.layout.move',
     'node.layout.resize',
+    'node.layout.rotate',
     'node.layout.update',
     'node.layout.bulk',
     'node.layout.setConstraint',

@@ -1,6 +1,6 @@
 import { snapDelta } from './snapEngine.js';
 
-export function computeDragDelta(dragState, options = {}) {
+export function computeRawDragDelta(dragState) {
     const startPointer = dragState?.startPointer ?? null;
     const currentPointer = dragState?.currentPointer ?? null;
 
@@ -8,16 +8,34 @@ export function computeDragDelta(dragState, options = {}) {
         return { dx: 0, dy: 0 };
     }
 
-    let dx = currentPointer.x - startPointer.x;
-    let dy = currentPointer.y - startPointer.y;
+    return {
+        dx: currentPointer.x - startPointer.x,
+        dy: currentPointer.y - startPointer.y,
+    };
+}
 
-    if (options.axisLock === true) {
-        if (Math.abs(dx) > Math.abs(dy)) {
-            dy = 0;
-        } else {
-            dx = 0;
-        }
+export function applyAxisLock(delta, options = {}) {
+    if (options.axisLock !== true) return delta;
+
+    let { dx, dy } = delta;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+        dy = 0;
+    } else {
+        dx = 0;
     }
+
+    return {
+        ...delta,
+        dx,
+        dy,
+    };
+}
+
+export function computeDragDelta(dragState, options = {}) {
+    let delta = computeRawDragDelta(dragState);
+    delta = applyAxisLock(delta, options);
+    let { dx, dy } = delta;
 
     if (typeof options.snapResolver === 'function') {
         const resolved = options.snapResolver(
@@ -40,8 +58,8 @@ export function computeDragDelta(dragState, options = {}) {
     if (options.snap) {
         const snapped =
             typeof options.snap === 'function'
-                ? options.snap({ dx, dy }, options.snapOptions)
-                : snapDelta({ dx, dy }, options.snapOptions);
+                ? options.snap(delta, options.snapOptions)
+                : snapDelta(delta, options.snapOptions);
 
         if (snapped && Number.isFinite(snapped.dx) && Number.isFinite(snapped.dy)) {
             dx = snapped.dx;

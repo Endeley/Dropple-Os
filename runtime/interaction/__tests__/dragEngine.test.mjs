@@ -7,7 +7,10 @@ import {
     updateDrag,
 } from '@/runtime/interaction/dragRuntime.js';
 import { computeDragDelta } from '@/runtime/interaction/dragEngine.js';
-import { resolveSnap } from '@/runtime/interaction/snapResolver.js';
+import {
+    collectSnapTargets as collectRuntimeSnapTargets,
+    resolveSnap,
+} from '@/runtime/interaction/snapResolver.js';
 
 test('startDrag initializes deterministic drag state', () => {
     const next = startDrag(initialDragState, {
@@ -21,9 +24,26 @@ test('startDrag initializes deterministic drag state', () => {
     assert.equal(next.type, 'move');
     assert.deepEqual(next.nodeIds, ['a']);
     assert.deepEqual(next.startPointer, { x: 10, y: 20 });
+    assert.deepEqual(next.previousPointer, { x: 10, y: 20 });
     assert.deepEqual(next.currentPointer, { x: 10, y: 20 });
     assert.deepEqual(next.origin, { a: { x: 1, y: 2 } });
+    assert.equal(next.resize, null);
     assert.equal(next.meta, null);
+});
+
+test('startDrag captures resize metadata for resize drags', () => {
+    const next = startDrag(initialDragState, {
+        type: 'resize',
+        nodeIds: ['a'],
+        pointer: { x: 10, y: 20 },
+        handle: 'se',
+        originBounds: { x: 5, y: 6, width: 20, height: 30 },
+    });
+
+    assert.deepEqual(next.resize, {
+        handle: 'se',
+        originBounds: { x: 5, y: 6, width: 20, height: 30 },
+    });
 });
 
 test('updateDrag updates current pointer without mutating origin', () => {
@@ -36,6 +56,7 @@ test('updateDrag updates current pointer without mutating origin', () => {
 
     const next = updateDrag(started, { x: 25, y: 35 });
 
+    assert.deepEqual(next.previousPointer, { x: 10, y: 20 });
     assert.deepEqual(next.currentPointer, { x: 25, y: 35 });
     assert.deepEqual(next.origin, { a: { x: 1, y: 2 } });
 });
@@ -149,4 +170,129 @@ test('resolveSnap prefers object targets over grid when weighted closer', () => 
             { type: 'horizontal', y: 35, source: 'node-b' },
         ],
     });
+});
+
+test('collectSnapTargets includes adjacent spacing targets for non-dragged nodes', () => {
+    const targets = collectRuntimeSnapTargets(
+        {
+            nodes: {
+                a: { id: 'a', layout: { x: 0, y: 0, width: 20, height: 20 } },
+                b: { id: 'b', layout: { x: 40, y: 0, width: 20, height: 20 } },
+                c: { id: 'c', layout: { x: 0, y: 60, width: 20, height: 20 } },
+            },
+            scene: { computed: {} },
+        },
+        { nodeIds: ['dragging'] },
+    );
+
+    assert.ok(
+        targets.some((target) => target.kind === 'spacing' && target.axis === 'x' && target.spacing === 20),
+    );
+    assert.ok(
+        targets.some((target) => target.kind === 'spacing' && target.axis === 'y' && target.spacing === 40),
+    );
+});
+
+test('resolveSnap returns spacing guides when spacing candidate wins', () => {
+    const result = resolveSnap(
+        { dx: 17, dy: 0 },
+        {
+            bounds: { x: 10, y: 20, width: 10, height: 10 },
+            threshold: 6,
+            grid: 10,
+            targets: [
+                {
+                    axis: 'x',
+                    kind: 'spacing',
+                    left: 30,
+                    right: 60,
+                    spacing: 20,
+                    source: 'a:b',
+                    weight: 1.15,
+                },
+            ],
+        },
+    );
+
+    assert.deepEqual(result, {
+        dx: 20,
+        dy: 0,
+        guides: [
+            {
+                type: 'spacing',
+                axis: 'x',
+                from: 40,
+                to: 60,
+                y: 25,
+                spacing: 20,
+                source: 'a:b',
+            },
+        ],
+    });
+});
+
+test('spacing target wins over edge even if slightly farther', () => {
+    const result = resolveSnap(
+        { dx: 18, dy: 0 },
+        {
+            bounds: { x: 10, y: 0, width: 10, height: 10 },
+            threshold: 10,
+            targets: [
+                {
+                    axis: 'x',
+                    kind: 'edge',
+                    value: 18.8,
+                    priority: 1,
+                },
+                {
+                    axis: 'x',
+                    kind: 'spacing',
+                    left: 30,
+                    right: 60,
+                    spacing: 20,
+                    priority: 2,
+                    weight: 1,
+                },
+            ],
+        },
+    );
+
+    assert.equal(result.dx, 20);
+    assert.equal(result.guides[0]?.type, 'spacing');
+});
+
+test('intent bias favors movement direction', () => {
+    const toward = resolveSnap(
+        { dx: 15, dy: 0 },
+        {
+            bounds: { x: 10, y: 0, width: 10, height: 10 },
+            threshold: 10,
+            targets: [
+                {
+                    axis: 'x',
+                    kind: 'edge',
+                    value: 20,
+                    priority: 1,
+                },
+            ],
+        },
+    );
+
+    const away = resolveSnap(
+        { dx: -15, dy: 0 },
+        {
+            bounds: { x: 10, y: 0, width: 10, height: 10 },
+            threshold: 10,
+            targets: [
+                {
+                    axis: 'x',
+                    kind: 'edge',
+                    value: 20,
+                    priority: 1,
+                },
+            ],
+        },
+    );
+
+    assert.ok(toward.dx >= away.dx);
 });

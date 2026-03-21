@@ -5,18 +5,28 @@ import {
     unregisterToolHandler,
 } from '@/runtime/tools/toolController.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
-import { computeDragDelta } from '@/runtime/interaction/dragEngine.js';
+import {
+    applyAxisLock,
+    computeDragDelta,
+    computeRawDragDelta,
+} from '@/runtime/interaction/dragEngine.js';
 import { hitTestPoint } from '@/runtime/hitTest/hitTestPoint.js';
 import {
     collectSnapTargets,
     resolveSnap,
 } from '@/runtime/interaction/snapResolver.js';
+import {
+    applyMagneticSnap,
+    computeVelocity,
+} from '@/runtime/interaction/magneticSnap.js';
+import { computeResizeDelta } from '@/runtime/interaction/resizeEngine.js';
+import { computeRotationDelta as computeRuntimeRotationDelta } from '@/runtime/interaction/rotationEngine.js';
+import { snapAngle } from '@/runtime/interaction/snapAngle.js';
+import { applyMagneticRotation } from '@/runtime/interaction/magneticRotation.js';
 import { clearSelection } from '@/runtime/selection/clearSelection.js';
 import { selectNode } from '@/runtime/selection/selectNode.js';
 import { toggleNode } from '@/runtime/selection/toggleNode.js';
-import { computeResizeDelta } from '@/runtime/transforms/computeResizeDelta.js';
 import { computeRotateAnchor } from '@/runtime/transforms/computeRotateAnchor.js';
-import { computeRotationDelta } from '@/runtime/transforms/computeRotationDelta.js';
 import { computeResizeAnchors } from '@/runtime/transforms/computeResizeAnchors.js';
 import { canvasBus } from '@/ui/eventBus/canvasBus.js';
 import {
@@ -123,6 +133,16 @@ function deriveDraggedBounds(nodeIds, origin, nodesById, dx, dy) {
     };
 }
 
+function resolveDraggedBounds(runtimeState, drag) {
+    return deriveDraggedBounds(
+        drag?.nodeIds ?? [],
+        drag?.origin ?? {},
+        runtimeState?.nodes ?? {},
+        0,
+        0,
+    );
+}
+
 function deriveSelectionBounds(nodeIds, nodesById) {
     const nodes = (nodeIds ?? [])
         .map((nodeId) => nodesById?.[nodeId])
@@ -184,37 +204,8 @@ function normalizeAngle(angle) {
     return next;
 }
 
-function buildResizedLayoutUpdates(nodeIds, origin, startBounds, resizeResult) {
-    if (!Array.isArray(nodeIds) || !nodeIds.length || !startBounds || !resizeResult) {
-        return [];
-    }
-
-    const resizeDelta = resizeResult.resize ?? { width: 0, height: 0 };
-    const offset = resizeResult.delta ?? { x: 0, y: 0 };
-    const nextWidth = Math.max(1, startBounds.width + resizeDelta.width);
-    const nextHeight = Math.max(1, startBounds.height + resizeDelta.height);
-    const scaleX = startBounds.width === 0 ? 1 : nextWidth / startBounds.width;
-    const scaleY = startBounds.height === 0 ? 1 : nextHeight / startBounds.height;
-    const originX = startBounds.x + offset.x;
-    const originY = startBounds.y + offset.y;
-
-    return nodeIds.flatMap((nodeId) => {
-        const start = origin?.[nodeId];
-        if (!start) return [];
-
-        const relX = startBounds.width === 0 ? 0 : (start.x - startBounds.x) / startBounds.width;
-        const relY = startBounds.height === 0 ? 0 : (start.y - startBounds.y) / startBounds.height;
-
-        return [{
-            id: nodeId,
-            layout: {
-                x: originX + relX * nextWidth,
-                y: originY + relY * nextHeight,
-                width: start.width * scaleX,
-                height: start.height * scaleY,
-            },
-        }];
-    });
+function radiansToDegrees(angle) {
+    return Math.round((angle * 180) / Math.PI);
 }
 
 function selectToolHandler(input, context) {
@@ -303,26 +294,44 @@ function moveToolHandler(input, context) {
 
     if (input.type === 'pointermove') {
         if (drag?.active && drag.type === 'move') {
-            const startBounds = deriveDraggedBounds(
-                drag.nodeIds ?? [],
-                drag.origin ?? {},
-                runtimeState?.nodes ?? {},
-                0,
-                0,
-            );
-            const { dx, dy, guides } = computeDragDelta({
+            const nextDragState = {
                 ...drag,
                 currentPointer: worldPoint,
-            }, {
+            };
+            const startBounds = resolveDraggedBounds(runtimeState, drag);
+            const rawDelta = applyAxisLock(
+                computeRawDragDelta(nextDragState),
+                {
+                    axisLock: input.event?.shiftKey === true,
+                },
+            );
+            const resolved = computeDragDelta(nextDragState, {
                 snapResolver: resolveSnap,
                 snapContext: {
                     bounds: startBounds,
                     targets: collectSnapTargets(runtimeState, drag),
-                    threshold: 6,
+                    threshold: 8,
                     grid: 10,
                 },
                 axisLock: input.event?.shiftKey === true,
             });
+            const velocity = computeVelocity(
+                drag.previousPointer ?? drag.currentPointer,
+                worldPoint,
+            );
+            const magnetic = applyMagneticSnap(
+                rawDelta,
+                resolved,
+                {
+                    threshold: 8,
+                    minStrength: 0.2,
+                    maxStrength: 1,
+                    velocity,
+                    velocityFalloff: 0.06,
+                },
+            );
+            const { guides } = resolved;
+            const { dx, dy } = magnetic;
 
             dispatcher.dispatch({
                 type: EventTypes.DRAG_UPDATE,
@@ -346,7 +355,7 @@ function moveToolHandler(input, context) {
                 });
             }
 
-            return { handled: true };
+            return { handled: true, magnetic };
         }
 
         const active = getActiveSessionType();
@@ -419,9 +428,9 @@ function resizeToolHandler(input, context) {
                 nodeIds,
                 pointer: worldPoint,
                 origin,
+                handle: resolveResizeHandle(bounds, worldPoint),
+                originBounds: bounds,
                 meta: {
-                    handle: resolveResizeHandle(bounds, worldPoint),
-                    bounds,
                     parentBounds: nodeIds.length === 1 ? deriveParentBounds(nodeIds[0], nodesById) : null,
                 },
             },
@@ -433,39 +442,55 @@ function resizeToolHandler(input, context) {
     if (input.type === 'pointermove') {
         if (!drag?.active || drag.type !== 'resize') return null;
 
-        const nextDrag = {
+        const nextDragState = {
             ...drag,
             currentPointer: worldPoint,
         };
-        const resizeResult = computeResizeDelta(
-            nextDrag.startPointer,
-            nextDrag.currentPointer,
-            drag.meta?.bounds ?? null,
-            drag.meta?.handle ?? 'se',
-            computeSnapTargets(runtimeState?.scene?.computed ?? {}, drag.nodeIds ?? []),
+        const rawDelta = computeRawDragDelta(nextDragState);
+        const resolved = computeDragDelta(nextDragState, {
+            snapResolver: resolveSnap,
+            snapContext: {
+                mode: 'resize',
+                handle: drag.resize?.handle ?? null,
+                bounds: drag.resize?.originBounds ?? null,
+                targets: collectSnapTargets(runtimeState, drag),
+                threshold: 8,
+                grid: 10,
+            },
+        });
+        const velocity = computeVelocity(
+            drag.previousPointer ?? drag.currentPointer,
+            worldPoint,
         );
+        const magnetic = applyMagneticSnap(
+            rawDelta,
+            resolved,
+            {
+                threshold: 8,
+                minStrength: 0.2,
+                maxStrength: 1,
+                velocity,
+                velocityFalloff: 0.06,
+            },
+        );
+        const bounds = computeResizeDelta(drag, magnetic);
+        if (!bounds) return null;
 
         dispatcher.dispatch({
             type: EventTypes.DRAG_UPDATE,
             payload: {
                 pointer: worldPoint,
-                guides: resizeResult.guides ?? [],
+                guides: resolved.guides ?? [],
             },
         });
 
-        const updates = buildResizedLayoutUpdates(
-            drag.nodeIds ?? [],
-            drag.origin ?? {},
-            drag.meta?.bounds ?? null,
-            resizeResult,
-        );
-
-        if (updates.length > 0) {
-            dispatcher.dispatch({
-                type: 'node.layout.bulk',
-                payload: { updates },
-            });
-        }
+        dispatcher.dispatch({
+            type: 'node.layout.resize',
+            payload: {
+                nodeId: drag.nodeIds?.[0],
+                ...bounds,
+            },
+        });
 
         return { handled: true };
     }
@@ -510,9 +535,8 @@ function rotateToolHandler(input, context) {
                 type: 'rotate',
                 nodeIds,
                 pointer: worldPoint,
-                meta: {
-                    pivot,
-                },
+                center: pivot,
+                originAngle: Number(nodesById?.[hit.id]?.rotation ?? 0),
             },
         });
 
@@ -522,33 +546,48 @@ function rotateToolHandler(input, context) {
     if (input.type === 'pointermove') {
         if (!drag?.active || drag.type !== 'rotate') return null;
 
-        const pivot = drag.meta?.pivot ?? null;
-        const previousRotation = computeRotationDelta(
-            drag.startPointer,
-            drag.currentPointer,
-            pivot,
-        ).rotation;
-        const nextRotation = computeRotationDelta(
-            drag.startPointer,
+        const nextDragState = {
+            ...drag,
+            currentPointer: worldPoint,
+        };
+        const raw = computeRuntimeRotationDelta(nextDragState);
+        const snapped = snapAngle(raw.angle, {
+            step: 15,
+            threshold: 6,
+        });
+        const velocity = computeVelocity(
+            drag.previousPointer ?? drag.currentPointer,
             worldPoint,
-            pivot,
-        ).rotation;
-        const deltaRotation = normalizeAngle(nextRotation - previousRotation);
+        );
+        const finalAngle = applyMagneticRotation(
+            raw.angle,
+            snapped.angle,
+            {
+                velocity,
+                threshold: 6,
+                velocityFalloff: 0.05,
+            },
+        );
 
         dispatcher.dispatch({
             type: EventTypes.DRAG_UPDATE,
             payload: {
                 pointer: worldPoint,
-                guides: [],
+                guides: snapped.snapped
+                    ? [{
+                        type: 'angle',
+                        angle: snapped.angle,
+                    }]
+                    : [],
             },
         });
 
-        if (deltaRotation !== 0) {
+        if (Number.isFinite(finalAngle)) {
             dispatcher.dispatch({
-                type: EventTypes.NODE_ROTATE,
+                type: 'node.layout.rotate',
                 payload: {
-                    nodeIds: drag.nodeIds ?? [],
-                    rotation: deltaRotation,
+                    nodeId: drag.nodeIds?.[0],
+                    rotation: normalizeAngle(finalAngle),
                 },
             });
         }

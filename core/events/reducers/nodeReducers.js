@@ -199,6 +199,23 @@ export function nodeReducers(state, event) {
       });
     }
 
+    case 'node.layout.rotate': {
+      const { nodeId, rotation } = payload;
+      const prev = graph.nodes[nodeId];
+      if (!prev) return state;
+
+      return applySceneGraph(state, {
+        nodes: {
+          ...graph.nodes,
+          [nodeId]: {
+            ...prev,
+            rotation: normalizeAngle(rotation ?? prev.rotation ?? 0),
+          },
+        },
+        rootIds: graph.rootIds,
+      });
+    }
+
     default:
       return state;
   }

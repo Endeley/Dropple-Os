@@ -3,8 +3,11 @@ export const initialDragState = Object.freeze({
     type: null,
     nodeIds: [],
     startPointer: null,
+    previousPointer: null,
     currentPointer: null,
     origin: null,
+    resize: null,
+    rotation: null,
     meta: null,
     guides: [],
 });
@@ -16,8 +19,23 @@ export function startDrag(state, payload = {}) {
         type: payload.type ?? null,
         nodeIds: Array.isArray(payload.nodeIds) ? [...payload.nodeIds] : [],
         startPointer: payload.pointer ?? null,
+        previousPointer: payload.pointer ?? null,
         currentPointer: payload.pointer ?? null,
         origin: payload.origin ?? null,
+        resize:
+            payload.type === 'resize'
+                ? {
+                    handle: payload.handle ?? null,
+                    originBounds: payload.originBounds ?? null,
+                }
+                : null,
+        rotation:
+            payload.type === 'rotate'
+                ? {
+                    originAngle: payload.originAngle ?? 0,
+                    center: payload.center ?? null,
+                }
+                : null,
         meta: payload.meta ?? null,
         guides: Array.isArray(payload.guides) ? [...payload.guides] : [],
     };
@@ -37,6 +55,7 @@ export function updateDrag(state, payload) {
 
     return {
         ...state,
+        previousPointer: state.currentPointer ?? null,
         currentPointer: pointer ?? null,
         guides: Array.isArray(guides) ? [...guides] : [],
     };

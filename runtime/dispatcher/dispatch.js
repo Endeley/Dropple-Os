@@ -471,7 +471,10 @@ export function createEventDispatcher({
                             ...(current.interaction ?? {}),
                             drag: updateDrag(
                                 current.interaction?.drag ?? initialDragState,
-                                event?.payload?.pointer,
+                                {
+                                    pointer: event?.payload?.pointer,
+                                    guides: event?.payload?.guides ?? null,
+                                },
                             ),
                         },
                     };

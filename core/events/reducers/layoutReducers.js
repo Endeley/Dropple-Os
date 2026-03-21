@@ -83,7 +83,7 @@ export function layoutReducers(state, event) {
         }
 
         case 'node.layout.resize': {
-            const { nodeId, width, height } = payload;
+            const { nodeId, x, y, width, height } = payload;
             const node = state.nodes[nodeId];
             if (!node) return state;
 
@@ -97,8 +97,10 @@ export function layoutReducers(state, event) {
                         ...node,
                         layout: {
                             ...prevLayout,
-                            width,
-                            height,
+                            x: x ?? prevLayout.x,
+                            y: y ?? prevLayout.y,
+                            width: width ?? prevLayout.width,
+                            height: height ?? prevLayout.height,
                         },
                     },
                 },
