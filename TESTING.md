@@ -1,86 +1,316 @@
-# Testing
+# Dropple Testing Guide
 
-Dropple uses Node's test runner for most local suites.
-Because the repo relies on path aliases such as `@/runtime`, `@/core`, and `@/engine`, full engine/runtime test runs must use the alias loader.
+This is the current test and validation map for the repo.
+
+## Run Tags
+
+### `[focused]`
+Smallest useful local run for one area you touched.
+
+### `[fast]`
+Quick confidence checks during feature work.
+
+### `[standard]`
+Recommended before commit.
+
+### `[app]`
+Includes app build and route/browser coverage.
+
+### `[gate]`
+CI-style enforcement or determinism gate.
+
+### `[release]`
+Full release validation.
+
+## Recommended Run Order
+
+### Small change
+```sh
+npm run test:architecture
+```
+
+Then run the smallest relevant suite:
+- runtime work: `npm run test:runtime:all`
+- engine work: `npm run test:engine:all`
+- dispatcher/kernel work: `npm run test:kernel`
+- UI tool/input work: `npm run ui:interactions:test`
+
+### Before commit
+```sh
+npm run test:all
+```
+
+### Before merging app-facing changes
+```sh
+npm run validate:app
+```
+
+### Before release
+```sh
+npm run validate:release
+```
 
 ## Primary Commands
 
-Use these scripts from the repo root:
-
-```bash
-npm run test:engine:all
-npm run test:runtime:all
-npm run test:core:all
-npm run test:all
-npm run validate:all
-npm run architecture:phase
+### `[fast]` Architecture
+```sh
+npm run test:architecture
 ```
-
-## What To Use
-
-For normal feature work in compiler, engine, or runtime:
-
-```bash
-npm run test:core:all
-```
-
-Before pushing substantial changes:
-
-```bash
-npm run test:all
-```
-
-Before release or deeper validation:
-
-```bash
-npm run validate:all
-
-For living architecture tracking:
-
-```bash
-npm run architecture:monitor
-npm run architecture:score
-npm run architecture:radar
-npm run architecture:phase
-```
-```
-
-## Script Meanings
-
-`npm run test:engine:all`
-Runs all tests under `engine/` with the alias loader.
-
-`npm run test:runtime:all`
-Runs all tests under `runtime/` with the alias loader.
-
-`npm run test:core:all`
-Runs both full engine and runtime suites.
-
-`npm run test:all`
 Runs:
-- full engine suite
-- full runtime suite
-- kernel tests
-- architecture tests
-- UI interaction tests
+- `tests/architecture/*.test.ts`
 
-`npm run validate:all`
+Purpose:
+- boundary enforcement
+- reducer ownership
+- import rules
+- interaction pipeline enforcement
+
+### `[fast]` Kernel
+```sh
+npm run test:kernel
+```
+Runs:
+- `tests/kernel/*.test.ts`
+
+Purpose:
+- dispatcher truth
+- replay equivalence
+- persistence roundtrip
+- runtime projection purity
+
+### `[fast]` UI interaction tests
+```sh
+npm run ui:interactions:test
+```
+Runs:
+- `ui/interactions/__tests__/toolController.test.mjs`
+
+Purpose:
+- tool-controller/UI interaction checks
+
+### `[fast]` Engine suite
+```sh
+npm run test:engine:all
+```
+Runs discovered tests under:
+- `engine/`
+
+Purpose:
+- compiler
+- timeline
+- design-system
+- determinism-oriented engine behavior
+
+### `[fast]` Runtime suite
+```sh
+npm run test:runtime:all
+```
+Runs discovered tests under:
+- `runtime/`
+
+Purpose:
+- runtime interaction
+- animation
+- snapping
+- guides
+- scene evaluation
+- workspaces
+- tools
+
+### `[standard]` Core suite
+```sh
+npm run test:core:all
+```
+Runs:
+- `npm run test:engine:all`
+- `npm run test:runtime:all`
+
+### `[standard]` Main local suite
+```sh
+npm run test:all
+```
+Runs:
+- `npm run test:core:all`
+- `npm run test:kernel`
+- `npm run test:architecture`
+- `npm run ui:interactions:test`
+
+## App and System Validation
+
+### `[app]` Build smoke
+```sh
+npm run build:smoke
+```
+Runs:
+- `next build`
+
+### `[app]` Route smoke
+```sh
+npm run test:routes:smoke
+```
+Runs:
+- `playwright test tests/e2e`
+
+Requires:
+- Playwright browsers installed
+
+### `[app]` App validation
+```sh
+npm run validate:app
+```
+Runs:
+- `npm run build:smoke`
+- `npm run test:routes:smoke`
+
+### `[gate]` Runtime system tests
+```sh
+npm run test:system:runtime
+```
+Runs:
+- `tests/system/*.test.mjs`
+
+### `[app]` System app validation
+```sh
+npm run test:system:app
+```
+Runs:
+- `npm run validate:app`
+
+### `[app]` Full system validation
+```sh
+npm run test:system:all
+```
+Runs:
+- `npm run test:system:runtime`
+- `npm run test:system:app`
+
+## Gates
+
+### `[gate]` Determinism
+```sh
+npm run determinism
+```
+Purpose:
+- deterministic output gate
+
+### `[gate]` Architecture guard
+```sh
+npm run architecture:guard
+```
+Purpose:
+- illegal pattern scanning
+- interaction architecture enforcement
+
+### `[gate]` Architecture CI
+```sh
+npm run architecture:ci
+```
+Runs:
+- `node scripts/architectureCi.mjs`
+- `node scripts/architectureGuard.mjs`
+
+Purpose:
+- critical system integration gate
+- architecture guard enforcement
+
+### `[gate]` Template verification
+```sh
+npm run template:verify-all
+```
+
+## Full Validation
+
+### `[gate]` Main CI validation
+```sh
+npm run validate:all
+```
 Runs:
 - `npm run test:all`
-- determinism gate
-- template verification
-- architecture CI checks
+- `npm run test:system:all`
+- `npm run determinism`
+- `npm run architecture:ci`
 
-## Direct Full-Suite Commands
+### `[release]` Release validation
+```sh
+npm run validate:release
+```
+Runs:
+- `npm run validate:all`
+- `npm run template:verify-all`
 
-If you need the raw commands instead of npm scripts:
+## Focused Single-File Runs
 
-```bash
-node --import ./bench/register-alias-loader.mjs --test $(rg --files -g '*test*.mjs' -g '*test*.js' engine)
-node --import ./bench/register-alias-loader.mjs --test $(rg --files -g '*test*.mjs' -g '*test*.js' runtime)
+### Runtime or engine `.mjs` tests
+```sh
+node --import ./bench/register-alias-loader.mjs --test runtime/interaction/__tests__/dragEngine.test.mjs
 ```
 
-## Notes
+You can replace the path with any runtime or engine test file.
 
-- Raw `node --test` without the alias loader will fail for many runtime and engine files that import from `@/...`.
-- Some narrow legacy scripts in `package.json` still exist for focused subsystems; keep using them when you only want a small slice of validation.
+### Architecture tests
+```sh
+node --import ./tests/register-test-loaders.mjs --test tests/architecture/*.test.ts
+```
+
+### Kernel tests
+```sh
+node --import ./tests/register-test-loaders.mjs --test tests/kernel/*.test.ts
+```
+
+## Named Script Inventory
+
+### `[focused]` Engine point checks
+- `npm run engine:test`
+- `npm run engine:shot:test`
+- `npm run engine:track:test`
+- `npm run engine:timeline:test`
+- `npm run engine:dispatcher:test`
+- `npm run engine:projection:test`
+- `npm run engine:timeline:evaluate:test`
+- `npm run engine:timeline:history:test`
+- `npm run engine:timeline:controller:test`
+- `npm run engine:timeline:controller:diff:test`
+- `npm run engine:timeline:diff:test`
+- `npm run engine:export:stability:test`
+- `npm run engine:track:lock:test`
+- `npm run engine:track:blend:test`
+- `npm run engine:track:group:test`
+- `npm run engine:timeline:dag:test`
+- `npm run engine:timeline:label:test`
+
+### `[focused]` Runtime point checks
+- `npm run runtime:map:test`
+- `npm run runtime:replay:test`
+- `npm run runtime:statehash:test`
+- `npm run runtime:resize:session:test`
+
+## Practical Policy
+
+### If you changed runtime interaction
+```sh
+npm run test:runtime:all
+npm run test:architecture
+```
+
+### If you changed dispatcher or truth ownership
+```sh
+npm run test:kernel
+npm run test:architecture
+```
+
+### If you changed compiler or engine behavior
+```sh
+npm run test:engine:all
+npm run test:architecture
+```
+
+### If you changed workspace UI routing or shell behavior
+```sh
+npm run test:all
+npm run validate:app
+```
+
+### If you want maximum confidence
+```sh
+npm run validate:release
+```
