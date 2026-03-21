@@ -6,9 +6,11 @@ import {
 } from '@/runtime/tools/toolController.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { computeDragDelta } from '@/runtime/interaction/dragEngine.js';
-import { computeGuides } from '@/runtime/guides/computeGuides.js';
 import { hitTestPoint } from '@/runtime/hitTest/hitTestPoint.js';
-import { computeSnapTargets } from '@/runtime/snapping/computeSnapTargets.js';
+import {
+    collectSnapTargets,
+    resolveSnap,
+} from '@/runtime/interaction/snapResolver.js';
 import { clearSelection } from '@/runtime/selection/clearSelection.js';
 import { selectNode } from '@/runtime/selection/selectNode.js';
 import { toggleNode } from '@/runtime/selection/toggleNode.js';
@@ -301,24 +303,26 @@ function moveToolHandler(input, context) {
 
     if (input.type === 'pointermove') {
         if (drag?.active && drag.type === 'move') {
-            const { dx, dy } = computeDragDelta({
+            const startBounds = deriveDraggedBounds(
+                drag.nodeIds ?? [],
+                drag.origin ?? {},
+                runtimeState?.nodes ?? {},
+                0,
+                0,
+            );
+            const { dx, dy, guides } = computeDragDelta({
                 ...drag,
                 currentPointer: worldPoint,
             }, {
-                snap: true,
-                snapOptions: { grid: 10 },
+                snapResolver: resolveSnap,
+                snapContext: {
+                    bounds: startBounds,
+                    targets: collectSnapTargets(runtimeState, drag),
+                    threshold: 6,
+                    grid: 10,
+                },
                 axisLock: input.event?.shiftKey === true,
             });
-            const guides = computeGuides(
-                deriveDraggedBounds(
-                    drag.nodeIds ?? [],
-                    drag.origin ?? {},
-                    runtimeState?.nodes ?? {},
-                    dx,
-                    dy,
-                ),
-                computeSnapTargets(runtimeState?.scene?.computed ?? {}, drag.nodeIds ?? []),
-            );
 
             dispatcher.dispatch({
                 type: EventTypes.DRAG_UPDATE,

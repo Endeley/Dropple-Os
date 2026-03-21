@@ -23,6 +23,9 @@ import { resolveWorkspaceContext } from '@/platform/workspaces/resolveWorkspaceC
 import { useWorkspaceCapabilities } from '@/ui/workspace/useWorkspaceCapabilities.js';
 import { useCapabilityLifecycle } from '@/ui/workspace/useCapabilityLifecycle.js';
 import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
+import { WorkspaceSwitcher } from '@/ui/workspace/shared/WorkspaceSwitcher.jsx';
+import { ModeSwitcher } from '@/ui/workspace/shared/ModeSwitcher.jsx';
+import { useWorkspaceNavigation } from '@/ui/workspace/shared/useWorkspaceNavigation.js';
 
 const PANEL_LEFT = new Set(['SubmissionInfoPanel', 'LessonOutlinePanel']);
 const PANEL_RIGHT = new Set([
@@ -79,6 +82,7 @@ function resolveWorkspaceAdapter(modeId) {
 export function EditorWorkspaceShell({
     modeId,
     workspaceContext: providedWorkspaceContext = null,
+    showWorkspaceNavigation = true,
     educationRole = 'teacher',
     educationInitialLocked = true,
     educationReadOnly = false,
@@ -100,6 +104,7 @@ export function EditorWorkspaceShell({
         [modeId, providedWorkspaceContext],
     );
     const dispatcher = useDispatcher();
+    const { goToMode, goToWorkspace } = useWorkspaceNavigation();
     const { capabilities } = useWorkspaceCapabilities({
         workspace: workspaceContext.workspace,
         mode: workspaceContext.mode,
@@ -188,28 +193,68 @@ export function EditorWorkspaceShell({
     );
 
     const workspace = (
-        <WorkspaceLayout
-            adapter={adapter}
-            events={events}
-            cursor={cursor}
-            setCursorIndex={setCursorIndex}
-            emit={emit}
-            documentName={documentName}
-            canPersist={persistenceEnabled}
-            canImport={importEnabled}
-            onOpenTemplateGenerator={templateGen.openGenerator}
-            educationReadOnly={educationReadOnly}
-            readOnly={effectiveReadOnly}
-            documentRole={documentRole}
-            documentId={documentId}
-            intents={intents}
-            reviewSubmission={reviewSubmission}
-            reviewRubric={reviewRubric}
-            onReviewDecision={onReviewDecision}
-            onReviewCriteriaChange={onReviewCriteriaChange}
-            reviewerId={reviewerId}
-            presence={presence}
-        />
+        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            {showWorkspaceNavigation && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: 12,
+                        right: 12,
+                        zIndex: 1200,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-end',
+                        gap: 8,
+                    }}>
+                    <div
+                        style={{
+                            padding: '6px 10px',
+                            borderRadius: 999,
+                            border: '1px solid rgba(148, 163, 184, 0.35)',
+                            background: 'rgba(15, 23, 42, 0.84)',
+                            color: '#e2e8f0',
+                            fontSize: 11,
+                            fontWeight: 700,
+                            letterSpacing: '0.04em',
+                            textTransform: 'uppercase',
+                            backdropFilter: 'blur(10px)',
+                        }}>
+                        {`${workspaceContext.label} ${workspaceContext.modeLabel ? `· ${workspaceContext.modeLabel}` : ''}`}
+                    </div>
+                    <WorkspaceSwitcher
+                        activeWorkspace={workspaceContext.workspace}
+                        onChange={goToWorkspace}
+                    />
+                    <ModeSwitcher
+                        workspace={workspaceContext.workspace}
+                        activeMode={workspaceContext.mode}
+                        onChange={(nextMode) => goToMode(workspaceContext.workspace, nextMode)}
+                    />
+                </div>
+            )}
+            <WorkspaceLayout
+                adapter={adapter}
+                events={events}
+                cursor={cursor}
+                setCursorIndex={setCursorIndex}
+                emit={emit}
+                documentName={documentName}
+                canPersist={persistenceEnabled}
+                canImport={importEnabled}
+                onOpenTemplateGenerator={templateGen.openGenerator}
+                educationReadOnly={educationReadOnly}
+                readOnly={effectiveReadOnly}
+                documentRole={documentRole}
+                documentId={documentId}
+                intents={intents}
+                reviewSubmission={reviewSubmission}
+                reviewRubric={reviewRubric}
+                onReviewDecision={onReviewDecision}
+                onReviewCriteriaChange={onReviewCriteriaChange}
+                reviewerId={reviewerId}
+                presence={presence}
+            />
+        </div>
     );
 
     return (

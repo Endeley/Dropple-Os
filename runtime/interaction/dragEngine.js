@@ -19,6 +19,24 @@ export function computeDragDelta(dragState, options = {}) {
         }
     }
 
+    if (typeof options.snapResolver === 'function') {
+        const resolved = options.snapResolver(
+            { dx, dy },
+            {
+                ...(options.snapContext || {}),
+                dragState,
+            },
+        );
+
+        if (resolved && Number.isFinite(resolved.dx) && Number.isFinite(resolved.dy)) {
+            return {
+                dx: resolved.dx,
+                dy: resolved.dy,
+                guides: Array.isArray(resolved.guides) ? resolved.guides : [],
+            };
+        }
+    }
+
     if (options.snap) {
         const snapped =
             typeof options.snap === 'function'
@@ -31,5 +49,5 @@ export function computeDragDelta(dragState, options = {}) {
         }
     }
 
-    return { dx, dy };
+    return { dx, dy, guides: [] };
 }

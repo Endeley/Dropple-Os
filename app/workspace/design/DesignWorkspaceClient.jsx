@@ -2,13 +2,29 @@
 
 import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { WorkspaceShell } from '@/ui/workspace/shared/WorkspaceShell';
 import { WorkspaceRoot } from '@/ui/workspace/root/WorkspaceRoot.jsx';
+import {
+  getWorkspaceDefinition,
+  resolveWorkspaceContext,
+} from '@/platform/workspaces';
 
 export default function DesignWorkspaceClient() {
   const params = useSearchParams();
   const docId = params.get('doc');
   const fromGallery = params.get('from') === 'gallery';
+  const queryMode = params.get('mode');
+  const workspaceContext = useMemo(
+    () =>
+      resolveWorkspaceContext({
+        workspace: 'design',
+        mode: queryMode ?? '',
+      }),
+    [queryMode]
+  );
+  const workspace = useMemo(
+    () => getWorkspaceDefinition(workspaceContext.definitionId ?? 'uiux'),
+    [workspaceContext]
+  );
 
   const options = useMemo(
     () => ({
@@ -20,8 +36,13 @@ export default function DesignWorkspaceClient() {
   );
 
   return (
-    <WorkspaceRoot modeId="design" workspaceId="design" profile="design">
-      <WorkspaceShell modeId="design" {...options} />
-    </WorkspaceRoot>
+    <WorkspaceRoot
+      modeId={workspaceContext.mode ?? 'uiux'}
+      workspaceId={workspaceContext.definitionId ?? 'uiux'}
+      profile={workspace?.profile ?? 'design'}
+      workspace={workspace}
+      workspaceContext={workspaceContext}
+      shellProps={options}
+    />
   );
 }

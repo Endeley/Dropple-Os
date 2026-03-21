@@ -131,6 +131,7 @@ export function MediaWorkspaceShell(props) {
                 {...props}
                 modeId={activeMode}
                 workspaceContext={workspaceContext}
+                showWorkspaceNavigation={false}
             />
         </div>
     );
