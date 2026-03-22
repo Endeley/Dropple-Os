@@ -2,7 +2,6 @@
 
 import React, { memo } from 'react';
 import { NodeView } from '@/ui/NodeView.jsx';
-import { useWorkspaceProjection } from '@/runtime/projection';
 import { useCanvasContext } from '@/ui/canvas/CanvasContext.jsx';
 
 const __DEV__ = process.env.NODE_ENV !== 'production';
@@ -25,14 +24,10 @@ function devSkip(reason, node, details = {}) {
 }
 
 function NodeRendererImpl({ node }) {
-    const viewport = useWorkspaceProjection((state) => state.viewport);
     const { zoomTier } = useCanvasContext();
     if (!node) return null;
 
     const layout = node.layout;
-    const vx = viewport?.x;
-    const vy = viewport?.y;
-    const vs = viewport?.scale;
     if (!layout) {
         devSkip('missing layout', node);
         return null;
@@ -41,15 +36,10 @@ function NodeRendererImpl({ node }) {
         devSkip('non-finite layout values', node);
         return null;
     }
-    if (!Number.isFinite(vx) || !Number.isFinite(vy) || !Number.isFinite(vs)) {
-        devSkip('invalid viewport', node, { viewport });
-        return null;
-    }
-
-    const left = (layout.x - vx) * vs;
-    const top = (layout.y - vy) * vs;
-    const width = layout.width * vs;
-    const height = layout.height * vs;
+    const left = layout.x;
+    const top = layout.y;
+    const width = layout.width;
+    const height = layout.height;
     if (!Number.isFinite(left) || !Number.isFinite(top) || !Number.isFinite(width) || !Number.isFinite(height)) {
         devSkip('projection produced non-finite values', node, {
             left,

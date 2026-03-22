@@ -1,33 +1,11 @@
 'use client';
 
-import { canvasBus } from './eventBus/canvasBus.js';
-
 export function NodeView({ node, rect, zoomTier = 'normal' }) {
     if (!node) return null;
     if (!rect) return null;
 
     const { left, top, width, height } = rect;
     if (!Number.isFinite(left) || !Number.isFinite(top) || !Number.isFinite(width) || !Number.isFinite(height)) return null;
-
-    function onPointerDown(e) {
-        // Left mouse only
-        if (e.button !== 0) return;
-
-        // 🔑 CRITICAL: prevent canvas pan + selection conflict
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Capture pointer so drag survives fast movement
-        e.currentTarget.setPointerCapture?.(e.pointerId);
-
-        // UI emits intent only (no MoveSession here)
-        canvasBus.emit('intent.node.pointerDown', {
-            nodeId: node.id,
-            pointer: { x: e.clientX, y: e.clientY },
-            zoomTier,
-            event: e,
-        });
-    }
 
     const showLabel = zoomTier !== 'far';
     const showFull = zoomTier === 'normal' || zoomTier === 'detail' || zoomTier === 'micro';
@@ -41,7 +19,7 @@ export function NodeView({ node, rect, zoomTier = 'normal' }) {
 
     return (
         <div
-            onPointerDown={onPointerDown}
+            data-node-id={node.id}
             style={{
                 position: 'absolute',
                 left,

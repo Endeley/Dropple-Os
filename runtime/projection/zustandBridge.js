@@ -9,7 +9,9 @@ import { selectionProjection } from '@/runtime/selection/selectionProjection.js'
 import { selectionBoundsProjection } from '@/runtime/selectionBounds/selectionBoundsProjection.js';
 import { transformAnchorProjection } from '@/runtime/transforms/transformAnchorProjection.js';
 import { guideProjection } from '@/runtime/guides/guideProjection.js';
+import { projectGroupTransform } from '@/runtime/projection/groupTransformProjection.js';
 import { selectActiveTool, selectVisibleTools } from '@/runtime/selectors/toolSelectors.js';
+import { projectGraphInteraction } from '@/runtime/graph/index.js';
 
 /**
  * Syncs authoritative runtime state into Zustand (read-only mirror).
@@ -34,6 +36,7 @@ export function syncRuntimeToZustand(nextState) {
                     rotateAnchor: null,
                 },
                 guides: [],
+                groupTransform: null,
                 components: {
                     index: {
                         definitions: {},
@@ -69,6 +72,18 @@ export function syncRuntimeToZustand(nextState) {
                 ai: {
                     requests: [],
                     latestRequest: null,
+                },
+                graph: {
+                    activeGraphId: null,
+                    activeGraph: null,
+                    nodes: [],
+                    edges: [],
+                    errors: [],
+                    selection: { ids: [], primary: null },
+                    viewport: { x: 0, y: 0, zoom: 1 },
+                    drag: { active: false, nodeId: null, origin: null, startPointer: null, currentPointer: null },
+                    connection: { active: false, fromNodeId: null, pointerX: 0, pointerY: 0 },
+                    dragPreviewPositions: {},
                 },
                 tools: {
                     activeTool: 'select',
@@ -110,6 +125,7 @@ export function syncRuntimeToZustand(nextState) {
         selectionBounds,
         transformAnchors: transformAnchorProjection(selectionBounds),
         guides: guideProjection(nextState, selectionBounds),
+        groupTransform: projectGroupTransform(nextState),
         components: componentProjection(nextState),
         data: nextState.data ?? { resolvedBindings: {}, resolvedValues: {} },
         app: nextState.app ?? {
@@ -144,6 +160,7 @@ export function syncRuntimeToZustand(nextState) {
                 return latestId ? nextState.ai?.requests?.[latestId] ?? null : null;
             })(),
         },
+        graph: projectGraphInteraction(nextState),
         tools: {
             activeTool: selectActiveTool(nextState),
             registeredTools: nextState.tools?.registeredTools ?? {},

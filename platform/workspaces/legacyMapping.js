@@ -5,7 +5,7 @@ export const LEGACY_WORKSPACE_MAP = Object.freeze({
     icons: Object.freeze({ workspace: 'design', mode: 'icons', definitionId: 'icons' }),
     document: Object.freeze({ workspace: 'design', mode: 'document', definitionId: 'document' }),
 
-    media: Object.freeze({ workspace: 'media', mode: 'animation', definitionId: 'media' }),
+    media: Object.freeze({ workspace: 'media', mode: 'animation', definitionId: 'animation' }),
     animation: Object.freeze({ workspace: 'media', mode: 'animation', definitionId: 'animation' }),
     video: Object.freeze({ workspace: 'media', mode: 'video', definitionId: 'video' }),
     podcast: Object.freeze({ workspace: 'media', mode: 'podcast', definitionId: 'podcast' }),

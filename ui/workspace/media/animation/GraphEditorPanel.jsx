@@ -3,52 +3,33 @@
 import { useMemo } from 'react';
 import { nanoid } from 'nanoid';
 import { EventTypes } from '@/core/events/eventTypes.js';
-import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
+import { useWorkspaceVisualState } from '@/runtime/projection';
 import {
-    selectActiveGraph,
-    selectGraphEdges,
-    selectGraphErrors,
-    selectGraphNodes,
-} from '@/runtime/projection/selectors/graphSelectors.js';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+    clearGraphSelection,
+    endGraphConnection,
+    endGraphDrag,
+    endGraphPan,
+    selectGraphNode,
+} from '@/runtime/graph/index.js';
+import { emitGraphIntent } from '@/ui/bridges/graphIntentBridge.js';
 import { GraphCanvas } from './GraphCanvas.jsx';
 import { canConnect } from './graphConnectionGuards.js';
 import { GraphInspectorPanel } from './GraphInspectorPanel.jsx';
 import { GraphNodeCreationPanel } from './GraphNodeCreationPanel.jsx';
 import { getGraphNodeTemplate } from './graphNodeCatalog.js';
-import { useGraphConnectionInteraction } from './useGraphConnectionInteraction.js';
-import { useGraphInteraction } from './useGraphInteraction.js';
+
+const EMPTY_GRAPH_ITEMS = [];
 
 export function GraphEditorPanel() {
-    const interaction = useGraphInteraction();
-    const connectionInteraction = useGraphConnectionInteraction();
-    const dispatcher = useDispatcher();
-    const document = useRuntimeStore((state) => state.document);
-    const graphErrors = useRuntimeStore(selectGraphErrors);
-    const activeGraphId = useRuntimeStore(
-        (state) =>
-            state.animation?.activeGraphId ??
-            state.workspace?.activeGraphId ??
-            state.document?.activeGraphId ??
-            null,
-    );
-
-    const projectionState = useMemo(
-        () => ({
-            document,
-            animation: {
-                activeGraphId,
-            },
-        }),
-        [activeGraphId, document],
-    );
-
-    const activeGraph = useMemo(() => selectActiveGraph(projectionState), [projectionState]);
-    const nodes = useMemo(() => selectGraphNodes(projectionState), [projectionState]);
-    const edges = useMemo(() => selectGraphEdges(projectionState), [projectionState]);
+    const graph = useWorkspaceVisualState((state) => state.graph);
+    const activeGraph = graph?.activeGraph ?? null;
+    const activeGraphId = graph?.activeGraphId ?? null;
+    const nodes = graph?.nodes ?? EMPTY_GRAPH_ITEMS;
+    const edges = graph?.edges ?? EMPTY_GRAPH_ITEMS;
+    const graphErrors = graph?.errors ?? EMPTY_GRAPH_ITEMS;
     const selectedNode = useMemo(
-        () => nodes.find((node) => node.id === interaction.selectedNodeId) ?? null,
-        [interaction.selectedNodeId, nodes],
+        () => nodes.find((node) => node.id === graph?.selection?.primary) ?? null,
+        [graph?.selection?.primary, nodes],
     );
 
     function getActiveGraphIdentifier() {
@@ -56,7 +37,8 @@ export function GraphEditorPanel() {
     }
 
     function dispatchGraphEvent(type, payload) {
-        return dispatcher.dispatch({ type, payload });
+        emitGraphIntent({ type, payload });
+        return null;
     }
 
     function createNode(type) {
@@ -64,8 +46,8 @@ export function GraphEditorPanel() {
         if (!graphId) return;
 
         const position = {
-            x: 48 - interaction.viewport.x / interaction.viewport.zoom + (nodes.length % 3) * 164,
-            y: 48 - interaction.viewport.y / interaction.viewport.zoom + Math.floor(nodes.length / 3) * 104,
+            x: 48 - (graph?.viewport?.x ?? 0) / (graph?.viewport?.zoom ?? 1) + (nodes.length % 3) * 164,
+            y: 48 - (graph?.viewport?.y ?? 0) / (graph?.viewport?.zoom ?? 1) + Math.floor(nodes.length / 3) * 104,
         };
         const nextNode = getGraphNodeTemplate(type, {
             id: `${type}-${nanoid(6)}`,
@@ -78,7 +60,7 @@ export function GraphEditorPanel() {
             graphId,
             node: nextNode,
         });
-        interaction.selectNode(nextNode.id);
+        emitGraphIntent(selectGraphNode(nextNode.id));
     }
 
     function patchNode(nodeId, patch) {
@@ -100,10 +82,6 @@ export function GraphEditorPanel() {
             graphId,
             nodeId,
         });
-
-        if (interaction.selectedNodeId === nodeId) {
-            interaction.clearSelection();
-        }
     }
 
     function setOutputNode(nodeId) {
@@ -117,23 +95,31 @@ export function GraphEditorPanel() {
     }
 
     function commitNodeDrag() {
-        const drag = interaction.draggingNode;
+        const drag = graph?.drag;
         const graphId = getActiveGraphIdentifier();
 
         if (!drag || !graphId) return;
 
-        if (drag.previewX === drag.originX && drag.previewY === drag.originY) {
-            interaction.endNodeDrag();
+        const startPointer = drag.startPointer ?? { x: 0, y: 0 };
+        const currentPointer = drag.currentPointer ?? startPointer;
+        const origin = drag.origin ?? { x: 0, y: 0 };
+        const nextPosition = {
+            x: Number(origin.x ?? 0) + Number(currentPointer.x ?? 0) - Number(startPointer.x ?? 0),
+            y: Number(origin.y ?? 0) + Number(currentPointer.y ?? 0) - Number(startPointer.y ?? 0),
+        };
+
+        if (nextPosition.x === Number(origin.x ?? 0) && nextPosition.y === Number(origin.y ?? 0)) {
+            emitGraphIntent(endGraphDrag());
             return;
         }
 
-        patchNode(drag.id, {
+        patchNode(drag.nodeId, {
             position: {
-                x: drag.previewX,
-                y: drag.previewY,
+                x: nextPosition.x,
+                y: nextPosition.y,
             },
         });
-        interaction.endNodeDrag();
+        emitGraphIntent(endGraphDrag());
     }
 
     function commitConnection({ from, to, input }) {
@@ -145,8 +131,6 @@ export function GraphEditorPanel() {
             from,
             to,
             input,
-        }).catch((error) => {
-            console.warn(error);
         });
     }
 
@@ -159,8 +143,6 @@ export function GraphEditorPanel() {
             from,
             to,
             input,
-        }).catch((error) => {
-            console.warn(error);
         });
     }
 
@@ -187,12 +169,15 @@ export function GraphEditorPanel() {
                     activeGraphId={activeGraphId}
                     nodes={nodes}
                     edges={edges}
-                    interaction={interaction}
-                    connectionInteraction={connectionInteraction}
+                    graph={graph}
                     canConnect={(payload) => canConnect({ ...payload, graph: activeGraph })}
                     onCommitNodeDrag={commitNodeDrag}
                     onCommitConnection={commitConnection}
                     onDisconnectEdge={disconnectEdge}
+                    onDispatchEvent={emitGraphIntent}
+                    onClearSelection={() => emitGraphIntent(clearGraphSelection())}
+                    onEndConnection={() => emitGraphIntent(endGraphConnection())}
+                    onEndPan={() => emitGraphIntent(endGraphPan())}
                 />
             </div>
             <GraphInspectorPanel

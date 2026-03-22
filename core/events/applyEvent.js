@@ -2,6 +2,7 @@
 
 import { rootReducer } from "./reducers/index.js";
 import { createTimeline } from "@/timeline/schema/timeline.js";
+import { createInitialGraphInteractionState } from './graphInteractionState.js';
 
 const initialState = Object.freeze({
     nodes: Object.freeze({}),
@@ -29,6 +30,7 @@ const initialState = Object.freeze({
         ids: new Set(),
         primary: null,
     }),
+    graph: Object.freeze(createInitialGraphInteractionState()),
     vectors: Object.freeze({}),
     stateMachines: Object.freeze({}),
     navigation: Object.freeze({}),

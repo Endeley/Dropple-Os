@@ -11,7 +11,7 @@ function getDefaultMode(workspaceId) {
 
 function resolveCanonicalDefinitionId(workspaceId, modeId) {
     if (workspaceId === 'design') return modeId;
-    if (workspaceId === 'media') return modeId === 'animation' ? 'media' : modeId;
+    if (workspaceId === 'media') return modeId;
     if (workspaceId === 'build') {
         if (modeId === 'application' || modeId === 'logic' || modeId === 'state-machine' || modeId === 'api') {
             return 'dev';

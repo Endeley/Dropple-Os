@@ -1,6 +1,7 @@
 import { getDesignStateAtCursor } from '@/core/persistence/index.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { bootWorkspaceDocument } from '@/runtime/workspaces/index.js';
+import { initialRuntimeState } from '@/runtime/state/runtimeState.internal.js';
 
 export function hydrateRuntimeSnapshot({
     dispatcher,
@@ -21,10 +22,11 @@ export function hydrateRuntimeSnapshot({
         cursorIndex,
     });
 
-    const runtimeSnapshot = getDesignStateAtCursor({
+    const replayedRuntimeSnapshot = getDesignStateAtCursor({
         events,
         uptoIndex: cursorIndex,
     });
+    const runtimeSnapshot = replayedRuntimeSnapshot ?? initialRuntimeState;
 
     const nextDocument =
         runtimeSnapshot?.document && typeof runtimeSnapshot.document === 'object'

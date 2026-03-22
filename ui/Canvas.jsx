@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useWorkspaceVisualState } from '@/runtime/projection';
 import { canvasBus } from './eventBus/canvasBus.js';
 import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
 import { NodeView } from './NodeView.jsx';
@@ -9,8 +9,8 @@ import { useSelection } from '@/ui/workspace/shared/SelectionContext';
 import { SelectionBox } from '@/ui/selection/SelectionBox.jsx';
 
 export default function Canvas() {
-    const nodes = useRuntimeStore((s) => s.nodes);
-    const projectedSelectionBounds = useRuntimeStore((s) => s.selectionBounds?.bounds ?? null);
+    const nodes = useWorkspaceVisualState((s) => s.nodes);
+    const projectedSelectionBounds = useWorkspaceVisualState((s) => s.selectionBounds?.bounds ?? null);
     const nodeList = Object.values(nodes);
 
     const { selectedIds, selectSingle, setSelection, clear } = useSelection();

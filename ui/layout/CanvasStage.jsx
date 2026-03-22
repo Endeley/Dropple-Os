@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useReplayState } from '@/runtime/replay/useReplayState';
-import ReadOnlyNodeRenderer from './ReadOnlyNodeRenderer';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext';
 import SnapGuidesOverlay from '@/ui/canvas/canvas/SnapGuidesOverlay.jsx';
 import { AutoLayoutOverlayLayer } from '@/ui/canvas/canvas/AutoLayoutOverlayLayer.jsx';
@@ -17,8 +16,8 @@ import { useEducationCursor } from '@/education/EducationCursorContext';
 import { getEducationAtCursor } from '@/education/selectEducationState';
 import { ContextMenu } from '@/ui/context/ContextMenu';
 import { useContextMenu } from '@/ui/context/useContextMenu';
-import { runToolCommand } from '@/ui/interactions/toolController';
 import { CapabilityActions } from '@/ui/capabilities/capabilityActions';
+import { runCommandIntent } from '@/ui/bridges/runtimeCommandFacade.js';
 import { exportJSON } from '@/runtime/export/exportJSON';
 import { exportSVG } from '@/runtime/export/svg/exportSVG';
 import { exportPNG } from '@/runtime/export/png/exportPNG';
@@ -28,6 +27,7 @@ import { api } from '@/convex/_generated/api';
 import { throttle } from '@/collab/throttle';
 import CursorsLayer from '@/collab/CursorsLayer';
 import CanvasIntentGhosts from '@/collab/CanvasIntentGhosts';
+import { NodeView } from '@/ui/NodeView.jsx';
 
 export default function CanvasStage({
   adapter,
@@ -216,45 +216,13 @@ export default function CanvasStage({
           key: 'group-selection',
           label: 'Group',
           disabled: !enabled,
-          onClick: () =>
-            runToolCommand({
-              commandId: 'group',
-              getRuntimeState: () => ({
-                workspaceId: adapter?.workspaceId || adapter?.id || 'graphic',
-                document: {
-                  sceneGraph: {
-                    nodes: state.nodes || {},
-                    rootIds: state.rootIds || [],
-                  },
-                },
-                nodes: state.nodes || {},
-                rootIds: state.rootIds || [],
-                selection: { ids: selected },
-              }),
-              dispatch: emit,
-            }),
+          onClick: () => runCommandIntent('group'),
         },
         {
           key: 'ungroup-selection',
           label: 'Ungroup',
           disabled: !singleSelected,
-          onClick: () =>
-            runToolCommand({
-              commandId: 'ungroup',
-              getRuntimeState: () => ({
-                workspaceId: adapter?.workspaceId || adapter?.id || 'graphic',
-                document: {
-                  sceneGraph: {
-                    nodes: state.nodes || {},
-                    rootIds: state.rootIds || [],
-                  },
-                },
-                nodes: state.nodes || {},
-                rootIds: state.rootIds || [],
-                selection: { ids: selected },
-              }),
-              dispatch: emit,
-            }),
+          onClick: () => runCommandIntent('ungroup'),
         },
         { type: 'separator' },
         { key: 'export-json', label: 'Export JSON', disabled: !hasNodes, onClick: () => runExportGate({ onProceed: () => exportJSON({ nodes: state.nodes, events, cursor }) }) },
@@ -300,18 +268,23 @@ export default function CanvasStage({
           `,
         }}
       >
-        <ReadOnlyNodeRenderer
-          nodes={state.nodes}
-          emit={emit}
-          viewport={viewport}
-          setGuides={setGuides}
-          isPreview={isPreview}
-          setReorderPreview={setReorderPreview}
-          modeId={adapter?.id}
-          educationRole={educationRole}
-          educationReadOnly={educationReadOnly}
-          readOnly={readOnly}
-        />
+        {Object.values(state.nodes || {}).map((node) => {
+          const layout = node?.layout;
+          if (!layout) return null;
+
+          return (
+            <NodeView
+              key={node.id}
+              node={node}
+              rect={{
+                left: layout.x ?? 0,
+                top: layout.y ?? 0,
+                width: layout.width ?? 0,
+                height: layout.height ?? 0,
+              }}
+            />
+          );
+        })}
         <AutoLayoutOverlayLayer interactive={!readOnly}>
           {overlayNode && (
             <>

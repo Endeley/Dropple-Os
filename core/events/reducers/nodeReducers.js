@@ -66,19 +66,37 @@ export function nodeReducers(state, event) {
         layoutChild: { ...defaultLayoutChild, ...(baseNode.layoutChild || {}) },
       };
 
-      const nextRootIds = graph.rootIds.includes(node.id)
-        ? graph.rootIds
-        : [...graph.rootIds, node.id];
+      const parentId = nextNode.parentId ?? null;
+      const parentNode = parentId ? graph.nodes[parentId] : null;
+      const nextNodes = {
+        ...graph.nodes,
+        [node.id]: nextNode,
+      };
+
+      if (parentNode) {
+        const parentChildren = Array.isArray(parentNode.children)
+          ? parentNode.children
+          : [];
+        nextNodes[parentId] = {
+          ...parentNode,
+          children: parentChildren.includes(node.id)
+            ? parentChildren
+            : [...parentChildren, node.id],
+        };
+      }
+
+      const nextRootIds = parentNode
+        ? graph.rootIds.filter((rootId) => rootId !== node.id)
+        : (graph.rootIds.includes(node.id)
+            ? graph.rootIds
+            : [...graph.rootIds, node.id]);
 
       const nextState = applySceneGraph(state, {
-        nodes: {
-          ...graph.nodes,
-          [node.id]: nextNode,
-        },
+        nodes: nextNodes,
         rootIds: nextRootIds,
       });
       return markLayoutDirty(nextState, {
-        nodeIds: [node.id],
+        nodeIds: parentNode ? [parentId, node.id] : [node.id],
       });
     }
 

@@ -7,8 +7,11 @@ import { UIUXCanvasStage } from './UIUXCanvasStage.jsx';
 import { PanelRenderer } from '@/ui/workspace/shell/PanelRenderer.jsx';
 import { WorkspaceSessionsRoot } from '@/ui/workspace/root/DispatcherProvider/Sessions/WorkspaceSessionsRoot.jsx';
 import { nodeUpdateIntent } from '@/ui/inspector/nodeUpdateIntent.js';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useWorkspaceVisualState } from '@/runtime/projection';
 import { CertifiedTemplatesPanel } from '@/ui/workspace/ux/panels/CertifiedTemplatesPanel.jsx';
+import { useWorkspaceCapabilities } from '@/ui/workspace/useWorkspaceCapabilities.js';
+import { useCapabilityLifecycle } from '@/ui/workspace/useCapabilityLifecycle.js';
+import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
 
 /**
  * UIUXAuthoringShell
@@ -18,11 +21,23 @@ import { CertifiedTemplatesPanel } from '@/ui/workspace/ux/panels/CertifiedTempl
  */
 export function UIUXAuthoringShell({ profile = 'uiux-authoring', modeId = 'uiux' }) {
   const emit = useCallback((event) => nodeUpdateIntent(event), []);
-  const nodes = useRuntimeStore((s) => s.nodes || {});
-  const selectedIds = useRuntimeStore((s) => s.selection?.ids || []);
+  const dispatcher = useDispatcher();
+  const { capabilities } = useWorkspaceCapabilities({
+    workspace: 'design',
+    mode: 'uiux',
+  });
+  const nodes = useWorkspaceVisualState((s) => s.nodes || {});
+  const selectedIds = useWorkspaceVisualState((s) => s.selection?.ids || []);
   const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
   const node = selectedId ? nodes[selectedId] : null;
   const [templatesOpen, setTemplatesOpen] = useState(false);
+
+  useCapabilityLifecycle({
+    capabilities,
+    dispatcher,
+    workspace: 'design',
+    mode: 'uiux',
+  });
 
   const extraPanels = useMemo(() => {
     if (!templatesOpen) return [];

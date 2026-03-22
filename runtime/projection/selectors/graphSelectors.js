@@ -74,6 +74,7 @@ function normalizeNodeInputs(node) {
 
 function getExplicitActiveGraphId(state, graphs) {
     const candidates = [
+        state?.graph?.activeGraphId,
         state?.animation?.activeGraphId,
         state?.workspace?.activeGraphId,
         state?.document?.activeGraphId,

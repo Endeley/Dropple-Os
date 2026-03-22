@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { runToolCommand } from '@/ui/interactions/toolController';
 import { handleKeyboardEvent } from '@/ui/bridges/keyboardEngineFacade.js';
+import { runCommandIntent } from '@/ui/bridges/runtimeCommandFacade.js';
 
 export function useGroupShortcuts({
   enabled = true,
@@ -30,26 +30,8 @@ export function useGroupShortcuts({
           const mod = isMac ? input.modifiers.meta : input.modifiers.ctrl;
           if (!mod || input.key.toLowerCase() !== 'g') return null;
 
-          const state = getState?.();
           e.preventDefault();
-          runToolCommand({
-            commandId: input.modifiers.shift ? 'ungroup' : 'group',
-            getRuntimeState: () => ({
-              workspaceId,
-              document: {
-                sceneGraph: {
-                  nodes: state?.nodes || {},
-                  rootIds: state?.rootIds || [],
-                },
-              },
-              nodes: state?.nodes || {},
-              rootIds: state?.rootIds || [],
-              selection: {
-                ids: selectedIds ? Array.from(selectedIds) : [],
-              },
-            }),
-            dispatch: emit,
-          });
+          runCommandIntent(input.modifiers.shift ? 'ungroup' : 'group');
           return { handled: true };
         },
       });

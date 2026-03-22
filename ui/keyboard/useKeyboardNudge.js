@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { emitLayoutUpdate } from '@/runtime/events/emitLayoutUpdate.js';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext';
 import { canvasBus } from '../eventBus/canvasBus.js';
 import { handleKeyboardEvent } from '@/ui/bridges/keyboardEngineFacade.js';
@@ -58,21 +59,23 @@ export function useKeyboardNudge({ enabled = true, emit, getState }) {
           const state = getState?.();
           const nodes = state?.nodes || {};
 
-          selectedIds.forEach((id) => {
-            const node = nodes[id];
-            if (!node) return;
+          emitLayoutUpdate(
+            emit,
+            Array.from(selectedIds)
+              .map((id) => {
+                const node = nodes[id];
+                if (!node) return null;
 
-            const layout = node.layout || {};
+                const layout = node.layout || {};
 
-            emit?.({
-              type: 'node.layout.move',
-              payload: {
-                nodeId: id,
-                x: (layout.x || 0) + dx,
-                y: (layout.y || 0) + dy,
-              },
-            });
-          });
+                return {
+                  nodeId: id,
+                  x: (layout.x || 0) + dx,
+                  y: (layout.y || 0) + dy,
+                };
+              })
+              .filter(Boolean),
+          );
 
           return { handled: true };
         },

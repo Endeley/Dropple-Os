@@ -4,6 +4,7 @@ import { initialInteractionState } from '@/runtime/interactionEngine/state/inter
 import { createPreviewState } from '@/runtime/state/previewState.js';
 import { createCanonicalDocumentEnvelope } from '@/core/persistence/documentEnvelope.js';
 import { initialToolRuntimeState } from '@/runtime/tools/toolRuntime.js';
+import { createInitialGraphInteractionState } from '@/core/events/graphInteractionState.js';
 
 export const initialRuntimeState = {
   document: createCanonicalDocumentEnvelope(),
@@ -53,6 +54,7 @@ export const initialRuntimeState = {
     requests: {},
     order: [],
   },
+  graph: createInitialGraphInteractionState(),
   tools: {
     ...initialToolRuntimeState,
   },

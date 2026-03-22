@@ -1,5 +1,6 @@
 'use client';
 
+import { emitLayoutUpdate } from '@/runtime/events/emitLayoutUpdate.js';
 import { InspectorSection } from '../InspectorSection';
 import { NumericInput } from '@/ui/inputs/NumericInput';
 import { AspectLockToggle } from '@/ui/controls/AspectLockToggle';
@@ -13,13 +14,10 @@ export function CommonInspector({ node, layout, emit, lockAspect, setLockAspect 
         label="X"
         value={layout.x}
         onChange={(x) =>
-          emit?.({
-            type: 'node.layout.move',
-            payload: {
-              nodeId: node.id,
-              x,
-              y: layout.y || 0,
-            },
+          emitLayoutUpdate(emit, {
+            nodeId: node.id,
+            x,
+            y: layout.y || 0,
           })
         }
       />
@@ -27,13 +25,10 @@ export function CommonInspector({ node, layout, emit, lockAspect, setLockAspect 
         label="Y"
         value={layout.y}
         onChange={(y) =>
-          emit?.({
-            type: 'node.layout.move',
-            payload: {
-              nodeId: node.id,
-              x: layout.x || 0,
-              y,
-            },
+          emitLayoutUpdate(emit, {
+            nodeId: node.id,
+            x: layout.x || 0,
+            y,
           })
         }
       />

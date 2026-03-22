@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useWorkspaceVisualState } from '@/runtime/projection';
 import { nodeUpdateIntent } from '@/ui/inspector/nodeUpdateIntent.js';
 import { InspectorSection } from '@/ui/inspector/InspectorSection.jsx';
 import { NodeHeaderPanel } from '@/ui/inspector/NodeHeaderPanel.jsx';
@@ -19,9 +19,9 @@ import { Capability } from '@/ui/capabilities/capabilityVocabulary';
 export function UIUXInspectorPanel() {
   const emit = useCallback((event) => nodeUpdateIntent(event), []);
 
-  const nodes = useRuntimeStore((s) => s.nodes || {});
-  const rootIds = useRuntimeStore((s) => s.rootIds || []);
-  const selectedIds = useRuntimeStore((s) => s.selection?.ids || []);
+  const nodes = useWorkspaceVisualState((s) => s.nodes || {});
+  const rootIds = useWorkspaceVisualState((s) => s.rootIds || []);
+  const selectedIds = useWorkspaceVisualState((s) => s.selection?.ids || []);
 
   const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
   const node = selectedId ? nodes[selectedId] : null;

@@ -33,27 +33,17 @@ export function layoutReducers(state, event) {
         }
 
         case 'node.layout.move': {
+            if (process.env.NODE_ENV === 'development') {
+                console.warn('[DEPRECATED] node.layout.move -> use node.layout.bulk');
+            }
+
             const { nodeId, x, y } = payload;
-            const node = state.nodes[nodeId];
-            if (!node) return state;
 
-            const prevLayout = node.layout || {};
-
-            return markLayoutDirty({
-                ...state,
-                nodes: {
-                    ...state.nodes,
-                    [nodeId]: {
-                        ...node,
-                        layout: {
-                            ...prevLayout,
-                            x,
-                            y,
-                        },
-                    },
+            return layoutReducers(state, {
+                type: 'node.layout.bulk',
+                payload: {
+                    updates: [{ id: nodeId, x, y }],
                 },
-            }, {
-                nodeIds: [nodeId],
             });
         }
 

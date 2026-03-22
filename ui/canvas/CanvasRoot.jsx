@@ -10,19 +10,18 @@ import MotionTrailLayer from './MotionTrailLayer.jsx';
 import { BehaviorPreviewLayer } from '@/design/canvas/behaviorPreview/BehaviorPreviewLayer.jsx';
 import ConstraintVisualizerLayer from './ConstraintVisualizerLayer.jsx';
 import GuideLayer from './GuideLayer.jsx';
+import GroupTransformOverlay from './GroupTransformOverlay.jsx';
 import SelectionLayer from './SelectionLayer.jsx';
 import RemoteCursors from './RemoteCursors.jsx';
 import RemoteSelections from './RemoteSelections.jsx';
 
-import { getRuntimeSnapshot } from '@/runtime/projection';
 import TimelinePanel from '@/ui/timeline/TimelinePanel.jsx';
 import { perfStart, perfEnd } from '@/ui/bridges/canvasRuntimeFacade.js';
-import { useWorkspaceProjection } from '@/runtime/projection';
+import { useWorkspaceProjection, useWorkspaceVisualState } from '@/runtime/projection';
 import { CanvasSurface } from '@/ui/canvas/surface/CanvasSurface.jsx';
 import { WorldOriginMarker } from '@/ui/canvas/WorldOriginMarker.jsx';
 import { computeCenteredViewport } from '@/ui/canvas/computeCenteredViewport.js';
 import { screenToWorld } from '@/canvas/transform/screenToWorld.js';
-import { getWorkspaceProjection } from '@/runtime/projection';
 import { viewportIntent } from '@/ui/viewport/viewportIntent.js';
 import { getZoomTier } from '@/runtime/canvas/zoomTiers.js';
 import { CanvasProvider } from '@/ui/canvas/CanvasContext.jsx';
@@ -33,7 +32,6 @@ import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStor
 import { useToolStore } from '@/ui/state/useToolStore.js';
 import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions';
 import { useCanvasInteractions } from '@/ui/interactions/useCanvasInteractions.js';
-import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
 import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
 import { handleInputEvent } from '@/ui/bridges/inputEngineFacade.js';
 
@@ -42,21 +40,32 @@ const MIN_EFFECTIVE_ZOOM = 0.0005;
 /** camera rebasing */
 const REBASE_DISTANCE = 8000;
 
+function isSelectionModifierGesture(event) {
+    return event?.shiftKey === true || event?.metaKey === true || event?.ctrlKey === true;
+}
+
 export default function CanvasRoot({ workspaceId }) {
     perfStart('canvas.render');
 
-    const workspaceState = getWorkspaceProjection();
-    const resolvedWorkspaceId = workspaceId ?? workspaceState?.id;
+    const projectedWorkspaceId = useWorkspaceProjection((s) => s.id);
+    const rootIds = useWorkspaceVisualState((s) => s.rootIds || []);
+    const resolvedWorkspaceId = workspaceId ?? projectedWorkspaceId;
     const workspace = getWorkspaceActivation(resolvedWorkspaceId);
-    const designState = getRuntimeSnapshot();
 
     const viewport = useWorkspaceProjection((s) => s.viewport);
     const canvasSurface = useWorkspaceProjection((s) => s.canvasSurface);
+    const projectedNodes = useWorkspaceVisualState((s) => s.nodes || {});
+    const projectedTimeline = useWorkspaceVisualState((s) => s.timeline);
     const cameraTransform = useAnimatedRuntimeStore((s) => s.cameraTransform);
     const activeTool = useToolStore((s) => s.activeTool);
     const canvasPolicy = workspace?.canvasPolicy;
-    const dispatcher = useDispatcher();
-    const dispatch = dispatcher?.dispatch;
+    const designState = useMemo(
+        () => ({
+            nodes: projectedNodes ?? {},
+            timeline: projectedTimeline ?? null,
+        }),
+        [projectedNodes, projectedTimeline],
+    );
 
     const containerRef = useRef(null);
     const panRef = useRef({ active: false, x: 0, y: 0 });
@@ -68,9 +77,13 @@ export default function CanvasRoot({ workspaceId }) {
     const [createSession, setCreateSession] = useState(null);
 
     const { onPointerDown: onCanvasPointerDown, onPointerMove: onCanvasPointerMove, onPointerUp: onCanvasPointerUp } = useCanvasInteractions({
-        getRuntimeState: () => getRuntimeSnapshot(),
-        dispatch,
-        getActiveToolId: () => activeTool,
+        getActiveToolId: (event) => {
+            const toolDef = TOOL_DEFINITION_BY_ID[activeTool];
+            if (toolDef?.createsNode && isSelectionModifierGesture(event)) {
+                return 'select';
+            }
+            return activeTool;
+        },
         getWorldPointFromEvent: (e) => {
             if (!viewport || !containerRef.current) {
                 return { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY };
@@ -106,7 +119,7 @@ export default function CanvasRoot({ workspaceId }) {
     // 🖱️ PAN START
     function handlePointerDown(e) {
         const toolDef = TOOL_DEFINITION_BY_ID[activeTool];
-        if (toolDef?.createsNode) {
+        if (toolDef?.createsNode && !isSelectionModifierGesture(e)) {
             if (!viewport || !containerRef.current) return;
 
             const rect = containerRef.current.getBoundingClientRect();
@@ -126,8 +139,9 @@ export default function CanvasRoot({ workspaceId }) {
 
         const isMiddle = e.button === 1;
         const isLeft = e.button === 0;
+        const isPanTool = activeTool === 'pan';
 
-        if (!isMiddle && !(isLeft && !isNodeDragging)) return;
+        if (!isMiddle && !(isLeft && isPanTool && !isNodeDragging)) return;
 
         panRef.current = {
             active: true,
@@ -176,10 +190,8 @@ export default function CanvasRoot({ workspaceId }) {
 
     function handlePointerUp(e) {
         if (createSession) {
-            console.log('CREATE TOOL:', activeTool);
             const toolDef = TOOL_DEFINITION_BY_ID[activeTool];
-            console.log('toolDef:', toolDef);
-            if (!toolDef?.createsNode) {
+            if (!toolDef?.createsNode || isSelectionModifierGesture(e)) {
                 setCreateSession(null);
                 e.currentTarget.releasePointerCapture?.(e.pointerId);
                 return;
@@ -196,10 +208,8 @@ export default function CanvasRoot({ workspaceId }) {
                     width,
                     height,
                 };
-                console.log('BOUNDS:', bounds);
 
-                const snapshot = getRuntimeSnapshot();
-                const rootId = snapshot?.rootIds?.[0] ?? null;
+                const rootId = rootIds[0] ?? null;
 
                 const handled = handleInputEvent(
                     {
@@ -304,7 +314,7 @@ export default function CanvasRoot({ workspaceId }) {
         if (hasCenteredRef.current) return;
 
         const rect = el.getBoundingClientRect();
-        const scale = getWorkspaceProjection()?.viewport?.scale ?? 1;
+        const scale = viewport?.scale ?? 1;
 
         const nextViewport = computeCenteredViewport({
             width: rect.width,
@@ -318,7 +328,7 @@ export default function CanvasRoot({ workspaceId }) {
         viewportIntent({ viewport: nextViewport });
 
         hasCenteredRef.current = true;
-    }, []);
+    }, [viewport?.scale]);
 
     // 🔔 Track node drag sessions
     useEffect(() => {
@@ -369,6 +379,7 @@ export default function CanvasRoot({ workspaceId }) {
                     <BehaviorPreviewLayer />
                     <GhostLayer />
                     <GuideLayer />
+                    <GroupTransformOverlay />
                     <SelectionLayer />
                     <RemoteSelections />
                 </div>

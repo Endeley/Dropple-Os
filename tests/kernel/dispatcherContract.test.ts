@@ -74,6 +74,51 @@ test('dispatcher assigns event ids and mirrors committed events into the runtime
     assert.deepEqual(useRuntimeStore.getState().rootIds, ['node-1']);
 });
 
+test('dispatcher attaches created child nodes to their parent instead of promoting them to roots', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: {
+                id: 'graphic',
+                policy: {
+                    mutation: 'allow',
+                    capabilities: ['node:create'],
+                },
+            },
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.NODE_CREATE,
+        payload: {
+            node: {
+                id: 'root-1',
+                type: 'frame',
+                children: [],
+                layout: { x: 0, y: 0, width: 400, height: 300 },
+            },
+        },
+    });
+
+    const next = await dispatcher.dispatch({
+        type: EventTypes.NODE_CREATE,
+        payload: {
+            node: {
+                id: 'child-1',
+                type: 'frame',
+                parentId: 'root-1',
+                layout: { x: 10, y: 10, width: 100, height: 80 },
+            },
+        },
+    });
+
+    assert.equal(next.nodes['child-1']?.parentId, 'root-1');
+    assert.deepEqual(next.rootIds, ['root-1']);
+    assert.deepEqual(next.nodes['root-1']?.children, ['child-1']);
+});
+
 test('dispatcher rejects pre-assigned event ids', async () => {
     const dispatcher = createEventDispatcher({ headless: true });
     dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });

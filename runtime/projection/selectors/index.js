@@ -6,6 +6,7 @@ export * from './graphSelectors.js';
 export * from './sequenceSelectors.js';
 export * from './rigControllerSelectors.js';
 export * from './rigControllerOverlaySelectors.js';
+export * from '@/runtime/graph/graphInteractionSelectors.js';
 export {
     selectRigState,
     selectRigMap,

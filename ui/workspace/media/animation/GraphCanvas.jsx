@@ -1,24 +1,43 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
+import {
+    startGraphConnection,
+    startGraphDrag,
+    startGraphPan,
+    selectGraphNode,
+    updateGraphConnection,
+    updateGraphDrag,
+    updateGraphPan,
+    zoomGraphViewport,
+} from '@/runtime/graph/index.js';
 import { GraphEdgeView } from './GraphEdgeView.jsx';
 import { GraphNodeView } from './GraphNodeView.jsx';
 import { getVisibleInputs } from './graphNodePorts.js';
+
+const EMPTY_GRAPH_PREVIEW_POSITIONS = {};
 
 export function GraphCanvas({
     activeGraph,
     activeGraphId,
     nodes,
     edges,
-    interaction,
-    connectionInteraction,
+    graph,
     canConnect,
     onCommitNodeDrag,
     onCommitConnection,
     onDisconnectEdge,
+    onDispatchEvent,
+    onClearSelection,
+    onEndConnection,
+    onEndPan,
 }) {
     const canvasBodyRef = useRef(null);
-    const { viewport } = interaction;
+    const viewport = graph?.viewport ?? { x: 0, y: 0, zoom: 1 };
+    const selectionIds = graph?.selection?.ids ?? [];
+    const drag = graph?.drag ?? null;
+    const connection = graph?.connection ?? null;
+    const dragPreviewPositions = graph?.dragPreviewPositions ?? EMPTY_GRAPH_PREVIEW_POSITIONS;
 
     function toLocalGraphPoint(clientX, clientY) {
         const rect = canvasBodyRef.current?.getBoundingClientRect();
@@ -32,30 +51,24 @@ export function GraphCanvas({
         };
     }
 
-    function getRenderedNodePosition(node) {
-        const dragPreview =
-            interaction.draggingNode?.id === node.id
-                ? {
-                      x: interaction.draggingNode.previewX,
-                      y: interaction.draggingNode.previewY,
-                  }
-                : null;
+    const getRenderedNodePosition = useCallback((node) => {
+        const dragPreview = dragPreviewPositions?.[node.id] ?? null;
 
         return {
             x: dragPreview?.x ?? node.position.x,
             y: dragPreview?.y ?? node.position.y,
         };
-    }
+    }, [dragPreviewPositions]);
 
-    function getOutputPortPosition(node) {
+    const getOutputPortPosition = useCallback((node) => {
         const position = getRenderedNodePosition(node);
         return {
             x: position.x + 120,
             y: position.y + 56,
         };
-    }
+    }, [getRenderedNodePosition]);
 
-    function getInputPortPosition(node, inputName) {
+    const getInputPortPosition = useCallback((node, inputName) => {
         const inputs = getVisibleInputs(node);
         const index = Math.max(0, inputs.indexOf(inputName));
         const position = getRenderedNodePosition(node);
@@ -64,7 +77,7 @@ export function GraphCanvas({
             x: position.x + 17,
             y: position.y + 61 + index * 20,
         };
-    }
+    }, [getRenderedNodePosition]);
 
     const graphEdges = useMemo(() => {
         const nodePositions = new Map(nodes.map((node) => [node.id, node]));
@@ -78,10 +91,9 @@ export function GraphCanvas({
                 ? getInputPortPosition(nodePositions.get(edge.to), edge.input)
                 : { x: 100, y: 100 },
         }));
-    }, [edges, interaction.draggingNode, nodes]);
+    }, [edges, getInputPortPosition, getOutputPortPosition, nodes]);
 
     const snappedConnectionTarget = useMemo(() => {
-        const connection = connectionInteraction.connection;
         if (!connection || !activeGraph) return null;
 
         let best = null;
@@ -118,21 +130,21 @@ export function GraphCanvas({
         }
 
         return best;
-    }, [activeGraph, canConnect, connectionInteraction.connection, interaction.draggingNode, nodes]);
+    }, [activeGraph, canConnect, connection, getInputPortPosition, nodes]);
 
     const previewEdge = useMemo(() => {
-        if (!connectionInteraction.connection) return null;
+        if (!connection?.active) return null;
 
         const sourceNode = nodes.find(
-            (node) => node.id === connectionInteraction.connection.fromNodeId,
+            (node) => node.id === connection.fromNodeId,
         );
 
         if (!sourceNode) return null;
 
         const source = getOutputPortPosition(sourceNode);
         const target = snappedConnectionTarget?.position ?? {
-            x: connectionInteraction.connection.pointerX,
-            y: connectionInteraction.connection.pointerY,
+            x: connection.pointerX,
+            y: connection.pointerY,
         };
 
         return {
@@ -145,47 +157,50 @@ export function GraphCanvas({
                 y: target.y,
             },
         };
-    }, [connectionInteraction.connection, interaction.draggingNode, nodes, snappedConnectionTarget]);
+    }, [connection, getOutputPortPosition, nodes, snappedConnectionTarget]);
 
     function handleWheel(event) {
         event.preventDefault();
-        interaction.updateZoom(event.deltaY);
+        onEndPan?.();
+        onEndConnection?.();
+        onCommitNodeDrag?.();
+        onDispatchEvent?.(zoomGraphViewport(event.deltaY));
     }
 
     function handleMouseDown(event) {
         if (event.target !== event.currentTarget) return;
-        interaction.clearSelection();
-        interaction.startPan(event.clientX, event.clientY);
+        onClearSelection?.();
+        onDispatchEvent?.(startGraphPan({ x: event.clientX, y: event.clientY }));
     }
 
     function handleMouseMove(event) {
-        if (connectionInteraction.connection) {
+        if (connection?.active) {
             const point = toLocalGraphPoint(event.clientX, event.clientY);
-            connectionInteraction.updateConnection(point.x, point.y);
+            onDispatchEvent?.(updateGraphConnection({ pointerX: point.x, pointerY: point.y }));
             return;
         }
 
-        if (interaction.draggingNode) {
-            interaction.updateNodeDrag(event.clientX, event.clientY);
+        if (drag?.active) {
+            onDispatchEvent?.(updateGraphDrag(toLocalGraphPoint(event.clientX, event.clientY)));
             return;
         }
 
-        if (interaction.panning) {
-            interaction.updatePanFromPointer(event.clientX, event.clientY);
+        if (graph?.pan?.active) {
+            onDispatchEvent?.(updateGraphPan({ x: event.clientX, y: event.clientY }));
         }
     }
 
     function handleMouseUp() {
-        if (connectionInteraction.connection && snappedConnectionTarget) {
+        if (connection?.active && snappedConnectionTarget) {
             onCommitConnection?.({
-                from: connectionInteraction.connection.fromNodeId,
+                from: connection.fromNodeId,
                 to: snappedConnectionTarget.nodeId,
                 input: snappedConnectionTarget.input,
             });
         }
 
-        connectionInteraction.endConnection();
-        interaction.endPan();
+        onEndConnection?.();
+        onEndPan?.();
         onCommitNodeDrag?.();
     }
 
@@ -273,17 +288,28 @@ export function GraphCanvas({
                                 <GraphNodeView
                                     key={node.id}
                                     node={node}
-                                    interaction={{
-                                        ...interaction,
-                                        connection: connectionInteraction.connection,
-                                        startConnection: (nodeId, clientX, clientY) => {
-                                            const point = toLocalGraphPoint(clientX, clientY);
-                                            connectionInteraction.startConnection(nodeId, point.x, point.y);
-                                        },
-                                        endConnection: connectionInteraction.endConnection,
-                                        commitConnection: onCommitConnection,
-                                        canConnect,
+                                    isSelected={selectionIds.includes(node.id)}
+                                    activeConnection={connection?.active ? connection : null}
+                                    dragPreviewPosition={dragPreviewPositions?.[node.id] ?? null}
+                                    canConnect={canConnect}
+                                    onSelectNode={() => onDispatchEvent?.(selectGraphNode(node.id))}
+                                    onStartNodeDrag={(clientX, clientY) => {
+                                        onDispatchEvent?.(startGraphDrag({
+                                            nodeId: node.id,
+                                            origin: node.position,
+                                            pointer: toLocalGraphPoint(clientX, clientY),
+                                        }));
                                     }}
+                                    onStartConnection={(nodeId, clientX, clientY) => {
+                                        const point = toLocalGraphPoint(clientX, clientY);
+                                        onDispatchEvent?.(startGraphConnection({
+                                            fromNodeId: nodeId,
+                                            pointerX: point.x,
+                                            pointerY: point.y,
+                                        }));
+                                    }}
+                                    onCommitConnection={onCommitConnection}
+                                    onEndConnection={onEndConnection}
                                     onCommitNodeDrag={onCommitNodeDrag}
                                 />
                             ))}

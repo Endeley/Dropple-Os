@@ -3,25 +3,27 @@
 import { getConnectionValue } from './graphConnectionGuards.js';
 import { getVisibleInputs } from './graphNodePorts.js';
 
-export function GraphNodeView({ node, interaction, onCommitNodeDrag }) {
-    const isSelected = interaction?.selectedNodeId === node.id;
-    const isHovered = interaction?.hoverNodeId === node.id;
+export function GraphNodeView({
+    node,
+    isSelected = false,
+    activeConnection = null,
+    dragPreviewPosition = null,
+    canConnect,
+    onSelectNode,
+    onStartNodeDrag,
+    onStartConnection,
+    onCommitConnection,
+    onEndConnection,
+    onCommitNodeDrag,
+}) {
     const visibleInputs = getVisibleInputs(node);
-    const activeConnection = interaction?.connection ?? null;
-    const dragPreview =
-        interaction?.draggingNode?.id === node.id
-            ? {
-                  x: interaction.draggingNode.previewX,
-                  y: interaction.draggingNode.previewY,
-              }
-            : null;
-    const x = dragPreview?.x ?? node.position.x;
-    const y = dragPreview?.y ?? node.position.y;
+    const x = dragPreviewPosition?.x ?? node.position.x;
+    const y = dragPreviewPosition?.y ?? node.position.y;
 
     function handleMouseDown(event) {
         event.stopPropagation();
-        interaction?.selectNode(node.id);
-        interaction?.startNodeDrag(node.id, event.clientX, event.clientY, node.position);
+        onSelectNode?.(node.id);
+        onStartNodeDrag?.(event.clientX, event.clientY);
     }
 
     function handleMouseUp(event) {
@@ -31,7 +33,7 @@ export function GraphNodeView({ node, interaction, onCommitNodeDrag }) {
 
     function handleOutputMouseDown(event) {
         event.stopPropagation();
-        interaction?.startConnection?.(
+        onStartConnection?.(
             node.id,
             event.clientX,
             event.clientY,
@@ -44,19 +46,19 @@ export function GraphNodeView({ node, interaction, onCommitNodeDrag }) {
         const connection = activeConnection;
         if (!connection) return;
 
-        interaction?.commitConnection?.({
+        onCommitConnection?.({
             from: connection.fromNodeId,
             to: node.id,
             input: inputName,
         });
-        interaction?.endConnection?.();
+        onEndConnection?.();
     }
 
     function getInputState(inputName) {
         const currentSource = getConnectionValue(node, inputName);
         const valid =
             activeConnection &&
-            interaction?.canConnect?.({
+            canConnect?.({
                 from: activeConnection.fromNodeId,
                 to: node.id,
                 input: inputName,
@@ -69,7 +71,7 @@ export function GraphNodeView({ node, interaction, onCommitNodeDrag }) {
     }
 
     const nodeHasValidTarget = visibleInputs.some((inputName) =>
-        interaction?.canConnect?.({
+        canConnect?.({
             from: activeConnection?.fromNodeId,
             to: node.id,
             input: inputName,
@@ -80,8 +82,6 @@ export function GraphNodeView({ node, interaction, onCommitNodeDrag }) {
         <div
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
-            onMouseEnter={() => interaction?.setHover(node.id)}
-            onMouseLeave={() => interaction?.setHover(null)}
             style={{
                 position: 'absolute',
                 left: x,
@@ -92,15 +92,13 @@ export function GraphNodeView({ node, interaction, onCommitNodeDrag }) {
                     ? '2px solid #22c55e'
                     : isSelected
                     ? '2px solid #60a5fa'
-                    : isHovered
-                      ? '1px solid rgba(96, 165, 250, 0.72)'
-                      : '1px solid rgba(148, 163, 184, 0.28)',
+                    : '1px solid rgba(148, 163, 184, 0.28)',
                 background: 'rgba(15, 23, 42, 0.92)',
                 boxShadow: '0 10px 30px rgba(2, 6, 23, 0.24)',
                 color: '#e2e8f0',
                 overflow: 'hidden',
-                cursor: interaction?.draggingNode?.id === node.id ? 'grabbing' : 'grab',
-                transform: isHovered && !isSelected ? 'translateY(-1px)' : 'none',
+                cursor: dragPreviewPosition ? 'grabbing' : 'grab',
+                transform: 'none',
                 opacity: activeConnection && !nodeHasValidTarget && activeConnection.fromNodeId !== node.id ? 0.4 : 1,
             }}>
             <div

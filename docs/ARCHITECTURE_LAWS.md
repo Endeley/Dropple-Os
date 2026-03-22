@@ -47,7 +47,8 @@ Forbidden:
 
 ## 6. Event-Driven Truth
 All interaction effects must resolve to events:
-- `node.layout.move`
+- `node.layout.bulk` (canonical)
+- `node.layout.move` (deprecated, compatibility only)
 - `node.layout.resize`
 - `node.layout.rotate`
 

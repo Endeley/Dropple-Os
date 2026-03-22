@@ -5,7 +5,7 @@ import { createShareLink } from '@/share/createShareLink';
 import { createEmbedCodeFromPreset } from '@/share/createEmbedCode';
 import { CapabilityActions } from '@/ui/capabilities/capabilityActions';
 import { publishCurrentDocument } from '@/gallery/publishToGallery';
-import { runToolCommand } from '@/ui/interactions/toolController';
+import { runCommandIntent } from '@/ui/bridges/runtimeCommandFacade.js';
 
 async function copyToClipboard(text) {
   if (navigator?.clipboard?.writeText) {
@@ -39,23 +39,7 @@ export function buildCommands({
       keywords: ['group', 'wrap', 'selection'],
       requiresSelection: 'multi',
       run: () => {
-        return runToolCommand({
-          commandId: 'group',
-          getRuntimeState: () => ({
-            workspaceId,
-            document: {
-              sceneGraph: {
-                nodes,
-                rootIds: [],
-              },
-            },
-            nodes,
-            selection: {
-              ids: selectedIds,
-            },
-          }),
-          dispatch: emit,
-        });
+        return runCommandIntent('group');
       },
     },
     {
@@ -66,23 +50,7 @@ export function buildCommands({
       keywords: ['ungroup', 'unwrap', 'selection'],
       requiresSelection: true,
       run: () => {
-        return runToolCommand({
-          commandId: 'ungroup',
-          getRuntimeState: () => ({
-            workspaceId,
-            document: {
-              sceneGraph: {
-                nodes,
-                rootIds: [],
-              },
-            },
-            nodes,
-            selection: {
-              ids: selectedIds,
-            },
-          }),
-          dispatch: emit,
-        });
+        return runCommandIntent('ungroup');
       },
     },
     {

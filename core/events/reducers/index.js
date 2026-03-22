@@ -21,6 +21,7 @@ import { vectorReducers } from "./vectorReducers.js";
 import { aiReducers } from "./aiReducers.js";
 import { selectionReducer } from "./selectionReducers.js";
 import { viewportReducer } from "./viewportReducer.js";
+import { graphInteractionReducer } from './graphInteractionReducer.js';
 import { assertReducerOwnership } from '@/core/events/reducerOwnership.js';
 
 function applyOwnedReducer(state, event, reducer, reducerName, ownership) {
@@ -57,6 +58,10 @@ export function rootReducer(state, event) {
   next = applyOwnedReducer(next, event, graphReducers, 'graphReducers', {
     allowedDocumentSlices: ['graphs'],
     allowedRuntimeSlices: [],
+  });
+  next = applyOwnedReducer(next, event, graphInteractionReducer, 'graphInteractionReducer', {
+    allowedDocumentSlices: [],
+    allowedRuntimeSlices: ['graph'],
   });
   next = applyOwnedReducer(next, event, sequenceReducers, 'sequenceReducers', {
     allowedDocumentSlices: ['sequences'],

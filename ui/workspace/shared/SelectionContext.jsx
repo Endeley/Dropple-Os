@@ -1,39 +1,32 @@
 'use client';
 
 import { createContext, useContext, useMemo } from 'react';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
-import {
-  clearSelection,
-  selectNode,
-  setSelection as createSetSelection,
-  toggleNode,
-} from '@/ui/bridges/selectionRuntimeFacade.js';
+import { useWorkspaceVisualState } from '@/runtime/projection';
+import { canvasBus } from '@/ui/eventBus/canvasBus.js';
 
 const SelectionContext = createContext(null);
 
 export function SelectionProvider({ children }) {
-  const selectionIds = useRuntimeStore((s) => s.selection?.ids || []);
+  const selectionIds = useWorkspaceVisualState((s) => s.selection?.ids || []);
   const selectedIds = useMemo(() => new Set(selectionIds), [selectionIds]);
-  const { dispatch } = useDispatcher();
 
   function selectSingle(id) {
     if (!id) return;
-    dispatch(selectNode(id));
+    canvasBus.emit('intent.selection.select', { nodeId: id });
   }
 
   function setSelection(ids) {
     const nextIds = Array.from(ids || []);
-    dispatch(createSetSelection(nextIds));
+    canvasBus.emit('intent.selection.set', { ids: nextIds, primary: nextIds[0] ?? null });
   }
 
   function toggle(id) {
     if (!id) return;
-    dispatch(toggleNode(id));
+    canvasBus.emit('intent.selection.toggle', { nodeId: id });
   }
 
   function clear() {
-    dispatch(clearSelection());
+    canvasBus.emit('intent.selection.clear', {});
   }
 
   return (

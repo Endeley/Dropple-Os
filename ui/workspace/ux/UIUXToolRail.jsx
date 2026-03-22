@@ -1,11 +1,11 @@
 'use client';
 
+import '@/ui/styles/uiux.css';
 import { useMemo } from 'react';
 import { useWorkspaceProjection } from '@/runtime/projection';
 import { useToolStore } from '@/ui/state/useToolStore.js';
-import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
-import { setActiveTool } from '@/runtime/actions/toolActions.js';
 import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions.js';
+import { canvasBus } from '@/ui/eventBus/canvasBus.js';
 
 const TOOL_ICONS = {
   select: (
@@ -77,7 +77,6 @@ export function UIUXToolRail() {
   const workspaceId = useWorkspaceProjection((state) => state.id) || 'uiux';
   const activeTool = useToolStore((s) => s.activeTool);
   const tools = useToolStore((s) => s.visibleTools);
-  const dispatcher = useDispatcher();
   const grouped = useMemo(() => {
     const map = new Map();
     tools.forEach((toolId) => {
@@ -101,7 +100,9 @@ export function UIUXToolRail() {
               id={tool.id}
               label={tool.label}
               active={activeTool === tool.id}
-              onSelect={() => dispatcher.dispatch(setActiveTool(tool.id))}
+              onSelect={() =>
+                canvasBus.emit('intent.tool.setActive', { toolId: tool.id, workspaceId })
+              }
             />
           ))}
         </div>

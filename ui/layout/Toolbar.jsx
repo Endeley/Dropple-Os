@@ -10,7 +10,7 @@ import { runExportGate } from '@/ui/export/exportGateClient.js';
 import { createShareLink } from '@/share/createShareLink';
 import { createEmbedCode } from '@/share/createEmbedCode';
 import { colors, spacing, radius } from '@/ui/tokens';
-import { runToolCommand } from '@/ui/interactions/toolController';
+import { runCommandIntent } from '@/ui/bridges/runtimeCommandFacade.js';
 
 export default function Toolbar({
   mode,
@@ -199,24 +199,7 @@ export default function Toolbar({
       )}
       <button
         disabled={!enabled}
-        onClick={() =>
-          runToolCommand({
-            commandId: 'group',
-            getRuntimeState: () => ({
-              workspaceId: mode?.workspaceId || mode?.id || 'graphic',
-              document: {
-                sceneGraph: {
-                  nodes,
-                  rootIds: state?.rootIds || [],
-                },
-              },
-              nodes,
-              rootIds: state?.rootIds || [],
-              selection: { ids: selected },
-            }),
-            dispatch: emit,
-          })
-        }
+        onClick={() => runCommandIntent('group')}
         title="Group selection"
         style={{
           minWidth: 32,
@@ -233,24 +216,7 @@ export default function Toolbar({
       </button>
       <button
         disabled={!singleSelected}
-        onClick={() =>
-          runToolCommand({
-            commandId: 'ungroup',
-            getRuntimeState: () => ({
-              workspaceId: mode?.workspaceId || mode?.id || 'graphic',
-              document: {
-                sceneGraph: {
-                  nodes,
-                  rootIds: state?.rootIds || [],
-                },
-              },
-              nodes,
-              rootIds: state?.rootIds || [],
-              selection: { ids: selected },
-            }),
-            dispatch: emit,
-          })
-        }
+        onClick={() => runCommandIntent('ungroup')}
         title="Ungroup selection"
         style={{
           minWidth: 32,

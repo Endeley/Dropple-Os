@@ -6,6 +6,7 @@ export const initialDragState = Object.freeze({
     previousPointer: null,
     currentPointer: null,
     origin: null,
+    group: null,
     resize: null,
     rotation: null,
     meta: null,
@@ -22,6 +23,7 @@ export function startDrag(state, payload = {}) {
         previousPointer: payload.pointer ?? null,
         currentPointer: payload.pointer ?? null,
         origin: payload.origin ?? null,
+        group: payload.group ?? null,
         resize:
             payload.type === 'resize'
                 ? {

@@ -26,6 +26,7 @@ import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
 import { WorkspaceSwitcher } from '@/ui/workspace/shared/WorkspaceSwitcher.jsx';
 import { ModeSwitcher } from '@/ui/workspace/shared/ModeSwitcher.jsx';
 import { useWorkspaceNavigation } from '@/ui/workspace/shared/useWorkspaceNavigation.js';
+import { UIUXToolRail } from '@/ui/workspace/ux/UIUXToolRail.jsx';
 
 const PANEL_LEFT = new Set(['SubmissionInfoPanel', 'LessonOutlinePanel']);
 const PANEL_RIGHT = new Set([
@@ -194,6 +195,18 @@ export function EditorWorkspaceShell({
 
     const workspace = (
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            {workspaceContext.workspace === 'design' && adapter?.ui?.editing !== false && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: 48,
+                        left: 0,
+                        bottom: 0,
+                        zIndex: 900,
+                    }}>
+                    <UIUXToolRail />
+                </div>
+            )}
             {showWorkspaceNavigation && (
                 <div
                     style={{
@@ -253,6 +266,7 @@ export function EditorWorkspaceShell({
                 onReviewCriteriaChange={onReviewCriteriaChange}
                 reviewerId={reviewerId}
                 presence={presence}
+                railOffset={workspaceContext.workspace === 'design' && adapter?.ui?.editing !== false ? 56 : 0}
             />
         </div>
     );

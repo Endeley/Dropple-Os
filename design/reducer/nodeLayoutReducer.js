@@ -1,18 +1,49 @@
 export function nodeLayoutReducer(state, event) {
+  if (event.type === 'node.layout.move') {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[DEPRECATED] node.layout.move -> use node.layout.bulk');
+    }
+
+    return nodeLayoutReducer(state, {
+      type: 'node.layout.bulk',
+      payload: {
+        updates: [{
+          id: event.payload?.nodeId,
+          x: event.payload?.x,
+          y: event.payload?.y,
+        }],
+      },
+    });
+  }
+
   const next = structuredClone(state);
+
+  if (event.type === 'node.layout.bulk') {
+    const updates = Array.isArray(event.payload?.updates) ? event.payload.updates : [];
+
+    updates.forEach((update) => {
+      const nodeId = update?.id ?? update?.nodeId;
+      const node = next.nodes[nodeId];
+      if (!node) return;
+
+      node.layout = {
+        ...node.layout,
+        ...(update.layout || {}),
+        ...(update.x != null ? { x: update.x } : null),
+        ...(update.y != null ? { y: update.y } : null),
+        ...(update.width != null ? { width: update.width } : null),
+        ...(update.height != null ? { height: update.height } : null),
+      };
+    });
+
+    return next;
+  }
 
   const { nodeId } = event.payload;
   const node = next.nodes[nodeId];
   if (!node) return state;
 
-  if (event.type === 'node.layout.move') {
-    const { x, y } = event.payload;
-    node.layout = {
-      ...node.layout,
-      x,
-      y,
-    };
-  } else if (event.type === 'node.layout.resize') {
+  if (event.type === 'node.layout.resize') {
     const { width, height } = event.payload;
     node.layout = {
       ...node.layout,

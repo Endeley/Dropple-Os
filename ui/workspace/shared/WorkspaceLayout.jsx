@@ -57,6 +57,7 @@ function WorkspaceLayoutInner({
   onReviewCriteriaChange,
   reviewerId,
   presence,
+  railOffset = 0,
   intents,
 }) {
   const { selectedIds, setSelection } = useSelection();
@@ -205,7 +206,7 @@ function WorkspaceLayoutInner({
   }, [adapter?.id, adapter?.workspaceId]);
 
   return (
-    <div className="workspace-root">
+    <div className="workspace-root" style={railOffset > 0 ? { paddingLeft: railOffset } : undefined}>
       <PresenceDots presence={presence} />
       {commandOpen && (
         <CommandPalette

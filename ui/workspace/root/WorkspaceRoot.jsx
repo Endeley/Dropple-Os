@@ -28,9 +28,11 @@ export function WorkspaceRoot({
     children = null,
 }) {
     const isUXMode = profile === 'ux-validation';
+    const workspaceRootKey = `${workspaceId ?? 'workspace'}:${branchId}:${profile}:${modeId ?? workspace?.id ?? 'mode'}`;
 
     return (
         <DispatcherProvider
+            key={workspaceRootKey}
             workspaceId={workspaceId}
             branchId={branchId}
             profile={profile}
