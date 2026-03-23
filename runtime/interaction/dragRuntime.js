@@ -57,7 +57,7 @@ export function updateDrag(state, payload) {
 
     return {
         ...state,
-        previousPointer: state.currentPointer ?? null,
+        previousPointer: state.currentPointer ?? state.startPointer ?? null,
         currentPointer: pointer ?? null,
         guides: Array.isArray(guides) ? [...guides] : [],
     };

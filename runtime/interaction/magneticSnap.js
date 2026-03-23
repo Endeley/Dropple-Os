@@ -46,12 +46,14 @@ export function applyMagneticSnap(rawDelta, resolvedDelta, options = {}) {
     const speed = velocity?.speed ?? 0;
     const velocityFactor = clamp01(1 - speed * velocityFalloff);
 
-    const strengthX = clamp01(
-        Math.max(minStrength, baseStrengthX * maxStrength * velocityFactor),
-    );
-    const strengthY = clamp01(
-        Math.max(minStrength, baseStrengthY * maxStrength * velocityFactor),
-    );
+    const strengthX =
+        distX > threshold
+            ? 0
+            : clamp01(Math.max(minStrength, baseStrengthX * maxStrength * velocityFactor));
+    const strengthY =
+        distY > threshold
+            ? 0
+            : clamp01(Math.max(minStrength, baseStrengthY * maxStrength * velocityFactor));
 
     return {
         dx: lerp(rawDx, snapDx, strengthX),

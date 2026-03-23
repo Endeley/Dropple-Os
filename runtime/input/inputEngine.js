@@ -29,32 +29,19 @@ export function handleInputEvent(input, options = {}) {
 
     let result = null;
 
-    if (typeof handler === 'function') {
-        result = handler(input, context);
-        if (isHandledResult(result)) {
-            if (process.env.NODE_ENV === 'development') {
-                console.debug('[InputEngine]', {
-                    input,
-                    tool,
-                    handled: true,
-                });
-            }
-            return result;
+    if (typeof handler !== 'function') {
+        if (process.env.NODE_ENV === 'development') {
+            console.warn('[InputEngine] Missing handler for tool:', tool);
         }
+    } else {
+        result = handler(input, context);
+        if (isHandledResult(result)) return result;
     }
 
     const fallbackResult =
         typeof options.fallbackHandler === 'function'
             ? options.fallbackHandler(input, context)
             : null;
-
-    if (process.env.NODE_ENV === 'development') {
-        console.debug('[InputEngine]', {
-            input,
-            tool,
-            handled: isHandledResult(fallbackResult),
-        });
-    }
 
     return isHandledResult(fallbackResult) ? fallbackResult : null;
 }

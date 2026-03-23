@@ -14,7 +14,9 @@ function getNodeBounds(node) {
 }
 
 export function computeGroupBounds(nodesById, nodeIds) {
-    const sortedIds = Array.isArray(nodeIds) ? [...nodeIds].sort() : [];
+    const sortedIds = Array.isArray(nodeIds)
+        ? [...nodeIds].sort((a, b) => String(a).localeCompare(String(b)))
+        : [];
     let minX = Infinity;
     let minY = Infinity;
     let maxX = -Infinity;

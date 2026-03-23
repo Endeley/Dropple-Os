@@ -4,11 +4,17 @@ import { computeGroupMoveUpdates } from '@/runtime/interaction/groupMoveEngine.j
 
 test('group move applies same delta to all members', () => {
     const group = {
-        active: true,
         nodeIds: ['a', 'b'],
+        bounds: { x: 0, y: 0, width: 140, height: 60 },
         members: {
-            a: { originBounds: { x: 0, y: 0 } },
-            b: { originBounds: { x: 100, y: 50 } },
+            a: {
+                originBounds: { x: 0, y: 0 },
+                offsetFromGroupOrigin: { x: 0, y: 0 },
+            },
+            b: {
+                originBounds: { x: 100, y: 50 },
+                offsetFromGroupOrigin: { x: 100, y: 50 },
+            },
         },
     };
 
@@ -22,11 +28,17 @@ test('group move applies same delta to all members', () => {
 
 test('group move is deterministic', () => {
     const group = {
-        active: true,
         nodeIds: ['a', 'b'],
+        bounds: { x: 0, y: 0, width: 140, height: 60 },
         members: {
-            a: { originBounds: { x: 0, y: 0 } },
-            b: { originBounds: { x: 100, y: 50 } },
+            a: {
+                originBounds: { x: 0, y: 0 },
+                offsetFromGroupOrigin: { x: 0, y: 0 },
+            },
+            b: {
+                originBounds: { x: 100, y: 50 },
+                offsetFromGroupOrigin: { x: 100, y: 50 },
+            },
         },
     };
 
@@ -34,4 +46,28 @@ test('group move is deterministic', () => {
     const resultB = computeGroupMoveUpdates(group, { dx: 5, dy: 5 });
 
     assert.deepEqual(resultA, resultB);
+});
+
+test('group move works with runtime group shape that does not include active', () => {
+    const group = {
+        nodeIds: ['a', 'b'],
+        bounds: { x: 10, y: 20, width: 140, height: 60 },
+        members: {
+            a: {
+                originBounds: { x: 10, y: 20 },
+                offsetFromGroupOrigin: { x: 0, y: 0 },
+            },
+            b: {
+                originBounds: { x: 110, y: 70 },
+                offsetFromGroupOrigin: { x: 100, y: 50 },
+            },
+        },
+    };
+
+    const result = computeGroupMoveUpdates(group, { dx: 15, dy: -5 });
+
+    assert.deepEqual(result, [
+        { nodeId: 'a', x: 25, y: 15 },
+        { nodeId: 'b', x: 125, y: 65 },
+    ]);
 });

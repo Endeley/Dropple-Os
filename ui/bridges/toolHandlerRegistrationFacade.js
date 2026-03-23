@@ -32,6 +32,7 @@ import { toggleNode } from '@/runtime/selection/toggleNode.js';
 import { computeRotateAnchor } from '@/runtime/transforms/computeRotateAnchor.js';
 import { computeResizeAnchors } from '@/runtime/transforms/computeResizeAnchors.js';
 import { canvasBus } from '@/ui/eventBus/canvasBus.js';
+import { resolveTargetNodeId } from '@/ui/interactions/resolveTargetNodeId.js';
 import {
     endSession,
     getActiveSessionType,
@@ -118,10 +119,10 @@ function resolvePrimaryHit(runtimeState, worldPoint, inputEvent = null, targetNo
         return runtimeState?.nodes?.[targetNodeId] ?? { id: targetNodeId };
     }
 
-    const eventTargetNodeId =
-        inputEvent?.target instanceof Element
-            ? inputEvent.target.closest?.('[data-node-id]')?.dataset?.nodeId ?? null
-            : null;
+    const eventTargetNodeId = resolveTargetNodeId(inputEvent?.target ?? null, {
+        x: inputEvent?.clientX,
+        y: inputEvent?.clientY,
+    });
 
     if (eventTargetNodeId) {
         return runtimeState?.nodes?.[eventTargetNodeId] ?? { id: eventTargetNodeId };
@@ -228,6 +229,13 @@ function selectToolHandler(input, context) {
 
     const drag = runtimeState?.interaction?.drag ?? null;
 
+    // Selection clicks can promote directly into a move drag. Once that happens,
+    // continue routing move updates/end through the move handler even if the
+    // active tool is still "select".
+    if ((input.type === 'pointermove' || input.type === 'pointerup' || input.type === 'pointercancel') && drag?.active && drag.type === 'move') {
+        return moveToolHandler(input, context);
+    }
+
     if (input.type === 'pointerdown') {
         const hit = resolvePrimaryHit(runtimeState, worldPoint, input.event, input.targetNodeId);
         const additive = input.event?.shiftKey ?? input.modifiers?.shift ?? false;
@@ -312,6 +320,12 @@ function selectToolHandler(input, context) {
             }
         }
 
+        dispatcher.dispatch({ type: EventTypes.DRAG_END });
+        return { handled: true };
+    }
+
+    if (input.type === 'pointercancel') {
+        if (!drag?.active) return null;
         dispatcher.dispatch({ type: EventTypes.DRAG_END });
         return { handled: true };
     }
@@ -448,6 +462,13 @@ function moveToolHandler(input, context) {
         }
     }
 
+    if (input.type === 'pointercancel') {
+        if (drag?.active && drag.type === 'move') {
+            dispatcher.dispatch({ type: EventTypes.DRAG_END });
+            return { handled: true };
+        }
+    }
+
     return null;
 }
 
@@ -495,3 +516,10 @@ export function unregisterDefaultGraphToolHandlers() {
     unregisterToolHandler('layer');
     unregisterToolHandler('defaultCreate');
 }
+
+export const __TESTING__ = Object.freeze({
+    buildGroupDragState,
+    moveToolHandler,
+    resolvePrimaryHit,
+    selectToolHandler,
+});

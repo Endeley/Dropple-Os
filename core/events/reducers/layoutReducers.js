@@ -156,7 +156,9 @@ export function layoutReducers(state, event) {
                 ...state,
                 nodes: nextNodes,
             }, {
-                nodeIds: updates.map((update) => update?.id),
+                nodeIds: updates
+                    .map((update) => update?.id)
+                    .filter(Boolean),
             });
         }
 

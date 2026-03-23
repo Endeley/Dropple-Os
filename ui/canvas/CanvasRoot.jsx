@@ -26,14 +26,12 @@ import { viewportIntent } from '@/ui/viewport/viewportIntent.js';
 import { getZoomTier } from '@/runtime/canvas/zoomTiers.js';
 import { CanvasProvider } from '@/ui/canvas/CanvasContext.jsx';
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
-import { EventTypes } from '@/core/events/eventTypes.js';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
 import { useToolStore } from '@/ui/state/useToolStore.js';
 import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions';
 import { useCanvasInteractions } from '@/ui/interactions/useCanvasInteractions.js';
+import { resolveTargetNodeId } from '@/ui/interactions/resolveTargetNodeId.js';
 import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
-import { handleInputEvent } from '@/ui/bridges/inputEngineFacade.js';
 
 /** precision safety */
 const MIN_EFFECTIVE_ZOOM = 0.0005;
@@ -74,12 +72,20 @@ export default function CanvasRoot({ workspaceId }) {
     const [worldOffset, setWorldOffset] = useState({ x: 0, y: 0 });
     const [isPanning, setIsPanning] = useState(false);
     const [isNodeDragging, setIsNodeDragging] = useState(false);
-    const [createSession, setCreateSession] = useState(null);
 
-    const { onPointerDown: onCanvasPointerDown, onPointerMove: onCanvasPointerMove, onPointerUp: onCanvasPointerUp } = useCanvasInteractions({
+    const {
+        onPointerDown: onCanvasPointerDown,
+        onPointerMove: onCanvasPointerMove,
+        onPointerUp: onCanvasPointerUp,
+        onPointerCancel: onCanvasPointerCancel,
+    } = useCanvasInteractions({
         getActiveToolId: (event) => {
             const toolDef = TOOL_DEFINITION_BY_ID[activeTool];
-            if (toolDef?.createsNode && isSelectionModifierGesture(event)) {
+            const targetNodeId = resolveTargetNodeId(event?.target ?? null, {
+                x: event?.clientX,
+                y: event?.clientY,
+            });
+            if (toolDef?.createsNode && (isSelectionModifierGesture(event) || targetNodeId)) {
                 return 'select';
             }
             return activeTool;
@@ -96,6 +102,7 @@ export default function CanvasRoot({ workspaceId }) {
                 y: viewport.y + worldOffset.y,
             });
         },
+        getDefaultParentId: () => rootIds[0] ?? null,
     });
 
     const allowPan = canvasPolicy?.allowPan ?? true;
@@ -118,23 +125,6 @@ export default function CanvasRoot({ workspaceId }) {
 
     // 🖱️ PAN START
     function handlePointerDown(e) {
-        const toolDef = TOOL_DEFINITION_BY_ID[activeTool];
-        if (toolDef?.createsNode && !isSelectionModifierGesture(e)) {
-            if (!viewport || !containerRef.current) return;
-
-            const rect = containerRef.current.getBoundingClientRect();
-            const point = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-            const world = screenToWorld(point, {
-                ...viewport,
-                x: viewport.x + worldOffset.x,
-                y: viewport.y + worldOffset.y,
-            });
-
-            setCreateSession({ start: world, current: world });
-            e.currentTarget.setPointerCapture?.(e.pointerId);
-            return;
-        }
-
         if (!allowPan) return;
 
         const isMiddle = e.button === 1;
@@ -155,19 +145,6 @@ export default function CanvasRoot({ workspaceId }) {
 
     // 🖱️ PAN MOVE
     function handlePointerMove(e) {
-        if (createSession) {
-            if (!viewport || !containerRef.current) return;
-            const rect = containerRef.current.getBoundingClientRect();
-            const point = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-            const world = screenToWorld(point, {
-                ...viewport,
-                x: viewport.x + worldOffset.x,
-                y: viewport.y + worldOffset.y,
-            });
-            setCreateSession((prev) => (prev ? { ...prev, current: world } : prev));
-            return;
-        }
-
         if (!allowPan || !panRef.current.active || !viewport) return;
         if ((e.buttons & 5) === 0) return;
 
@@ -189,63 +166,6 @@ export default function CanvasRoot({ workspaceId }) {
     }
 
     function handlePointerUp(e) {
-        if (createSession) {
-            const toolDef = TOOL_DEFINITION_BY_ID[activeTool];
-            if (!toolDef?.createsNode || isSelectionModifierGesture(e)) {
-                setCreateSession(null);
-                e.currentTarget.releasePointerCapture?.(e.pointerId);
-                return;
-            }
-            const { start, current } = createSession;
-            const width = Math.abs(current.x - start.x);
-            const height = Math.abs(current.y - start.y);
-
-            // 🔥 Drag threshold (prevents click-create)
-            if (width > 6 && height > 6) {
-                const bounds = {
-                    x: Math.min(start.x, current.x),
-                    y: Math.min(start.y, current.y),
-                    width,
-                    height,
-                };
-
-                const rootId = rootIds[0] ?? null;
-
-                const handled = handleInputEvent(
-                    {
-                        type: EventTypes.INPUT_CREATE_COMMIT,
-                        event: e,
-                        worldPoint: start,
-                        bounds,
-                        nodeType: toolDef.nodeType,
-                        parentId: rootId,
-                    },
-                    {
-                        fallbackHandler() {
-                            nodeCreateIntent({
-                                type: toolDef.nodeType,
-                                bounds,
-                                parentId: rootId,
-                            });
-                            return { handled: true };
-                        },
-                    },
-                );
-
-                if (!handled) {
-                    nodeCreateIntent({
-                        type: toolDef.nodeType,
-                        bounds,
-                        parentId: rootId,
-                    });
-                }
-            }
-
-            setCreateSession(null);
-            e.currentTarget.releasePointerCapture?.(e.pointerId);
-            return;
-        }
-
         panRef.current.active = false;
         setIsPanning(false);
         e.currentTarget.releasePointerCapture?.(e.pointerId);
@@ -363,13 +283,15 @@ export default function CanvasRoot({ workspaceId }) {
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
+                onPointerCancel={onCanvasPointerCancel}
                 onWheel={handleWheel}>
                 {/* 🌍 WORLD */}
                 <div
                     style={{ position: 'absolute', inset: 0 }}
                     onPointerDown={onCanvasPointerDown}
                     onPointerMove={onCanvasPointerMove}
-                    onPointerUp={onCanvasPointerUp}>
+                    onPointerUp={onCanvasPointerUp}
+                    onPointerCancel={onCanvasPointerCancel}>
                     <CanvasSurface surface={canvasSurface} viewport={viewport} emphasisMode={isNodeDragging ? 'drag' : isPanning ? 'pan' : 'none'} />
                     <WorldOriginMarker viewport={viewport} />
                     <GhostFrameLayer designState={designState} />

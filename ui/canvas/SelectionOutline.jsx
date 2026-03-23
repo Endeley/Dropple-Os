@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
 import { useWorkspaceProjection } from '@/runtime/projection';
 import { projectRectToViewport } from '@/canvas/transform/projectRectToViewport.js';
-import { canvasBus } from '@/ui/eventBus/canvasBus.js';
 
 export function SelectionOutline({
     nodeId,
@@ -55,20 +54,10 @@ export function SelectionOutline({
                         onPointerDown={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            const startPointer = {
-                                x: (node.x ?? 0) + (node.width ?? 0),
-                                y: (node.y ?? 0) + (node.height ?? 0),
-                            };
-
-                            canvasBus.emit('intent.session.start', {
-                                sessionType: 'resize',
-                                payload: {
-                                    nodeIds: [nodeId],
-                                    handle: 'se',
-                                    startPointer,
-                                },
-                                originalEvent: e,
-                            });
+                            if (process.env.NODE_ENV === 'development') {
+                                console.warn('SESSION DISABLED');
+                            }
+                            return;
                         }}
                         onMouseEnter={() => setShowLabel(true)}
                         onMouseLeave={() => setShowLabel(false)}
