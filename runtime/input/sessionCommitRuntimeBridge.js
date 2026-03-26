@@ -1,3 +1,12 @@
+/**
+ * NON-CANONICAL INTERACTION SYSTEM
+ *
+ * This bridge may translate session commits for preview-oriented or legacy flows,
+ * but it must not become the primary execution authority for canvas move/resize/
+ * rotate commits while the canonical canvas path is:
+ * CanvasRoot -> useCanvasInteractions -> inputEngine -> toolHandlerRegistrationFacade
+ */
+
 import { EventTypes } from '../../core/events/eventTypes.js';
 import { VIEWPORT_PAN, VIEWPORT_ZOOM } from '@/core/events/viewportEvents.js';
 import { computeSelectionBounds } from '../../domain/geometry/selectionBounds.js';

@@ -1,11 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useWorkspaceProjection } from '@/runtime/projection';
+import { useWorkspaceViewState } from '@/runtime/projection';
 import { resolveAvailability } from './resolveAvailability';
 
 export function useAvailability({ readCaps = [], writeCaps = [], modeId = null }) {
-  const workspaceId = useWorkspaceProjection((state) => state.id);
+  const workspaceId = useWorkspaceViewState((state) => state.id);
 
   return useMemo(
     () =>

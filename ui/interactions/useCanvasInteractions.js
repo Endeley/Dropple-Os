@@ -15,10 +15,10 @@ export function useCanvasInteractions({ getActiveToolId, getWorldPointFromEvent,
     return { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY };
   }, [getWorldPointFromEvent]);
 
-  const routePointerInput = useCallback((type, e) => {
+  const routePointerInput = useCallback((type, e, overrides = null) => {
     const worldPoint = toWorldPoint(e);
-    const tool = typeof getActiveToolId === 'function' ? getActiveToolId(e) : 'select';
-    const targetNodeId = resolveTargetNodeId(e.target, {
+    const tool = overrides?.tool ?? (typeof getActiveToolId === 'function' ? getActiveToolId(e) : 'select');
+    const targetNodeId = overrides?.targetNodeId ?? resolveTargetNodeId(e.target, {
       x: e.clientX,
       y: e.clientY,
     });
@@ -30,6 +30,7 @@ export function useCanvasInteractions({ getActiveToolId, getWorldPointFromEvent,
         pointerId: e.pointerId,
         worldPoint,
         targetNodeId,
+        resizeHandle: overrides?.resizeHandle ?? null,
       },
       {
         tool,
@@ -150,5 +151,35 @@ export function useCanvasInteractions({ getActiveToolId, getWorldPointFromEvent,
     e.currentTarget.releasePointerCapture?.(e.pointerId);
   }, [routePointerInput]);
 
-  return { onPointerDown, onPointerMove, onPointerUp, onPointerCancel };
+  const onResizeHandlePointerDown = useCallback((e, { nodeId, handle }) => {
+    if (e.defaultPrevented) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    routePointerInput('pointerdown', e, {
+      tool: 'resize',
+      targetNodeId: nodeId,
+      resizeHandle: handle,
+    });
+  }, [routePointerInput]);
+
+  const onRotateHandlePointerDown = useCallback((e, { nodeId }) => {
+    if (e.defaultPrevented) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    routePointerInput('pointerdown', e, {
+      tool: 'rotate',
+      targetNodeId: nodeId,
+    });
+  }, [routePointerInput]);
+
+  return {
+    onPointerDown,
+    onPointerMove,
+    onPointerUp,
+    onPointerCancel,
+    onResizeHandlePointerDown,
+    onRotateHandlePointerDown,
+  };
 }

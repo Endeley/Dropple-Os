@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useWorkspaceProjection } from '@/runtime/projection';
+import { useWorkspaceViewState } from '@/runtime/projection';
 
 /**
  * CanvasOriginMarker
@@ -10,7 +10,7 @@ import { useWorkspaceProjection } from '@/runtime/projection';
  * UX-only, read-only, non-interactive.
  */
 export function CanvasOriginMarker({ visible = true }) {
-    const viewport = useWorkspaceProjection((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
+    const viewport = useWorkspaceViewState((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
 
     if (!visible) return null;
 

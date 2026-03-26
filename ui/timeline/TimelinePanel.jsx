@@ -26,11 +26,11 @@ import {
   selectIsReplaying,
   useRuntimeStore,
   useTimelineStore,
-  useWorkspaceProjection,
+  useWorkspaceViewState,
 } from '@/ui/bridges/timelinePanelBridge.js';
 
 export default function TimelinePanel({ designState }) {
-  const workspaceId = useWorkspaceProjection((s) => s.id);
+  const workspaceId = useWorkspaceViewState((s) => s.id);
   const isAnimationWorkspace = workspaceId === 'animation';
   const sceneGraph = useRuntimeStore((s) => s.sceneGraph);
   const runtimeScene = useRuntimeStore((s) => s.scene);

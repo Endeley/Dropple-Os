@@ -1,7 +1,7 @@
 'use client';
 
 import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
-import { useWorkspaceProjection } from '@/runtime/projection';
+import { useWorkspaceViewState } from '@/runtime/projection';
 import { projectToViewport } from '@/canvas/transform/projectToViewport.js';
 
 /**
@@ -10,7 +10,7 @@ import { projectToViewport } from '@/canvas/transform/projectToViewport.js';
  */
 export default function InsertionLine({ containerId, index }) {
     const nodes = useCharacterRenderNodes();
-    const viewport = useWorkspaceProjection((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
+    const viewport = useWorkspaceViewState((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
 
     const container = nodes[containerId];
     if (!container) return null;

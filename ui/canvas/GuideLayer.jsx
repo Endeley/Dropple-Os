@@ -4,7 +4,7 @@ import CanvasSnapGuides from './CanvasSnapGuides.jsx';
 import InsertionLine from './InsertionLine.jsx';
 import FrameRulers from './FrameRulers.jsx';
 import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
-import { useWorkspaceProjection, useWorkspaceVisualState } from '@/runtime/projection';
+import { useWorkspaceViewState, useWorkspaceVisualState } from '@/runtime/projection';
 import { useEffect, useRef, useState } from 'react';
 import { getPreview } from '@/ui/bridges/inputSessionRuntimeFacade.js';
 
@@ -12,7 +12,7 @@ export default function GuideLayer() {
     const nodes = useCharacterRenderNodes();
     const selectedIds = useWorkspaceVisualState((s) => s.selection?.ids || []);
     const guides = useWorkspaceVisualState((s) => s.guides || []);
-    const viewport = useWorkspaceProjection((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
+    const viewport = useWorkspaceViewState((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
     const [reorderPreview, setReorderPreview] = useState(null);
     const lastPreviewRef = useRef(null);
 

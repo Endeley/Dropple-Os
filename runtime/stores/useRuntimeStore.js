@@ -15,6 +15,8 @@ export const useRuntimeStore = create((set) => ({
     scene: null,
     timeline: null,
     playback: { isPlaying: false },
+    isReplaying: false,
+    uxAudit: [],
     selection: { ids: [], primary: null, count: 0 },
     clipboard: { count: 0, hasData: false },
     grouping: { count: 0 },

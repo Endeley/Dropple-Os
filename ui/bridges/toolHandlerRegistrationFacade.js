@@ -29,15 +29,17 @@ import { clearSelection } from '@/runtime/selection/clearSelection.js';
 import { selectBounds } from '@/runtime/selection/selectBounds.js';
 import { selectNode } from '@/runtime/selection/selectNode.js';
 import { toggleNode } from '@/runtime/selection/toggleNode.js';
-import { computeRotateAnchor } from '@/runtime/transforms/computeRotateAnchor.js';
-import { computeResizeAnchors } from '@/runtime/transforms/computeResizeAnchors.js';
-import { canvasBus } from '@/ui/eventBus/canvasBus.js';
 import { resolveTargetNodeId } from '@/ui/interactions/resolveTargetNodeId.js';
-import {
-    endSession,
-    getActiveSessionType,
-    updatePointer,
-} from '@/ui/bridges/inputSessionRuntimeFacade.js';
+
+const MOVE_DRAG_THRESHOLD = 3;
+
+function normalizeAngle(angle) {
+    const TAU = Math.PI * 2;
+    let next = angle;
+    while (next > Math.PI) next -= TAU;
+    while (next < -Math.PI) next += TAU;
+    return next;
+}
 
 function getNodeRect(node) {
     const props = node?.props || {};
@@ -202,13 +204,15 @@ export function dispatchMoveDragStart({
     dispatcher.dispatch({
         type: EventTypes.DRAG_START,
         payload: {
-            type: 'move',
+            type: 'pending-move',
             nodeIds,
             pointer: worldPoint,
             origin,
             group: buildGroupDragState(nodesById, nodeIds),
             meta: {
                 snapTargets: collectSnapTargets(runtimeState, { nodeIds }),
+                additive,
+                hitNodeId,
             },
         },
     });
@@ -232,8 +236,14 @@ function selectToolHandler(input, context) {
     // Selection clicks can promote directly into a move drag. Once that happens,
     // continue routing move updates/end through the move handler even if the
     // active tool is still "select".
-    if ((input.type === 'pointermove' || input.type === 'pointerup' || input.type === 'pointercancel') && drag?.active && drag.type === 'move') {
+    if ((input.type === 'pointermove' || input.type === 'pointerup' || input.type === 'pointercancel') && drag?.active && (drag.type === 'move' || drag.type === 'pending-move')) {
         return moveToolHandler(input, context);
+    }
+    if ((input.type === 'pointermove' || input.type === 'pointerup' || input.type === 'pointercancel') && drag?.active && drag.type === 'resize') {
+        return resizeToolHandler(input, context);
+    }
+    if ((input.type === 'pointermove' || input.type === 'pointerup' || input.type === 'pointercancel') && drag?.active && drag.type === 'rotate') {
+        return rotateToolHandler(input, context);
     }
 
     if (input.type === 'pointerdown') {
@@ -368,6 +378,33 @@ function moveToolHandler(input, context) {
     }
 
     if (input.type === 'pointermove') {
+        if (drag?.active && drag.type === 'pending-move') {
+            const nextDragState = {
+                ...drag,
+                currentPointer: worldPoint,
+            };
+            const rawDelta = computeRawDragDelta(nextDragState);
+            const distance = Math.max(Math.abs(rawDelta.dx ?? 0), Math.abs(rawDelta.dy ?? 0));
+
+            if (distance < MOVE_DRAG_THRESHOLD) {
+                return { handled: true };
+            }
+
+            dispatcher.dispatch({
+                type: EventTypes.DRAG_START,
+                payload: {
+                    type: 'move',
+                    nodeIds: Array.isArray(drag.nodeIds) ? drag.nodeIds : [],
+                    pointer: drag.startPointer ?? worldPoint,
+                    origin: drag.origin ?? {},
+                    group: drag.group ?? null,
+                    meta: drag.meta ?? null,
+                },
+            });
+
+            return { handled: true };
+        }
+
         if (drag?.active && drag.type === 'move') {
             const dragNodeIds = Array.isArray(drag?.nodeIds) ? drag.nodeIds : [];
             const nextDragState = {
@@ -456,6 +493,11 @@ function moveToolHandler(input, context) {
     }
 
     if (input.type === 'pointerup') {
+        if (drag?.active && drag.type === 'pending-move') {
+            dispatcher.dispatch({ type: EventTypes.DRAG_END });
+            return { handled: true };
+        }
+
         if (drag?.active && drag.type === 'move') {
             dispatcher.dispatch({ type: EventTypes.DRAG_END });
             return { handled: true };
@@ -463,10 +505,185 @@ function moveToolHandler(input, context) {
     }
 
     if (input.type === 'pointercancel') {
+        if (drag?.active && drag.type === 'pending-move') {
+            dispatcher.dispatch({ type: EventTypes.DRAG_END });
+            return { handled: true };
+        }
+
         if (drag?.active && drag.type === 'move') {
             dispatcher.dispatch({ type: EventTypes.DRAG_END });
             return { handled: true };
         }
+    }
+
+    return null;
+}
+
+function resizeToolHandler(input, context) {
+    const runtimeState = context.state;
+    const dispatcher = context.dispatcher;
+    const worldPoint = input.worldPoint;
+
+    if (!runtimeState || !dispatcher || !worldPoint) return null;
+
+    const drag = runtimeState?.interaction?.drag ?? null;
+
+    if (input.type === 'pointerdown') {
+        const handle = input.resizeHandle ?? null;
+        const nodeId = input.targetNodeId ?? null;
+        if (!handle || !nodeId) return null;
+
+        const node = runtimeState?.nodes?.[nodeId];
+        if (!node) return null;
+
+        const originBounds = getNodeRect(node);
+
+        dispatcher.dispatch({
+            type: EventTypes.DRAG_START,
+            payload: {
+                type: 'resize',
+                nodeIds: [nodeId],
+                pointer: worldPoint,
+                origin: {
+                    [nodeId]: originBounds,
+                },
+                handle,
+                originBounds,
+            },
+        });
+
+        return { handled: true };
+    }
+
+    if (input.type === 'pointermove') {
+        if (!drag?.active || drag.type !== 'resize') return null;
+
+        const nodeId = Array.isArray(drag.nodeIds) ? drag.nodeIds[0] : null;
+        if (!nodeId) return null;
+
+        const nextDragState = {
+            ...drag,
+            currentPointer: worldPoint,
+        };
+        const rawDelta = computeRawDragDelta(nextDragState);
+        const nextBounds = computeResizeDelta(drag, rawDelta);
+        if (!nextBounds) return null;
+
+        dispatcher.dispatch({
+            type: EventTypes.DRAG_UPDATE,
+            payload: {
+                pointer: worldPoint,
+                guides: [],
+            },
+        });
+
+        dispatcher.dispatch({
+            type: 'node.layout.bulk',
+            payload: {
+                updates: [{
+                    id: nodeId,
+                    x: nextBounds.x,
+                    y: nextBounds.y,
+                    width: nextBounds.width,
+                    height: nextBounds.height,
+                }],
+            },
+        });
+
+        return { handled: true };
+    }
+
+    if (input.type === 'pointerup' || input.type === 'pointercancel') {
+        if (!drag?.active || drag.type !== 'resize') return null;
+        dispatcher.dispatch({ type: EventTypes.DRAG_END });
+        return { handled: true };
+    }
+
+    return null;
+}
+
+function rotateToolHandler(input, context) {
+    const runtimeState = context.state;
+    const dispatcher = context.dispatcher;
+    const worldPoint = input.worldPoint;
+
+    if (!runtimeState || !dispatcher || !worldPoint) return null;
+
+    const drag = runtimeState?.interaction?.drag ?? null;
+
+    if (input.type === 'pointerdown') {
+        const nodeId = input.targetNodeId ?? null;
+        if (!nodeId) return null;
+
+        const node = runtimeState?.nodes?.[nodeId];
+        if (!node) return null;
+
+        const bounds = getNodeRect(node);
+        const center = {
+            x: bounds.x + bounds.width / 2,
+            y: bounds.y + bounds.height / 2,
+        };
+
+        dispatcher.dispatch({
+            type: EventTypes.DRAG_START,
+            payload: {
+                type: 'rotate',
+                nodeIds: [nodeId],
+                pointer: worldPoint,
+                origin: {
+                    [nodeId]: { rotation: Number(node?.rotation ?? 0) },
+                },
+                originAngle: Number(node?.rotation ?? 0),
+                center,
+            },
+        });
+
+        return { handled: true };
+    }
+
+    if (input.type === 'pointermove') {
+        if (!drag?.active || drag.type !== 'rotate') return null;
+
+        const nodeId = Array.isArray(drag.nodeIds) ? drag.nodeIds[0] : null;
+        if (!nodeId) return null;
+        const node = runtimeState?.nodes?.[nodeId];
+        if (!node) return null;
+
+        const nextDragState = {
+            ...drag,
+            currentPointer: worldPoint,
+        };
+        const rawAngle = computeRuntimeRotationDelta(nextDragState).angle;
+        const snappedAngle = snapAngle(rawAngle, 15);
+        const resolvedAngle = applyMagneticRotation(rawAngle, snappedAngle, {
+            threshold: 6,
+        });
+        const currentRotation = Number(node?.rotation ?? 0);
+        const rotationDelta = normalizeAngle(resolvedAngle - currentRotation);
+
+        dispatcher.dispatch({
+            type: EventTypes.DRAG_UPDATE,
+            payload: {
+                pointer: worldPoint,
+                guides: [],
+            },
+        });
+
+        dispatcher.dispatch({
+            type: EventTypes.NODE_ROTATE,
+            payload: {
+                nodeIds: [nodeId],
+                rotation: rotationDelta,
+            },
+        });
+
+        return { handled: true };
+    }
+
+    if (input.type === 'pointerup' || input.type === 'pointercancel') {
+        if (!drag?.active || drag.type !== 'rotate') return null;
+        dispatcher.dispatch({ type: EventTypes.DRAG_END });
+        return { handled: true };
     }
 
     return null;
@@ -498,6 +715,8 @@ function createToolCommitHandler(input, context) {
 export function registerDefaultGraphToolHandlers() {
     registerToolHandler('select', selectToolHandler);
     registerToolHandler('move', moveToolHandler);
+    registerToolHandler('resize', resizeToolHandler);
+    registerToolHandler('rotate', rotateToolHandler);
     registerToolHandler('frame', createToolCommitHandler);
     registerToolHandler('shape', createToolCommitHandler);
     registerToolHandler('text', createToolCommitHandler);
@@ -509,6 +728,8 @@ export function registerDefaultGraphToolHandlers() {
 export function unregisterDefaultGraphToolHandlers() {
     unregisterToolHandler('select');
     unregisterToolHandler('move');
+    unregisterToolHandler('resize');
+    unregisterToolHandler('rotate');
     unregisterToolHandler('frame');
     unregisterToolHandler('shape');
     unregisterToolHandler('text');
@@ -519,7 +740,10 @@ export function unregisterDefaultGraphToolHandlers() {
 
 export const __TESTING__ = Object.freeze({
     buildGroupDragState,
+    dispatchMoveDragStart,
     moveToolHandler,
+    resizeToolHandler,
+    rotateToolHandler,
     resolvePrimaryHit,
     selectToolHandler,
 });

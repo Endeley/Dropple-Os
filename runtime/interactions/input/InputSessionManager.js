@@ -1,3 +1,14 @@
+/**
+ * NON-CANONICAL INTERACTION SYSTEM
+ *
+ * Canvas authoring uses:
+ * CanvasRoot -> useCanvasInteractions -> inputEngine -> toolHandlerRegistrationFacade
+ *
+ * This manager may remain for preview or non-canvas session flows, but it must
+ * not become a competing execution authority for canvas drag, move, resize, or
+ * rotate behavior.
+ */
+
 import { getRuntimeState } from '@/runtime/state/runtimeState.js';
 import { createSessionFromIntent } from '@/runtime/input/sessionRuntimeBridge.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';

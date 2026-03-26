@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { CanvasSurfaceTypes } from '@/platform/workspaces';
-import { useWorkspaceProjection } from '@/runtime/projection';
+import { useWorkspaceViewState } from '@/runtime/projection';
 import { canvasSurfaceIntentSet } from '@/ui/workspace/canvasSurfaceIntent.js';
 
 const SURFACE_OPTIONS = [
@@ -12,7 +12,7 @@ const SURFACE_OPTIONS = [
 ];
 
 export function CanvasSurfacePanel() {
-    const surface = useWorkspaceProjection((state) => state.canvasSurface);
+    const surface = useWorkspaceViewState((state) => state.canvasSurface);
     const currentType = surface?.type ?? CanvasSurfaceTypes.SMOOTH;
     const gridSize = surface?.gridSize ?? 8;
 

@@ -2,7 +2,7 @@
 import {
     evaluateTimelinePreview,
     flattenTimeline,
-    getRuntimeSnapshot,
+    getProjectedRuntimeViewState,
     useAnimatedRuntimeStore,
 } from '@/ui/bridges/timelinePreviewRuntimeBridge.js';
 
@@ -11,7 +11,7 @@ import {
  * Read-only: does not use dispatcher, history, or reducers outside applyEvent.
  */
 export function applyTimelinePreview({ timeline, time }) {
-    const baseState = getRuntimeSnapshot();
+    const baseState = getProjectedRuntimeViewState();
     if (!timeline || !baseState) return;
 
     let state = baseState;

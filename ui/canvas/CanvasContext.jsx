@@ -4,6 +4,8 @@ import { createContext, useContext } from 'react';
 
 const CanvasContext = createContext({
     zoomTier: 'normal',
+    onResizeHandlePointerDown: null,
+    onRotateHandlePointerDown: null,
 });
 
 export function CanvasProvider({ value, children }) {

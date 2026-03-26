@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
-import { useWorkspaceProjection } from '@/runtime/projection';
+import { useWorkspaceViewState } from '@/runtime/projection';
 import { projectRectToViewport } from '@/canvas/transform/projectRectToViewport.js';
+import { useCanvasContext } from '@/ui/canvas/CanvasContext.jsx';
 
 export function SelectionOutline({
     nodeId,
@@ -13,7 +14,8 @@ export function SelectionOutline({
     const nodes = useCharacterRenderNodes();
     const node = nodes?.[nodeId];
     const [showLabel, setShowLabel] = useState(false);
-    const viewport = useWorkspaceProjection((state) => state.viewport);
+    const viewport = useWorkspaceViewState((state) => state.viewport);
+    const { onResizeHandlePointerDown, onRotateHandlePointerDown } = useCanvasContext();
     if (!node) return null;
     const rect = projectRectToViewport(
         {
@@ -38,6 +40,31 @@ export function SelectionOutline({
 
     return (
         <div style={style}>
+            <div
+                onPointerDown={(e) => {
+                    onRotateHandlePointerDown?.(e, { nodeId });
+                }}
+                onPointerUp={(e) => {
+                    e.currentTarget.releasePointerCapture?.(e.pointerId);
+                }}
+                onPointerCancel={(e) => {
+                    e.currentTarget.releasePointerCapture?.(e.pointerId);
+                }}
+                style={{
+                    position: 'absolute',
+                    left: '50%',
+                    top: -22,
+                    width: 10,
+                    height: 10,
+                    marginLeft: -5,
+                    background: 'rgba(245, 158, 11, 0.95)',
+                    borderRadius: 999,
+                    border: '1px solid rgba(15,23,42,0.25)',
+                    cursor: 'grab',
+                    pointerEvents: 'auto',
+                }}
+                title="Rotate selection"
+            />
             {resizeEnabled && (
                 <div
                     style={{
@@ -52,12 +79,16 @@ export function SelectionOutline({
                 >
                     <div
                         onPointerDown={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (process.env.NODE_ENV === 'development') {
-                                console.warn('SESSION DISABLED');
-                            }
-                            return;
+                            onResizeHandlePointerDown?.(e, {
+                                nodeId,
+                                handle: 'se',
+                            });
+                        }}
+                        onPointerUp={(e) => {
+                            e.currentTarget.releasePointerCapture?.(e.pointerId);
+                        }}
+                        onPointerCancel={(e) => {
+                            e.currentTarget.releasePointerCapture?.(e.pointerId);
                         }}
                         onMouseEnter={() => setShowLabel(true)}
                         onMouseLeave={() => setShowLabel(false)}

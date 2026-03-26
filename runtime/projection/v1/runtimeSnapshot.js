@@ -1,5 +1,13 @@
 // runtime/projection/v1/runtimeSnapshot.js
 
+/**
+ * @deprecated Legacy snapshot getter.
+ *
+ * This reads directly from internal runtime state and should not become the
+ * default projection access path for UI code. Prefer projected-store-backed
+ * hooks/selectors unless a non-React bridge explicitly needs a snapshot.
+ */
+
 import {
     __getRuntimeStateInternal,
     __getIsReplayingInternal,

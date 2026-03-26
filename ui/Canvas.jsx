@@ -1,5 +1,16 @@
 'use client';
 
+/**
+ * @deprecated Legacy canvas entry.
+ *
+ * Canvas authoring now enters through:
+ * CanvasRoot -> useCanvasInteractions -> inputEngine -> toolHandlerRegistrationFacade
+ *
+ * This module must not become a parallel pointer authority for workspace canvas
+ * interactions. Keep it isolated from the canonical canvas lifecycle unless it is
+ * explicitly migrated or removed.
+ */
+
 import { useEffect, useRef, useState } from 'react';
 import { useWorkspaceVisualState } from '@/runtime/projection';
 import { canvasBus } from './eventBus/canvasBus.js';

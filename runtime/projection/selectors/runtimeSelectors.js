@@ -1,34 +1,36 @@
-import { getRuntimeSnapshot } from '../v1/runtimeSnapshot.js';
-import { getWorkspaceProjection } from '../v1/workspaceProjection.js';
+import {
+    getProjectedRuntimeViewState,
+    getProjectedWorkspaceViewState,
+} from '../nonReactProjection.js';
 
 export function selectViewport() {
-    return getWorkspaceProjection()?.viewport ?? null;
+    return getProjectedWorkspaceViewState()?.viewport ?? null;
 }
 
 export function selectCanvasSurface() {
-    return getWorkspaceProjection()?.canvasSurface ?? null;
+    return getProjectedWorkspaceViewState()?.canvasSurface ?? null;
 }
 
 export function selectNodes() {
-    return getRuntimeSnapshot()?.nodes ?? {};
+    return getProjectedRuntimeViewState()?.nodes ?? {};
 }
 
 export function selectRootIds() {
-    return getRuntimeSnapshot()?.rootIds ?? [];
+    return getProjectedRuntimeViewState()?.rootIds ?? [];
 }
 
 export function selectTimeline() {
-    return getRuntimeSnapshot()?.timeline ?? null;
+    return getProjectedRuntimeViewState()?.timeline ?? null;
 }
 
 export function selectIsReplaying() {
-    return getRuntimeSnapshot()?.isReplaying ?? false;
+    return getProjectedRuntimeViewState()?.isReplaying ?? false;
 }
 
 export function selectRenderState() {
-    return getRuntimeSnapshot();
+    return getProjectedRuntimeViewState();
 }
 
 export function selectSequencerPreview() {
-    return getRuntimeSnapshot()?.sequencer ?? null;
+    return getProjectedRuntimeViewState()?.sequencer ?? null;
 }

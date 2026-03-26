@@ -1,5 +1,5 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { getWorkspaceProjection } from '@/runtime/projection';
+import { getProjectedWorkspaceViewState } from '@/runtime/projection';
 import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
 
 const DEFAULT_BOUNDS = { x: 0, y: 0, width: 160, height: 100 };
@@ -39,7 +39,7 @@ function normalizeBounds(bounds, position) {
 }
 
 function resolveWorkspace() {
-    const projection = getWorkspaceProjection?.();
+    const projection = getProjectedWorkspaceViewState?.();
     const workspaceId = projection?.id ?? null;
     if (!workspaceId) return null;
     return getWorkspaceActivation(workspaceId);

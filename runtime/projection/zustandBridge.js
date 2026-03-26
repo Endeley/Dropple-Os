@@ -17,7 +17,17 @@ import { projectGraphInteraction } from '@/runtime/graph/index.js';
  * Syncs authoritative runtime state into Zustand (read-only mirror).
  * ❗ Zustand never mutates runtime directly.
  */
-export function syncRuntimeToZustand(nextState) {
+export function syncRuntimeToZustand(nextState, options = {}) {
+    const sanitizedUxAudit = Array.isArray(options?.uxAudit)
+        ? options.uxAudit.map((entry) => ({
+            id: entry?.id,
+            type: entry?.type,
+            timestamp: entry?.timestamp,
+            message: entry?.message,
+            level: entry?.level,
+        }))
+        : [];
+
     if (!nextState) {
         useRuntimeStore.setState(
             {
@@ -26,6 +36,8 @@ export function syncRuntimeToZustand(nextState) {
                 document: null,
                 timeline: null,
                 playback: { isPlaying: false },
+                isReplaying: false,
+                uxAudit: [],
                 selection: { ids: [], primary: null, count: 0 },
                 clipboard: { count: 0, hasData: false },
                 grouping: { count: 0 },
@@ -119,6 +131,8 @@ export function syncRuntimeToZustand(nextState) {
         workspace: nextState.workspace ?? null,
         timeline: nextState.timeline ?? null,
         playback: nextState.playback ?? { isPlaying: false },
+        isReplaying: nextState.__isReplaying === true,
+        uxAudit: sanitizedUxAudit,
         selection: selectionProjection(nextState),
         clipboard: clipboardProjection(nextState),
         grouping: groupProjection(nextState),

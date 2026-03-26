@@ -1,4 +1,7 @@
-import { getRuntimeSnapshot, getWorkspaceProjection } from '@/runtime/projection';
+import {
+    getProjectedRuntimeViewState,
+    getProjectedWorkspaceViewState,
+} from '@/runtime/projection';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useAutoKeyframeStore } from '@/runtime/stores/useAutoKeyframeStore.js';
 import { commitTimelineKeyframe } from '@/runtime/timeline/commitTimelineKeyframe';
@@ -7,10 +10,10 @@ import { createSessionCommitActions } from '@/runtime/input/sessionCommitRuntime
 import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
 
 function canAuthorAnimationKeyframes() {
-    const runtimeState = getRuntimeSnapshot();
+    const runtimeState = getProjectedRuntimeViewState();
     if (runtimeState?.isReplaying) return false;
 
-    const workspaceId = getWorkspaceProjection()?.id ?? 'graphic';
+    const workspaceId = getProjectedWorkspaceViewState()?.id ?? 'graphic';
     const activation = getWorkspaceActivation(workspaceId);
     if (!activation?.capabilities?.has('timeline')) return false;
 
@@ -18,7 +21,7 @@ function canAuthorAnimationKeyframes() {
 }
 
 export function createSessionCommitBridgeActions(event) {
-    const runtimeState = getRuntimeSnapshot();
+    const runtimeState = getProjectedRuntimeViewState();
     const nodesById = runtimeState?.nodes || {};
     const selectedIds = useRuntimeStore.getState().selection?.ids || [];
     const frameTime = useRuntimeStore.getState().frameTime;

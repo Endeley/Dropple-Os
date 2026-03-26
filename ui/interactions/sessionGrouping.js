@@ -1,5 +1,12 @@
 'use client';
 
+/**
+ * Semantic grouping only.
+ *
+ * This bridge may observe session.* and intent.edit.* events to maintain grouping
+ * metadata, but it is not an execution authority for canvas interactions.
+ */
+
 import { useEffect, useRef } from 'react';
 import { canvasBus } from '@/ui/eventBus/canvasBus.js';
 

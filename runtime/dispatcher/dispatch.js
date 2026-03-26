@@ -192,7 +192,9 @@ export function createEventDispatcher({
             playbackController.cancel();
         }
 
-        syncRuntimeToZustand(committedState);
+        syncRuntimeToZustand(committedState, {
+            uxAudit: uxAuditLog.snapshot(),
+        });
         useAnimatedRuntimeStore.setState(
             layoutApplied?.derived ?? {
                 nodes: committedState?.nodes ?? {},
@@ -555,7 +557,9 @@ export function createEventDispatcher({
                         },
                     };
                     __setRuntimeStateInternal(nextState, 'dispatcher');
-                    syncRuntimeToZustand(nextState);
+                    syncRuntimeToZustand(nextState, {
+                        uxAudit: uxAuditLog.snapshot(),
+                    });
                     return __getRuntimeStateInternal();
                 }
 

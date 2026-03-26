@@ -1,5 +1,12 @@
 // runtime/projection/v1/workspaceProjection.js
 
+/**
+ * @deprecated Legacy workspace projection getter.
+ *
+ * New UI reads should prefer `useWorkspaceViewState`, which reads from the
+ * canonical projected Zustand mirror instead of recomputing from internals.
+ */
+
 import { __getRuntimeStateInternal } from '../../state/runtimeState.internal.js';
 import { createDefaultWorkspaceState } from '../../state/workspaceRuntime.js';
 

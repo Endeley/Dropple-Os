@@ -17,7 +17,7 @@ import RemoteSelections from './RemoteSelections.jsx';
 
 import TimelinePanel from '@/ui/timeline/TimelinePanel.jsx';
 import { perfStart, perfEnd } from '@/ui/bridges/canvasRuntimeFacade.js';
-import { useWorkspaceProjection, useWorkspaceVisualState } from '@/runtime/projection';
+import { useWorkspaceViewState, useWorkspaceVisualState } from '@/runtime/projection';
 import { CanvasSurface } from '@/ui/canvas/surface/CanvasSurface.jsx';
 import { WorldOriginMarker } from '@/ui/canvas/WorldOriginMarker.jsx';
 import { computeCenteredViewport } from '@/ui/canvas/computeCenteredViewport.js';
@@ -27,6 +27,7 @@ import { getZoomTier } from '@/runtime/canvas/zoomTiers.js';
 import { CanvasProvider } from '@/ui/canvas/CanvasContext.jsx';
 import { canvasBus } from '../eventBus/canvasBus.js';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
+import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useToolStore } from '@/ui/state/useToolStore.js';
 import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions';
 import { useCanvasInteractions } from '@/ui/interactions/useCanvasInteractions.js';
@@ -45,16 +46,17 @@ function isSelectionModifierGesture(event) {
 export default function CanvasRoot({ workspaceId }) {
     perfStart('canvas.render');
 
-    const projectedWorkspaceId = useWorkspaceProjection((s) => s.id);
+    const projectedWorkspaceId = useWorkspaceViewState((s) => s.id);
     const rootIds = useWorkspaceVisualState((s) => s.rootIds || []);
     const resolvedWorkspaceId = workspaceId ?? projectedWorkspaceId;
     const workspace = getWorkspaceActivation(resolvedWorkspaceId);
 
-    const viewport = useWorkspaceProjection((s) => s.viewport);
-    const canvasSurface = useWorkspaceProjection((s) => s.canvasSurface);
+    const viewport = useWorkspaceViewState((s) => s.viewport);
+    const canvasSurface = useWorkspaceViewState((s) => s.canvasSurface);
     const projectedNodes = useWorkspaceVisualState((s) => s.nodes || {});
     const projectedTimeline = useWorkspaceVisualState((s) => s.timeline);
     const cameraTransform = useAnimatedRuntimeStore((s) => s.cameraTransform);
+    const dragState = useRuntimeStore((state) => state.interaction?.drag ?? null);
     const activeTool = useToolStore((s) => s.activeTool);
     const canvasPolicy = workspace?.canvasPolicy;
     const designState = useMemo(
@@ -71,13 +73,17 @@ export default function CanvasRoot({ workspaceId }) {
 
     const [worldOffset, setWorldOffset] = useState({ x: 0, y: 0 });
     const [isPanning, setIsPanning] = useState(false);
-    const [isNodeDragging, setIsNodeDragging] = useState(false);
+    const isNodeDragging =
+        dragState?.active === true &&
+        (dragState?.type === 'move' || dragState?.type === 'resize' || dragState?.type === 'rotate');
 
     const {
         onPointerDown: onCanvasPointerDown,
         onPointerMove: onCanvasPointerMove,
         onPointerUp: onCanvasPointerUp,
         onPointerCancel: onCanvasPointerCancel,
+        onResizeHandlePointerDown,
+        onRotateHandlePointerDown,
     } = useCanvasInteractions({
         getActiveToolId: (event) => {
             const toolDef = TOOL_DEFINITION_BY_ID[activeTool];
@@ -250,30 +256,10 @@ export default function CanvasRoot({ workspaceId }) {
         hasCenteredRef.current = true;
     }, [viewport?.scale]);
 
-    // 🔔 Track node drag sessions
-    useEffect(() => {
-        const start = (p) => {
-            if (p?.sessionType === 'move' || p?.sessionType === 'resize') {
-                setIsNodeDragging(true);
-            }
-        };
-        const end = () => setIsNodeDragging(false);
-
-        canvasBus.on('session.start', start);
-        canvasBus.on('session.commit', end);
-        canvasBus.on('session.cancel', end);
-
-        return () => {
-            canvasBus.off('session.start', start);
-            canvasBus.off('session.commit', end);
-            canvasBus.off('session.cancel', end);
-        };
-    }, []);
-
     perfEnd('canvas.render');
 
     return (
-        <CanvasProvider value={{ zoomTier }}>
+        <CanvasProvider value={{ zoomTier, onResizeHandlePointerDown, onRotateHandlePointerDown }}>
             <CanvasHost
                 ref={containerRef}
                 onMount={handleCanvasMount}

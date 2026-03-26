@@ -1,3 +1,13 @@
+/**
+ * NON-CANONICAL INTERACTION SYSTEM
+ *
+ * This module creates session objects for preview/session-driven flows. Canvas
+ * authoring execution is owned by:
+ * CanvasRoot -> useCanvasInteractions -> inputEngine -> toolHandlerRegistrationFacade
+ *
+ * Do not use this bridge to introduce a parallel canvas execution path.
+ */
+
 import { createInteractionManager } from '@/runtime/interactions/index.js';
 import { isAutoLayoutChild } from '@/runtime/layout/index.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';

@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { getRuntimeSnapshot, getWorkspaceProjection } from "@/runtime/projection";
+import { useWorkspaceViewState } from "@/runtime/projection";
+import { useRuntimeStore } from "@/runtime/stores/useRuntimeStore.js";
 import { useTimelineSelectionStore } from "@/ui/timeline/useTimelineSelectionStore.js";
 import { commitCurveChange } from "./commitCurveChange.js";
 import BezierCurveCanvas from "./BezierCurveCanvas.jsx";
@@ -14,15 +15,15 @@ function isBezier(easing) {
 export default function CurveEditorPanel({ capabilities }) {
   const selection = useTimelineSelectionStore((s) => s.selectedKeyframeIds);
   const selectedKeyframeId = selection.size ? Array.from(selection)[0] : null;
-  const workspaceId = getWorkspaceProjection()?.id ?? "graphic";
+  const workspaceId = useWorkspaceViewState((state) => state.id) ?? "graphic";
+  const timeline = useRuntimeStore((state) => state.timeline);
   const workspace = getWorkspaceActivation(workspaceId);
   const canRender = capabilities?.animation === true || workspace?.capabilities?.has('animation') === true;
 
   const keyframe = useMemo(() => {
     if (!selectedKeyframeId) return null;
-    const state = getRuntimeSnapshot();
-    return state?.timeline?.animations?.keyframes?.[selectedKeyframeId] || null;
-  }, [selectedKeyframeId]);
+    return timeline?.animations?.keyframes?.[selectedKeyframeId] || null;
+  }, [selectedKeyframeId, timeline]);
 
   const easing = keyframe?.easing || "linear";
   const bezierActive = isBezier(easing);
