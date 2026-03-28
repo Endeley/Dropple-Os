@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createEventDispatcher } from '@/runtime/dispatcher/dispatch.js';
-import { getWorkspaceContractDefinition } from '@/ui/bridges/workspaceActivationFacade.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
+import { getWorkspaceDefinition } from '@/platform/workspaces/workspaceRegistry.js';
 
 function createNode(id, { x = 0, y = 0, width = 100, height = 80 } = {}) {
     return {
@@ -45,7 +45,7 @@ test('node.layout.bulk survives layout pass using runtime geometry authority', a
     await dispatcher.dispatch({
         type: EventTypes.WORKSPACE_SET_ACTIVE,
         payload: {
-            workspaceDef: getWorkspaceContractDefinition('uiux'),
+            workspaceDef: getWorkspaceDefinition('uiux'),
         },
     });
     await dispatcher.dispatch({
