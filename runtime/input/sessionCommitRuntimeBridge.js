@@ -88,6 +88,14 @@ function buildKeyframeIntentsForNodes(nodeIds, { position, size, rotation } = {}
     return intents;
 }
 
+function warnNonCanonicalCanvasSessionCommit(kind) {
+    if (process.env.NODE_ENV !== 'development') return;
+    console.warn(
+        `[sessionCommitRuntimeBridge] Non-canonical canvas ${kind} commit requested. ` +
+        'Canvas move/resize/rotate execution should stay on the tool-handler pipeline.'
+    );
+}
+
 export function createSessionCommitActions({ event, context }) {
     const { sessionType, payload } = event || {};
     if (!payload || payload.type === 'noop') return null;
@@ -174,6 +182,7 @@ export function createSessionCommitActions({ event, context }) {
     }
 
     if (sessionType === 'move' && payload.type === 'move') {
+        warnNonCanonicalCanvasSessionCommit('move');
         const { nodeIds, delta } = payload;
         const xDelta = delta?.x ?? delta?.dx ?? 0;
         const yDelta = delta?.y ?? delta?.dy ?? 0;
@@ -206,6 +215,7 @@ export function createSessionCommitActions({ event, context }) {
     }
 
     if (payload.type === 'resize') {
+        warnNonCanonicalCanvasSessionCommit('resize');
         const { nodeIds } = payload;
         const nodes = (nodeIds || []).map((id) => nodesById[id]).filter(Boolean);
         if (!nodes.length) return actions;
@@ -255,6 +265,7 @@ export function createSessionCommitActions({ event, context }) {
     }
 
     if (payload.type === 'rotate') {
+        warnNonCanonicalCanvasSessionCommit('rotate');
         const { nodeIds, rotationDelta } = payload;
         if (!Array.isArray(nodeIds) || nodeIds.length === 0) return actions;
 

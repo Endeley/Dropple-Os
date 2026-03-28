@@ -1,0 +1,919 @@
+Run started: Sat Mar 28 15:10:14 CET 2026
+Repo: /Users/endeleykonboye/Desktop/dropple-os/dropple
+Log: /Users/endeleykonboye/Desktop/dropple-os/dropple/logs/run-everything-20260328-151014.log
+
+==> Lint
+Command: npm run lint
+
+> dropple@0.1.0 lint
+> eslint
+
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/build/chunks/[root-of-the-server]__974941ed._.js
+  435:9  error  Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/build/chunks/[root-of-the-server]__c7ae8543._.js
+  435:9  error  Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/build/chunks/[turbopack]_runtime.js
+    9:5  error  Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+   31:5  error  Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   96:5  error  Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  140:5  error  Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  156:5  error  Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  166:5  error  Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  228:5  error  Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  398:5  error  Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  546:1  error  Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+  567:1  error  Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+  588:1  error  Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/build/chunks/node_modules_2d7da256._.js
+  5946:1   warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  6173:25  warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  6179:36  warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  6642:9   warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  6645:13  warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  6648:40  warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__00db32c3._.js
+  5997:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__01de21ca._.js
+  5311:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__04b44d75._.js
+  5256:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__087418ee._.js
+  5402:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__103f7b90._.js
+  6226:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__116ca0e4._.js
+  5311:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__138e1375._.js
+  5313:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__1911b0bc._.js
+  5311:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__1dd92d56._.js
+  5322:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__2401b6ac._.js
+  5546:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__2c20b929._.js
+  5311:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__3451da30._.js
+  5311:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__42d3b890._.js
+  5517:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__440e73c4._.js
+  6097:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__53d66e0e._.js
+  5311:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__5a0ad582._.js
+  586:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__62368ef5._.js
+  5311:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__664fae6d._.js
+  5997:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__685c41fa._.js
+  5322:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__6cd6c60f._.js
+  5305:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__6ced7b71._.js
+  5311:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__6dff469d._.js
+  6097:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__6f03752b._.js
+  5169:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__73427bb8._.js
+  5311:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__85cd4f51._.js
+  5517:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__8d9322d0._.js
+  6226:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__8ee52483._.js
+  6052:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__ae3b44a6._.js
+  5255:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__ae6396bc._.js
+  5305:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__b10c7e81._.js
+  5255:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__b250ea71._.js
+  5322:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__b8bbf49e._.js
+  6097:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__be0c219b._.js
+  5311:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__c288c743._.js
+  5311:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__ca112f9e._.js
+  5311:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__ca793136._.js
+  5266:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__d08c31fd._.js
+  6446:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__d5efdb3e._.js
+  6226:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__da6f9a23._.js
+  5305:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__e10c9646._.js
+  6151:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__e1d8e6bc._.js
+  5289:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__e2f5c6ef._.js
+  5311:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__e453322f._.js
+  5174:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__ea1b679a._.js
+  5311:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__eacf31cb._.js
+  5517:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__f085654f._.js
+  5311:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__f8dd3e74._.js
+  6097:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[root-of-the-server]__ffccaabf._.js
+  5306:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/[turbopack]_runtime.js
+    9:5  error  Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+   31:5  error  Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   96:5  error  Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  140:5  error  Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  156:5  error  Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  166:5  error  Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  228:5  error  Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  398:5  error  Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  546:1  error  Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+  567:1  error  Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+  588:1  error  Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/_ca2e5125._.js
+  3192:1  warning  Unused eslint-disable directive (no problems were reported)
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/_e535e917._.js
+  4020:1  warning  Unused eslint-disable directive (no problems were reported)
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/node_modules_4c90c24b._.js
+  289:9  warning  Unused eslint-disable directive (no problems were reported from 'default-case')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/node_modules_@opentelemetry_api_build_esm_c2831320._.js
+   157:70  error    Definition for rule 'node/no-unsupported-features/es-builtins' was not found   node/no-unsupported-features/es-builtins
+  2352:21  warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  2356:25  warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/node_modules_d3119bbe._.js
+  1974:70  error    Definition for rule 'node/no-unsupported-features/es-builtins' was not found   node/no-unsupported-features/es-builtins
+  4169:21  warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  4173:25  warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/node_modules_f29401c2._.js
+  6229:5    warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  6248:273  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  6260:269  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  6649:9    warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/node_modules_next_dist_3e1f69b5._.js
+   113:5   warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/rules-of-hooks')
+  3383:1   warning  Unused eslint-disable directive (no problems were reported from 'import/no-extraneous-dependencies')
+  9367:31  error    Do not use findDOMNode. It doesn’t work with function components and is deprecated in StrictMode. See https://reactjs.org/docs/react-dom.html#finddomnode  react/no-find-dom-node
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/node_modules_next_dist_eac56746._.js
+  11308:1    warning  Unused eslint-disable directive (no problems were reported from 'import/no-extraneous-dependencies')
+  11850:1    error    Definition for rule '@typescript-eslint/no-unused-vars' was not found                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+  14649:141  error    React Hook "useEnclosingLine" is called in function "initializeFakeTask" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  19108:1    error    Definition for rule '@next/internal/no-ambiguous-jsx' was not found                                                                                                                                                                                               @next/internal/no-ambiguous-jsx
+  19109:1    warning  Unused eslint-disable directive (no problems were reported from 'import/no-extraneous-dependencies')
+  19111:1    warning  Unused eslint-disable directive (no problems were reported from 'import/no-extraneous-dependencies')
+  20497:81   warning  Unused eslint-disable directive (no problems were reported from 'eqeqeq')
+  20500:55   warning  Unused eslint-disable directive (no problems were reported from 'eqeqeq')
+  20897:179  warning  Unused eslint-disable directive (no problems were reported from 'no-restricted-syntax')
+  21104:1    warning  Unused eslint-disable directive (no problems were reported from 'import/no-extraneous-dependencies')
+  21106:1    warning  Unused eslint-disable directive (no problems were reported from 'import/no-extraneous-dependencies')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/ui_025ad63f._.js
+  368:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/ui_0450a50d._.js
+  368:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/ui_0a754200._.js
+  368:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/ui_60a6353d._.js
+  368:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/ui_6ba3f414._.js
+  368:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/ui_6d66c73c._.js
+  368:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/ui_a7a05397._.js
+  368:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/ui_ba1501cd._.js
+  358:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/server/chunks/ssr/ui_d10ba475._.js
+  368:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_00983b95._.js
+  5899:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_05b38eae._.js
+  895:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_1ac87a93._.js
+  5740:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_1f0a1692._.js
+  5887:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_1f9223c0._.js
+  5831:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_226996fb._.js
+  6109:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_23af96b1._.js
+  5916:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_255434f9._.js
+  6109:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_26b8f399._.js
+  5916:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_2c066d2a._.js
+  5916:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_373931ad._.js
+  5886:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_3bab67ff._.js
+  5916:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_48626e4f._.js
+  6713:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_4fd5aab4._.js
+  6713:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_4ffe8729._.js
+  5830:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_50c84e83._.js
+  5916:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_58475338._.js
+  4412:1  warning  Unused eslint-disable directive (no problems were reported)
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_5a40da4d._.js
+  5916:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_64c804ad._.js
+  5916:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_667c6786._.js
+  6713:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_6f7eb401._.js
+  5916:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_70c8b1b3._.js
+  6138:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_85fccf53._.js
+  5985:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_87d7aaf4._.js
+  5918:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_88d38607._.js
+  5830:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_8b06fc0e._.js
+  5916:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_8d399bb9._.js
+  5916:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_91a4dc65._.js
+  5916:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_940cb5ec._.js
+  5916:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_98dfe64a._.js
+  5916:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_9cc836be._.js
+  5899:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_b00af338._.js
+  6109:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_b68a2b3b._.js
+  5886:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_ba0f28fc._.js
+  5837:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_c6a259ba._.js
+  5899:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_d1b436d0._.js
+  5745:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_e023a625._.js
+  5886:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_e3b91ec2._.js
+  3746:1  warning  Unused eslint-disable directive (no problems were reported)
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_ef9db608._.js
+  5916:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_f380b573._.js
+  5863:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/_ff8ee470._.js
+  5916:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/node_modules_convex_dist_esm_02325f7a._.js
+  6220:5   warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  6241:31  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  6255:29  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  6670:9   warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/node_modules_next_dist_a183fb77._.js
+  674:5  error  Definition for rule '@next/internal/typechecked-require' was not found  @next/internal/typechecked-require
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/node_modules_next_dist_b3fb3b5f._.js
+  674:5  error  Definition for rule '@next/internal/typechecked-require' was not found  @next/internal/typechecked-require
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/node_modules_next_dist_be32b49c._.js
+  269:31  error  Do not use findDOMNode. It doesn’t work with function components and is deprecated in StrictMode. See https://reactjs.org/docs/react-dom.html#finddomnode  react/no-find-dom-node
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/node_modules_next_dist_client_17643121._.js
+    877:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/rules-of-hooks')
+  11757:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/rules-of-hooks')
+  11921:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/rules-of-hooks')
+  12698:1  error    Definition for rule '@next/internal/typechecked-require' was not found                         @next/internal/typechecked-require
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/node_modules_next_dist_compiled_8ca6b690._.js
+   686:35      warning  Unused eslint-disable directive (no problems were reported from 'no-proto')
+  3104:345482  error    React Hook "C.useEffect" is called in function "ti" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:345780  error    React Hook "C.useEffect" is called in function "ti" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:392251  error    React Hook "C.useRef" is called in function "t2" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:392271  error    React Hook "C.useState" is called in function "t2" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:393768  error    React Hook "C.useEffect" is called in function "t2" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:394126  error    React Hook "C.useEffect" is called in function "t2" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:394532  error    React Hook "C.useEffect" is called in function "t2" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:399362  error    React Hook "C.useEffect" is called in function "t8" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:412148  error    React Hook "C.useState" is called in function "nb" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:412188  error    React Hook "C.useRef" is called in function "nb" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:412213  error    React Hook "C.useRef" is called in function "nb" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:425633  error    React Hook "C.useMemo" is called in function "nS" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:427121  error    React Hook "C.useMemo" is called in function "nS" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:445175  error    React Hook "C.use" is called in function "nW" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"                  react-hooks/rules-of-hooks
+  3104:606046  error    React Hook "C.useRef" is called in function "ay" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:606126  error    React Hook "C.useEffect" is called in function "ab" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:606896  error    React Hook "C.useRef" is called in function "aC" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:606923  error    React Hook "C.useState" is called in function "aC" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:606939  error    React Hook "C.useCallback" is called in function "aC" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  3104:607493  error    React Hook "P.useContext" is called in function "aR" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  3104:607600  error    React Hook "C.useMemo" is called in function "aD" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:607689  error    React Hook "C.useRef" is called in function "aM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:607704  error    React Hook "C.useCallback" is called in function "aM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  3104:607756  error    React Hook "C.useCallback" is called in function "aM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  3104:607820  error    React Hook "C.useState" is called in function "aM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:607876  error    React Hook "C.useMemo" is called in function "aM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:608026  error    React Hook "C.useRef" is called in function "aZ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:608043  error    React Hook "C.useState" is called in function "aZ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:608083  error    React Hook "C.useState" is called in function "aZ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:608224  error    React Hook "C.useMemo" is called in function "aZ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:608271  error    React Hook "C.useMemo" is called in function "aZ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:608406  error    React Hook "C.useMemo" is called in function "aZ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:613887  error    React Hook "C.useContext" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  3104:613945  error    React Hook "C.useRef" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:613971  error    React Hook "C.useRef" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:613997  error    React Hook "C.useRef" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:614012  error    React Hook "C.useRef" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:614027  error    React Hook "C.useRef" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:614046  error    React Hook "C.useRef" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:614148  error    React Hook "C.useEffect" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:614311  error    React Hook "C.useEffect" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:614546  error    React Hook "C.useCallback" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  3104:614937  error    React Hook "C.useEffect" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:617009  error    React Hook "C.useEffect" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:617093  error    React Hook "C.useMemo" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:617459  error    React Hook "C.useMemo" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:620453  error    React Hook "C.useRef" is called in function "iB" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:620475  error    React Hook "C.useRef" is called in function "iB" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:620488  error    React Hook "C.useEffect" is called in function "iB" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:620951  error    React Hook "C.useEffect" is called in function "iB" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:621125  error    React Hook "C.useMemo" is called in function "iB" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:621812  error    React Hook "C.useMemo" is called in function "iB" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:623320  error    React Hook "C.useContext" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  3104:623402  error    React Hook "C.useRef" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:623487  error    React Hook "C.useRef" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:623518  error    React Hook "C.useRef" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:623533  error    React Hook "C.useRef" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:626321  error    React Hook "C.useEffect" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:627751  error    React Hook "C.useEffect" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:627811  error    React Hook "C.useMemo" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:628142  error    React Hook "C.useMemo" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:628275  error    React Hook "C.useMemo" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:630416  error    React Hook "C.useCallback" is called in function "lC" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  3104:630458  error    React Hook "C.useCallback" is called in function "lC" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  3104:630499  error    React Hook "C.useCallback" is called in function "lC" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  3104:630541  error    React Hook "C.useMemo" is called in function "lC" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:631159  error    React Hook "C.useContext" is called in function "lN" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  3104:631364  error    React Hook "C.useState" is called in function "lL" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:631401  error    React Hook "C.useState" is called in function "lL" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:631867  error    React Hook "C.useMemo" is called in function "lL" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:632403  error    React Hook "C.useEffect" is called in function "lA" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:632520  error    React Hook "C.useContext" is called in function "lR" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  3104:635643  error    React Hook "C.useContext" is called in function "lq" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  3104:637050  error    React Hook "C.useState" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:637073  error    React Hook "C.useState" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:637096  error    React Hook "C.useState" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:637115  error    React Hook "C.useState" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:637136  error    React Hook "C.useState" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:637159  error    React Hook "C.useState" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:637182  error    React Hook "C.useState" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:637203  error    React Hook "C.useState" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:637220  error    React Hook "C.useRef" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:637237  error    React Hook "C.useRef" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:637254  error    React Hook "C.useRef" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:637271  error    React Hook "C.useRef" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:637286  error    React Hook "C.useRef" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:637317  error    React Hook "C.useContext" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  3104:637958  error    React Hook "C.useRef" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:637999  error    React Hook "C.useEffect" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:638155  error    React Hook "C.useCallback" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  3104:639340  error    React Hook "C.useRef" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:640062  error    React Hook "C.useImperativeHandle" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  3104:640150  error    React Hook "C.useImperativeHandle" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  3104:640200  error    React Hook "C.useImperativeHandle" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  3104:640261  error    React Hook "C.useEffect" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:650289  error    React Hook "C.useRef" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:651765  error    React Hook "C.useCallback" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  3104:652270  error    React Hook "C.useMemo" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:652392  error    React Hook "C.useMemo" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:652515  error    React Hook "C.useMemo" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:652543  error    React Hook "C.useMemo" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:656216  error    React Hook "C.useContext" is called in function "sg" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  3104:656463  error    React Hook "C.useRef" is called in function "sy" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:657158  error    React Hook "C.useCallback" is called in function "sy" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  3104:658131  error    React Hook "C.useContext" is called in function "sx" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  3104:658150  error    React Hook "C.useRef" is called in function "sx" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:658169  error    React Hook "C.useState" is called in function "sx" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:658291  error    React Hook "C.useRef" is called in function "sx" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:658308  error    React Hook "C.useCallback" is called in function "sx" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  3104:658619  error    React Hook "C.useMemo" is called in function "sx" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:667565  error    React Hook "C.useContext" is called in function "s9" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  3104:667588  error    React Hook "C.useState" is called in function "s9" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:667607  error    React Hook "C.useRef" is called in function "s9" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:668282  error    React Hook "C.useState" is called in function "s8" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:668301  error    React Hook "C.useRef" is called in function "s8" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:668318  error    React Hook "C.useRef" is called in function "s8" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:668335  error    React Hook "C.useRef" is called in function "s8" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:668352  error    React Hook "C.useRef" is called in function "s8" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:668432  error    React Hook "C.useEffect" is called in function "s8" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:668699  error    React Hook "C.useEffect" is called in function "s8" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:668767  error    React Hook "C.useMemo" is called in function "s8" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:680107  error    React Hook "C.useRef" is called in function "cN" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:681279  error    React Hook "C.useRef" is called in function "cA" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:688680  error    React Hook "C.useMemo" is called in function "cA" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:691909  error    React Hook "C.useMemo" is called in function "cA" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:691996  error    React Hook "C.useRef" is called in function "cA" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:692176  error    React Hook "C.useEffect" is called in function "cA" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:692346  error    React Hook "C.useEffect" is called in function "cA" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3104:692538  error    React Hook "C.useMemo" is called in function "cA" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:692658  error    React Hook "C.useMemo" is called in function "cA" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:692974  error    React Hook "C.useRef" is called in function "cR" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:693026  error    React Hook "C.useState" is called in function "cR" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3104:693042  error    React Hook "C.useRef" is called in function "cR" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3104:693163  error    React Hook "C.useMemo" is called in function "cR" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3104:693540  error    React Hook "C.useMemo" is called in function "cR" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3115:4081    error    React Hook "C.useContext" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  3115:4100    error    React Hook "C.useContext" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  3115:4119    error    React Hook "C.useRef" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3115:4136    error    React Hook "C.useRef" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3115:4153    error    React Hook "C.useRef" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3115:4168    error    React Hook "C.useRef" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3115:4183    error    React Hook "C.useRef" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3115:4323    error    React Hook "C.useEffect" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3115:4540    error    React Hook "C.useEffect" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3115:4722    error    React Hook "C.useEffect" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3115:6005    error    React Hook "C.useRef" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3115:6022    error    React Hook "C.useRef" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3115:6090    error    React Hook "C.useEffect" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3115:8832    error    React Hook "C.useEffect" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3115:8890    error    React Hook "C.useEffect" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3115:22869   error    React Hook "C.useContext" is called in function "ug" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  3115:23289   error    React Hook "C.useContext" is called in function "ub" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  3115:26032   error    React Hook "C.useRef" is called in function "uP" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3115:26046   error    React Hook "C.useRef" is called in function "uP" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3115:26060   error    React Hook "C.useRef" is called in function "uP" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3115:26077   error    React Hook "C.useRef" is called in function "uP" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3115:26134   error    React Hook "C.useMemo" is called in function "uP" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3115:26363   error    React Hook "C.useMemo" is called in function "uT" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3115:26411   error    React Hook "C.useMemo" is called in function "uT" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3115:26797   error    React Hook "C.useState" is called in function "uI" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3115:26820   error    React Hook "C.useState" is called in function "uI" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3115:26843   error    React Hook "C.useState" is called in function "uI" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3115:26858   error    React Hook "C.useRef" is called in function "uI" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  3115:27341   error    React Hook "C.useImperativeHandle" is called in function "uI" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  3115:27477   error    React Hook "C.useContext" is called in function "uI" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  3115:30717   error    React Hook "C.useMemo" is called in function "uI" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3115:30992   error    React Hook "C.useMemo" is called in function "uI" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/node_modules_next_dist_compiled_a0e4c7b4._.js
+  686:35  warning  Unused eslint-disable directive (no problems were reported from 'no-proto')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/node_modules_next_dist_compiled_next-devtools_index_1dd7fb59.js
+  1644:345482  error  React Hook "C.useEffect" is called in function "ti" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:345780  error  React Hook "C.useEffect" is called in function "ti" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:392251  error  React Hook "C.useRef" is called in function "t2" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:392271  error  React Hook "C.useState" is called in function "t2" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:393768  error  React Hook "C.useEffect" is called in function "t2" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:394126  error  React Hook "C.useEffect" is called in function "t2" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:394532  error  React Hook "C.useEffect" is called in function "t2" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:399362  error  React Hook "C.useEffect" is called in function "t8" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:412148  error  React Hook "C.useState" is called in function "nb" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:412188  error  React Hook "C.useRef" is called in function "nb" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:412213  error  React Hook "C.useRef" is called in function "nb" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:425633  error  React Hook "C.useMemo" is called in function "nS" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:427121  error  React Hook "C.useMemo" is called in function "nS" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:445175  error  React Hook "C.use" is called in function "nW" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"                  react-hooks/rules-of-hooks
+  1644:606046  error  React Hook "C.useRef" is called in function "ay" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:606126  error  React Hook "C.useEffect" is called in function "ab" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:606896  error  React Hook "C.useRef" is called in function "aC" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:606923  error  React Hook "C.useState" is called in function "aC" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:606939  error  React Hook "C.useCallback" is called in function "aC" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  1644:607493  error  React Hook "P.useContext" is called in function "aR" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  1644:607600  error  React Hook "C.useMemo" is called in function "aD" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:607689  error  React Hook "C.useRef" is called in function "aM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:607704  error  React Hook "C.useCallback" is called in function "aM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  1644:607756  error  React Hook "C.useCallback" is called in function "aM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  1644:607820  error  React Hook "C.useState" is called in function "aM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:607876  error  React Hook "C.useMemo" is called in function "aM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:608026  error  React Hook "C.useRef" is called in function "aZ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:608043  error  React Hook "C.useState" is called in function "aZ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:608083  error  React Hook "C.useState" is called in function "aZ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:608224  error  React Hook "C.useMemo" is called in function "aZ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:608271  error  React Hook "C.useMemo" is called in function "aZ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:608406  error  React Hook "C.useMemo" is called in function "aZ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:613887  error  React Hook "C.useContext" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  1644:613945  error  React Hook "C.useRef" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:613971  error  React Hook "C.useRef" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:613997  error  React Hook "C.useRef" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:614012  error  React Hook "C.useRef" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:614027  error  React Hook "C.useRef" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:614046  error  React Hook "C.useRef" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:614148  error  React Hook "C.useEffect" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:614311  error  React Hook "C.useEffect" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:614546  error  React Hook "C.useCallback" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  1644:614937  error  React Hook "C.useEffect" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:617009  error  React Hook "C.useEffect" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:617093  error  React Hook "C.useMemo" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:617459  error  React Hook "C.useMemo" is called in function "iM" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:620453  error  React Hook "C.useRef" is called in function "iB" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:620475  error  React Hook "C.useRef" is called in function "iB" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:620488  error  React Hook "C.useEffect" is called in function "iB" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:620951  error  React Hook "C.useEffect" is called in function "iB" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:621125  error  React Hook "C.useMemo" is called in function "iB" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:621812  error  React Hook "C.useMemo" is called in function "iB" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:623320  error  React Hook "C.useContext" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  1644:623402  error  React Hook "C.useRef" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:623487  error  React Hook "C.useRef" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:623518  error  React Hook "C.useRef" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:623533  error  React Hook "C.useRef" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:626321  error  React Hook "C.useEffect" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:627751  error  React Hook "C.useEffect" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:627811  error  React Hook "C.useMemo" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:628142  error  React Hook "C.useMemo" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:628275  error  React Hook "C.useMemo" is called in function "i1" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:630416  error  React Hook "C.useCallback" is called in function "lC" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  1644:630458  error  React Hook "C.useCallback" is called in function "lC" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  1644:630499  error  React Hook "C.useCallback" is called in function "lC" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  1644:630541  error  React Hook "C.useMemo" is called in function "lC" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:631159  error  React Hook "C.useContext" is called in function "lN" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  1644:631364  error  React Hook "C.useState" is called in function "lL" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:631401  error  React Hook "C.useState" is called in function "lL" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:631867  error  React Hook "C.useMemo" is called in function "lL" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:632403  error  React Hook "C.useEffect" is called in function "lA" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:632520  error  React Hook "C.useContext" is called in function "lR" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  1644:635643  error  React Hook "C.useContext" is called in function "lq" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  1644:637050  error  React Hook "C.useState" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:637073  error  React Hook "C.useState" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:637096  error  React Hook "C.useState" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:637115  error  React Hook "C.useState" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:637136  error  React Hook "C.useState" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:637159  error  React Hook "C.useState" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:637182  error  React Hook "C.useState" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:637203  error  React Hook "C.useState" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:637220  error  React Hook "C.useRef" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:637237  error  React Hook "C.useRef" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:637254  error  React Hook "C.useRef" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:637271  error  React Hook "C.useRef" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:637286  error  React Hook "C.useRef" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:637317  error  React Hook "C.useContext" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  1644:637958  error  React Hook "C.useRef" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:637999  error  React Hook "C.useEffect" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:638155  error  React Hook "C.useCallback" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  1644:639340  error  React Hook "C.useRef" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:640062  error  React Hook "C.useImperativeHandle" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  1644:640150  error  React Hook "C.useImperativeHandle" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  1644:640200  error  React Hook "C.useImperativeHandle" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  1644:640261  error  React Hook "C.useEffect" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:650289  error  React Hook "C.useRef" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:651765  error  React Hook "C.useCallback" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  1644:652270  error  React Hook "C.useMemo" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:652392  error  React Hook "C.useMemo" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:652515  error  React Hook "C.useMemo" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:652543  error  React Hook "C.useMemo" is called in function "l4" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:656216  error  React Hook "C.useContext" is called in function "sg" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  1644:656463  error  React Hook "C.useRef" is called in function "sy" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:657158  error  React Hook "C.useCallback" is called in function "sy" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  1644:658131  error  React Hook "C.useContext" is called in function "sx" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  1644:658150  error  React Hook "C.useRef" is called in function "sx" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:658169  error  React Hook "C.useState" is called in function "sx" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:658291  error  React Hook "C.useRef" is called in function "sx" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:658308  error  React Hook "C.useCallback" is called in function "sx" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"          react-hooks/rules-of-hooks
+  1644:658619  error  React Hook "C.useMemo" is called in function "sx" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:667565  error  React Hook "C.useContext" is called in function "s9" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  1644:667588  error  React Hook "C.useState" is called in function "s9" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:667607  error  React Hook "C.useRef" is called in function "s9" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:668282  error  React Hook "C.useState" is called in function "s8" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:668301  error  React Hook "C.useRef" is called in function "s8" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:668318  error  React Hook "C.useRef" is called in function "s8" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:668335  error  React Hook "C.useRef" is called in function "s8" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:668352  error  React Hook "C.useRef" is called in function "s8" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:668432  error  React Hook "C.useEffect" is called in function "s8" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:668699  error  React Hook "C.useEffect" is called in function "s8" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:668767  error  React Hook "C.useMemo" is called in function "s8" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:680107  error  React Hook "C.useRef" is called in function "cN" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:681279  error  React Hook "C.useRef" is called in function "cA" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:688680  error  React Hook "C.useMemo" is called in function "cA" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:691909  error  React Hook "C.useMemo" is called in function "cA" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:691996  error  React Hook "C.useRef" is called in function "cA" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:692176  error  React Hook "C.useEffect" is called in function "cA" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:692346  error  React Hook "C.useEffect" is called in function "cA" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1644:692538  error  React Hook "C.useMemo" is called in function "cA" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:692658  error  React Hook "C.useMemo" is called in function "cA" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:692974  error  React Hook "C.useRef" is called in function "cR" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:693026  error  React Hook "C.useState" is called in function "cR" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1644:693042  error  React Hook "C.useRef" is called in function "cR" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1644:693163  error  React Hook "C.useMemo" is called in function "cR" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1644:693540  error  React Hook "C.useMemo" is called in function "cR" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1655:4081    error  React Hook "C.useContext" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  1655:4100    error  React Hook "C.useContext" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  1655:4119    error  React Hook "C.useRef" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1655:4136    error  React Hook "C.useRef" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1655:4153    error  React Hook "C.useRef" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1655:4168    error  React Hook "C.useRef" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1655:4183    error  React Hook "C.useRef" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1655:4323    error  React Hook "C.useEffect" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1655:4540    error  React Hook "C.useEffect" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1655:4722    error  React Hook "C.useEffect" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1655:6005    error  React Hook "C.useRef" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1655:6022    error  React Hook "C.useRef" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1655:6090    error  React Hook "C.useEffect" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1655:8832    error  React Hook "C.useEffect" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1655:8890    error  React Hook "C.useEffect" is called in function "cQ" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  1655:22869   error  React Hook "C.useContext" is called in function "ug" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  1655:23289   error  React Hook "C.useContext" is called in function "ub" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  1655:26032   error  React Hook "C.useRef" is called in function "uP" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1655:26046   error  React Hook "C.useRef" is called in function "uP" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1655:26060   error  React Hook "C.useRef" is called in function "uP" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1655:26077   error  React Hook "C.useRef" is called in function "uP" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1655:26134   error  React Hook "C.useMemo" is called in function "uP" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1655:26363   error  React Hook "C.useMemo" is called in function "uT" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1655:26411   error  React Hook "C.useMemo" is called in function "uT" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1655:26797   error  React Hook "C.useState" is called in function "uI" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1655:26820   error  React Hook "C.useState" is called in function "uI" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1655:26843   error  React Hook "C.useState" is called in function "uI" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  1655:26858   error  React Hook "C.useRef" is called in function "uI" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"               react-hooks/rules-of-hooks
+  1655:27341   error  React Hook "C.useImperativeHandle" is called in function "uI" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  1655:27477   error  React Hook "C.useContext" is called in function "uI" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"           react-hooks/rules-of-hooks
+  1655:30717   error  React Hook "C.useMemo" is called in function "uI" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  1655:30992   error  React Hook "C.useMemo" is called in function "uI" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js
+  4011:23   error  React Hook "useFiber" is called in function "updateTextNode" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  4019:296  error  React Hook "useFiber" is called in function "updateElement" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  4028:23   error  React Hook "useFiber" is called in function "updatePortal" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  4035:23   error  React Hook "useFiber" is called in function "updateFragment" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  4211:53   error  React Hook "useFiber" is called in function "reconcileChildFibersImpl" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  4222:49   error  React Hook "useFiber" is called in function "reconcileChildFibersImpl" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  4246:45   error  React Hook "useFiber" is called in function "reconcileChildFibersImpl" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  4282:302  error  React Hook "useFiber" is called in function "reconcileChildFibersImpl" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  4712:68   error  React Hook "useThenable" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                                                                                  react-hooks/rules-of-hooks
+  4798:59   error  React Hook "useThenable" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?                                                                   react-hooks/rules-of-hooks
+  5265:25   error  React Hook "useThenable" is called in function "updateActionStateImpl" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  5361:9    error  React Hook "useEffectEventImpl" is called in function "updateEvent" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"     react-hooks/rules-of-hooks
+  5580:74   error  React Hook "useThenable" is called in function "updateTransition" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"       react-hooks/rules-of-hooks
+  5587:74   error  React Hook "useThenable" is called in function "rerenderTransition" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"     react-hooks/rules-of-hooks
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js
+  1937:141  error  React Hook "useEnclosingLine" is called in function "initializeFakeTask" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/node_modules_next_dist_f3530cac._.js
+  1517:5  error    Definition for rule '@next/internal/typechecked-require' was not found                         @next/internal/typechecked-require
+  3517:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/rules-of-hooks')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/node_modules_next_dist_shared_lib_8bac8163._.js
+    61:13  warning  Unused eslint-disable directive (no problems were reported from 'array-callback-return')
+  3601:9   warning  Unused eslint-disable directive (no problems were reported from 'array-callback-return')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/node_modules_next_dist_shared_lib_9a2a7093._.js
+    61:13  warning  Unused eslint-disable directive (no problems were reported from 'array-callback-return')
+  3601:9   warning  Unused eslint-disable directive (no problems were reported from 'array-callback-return')
+  6326:9   warning  Unused eslint-disable directive (no problems were reported from 'default-case')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/node_modules_react-dom_4411d9bd._.js
+  3834:23   error  React Hook "useFiber" is called in function "updateTextNode" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  3842:296  error  React Hook "useFiber" is called in function "updateElement" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"             react-hooks/rules-of-hooks
+  3851:23   error  React Hook "useFiber" is called in function "updatePortal" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"              react-hooks/rules-of-hooks
+  3858:23   error  React Hook "useFiber" is called in function "updateFragment" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"            react-hooks/rules-of-hooks
+  4034:53   error  React Hook "useFiber" is called in function "reconcileChildFibersImpl" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  4044:49   error  React Hook "useFiber" is called in function "reconcileChildFibersImpl" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  4068:45   error  React Hook "useFiber" is called in function "reconcileChildFibersImpl" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  4104:302  error  React Hook "useFiber" is called in function "reconcileChildFibersImpl" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  4525:68   error  React Hook "useThenable" is called conditionally. React Hooks must be called in the exact same order in every component render                                                                                                                                  react-hooks/rules-of-hooks
+  4611:59   error  React Hook "useThenable" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?                                                                   react-hooks/rules-of-hooks
+  5077:25   error  React Hook "useThenable" is called in function "updateActionStateImpl" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+  5173:9    error  React Hook "useEffectEventImpl" is called in function "updateEvent" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"     react-hooks/rules-of-hooks
+  5391:74   error  React Hook "useThenable" is called in function "updateTransition" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"       react-hooks/rules-of-hooks
+  5398:74   error  React Hook "useThenable" is called in function "rerenderTransition" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"     react-hooks/rules-of-hooks
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/turbopack-_23a915ee._.js
+    19:5  error    Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+    41:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   106:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   150:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   166:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   176:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   238:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   408:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   521:5  error    Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+   752:5  error    Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+   800:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   817:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   868:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  1008:9  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  1075:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  1317:9  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  1601:5  error    Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+  1763:5  error    Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+  1848:5  warning  Unused eslint-disable directive (no problems were reported from 'no-eval')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/turbopack-pages__app_0fce199e._.js
+    19:5  error    Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+    41:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   106:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   150:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   166:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   176:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   238:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   408:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   521:5  error    Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+   752:5  error    Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+   800:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   817:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   868:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  1008:9  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  1075:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  1317:9  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  1601:5  error    Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+  1763:5  error    Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+  1848:5  warning  Unused eslint-disable directive (no problems were reported from 'no-eval')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/turbopack-pages__error_af01c4e3._.js
+    19:5  error    Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+    41:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   106:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   150:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   166:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   176:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   238:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   408:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   521:5  error    Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+   752:5  error    Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+   800:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   817:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+   868:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  1008:9  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  1075:5  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  1317:9  error    Do not assign to the variable `module`. See: https://nextjs.org/docs/messages/no-assign-module-variable  @next/next/no-assign-module-variable
+  1601:5  error    Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+  1763:5  error    Definition for rule '@typescript-eslint/no-unused-vars' was not found                                    @typescript-eslint/no-unused-vars
+  1848:5  warning  Unused eslint-disable directive (no problems were reported from 'no-eval')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/ui_2043a3ce._.js
+  647:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/ui_canvas_18b281e0._.js
+  37:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/ui_canvas_26a75715._.js
+  36:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/ui_canvas_a9efced4._.js
+  37:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/ui_canvas_f4a944ee._.js
+  37:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/ui_d047dfb9._.js
+  647:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/ui_d891f869._.js
+  647:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/.next_backup_1773586954/dev/static/chunks/ui_fceb904e._.js
+  634:9  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/ui/bridges/PersistenceBridge.jsx
+  66:8  warning  React Hook useEffect has missing dependencies: 'mode' and 'workspace'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/ui/workspace/capabilities/capabilityRegistry.js
+  16:24  error  UI layer must not access dispatcher or dispatch truth. Emit intent via canvasBus instead  dropple-architecture/no-ui-truth-dispatch
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/ui/workspace/editor/EditorWorkspaceShell.jsx
+   25:1   error  UI layer must not access dispatcher or dispatch truth. Emit intent via canvasBus instead  dropple-architecture/no-ui-truth-dispatch
+  107:24  error  UI layer must not access dispatcher or dispatch truth. Emit intent via canvasBus instead  dropple-architecture/no-ui-truth-dispatch
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/ui/workspace/media/shared/MediaTimelinePanel.jsx
+  248:8  warning  React Hook useEffect has a missing dependency: 'seekFromClientX'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+  320:8  warning  React Hook useEffect has a missing dependency: 'frameFromClientX'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/ui/workspace/root/DispatcherProvider/Bridges/WorkspaceBridgesRoot.jsx
+   4:1   error  UI layer must not access dispatcher or dispatch truth. Emit intent via canvasBus instead  dropple-architecture/no-ui-truth-dispatch
+  22:22  error  UI layer must not access dispatcher or dispatch truth. Emit intent via canvasBus instead  dropple-architecture/no-ui-truth-dispatch
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/ui/workspace/root/DispatcherProvider/Sessions/WorkspaceSessionsRoot.jsx
+   5:1   error    UI layer must not access dispatcher or dispatch truth. Emit intent via canvasBus instead                         dropple-architecture/no-ui-truth-dispatch
+  13:22  error    UI layer must not access dispatcher or dispatch truth. Emit intent via canvasBus instead                         dropple-architecture/no-ui-truth-dispatch
+  40:6   warning  React Hook useEffect has a missing dependency: 'normalizedId'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/ui/workspace/shared/WorkspaceLayout.jsx
+  149:5  warning  React Hook useMemo has missing dependencies: 'adapter?.id' and 'adapter?.workspaceId'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/endeleykonboye/Desktop/dropple-os/dropple/ui/workspace/ux/UIUXAuthoringShell.jsx
+  14:1   error  UI layer must not access dispatcher or dispatch truth. Emit intent via canvasBus instead  dropple-architecture/no-ui-truth-dispatch
+  24:22  error  UI layer must not access dispatcher or dispatch truth. Emit intent via canvasBus instead  dropple-architecture/no-ui-truth-dispatch
+
+✖ 617 problems (461 errors, 156 warnings)
+  0 errors and 151 warnings potentially fixable with the `--fix` option.
+

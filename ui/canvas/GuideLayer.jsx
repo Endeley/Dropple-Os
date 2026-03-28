@@ -6,7 +6,7 @@ import FrameRulers from './FrameRulers.jsx';
 import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
 import { useWorkspaceViewState, useWorkspaceVisualState } from '@/runtime/projection';
 import { useEffect, useRef, useState } from 'react';
-import { getPreview } from '@/ui/bridges/inputSessionRuntimeFacade.js';
+import { getReorderPreviewOnly } from '@/ui/bridges/inputSessionRuntimeFacade.js';
 
 export default function GuideLayer() {
     const nodes = useCharacterRenderNodes();
@@ -20,9 +20,9 @@ export default function GuideLayer() {
         let raf = null;
 
         const tick = () => {
-            const preview = getPreview();
+            const preview = getReorderPreviewOnly();
             const next =
-                preview?.type === 'reorder-preview' && preview.containerId != null
+                preview?.containerId != null
                     ? { containerId: preview.containerId, index: preview.index }
                     : null;
 
