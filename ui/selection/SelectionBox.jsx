@@ -24,6 +24,7 @@ export function SelectionBox({
 
     return (
         <div
+            data-testid="selection-box"
             onPointerDown={handleMoveStart}
             style={{
                 position: 'absolute',
@@ -38,6 +39,7 @@ export function SelectionBox({
                 zIndex: 5,
             }}>
             <div
+                data-testid="selection-box-resize-handle"
                 onPointerDown={handleResizeStart}
                 style={{
                     position: 'absolute',

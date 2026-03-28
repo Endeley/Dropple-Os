@@ -7,6 +7,7 @@ import LeftPanel from '@/ui/layout/LeftPanel';
 import RightPanel from '@/ui/layout/RightPanel';
 import TimelineBar from '@/ui/layout/TimelineBar';
 import CanvasStage from '@/ui/layout/CanvasStage';
+import { WorkspaceCanvasRoot } from '@/ui/workspace/WorkspaceCanvasRoot.jsx';
 import { EducationToolbar } from '@/education/EducationToolbar';
 import ReviewToolbar from '@/review/ReviewToolbar';
 import { SelectionProvider, useSelection } from './SelectionContext';
@@ -291,24 +292,28 @@ function WorkspaceLayoutInner({
       <div className="workspace-main">
         <LeftPanel panels={adapter.panels?.left} submission={reviewSubmission} />
 
-        <CanvasStage
-          adapter={adapter}
-          events={events}
-          cursor={cursor}
-          emit={emit}
-          educationReadOnly={educationReadOnly}
-          readOnly={readOnly}
-          documentId={documentId}
-          canEmitCursor={canEmitCursor}
-          presence={presence}
-          selfUserId={selfUserId}
-          intents={intents}
-          onImportJSONReplace={openImportJSONReplace}
-          onImportJSONMerge={openImportJSONMerge}
-          onImportSVGReplace={openImportSVGReplace}
-          onImportSVGMerge={openImportSVGMerge}
-          canImport={canImport}
-        />
+        {adapter?.id === 'education' || adapter?.id === 'review' ? (
+          <CanvasStage
+            adapter={adapter}
+            events={events}
+            cursor={cursor}
+            emit={emit}
+            educationReadOnly={educationReadOnly}
+            readOnly={readOnly}
+            documentId={documentId}
+            canEmitCursor={canEmitCursor}
+            presence={presence}
+            selfUserId={selfUserId}
+            intents={intents}
+            onImportJSONReplace={openImportJSONReplace}
+            onImportJSONMerge={openImportJSONMerge}
+            onImportSVGReplace={openImportSVGReplace}
+            onImportSVGMerge={openImportSVGMerge}
+            canImport={canImport}
+          />
+        ) : (
+          <WorkspaceCanvasRoot workspaceId={adapter?.workspaceId || adapter?.id || 'graphic'} />
+        )}
 
         <RightPanel
           panels={rightPanels}

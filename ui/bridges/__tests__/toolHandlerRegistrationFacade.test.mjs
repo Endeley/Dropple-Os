@@ -178,9 +178,14 @@ test('pending move drag promotes to move after threshold', () => {
     );
 
     assert.deepEqual(result, { handled: true });
-    assert.equal(dispatched.length, 1);
+    assert.equal(dispatched.length, 3);
     assert.equal(dispatched[0]?.type, EventTypes.DRAG_START);
     assert.equal(dispatched[0]?.payload?.type, 'move');
+    assert.equal(dispatched[1]?.type, EventTypes.DRAG_UPDATE);
+    assert.equal(dispatched[2]?.type, 'node.layout.bulk');
+    assert.equal(dispatched[2]?.payload?.updates?.[0]?.id, 'a');
+    assert.equal(dispatched[2]?.payload?.updates?.[0]?.y, 0);
+    assert.ok(dispatched[2]?.payload?.updates?.[0]?.x > 0);
 });
 
 test('pending move drag ends cleanly on pointerup without movement', () => {

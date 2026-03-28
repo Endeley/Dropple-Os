@@ -10,6 +10,7 @@ export function SelectionOutline({
     nodeId,
     color = 'rgba(59,130,246,0.6)',
     resizeEnabled = false,
+    rotateEnabled = false,
 }) {
     const nodes = useCharacterRenderNodes();
     const node = nodes?.[nodeId];
@@ -39,32 +40,39 @@ export function SelectionOutline({
     };
 
     return (
-        <div style={style}>
-            <div
-                onPointerDown={(e) => {
-                    onRotateHandlePointerDown?.(e, { nodeId });
-                }}
-                onPointerUp={(e) => {
-                    e.currentTarget.releasePointerCapture?.(e.pointerId);
-                }}
-                onPointerCancel={(e) => {
-                    e.currentTarget.releasePointerCapture?.(e.pointerId);
-                }}
-                style={{
-                    position: 'absolute',
-                    left: '50%',
-                    top: -22,
-                    width: 10,
-                    height: 10,
-                    marginLeft: -5,
-                    background: 'rgba(245, 158, 11, 0.95)',
-                    borderRadius: 999,
-                    border: '1px solid rgba(15,23,42,0.25)',
-                    cursor: 'grab',
-                    pointerEvents: 'auto',
-                }}
-                title="Rotate selection"
-            />
+        <div
+            data-testid="selection-outline"
+            data-selection-node-id={nodeId}
+            style={style}
+        >
+            {rotateEnabled && (
+                <div
+                    data-testid="rotate-handle"
+                    onPointerDown={(e) => {
+                        onRotateHandlePointerDown?.(e, { nodeId });
+                    }}
+                    onPointerUp={(e) => {
+                        e.currentTarget.releasePointerCapture?.(e.pointerId);
+                    }}
+                    onPointerCancel={(e) => {
+                        e.currentTarget.releasePointerCapture?.(e.pointerId);
+                    }}
+                    style={{
+                        position: 'absolute',
+                        left: '50%',
+                        top: -22,
+                        width: 10,
+                        height: 10,
+                        marginLeft: -5,
+                        background: 'rgba(245, 158, 11, 0.95)',
+                        borderRadius: 999,
+                        border: '1px solid rgba(15,23,42,0.25)',
+                        cursor: 'grab',
+                        pointerEvents: 'auto',
+                    }}
+                    title="Rotate selection"
+                />
+            )}
             {resizeEnabled && (
                 <div
                     style={{
@@ -78,6 +86,7 @@ export function SelectionOutline({
                     }}
                 >
                     <div
+                        data-testid="resize-handle"
                         onPointerDown={(e) => {
                             onResizeHandlePointerDown?.(e, {
                                 nodeId,

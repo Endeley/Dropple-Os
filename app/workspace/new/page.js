@@ -2,12 +2,15 @@
 
 import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { WorkspaceShell } from '@/ui/workspace/shared/WorkspaceShell';
 import { WorkspaceRoot } from '@/ui/workspace/root/WorkspaceRoot.jsx';
 import { mockTemplates } from '@/marketplace/mockTemplates';
 import { createWorkspaceFromTemplate } from '@/workspace/createFromTemplate';
 import { mockLessons } from '@/marketplace/mockLessons';
 import { forkLessonToWorkspace } from '@/education/forkLessonToWorkspace';
+import {
+  getWorkspaceDefinition,
+  resolveWorkspaceContext,
+} from '@/platform/workspaces';
 
 function createEmptyWorkspace() {
   return {
@@ -37,19 +40,30 @@ export default function WorkspaceNewPage() {
   const initialCursorIndex = workspace.events.length
     ? workspace.events.length - 1
     : -1;
+  const workspaceContext = useMemo(
+    () =>
+      resolveWorkspaceContext({
+        workspace: workspace.mode,
+      }),
+    [workspace.mode]
+  );
+  const workspaceDefinition = useMemo(
+    () => getWorkspaceDefinition(workspaceContext.definitionId ?? workspace.mode),
+    [workspace.mode, workspaceContext]
+  );
 
   return (
     <WorkspaceRoot
-      modeId={workspace.mode}
-      workspaceId={workspace.mode}
-      profile='design'
-    >
-      <WorkspaceShell
-        modeId={workspace.mode}
-        initialEvents={workspace.events}
-        initialCursorIndex={initialCursorIndex}
-        disableSeed={workspace.events.length > 0}
-      />
-    </WorkspaceRoot>
+      modeId={workspaceContext.mode ?? workspace.mode}
+      workspaceId={workspaceContext.definitionId ?? workspace.mode}
+      profile={workspaceDefinition?.profile ?? 'design'}
+      workspace={workspaceDefinition}
+      workspaceContext={workspaceContext}
+      shellProps={{
+        initialEvents: workspace.events,
+        initialCursorIndex,
+        disableSeed: workspace.events.length > 0,
+      }}
+    />
   );
 }

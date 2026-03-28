@@ -11,7 +11,7 @@ const ROUTES = [
   },
   {
     path: '/workspace/graphic',
-    expected: 'Undo',
+    expectedToolId: 'select',
   },
   {
     path: '/workspace/media',
@@ -31,7 +31,7 @@ const ROUTES = [
   },
   {
     path: '/workspace/new',
-    expected: 'Undo',
+    expectedToolId: 'select',
   },
 ];
 
@@ -54,7 +54,11 @@ for (const route of ROUTES) {
     });
 
     expect(response?.ok(), `route ${route.path} should respond successfully`).toBeTruthy();
-    await expect(page.locator('body')).toContainText(route.expected);
+    if (route.expectedToolId) {
+      await expect(page.locator(`[data-tool-id="${route.expectedToolId}"]`).first()).toBeVisible();
+    } else {
+      await expect(page.locator('body')).toContainText(route.expected);
+    }
     await expect(page.locator('body')).not.toContainText('Module not found');
     await expect(page.locator('body')).not.toContainText('Application error');
     expect(errors, `route ${route.path} should not trigger pageerror`).toEqual([]);

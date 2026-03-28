@@ -18,9 +18,19 @@ export default function SelectionLayer() {
     if (zoomTier === 'far' || zoomTier === 'overview') return null;
     if (!Array.isArray(selectionIds) || selectionIds.length === 0) return null;
 
+    const isSingleSelection = selectionIds.length === 1;
+
     return selectionIds.map((id) => {
         const node = nodesById?.[id];
-        const resizeEnabled = Boolean(node?.layout?.autoLayout);
-        return <SelectionOutline key={id} nodeId={id} resizeEnabled={resizeEnabled} />;
+        const resizeEnabled = isSingleSelection && Boolean(node?.layout?.autoLayout);
+        const rotateEnabled = isSingleSelection;
+        return (
+            <SelectionOutline
+                key={id}
+                nodeId={id}
+                resizeEnabled={resizeEnabled}
+                rotateEnabled={rotateEnabled}
+            />
+        );
     });
 }

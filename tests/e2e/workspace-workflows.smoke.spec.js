@@ -44,7 +44,7 @@ test('marketplace template workflow opens template details and enters workspace'
 
   await page.getByRole('button', { name: 'Use Template' }).click();
   await expect(page).toHaveURL(/\/workspace\/new\?fromTemplate=tpl-landing-001$/);
-  await expect(page.locator('body')).toContainText('Undo');
+  await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();
 
   assertNoFatalErrors(tracked, 'marketplace template workflow');
 });
@@ -56,7 +56,7 @@ test('workspace mode flow can move between graphic and media routes without fata
     waitUntil: 'networkidle',
   });
   expect(response?.ok(), 'graphic workspace should respond successfully').toBeTruthy();
-  await expect(page.locator('body')).toContainText('Undo');
+  await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();
 
   response = await page.goto('/workspace/media', {
     waitUntil: 'networkidle',

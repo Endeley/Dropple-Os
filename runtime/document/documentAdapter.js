@@ -44,8 +44,58 @@ export function getDocument(runtimeState) {
     return runtimeState?.document ?? null;
 }
 
+function overlayRuntimeGeometry(node, runtimeNode) {
+    if (!node || !runtimeNode) return node;
+
+    const runtimeLayout = runtimeNode?.layout ?? {};
+    const runtimeX = runtimeLayout.x ?? runtimeNode?.x;
+    const runtimeY = runtimeLayout.y ?? runtimeNode?.y;
+    const runtimeWidth = runtimeLayout.width ?? runtimeNode?.width;
+    const runtimeHeight = runtimeLayout.height ?? runtimeNode?.height;
+
+    if (
+        runtimeX == null &&
+        runtimeY == null &&
+        runtimeWidth == null &&
+        runtimeHeight == null
+    ) {
+        return node;
+    }
+
+    return {
+        ...node,
+        x: runtimeX ?? node?.x,
+        y: runtimeY ?? node?.y,
+        width: runtimeWidth ?? node?.width,
+        height: runtimeHeight ?? node?.height,
+        layout: {
+            ...(node?.layout ?? {}),
+            x: runtimeX ?? node?.layout?.x ?? node?.x,
+            y: runtimeY ?? node?.layout?.y ?? node?.y,
+            width: runtimeWidth ?? node?.layout?.width ?? node?.width,
+            height: runtimeHeight ?? node?.layout?.height ?? node?.height,
+        },
+    };
+}
+
 export function getSceneGraph(runtimeState) {
-    return runtimeState?.document?.sceneGraph ?? runtimeState?.sceneGraph ?? null;
+    const documentSceneGraph = runtimeState?.document?.sceneGraph ?? null;
+    if (!documentSceneGraph) {
+        return runtimeState?.sceneGraph ?? null;
+    }
+
+    const runtimeNodes = runtimeState?.nodes ?? {};
+    const nextNodes = Object.fromEntries(
+        Object.entries(documentSceneGraph.nodes ?? {}).map(([nodeId, node]) => [
+            nodeId,
+            overlayRuntimeGeometry(node, runtimeNodes[nodeId]),
+        ]),
+    );
+
+    return {
+        ...documentSceneGraph,
+        nodes: nextNodes,
+    };
 }
 
 export function getNode(runtimeState, nodeId) {

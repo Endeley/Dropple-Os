@@ -378,12 +378,15 @@ function moveToolHandler(input, context) {
     }
 
     if (input.type === 'pointermove') {
+        let activeDrag = drag;
+
         if (drag?.active && drag.type === 'pending-move') {
-            const nextDragState = {
+            const promotedDrag = {
                 ...drag,
+                type: 'move',
                 currentPointer: worldPoint,
             };
-            const rawDelta = computeRawDragDelta(nextDragState);
+            const rawDelta = computeRawDragDelta(promotedDrag);
             const distance = Math.max(Math.abs(rawDelta.dx ?? 0), Math.abs(rawDelta.dy ?? 0));
 
             if (distance < MOVE_DRAG_THRESHOLD) {
@@ -401,14 +404,13 @@ function moveToolHandler(input, context) {
                     meta: drag.meta ?? null,
                 },
             });
-
-            return { handled: true };
+            activeDrag = promotedDrag;
         }
 
-        if (drag?.active && drag.type === 'move') {
-            const dragNodeIds = Array.isArray(drag?.nodeIds) ? drag.nodeIds : [];
+        if (activeDrag?.active && activeDrag.type === 'move') {
+            const dragNodeIds = Array.isArray(activeDrag?.nodeIds) ? activeDrag.nodeIds : [];
             const nextDragState = {
-                ...drag,
+                ...activeDrag,
                 currentPointer: worldPoint,
             };
 
@@ -421,18 +423,18 @@ function moveToolHandler(input, context) {
 
             const projectedBounds = isGroup
                 ? buildGroupSnapContext({
-                    x: drag.group.bounds.x + rawDelta.dx,
-                    y: drag.group.bounds.y + rawDelta.dy,
-                    width: drag.group.bounds.width,
-                    height: drag.group.bounds.height,
+                    x: activeDrag.group.bounds.x + rawDelta.dx,
+                    y: activeDrag.group.bounds.y + rawDelta.dy,
+                    width: activeDrag.group.bounds.width,
+                    height: activeDrag.group.bounds.height,
                     center: {
-                        x: drag.group.center.x + rawDelta.dx,
-                        y: drag.group.center.y + rawDelta.dy,
+                        x: activeDrag.group.center.x + rawDelta.dx,
+                        y: activeDrag.group.center.y + rawDelta.dy,
                     },
                 })
                 : deriveDraggedBounds(
                     dragNodeIds,
-                    drag?.origin ?? {},
+                    activeDrag?.origin ?? {},
                     nodesById,
                     rawDelta.dx,
                     rawDelta.dy,
@@ -440,13 +442,13 @@ function moveToolHandler(input, context) {
 
             const resolved = resolveSnap(rawDelta, {
                 bounds: projectedBounds,
-                targets: drag?.meta?.snapTargets ?? collectSnapTargets(runtimeState, drag),
+                targets: activeDrag?.meta?.snapTargets ?? collectSnapTargets(runtimeState, activeDrag),
                 threshold: 8,
                 grid: 10,
             });
 
             const velocity = computeVelocity(
-                drag.previousPointer ?? drag.currentPointer,
+                activeDrag.previousPointer ?? activeDrag.currentPointer,
                 worldPoint,
             );
 
@@ -467,9 +469,9 @@ function moveToolHandler(input, context) {
             });
 
             const updates = isGroup
-                ? computeGroupMoveUpdates(drag.group, magnetic)
+                ? computeGroupMoveUpdates(activeDrag.group, magnetic)
                 : dragNodeIds.map((nodeId) => {
-                    const origin = drag.origin[nodeId];
+                    const origin = activeDrag.origin[nodeId];
                     return {
                         nodeId,
                         x: origin.x + magnetic.dx,
@@ -527,8 +529,11 @@ function resizeToolHandler(input, context) {
     if (!runtimeState || !dispatcher || !worldPoint) return null;
 
     const drag = runtimeState?.interaction?.drag ?? null;
+    const selectedIds = Array.from(runtimeState?.selection?.ids ?? []);
 
     if (input.type === 'pointerdown') {
+        if (selectedIds.length > 1) return null;
+
         const handle = input.resizeHandle ?? null;
         const nodeId = input.targetNodeId ?? null;
         if (!handle || !nodeId) return null;
@@ -610,8 +615,11 @@ function rotateToolHandler(input, context) {
     if (!runtimeState || !dispatcher || !worldPoint) return null;
 
     const drag = runtimeState?.interaction?.drag ?? null;
+    const selectedIds = Array.from(runtimeState?.selection?.ids ?? []);
 
     if (input.type === 'pointerdown') {
+        if (selectedIds.length > 1) return null;
+
         const nodeId = input.targetNodeId ?? null;
         if (!nodeId) return null;
 

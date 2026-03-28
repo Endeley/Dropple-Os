@@ -61,6 +61,7 @@ const CanvasHost = forwardRef(function CanvasHost(
     return (
         <div
             ref={localRef}
+            data-testid="canvas-host"
             onPointerDown={(e) => {
                 onPointerDown?.(e);
                 canvasBus.emit('pointer.down', {
