@@ -26,7 +26,7 @@ import { computeRotationDelta as computeRuntimeRotationDelta } from '@/runtime/i
 import { snapAngle } from '@/runtime/interaction/snapAngle.js';
 import { applyMagneticRotation } from '@/runtime/interaction/magneticRotation.js';
 import { clearSelection } from '@/runtime/selection/clearSelection.js';
-import { selectBounds } from '@/runtime/selection/selectBounds.js';
+import { resolveBoundsSelection, selectBounds } from '@/runtime/selection/selectBounds.js';
 import { selectNode } from '@/runtime/selection/selectNode.js';
 import { toggleNode } from '@/runtime/selection/toggleNode.js';
 import { resolveTargetNodeId } from '@/ui/interactions/resolveTargetNodeId.js';
@@ -145,6 +145,94 @@ function resolvePrimaryHit(runtimeState, worldPoint, inputEvent = null, targetNo
     return null;
 }
 
+function resolveDirectTargetNodeId(element) {
+    let current = element;
+
+    while (current && !(current instanceof Element)) {
+        current = current.parentNode;
+    }
+
+    while (current) {
+        if (current.dataset?.nodeId) return current.dataset.nodeId;
+        current = current.parentElement;
+    }
+
+    return null;
+}
+
+function isSelectionRectPastThreshold(bounds) {
+    if (!bounds) return false;
+    return Math.max(bounds.width ?? 0, bounds.height ?? 0) >= MOVE_DRAG_THRESHOLD;
+}
+
+function buildMarqueeBounds(startPoint, currentPoint) {
+    const start = startPoint ?? currentPoint ?? { x: 0, y: 0 };
+    const current = currentPoint ?? start;
+    return {
+        x: Math.min(start.x, current.x),
+        y: Math.min(start.y, current.y),
+        width: Math.abs(current.x - start.x),
+        height: Math.abs(current.y - start.y),
+    };
+}
+
+function startMarqueeDrag(dispatcher, worldPoint, meta = {}) {
+    dispatcher.dispatch({
+        type: EventTypes.DRAG_START,
+        payload: {
+            type: 'marquee',
+            nodeIds: [],
+            pointer: worldPoint,
+            meta,
+        },
+    });
+}
+
+function startPendingSelectDrag(dispatcher, worldPoint, meta = {}) {
+    dispatcher.dispatch({
+        type: EventTypes.DRAG_START,
+        payload: {
+            type: 'pending-select',
+            nodeIds: [],
+            pointer: worldPoint,
+            meta,
+        },
+    });
+}
+
+function buildPendingMovePayload(runtimeState, startPointer, hitNodeId, additive = false) {
+    const nodesById = runtimeState?.nodes ?? {};
+    const currentSelection = Array.from(runtimeState?.selection?.ids ?? []);
+    const nextSelection = resolveNextMoveSelection({
+        additive,
+        currentSelection,
+        hitNodeId,
+    });
+    const nodeIds = nextSelection.length > 0 ? nextSelection : [hitNodeId];
+
+    return {
+        type: 'pending-move',
+        nodeIds,
+        pointer: startPointer,
+        origin: Object.fromEntries(
+            nodeIds.map((nodeId) => {
+                const node = nodesById[nodeId];
+                const layout = node?.layout ?? {};
+                return [nodeId, {
+                    x: layout.x ?? 0,
+                    y: layout.y ?? 0,
+                }];
+            }),
+        ),
+        group: buildGroupDragState(nodesById, nodeIds),
+        meta: {
+            snapTargets: collectSnapTargets(runtimeState, { nodeIds }),
+            additive,
+            hitNodeId,
+        },
+    };
+}
+
 export function resolveNextMoveSelection({
     additive = false,
     currentSelection = [],
@@ -248,45 +336,92 @@ function selectToolHandler(input, context) {
 
     if (input.type === 'pointerdown') {
         const hit = resolvePrimaryHit(runtimeState, worldPoint, input.event, input.targetNodeId);
+        const directHitNodeId = resolveDirectTargetNodeId(input.event?.target ?? null);
         const additive = input.event?.shiftKey ?? input.modifiers?.shift ?? false;
-
-        if (hit?.id) {
-            if (additive) {
-                dispatcher.dispatch(toggleNode(hit.id));
-                return { handled: true };
-            }
-
-            dispatchMoveDragStart({
-                dispatcher,
-                runtimeState,
-                worldPoint,
-                hitNodeId: hit.id,
-                additive,
-            });
-            return { handled: true };
-        }
-
-        if (!additive) {
-            dispatcher.dispatch(clearSelection());
-        }
-
-        dispatcher.dispatch({
-            type: EventTypes.DRAG_START,
-            payload: {
-                type: 'select',
-                nodeIds: [],
-                pointer: worldPoint,
-                meta: {
-                    additive,
-                },
-            },
+        const currentSelection = Array.from(runtimeState?.selection?.ids ?? []);
+        startPendingSelectDrag(dispatcher, worldPoint, {
+            additive,
+            hitNodeId: hit?.id ?? null,
+            directHitNodeId,
+            wasHitSelected: hit?.id ? currentSelection.includes(hit.id) : false,
+            pendingToggleId: additive ? hit?.id ?? null : null,
         });
 
         return { handled: true };
     }
 
     if (input.type === 'pointermove') {
-        if (!drag?.active || drag.type !== 'select') return null;
+        if (!drag?.active) return null;
+
+        if (drag.type === 'pending-select') {
+            const bounds = buildMarqueeBounds(drag.startPointer ?? worldPoint, worldPoint);
+            if (!isSelectionRectPastThreshold(bounds)) {
+                return { handled: true };
+            }
+
+            const additive = drag?.meta?.additive === true;
+            const hitNodeId = drag?.meta?.hitNodeId ?? null;
+            const directHitNodeId = drag?.meta?.directHitNodeId ?? null;
+            const wasHitSelected = drag?.meta?.wasHitSelected === true;
+            const startPointer = drag.startPointer ?? worldPoint;
+
+            if (directHitNodeId && hitNodeId && wasHitSelected && !additive) {
+                const selectionEvent = selectNode(hitNodeId);
+                const pendingMovePayload = buildPendingMovePayload(
+                    runtimeState,
+                    startPointer,
+                    hitNodeId,
+                    additive,
+                );
+
+                dispatcher.dispatch(selectionEvent);
+                dispatcher.dispatch({
+                    type: EventTypes.DRAG_START,
+                    payload: pendingMovePayload,
+                });
+
+                return moveToolHandler(input, {
+                    ...context,
+                    state: {
+                        ...runtimeState,
+                        selection: {
+                            ...(runtimeState?.selection ?? {}),
+                            ids: pendingMovePayload.nodeIds,
+                            primary: pendingMovePayload.nodeIds[0] ?? null,
+                        },
+                        interaction: {
+                            ...(runtimeState?.interaction ?? {}),
+                            drag: {
+                                active: true,
+                                ...pendingMovePayload,
+                                startPointer,
+                                previousPointer: startPointer,
+                                currentPointer: startPointer,
+                                guides: [],
+                            },
+                        },
+                    },
+                });
+            }
+
+            startMarqueeDrag(dispatcher, startPointer, {
+                additive,
+                pendingToggleId: drag?.meta?.pendingToggleId ?? null,
+                hitNodeId,
+            });
+
+            dispatcher.dispatch({
+                type: EventTypes.DRAG_UPDATE,
+                payload: {
+                    pointer: worldPoint,
+                    guides: [],
+                },
+            });
+
+            return { handled: true };
+        }
+
+        if (drag.type !== 'marquee') return null;
 
         dispatcher.dispatch({
             type: EventTypes.DRAG_UPDATE,
@@ -300,34 +435,43 @@ function selectToolHandler(input, context) {
     }
 
     if (input.type === 'pointerup') {
-        if (!drag?.active || drag.type !== 'select') return null;
+        if (!drag?.active) return null;
 
-        const start = drag.startPointer ?? worldPoint;
-        const current = drag.currentPointer ?? worldPoint;
-        const bounds = {
-            x: Math.min(start.x, current.x),
-            y: Math.min(start.y, current.y),
-            width: Math.abs(current.x - start.x),
-            height: Math.abs(current.y - start.y),
-        };
-
-        if (bounds.width > 0 || bounds.height > 0) {
-            const result = selectBounds(runtimeState, bounds);
+        if (drag.type === 'pending-select') {
             const additive = drag?.meta?.additive === true;
+            const hitNodeId = drag?.meta?.hitNodeId ?? null;
+            const pendingToggleId = drag?.meta?.pendingToggleId ?? null;
 
-            if (additive) {
-                const existing = Array.from(runtimeState.selection?.ids ?? []);
-                const merged = Array.from(new Set([...existing, ...(result?.payload?.ids ?? [])]));
-                dispatcher.dispatch({
-                    type: EventTypes.SELECTION_SET,
-                    payload: {
-                        ids: merged,
-                        primary: merged[0] ?? null,
-                    },
-                });
-            } else {
-                dispatcher.dispatch(result);
+            if (additive && pendingToggleId) {
+                dispatcher.dispatch(toggleNode(pendingToggleId));
+            } else if (hitNodeId) {
+                dispatcher.dispatch(selectNode(hitNodeId));
+            } else if (!additive) {
+                dispatcher.dispatch(clearSelection());
             }
+
+            dispatcher.dispatch({ type: EventTypes.DRAG_END });
+            return { handled: true };
+        }
+
+        if (drag.type !== 'marquee') return null;
+
+        const bounds = buildMarqueeBounds(drag.startPointer ?? worldPoint, drag.currentPointer ?? worldPoint);
+        const additive = drag?.meta?.additive === true;
+        const pendingToggleId = drag?.meta?.pendingToggleId ?? null;
+        const hasMarqueeArea = isSelectionRectPastThreshold(bounds);
+
+        if (hasMarqueeArea) {
+            const selection = resolveBoundsSelection(runtimeState, bounds, {
+                additive,
+                existingIds: Array.from(runtimeState.selection?.ids ?? []),
+            });
+            dispatcher.dispatch(selectBounds(runtimeState, bounds, {
+                additive,
+                existingIds: Array.from(runtimeState.selection?.ids ?? []),
+            }));
+        } else if (additive && pendingToggleId) {
+            dispatcher.dispatch(toggleNode(pendingToggleId));
         }
 
         dispatcher.dispatch({ type: EventTypes.DRAG_END });

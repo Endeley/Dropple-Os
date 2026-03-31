@@ -21,7 +21,6 @@ import { useWorkspaceViewState, useWorkspaceVisualState } from '@/runtime/projec
 import { CanvasSurface } from '@/ui/canvas/surface/CanvasSurface.jsx';
 import { WorldOriginMarker } from '@/ui/canvas/WorldOriginMarker.jsx';
 import { computeCenteredViewport } from '@/ui/canvas/computeCenteredViewport.js';
-import { screenToWorld } from '@/canvas/transform/screenToWorld.js';
 import { viewportIntent } from '@/ui/viewport/viewportIntent.js';
 import { getZoomTier } from '@/runtime/canvas/zoomTiers.js';
 import { CanvasProvider } from '@/ui/canvas/CanvasContext.jsx';
@@ -41,6 +40,33 @@ const REBASE_DISTANCE = 8000;
 
 function isSelectionModifierGesture(event) {
     return event?.shiftKey === true || event?.metaKey === true || event?.ctrlKey === true;
+}
+
+function screenToCanvasWorld(screenPoint, { viewport, worldOffset, cameraTransform }) {
+    const cameraX = cameraTransform?.x ?? 0;
+    const cameraY = cameraTransform?.y ?? 0;
+    const cameraZoom = cameraTransform?.zoom ?? 1;
+    const cameraRotation = cameraTransform?.rotation ?? 0;
+    const baseScale = viewport?.scale ?? 1;
+    const scale = baseScale * cameraZoom;
+    const tx = (viewport?.x ?? 0) + (worldOffset?.x ?? 0) + cameraX;
+    const ty = (viewport?.y ?? 0) + (worldOffset?.y ?? 0) + cameraY;
+
+    const translatedX = screenPoint.x + tx;
+    const translatedY = screenPoint.y + ty;
+    const scaledX = translatedX / scale;
+    const scaledY = translatedY / scale;
+
+    if (cameraRotation === 0) {
+        return { x: scaledX, y: scaledY };
+    }
+
+    const cos = Math.cos(-cameraRotation);
+    const sin = Math.sin(-cameraRotation);
+    return {
+        x: scaledX * cos - scaledY * sin,
+        y: scaledX * sin + scaledY * cos,
+    };
 }
 
 export default function CanvasRoot({ workspaceId }) {
@@ -102,10 +128,10 @@ export default function CanvasRoot({ workspaceId }) {
             }
             const rect = containerRef.current.getBoundingClientRect();
             const screenPoint = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-            return screenToWorld(screenPoint, {
-                ...viewport,
-                x: viewport.x + worldOffset.x,
-                y: viewport.y + worldOffset.y,
+            return screenToCanvasWorld(screenPoint, {
+                viewport,
+                worldOffset,
+                cameraTransform,
             });
         },
         getDefaultParentId: () => rootIds[0] ?? null,
@@ -177,6 +203,36 @@ export default function CanvasRoot({ workspaceId }) {
         e.currentTarget.releasePointerCapture?.(e.pointerId);
     }
 
+    function handleCanvasHostPointerDown(e) {
+        handlePointerDown(e);
+        if (panRef.current.active) return;
+        onCanvasPointerDown(e);
+    }
+
+    function handleCanvasHostPointerMove(e) {
+        if (panRef.current.active) {
+            handlePointerMove(e);
+            return;
+        }
+        onCanvasPointerMove(e);
+    }
+
+    function handleCanvasHostPointerUp(e) {
+        if (panRef.current.active) {
+            handlePointerUp(e);
+            return;
+        }
+        onCanvasPointerUp(e);
+    }
+
+    function handleCanvasHostPointerCancel(e) {
+        if (panRef.current.active) {
+            handlePointerUp(e);
+            return;
+        }
+        onCanvasPointerCancel(e);
+    }
+
     // 🔍 ZOOM
     function handleWheel(e) {
         if (!allowZoom || !viewport) return;
@@ -190,10 +246,10 @@ export default function CanvasRoot({ workspaceId }) {
             y: e.clientY - rect.top,
         };
 
-        const worldBefore = screenToWorld(cursor, {
-            ...viewport,
-            x: viewport.x + worldOffset.x,
-            y: viewport.y + worldOffset.y,
+        const worldBefore = screenToCanvasWorld(cursor, {
+            viewport,
+            worldOffset,
+            cameraTransform,
         });
 
         const zoomFactor = Math.exp(-e.deltaY * 0.001);
@@ -224,7 +280,7 @@ export default function CanvasRoot({ workspaceId }) {
 
         setWorldOffset({ x: 0, y: 0 });
         viewportIntent({ viewport: nextViewport });
-    }, [viewport]);
+    }, [cameraTransform, viewport, worldOffset]);
 
     // 🔌 Listen for reset intent
     useEffect(() => {
@@ -266,18 +322,13 @@ export default function CanvasRoot({ workspaceId }) {
                 viewport={viewport}
                 worldOffset={worldOffset}
                 cameraTransform={cameraTransform}
-                onPointerDown={handlePointerDown}
-                onPointerMove={handlePointerMove}
-                onPointerUp={handlePointerUp}
-                onPointerCancel={onCanvasPointerCancel}
+                onPointerDown={handleCanvasHostPointerDown}
+                onPointerMove={handleCanvasHostPointerMove}
+                onPointerUp={handleCanvasHostPointerUp}
+                onPointerCancel={handleCanvasHostPointerCancel}
                 onWheel={handleWheel}>
                 {/* 🌍 WORLD */}
-                <div
-                    style={{ position: 'absolute', inset: 0 }}
-                    onPointerDown={onCanvasPointerDown}
-                    onPointerMove={onCanvasPointerMove}
-                    onPointerUp={onCanvasPointerUp}
-                    onPointerCancel={onCanvasPointerCancel}>
+                <div style={{ position: 'absolute', inset: 0 }}>
                     <CanvasSurface surface={canvasSurface} viewport={viewport} emphasisMode={isNodeDragging ? 'drag' : isPanning ? 'pan' : 'none'} />
                     <WorldOriginMarker viewport={viewport} />
                     <GhostFrameLayer designState={designState} />

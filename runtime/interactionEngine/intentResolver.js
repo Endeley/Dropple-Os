@@ -8,7 +8,6 @@ export function resolveIntent(input = {}, context = {}) {
   if (tool === 'rotate') return INTERACTIONS.ROTATE;
   if (tool === 'pan') return INTERACTIONS.PAN;
   if (tool === 'zoom') return INTERACTIONS.ZOOM;
-  if (tool === 'marquee') return INTERACTIONS.MARQUEE;
 
   return null;
 }

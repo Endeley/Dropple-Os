@@ -9,7 +9,16 @@ export function updateSpatialIndex(scene, dirtyNodes = []) {
         removeNodeFromIndex(index, nodeId);
 
         const computed = scene?.computed?.[nodeId];
-        const bounds = computed?.worldBounds ?? null;
+        const bounds = computed?.worldBounds ?? (
+            computed
+                ? {
+                    x: computed.x ?? 0,
+                    y: computed.y ?? 0,
+                    width: computed.width ?? 0,
+                    height: computed.height ?? 0,
+                }
+                : null
+        );
 
         if (!bounds) continue;
 

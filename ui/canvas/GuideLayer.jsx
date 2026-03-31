@@ -12,6 +12,7 @@ export default function GuideLayer() {
     const nodes = useCharacterRenderNodes();
     const selectedIds = useWorkspaceVisualState((s) => s.selection?.ids || []);
     const guides = useWorkspaceVisualState((s) => s.guides || []);
+    const marquee = useWorkspaceVisualState((s) => s.marquee ?? null);
     const viewport = useWorkspaceViewState((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
     const [reorderPreview, setReorderPreview] = useState(null);
     const lastPreviewRef = useRef(null);
@@ -51,6 +52,25 @@ export default function GuideLayer() {
 
     return (
         <>
+            {marquee && (marquee.width > 0 || marquee.height > 0) && (
+                <div
+                    data-testid="marquee-selection"
+                    style={{
+                        position: 'absolute',
+                        left: marquee.x,
+                        top: marquee.y,
+                        width: marquee.width,
+                        height: marquee.height,
+                        border: `1px dashed ${marquee.additive ? 'rgba(16,185,129,0.95)' : 'rgba(59,130,246,0.95)'}`,
+                        background: marquee.additive ? 'rgba(16,185,129,0.10)' : 'rgba(59,130,246,0.10)',
+                        boxShadow: marquee.additive
+                            ? '0 0 0 1px rgba(16,185,129,0.18)'
+                            : '0 0 0 1px rgba(59,130,246,0.18)',
+                        pointerEvents: 'none',
+                        zIndex: 2,
+                    }}
+                />
+            )}
             <CanvasSnapGuides guides={guides} />
             {selectedFrame && <FrameRulers frame={selectedFrame} viewport={viewport} />}
             {reorderPreview && (

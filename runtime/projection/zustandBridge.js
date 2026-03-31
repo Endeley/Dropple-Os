@@ -13,6 +13,27 @@ import { projectGroupTransform } from '@/runtime/projection/groupTransformProjec
 import { selectActiveTool, selectVisibleTools } from '@/runtime/selectors/toolSelectors.js';
 import { projectGraphInteraction } from '@/runtime/graph/index.js';
 
+function projectMarquee(runtime) {
+    const drag = runtime?.interaction?.drag ?? null;
+    if (!drag?.active || drag.type !== 'marquee') {
+        return null;
+    }
+
+    const start = drag.startPointer ?? null;
+    const current = drag.currentPointer ?? start ?? null;
+    if (!start || !current) {
+        return null;
+    }
+
+    return Object.freeze({
+        x: Math.min(start.x, current.x),
+        y: Math.min(start.y, current.y),
+        width: Math.abs(current.x - start.x),
+        height: Math.abs(current.y - start.y),
+        additive: drag?.meta?.additive === true,
+    });
+}
+
 /**
  * Syncs authoritative runtime state into Zustand (read-only mirror).
  * ❗ Zustand never mutates runtime directly.
@@ -48,6 +69,7 @@ export function syncRuntimeToZustand(nextState, options = {}) {
                     rotateAnchor: null,
                 },
                 guides: [],
+                marquee: null,
                 groupTransform: null,
                 components: {
                     index: {
@@ -139,6 +161,7 @@ export function syncRuntimeToZustand(nextState, options = {}) {
         selectionBounds,
         transformAnchors: transformAnchorProjection(selectionBounds),
         guides: guideProjection(nextState, selectionBounds),
+        marquee: projectMarquee(nextState),
         groupTransform: projectGroupTransform(nextState),
         components: componentProjection(nextState),
         data: nextState.data ?? { resolvedBindings: {}, resolvedValues: {} },

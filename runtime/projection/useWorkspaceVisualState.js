@@ -18,6 +18,7 @@ function selectProjectedVisualState(state) {
             rotateAnchor: null,
         },
         guides: state?.guides ?? [],
+        marquee: state?.marquee ?? null,
         groupTransform: state?.groupTransform ?? null,
         graph: state?.graph ?? null,
     };
@@ -31,6 +32,7 @@ function selectProjectedVisualState(state) {
         lastProjectedState.selectionBounds === nextProjectedState.selectionBounds &&
         lastProjectedState.transformAnchors === nextProjectedState.transformAnchors &&
         lastProjectedState.guides === nextProjectedState.guides &&
+        lastProjectedState.marquee === nextProjectedState.marquee &&
         lastProjectedState.groupTransform === nextProjectedState.groupTransform &&
         lastProjectedState.graph === nextProjectedState.graph
     ) {

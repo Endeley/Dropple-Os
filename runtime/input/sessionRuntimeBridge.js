@@ -92,12 +92,5 @@ export function createSessionFromIntent({ sessionType, payload, nodesById = {} }
         });
     }
 
-    if (sessionType === 'marquee') {
-        return interactionManager.createSession('marquee', {
-            startPointer: payload.startPointer ?? payload.pointer ?? payload.pointerWorld,
-            runtime: runtimeState,
-        });
-    }
-
     return null;
 }

@@ -7,6 +7,7 @@ import {
     resolveNextMoveSelection,
 } from '@/ui/bridges/toolHandlerRegistrationFacade.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
+import { buildSpatialIndex } from '@/runtime/spatial/index.js';
 
 const { moveToolHandler, resizeToolHandler, rotateToolHandler, selectToolHandler } = __TESTING__;
 
@@ -223,7 +224,7 @@ test('pending move drag ends cleanly on pointerup without movement', () => {
     assert.equal(dispatched[0]?.type, EventTypes.DRAG_END);
 });
 
-test('select tool shift-click toggles selection without starting drag', () => {
+test('select tool shift-click defers toggle until pointerup', () => {
     const dispatched = [];
     const dispatcher = {
         dispatch(event) {
@@ -253,7 +254,202 @@ test('select tool shift-click toggles selection without starting drag', () => {
 
     assert.deepEqual(result, { handled: true });
     assert.equal(dispatched.length, 1);
+    assert.equal(dispatched[0]?.type, EventTypes.DRAG_START);
+    assert.equal(dispatched[0]?.payload?.type, 'pending-select');
+    assert.equal(dispatched[0]?.payload?.meta?.pendingToggleId, 'a');
+});
+
+test('select tool shift-click toggles selection on pointerup when marquee threshold is not crossed', () => {
+    const dispatched = [];
+    const dispatcher = {
+        dispatch(event) {
+            dispatched.push(event);
+        },
+    };
+
+    const result = selectToolHandler(
+        {
+            type: 'pointerup',
+            event: { shiftKey: true },
+            worldPoint: { x: 11, y: 11 },
+        },
+        {
+            tool: 'select',
+            dispatcher,
+            state: {
+                nodes: {
+                    a: { id: 'a', layout: { x: 0, y: 0, width: 10, height: 10 } },
+                },
+                selection: { ids: [] },
+                interaction: {
+                    drag: {
+                        active: true,
+                        type: 'pending-select',
+                        startPointer: { x: 10, y: 10 },
+                        currentPointer: { x: 11, y: 11 },
+                        meta: {
+                            additive: true,
+                            pendingToggleId: 'a',
+                        },
+                    },
+                },
+            },
+        },
+    );
+
+    assert.deepEqual(result, { handled: true });
+    assert.equal(dispatched.length, 2);
     assert.equal(dispatched[0]?.type, EventTypes.SELECTION_TOGGLE);
+    assert.equal(dispatched[1]?.type, EventTypes.DRAG_END);
+});
+
+test('select tool shift-drag over a hit node promotes to additive marquee selection', () => {
+    const dispatched = [];
+    const dispatcher = {
+        dispatch(event) {
+            dispatched.push(event);
+        },
+    };
+    const scene = {
+        computed: {
+            a: { x: 0, y: 0, width: 50, height: 50 },
+        },
+        spatialIndex: null,
+    };
+    scene.spatialIndex = buildSpatialIndex(scene, 64);
+
+    const result = selectToolHandler(
+        {
+            type: 'pointerup',
+            event: { shiftKey: true },
+            worldPoint: { x: 40, y: 40 },
+        },
+        {
+            tool: 'select',
+            dispatcher,
+            state: {
+                nodes: {
+                    a: { id: 'a', layout: { x: 0, y: 0, width: 10, height: 10 } },
+                },
+                document: {
+                    nodes: {
+                        a: {},
+                    },
+                },
+                scene,
+                selection: { ids: ['seed'] },
+                interaction: {
+                    drag: {
+                        active: true,
+                        type: 'marquee',
+                        startPointer: { x: 10, y: 10 },
+                        currentPointer: { x: 40, y: 40 },
+                        meta: {
+                            additive: true,
+                            pendingToggleId: 'a',
+                        },
+                    },
+                },
+            },
+        },
+    );
+
+    assert.deepEqual(result, { handled: true });
+    assert.equal(dispatched.length, 2);
+    assert.equal(dispatched[0]?.type, EventTypes.SELECTION_SET);
+    assert.deepEqual(dispatched[0]?.payload?.ids, ['seed', 'a']);
+    assert.equal(dispatched[1]?.type, EventTypes.DRAG_END);
+});
+
+test('select tool click on a node selects on pointerup when no drag threshold is crossed', () => {
+    const dispatched = [];
+    const dispatcher = {
+        dispatch(event) {
+            dispatched.push(event);
+        },
+    };
+
+    const result = selectToolHandler(
+        {
+            type: 'pointerup',
+            event: {},
+            worldPoint: { x: 10, y: 10 },
+        },
+        {
+            tool: 'select',
+            dispatcher,
+            state: {
+                nodes: {
+                    a: { id: 'a', layout: { x: 0, y: 0, width: 10, height: 10 } },
+                },
+                selection: { ids: [] },
+                interaction: {
+                    drag: {
+                        active: true,
+                        type: 'pending-select',
+                        startPointer: { x: 10, y: 10 },
+                        currentPointer: { x: 10, y: 10 },
+                        meta: {
+                            additive: false,
+                            hitNodeId: 'a',
+                        },
+                    },
+                },
+            },
+        },
+    );
+
+    assert.deepEqual(result, { handled: true });
+    assert.equal(dispatched.length, 2);
+    assert.equal(dispatched[0]?.type, EventTypes.SELECTION_SET);
+    assert.equal(dispatched[0]?.payload?.ids?.[0], 'a');
+    assert.equal(dispatched[1]?.type, EventTypes.DRAG_END);
+});
+
+test('select tool drag from an unselected node resolves to marquee after threshold', () => {
+    const dispatched = [];
+    const dispatcher = {
+        dispatch(event) {
+            dispatched.push(event);
+        },
+    };
+
+    const result = selectToolHandler(
+        {
+            type: 'pointermove',
+            event: {},
+            worldPoint: { x: 20, y: 20 },
+        },
+        {
+            tool: 'select',
+            dispatcher,
+            state: {
+                nodes: {
+                    a: { id: 'a', layout: { x: 0, y: 0, width: 40, height: 40 } },
+                },
+                selection: { ids: [] },
+                interaction: {
+                    drag: {
+                        active: true,
+                        type: 'pending-select',
+                        startPointer: { x: 10, y: 10 },
+                        currentPointer: { x: 10, y: 10 },
+                        meta: {
+                            additive: false,
+                            hitNodeId: 'a',
+                            wasHitSelected: false,
+                        },
+                    },
+                },
+            },
+        },
+    );
+
+    assert.deepEqual(result, { handled: true });
+    assert.equal(dispatched.length, 2);
+    assert.equal(dispatched[0]?.type, EventTypes.DRAG_START);
+    assert.equal(dispatched[0]?.payload?.type, 'marquee');
+    assert.equal(dispatched[1]?.type, EventTypes.DRAG_UPDATE);
 });
 
 test('select tool pointerup delegates active move drags to move handler and ends drag', () => {

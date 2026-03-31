@@ -45,7 +45,21 @@ function projectDragGuides(runtime) {
         .filter(Boolean);
 }
 
+function shouldSuppressGuides(runtime) {
+    const drag = runtime?.interaction?.drag;
+    if (!drag?.active || drag.type !== 'move') {
+        return false;
+    }
+
+    const nodeIds = Array.isArray(drag.nodeIds) ? drag.nodeIds.filter(Boolean) : [];
+    return nodeIds.length > 1;
+}
+
 export function guideProjection(runtime, selectionBounds) {
+    if (shouldSuppressGuides(runtime)) {
+        return Object.freeze([]);
+    }
+
     const dragGuides = projectDragGuides(runtime);
     const bounds = selectionBounds?.bounds ?? null;
     if (!bounds) {

@@ -15,7 +15,7 @@ export const initialDragState = Object.freeze({
 
 export function startDrag(state, payload = {}) {
     return {
-        ...(state ?? initialDragState),
+        ...initialDragState,
         active: true,
         type: payload.type ?? null,
         nodeIds: Array.isArray(payload.nodeIds) ? [...payload.nodeIds] : [],

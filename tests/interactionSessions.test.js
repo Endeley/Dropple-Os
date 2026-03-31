@@ -79,61 +79,18 @@ test('session runtime bridge creates zoom session and commit bridge emits viewpo
     assert.equal(typeof actions.dispatchEvents[0].payload.scale, 'number');
 });
 
-test('session runtime bridge creates marquee session and commit bridge emits selection set', () => {
-    const document = createCanonicalDocumentEnvelope();
-    document.sceneGraph = {
-        rootIds: ['node-1'],
-        nodes: {
-            'node-1': {
-                id: 'node-1',
-                hidden: false,
-            },
-        },
-    };
-
+test('session runtime bridge returns null for unsupported legacy session types', () => {
     seedRuntime({
-        document,
-        scene: {
-            spatialIndex: {
-                cellSize: 128,
-                cells: new Map([['0:0', new Set(['node-1'])]]),
-                nodeBounds: new Map([['node-1', { x: 5, y: 5, width: 20, height: 20 }]]),
-                nodeCells: new Map([['node-1', ['0:0']]]),
-            },
-            computed: {
-                'node-1': {
-                    id: 'node-1',
-                    worldBounds: { x: 5, y: 5, width: 20, height: 20 },
-                },
-            },
-            partitions: null,
-            nodeToPartition: null,
-        },
-        nodes: {
-            'node-1': {
-                id: 'node-1',
-                visible: true,
-            },
-        },
+        document: createCanonicalDocumentEnvelope(),
     });
 
     const session = createSessionFromIntent({
-        sessionType: 'marquee',
+        sessionType: 'unsupported',
         payload: {
             startPointer: { x: 0, y: 0 },
         },
         nodesById: {},
     });
 
-    session.onPointerMove({ x: 30, y: 30 });
-    const actions = createSessionCommitActions({
-        event: {
-            sessionType: 'marquee',
-            payload: session.commit(),
-        },
-        context: {},
-    });
-
-    assert.equal(actions.dispatchEvents[0].type, EventTypes.SELECTION_SET);
-    assert.deepEqual(actions.dispatchEvents[0].payload.ids, ['node-1']);
+    assert.equal(session, null);
 });

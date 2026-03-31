@@ -9,6 +9,7 @@ import { useCanvasContext } from '@/ui/canvas/CanvasContext.jsx';
 export function SelectionOutline({
     nodeId,
     color = 'rgba(59,130,246,0.6)',
+    isPrimary = false,
     resizeEnabled = false,
     rotateEnabled = false,
 }) {
@@ -35,14 +36,15 @@ export function SelectionOutline({
         width: rect.width,
         height: rect.height,
         pointerEvents: 'none',
-        border: `1px solid ${color}`,
-        boxShadow: `0 0 0 1px ${color}55`,
+        border: `${isPrimary ? 2 : 1}px solid ${color}`,
+        boxShadow: isPrimary ? `0 0 0 2px ${color}33` : `0 0 0 1px ${color}55`,
     };
 
     return (
         <div
             data-testid="selection-outline"
             data-selection-node-id={nodeId}
+            data-selection-primary={isPrimary ? 'true' : 'false'}
             style={style}
         >
             {rotateEnabled && (

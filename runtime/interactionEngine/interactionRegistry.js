@@ -4,7 +4,6 @@ export const INTERACTIONS = {
   ROTATE: 'rotate',
   PAN: 'pan',
   ZOOM: 'zoom',
-  MARQUEE: 'marquee',
 };
 
 export const interactionRegistry = new Map();

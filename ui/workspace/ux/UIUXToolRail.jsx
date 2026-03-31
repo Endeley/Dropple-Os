@@ -63,7 +63,9 @@ function ToolButton({ label, id, active, onSelect }) {
   );
   return (
     <button
+      type="button"
       data-tool-id={id}
+      aria-pressed={active}
       onClick={onSelect}
       className={`tool-button ${active ? 'is-active' : ''}`}
     >

@@ -22,12 +22,13 @@ export default function SelectionLayer() {
 
     return selectionIds.map((id) => {
         const node = nodesById?.[id];
-        const resizeEnabled = isSingleSelection && Boolean(node?.layout?.autoLayout);
+        const resizeEnabled = isSingleSelection && !node?.resizeLocked;
         const rotateEnabled = isSingleSelection;
         return (
             <SelectionOutline
                 key={id}
                 nodeId={id}
+                isPrimary={selection?.primary === id}
                 resizeEnabled={resizeEnabled}
                 rotateEnabled={rotateEnabled}
             />

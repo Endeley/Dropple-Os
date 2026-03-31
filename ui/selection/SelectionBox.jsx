@@ -15,11 +15,11 @@ export function SelectionBox({
         onMoveStart?.(e);
     }
 
-    function handleResizeStart(e) {
+    function handleResizeStart(e, handle) {
         if (resizeDisabled) return;
         e.preventDefault();
         e.stopPropagation();
-        onResizeStart?.(e);
+        onResizeStart?.(e, { handle });
     }
 
     return (
@@ -40,13 +40,14 @@ export function SelectionBox({
             }}>
             <div
                 data-testid="selection-box-resize-handle"
-                onPointerDown={handleResizeStart}
+                data-resize-handle="se"
+                onPointerDown={(e) => handleResizeStart(e, 'se')}
                 style={{
                     position: 'absolute',
-                    right: -4,
-                    bottom: -4,
-                    width: 8,
-                    height: 8,
+                    right: -6,
+                    bottom: -6,
+                    width: 12,
+                    height: 12,
                     background: resizeDisabled ? '#94a3b8' : '#2563eb',
                     borderRadius: 2,
                     cursor: resizeDisabled ? 'not-allowed' : 'se-resize',
