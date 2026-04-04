@@ -10,7 +10,6 @@ export const initialRuntimeState = {
   document: createCanonicalDocumentEnvelope(),
   nodes: {},
   rootIds: [],
-  sceneGraph: null,
   timeline: null,
   history: null,
   workspace: createDefaultWorkspaceState(),

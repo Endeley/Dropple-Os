@@ -25,7 +25,7 @@ const defaultLayoutChild = Object.freeze({
  * Applies reducer-compatible events without importing reducers or dispatcher.
  * Returns a derived state and does not mutate inputs.
  */
-export function evaluateTimelinePreview(baseState, events = []) {
+export function evaluatePreviewEvents(baseState, events = []) {
     if (!baseState) return baseState;
 
     const clone =

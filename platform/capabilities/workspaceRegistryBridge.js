@@ -1,5 +1,10 @@
-import { WorkspaceRegistry } from '@/workspaces/registry/index.js';
+import {
+    getWorkspaceDefinition,
+    getWorkspaceRegistry,
+} from '@/platform/workspaces/workspaceRegistry.js';
 import { getWorkspacePolicy, registerWorkspacePolicy } from './workspacePolicy.js';
+
+export { getWorkspaceDefinition };
 
 function toArray(value) {
     if (!value) return [];
@@ -39,10 +44,6 @@ function normalizeWorkspacePolicy(definition) {
     };
 }
 
-export function getWorkspaceDefinition(workspace) {
-    return WorkspaceRegistry[workspace] ?? null;
-}
-
 export function ensureWorkspacePolicyRegistered(workspace) {
     const existing = getWorkspacePolicy(workspace);
     if (existing) return existing;
@@ -56,7 +57,7 @@ export function ensureWorkspacePolicyRegistered(workspace) {
 }
 
 export function registerWorkspaceRegistryPolicies() {
-    return Object.keys(WorkspaceRegistry)
+    return Object.keys(getWorkspaceRegistry())
         .sort((a, b) => a.localeCompare(b))
         .map((workspace) => ensureWorkspacePolicyRegistered(workspace))
         .filter(Boolean);

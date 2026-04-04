@@ -7,8 +7,9 @@ let lastProjectedState = null;
 
 function selectProjectedVisualState(state) {
     const nextProjectedState = {
-        nodes: state?.nodes ?? {},
-        rootIds: state?.rootIds ?? [],
+        nodes: state?.viewNodes ?? {},
+        rootIds: state?.viewRootIds ?? [],
+        sceneGraph: state?.viewSceneGraph ?? null,
         timeline: state?.timeline ?? null,
         selection: state?.selection ?? { ids: [], primary: null, count: 0 },
         selectionBounds: state?.selectionBounds ?? { bounds: null, center: null },
@@ -27,6 +28,7 @@ function selectProjectedVisualState(state) {
         lastProjectedState &&
         lastProjectedState.nodes === nextProjectedState.nodes &&
         lastProjectedState.rootIds === nextProjectedState.rootIds &&
+        lastProjectedState.sceneGraph === nextProjectedState.sceneGraph &&
         lastProjectedState.timeline === nextProjectedState.timeline &&
         lastProjectedState.selection === nextProjectedState.selection &&
         lastProjectedState.selectionBounds === nextProjectedState.selectionBounds &&

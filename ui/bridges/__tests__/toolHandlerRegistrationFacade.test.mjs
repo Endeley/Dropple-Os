@@ -52,7 +52,7 @@ test('select semantics can promote a node hit into a move drag session', () => {
     const didStart = dispatchMoveDragStart({
         dispatcher,
         runtimeState: {
-            nodes: {
+            viewNodes: {
                 a: { layout: { x: 12, y: 24, width: 100, height: 60 } },
             },
             selection: { ids: [] },
@@ -81,7 +81,7 @@ test('move drag startup keeps a multi-selection authoritative when dragging a se
     const didStart = dispatchMoveDragStart({
         dispatcher,
         runtimeState: {
-            nodes: {
+            viewNodes: {
                 a: { layout: { x: 0, y: 0, width: 10, height: 10 } },
                 b: { layout: { x: 20, y: 30, width: 40, height: 50 } },
             },
@@ -117,7 +117,7 @@ test('pending move drag does not promote before threshold', () => {
             tool: 'select',
             dispatcher,
             state: {
-                nodes: {
+                viewNodes: {
                     a: { id: 'a', layout: { x: 0, y: 0, width: 10, height: 10 } },
                 },
                 interaction: {
@@ -158,7 +158,7 @@ test('pending move drag promotes to move after threshold', () => {
             tool: 'select',
             dispatcher,
             state: {
-                nodes: {
+                viewNodes: {
                     a: { id: 'a', layout: { x: 0, y: 0, width: 10, height: 10 } },
                 },
                 interaction: {
@@ -516,7 +516,7 @@ test('resize tool pointerdown starts canonical resize drag with handle metadata'
             tool: 'resize',
             dispatcher,
             state: {
-                nodes: {
+                viewNodes: {
                     a: { id: 'a', layout: { x: 10, y: 20, width: 30, height: 40 } },
                 },
                 interaction: { drag: null },
@@ -556,7 +556,7 @@ test('select tool pointerup delegates active resize drags to resize handler and 
             tool: 'select',
             dispatcher,
             state: {
-                nodes: {
+                viewNodes: {
                     a: { id: 'a', layout: { x: 10, y: 20, width: 30, height: 40 } },
                 },
                 selection: { ids: ['a'] },
@@ -602,7 +602,7 @@ test('rotate tool pointerdown starts canonical rotate drag with center metadata'
             tool: 'rotate',
             dispatcher,
             state: {
-                nodes: {
+                viewNodes: {
                     a: { id: 'a', layout: { x: 10, y: 20, width: 30, height: 40 }, rotation: 0 },
                 },
                 interaction: { drag: null },
@@ -637,7 +637,7 @@ test('select tool pointerup delegates active rotate drags to rotate handler and 
             tool: 'select',
             dispatcher,
             state: {
-                nodes: {
+                viewNodes: {
                     a: { id: 'a', layout: { x: 10, y: 20, width: 30, height: 40 }, rotation: 0 },
                 },
                 selection: { ids: ['a'] },

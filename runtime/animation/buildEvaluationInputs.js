@@ -1,5 +1,6 @@
 import { buildSceneTree } from '../../domain/scene/buildSceneTree.js';
 import { projectActiveSequenceView } from '../projection/selectors/sequenceSelectors.js';
+import { getNode, getNodes, getRootIds, getSceneGraph } from '../document/documentAdapter.js';
 
 function buildShotTimeline(sceneGraph, activeSceneId) {
     if (!sceneGraph || !Array.isArray(sceneGraph.scenes)) {
@@ -52,7 +53,7 @@ function buildSequenceCameraTransform(runtimeState, timeMs) {
     const cameraNodeRef = sequenceView?.activeCamera?.cameraNodeRef ?? null;
     if (!cameraNodeRef) return null;
 
-    const node = runtimeState?.nodes?.[cameraNodeRef] ?? null;
+    const node = getNode(runtimeState, cameraNodeRef);
     const transform = node?.props?.transform ?? {};
 
     return {
@@ -67,18 +68,18 @@ function buildSequenceCameraTransform(runtimeState, timeMs) {
 }
 
 export function buildEvaluationInputs(runtimeState, { timeMs = 0 } = {}) {
-    const nodesById = runtimeState?.nodes ?? null;
-    const rootIds = runtimeState?.rootIds ?? null;
-    const sceneGraph = runtimeState?.sceneGraph ?? null;
+    const nodesById = getNodes(runtimeState);
+    const rootIds = getRootIds(runtimeState);
+    const sceneGraph = getSceneGraph(runtimeState);
     const activeSceneId = runtimeState?.scene?.activeSceneId ?? sceneGraph?.activeSceneId ?? null;
     const sceneActiveShotId = runtimeState?.scene?.activeShotId ?? null;
     const graphActiveShotId = sceneGraph?.activeShotId ?? null;
 
     const root = buildSceneTree({
-        rootId: rootIds?.[0] ?? null,
-        nodes: Object.values(nodesById ?? {}),
+        rootId: rootIds[0] ?? null,
+        nodes: Object.values(nodesById),
         tree: Object.fromEntries(
-            Object.entries(nodesById ?? {}).map(([id, node]) => [
+            Object.entries(nodesById).map(([id, node]) => [
                 id,
                 Array.isArray(node?.children) ? node.children : [],
             ])

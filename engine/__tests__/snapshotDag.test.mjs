@@ -4,7 +4,7 @@ import {
     applyTimelineMutation,
     checkoutSnapshot,
 } from '../../engine/timeline/timelineHistory.js';
-import { evaluateTimeline } from '../../engine/timeline/evaluateTimeline.js';
+import { evaluateChannelTimeline } from '../../engine/timeline/evaluateTimeline.js';
 import { runExportStabilityGate } from '../../engine/export/exportStabilityGate.js';
 
 const base = {
@@ -76,13 +76,13 @@ const integrityOk = Object.values(graph.nodes).every(
 );
 console.log('SNAPSHOT ID INTEGRITY:', integrityOk);
 
-const evalA = evaluateTimeline(
+const evalA = evaluateChannelTimeline(
     graph.nodes[graph.headId].timeline,
     0,
     () => 2,
     (a, b) => a + b
 );
-const evalB = evaluateTimeline(
+const evalB = evaluateChannelTimeline(
     graph.nodes[graph.headId].timeline,
     0,
     () => 2,

@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 
 import { createEventDispatcher } from '@/runtime/dispatcher/dispatch.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
-import { getWorkspaceDefinition } from '@/platform/workspaces/workspaceRegistry.js';
+import { getWorkspaceDefinition } from '@/platform/workspaces/index.js';
+import { getNodes } from '@/runtime/document/documentAdapter.js';
 
 function createNode(id, { x = 0, y = 0, width = 100, height = 80 } = {}) {
     return {
@@ -39,7 +40,7 @@ function createNode(id, { x = 0, y = 0, width = 100, height = 80 } = {}) {
     };
 }
 
-test('node.layout.bulk survives layout pass using runtime geometry authority', async () => {
+test('node.layout.bulk survives layout pass using derived geometry projection', async () => {
     const dispatcher = createEventDispatcher({ headless: true, workspaceId: 'uiux' });
 
     await dispatcher.dispatch({
@@ -69,7 +70,7 @@ test('node.layout.bulk survives layout pass using runtime geometry authority', a
     });
 
     const next = dispatcher.getState();
-    const runtimeNode = next.nodes.node1;
+    const runtimeNode = getNodes(next).node1;
 
     assert.equal(runtimeNode.layout.x, 200);
     assert.equal(runtimeNode.layout.y, 300);

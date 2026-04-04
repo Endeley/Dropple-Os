@@ -1,7 +1,7 @@
-import { getSceneGraph } from '@/runtime/document/documentAdapter.js';
+import { getNodes, getSceneGraph } from '@/runtime/document/documentAdapter.js';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
 import {
-  evaluateTimelinePreview,
+  evaluatePreviewEvents,
   getProjectedRuntimeViewState,
 } from '@/runtime/projection';
 import { selectRenderState } from '@/runtime/projection/selectors/index.js';
@@ -10,9 +10,10 @@ import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
 import { flattenTimeline } from '@/runtime/timeline/flattenTimeline.js';
 
 export {
-  evaluateTimelinePreview,
+  evaluatePreviewEvents,
   flattenTimeline,
   getProjectedRuntimeViewState,
+  getNodes,
   getSceneGraph,
   selectRenderState,
   useAnimatedRuntimeStore,

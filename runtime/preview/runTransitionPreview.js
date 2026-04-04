@@ -2,6 +2,7 @@ import { createAnimationController } from '@/runtime/animation/animationControll
 import { interpolateNodes } from '@/runtime/animation/interpolateNodes.js';
 import { easeInOut, easeOutCubic } from '@/runtime/animation/easing.js';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
+import { getNodes } from '@/runtime/document/documentAdapter.js';
 
 function resolveEasing(easing) {
     switch (easing) {
@@ -61,8 +62,7 @@ export function runTransitionPreview({ fromState, toState, transition, onComplet
     if (!Number.isFinite(durationMs) || durationMs <= 0) {
         useAnimatedRuntimeStore.setState(
             {
-                nodes: toState.nodes || {},
-                rootIds: toState.rootIds || [],
+                previewNodes: getNodes(toState),
             },
             false
         );
@@ -83,17 +83,16 @@ export function runTransitionPreview({ fromState, toState, transition, onComplet
             const nodes =
                 transition?.properties?.length
                     ? interpolateForTransition({
-                          fromNodes: from?.nodes || {},
-                          toNodes: to?.nodes || {},
+                          fromNodes: getNodes(from),
+                          toNodes: getNodes(to),
                           t,
                           properties: transition.properties,
                       })
-                    : interpolateNodes(from?.nodes || {}, to?.nodes || {}, t);
+                    : interpolateNodes(getNodes(from), getNodes(to), t);
 
             useAnimatedRuntimeStore.setState(
                 {
-                    nodes,
-                    rootIds: to?.rootIds || [],
+                    previewNodes: nodes,
                 },
                 false
             );

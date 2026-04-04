@@ -9,6 +9,7 @@ import {
 import { getRuntimeState } from '@/runtime/state/runtimeState';
 import { applyViewportUpdate } from '@/runtime/state/workspaceRuntime.js';
 import { getRuntimeDispatcher } from '@/runtime/dispatcher/dispatcherHandle.js';
+import { getNodes, getRootIds } from '@/runtime/document/documentAdapter.js';
 
 export function hydrateWorld(worldState, { dispatcher } = {}) {
     if (!worldState) return null;
@@ -46,7 +47,7 @@ export function roundTripWorldState({ nodesById, viewport, workspaceId, metadata
     hydrateWorld(first, { dispatcher });
     const runtimeState = getRuntimeState();
     const second = serializeWorld({
-        nodesById: runtimeState?.nodes ?? {},
+        nodesById: getNodes(runtimeState),
         viewport,
         workspaceId,
         metadata,
@@ -57,7 +58,15 @@ export function roundTripWorldState({ nodesById, viewport, workspaceId, metadata
 
 export function buildWorldFromRuntime(workspaceSnapshot, metadata) {
     const runtimeSnapshot = getRuntimeState();
-    return buildWorldState(runtimeSnapshot, workspaceSnapshot, metadata);
+    return buildWorldState(
+        {
+            ...runtimeSnapshot,
+            nodes: getNodes(runtimeSnapshot),
+            rootIds: getRootIds(runtimeSnapshot),
+        },
+        workspaceSnapshot,
+        metadata,
+    );
 }
 
 export { serializeWorld };

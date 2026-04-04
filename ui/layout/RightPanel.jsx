@@ -12,6 +12,7 @@ import RubricPanel from '@/review/panels/RubricPanel';
 import AnnotationPanel from '@/review/panels/AnnotationPanel';
 import CurveEditorPanel from '@/ui/animation/curves/CurveEditorPanel';
 import SharingPanel from '@/collaboration/panels/SharingPanel';
+import { getNode } from '@/runtime/document/documentAdapter.js';
 
 export default function RightPanel({
   panels = [],
@@ -32,7 +33,7 @@ export default function RightPanel({
 
   const selectedId =
     selectedIds && selectedIds.size === 1 ? Array.from(selectedIds)[0] : null;
-  const node = selectedId ? state.nodes?.[selectedId] : null;
+  const node = selectedId ? getNode(state, selectedId) : null;
 
   const showInspector = panels.includes('InspectorPanel') && !!node;
   const showAutoLayout = panels.includes('AutoLayoutPanel') && !!node;

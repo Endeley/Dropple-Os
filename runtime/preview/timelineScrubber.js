@@ -1,8 +1,9 @@
 import { evaluateTimelineFrame } from '@/timeline/evaluateTimelineFrame.js';
+import { getNodes } from '@/runtime/document/documentAdapter.js';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
 
 /**
- * Read-only scrubbing: sets cursor time and fills animated store with preview nodes/rootIds.
+ * Read-only scrubbing: sets cursor time and fills animated store with preview nodes.
  * Does not mutate runtime state.
  */
 export function scrubTimeline({ timeline, baseState, time }) {
@@ -14,8 +15,7 @@ export function scrubTimeline({ timeline, baseState, time }) {
 
     useAnimatedRuntimeStore.setState(
         {
-            nodes: previewState?.nodes,
-            rootIds: previewState?.rootIds,
+            previewNodes: getNodes(previewState),
         },
         false
     );

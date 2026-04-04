@@ -8,6 +8,7 @@ import { CommonInspector } from '@/inspector/sections/CommonInspector';
 import { GraphicInspector } from '@/inspector/sections/GraphicInspector';
 import { UIInspector } from '@/inspector/sections/UIInspector';
 import { AnimationInspector } from '@/inspector/sections/AnimationInspector';
+import { getNode } from '@/runtime/document/documentAdapter.js';
 
 export default function PropertyBar({ events, cursor, emit }) {
   const { selectedIds } = useSelection();
@@ -18,7 +19,7 @@ export default function PropertyBar({ events, cursor, emit }) {
   const selectionCount = selectedIds?.size ?? 0;
   const selectedId = selectionCount === 1 ? Array.from(selectedIds)[0] : null;
 
-  const node = selectedId ? state.nodes?.[selectedId] : null;
+  const node = selectedId ? getNode(state, selectedId) : null;
   const layout = node?.layout || {};
 
   const lockAspect = useMemo(

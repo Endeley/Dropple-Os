@@ -6,10 +6,10 @@ import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 
 test.beforeEach(() => {
     useRuntimeStore.setState({
-        nodes: {},
-        rootIds: [],
+        viewNodes: {},
+        viewRootIds: [],
         workspace: null,
-        sceneGraph: null,
+        viewSceneGraph: null,
         scene: null,
         selection: { ids: [], primary: null, count: 0 },
         clipboard: { count: 0, hasData: false },
@@ -75,9 +75,9 @@ test('projection sync does not mutate runtime truth', () => {
     assert.deepEqual(runtimeState, before);
 
     const projection = useRuntimeStore.getState();
-    assert.notEqual(projection.nodes.frameA, runtimeState.nodes.frameA);
-    assert.equal(projection.nodes.frameA.id, 'frameA');
-    assert.deepEqual(projection.rootIds, ['frameA']);
+    assert.notEqual(projection.viewNodes.frameA, runtimeState.nodes.frameA);
+    assert.equal(projection.viewNodes.frameA.id, 'frameA');
+    assert.deepEqual(projection.viewRootIds, ['frameA']);
     assert.deepEqual(projection.selection.ids, ['frameA']);
     assert.equal(projection.selection.primary, 'frameA');
     assert.equal(projection.selection.count, 1);

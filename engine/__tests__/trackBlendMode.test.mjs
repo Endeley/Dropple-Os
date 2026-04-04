@@ -1,6 +1,6 @@
 import { normalizeTrack } from '../../domain/timeline/TrackContract.js';
 import { hashTimeline } from '../../domain/timeline/TimelineContract.js';
-import { evaluateTimeline } from '../../engine/timeline/evaluateTimeline.js';
+import { evaluateChannelTimeline } from '../../engine/timeline/evaluateTimeline.js';
 import { createTimelineController, dispatchTrack } from '../../engine/timeline/timelineController.js';
 import { TrackActions } from '../../engine/timeline/trackDispatcher.js';
 
@@ -43,7 +43,7 @@ const timeline = {
     channels: [],
 };
 
-const result = evaluateTimeline(
+const result = evaluateChannelTimeline(
     timeline,
     0,
     () => 2,
@@ -70,8 +70,8 @@ const addOrderB = {
     channels: [],
 };
 
-const addA = evaluateTimeline(addOrderA, 0, () => 2, (a, b) => a + b);
-const addB = evaluateTimeline(addOrderB, 0, () => 2, (a, b) => a + b);
+const addA = evaluateChannelTimeline(addOrderA, 0, () => 2, (a, b) => a + b);
+const addB = evaluateChannelTimeline(addOrderB, 0, () => 2, (a, b) => a + b);
 
 console.log('ADD COMMUTATIVE:', addA.x === addB.x);
 
@@ -93,13 +93,13 @@ const replaceOrderB = {
     channels: [],
 };
 
-const replaceA = evaluateTimeline(replaceOrderA, 0, () => 2, (a, b) => a + b);
-const replaceB = evaluateTimeline(replaceOrderB, 0, () => 2, (a, b) => a + b);
+const replaceA = evaluateChannelTimeline(replaceOrderA, 0, () => 2, (a, b) => a + b);
+const replaceB = evaluateChannelTimeline(replaceOrderB, 0, () => 2, (a, b) => a + b);
 
 console.log('REPLACE ORDER DETERMINISTIC:', replaceA.x !== replaceB.x);
 
-const evalHashA = JSON.stringify(evaluateTimeline(timeline, 0, () => 2, (a, b) => a + b));
-const evalHashB = JSON.stringify(evaluateTimeline(timeline, 0, () => 2, (a, b) => a + b));
+const evalHashA = JSON.stringify(evaluateChannelTimeline(timeline, 0, () => 2, (a, b) => a + b));
+const evalHashB = JSON.stringify(evaluateChannelTimeline(timeline, 0, () => 2, (a, b) => a + b));
 
 console.log('EVALUATION HASH STABLE:', evalHashA === evalHashB);
 

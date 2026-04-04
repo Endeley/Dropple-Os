@@ -75,8 +75,8 @@ test('hydrated persistence data replays back into the same design truth', () => 
         uptoIndex: hydrated.cursorIndex,
     });
 
-    assert.ok(state.nodes['persisted-node']);
-    assert.deepEqual(state.rootIds, ['persisted-node']);
+    assert.ok(state.document.sceneGraph.nodes['persisted-node']);
+    assert.deepEqual(state.document.sceneGraph.rootIds, ['persisted-node']);
     assert.deepEqual(Array.from(state.selection.ids), ['persisted-node']);
     assert.equal(state.selection.primary, null);
 });

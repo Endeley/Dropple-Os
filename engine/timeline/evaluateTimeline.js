@@ -1,6 +1,6 @@
 import { normalizeTimeline } from '../../domain/timeline/TimelineContract.js';
 
-export function evaluateTimeline(timeline, time, evaluateChannel, blend) {
+export function evaluateChannelTimeline(timeline, time, evaluateChannel, blend) {
     const normalized = normalizeTimeline(timeline);
 
     const output = Object.create(null);

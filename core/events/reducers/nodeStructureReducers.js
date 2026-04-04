@@ -10,8 +10,8 @@ import { markLayoutDirty } from './layoutDirtyHelpers.js';
 function getSceneGraph(state) {
     const documentGraph = state?.document?.sceneGraph;
     return {
-        nodes: documentGraph?.nodes ?? state?.nodes ?? {},
-        rootIds: documentGraph?.rootIds ?? state?.rootIds ?? [],
+        nodes: documentGraph?.nodes ?? {},
+        rootIds: documentGraph?.rootIds ?? [],
     };
 }
 
@@ -26,8 +26,6 @@ function applySceneGraph(state, nextGraph) {
     return {
         ...state,
         document,
-        nodes: nextGraph.nodes,
-        rootIds: nextGraph.rootIds,
     };
 }
 

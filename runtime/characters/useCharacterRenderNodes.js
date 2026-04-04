@@ -6,7 +6,7 @@ import { applyCharacterConstraints } from './applyCharacterConstraints.js';
 import { applyAttachments } from '@/runtime/attachments/applyAttachments.js';
 
 export function useCharacterRenderNodes() {
-    const nodes = useAnimatedRuntimeStore((s) => s.nodes);
+    const nodes = useAnimatedRuntimeStore((s) => s.previewNodes);
 
     return useMemo(() => {
         const withCharacters = applyCharacterConstraints(nodes || {});

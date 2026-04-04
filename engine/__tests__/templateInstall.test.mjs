@@ -1,6 +1,6 @@
 import { compileTemplateV1 } from '../templates/templateCompilerV1.js';
 import { installTemplateSeed, switchTemplateState } from '../templates/installTemplateSeed.js';
-import { evaluateTimeline } from '../timeline/evaluateTimeline.js';
+import { evaluateChannelTimeline } from '../timeline/evaluateTimeline.js';
 import { runExportStabilityGate } from '../export/exportStabilityGate.js';
 import { hashTimeline } from '../../domain/timeline/TimelineContract.js';
 
@@ -107,7 +107,7 @@ function evaluateCanonicalTimeline(timeline, timeMs) {
         return resolveChannelValue(channel, time);
     };
     const blend = (a, b) => (Number.isFinite(a) && Number.isFinite(b) ? a + b : b);
-    return evaluateTimeline(timeline, timeMs, evaluateChannel, blend);
+    return evaluateChannelTimeline(timeline, timeMs, evaluateChannel, blend);
 }
 
 const compiled = compileTemplateV1(template);

@@ -19,7 +19,7 @@ const DROPPLE_LAWS = {
     selectionAuthority: ['SelectionContext', 'useSelectionStore'],
     createNode: 'createNode',
     reducerPattern: /Reducers?$/,
-    timelineEvaluators: ['evaluateTimeline', 'evaluateAnimationTimeline', 'evaluateAnimationAtTime'],
+    timelineEvaluators: ['evaluateTimeline', 'evaluateChannelTimeline', 'evaluatePreviewEvents'],
 };
 
 function hash(content) {

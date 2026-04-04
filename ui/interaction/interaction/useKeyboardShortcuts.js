@@ -6,6 +6,7 @@ import { pasteFromClipboard } from '@/ui/workspace/shared/pasteFromClipboard';
 import { useClipboard } from '@/ui/workspace/shared/ClipboardContext';
 import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
 import { handleKeyboardEvent } from '@/ui/bridges/keyboardEngineFacade.js';
+import { getNode } from '@/runtime/document/documentAdapter.js';
 
 export function useKeyboardShortcuts({
   enabled = true,
@@ -87,7 +88,7 @@ export function useKeyboardShortcuts({
     function duplicateSelection() {
       const state = getState();
       selectedIds.forEach((id) => {
-        const node = state.nodes[id];
+        const node = getNode(state, id);
         if (!node) return;
 
         const newId = `${id}-copy`;

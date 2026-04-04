@@ -44,51 +44,79 @@ export function getDocument(runtimeState) {
     return runtimeState?.document ?? null;
 }
 
-function overlayRuntimeGeometry(node, runtimeNode) {
-    if (!node || !runtimeNode) return node;
+export function getNodes(runtimeState) {
+    return getSceneGraph(runtimeState)?.nodes ?? {};
+}
 
-    const runtimeLayout = runtimeNode?.layout ?? {};
-    const runtimeX = runtimeLayout.x ?? runtimeNode?.x;
-    const runtimeY = runtimeLayout.y ?? runtimeNode?.y;
-    const runtimeWidth = runtimeLayout.width ?? runtimeNode?.width;
-    const runtimeHeight = runtimeLayout.height ?? runtimeNode?.height;
+export function getRootIds(runtimeState) {
+    return getSceneGraph(runtimeState)?.rootIds ?? [];
+}
 
-    if (
-        runtimeX == null &&
-        runtimeY == null &&
-        runtimeWidth == null &&
-        runtimeHeight == null
-    ) {
-        return node;
+function overlayDocumentLayout(node, layoutNode, computedLayout, computedSceneNode) {
+    if (!node || (!layoutNode && !computedLayout && !computedSceneNode)) return node;
+
+    const nextLayout = {
+        ...(node?.layout ?? {}),
+        ...(layoutNode ?? {}),
+    };
+
+    if (layoutNode) {
+        if (layoutNode.x != null) nextLayout.x = layoutNode.x;
+        if (layoutNode.y != null) nextLayout.y = layoutNode.y;
+        if (layoutNode.width != null) nextLayout.width = layoutNode.width;
+        if (layoutNode.height != null) nextLayout.height = layoutNode.height;
+    }
+
+    if (computedLayout) {
+        nextLayout.x = computedLayout.x;
+        nextLayout.y = computedLayout.y;
+        nextLayout.width = computedLayout.width;
+        nextLayout.height = computedLayout.height;
+    }
+
+    if (computedSceneNode) {
+        nextLayout.x = nextLayout.x ?? computedSceneNode.x;
+        nextLayout.y = nextLayout.y ?? computedSceneNode.y;
+        nextLayout.width = nextLayout.width ?? computedSceneNode.width;
+        nextLayout.height = nextLayout.height ?? computedSceneNode.height;
     }
 
     return {
         ...node,
-        x: runtimeX ?? node?.x,
-        y: runtimeY ?? node?.y,
-        width: runtimeWidth ?? node?.width,
-        height: runtimeHeight ?? node?.height,
-        layout: {
-            ...(node?.layout ?? {}),
-            x: runtimeX ?? node?.layout?.x ?? node?.x,
-            y: runtimeY ?? node?.layout?.y ?? node?.y,
-            width: runtimeWidth ?? node?.layout?.width ?? node?.width,
-            height: runtimeHeight ?? node?.layout?.height ?? node?.height,
-        },
+        x: computedLayout?.x ?? layoutNode?.x ?? computedSceneNode?.x ?? node?.x,
+        y: computedLayout?.y ?? layoutNode?.y ?? computedSceneNode?.y ?? node?.y,
+        width:
+            computedLayout?.width ??
+            layoutNode?.width ??
+            computedSceneNode?.width ??
+            node?.width,
+        height:
+            computedLayout?.height ??
+            layoutNode?.height ??
+            computedSceneNode?.height ??
+            node?.height,
+        layout: nextLayout,
     };
 }
 
 export function getSceneGraph(runtimeState) {
     const documentSceneGraph = runtimeState?.document?.sceneGraph ?? null;
     if (!documentSceneGraph) {
-        return runtimeState?.sceneGraph ?? null;
+        return null;
     }
 
-    const runtimeNodes = runtimeState?.nodes ?? {};
+    const layoutNodes = runtimeState?.document?.layout?.nodes ?? {};
+    const computedNodes = runtimeState?.document?.layout?.computed ?? {};
+    const computedSceneNodes = runtimeState?.scene?.computed ?? {};
     const nextNodes = Object.fromEntries(
         Object.entries(documentSceneGraph.nodes ?? {}).map(([nodeId, node]) => [
             nodeId,
-            overlayRuntimeGeometry(node, runtimeNodes[nodeId]),
+            overlayDocumentLayout(
+                node,
+                layoutNodes[nodeId],
+                computedNodes[nodeId],
+                computedSceneNodes[nodeId],
+            ),
         ]),
     );
 
@@ -99,8 +127,7 @@ export function getSceneGraph(runtimeState) {
 }
 
 export function getNode(runtimeState, nodeId) {
-    const graph = getSceneGraph(runtimeState);
-    return graph?.nodes?.[nodeId] ?? null;
+    return getNodes(runtimeState)?.[nodeId] ?? null;
 }
 
 export function getLayout(runtimeState) {

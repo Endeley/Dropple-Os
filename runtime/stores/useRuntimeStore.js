@@ -8,10 +8,10 @@ import { create } from 'zustand';
  */
 export const useRuntimeStore = create((set) => ({
     document: null,
-    nodes: {},
-    rootIds: [],
+    viewNodes: {},
+    viewRootIds: [],
     workspace: null,
-    sceneGraph: null,
+    viewSceneGraph: null,
     scene: null,
     timeline: null,
     playback: { isPlaying: false },

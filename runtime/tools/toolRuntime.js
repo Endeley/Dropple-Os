@@ -34,13 +34,22 @@ export function registerToolSource(toolState, { source, tools } = {}) {
 
     const nextTools = normalizeTools(tools);
     const currentState = toolState ?? initialToolRuntimeState;
+    const nextRegisteredTools = {
+        ...currentState.registeredTools,
+        [source]: nextTools,
+    };
+    const nextVisibleTools = getVisibleTools({
+        ...currentState,
+        registeredTools: nextRegisteredTools,
+    });
+    const nextActiveTool = nextVisibleTools.includes(currentState.activeTool)
+        ? currentState.activeTool
+        : nextVisibleTools[0] ?? null;
 
     return {
         ...currentState,
-        registeredTools: {
-            ...currentState.registeredTools,
-            [source]: nextTools,
-        },
+        activeTool: nextActiveTool,
+        registeredTools: nextRegisteredTools,
     };
 }
 

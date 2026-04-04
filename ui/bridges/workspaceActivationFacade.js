@@ -2,7 +2,7 @@ import { resolveWorkspaceActivationContract } from '@/platform/capabilities/work
 import {
     getWorkspaceDefinition as getCanonicalWorkspaceDefinition,
     resolveWorkspaceId as resolveCanonicalWorkspaceId,
-} from '@/platform/workspaces/workspaceRegistry.js';
+} from '@/platform/workspaces/index.js';
 import { adaptWorkspaceToContractV1 } from '@/core/contracts/adaptWorkspaceToContractV1.js';
 
 function safeArray(values) {

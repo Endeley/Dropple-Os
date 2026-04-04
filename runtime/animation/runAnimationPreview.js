@@ -2,6 +2,7 @@ import { evaluateMotion } from '@/engine/animation/evaluateMotion.js';
 import { useAnimatedRuntimeStore } from '../stores/useAnimatedRuntimeStore.js';
 import { getRuntimeState } from '../state/runtimeState.js';
 import { getCameraTransformAtTime } from '@/core/scene/cameraPlayback.v1.js';
+import { getNodes } from '../document/documentAdapter.js';
 
 export function runAnimationPreview({
     fromState,
@@ -26,7 +27,7 @@ export function runAnimationPreview({
         const baseState = designState || fromState;
         const motionResult = evaluateMotion(baseState?.document, time);
         const projectedNodes = {
-            ...(baseState?.nodes || {}),
+            ...getNodes(baseState),
         };
 
         Object.entries(motionResult).forEach(([nodeId, patch]) => {
@@ -43,8 +44,7 @@ export function runAnimationPreview({
 
         useAnimatedRuntimeStore.setState(
             {
-                nodes: projectedNodes,
-                rootIds: baseState?.rootIds || [],
+                previewNodes: projectedNodes,
                 cameraTransform,
             },
             false
@@ -57,8 +57,7 @@ export function runAnimationPreview({
             cancel() {
                 useAnimatedRuntimeStore.setState(
                     {
-                        nodes: {},
-                        rootIds: [],
+                        previewNodes: {},
                         cameraTransform: null,
                     },
                     false
@@ -106,8 +105,7 @@ export function runAnimationPreview({
 
             useAnimatedRuntimeStore.setState(
                 {
-                    nodes: {},
-                    rootIds: [],
+                    previewNodes: {},
                     cameraTransform: null,
                 },
                 false

@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid';
 import { getRuntimeState } from '@/runtime/state/runtimeState.js';
 import { getCharacterByNodeId } from '@/runtime/characters/characterRegistry.js';
+import { getNodes } from '@/runtime/document/documentAdapter.js';
 
 const attachments = new Map();
 const propToAttachment = new Map();
@@ -24,7 +25,7 @@ export function createSocket({ hostId, name, offset = null } = {}) {
     if (!hostId || !name) return null;
 
     const runtime = getRuntimeState();
-    const host = runtime?.nodes?.[hostId];
+    const host = getNodes(runtime)?.[hostId];
     if (!host?.layout) return null;
 
     const sockets = hostSockets.get(hostId) || {};
@@ -57,7 +58,7 @@ export function attachProp({ hostId, propId, socketName, mode = 'follow' } = {})
     if (getCharacterByNodeId(propId)) return null;
 
     const runtime = getRuntimeState();
-    const nodes = runtime?.nodes || {};
+    const nodes = getNodes(runtime);
     const host = nodes[hostId];
     const prop = nodes[propId];
     if (!host?.layout || !prop?.layout) return null;

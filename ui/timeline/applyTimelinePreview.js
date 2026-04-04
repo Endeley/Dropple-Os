@@ -1,7 +1,8 @@
 // NOTE: This file is runtime/UI glue. Pure timeline evaluation lives elsewhere.
 import {
-    evaluateTimelinePreview,
+    evaluatePreviewEvents,
     flattenTimeline,
+    getNodes,
     getProjectedRuntimeViewState,
     useAnimatedRuntimeStore,
 } from '@/ui/bridges/timelinePreviewRuntimeBridge.js';
@@ -21,12 +22,11 @@ export function applyTimelinePreview({ timeline, time }) {
         upToTime: time,
     });
 
-    state = evaluateTimelinePreview(state, events);
+    state = evaluatePreviewEvents(state, events);
 
     useAnimatedRuntimeStore.setState(
         {
-            nodes: state.nodes || {},
-            rootIds: state.rootIds || [],
+            previewNodes: getNodes(state),
         },
         false
     );

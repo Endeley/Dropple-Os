@@ -1,6 +1,5 @@
 import { createPlaybackController } from '../animation/playbackController.js';
 import { useAnimatedRuntimeStore } from '../stores/useAnimatedRuntimeStore.js';
-import { getRuntimeState } from '../state/runtimeState.js';
 import { createEventDispatcher } from '../dispatcher/dispatch.js';
 
 const dispatcher = createEventDispatcher();
@@ -23,7 +22,14 @@ function createStubAnimationController() {
     const animationController = createStubAnimationController();
     const controller = createPlaybackController({ animationController });
 
-    dispatcher.hydrateRuntimeState({ nodes: {}, rootIds: [] }, { animate: false });
+    dispatcher.hydrateRuntimeState({
+        document: {
+            sceneGraph: {
+                rootIds: [],
+                nodes: {},
+            },
+        },
+    }, { animate: false });
     dispatcher.setReplaying(true);
 
     controller.play({ fromState: {}, toState: {} });
@@ -41,24 +47,28 @@ function createStubAnimationController() {
     const animationController = createStubAnimationController();
     const controller = createPlaybackController({ animationController });
 
-    const truth = { nodes: { a: { x: 1 } }, rootIds: ['a'] };
+    const truth = {
+        document: {
+            sceneGraph: {
+                rootIds: ['a'],
+                nodes: {
+                    a: { id: 'a', type: 'frame', children: [], x: 1 },
+                },
+            },
+        },
+    };
     dispatcher.hydrateRuntimeState(truth, { animate: false });
 
     controller.play({ fromState: truth, toState: truth });
 
-    useAnimatedRuntimeStore.setState({ nodes: {}, rootIds: [] }, false);
+    useAnimatedRuntimeStore.setState({ previewNodes: {} }, false);
     controller.cancel();
 
     const animated = useAnimatedRuntimeStore.getState();
-    const runtime = getRuntimeState();
 
     console.assert(
-        JSON.stringify(animated.nodes) === JSON.stringify(runtime.nodes),
-        'cancel() should reset animated nodes to runtime truth'
-    );
-    console.assert(
-        JSON.stringify(animated.rootIds) === JSON.stringify(runtime.rootIds),
-        'cancel() should reset animated rootIds to runtime truth'
+        JSON.stringify(animated.previewNodes) === JSON.stringify({}),
+        'cancel() should clear animated preview nodes'
     );
 }
 

@@ -8,6 +8,7 @@ import { commitTimelineKeyframe } from '@/runtime/timeline/commitTimelineKeyfram
 import { isAutoLayoutChild } from '@/runtime/layout/index.js';
 import { createSessionCommitActions } from '@/runtime/input/sessionCommitRuntimeBridge.js';
 import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
+import { getNodes } from '@/runtime/document/documentAdapter.js';
 
 function canAuthorAnimationKeyframes() {
     const runtimeState = getProjectedRuntimeViewState();
@@ -22,7 +23,7 @@ function canAuthorAnimationKeyframes() {
 
 export function createSessionCommitBridgeActions(event) {
     const runtimeState = getProjectedRuntimeViewState();
-    const nodesById = runtimeState?.nodes || {};
+    const nodesById = getNodes(runtimeState);
     const selectedIds = useRuntimeStore.getState().selection?.ids || [];
     const frameTime = useRuntimeStore.getState().frameTime;
     const autoKeyframeEnabled = useAutoKeyframeStore.getState()?.enabled;

@@ -1,5 +1,5 @@
 import { evaluateScene } from './evaluateScene.js';
-import { evaluateTimeline } from '../timeline/evaluateTimeline.js';
+import { evaluateChannelTimeline } from '../timeline/evaluateTimeline.js';
 
 function toFiniteNumber(value, label) {
     if (!Number.isFinite(value)) {
@@ -220,7 +220,7 @@ export function evaluateShotAt(shotTimeline, sceneGraph, timeMs, options = {}) {
             return resolveChannelValue(channel, time, `channel:${channelId}`);
         };
         const blend = (a, b) => (Number.isFinite(a) && Number.isFinite(b) ? a + b : b);
-        const resolved = evaluateTimeline(shot.timeline, shotTimeMs, evaluateChannel, blend);
+        const resolved = evaluateChannelTimeline(shot.timeline, shotTimeMs, evaluateChannel, blend);
         graphForEval = applyResolvedChannelsToRuntime(sceneGraph, resolved);
     }
 

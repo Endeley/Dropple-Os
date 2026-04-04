@@ -7,42 +7,44 @@ function assert(condition, message) {
 }
 
 const runtimeState = {
-    nodes: {
-        root: { id: 'root', type: 'frame', children: ['childA', 'childB'] },
-        childA: { id: 'childA', type: 'rect', children: [] },
-        childB: { id: 'childB', type: 'rect', children: [] },
+    document: {
+        sceneGraph: {
+            rootIds: ['root'],
+            nodes: {
+                root: { id: 'root', type: 'frame', children: ['childA', 'childB'] },
+                childA: { id: 'childA', type: 'rect', children: [] },
+                childB: { id: 'childB', type: 'rect', children: [] },
+            },
+            activeSceneId: 'scene1',
+            activeShotId: 'shotB',
+            scenes: [
+                {
+                    id: 'scene1',
+                    shots: [
+                        {
+                            id: 'shotA',
+                            start: 0,
+                            duration: 1000,
+                            camera: {
+                                keyframes: [
+                                    { time: 0, x: 0, y: 0, zoom: 1 },
+                                    { time: 1000, x: 10, y: 20, zoom: 1 },
+                                ],
+                            },
+                        },
+                        {
+                            id: 'shotB',
+                            start: 1000,
+                            duration: 1000,
+                        },
+                    ],
+                },
+            ],
+        },
     },
-    rootIds: ['root'],
     scene: {
         activeSceneId: 'scene1',
         activeShotId: 'shotA',
-    },
-    sceneGraph: {
-        activeSceneId: 'scene1',
-        activeShotId: 'shotB',
-        scenes: [
-            {
-                id: 'scene1',
-                shots: [
-                    {
-                        id: 'shotA',
-                        start: 0,
-                        duration: 1000,
-                        camera: {
-                            keyframes: [
-                                { time: 0, x: 0, y: 0, zoom: 1 },
-                                { time: 1000, x: 10, y: 20, zoom: 1 },
-                            ],
-                        },
-                    },
-                    {
-                        id: 'shotB',
-                        start: 1000,
-                        duration: 1000,
-                    },
-                ],
-            },
-        ],
     },
 };
 

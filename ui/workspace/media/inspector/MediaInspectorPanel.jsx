@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useWorkspaceVisualState } from '@/runtime/projection/useWorkspaceVisualState.js';
 import {
     projectAnimationTrackSummary,
     projectMediaActiveKeyframe,
@@ -93,7 +94,7 @@ export function MediaInspectorPanel({ mode }) {
     const cursorIndex = useRuntimeStore(selectMediaCursorIndex);
     const activeRig = useRuntimeStore(selectActiveRig);
     const activeSequence = useRuntimeStore((state) => selectActiveSequence(state.document));
-    const nodes = useRuntimeStore((state) => state.nodes);
+    const nodes = useWorkspaceVisualState((state) => state.nodes || {});
     const selectedTrackId = useMediaTimelineSelectionStore((state) => state.selectedTrackId);
     const selectedKeyframeId = useMediaTimelineSelectionStore((state) => state.selectedKeyframeId);
     const selectedKeyframeIds = useMediaTimelineSelectionStore((state) => state.selectedKeyframeIds);

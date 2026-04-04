@@ -12,6 +12,7 @@
 import { getRuntimeState } from '@/runtime/state/runtimeState.js';
 import { createSessionFromIntent } from '@/runtime/input/sessionRuntimeBridge.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { getNodes } from '@/runtime/document/documentAdapter.js';
 
 let activeSession = null;
 let activeSessionType = null;
@@ -29,7 +30,7 @@ export function beginSession({ type, payload }) {
   }
 
   const runtimeState = getRuntimeState();
-  const nodesById = runtimeState?.nodes || {};
+  const nodesById = getNodes(runtimeState);
   const projection = useRuntimeStore.getState();
 
   const sessionPayload = { ...(payload || {}) };

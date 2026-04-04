@@ -1,5 +1,6 @@
 import { createEventDispatcher } from '@/runtime/dispatcher/dispatch.js';
 import { initialRuntimeState } from '@/runtime/state/runtimeState.internal.js';
+import { getNodes } from '@/runtime/document/documentAdapter.js';
 
 function assert(condition, message) {
     if (!condition) throw new Error(message);
@@ -119,14 +120,15 @@ function createLayoutNode({
 
     dispatcher.hydrateRuntimeState(state, { animate: false });
     const result = dispatcher.getState();
+    const projectedNodes = getNodes(result);
 
     assert(result.document.layout.computed.a.x === 8, 'row runtime child a x mismatch');
     assert(result.document.layout.computed.a.y === 8, 'row runtime child a y mismatch');
     assert(result.document.layout.computed.root.height === 80, 'row runtime container fixed height mismatch');
     assert(result.document.layout.computed.b.x === 68, 'row runtime child b x mismatch');
     assert(result.document.layout.computed.b.height === 64, 'row runtime stretch height mismatch');
-    assert(result.nodes.b.x === 68, 'row runtime legacy node mirror x mismatch');
-    assert(result.nodes.b.height === 64, 'row runtime legacy node mirror height mismatch');
+    assert(projectedNodes.b.x === 68, 'row runtime derived node x mismatch');
+    assert(projectedNodes.b.height === 64, 'row runtime derived node height mismatch');
     assert(result.document.layout.dirty.fullPass === false, 'row runtime dirty fullPass should clear');
     assert(result.document.layout.dirty.nodeIds.length === 0, 'row runtime dirty nodeIds should clear');
 }
@@ -162,13 +164,14 @@ function createLayoutNode({
 
     dispatcher.hydrateRuntimeState(state, { animate: false });
     const result = dispatcher.getState();
+    const projectedNodes = getNodes(result);
 
     assert(result.document.layout.computed.a.x === 6, 'column runtime child a x mismatch');
     assert(result.document.layout.computed.a.y === 10, 'column runtime child a y mismatch');
     assert(result.document.layout.computed.b.y === 46, 'column runtime child b y mismatch');
     assert(result.document.layout.computed.root.height === 86, 'column runtime hug container height mismatch');
     assert(result.document.layout.computed.a.width === 148, 'column runtime fill width mismatch');
-    assert(result.nodes.a.width === 148, 'column runtime legacy node mirror width mismatch');
+    assert(projectedNodes.a.width === 148, 'column runtime derived node width mismatch');
     assert(result.document.layout.dirty.fullPass === false, 'column runtime dirty fullPass should clear');
     assert(result.document.layout.dirty.nodeIds.length === 0, 'column runtime dirty nodeIds should clear');
 }

@@ -3,31 +3,54 @@
 import { EventTypes } from '../eventTypes.js';
 import { markLayoutDirty } from './layoutDirtyHelpers.js';
 
+function getSceneNodes(state) {
+    return state?.document?.sceneGraph?.nodes ?? {};
+}
+
+function getLayoutSystem(state) {
+    return state?.document?.layout ?? null;
+}
+
+function getLayoutEntry(state, nodeId) {
+    return getLayoutSystem(state)?.nodes?.[nodeId] ?? {};
+}
+
+function applyLayoutNodes(state, nextLayoutNodes) {
+    const document = state?.document;
+    if (!document?.layout) return state;
+
+    return {
+        ...state,
+        document: {
+            ...document,
+            layout: {
+                ...document.layout,
+                nodes: nextLayoutNodes,
+            },
+        },
+    };
+}
+
 export function layoutReducers(state, event) {
     const { type, payload } = event;
+    const sceneNodes = getSceneNodes(state);
 
     switch (type) {
         case EventTypes.NODE_MOVE: {
             const { id, xDelta, yDelta } = payload;
-            const node = state.nodes[id];
+            const node = sceneNodes[id];
             if (!node) return state;
 
-            const prevLayout = node.layout || {};
+            const prevLayout = getLayoutEntry(state, id);
 
-            return markLayoutDirty({
-                ...state,
-                nodes: {
-                    ...state.nodes,
-                    [id]: {
-                        ...node,
-                        layout: {
-                            ...prevLayout,
-                            x: (prevLayout.x ?? 0) + xDelta,
-                            y: (prevLayout.y ?? 0) + yDelta,
-                        },
-                    },
+            return markLayoutDirty(applyLayoutNodes(state, {
+                ...(getLayoutSystem(state)?.nodes ?? {}),
+                [id]: {
+                    ...prevLayout,
+                    x: (prevLayout.x ?? 0) + xDelta,
+                    y: (prevLayout.y ?? 0) + yDelta,
                 },
-            }, {
+            }), {
                 nodeIds: [id],
             });
         }
@@ -49,76 +72,58 @@ export function layoutReducers(state, event) {
 
         case EventTypes.NODE_RESIZE: {
             const { id, width, height } = payload;
-            const node = state.nodes[id];
+            const node = sceneNodes[id];
             if (!node) return state;
 
-            const prevLayout = node.layout || {};
+            const prevLayout = getLayoutEntry(state, id);
 
-            return markLayoutDirty({
-                ...state,
-                nodes: {
-                    ...state.nodes,
-                    [id]: {
-                        ...node,
-                        layout: {
-                            ...prevLayout,
-                            width: width ?? prevLayout.width,
-                            height: height ?? prevLayout.height,
-                        },
-                    },
+            return markLayoutDirty(applyLayoutNodes(state, {
+                ...(getLayoutSystem(state)?.nodes ?? {}),
+                [id]: {
+                    ...prevLayout,
+                    width: width ?? prevLayout.width,
+                    height: height ?? prevLayout.height,
                 },
-            }, {
+            }), {
                 nodeIds: [id],
             });
         }
 
         case 'node.layout.resize': {
             const { nodeId, x, y, width, height } = payload;
-            const node = state.nodes[nodeId];
+            const node = sceneNodes[nodeId];
             if (!node) return state;
 
-            const prevLayout = node.layout || {};
+            const prevLayout = getLayoutEntry(state, nodeId);
 
-            return markLayoutDirty({
-                ...state,
-                nodes: {
-                    ...state.nodes,
-                    [nodeId]: {
-                        ...node,
-                        layout: {
-                            ...prevLayout,
-                            x: x ?? prevLayout.x,
-                            y: y ?? prevLayout.y,
-                            width: width ?? prevLayout.width,
-                            height: height ?? prevLayout.height,
-                        },
-                    },
+            return markLayoutDirty(applyLayoutNodes(state, {
+                ...(getLayoutSystem(state)?.nodes ?? {}),
+                [nodeId]: {
+                    ...prevLayout,
+                    x: x ?? prevLayout.x,
+                    y: y ?? prevLayout.y,
+                    width: width ?? prevLayout.width,
+                    height: height ?? prevLayout.height,
                 },
-            }, {
+            }), {
                 nodeIds: [nodeId],
             });
         }
 
         case 'node.layout.update': {
             const { nodeId, layout } = payload;
-            const node = state.nodes[nodeId];
+            const node = sceneNodes[nodeId];
             if (!node) return state;
 
-            const prevLayout = node.layout || {};
+            const prevLayout = getLayoutEntry(state, nodeId);
 
-            return markLayoutDirty({
-                ...state,
-                nodes: {
-                    ...state.nodes,
-                    [nodeId]: {
-                        ...node,
-                        layout: {
-                            ...prevLayout,
-                            ...(layout || {}),
-                        },
-                    },
+            return markLayoutDirty(applyLayoutNodes(state, {
+                ...(getLayoutSystem(state)?.nodes ?? {}),
+                [nodeId]: {
+                    ...prevLayout,
+                    ...(layout || {}),
                 },
-            }, {
+            }), {
                 nodeIds: [nodeId],
             });
         }
@@ -127,15 +132,17 @@ export function layoutReducers(state, event) {
             const { updates } = payload || {};
             if (!Array.isArray(updates) || updates.length === 0) return state;
 
-            const nextNodes = { ...state.nodes };
+            const nextLayoutNodes = {
+                ...(getLayoutSystem(state)?.nodes ?? {}),
+            };
 
             updates.forEach((update) => {
                 const nodeId = update?.id;
                 if (!nodeId) return;
-                const node = nextNodes[nodeId];
+                const node = sceneNodes[nodeId];
                 if (!node) return;
 
-                const prevLayout = node.layout || {};
+                const prevLayout = nextLayoutNodes[nodeId] ?? {};
                 const nextLayout = {
                     ...prevLayout,
                     ...(update.layout || {}),
@@ -146,16 +153,10 @@ export function layoutReducers(state, event) {
                 if (update.width != null) nextLayout.width = update.width;
                 if (update.height != null) nextLayout.height = update.height;
 
-                nextNodes[nodeId] = {
-                    ...node,
-                    layout: nextLayout,
-                };
+                nextLayoutNodes[nodeId] = nextLayout;
             });
 
-            return markLayoutDirty({
-                ...state,
-                nodes: nextNodes,
-            }, {
+            return markLayoutDirty(applyLayoutNodes(state, nextLayoutNodes), {
                 nodeIds: updates
                     .map((update) => update?.id)
                     .filter(Boolean),
@@ -164,65 +165,53 @@ export function layoutReducers(state, event) {
 
         case 'node.layout.setConstraint': {
             const { nodeId, constraint } = payload;
-            const node = state.nodes[nodeId];
+            const node = sceneNodes[nodeId];
             if (!node) return state;
 
-            const prevLayout = node.layout || {};
+            const prevLayout = getLayoutEntry(state, nodeId);
             const prevConstraints = prevLayout.constraints || {};
 
-            return markLayoutDirty({
-                ...state,
-                nodes: {
-                    ...state.nodes,
-                    [nodeId]: {
-                        ...node,
-                        layout: {
-                            ...prevLayout,
-                            constraints: {
-                                ...prevConstraints,
-                                ...(constraint || {}),
-                            },
-                        },
+            return markLayoutDirty(applyLayoutNodes(state, {
+                ...(getLayoutSystem(state)?.nodes ?? {}),
+                [nodeId]: {
+                    ...prevLayout,
+                    constraints: {
+                        ...prevConstraints,
+                        ...(constraint || {}),
                     },
                 },
-            }, {
+            }), {
                 nodeIds: [nodeId],
             });
         }
 
         case 'node.layout.clearConstraint': {
             const { nodeId, key } = payload;
-            const node = state.nodes[nodeId];
+            const node = sceneNodes[nodeId];
             if (!node) return state;
 
-            const prevLayout = node.layout || {};
+            const prevLayout = getLayoutEntry(state, nodeId);
             const prevConstraints = prevLayout.constraints || {};
             const nextConstraints = { ...prevConstraints };
             delete nextConstraints[key];
 
-            return markLayoutDirty({
-                ...state,
-                nodes: {
-                    ...state.nodes,
-                    [nodeId]: {
-                        ...node,
-                        layout: {
-                            ...prevLayout,
-                            constraints: nextConstraints,
-                        },
-                    },
+            return markLayoutDirty(applyLayoutNodes(state, {
+                ...(getLayoutSystem(state)?.nodes ?? {}),
+                [nodeId]: {
+                    ...prevLayout,
+                    constraints: nextConstraints,
                 },
-            }, {
+            }), {
                 nodeIds: [nodeId],
             });
         }
 
         case 'node.layout.setAutoLayout': {
             const { nodeId, config } = payload;
-            const node = state.nodes[nodeId];
+            const node = sceneNodes[nodeId];
             if (!node) return state;
 
-            const prevLayout = node.layout || {};
+            const prevLayout = getLayoutEntry(state, nodeId);
             const nextAutoLayout =
                 config?.type === 'grid'
                     ? {
@@ -245,43 +234,31 @@ export function layoutReducers(state, event) {
                           ...config,
                       };
 
-            return markLayoutDirty({
-                ...state,
-                nodes: {
-                    ...state.nodes,
-                    [nodeId]: {
-                        ...node,
-                        layout: {
-                            ...prevLayout,
-                            autoLayout: nextAutoLayout,
-                        },
-                    },
+            return markLayoutDirty(applyLayoutNodes(state, {
+                ...(getLayoutSystem(state)?.nodes ?? {}),
+                [nodeId]: {
+                    ...prevLayout,
+                    autoLayout: nextAutoLayout,
                 },
-            }, {
+            }), {
                 nodeIds: [nodeId],
             });
         }
 
         case 'node.layout.clearAutoLayout': {
             const { nodeId } = payload;
-            const node = state.nodes[nodeId];
+            const node = sceneNodes[nodeId];
             if (!node) return state;
 
-            const prevLayout = node.layout || {};
+            const prevLayout = getLayoutEntry(state, nodeId);
 
-            return markLayoutDirty({
-                ...state,
-                nodes: {
-                    ...state.nodes,
-                    [nodeId]: {
-                        ...node,
-                        layout: {
-                            ...prevLayout,
-                            autoLayout: null,
-                        },
-                    },
+            return markLayoutDirty(applyLayoutNodes(state, {
+                ...(getLayoutSystem(state)?.nodes ?? {}),
+                [nodeId]: {
+                    ...prevLayout,
+                    autoLayout: null,
                 },
-            }, {
+            }), {
                 nodeIds: [nodeId],
             });
         }

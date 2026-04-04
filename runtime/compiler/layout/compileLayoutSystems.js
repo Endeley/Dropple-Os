@@ -4,7 +4,7 @@ import { compileBreakpoints } from './compileBreakpoints.js';
 
 export function compileLayoutSystems(document = {}) {
     return {
-        constraints: compileConstraints(document?.sceneGraph),
+        constraints: compileConstraints(document?.layout),
         responsiveRules: compileResponsiveLayout(document?.sceneGraph),
         breakpoints: compileBreakpoints(document).breakpoints,
     };

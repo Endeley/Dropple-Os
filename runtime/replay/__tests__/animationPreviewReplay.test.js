@@ -10,8 +10,14 @@ test('animation preview during replay does not mutate animated store', () => {
 
   dispatcher.hydrateRuntimeState(
     {
-      nodes: { nodeA: { opacity: 0.5 } },
-      rootIds: ['nodeA'],
+      document: {
+        sceneGraph: {
+          rootIds: ['nodeA'],
+          nodes: {
+            nodeA: { id: 'nodeA', type: 'frame', children: [], opacity: 0.5 },
+          },
+        },
+      },
       __isReplaying: true,
     },
     { animate: false },
@@ -22,8 +28,14 @@ test('animation preview during replay does not mutate animated store', () => {
 
   runAnimationPreview({
     designState: {
-      nodes: { nodeA: { opacity: 0.5 } },
-      rootIds: ['nodeA'],
+      document: {
+        sceneGraph: {
+          rootIds: ['nodeA'],
+          nodes: {
+            nodeA: { id: 'nodeA', type: 'frame', children: [], opacity: 0.5 },
+          },
+        },
+      },
       __isReplaying: true,
     },
     timeMs: 100,
@@ -31,7 +43,6 @@ test('animation preview during replay does not mutate animated store', () => {
 
   const animated = useAnimatedRuntimeStore.getState();
 
-  assert.deepEqual(animated.nodes, before.nodes);
-  assert.deepEqual(animated.rootIds, before.rootIds);
+  assert.deepEqual(animated.previewNodes, before.previewNodes);
   assert.equal(animated.cameraTransform, before.cameraTransform);
 });

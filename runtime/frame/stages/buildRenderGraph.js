@@ -1,5 +1,7 @@
+import { getNodes } from '@/runtime/document/documentAdapter.js';
+
 export function buildRenderGraph(context) {
-  const nodes = context.runtimeState?.nodes || {};
+  const nodes = getNodes(context.runtimeState);
 
   const renderGraph = {
     nodes: Object.values(nodes),

@@ -29,6 +29,7 @@ import { useGalleryIdentity } from '@/gallery/useGalleryIdentity';
 import { usePublishToServer } from '@/gallery/usePublishToServer';
 import PresenceDots from '@/collab/PresenceDots';
 import { ExportGateOverlay } from '@/ui/export/ExportGateOverlay';
+import { getNodes } from '@/runtime/document/documentAdapter.js';
 
 function WorkspaceLayoutInner({
   adapter,
@@ -127,18 +128,19 @@ function WorkspaceLayoutInner({
   }, [events, cursor.index]);
 
   const replayState = useMemo(() => getState() ?? { nodes: {} }, [getState]);
+  const replayNodes = useMemo(() => getNodes(replayState), [replayState]);
   const selected = useMemo(() => {
     if (!selectedIds || selectedIds.size === 0) return [];
     return Array.from(selectedIds)
-      .map((id) => replayState.nodes?.[id])
+      .map((id) => replayNodes?.[id])
       .filter(Boolean);
-  }, [selectedIds, replayState.nodes]);
+  }, [selectedIds, replayNodes]);
 
   const commands = useMemo(
     () =>
       buildCommands({
         emit,
-        nodes: replayState.nodes || {},
+        nodes: replayNodes || {},
         selectedIds: selectedIds ? Array.from(selectedIds) : [],
         events,
         cursorIndex: cursor.index,
@@ -151,7 +153,7 @@ function WorkspaceLayoutInner({
       emit,
       events,
       cursor.index,
-      replayState.nodes,
+      replayNodes,
       selectedIds,
       selected,
       hintMode,

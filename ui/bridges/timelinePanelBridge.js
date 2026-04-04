@@ -1,4 +1,4 @@
-import { useWorkspaceViewState } from '@/runtime/projection';
+import { useWorkspaceViewState, useWorkspaceVisualState } from '@/runtime/projection';
 import { selectIsReplaying } from '@/runtime/projection/selectors/index.js';
 import { runAnimationPreview } from '@/runtime/animation/runAnimationPreview.js';
 import { cancelAnimationPreview } from '@/runtime/animation/cancelAnimationPreview.js';
@@ -23,5 +23,6 @@ export {
   selectIsReplaying,
   useRuntimeStore,
   useTimelineStore,
+  useWorkspaceVisualState,
   useWorkspaceViewState,
 };

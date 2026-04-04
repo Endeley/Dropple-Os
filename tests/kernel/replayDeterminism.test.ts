@@ -35,8 +35,8 @@ test('replay is deterministic for the same event stream', () => {
 test('replay preserves canonical scene graph and selection outputs', () => {
     const state = replayEvents({ events });
 
-    assert.ok(state.nodes.root);
-    assert.deepEqual(state.rootIds, ['root']);
+    assert.ok(state.document.sceneGraph.nodes.root);
+    assert.deepEqual(state.document.sceneGraph.rootIds, ['root']);
     assert.deepEqual(Array.from(state.selection.ids), ['root']);
     assert.equal(state.selection.primary, null);
 });

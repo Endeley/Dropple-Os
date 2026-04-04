@@ -1,7 +1,7 @@
 import { compileTemplateV1 } from './templateCompilerV1.js';
 import { hashTimeline } from '../../domain/timeline/TimelineContract.js';
 import { createTimelineController } from '../timeline/timelineController.js';
-import { evaluateTimeline } from '../timeline/evaluateTimeline.js';
+import { evaluateChannelTimeline } from '../timeline/evaluateTimeline.js';
 
 const baseTemplate = {
     metadata: {
@@ -116,7 +116,7 @@ function evaluateCanonicalTimeline(timeline, timeMs) {
         return resolveChannelValue(channel, time);
     };
     const blend = (a, b) => (Number.isFinite(a) && Number.isFinite(b) ? a + b : b);
-    return evaluateTimeline(timeline, timeMs, evaluateChannel, blend);
+    return evaluateChannelTimeline(timeline, timeMs, evaluateChannel, blend);
 }
 
 const original = clone(baseTemplate);

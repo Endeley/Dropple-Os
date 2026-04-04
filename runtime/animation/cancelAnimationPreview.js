@@ -10,8 +10,7 @@ import { useAnimatedRuntimeStore } from '../stores/useAnimatedRuntimeStore.js';
 export function cancelAnimationPreview() {
   useAnimatedRuntimeStore.setState(
     {
-      nodes: {},
-      rootIds: [],
+      previewNodes: {},
       cameraTransform: null,
     },
     false

@@ -7,7 +7,7 @@ import { create } from 'zustand';
  * This is NOT authoritative runtime truth.
  */
 export const useAnimatedRuntimeStore = create(() => ({
-    nodes: {},
-    rootIds: [],
+    previewNodes: {},
+    ghostNodes: {},
     cameraTransform: null,
 }));

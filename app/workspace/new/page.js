@@ -4,13 +4,13 @@ import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { WorkspaceRoot } from '@/ui/workspace/root/WorkspaceRoot.jsx';
 import { mockTemplates } from '@/marketplace/mockTemplates';
-import { createWorkspaceFromTemplate } from '@/workspace/createFromTemplate';
 import { mockLessons } from '@/marketplace/mockLessons';
 import { forkLessonToWorkspace } from '@/education/forkLessonToWorkspace';
 import {
+  createWorkspaceFromTemplate,
   getWorkspaceDefinition,
   resolveWorkspaceContext,
-} from '@/platform/workspaces';
+} from '@/platform/workspaces/index.js';
 
 function createEmptyWorkspace() {
   return {

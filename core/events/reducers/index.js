@@ -97,19 +97,19 @@ export function rootReducer(state, event) {
   });
   next = applyOwnedReducer(next, event, nodeReducers, 'nodeReducers', {
     allowedDocumentSlices: ['sceneGraph', 'layout'],
-    allowedRuntimeSlices: ['nodes', 'rootIds'],
+    allowedRuntimeSlices: [],
   });
   next = applyOwnedReducer(next, event, nodeStructureReducers, 'nodeStructureReducers', {
     allowedDocumentSlices: ['sceneGraph', 'layout'],
-    allowedRuntimeSlices: ['nodes', 'rootIds'],
+    allowedRuntimeSlices: [],
   });
   next = applyOwnedReducer(next, event, layoutReducers, 'layoutReducers', {
     allowedDocumentSlices: ['layout'],
-    allowedRuntimeSlices: ['nodes'],
+    allowedRuntimeSlices: [],
   });
   next = applyOwnedReducer(next, event, styleReducers, 'styleReducers', {
-    allowedDocumentSlices: [],
-    allowedRuntimeSlices: ['nodes'],
+    allowedDocumentSlices: ['sceneGraph'],
+    allowedRuntimeSlices: [],
   });
   next = applyOwnedReducer(next, event, timelineReducers, 'timelineReducers', {
     allowedDocumentSlices: [],

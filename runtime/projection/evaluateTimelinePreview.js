@@ -1,1 +1,1 @@
-export { evaluateTimelinePreview } from '@/engine/timeline/evaluateTimelinePreview.js';
+export { evaluatePreviewEvents } from '@/engine/timeline/evaluateTimelinePreview.js';

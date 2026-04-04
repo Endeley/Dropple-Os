@@ -23,7 +23,7 @@ export function useRenderState() {
 
     return {
         ...state,
-        nodes: graph.nodes ?? state.nodes ?? {},
-        rootIds: graph.rootIds ?? state.rootIds ?? [],
+        nodes: graph.nodes ?? {},
+        rootIds: graph.rootIds ?? [],
     };
 }

@@ -3,6 +3,7 @@ import { canRunWorkspaceCommand } from '@/ui/capabilities/workspaceCapabilities.
 import { wrapSelection } from '@/runtime/commands/structure/wrapSelection.js';
 import { unwrapNodeCommand } from '@/runtime/commands/structure/unwrapNode.js';
 import { registerGraphIntentBridge } from './graphIntentBridge.js';
+import { getNodes } from '@/runtime/document/documentAdapter.js';
 
 let registered = false;
 
@@ -32,7 +33,7 @@ function runCommand(commandId, dispatcher) {
     }
 
     const selectedIds = Array.from(runtimeState?.selection?.ids ?? []).filter(Boolean);
-    const nodes = runtimeState?.nodes ?? {};
+    const nodes = getNodes(runtimeState);
 
     if (commandId === 'group') {
         if (selectedIds.length < 2) return null;

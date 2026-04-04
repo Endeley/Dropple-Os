@@ -3,8 +3,10 @@ import { evaluateLayoutIncremental } from './evaluateLayoutIncremental.js';
 import { compileLayoutSystems } from '../compiler/layout/compileLayoutSystems.js';
 import { responsiveLayoutRuntime } from './responsiveLayoutRuntime.js';
 import {
+    getDocument,
     getLayout,
-    getSceneGraph,
+    getNodes,
+    getRootIds,
     resolveLayoutNode,
 } from '../document/documentAdapter.js';
 
@@ -211,16 +213,17 @@ function mergeLayoutNode(base, override) {
     };
 }
 
-function buildNodeGeometry(nodes = {}) {
+function buildNodeGeometry(nodes = {}, layoutNodes = {}, computedNodes = {}) {
     return Object.fromEntries(
         Object.entries(nodes).map(([nodeId, node]) => {
             const transform = node?.props?.transform ?? {};
-            const layout = node?.layout ?? {};
+            const layout = layoutNodes?.[nodeId] ?? {};
+            const computed = computedNodes?.[nodeId] ?? {};
 
-            const x = layout.x ?? node?.x ?? transform.x ?? 0;
-            const y = layout.y ?? node?.y ?? transform.y ?? 0;
-            const width = layout.width ?? node?.width ?? transform.width ?? 0;
-            const height = layout.height ?? node?.height ?? transform.height ?? 0;
+            const x = layout.x ?? computed.x ?? node?.x ?? transform.x ?? 0;
+            const y = layout.y ?? computed.y ?? node?.y ?? transform.y ?? 0;
+            const width = layout.width ?? computed.width ?? node?.width ?? transform.width ?? 0;
+            const height = layout.height ?? computed.height ?? node?.height ?? transform.height ?? 0;
 
             return [
                 nodeId,
@@ -320,20 +323,24 @@ function applyComputedToNodes(nodes = {}, computed = {}) {
 }
 
 export function applyLayoutPass(runtimeState) {
-    const sceneGraph = getSceneGraph(runtimeState);
+    const sceneGraph = getDocument(runtimeState)?.sceneGraph ?? null;
     const layout = getLayout(runtimeState);
 
     if (!runtimeState || !sceneGraph?.nodes || !layout) {
         return {
             nextState: runtimeState,
             derived: {
-                nodes: runtimeState?.nodes ?? {},
-                rootIds: runtimeState?.rootIds ?? [],
+                nodes: getNodes(runtimeState),
+                rootIds: getRootIds(runtimeState),
             },
         };
     }
 
-    const nodeGeometry = buildNodeGeometry(sceneGraph.nodes);
+    const nodeGeometry = buildNodeGeometry(
+        sceneGraph.nodes,
+        layout.nodes ?? {},
+        layout.computed ?? {},
+    );
     const compiledLayout = compileLayoutSystems(runtimeState?.document ?? {});
     const viewportWidth =
         runtimeState?.workspace?.viewport?.width ??

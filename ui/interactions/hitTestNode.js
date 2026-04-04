@@ -1,3 +1,5 @@
+import { getNodes } from '@/runtime/document/documentAdapter.js';
+
 export function getNodeRect(node) {
   const p = node?.props || {};
   const l = node?.layout || {};
@@ -13,7 +15,7 @@ export function pointInRect(pt, r) {
 }
 
 export function hitTestNode(runtimeState, worldPoint) {
-  const nodesMap = runtimeState?.nodes || {};
+  const nodesMap = getNodes(runtimeState);
   const nodes = Object.values(nodesMap);
 
   const hits = [];

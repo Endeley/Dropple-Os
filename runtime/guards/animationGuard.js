@@ -1,5 +1,6 @@
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { getRuntimeState } from '../state/runtimeState.js';
+import { getNode } from '../document/documentAdapter.js';
 
 const ALLOWED_ANIMATION_PROPERTIES = new Set([
     'x',
@@ -53,7 +54,7 @@ export function applyAnimationGuard(event) {
         case EventTypes.ANIMATION_TRACK_CREATE: {
             const { trackId, nodeId, property } = event.payload || {};
             if (!trackId || !nodeId || !property) return null;
-            if (!state.nodes?.[nodeId]) return null;
+            if (!getNode(state, nodeId)) return null;
             if (!ALLOWED_ANIMATION_PROPERTIES.has(property)) return null;
 
             const duplicate = tracks.some((track) => track?.nodeId === nodeId && track?.property === property);
@@ -83,7 +84,7 @@ export function applyAnimationGuard(event) {
         case EventTypes.ANIMATION_KEYFRAME_CREATE: {
             const { nodeId, property, timeMs, value } = event.payload || {};
             if (!nodeId || !property) return null;
-            if (!state.nodes?.[nodeId]) return null;
+            if (!getNode(state, nodeId)) return null;
             if (!ALLOWED_ANIMATION_AUTHORING_PROPERTIES.has(property)) return null;
             if (!Number.isFinite(timeMs) || timeMs < 0) return null;
             if (!Number.isFinite(value)) return null;

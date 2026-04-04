@@ -1,5 +1,5 @@
 import { normalizeTimeline, hashTimeline } from '../../domain/timeline/TimelineContract.js';
-import { evaluateTimeline } from '../../engine/timeline/evaluateTimeline.js';
+import { evaluateChannelTimeline } from '../../engine/timeline/evaluateTimeline.js';
 import { createTimelineController, dispatchTrack } from '../../engine/timeline/timelineController.js';
 import { TrackActions } from '../../engine/timeline/trackDispatcher.js';
 
@@ -80,8 +80,8 @@ const evalReorderedGroups = {
     ],
 };
 
-const evalA = evaluateTimeline(evalBase, 0, () => 2, (a, b) => a + b);
-const evalB = evaluateTimeline(evalReorderedGroups, 0, () => 2, (a, b) => a + b);
+const evalA = evaluateChannelTimeline(evalBase, 0, () => 2, (a, b) => a + b);
+const evalB = evaluateChannelTimeline(evalReorderedGroups, 0, () => 2, (a, b) => a + b);
 
 console.log('GROUP ORDER DOES NOT AFFECT EVAL:', JSON.stringify(evalA) === JSON.stringify(evalB));
 

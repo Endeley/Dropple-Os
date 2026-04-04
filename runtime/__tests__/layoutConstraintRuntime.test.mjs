@@ -1,5 +1,6 @@
 import { createEventDispatcher } from '@/runtime/dispatcher/dispatch.js';
 import { initialRuntimeState } from '@/runtime/state/runtimeState.internal.js';
+import { getNodes } from '@/runtime/document/documentAdapter.js';
 
 function assert(condition, message) {
     if (!condition) throw new Error(message);
@@ -144,10 +145,11 @@ function createState({ parentWidth, parentHeight, childWidth = 100, childHeight 
 
     dispatcher.hydrateRuntimeState(state, { animate: false });
     const result = dispatcher.getState();
+    const projectedNodes = getNodes(result);
 
     assert(result.document.layout.computed.child.x === 24, 'left pinned child x mismatch');
     assert(result.document.layout.computed.child.y === 16, 'top pinned child y mismatch');
-    assert(result.nodes.child.x === 24, 'left pinned legacy node x mismatch');
+    assert(projectedNodes.child.x === 24, 'left pinned derived node x mismatch');
 }
 
 {
@@ -165,10 +167,11 @@ function createState({ parentWidth, parentHeight, childWidth = 100, childHeight 
 
     dispatcher.hydrateRuntimeState(state, { animate: false });
     const result = dispatcher.getState();
+    const projectedNodes = getNodes(result);
 
     assert(result.document.layout.computed.child.x === 20, 'left+right pinned child x mismatch');
     assert(result.document.layout.computed.child.width === 310, 'left+right pinned child width mismatch');
-    assert(result.nodes.child.width === 310, 'left+right legacy node width mismatch');
+    assert(projectedNodes.child.width === 310, 'left+right derived node width mismatch');
 }
 
 {

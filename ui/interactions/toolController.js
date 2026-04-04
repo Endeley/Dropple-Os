@@ -3,6 +3,7 @@ import { canRunWorkspaceCommand } from '@/ui/capabilities/workspaceCapabilities'
 import {
   clearSelection,
   getSceneGraph,
+  getNodes,
   hitTestPoint,
   selectBounds,
   selectNode,
@@ -32,7 +33,7 @@ export function executeWorkspaceCommand({ commandId, getRuntimeState, dispatch }
     'graphic';
   const selectedIds = Array.from(runtimeState?.selection?.ids ?? []).filter(Boolean);
   const graph = getSceneGraph(runtimeState);
-  const nodes = graph?.nodes || runtimeState?.nodes || {};
+  const nodes = graph?.nodes || getNodes(runtimeState);
 
   if (!canRunWorkspaceCommand(workspaceId, commandId)) {
     return null;

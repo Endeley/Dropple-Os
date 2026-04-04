@@ -3,8 +3,10 @@
 import { rootReducer } from "./reducers/index.js";
 import { createTimeline } from "@/timeline/schema/timeline.js";
 import { createInitialGraphInteractionState } from './graphInteractionState.js';
+import { createCanonicalDocumentEnvelope } from '@/core/persistence/documentEnvelope.js';
 
 const initialState = Object.freeze({
+    document: Object.freeze(createCanonicalDocumentEnvelope()),
     nodes: Object.freeze({}),
     rootIds: Object.freeze([]),
     scene: Object.freeze({

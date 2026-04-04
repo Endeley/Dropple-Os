@@ -1,3 +1,5 @@
+import { getNode } from '@/runtime/document/documentAdapter.js';
+
 export class AutoLayoutPanel {
   constructor({ container, shell, interactions, messageBus }) {
     this.container = container;
@@ -27,7 +29,7 @@ export class AutoLayoutPanel {
     }
 
     const state = this.shell.getCurrentState();
-    const node = state.nodes[ids[0]];
+    const node = getNode(state, ids[0]);
     if (!node) return;
 
     this.renderControls(node);

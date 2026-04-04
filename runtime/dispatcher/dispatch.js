@@ -1,4 +1,5 @@
 import { applyEvent } from '../../core/events/applyEvent.js';
+import { getRootIds, getSceneGraph, getNodes } from '@/runtime/document/documentAdapter.js';
 import { alignNodes } from '@/engine/alignment/alignNodes.js';
 import { distributeNodes } from '@/engine/alignment/distributeNodes.js';
 import { convertLayout } from '@/engine/layout/convertLayout.js';
@@ -74,6 +75,16 @@ import {
     updateDrag,
 } from '@/runtime/interaction/dragRuntime.js';
 
+function clearAnimatedPreview() {
+    useAnimatedRuntimeStore.setState(
+        {
+            previewNodes: {},
+            cameraTransform: null,
+        },
+        false,
+    );
+}
+
 // System-level projection events (never domain mutations)
 const SYSTEM_EVENTS = new Set([
     EventTypes.WORKSPACE_SET_ACTIVE,
@@ -145,12 +156,11 @@ export function createEventDispatcher({
         onFrame: (fromState, toState, t) => {
             if (!fromState || !toState) return;
 
-            const animatedNodes = interpolateNodes(fromState.nodes || {}, toState.nodes || {}, t);
+            const animatedNodes = interpolateNodes(getNodes(fromState), getNodes(toState), t);
 
             useAnimatedRuntimeStore.setState(
                 {
-                    nodes: animatedNodes,
-                    rootIds: toState.rootIds,
+                    previewNodes: animatedNodes,
                 },
                 false,
             );
@@ -174,8 +184,8 @@ export function createEventDispatcher({
             ? {
                   nextState: ensured,
                   derived: {
-                      nodes: ensured?.nodes ?? {},
-                      rootIds: ensured?.rootIds ?? [],
+                      nodes: getNodes(ensured),
+                      rootIds: getRootIds(ensured),
                   },
               }
             : applyLayoutPass(ensured);
@@ -195,13 +205,7 @@ export function createEventDispatcher({
         syncRuntimeToZustand(committedState, {
             uxAudit: uxAuditLog.snapshot(),
         });
-        useAnimatedRuntimeStore.setState(
-            layoutApplied?.derived ?? {
-                nodes: committedState?.nodes ?? {},
-                rootIds: committedState?.rootIds ?? [],
-            },
-            false,
-        );
+        clearAnimatedPreview();
 
         return committedState;
     }
@@ -381,9 +385,20 @@ export function createEventDispatcher({
                         current.workspace,
                         event?.payload?.workspaceDef ?? null
                     );
+                    const workspaceTools =
+                        event?.payload?.workspaceDef?.tools ??
+                        event?.payload?.workspaceDef?.ui?.tools ??
+                        [];
                     const nextState = {
                         ...current,
                         workspace: nextWorkspace,
+                        tools: registerToolSource(
+                            current.tools ?? initialToolRuntimeState,
+                            {
+                                source: 'workspace',
+                                tools: workspaceTools,
+                            },
+                        ),
                     };
                     return commit(nextState, { animate: false, event });
                 }
@@ -533,7 +548,7 @@ export function createEventDispatcher({
                         return current;
                     }
 
-                    const sceneGraph = current?.sceneGraph;
+                    const sceneGraph = getSceneGraph(current);
                     if (sceneGraph?.scenes?.length) {
                         const activeSceneId = runtimeScene.activeSceneId;
                         const activeScene = sceneGraph.scenes.find((scene) => scene.id === activeSceneId);
@@ -609,8 +624,9 @@ export function createEventDispatcher({
                         : [];
                     if (nodeIds.length < 2) return runtimeState;
 
+                    const nodesById = getNodes(runtimeState);
                     const nodes = nodeIds
-                        .map((id) => runtimeState?.nodes?.[id])
+                        .map((id) => nodesById[id])
                         .filter(Boolean);
 
                     const updates = alignNodes(nodes, rawEvent.payload?.alignment);
@@ -629,8 +645,9 @@ export function createEventDispatcher({
                         : [];
                     if (nodeIds.length < 3) return runtimeState;
 
+                    const nodesById = getNodes(runtimeState);
                     const nodes = nodeIds
-                        .map((id) => runtimeState?.nodes?.[id])
+                        .map((id) => nodesById[id])
                         .filter(Boolean);
 
                     const updates = distributeNodes(nodes, rawEvent.payload?.axis);
@@ -646,12 +663,13 @@ export function createEventDispatcher({
                     const runtimeState = __getRuntimeStateInternal();
                     const payload = rawEvent.payload || {};
                     const containerId = payload.containerId;
-                    if (!containerId || runtimeState?.nodes?.[containerId]) return runtimeState;
+                    const nodesById = getNodes(runtimeState);
+                    if (!containerId || nodesById[containerId]) return runtimeState;
 
                     const plan = convertLayout({
                         layout: payload.layout,
                         nodeIds: payload.nodeIds,
-                        nodesById: runtimeState?.nodes || {},
+                        nodesById,
                         containerId,
                         options: {
                             ...(payload.options || {}),
@@ -668,7 +686,7 @@ export function createEventDispatcher({
                     });
 
                     if (plan.parentId) {
-                        const parent = runtimeState?.nodes?.[plan.parentId];
+                        const parent = nodesById[plan.parentId];
                         const childSet = new Set(plan.childIds || []);
                         let index = undefined;
                         if (parent && Array.isArray(parent.children)) {
@@ -792,7 +810,7 @@ export function createEventDispatcher({
             sequencer.reset();
             __resetRuntimeStateInternal();
             useRuntimeStore.setState({ events: [], cursorIndex: -1 });
-            useAnimatedRuntimeStore.setState({ nodes: {}, rootIds: [] }, false);
+            clearAnimatedPreview();
         });
     }
 

@@ -1,9 +1,11 @@
+import { getNode } from '@/runtime/document/documentAdapter';
+
 export function serializeSelection({ state, selectedIds }) {
   const nodes = [];
   const rootIds = [];
 
   selectedIds.forEach((id) => {
-    const node = state.nodes[id];
+    const node = getNode(state, id);
     if (!node) return;
 
     nodes.push(structuredClone(node));

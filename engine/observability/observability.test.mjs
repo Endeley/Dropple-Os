@@ -4,7 +4,7 @@ import {
     applyTimelineMutation,
     checkoutSnapshot,
 } from '../timeline/timelineHistory.js';
-import { evaluateTimeline } from '../timeline/evaluateTimeline.js';
+import { evaluateChannelTimeline } from '../timeline/evaluateTimeline.js';
 import { runExportStabilityGate } from '../export/exportStabilityGate.js';
 import {
     countTracks,
@@ -102,7 +102,7 @@ function blend(a, b) {
     return a + b;
 }
 
-const baselineEval = evaluateTimeline(timeline, 5, evaluateChannel, blend);
+const baselineEval = evaluateChannelTimeline(timeline, 5, evaluateChannel, blend);
 const withMetrics = evaluateTimelineWithMetrics(timeline, {
     time: 5,
     evaluateChannel,

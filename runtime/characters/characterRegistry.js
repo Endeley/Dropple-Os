@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import { getRuntimeState } from '@/runtime/state/runtimeState.js';
+import { getNodes } from '@/runtime/document/documentAdapter.js';
 
 const characters = new Map();
 const nodeToCharacter = new Map();
@@ -29,7 +30,7 @@ export function createCharacter({ rootId, partIds = [] } = {}) {
     if (!rootId || !Array.isArray(partIds)) return null;
 
     const runtime = getRuntimeState();
-    const nodes = runtime?.nodes || {};
+    const nodes = getNodes(runtime);
     const root = nodes[rootId];
     if (!root) return null;
 

@@ -1,4 +1,4 @@
-import { WorkspaceRegistry } from '../registry.js';
+import { WorkspaceRegistry } from './index.js';
 
 /**
  * Merge allowedEventTypes from parent → child.

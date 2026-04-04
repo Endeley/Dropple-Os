@@ -16,6 +16,33 @@ const defaultLayoutChild = Object.freeze({
   size: "fixed", // 'fixed' | 'fill' | 'hug'
 });
 
+function extractLayoutEntry(node = {}) {
+  const transform = node?.props?.transform ?? node?.transform ?? {};
+  const layout = node?.layout ?? {};
+
+  return {
+    ...defaultLayout,
+    ...layout,
+    x: layout.x ?? node?.x ?? transform.x ?? 0,
+    y: layout.y ?? node?.y ?? transform.y ?? 0,
+    width: layout.width ?? node?.width ?? transform.width,
+    height: layout.height ?? node?.height ?? transform.height,
+  };
+}
+
+function stripLayoutFromNode(node = {}) {
+  const {
+    layout: _layout,
+    x: _x,
+    y: _y,
+    width: _width,
+    height: _height,
+    ...rest
+  } = node;
+
+  return rest;
+}
+
 function normalizeAngle(angle) {
   const TAU = Math.PI * 2;
   let a = angle;
@@ -27,24 +54,28 @@ function normalizeAngle(angle) {
 function getSceneGraph(state) {
   const documentGraph = state?.document?.sceneGraph;
   return {
-    nodes: documentGraph?.nodes ?? state?.nodes ?? {},
-    rootIds: documentGraph?.rootIds ?? state?.rootIds ?? [],
+    nodes: documentGraph?.nodes ?? {},
+    rootIds: documentGraph?.rootIds ?? [],
   };
 }
 
 function applySceneGraph(state, nextGraph) {
+  return applyDocumentSlices(state, {
+    sceneGraph: nextGraph,
+  });
+}
+
+function applyDocumentSlices(state, slices) {
   const document = state?.document
     ? {
         ...state.document,
-        sceneGraph: nextGraph,
+        ...slices,
       }
     : state?.document;
 
   return {
     ...state,
     document,
-    nodes: nextGraph.nodes,
-    rootIds: nextGraph.rootIds,
   };
 }
 
@@ -59,10 +90,10 @@ export function nodeReducers(state, event) {
         children: [],
         ...node,
       };
+      const nextLayoutEntry = extractLayoutEntry(baseNode);
 
       const nextNode = {
-        ...baseNode,
-        layout: { ...defaultLayout, ...(baseNode.layout || {}) },
+        ...stripLayoutFromNode(baseNode),
         layoutChild: { ...defaultLayoutChild, ...(baseNode.layoutChild || {}) },
       };
 
@@ -91,9 +122,18 @@ export function nodeReducers(state, event) {
             ? graph.rootIds
             : [...graph.rootIds, node.id]);
 
-      const nextState = applySceneGraph(state, {
-        nodes: nextNodes,
-        rootIds: nextRootIds,
+      const nextState = applyDocumentSlices(state, {
+        sceneGraph: {
+          nodes: nextNodes,
+          rootIds: nextRootIds,
+        },
+        layout: {
+          ...(state?.document?.layout ?? {}),
+          nodes: {
+            ...(state?.document?.layout?.nodes ?? {}),
+            [node.id]: nextLayoutEntry,
+          },
+        },
       });
       return markLayoutDirty(nextState, {
         nodeIds: parentNode ? [parentId, node.id] : [node.id],
@@ -113,28 +153,39 @@ export function nodeReducers(state, event) {
         }
       }
 
-      return applySceneGraph(state, {
-        nodes: {
-          ...graph.nodes,
-          [id]: {
-            ...prev,
-
-            // 🔒 ONLY layout & layoutChild may be updated
-            layout: {
-              ...defaultLayout,
-              ...(prev.layout || {}),
-              ...(patch.layout || {}),
-            },
-
-            layoutChild: {
-              ...defaultLayoutChild,
-              ...(prev.layoutChild || {}),
-              ...(patch.layoutChild || {}),
+      const nextState = applyDocumentSlices(state, {
+        sceneGraph: {
+          nodes: {
+            ...graph.nodes,
+            [id]: {
+              ...prev,
+              layoutChild: {
+                ...defaultLayoutChild,
+                ...(prev.layoutChild || {}),
+                ...(patch.layoutChild || {}),
+              },
             },
           },
+          rootIds: graph.rootIds,
         },
-        rootIds: graph.rootIds,
+        layout: patch.layout
+          ? {
+              ...(state?.document?.layout ?? {}),
+              nodes: {
+                ...(state?.document?.layout?.nodes ?? {}),
+                [id]: {
+                  ...extractLayoutEntry(prev),
+                  ...(state?.document?.layout?.nodes?.[id] ?? {}),
+                  ...(patch.layout || {}),
+                },
+              },
+            }
+          : state?.document?.layout,
       });
+
+      return patch.layout
+        ? markLayoutDirty(nextState, { nodeIds: [id] })
+        : nextState;
     }
 
     case EventTypes.NODE_DELETE: {
@@ -144,9 +195,21 @@ export function nodeReducers(state, event) {
       const nextNodes = { ...graph.nodes };
       delete nextNodes[id];
 
-      const nextState = applySceneGraph(state, {
-        nodes: nextNodes,
-        rootIds: graph.rootIds.filter((rootId) => rootId !== id),
+      const nextLayoutNodes = { ...(state?.document?.layout?.nodes ?? {}) };
+      const nextComputed = { ...(state?.document?.layout?.computed ?? {}) };
+      delete nextLayoutNodes[id];
+      delete nextComputed[id];
+
+      const nextState = applyDocumentSlices(state, {
+        sceneGraph: {
+          nodes: nextNodes,
+          rootIds: graph.rootIds.filter((rootId) => rootId !== id),
+        },
+        layout: {
+          ...(state?.document?.layout ?? {}),
+          nodes: nextLayoutNodes,
+          computed: nextComputed,
+        },
       });
       return markLayoutDirty(nextState, {
         nodeIds: [id],

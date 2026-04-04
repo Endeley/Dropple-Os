@@ -1,4 +1,5 @@
 import { EventTypes } from '@/core/events/eventTypes.js';
+import { getNode, getNodes } from '@/runtime/document/documentAdapter.js';
 
 function intersects(a, b) {
     return (
@@ -11,6 +12,7 @@ function intersects(a, b) {
 
 function getNodeBounds(runtime, nodeId) {
     const computedBounds = runtime?.scene?.computed?.[nodeId]?.worldBounds ?? null;
+    const computedNode = runtime?.scene?.computed?.[nodeId] ?? null;
     if (
         Number.isFinite(computedBounds?.x) &&
         Number.isFinite(computedBounds?.y) &&
@@ -25,11 +27,21 @@ function getNodeBounds(runtime, nodeId) {
         };
     }
 
-    const node =
-        runtime?.nodes?.[nodeId] ??
-        runtime?.document?.sceneGraph?.nodes?.[nodeId] ??
-        runtime?.document?.nodes?.[nodeId] ??
-        null;
+    if (
+        Number.isFinite(computedNode?.x) &&
+        Number.isFinite(computedNode?.y) &&
+        Number.isFinite(computedNode?.width) &&
+        Number.isFinite(computedNode?.height)
+    ) {
+        return {
+            x: computedNode.x,
+            y: computedNode.y,
+            width: computedNode.width,
+            height: computedNode.height,
+        };
+    }
+
+    const node = getNode(runtime, nodeId) ?? runtime?.document?.nodes?.[nodeId] ?? null;
 
     const layout = node?.layout ?? {};
     const x = layout.x ?? node?.x ?? node?.props?.x ?? null;
@@ -50,7 +62,7 @@ function getNodeBounds(runtime, nodeId) {
 }
 
 function collectSelectableNodeIds(runtime) {
-    const runtimeIds = Object.keys(runtime?.nodes ?? {});
+    const runtimeIds = Object.keys(getNodes(runtime));
     const sceneGraphIds = Object.keys(runtime?.document?.sceneGraph?.nodes ?? {});
     const documentIds = Object.keys(runtime?.document?.nodes ?? {});
 
@@ -61,11 +73,7 @@ function resolveBoundsHits(runtime, rect) {
     const hits = [];
 
     for (const nodeId of collectSelectableNodeIds(runtime)) {
-        const node =
-            runtime?.nodes?.[nodeId] ??
-            runtime?.document?.sceneGraph?.nodes?.[nodeId] ??
-            runtime?.document?.nodes?.[nodeId] ??
-            null;
+        const node = getNode(runtime, nodeId) ?? runtime?.document?.nodes?.[nodeId] ?? null;
 
         if (!node || node.hidden === true) continue;
 

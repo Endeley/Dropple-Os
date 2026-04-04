@@ -1,10 +1,11 @@
 'use client';
 
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useWorkspaceVisualState } from '@/runtime/projection/useWorkspaceVisualState.js';
 import { timelineIntentShotSetActive } from '@/ui/timeline/timelineIntent.js';
 
 export default function ShotTimelineBar() {
-  const sceneGraph = useRuntimeStore((s) => s.sceneGraph);
+  const sceneGraph = useWorkspaceVisualState((s) => s.sceneGraph);
   const runtimeScene = useRuntimeStore((s) => s.scene);
 
   if (!sceneGraph || !runtimeScene?.activeSceneId) return null;

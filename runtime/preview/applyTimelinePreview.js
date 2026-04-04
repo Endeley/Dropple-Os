@@ -1,4 +1,5 @@
 import { evaluateTimelineFrame } from '@/timeline/evaluateTimelineFrame.js';
+import { getNodes } from '@/runtime/document/documentAdapter.js';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
 import { perfStart, perfEnd } from '@/runtime/instrumentation/perfTracker.js';
 
@@ -16,8 +17,7 @@ export function applyTimelinePreview(args) {
 
     useAnimatedRuntimeStore.setState(
         {
-            nodes: result.nodes || {},
-            rootIds: result.rootIds || [],
+            previewNodes: getNodes(result),
         },
         false
     );

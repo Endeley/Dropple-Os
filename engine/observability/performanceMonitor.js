@@ -1,5 +1,5 @@
 import { performance } from 'perf_hooks';
-import { evaluateTimeline } from '../timeline/evaluateTimeline.js';
+import { evaluateChannelTimeline } from '../timeline/evaluateTimeline.js';
 import { countTracks, countGroups, countChannels } from './complexityCounters.js';
 
 function defaultNow() {
@@ -31,7 +31,7 @@ export function evaluateTimelineWithMetrics(timeline, frame) {
     const now = typeof resolved.now === 'function' ? resolved.now : defaultNow;
 
     const start = now();
-    const result = evaluateTimeline(timeline, time, evaluateChannel, blend);
+    const result = evaluateChannelTimeline(timeline, time, evaluateChannel, blend);
     const end = now();
 
     return {

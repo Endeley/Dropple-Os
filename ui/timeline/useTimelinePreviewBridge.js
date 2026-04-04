@@ -32,8 +32,7 @@ export function useTimelinePreviewBridge(timelineOverride) {
 
             useAnimatedRuntimeStore.setState(
                 {
-                    nodes: preview.nodes || {},
-                    rootIds: preview.rootIds || [],
+                    previewNodes: preview.nodes || {},
                 },
                 false
             );
@@ -43,8 +42,7 @@ export function useTimelinePreviewBridge(timelineOverride) {
         // Snap back to authoritative runtime state when not scrubbing.
         useAnimatedRuntimeStore.setState(
             {
-                nodes: graph?.nodes || {},
-                rootIds: graph?.rootIds || [],
+                previewNodes: {},
             },
             false
         );

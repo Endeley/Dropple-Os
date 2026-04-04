@@ -1,15 +1,15 @@
 'use client';
 
 import { exportTimelineToCSS } from '@/timeline/export/cssExporter.js';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { exportCSSAnimation } from '@/ui/bridges/exportAnimationBridge.js';
+import { useWorkspaceVisualState } from '@/runtime/projection/useWorkspaceVisualState.js';
 
 /**
  * Minimal export UI. Proof-of-concept only.
  * No state mutation; pure code generation.
  */
 export default function ExportPanel({ timeline }) {
-    const runtimeState = useRuntimeStore((s) => ({
+    const runtimeState = useWorkspaceVisualState((s) => ({
         nodes: s.nodes,
         rootIds: s.rootIds,
         sceneGraph: s.sceneGraph,

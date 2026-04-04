@@ -12,6 +12,7 @@ import { guideProjection } from '@/runtime/guides/guideProjection.js';
 import { projectGroupTransform } from '@/runtime/projection/groupTransformProjection.js';
 import { selectActiveTool, selectVisibleTools } from '@/runtime/selectors/toolSelectors.js';
 import { projectGraphInteraction } from '@/runtime/graph/index.js';
+import { getNodes, getRootIds, getSceneGraph } from '@/runtime/document/documentAdapter.js';
 
 function projectMarquee(runtime) {
     const drag = runtime?.interaction?.drag ?? null;
@@ -52,8 +53,8 @@ export function syncRuntimeToZustand(nextState, options = {}) {
     if (!nextState) {
         useRuntimeStore.setState(
             {
-                nodes: {},
-                rootIds: [],
+                viewNodes: {},
+                viewRootIds: [],
                 document: null,
                 timeline: null,
                 playback: { isPlaying: false },
@@ -132,7 +133,7 @@ export function syncRuntimeToZustand(nextState, options = {}) {
     }
 
     const prev = useRuntimeStore.getState();
-    const nodesById = nextState.nodes || {};
+    const nodesById = getNodes(nextState);
     const projectedNodes = {};
 
     Object.keys(nodesById).forEach((id) => {
@@ -147,8 +148,8 @@ export function syncRuntimeToZustand(nextState, options = {}) {
 
     const selectionBounds = selectionBoundsProjection(nextState);
     const nextProjection = {
-        nodes: projectedNodes,
-        rootIds: nextState.rootIds,
+        viewNodes: projectedNodes,
+        viewRootIds: getRootIds(nextState),
         document: nextState.document ?? null,
         workspace: nextState.workspace ?? null,
         timeline: nextState.timeline ?? null,
@@ -206,8 +207,9 @@ export function syncRuntimeToZustand(nextState, options = {}) {
         interaction: nextState.interaction ?? null,
     };
 
-    if (prev.sceneGraph !== nextState.sceneGraph) {
-        nextProjection.sceneGraph = nextState.sceneGraph ?? null;
+    const nextSceneGraph = getSceneGraph(nextState);
+    if (prev.viewSceneGraph !== nextSceneGraph) {
+        nextProjection.viewSceneGraph = nextSceneGraph;
     }
     if (prev.scene !== nextState.scene) {
         nextProjection.scene = nextState.scene ?? null;

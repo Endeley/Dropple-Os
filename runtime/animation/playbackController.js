@@ -5,23 +5,27 @@ import { useAnimatedRuntimeStore } from '../stores/useAnimatedRuntimeStore.js';
 import { resolveShotForTime } from '../scene/resolveShotForTime.js';
 import { getCameraTransformAtTime } from '@/core/scene/cameraPlayback.v1.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
+import { getSceneGraph } from '../document/documentAdapter.js';
 
 export function createPlaybackController({ animationController, dispatchEvent }) {
     let playing = false;
     let rafId = null;
     let startTime = 0;
     let pendingShotId = null;
+    const hasAnimationFrame =
+        typeof requestAnimationFrame === 'function' &&
+        typeof cancelAnimationFrame === 'function';
 
     function isPlaying() {
         return playing;
     }
 
     function stopShotLoop() {
-        if (rafId) cancelAnimationFrame(rafId);
+        if (rafId && hasAnimationFrame) cancelAnimationFrame(rafId);
         rafId = null;
         startTime = 0;
         pendingShotId = null;
-        useAnimatedRuntimeStore.setState({ cameraTransform: null }, false);
+        useAnimatedRuntimeStore.setState({ previewNodes: {}, cameraTransform: null }, false);
     }
 
     function tick(now) {
@@ -30,7 +34,7 @@ export function createPlaybackController({ animationController, dispatchEvent })
 
         const elapsed = now - startTime;
         const runtime = getRuntimeState();
-        const sceneGraph = runtime?.sceneGraph ?? null;
+        const sceneGraph = getSceneGraph(runtime);
         const runtimeScene = runtime?.scene ?? null;
 
         if (sceneGraph && runtimeScene) {
@@ -66,7 +70,9 @@ export function createPlaybackController({ animationController, dispatchEvent })
             useAnimatedRuntimeStore.setState({ cameraTransform }, false);
         }
 
-        rafId = requestAnimationFrame(tick);
+        if (hasAnimationFrame) {
+            rafId = requestAnimationFrame(tick);
+        }
     }
 
     function cancel() {
@@ -74,15 +80,6 @@ export function createPlaybackController({ animationController, dispatchEvent })
         animationController.cancel();
         playing = false;
         stopShotLoop();
-
-        const truth = getRuntimeState();
-        useAnimatedRuntimeStore.setState(
-            {
-                nodes: truth?.nodes || {},
-                rootIds: truth?.rootIds || [],
-            },
-            false
-        );
     }
 
     function play({ fromState, toState, onComplete }) {
@@ -102,23 +99,17 @@ export function createPlaybackController({ animationController, dispatchEvent })
             onComplete: () => {
                 playing = false;
                 stopShotLoop();
-                const truth = getRuntimeState();
-                useAnimatedRuntimeStore.setState(
-                    {
-                        nodes: truth?.nodes || {},
-                        rootIds: truth?.rootIds || [],
-                    },
-                    false
-                );
                 if (typeof onComplete === 'function') {
                     onComplete();
                 }
             },
         });
 
-        if (rafId) cancelAnimationFrame(rafId);
+        if (rafId && hasAnimationFrame) cancelAnimationFrame(rafId);
         startTime = 0;
-        rafId = requestAnimationFrame(tick);
+        if (hasAnimationFrame) {
+            rafId = requestAnimationFrame(tick);
+        }
     }
 
     return {

@@ -1,5 +1,6 @@
 import { createEventDispatcher } from '@/runtime/dispatcher/dispatch.js';
 import { initialRuntimeState } from '@/runtime/state/runtimeState.internal.js';
+import { getNodes } from '@/runtime/document/documentAdapter.js';
 
 function assert(condition, message) {
     if (!condition) throw new Error(message);
@@ -108,13 +109,14 @@ state.document.layout.dirty = {
 const dispatcher = createEventDispatcher({ headless: true });
 dispatcher.hydrateRuntimeState(state, { animate: false });
 const result = dispatcher.getState();
+const projectedNodes = getNodes(result);
 
 assert(result.document.layout.computed.root.height === 87, 'grid runtime hug container height mismatch');
 assert(result.document.layout.computed.a.x === 10, 'grid runtime child a x mismatch');
 assert(result.document.layout.computed.b.x === 122, 'grid runtime child b x mismatch');
 assert(result.document.layout.computed.c.y === 52, 'grid runtime child c y mismatch');
 assert(result.document.layout.computed.b.width === 100, 'grid runtime fill width mismatch');
-assert(result.nodes.b.width === 100, 'grid runtime legacy node width mismatch');
+assert(projectedNodes.b.width === 100, 'grid runtime derived node width mismatch');
 assert(result.document.layout.dirty.fullPass === false, 'grid runtime dirty fullPass should clear');
 assert(result.document.layout.dirty.nodeIds.length === 0, 'grid runtime dirty nodeIds should clear');
 

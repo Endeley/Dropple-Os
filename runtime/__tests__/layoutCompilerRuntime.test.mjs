@@ -12,21 +12,10 @@ test('layout compiler extracts constraints responsive rules and breakpoints from
             nodes: {
                 root: {
                     id: 'root',
-                    layout: {
-                        mode: 'absolute',
-                    },
                 },
                 card: {
                     id: 'card',
                     parentId: 'root',
-                    layout: {
-                        mode: 'absolute',
-                        constraints: {
-                            left: true,
-                            top: true,
-                            centerX: false,
-                        },
-                    },
                     responsive: {
                         mobile: { width: '100%' },
                         tablet: { width: '50%' },
@@ -36,6 +25,19 @@ test('layout compiler extracts constraints responsive rules and breakpoints from
             },
         },
         layout: {
+            nodes: {
+                root: {
+                    mode: 'free',
+                },
+                card: {
+                    mode: 'constraint',
+                    constraints: {
+                        left: true,
+                        top: true,
+                        centerX: false,
+                    },
+                },
+            },
             breakpoints: {
                 mobile: 420,
                 tablet: 900,
@@ -44,7 +46,7 @@ test('layout compiler extracts constraints responsive rules and breakpoints from
         },
     };
 
-    assert.deepEqual(compileConstraints(document.sceneGraph), [
+    assert.deepEqual(compileConstraints(document.layout), [
         {
             nodeId: 'card',
             type: 'constraints',
@@ -78,7 +80,7 @@ test('layout compiler extracts constraints responsive rules and breakpoints from
     });
 
     assert.deepEqual(compileLayoutSystems(document), {
-        constraints: compileConstraints(document.sceneGraph),
+        constraints: compileConstraints(document.layout),
         responsiveRules: compileResponsiveLayout(document.sceneGraph),
         breakpoints: {
             mobile: 420,

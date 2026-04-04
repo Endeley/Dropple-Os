@@ -7,6 +7,7 @@ import {
     createGroupResizeSession,
 } from '@/runtime/input/groupSessionRuntimeBridge.js';
 import { createSessionFromIntent } from '@/runtime/input/sessionRuntimeBridge.js';
+import { selectNodes } from '@/runtime/projection/selectors/runtimeSelectors.js';
 
 export function getInteractionBridgeState() {
     return {
@@ -19,10 +20,11 @@ export function getInteractionBridgeState() {
 export function createNodeDragBridgeResult({ intent }) {
     const { runtime, animated, nearestSnapshot } = getInteractionBridgeState();
     const selectionIds = runtime?.selection?.ids || [];
+    const projectedNodes = selectNodes();
     const nodesById =
-        runtime?.nodes && Object.keys(runtime.nodes).length > 0
-            ? runtime.nodes
-            : animated?.nodes || {};
+        projectedNodes && Object.keys(projectedNodes).length > 0
+            ? projectedNodes
+            : animated?.previewNodes || {};
 
     return createNodeDragSessionIntent({
         intent,
@@ -40,13 +42,14 @@ export function createGroupMoveBridgeSession({
     zoomTier = 'normal',
 }) {
     const { runtime, animated, nearestSnapshot } = getInteractionBridgeState();
+    const projectedNodes = selectNodes();
 
     return createGroupMoveSession({
         nodeIds,
         pointer,
         modifiers,
-        nodesById: runtime?.nodes || {},
-        animatedNodesById: animated?.nodes || {},
+        nodesById: projectedNodes || {},
+        animatedNodesById: animated?.previewNodes || {},
         nearestSnapshot,
         zoomTier,
     });
@@ -58,23 +61,23 @@ export function createGroupResizeBridgeSession({
     handle,
     modifiers,
 }) {
-    const { runtime } = getInteractionBridgeState();
+    const projectedNodes = selectNodes();
 
     return createGroupResizeSession({
         nodeIds,
         pointer,
         handle,
         modifiers,
-        nodesById: runtime?.nodes || {},
+        nodesById: projectedNodes || {},
     });
 }
 
 export function createSessionBridgeSession({ sessionType, payload }) {
-    const { runtime } = getInteractionBridgeState();
+    const projectedNodes = selectNodes();
 
     return createSessionFromIntent({
         sessionType,
         payload,
-        nodesById: runtime?.nodes || {},
+        nodesById: projectedNodes || {},
     });
 }

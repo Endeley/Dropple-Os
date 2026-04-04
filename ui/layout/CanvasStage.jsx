@@ -28,6 +28,7 @@ import { throttle } from '@/collab/throttle';
 import CursorsLayer from '@/collab/CursorsLayer';
 import CanvasIntentGhosts from '@/collab/CanvasIntentGhosts';
 import { NodeView } from '@/ui/NodeView.jsx';
+import { getNodes } from '@/runtime/document/documentAdapter.js';
 
 export default function CanvasStage({
   adapter,
@@ -50,6 +51,7 @@ export default function CanvasStage({
   const containerRef = useRef(null);
 
   const state = useReplayState({ events, cursor });
+  const nodes = useMemo(() => getNodes(state), [state]);
   const { clear, selectedIds } = useSelection();
 
   const [viewport, setViewport] = useState({
@@ -75,17 +77,17 @@ export default function CanvasStage({
     (adapter?.id === 'education' && (educationReadOnly || educationRole !== 'teacher'));
   const showAutoLayoutOverlay = shouldShowAutoLayoutOverlay({
     selectedIds,
-    nodes: state.nodes,
+    nodes,
     isPreview,
   });
   const overlayNode = showAutoLayoutOverlay
-    ? state.nodes[Array.from(selectedIds)[0]]
+    ? nodes[Array.from(selectedIds)[0]]
     : null;
   const overlayChildren = overlayNode?.children?.length
-    ? overlayNode.children.map((id) => state.nodes[id]).filter(Boolean)
+    ? overlayNode.children.map((id) => nodes[id]).filter(Boolean)
     : [];
   const reorderParent = reorderPreview.parentId
-    ? state.nodes[reorderPreview.parentId]
+    ? nodes[reorderPreview.parentId]
     : null;
   const { menu, openMenu, closeMenu } = useContextMenu();
   const updateCursor = useMutation(api.updateCursor.updateCursor);
@@ -194,7 +196,7 @@ export default function CanvasStage({
     const selected = selectedIds ? Array.from(selectedIds) : [];
     const enabled = selected.length > 1;
     const singleSelected = selected.length === 1;
-    const hasNodes = Object.keys(state.nodes || {}).length > 0;
+    const hasNodes = Object.keys(nodes || {}).length > 0;
     const canShowImport = canImport;
 
     openMenu({
@@ -225,9 +227,9 @@ export default function CanvasStage({
           onClick: () => runCommandIntent('ungroup'),
         },
         { type: 'separator' },
-        { key: 'export-json', label: 'Export JSON', disabled: !hasNodes, onClick: () => runExportGate({ onProceed: () => exportJSON({ nodes: state.nodes, events, cursor }) }) },
-        { key: 'export-svg', label: 'Export SVG', disabled: !hasNodes, onClick: () => runExportGate({ onProceed: () => exportSVG({ nodes: state.nodes }) }) },
-        { key: 'export-png', label: 'Export PNG', disabled: !hasNodes, onClick: () => runExportGate({ onProceed: () => exportPNG({ nodes: state.nodes, scale: 2 }) }) },
+        { key: 'export-json', label: 'Export JSON', disabled: !hasNodes, onClick: () => runExportGate({ onProceed: () => exportJSON({ nodes, events, cursor }) }) },
+        { key: 'export-svg', label: 'Export SVG', disabled: !hasNodes, onClick: () => runExportGate({ onProceed: () => exportSVG({ nodes }) }) },
+        { key: 'export-png', label: 'Export PNG', disabled: !hasNodes, onClick: () => runExportGate({ onProceed: () => exportPNG({ nodes, scale: 2 }) }) },
         ...(canShowImport
           ? [
               { type: 'separator' },
@@ -268,7 +270,7 @@ export default function CanvasStage({
           `,
         }}
       >
-        {Object.values(state.nodes || {}).map((node) => {
+        {Object.values(nodes || {}).map((node) => {
           const layout = node?.layout;
           if (!layout) return null;
 
@@ -305,7 +307,7 @@ export default function CanvasStage({
           {reorderParent && reorderPreview.toIndex != null && (
             <ReorderIndicator
               parent={reorderParent}
-              nodes={state.nodes}
+              nodes={nodes}
               toIndex={reorderPreview.toIndex}
               active={reorderPreview.active}
             />

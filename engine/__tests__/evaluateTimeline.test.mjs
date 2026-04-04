@@ -1,4 +1,4 @@
-import { evaluateTimeline } from '../../engine/timeline/evaluateTimeline.js';
+import { evaluateChannelTimeline } from '../../engine/timeline/evaluateTimeline.js';
 
 const timeline = {
     duration: 100,
@@ -17,6 +17,6 @@ function blend(a, b) {
     return a + b;
 }
 
-const result = evaluateTimeline(timeline, 5, evaluateChannel, blend);
+const result = evaluateChannelTimeline(timeline, 5, evaluateChannel, blend);
 
 console.log('OVERLAY OVERRIDES:', result.x === 5);

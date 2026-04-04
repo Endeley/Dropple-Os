@@ -8,6 +8,26 @@ function assert(condition, message) {
 
 const runtimeState = {
     document: {
+        sceneGraph: {
+            rootIds: ['root'],
+            nodes: {
+                root: { id: 'root', type: 'frame', children: [] },
+                'camera-a': {
+                    id: 'camera-a',
+                    props: {
+                        transform: {
+                            x: 320,
+                            y: 180,
+                            scale: 1.25,
+                            rotation: 12,
+                        },
+                    },
+                },
+            },
+            activeSceneId: null,
+            activeShotId: null,
+            scenes: [],
+        },
         sequences: {
             activeSequenceId: 'fight-sequence',
             sequences: {
@@ -32,29 +52,9 @@ const runtimeState = {
             },
         },
     },
-    nodes: {
-        root: { id: 'root', type: 'frame', children: [] },
-        'camera-a': {
-            id: 'camera-a',
-            props: {
-                transform: {
-                    x: 320,
-                    y: 180,
-                    scale: 1.25,
-                    rotation: 12,
-                },
-            },
-        },
-    },
-    rootIds: ['root'],
     scene: {
         activeSceneId: null,
         activeShotId: null,
-    },
-    sceneGraph: {
-        activeSceneId: null,
-        activeShotId: null,
-        scenes: [],
     },
 };
 

@@ -64,6 +64,7 @@ export function computeDirtyDomains({ event, runtime }) {
             break;
 
         case 'node/style-update':
+        case 'node.style.update':
             forEachId(payload.nodeId ?? payload.nodeIds, addPaint);
             break;
 

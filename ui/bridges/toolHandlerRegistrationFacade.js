@@ -30,8 +30,17 @@ import { resolveBoundsSelection, selectBounds } from '@/runtime/selection/select
 import { selectNode } from '@/runtime/selection/selectNode.js';
 import { toggleNode } from '@/runtime/selection/toggleNode.js';
 import { resolveTargetNodeId } from '@/ui/interactions/resolveTargetNodeId.js';
+import { getNodes } from '@/runtime/document/documentAdapter.js';
 
 const MOVE_DRAG_THRESHOLD = 3;
+
+function getToolNodes(runtimeState) {
+    const canonicalNodes = getNodes(runtimeState);
+    if (Object.keys(canonicalNodes).length > 0) {
+        return canonicalNodes;
+    }
+    return runtimeState?.viewNodes ?? {};
+}
 
 function normalizeAngle(angle) {
     const TAU = Math.PI * 2;
@@ -117,8 +126,9 @@ function buildGroupDragState(nodesById, nodeIds) {
 }
 
 function resolvePrimaryHit(runtimeState, worldPoint, inputEvent = null, targetNodeId = null) {
+    const nodesById = getToolNodes(runtimeState);
     if (targetNodeId) {
-        return runtimeState?.nodes?.[targetNodeId] ?? { id: targetNodeId };
+        return nodesById[targetNodeId] ?? { id: targetNodeId };
     }
 
     const eventTargetNodeId = resolveTargetNodeId(inputEvent?.target ?? null, {
@@ -127,7 +137,7 @@ function resolvePrimaryHit(runtimeState, worldPoint, inputEvent = null, targetNo
     });
 
     if (eventTargetNodeId) {
-        return runtimeState?.nodes?.[eventTargetNodeId] ?? { id: eventTargetNodeId };
+        return nodesById[eventTargetNodeId] ?? { id: eventTargetNodeId };
     }
 
     const pointHit = hitTestPoint({
@@ -137,7 +147,7 @@ function resolvePrimaryHit(runtimeState, worldPoint, inputEvent = null, targetNo
     });
 
     if (typeof pointHit === 'string') {
-        return runtimeState?.nodes?.[pointHit] ?? { id: pointHit };
+        return nodesById[pointHit] ?? { id: pointHit };
     }
 
     if (pointHit?.id) return pointHit;
@@ -201,7 +211,7 @@ function startPendingSelectDrag(dispatcher, worldPoint, meta = {}) {
 }
 
 function buildPendingMovePayload(runtimeState, startPointer, hitNodeId, additive = false) {
-    const nodesById = runtimeState?.nodes ?? {};
+    const nodesById = getToolNodes(runtimeState);
     const currentSelection = Array.from(runtimeState?.selection?.ids ?? []);
     const nextSelection = resolveNextMoveSelection({
         additive,
@@ -263,7 +273,7 @@ export function dispatchMoveDragStart({
         return false;
     }
 
-    const nodesById = runtimeState?.nodes ?? {};
+    const nodesById = getToolNodes(runtimeState);
     const currentSelection = Array.from(runtimeState?.selection?.ids ?? []);
     const nextSelection = resolveNextMoveSelection({
         additive,
@@ -499,7 +509,7 @@ function moveToolHandler(input, context) {
     if (!runtimeState || !dispatcher || !worldPoint) return null;
 
     const drag = runtimeState?.interaction?.drag ?? null;
-    const nodesById = runtimeState?.nodes ?? {};
+    const nodesById = getToolNodes(runtimeState);
 
     if (input.type === 'pointerdown') {
         let hit = resolvePrimaryHit(runtimeState, worldPoint, input.event, input.targetNodeId);
@@ -682,7 +692,7 @@ function resizeToolHandler(input, context) {
         const nodeId = input.targetNodeId ?? null;
         if (!handle || !nodeId) return null;
 
-        const node = runtimeState?.nodes?.[nodeId];
+        const node = getToolNodes(runtimeState)?.[nodeId];
         if (!node) return null;
 
         const originBounds = getNodeRect(node);
@@ -767,7 +777,7 @@ function rotateToolHandler(input, context) {
         const nodeId = input.targetNodeId ?? null;
         if (!nodeId) return null;
 
-        const node = runtimeState?.nodes?.[nodeId];
+        const node = getToolNodes(runtimeState)?.[nodeId];
         if (!node) return null;
 
         const bounds = getNodeRect(node);
@@ -798,7 +808,7 @@ function rotateToolHandler(input, context) {
 
         const nodeId = Array.isArray(drag.nodeIds) ? drag.nodeIds[0] : null;
         if (!nodeId) return null;
-        const node = runtimeState?.nodes?.[nodeId];
+        const node = getToolNodes(runtimeState)?.[nodeId];
         if (!node) return null;
 
         const nextDragState = {

@@ -13,6 +13,12 @@ describe('runAnimationPreview (illusion only)', () => {
   beforeEach(() => {
     dispatcher.hydrateRuntimeState({
       document: {
+        sceneGraph: {
+          rootIds: ['nodeA'],
+          nodes: {
+            nodeA: { id: 'nodeA', type: 'frame', children: [], opacity: 0.2 },
+          },
+        },
         motion: {
           clips: {
             clip1: {
@@ -27,13 +33,9 @@ describe('runAnimationPreview (illusion only)', () => {
           },
         },
       },
-      nodes: {
-        nodeA: { opacity: 0.2 },
-      },
-      rootIds: ['nodeA'],
     }, { animate: false });
 
-    useAnimatedRuntimeStore.setState({ nodes: {}, rootIds: [] }, false);
+    useAnimatedRuntimeStore.setState({ previewNodes: {} }, false);
   });
 
   it('writes only to animated store', () => {
@@ -48,7 +50,7 @@ describe('runAnimationPreview (illusion only)', () => {
     const animated = useAnimatedRuntimeStore.getState();
 
     assert.deepEqual(after, before);
-    assert.notEqual(animated.nodes.nodeA.opacity, undefined);
+    assert.notEqual(animated.previewNodes.nodeA.opacity, undefined);
   });
 
   it('cancel clears preview state', () => {
@@ -60,7 +62,7 @@ describe('runAnimationPreview (illusion only)', () => {
     preview.cancel();
 
     const animated = useAnimatedRuntimeStore.getState();
-    assert.deepEqual(animated.nodes, {});
+    assert.deepEqual(animated.previewNodes, {});
   });
 
   it('does not alter runtime nodes after cancel', () => {
@@ -72,6 +74,6 @@ describe('runAnimationPreview (illusion only)', () => {
     preview.cancel();
 
     const runtime = getRuntimeState();
-    assert.equal(runtime.nodes.nodeA.opacity, 0.2);
+    assert.equal(runtime.document.sceneGraph.nodes.nodeA.opacity, 0.2);
   });
 });

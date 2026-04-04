@@ -13,10 +13,10 @@ import { EventTypes } from '@/core/events/eventTypes.js';
 function resetStores() {
     __resetRuntimeStateInternal();
     useRuntimeStore.setState({
-        nodes: {},
-        rootIds: [],
+        viewNodes: {},
+        viewRootIds: [],
         workspace: null,
-        sceneGraph: null,
+        viewSceneGraph: null,
         scene: null,
         selection: { ids: [], primary: null, count: 0 },
         clipboard: { count: 0, hasData: false },
@@ -32,7 +32,7 @@ function resetStores() {
         events: [],
         cursorIndex: -1,
     });
-    useAnimatedRuntimeStore.setState({ nodes: {}, rootIds: [] }, false);
+    useAnimatedRuntimeStore.setState({ previewNodes: {}, cameraTransform: null }, false);
 }
 
 test.beforeEach(resetStores);
@@ -45,6 +45,7 @@ test('dispatcher assigns event ids and mirrors committed events into the runtime
         payload: {
             workspaceDef: {
                 id: 'graphic',
+                tools: ['select', 'shape'],
                 policy: {
                     mutation: 'allow',
                     capabilities: ['node:create'],
@@ -71,7 +72,9 @@ test('dispatcher assigns event ids and mirrors committed events into the runtime
     assert.match(events[0].id, /^main:\d+$/);
     assert.equal(events[0].type, EventTypes.NODE_CREATE);
     assert.ok(next.nodes['node-1']);
-    assert.deepEqual(useRuntimeStore.getState().rootIds, ['node-1']);
+    assert.deepEqual(useRuntimeStore.getState().viewRootIds, ['node-1']);
+    assert.equal(useRuntimeStore.getState().tools.activeTool, 'select');
+    assert.equal(useRuntimeStore.getState().tools.visibleTools.includes('select'), true);
 });
 
 test('dispatcher attaches created child nodes to their parent instead of promoting them to roots', async () => {
@@ -169,4 +172,47 @@ test('clipboard system events update runtime clipboard without entering persiste
         hasData: true,
     });
     assert.deepEqual(useRuntimeStore.getState().events, []);
+});
+
+test('style events write truth into document.sceneGraph through the dispatcher', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: {
+                id: 'graphic',
+                policy: {
+                    mutation: 'allow',
+                    capabilities: ['node:create', 'node:mutate'],
+                },
+            },
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.NODE_CREATE,
+        payload: {
+            node: {
+                id: 'styled-1',
+                type: 'frame',
+                children: [],
+                props: {
+                    transform: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 },
+                },
+            },
+        },
+    });
+
+    const next = await dispatcher.dispatch({
+        type: 'node.style.update',
+        payload: {
+            nodeId: 'styled-1',
+            style: { opacity: 0.4, fill: '#ff0000' },
+        },
+    });
+
+    assert.equal(next.document.sceneGraph.nodes['styled-1']?.style?.opacity, 0.4);
+    assert.equal(next.document.sceneGraph.nodes['styled-1']?.style?.fill, '#ff0000');
+    assert.equal(useRuntimeStore.getState().viewNodes['styled-1']?.style?.opacity, 0.4);
 });

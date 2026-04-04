@@ -48,6 +48,7 @@ export type SceneNode = {
     parentId?: NodeId;
     children: NodeId[];
     props: NodeProps;
+    style?: NodeStyle;
     layout?: LayoutBinding;
     motion?: MotionBinding;
     component?: ComponentBinding;
@@ -73,6 +74,7 @@ export type Transform = {
 export type LayoutBinding = Record<string, unknown>;
 export type MotionBinding = Record<string, unknown>;
 export type ComponentBinding = Record<string, unknown>;
+export type NodeStyle = Record<string, unknown>;
 
 export type LayoutSystem = {
     version: 1;
