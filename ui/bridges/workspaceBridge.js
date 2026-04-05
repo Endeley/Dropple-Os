@@ -2,11 +2,12 @@ import { canvasBus } from '../eventBus/canvasBus.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 
 let registered = false;
+let activeDispatch = null;
+let activeRegistrations = 0;
 
 export function registerWorkspaceBridge(dispatcher) {
-    if (registered) return () => {};
-    registered = true;
-    const dispatch = dispatcher?.dispatch;
+    activeDispatch = dispatcher?.dispatch ?? null;
+    activeRegistrations += 1;
 
     const onSetActive = (intent) => {
         const workspaceId = intent?.workspaceId ?? intent?.id;
@@ -17,8 +18,8 @@ export function registerWorkspaceBridge(dispatcher) {
             hasDef: Boolean(workspaceDef),
             hasPolicy: Boolean(workspaceDef?.policy),
         });
-        if (typeof dispatch === 'function') {
-            dispatch({
+        if (typeof activeDispatch === 'function') {
+            activeDispatch({
                 type: EventTypes.WORKSPACE_SET_ACTIVE,
                 payload: workspaceDef
                     ? { id: workspaceId, workspaceDef }
@@ -31,10 +32,17 @@ export function registerWorkspaceBridge(dispatcher) {
         }
     };
 
-    canvasBus.on('intent.workspace.setActive', onSetActive);
+    if (!registered) {
+        canvasBus.on('intent.workspace.setActive', onSetActive);
+        registered = true;
+    }
 
     return () => {
-        canvasBus.off('intent.workspace.setActive', onSetActive);
-        registered = false;
+        activeRegistrations = Math.max(0, activeRegistrations - 1);
+        if (activeRegistrations === 0) {
+            canvasBus.off('intent.workspace.setActive', onSetActive);
+            activeDispatch = null;
+            registered = false;
+        }
     };
 }

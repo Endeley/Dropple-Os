@@ -455,11 +455,15 @@ export default function ReadOnlyNodeRenderer({
             if (!newId) return;
 
             emit({
-              type: 'node.layout.move',
+              type: 'node.layout.bulk',
               payload: {
-                nodeId: newId,
-                x: node.layout.x + baseDx + dx,
-                y: node.layout.y + baseDy + dy,
+                updates: [
+                  {
+                    id: newId,
+                    x: node.layout.x + baseDx + dx,
+                    y: node.layout.y + baseDy + dy,
+                  },
+                ],
               },
             });
           });
@@ -485,11 +489,15 @@ export default function ReadOnlyNodeRenderer({
 
         origins.forEach((origin, nodeId) => {
           emit({
-            type: 'node.layout.move',
+            type: 'node.layout.bulk',
             payload: {
-              nodeId,
-              x: origin.x + baseDx + dx,
-              y: origin.y + baseDy + dy,
+              updates: [
+                {
+                  id: nodeId,
+                  x: origin.x + baseDx + dx,
+                  y: origin.y + baseDy + dy,
+                },
+              ],
             },
           });
         });
@@ -565,21 +573,29 @@ export default function ReadOnlyNodeRenderer({
 
         if (finalX !== originX || finalY !== originY) {
           emit({
-            type: 'node.layout.move',
+            type: 'node.layout.bulk',
             payload: {
-              nodeId: resizingId,
-              x: Math.round(finalX),
-              y: Math.round(finalY),
+              updates: [
+                {
+                  id: resizingId,
+                  x: Math.round(finalX),
+                  y: Math.round(finalY),
+                },
+              ],
             },
           });
         }
 
         emit({
-          type: 'node.layout.resize',
+          type: 'node.layout.bulk',
           payload: {
-            nodeId: resizingId,
-            width: Math.round(finalWidth),
-            height: Math.round(finalHeight),
+            updates: [
+              {
+                id: resizingId,
+                width: Math.round(finalWidth),
+                height: Math.round(finalHeight),
+              },
+            ],
           },
         });
 

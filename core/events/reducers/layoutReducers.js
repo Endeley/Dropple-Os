@@ -31,6 +31,34 @@ function applyLayoutNodes(state, nextLayoutNodes) {
     };
 }
 
+function applyExplicitSizeToSizing(nextLayout, update = {}) {
+    const next = { ...nextLayout };
+
+    if (update.width != null) {
+        next.sizing = {
+            ...(next.sizing ?? {}),
+            width: {
+                ...(next.sizing?.width ?? {}),
+                mode: next.sizing?.width?.mode ?? 'fixed',
+                value: update.width,
+            },
+        };
+    }
+
+    if (update.height != null) {
+        next.sizing = {
+            ...(next.sizing ?? {}),
+            height: {
+                ...(next.sizing?.height ?? {}),
+                mode: next.sizing?.height?.mode ?? 'fixed',
+                value: update.height,
+            },
+        };
+    }
+
+    return next;
+}
+
 export function layoutReducers(state, event) {
     const { type, payload } = event;
     const sceneNodes = getSceneNodes(state);
@@ -52,61 +80,6 @@ export function layoutReducers(state, event) {
                 },
             }), {
                 nodeIds: [id],
-            });
-        }
-
-        case 'node.layout.move': {
-            if (process.env.NODE_ENV === 'development') {
-                console.warn('[DEPRECATED] node.layout.move -> use node.layout.bulk');
-            }
-
-            const { nodeId, x, y } = payload;
-
-            return layoutReducers(state, {
-                type: 'node.layout.bulk',
-                payload: {
-                    updates: [{ id: nodeId, x, y }],
-                },
-            });
-        }
-
-        case EventTypes.NODE_RESIZE: {
-            const { id, width, height } = payload;
-            const node = sceneNodes[id];
-            if (!node) return state;
-
-            const prevLayout = getLayoutEntry(state, id);
-
-            return markLayoutDirty(applyLayoutNodes(state, {
-                ...(getLayoutSystem(state)?.nodes ?? {}),
-                [id]: {
-                    ...prevLayout,
-                    width: width ?? prevLayout.width,
-                    height: height ?? prevLayout.height,
-                },
-            }), {
-                nodeIds: [id],
-            });
-        }
-
-        case 'node.layout.resize': {
-            const { nodeId, x, y, width, height } = payload;
-            const node = sceneNodes[nodeId];
-            if (!node) return state;
-
-            const prevLayout = getLayoutEntry(state, nodeId);
-
-            return markLayoutDirty(applyLayoutNodes(state, {
-                ...(getLayoutSystem(state)?.nodes ?? {}),
-                [nodeId]: {
-                    ...prevLayout,
-                    x: x ?? prevLayout.x,
-                    y: y ?? prevLayout.y,
-                    width: width ?? prevLayout.width,
-                    height: height ?? prevLayout.height,
-                },
-            }), {
-                nodeIds: [nodeId],
             });
         }
 
@@ -153,7 +126,7 @@ export function layoutReducers(state, event) {
                 if (update.width != null) nextLayout.width = update.width;
                 if (update.height != null) nextLayout.height = update.height;
 
-                nextLayoutNodes[nodeId] = nextLayout;
+                nextLayoutNodes[nodeId] = applyExplicitSizeToSizing(nextLayout, update);
             });
 
             return markLayoutDirty(applyLayoutNodes(state, nextLayoutNodes), {

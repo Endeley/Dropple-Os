@@ -1,12 +1,25 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { handleInputEvent } from '@/ui/bridges/inputEngineFacade.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions';
 import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
 import { resolveTargetNodeId } from '@/ui/interactions/resolveTargetNodeId.js';
 
-export function useCanvasInteractions({ getActiveToolId, getWorldPointFromEvent, getDefaultParentId }) {
+function setOverlayDebug(value) {
+  if (typeof document === 'undefined') return;
+  document.documentElement.dataset.droppleOverlayDebug = value;
+}
+
+export function useCanvasInteractions({
+  dispatcher = null,
+  getActiveToolId,
+  getWorldPointFromEvent,
+  getDefaultParentId,
+}) {
   const createSessionRef = useRef(null);
+  const overlaySessionRef = useRef(null);
+  const overlayCleanupRef = useRef(null);
+  const handleDownRef = useRef(null);
 
   const toWorldPoint = useCallback((e) => {
     if (typeof getWorldPointFromEvent === 'function') {
@@ -33,10 +46,111 @@ export function useCanvasInteractions({ getActiveToolId, getWorldPointFromEvent,
         resizeHandle: overrides?.resizeHandle ?? null,
       },
       {
+        dispatcher,
         tool,
       },
     );
-  }, [getActiveToolId, toWorldPoint]);
+  }, [dispatcher, getActiveToolId, toWorldPoint]);
+
+  const clearOverlaySession = useCallback(() => {
+    setOverlayDebug('idle');
+    overlaySessionRef.current = null;
+    if (typeof overlayCleanupRef.current === 'function') {
+      overlayCleanupRef.current();
+      overlayCleanupRef.current = null;
+    }
+  }, []);
+
+  const scheduleOverlaySessionClear = useCallback(() => {
+    if (typeof queueMicrotask === 'function') {
+      queueMicrotask(() => {
+        clearOverlaySession();
+      });
+      return;
+    }
+
+    setTimeout(() => {
+      clearOverlaySession();
+    }, 0);
+  }, [clearOverlaySession]);
+
+  const bindOverlayPointerSession = useCallback((event, overrides) => {
+    if (typeof window === 'undefined') return;
+
+    clearOverlaySession();
+
+    const session = {
+      pointerId: event.pointerId,
+      overrides,
+    };
+    overlaySessionRef.current = session;
+    setOverlayDebug(`${overrides?.tool ?? 'unknown'}:start`);
+
+    const handleMove = (nextEvent) => {
+      if (overlaySessionRef.current?.pointerId !== nextEvent.pointerId) return;
+      setOverlayDebug(`${overlaySessionRef.current?.overrides?.tool ?? 'unknown'}:pointermove`);
+      routePointerInput('pointermove', nextEvent, overlaySessionRef.current.overrides);
+    };
+
+    const handleEnd = (type) => (nextEvent) => {
+      if (overlaySessionRef.current?.pointerId !== nextEvent.pointerId) return;
+      routePointerInput(type, nextEvent, overlaySessionRef.current.overrides);
+      scheduleOverlaySessionClear();
+    };
+
+    const handlePointerUp = handleEnd('pointerup');
+    const handlePointerCancel = handleEnd('pointercancel');
+    const handleMouseMove = (nextEvent) => {
+      if (!overlaySessionRef.current) return;
+      setOverlayDebug(`${overlaySessionRef.current?.overrides?.tool ?? 'unknown'}:mousemove`);
+      routePointerInput('pointermove', nextEvent, overlaySessionRef.current.overrides);
+    };
+    const handleMouseUp = (nextEvent) => {
+      if (!overlaySessionRef.current) return;
+      setOverlayDebug(`${overlaySessionRef.current?.overrides?.tool ?? 'unknown'}:mouseup`);
+      routePointerInput('pointerup', nextEvent, overlaySessionRef.current.overrides);
+      scheduleOverlaySessionClear();
+    };
+
+    window.addEventListener('pointermove', handleMove, true);
+    window.addEventListener('pointerup', handlePointerUp, true);
+    window.addEventListener('pointercancel', handlePointerCancel, true);
+    window.addEventListener('mousemove', handleMouseMove, true);
+    window.addEventListener('mouseup', handleMouseUp, true);
+
+    overlayCleanupRef.current = () => {
+      window.removeEventListener('pointermove', handleMove, true);
+      window.removeEventListener('pointerup', handlePointerUp, true);
+      window.removeEventListener('pointercancel', handlePointerCancel, true);
+      window.removeEventListener('mousemove', handleMouseMove, true);
+      window.removeEventListener('mouseup', handleMouseUp, true);
+    };
+  }, [clearOverlaySession, dispatcher, routePointerInput, scheduleOverlaySessionClear, toWorldPoint]);
+
+  useEffect(() => () => {
+    clearOverlaySession();
+  }, [clearOverlaySession]);
+
+  const isDuplicateHandleDown = useCallback((event, key) => {
+    const previous = handleDownRef.current;
+    const current = {
+      key,
+      type: event?.type ?? null,
+      clientX: event?.clientX ?? null,
+      clientY: event?.clientY ?? null,
+      timeStamp: Number(event?.timeStamp ?? 0),
+    };
+
+    handleDownRef.current = current;
+
+    if (!previous) return false;
+    if (current.type !== 'mousedown') return false;
+    if (previous.type !== 'pointerdown') return false;
+    if (previous.key !== current.key) return false;
+    if (previous.clientX !== current.clientX || previous.clientY !== current.clientY) return false;
+
+    return Math.abs(current.timeStamp - previous.timeStamp) < 64;
+  }, []);
 
   const onPointerDown = useCallback((e) => {
     if (e.defaultPrevented) return;
@@ -69,6 +183,10 @@ export function useCanvasInteractions({ getActiveToolId, getWorldPointFromEvent,
     if (e.defaultPrevented) return;
     e.stopPropagation();
 
+    if (overlaySessionRef.current) {
+      return;
+    }
+
     if (createSessionRef.current) {
       createSessionRef.current = {
         ...createSessionRef.current,
@@ -83,6 +201,10 @@ export function useCanvasInteractions({ getActiveToolId, getWorldPointFromEvent,
   const onPointerUp = useCallback((e) => {
     if (e.defaultPrevented) return;
     e.stopPropagation();
+
+    if (overlaySessionRef.current) {
+      return;
+    }
 
     if (createSessionRef.current) {
       const { start, current, nodeType, tool } = createSessionRef.current;
@@ -108,6 +230,7 @@ export function useCanvasInteractions({ getActiveToolId, getWorldPointFromEvent,
             parentId,
           },
           {
+            dispatcher,
             tool,
             fallbackHandler() {
               nodeCreateIntent({
@@ -143,6 +266,10 @@ export function useCanvasInteractions({ getActiveToolId, getWorldPointFromEvent,
       e.stopPropagation();
     }
 
+    if (overlaySessionRef.current) {
+      return;
+    }
+
     if (!createSessionRef.current) {
       routePointerInput('pointercancel', e);
     }
@@ -152,11 +279,32 @@ export function useCanvasInteractions({ getActiveToolId, getWorldPointFromEvent,
   }, [routePointerInput]);
 
   const onResizeHandlePointerDown = useCallback((e, { nodeId, handle }) => {
-    if (e.defaultPrevented) return;
     e.preventDefault();
     e.stopPropagation();
-    e.currentTarget.setPointerCapture?.(e.pointerId);
-    routePointerInput('pointerdown', e, {
+    if (isDuplicateHandleDown(e, `resize:${nodeId}:${handle}`)) return;
+    const overrides = {
+      tool: 'resize',
+      targetNodeId: nodeId,
+      resizeHandle: handle,
+    };
+    routePointerInput('pointerdown', e, overrides);
+    bindOverlayPointerSession(e, overrides);
+  }, [bindOverlayPointerSession, isDuplicateHandleDown, routePointerInput]);
+
+  const onResizeHandlePointerMove = useCallback((e, { nodeId, handle }) => {
+    e.preventDefault();
+    e.stopPropagation();
+    routePointerInput('pointermove', e, {
+      tool: 'resize',
+      targetNodeId: nodeId,
+      resizeHandle: handle,
+    });
+  }, [routePointerInput]);
+
+  const onResizeHandlePointerUp = useCallback((e, { nodeId, handle, type = 'pointerup' }) => {
+    e.preventDefault();
+    e.stopPropagation();
+    routePointerInput(type, e, {
       tool: 'resize',
       targetNodeId: nodeId,
       resizeHandle: handle,
@@ -164,15 +312,16 @@ export function useCanvasInteractions({ getActiveToolId, getWorldPointFromEvent,
   }, [routePointerInput]);
 
   const onRotateHandlePointerDown = useCallback((e, { nodeId }) => {
-    if (e.defaultPrevented) return;
     e.preventDefault();
     e.stopPropagation();
-    e.currentTarget.setPointerCapture?.(e.pointerId);
-    routePointerInput('pointerdown', e, {
+    if (isDuplicateHandleDown(e, `rotate:${nodeId}`)) return;
+    const overrides = {
       tool: 'rotate',
       targetNodeId: nodeId,
-    });
-  }, [routePointerInput]);
+    };
+    routePointerInput('pointerdown', e, overrides);
+    bindOverlayPointerSession(e, overrides);
+  }, [bindOverlayPointerSession, isDuplicateHandleDown, routePointerInput]);
 
   return {
     onPointerDown,
@@ -180,6 +329,8 @@ export function useCanvasInteractions({ getActiveToolId, getWorldPointFromEvent,
     onPointerUp,
     onPointerCancel,
     onResizeHandlePointerDown,
+    onResizeHandlePointerMove,
+    onResizeHandlePointerUp,
     onRotateHandlePointerDown,
   };
 }

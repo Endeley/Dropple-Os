@@ -4,7 +4,10 @@ import '@/ui/styles/uiux.css';
 import { useMemo } from 'react';
 import { useWorkspaceViewState } from '@/runtime/projection';
 import { useToolStore } from '@/ui/state/useToolStore.js';
-import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions.js';
+import {
+  getVisibleToolsForWorkspace,
+  TOOL_DEFINITION_BY_ID,
+} from '@/ui/tools/toolDefinitions.js';
 import { canvasBus } from '@/ui/eventBus/canvasBus.js';
 
 const TOOL_ICONS = {
@@ -78,7 +81,13 @@ function ToolButton({ label, id, active, onSelect }) {
 export function UIUXToolRail() {
   const workspaceId = useWorkspaceViewState((state) => state.id) || 'uiux';
   const activeTool = useToolStore((s) => s.activeTool);
-  const tools = useToolStore((s) => s.visibleTools);
+  const runtimeTools = useToolStore((s) => s.visibleTools);
+  const tools = useMemo(() => {
+    if (Array.isArray(runtimeTools) && runtimeTools.length > 0) {
+      return runtimeTools;
+    }
+    return getVisibleToolsForWorkspace({ workspaceId });
+  }, [runtimeTools, workspaceId]);
   const grouped = useMemo(() => {
     const map = new Map();
     tools.forEach((toolId) => {

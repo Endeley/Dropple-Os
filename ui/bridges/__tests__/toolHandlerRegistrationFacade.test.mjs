@@ -537,6 +537,42 @@ test('resize tool pointerdown starts canonical resize drag with handle metadata'
     });
 });
 
+test('resize tool pointerdown accepts handle alias', () => {
+    const dispatched = [];
+    const dispatcher = {
+        dispatch(event) {
+            dispatched.push(event);
+        },
+    };
+
+    const result = resizeToolHandler(
+        {
+            type: 'pointerdown',
+            event: {},
+            worldPoint: { x: 40, y: 60 },
+            targetNodeId: 'a',
+            handle: 'se',
+        },
+        {
+            tool: 'resize',
+            dispatcher,
+            state: {
+                viewNodes: {
+                    a: { id: 'a', layout: { x: 10, y: 20, width: 30, height: 40 } },
+                },
+                interaction: { drag: null },
+            },
+        },
+    );
+
+    assert.deepEqual(result, { handled: true });
+    assert.equal(dispatched.length, 1);
+    assert.equal(dispatched[0]?.type, EventTypes.DRAG_START);
+    assert.equal(dispatched[0]?.payload?.type, 'resize');
+    assert.equal(dispatched[0]?.payload?.handle, 'se');
+    assert.deepEqual(dispatched[0]?.payload?.nodeIds, ['a']);
+});
+
 test('select tool pointerup delegates active resize drags to resize handler and ends drag', () => {
     const dispatched = [];
     const dispatcher = {
@@ -579,8 +615,20 @@ test('select tool pointerup delegates active resize drags to resize handler and 
     );
 
     assert.deepEqual(result, { handled: true });
-    assert.equal(dispatched.length, 1);
-    assert.equal(dispatched[0]?.type, EventTypes.DRAG_END);
+    assert.equal(dispatched.length, 2);
+    assert.equal(dispatched[0]?.type, 'node.layout.bulk');
+    assert.deepEqual(dispatched[0]?.payload, {
+        updates: [
+            {
+                id: 'a',
+                x: 10,
+                y: 20,
+                width: 40,
+                height: 50,
+            },
+        ],
+    });
+    assert.equal(dispatched[1]?.type, EventTypes.DRAG_END);
 });
 
 test('rotate tool pointerdown starts canonical rotate drag with center metadata', () => {

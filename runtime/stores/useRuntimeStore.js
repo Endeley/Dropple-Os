@@ -51,6 +51,7 @@ export const useRuntimeStore = create((set) => ({
     shotId: null,
     shotTimeMs: null,
     evalStatus: 'NO_SHOT',
+    resizeDebug: '',
 
     // Event log mirror
     events: [],

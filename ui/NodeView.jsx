@@ -20,6 +20,8 @@ export function NodeView({ node, rect, zoomTier = 'normal' }) {
     return (
         <div
             data-node-id={node.id}
+            data-node-width={width}
+            data-node-height={height}
             style={{
                 position: 'absolute',
                 left,

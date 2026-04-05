@@ -10,8 +10,8 @@ import CanvasStage from '@/ui/layout/CanvasStage';
 import { WorkspaceCanvasRoot } from '@/ui/workspace/WorkspaceCanvasRoot.jsx';
 import { EducationToolbar } from '@/education/EducationToolbar';
 import ReviewToolbar from '@/review/ReviewToolbar';
-import { SelectionProvider, useSelection } from './SelectionContext';
-import { ModeProvider, useMode } from './ModeContext';
+import { SelectionProvider, useSelection } from '@/ui/workspace/shared/SelectionContext.jsx';
+import { ModeProvider, useMode } from '@/ui/workspace/shared/ModeContext.jsx';
 import { useKeyboardShortcuts } from '@/ui/interaction/interaction/useKeyboardShortcuts.js';
 import { getDesignStateAtCursor } from '@/core/persistence/index.js';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
@@ -31,7 +31,7 @@ import PresenceDots from '@/collab/PresenceDots';
 import { ExportGateOverlay } from '@/ui/export/ExportGateOverlay';
 import { getNodes } from '@/runtime/document/documentAdapter.js';
 
-function WorkspaceLayoutInner({
+function EditorWorkspaceLayoutInner({
   adapter,
   events,
   cursor,
@@ -345,7 +345,7 @@ function WorkspaceLayoutInner({
   );
 }
 
-export function WorkspaceLayout({
+export function EditorWorkspaceLayout({
   adapter,
   events,
   cursor,
@@ -374,11 +374,12 @@ export function WorkspaceLayout({
   reviewerId,
   presence,
   intents,
+  railOffset = 0,
 }) {
   return (
     <SelectionProvider>
       <ModeProvider value={adapter?.id || 'graphic'}>
-        <WorkspaceLayoutInner
+        <EditorWorkspaceLayoutInner
           adapter={adapter}
           events={events}
           cursor={cursor}
@@ -407,6 +408,7 @@ export function WorkspaceLayout({
           reviewerId={reviewerId}
           presence={presence}
           intents={intents}
+          railOffset={railOffset}
         />
       </ModeProvider>
     </SelectionProvider>

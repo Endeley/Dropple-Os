@@ -1,10 +1,13 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
 import { createNodeCreateBridgeEvent } from '@/ui/bridges/intentEventFacade.js';
 
-let _unsub = null;
+let registered = false;
+let activeDispatch = null;
+let activeRegistrations = 0;
 
 export function registerNodeCreateBridge(dispatch) {
-    if (_unsub) return _unsub;
+    activeDispatch = dispatch ?? null;
+    activeRegistrations += 1;
 
     const handler = (intent) => {
         console.log('BRIDGE RECEIVED:', intent);
@@ -18,13 +21,24 @@ export function registerNodeCreateBridge(dispatch) {
             );
         }
 
-        if (typeof dispatch === 'function') {
-            dispatch(result.event);
+        if (typeof activeDispatch === 'function') {
+            activeDispatch(result.event);
         } else {
             console.warn('[nodeCreateBridge] Dispatch not provided; skipping node create.');
         }
     };
 
-    _unsub = canvasBus.on('intent.node.create', handler);
-    return _unsub;
+    if (!registered) {
+        canvasBus.on('intent.node.create', handler);
+        registered = true;
+    }
+
+    return () => {
+        activeRegistrations = Math.max(0, activeRegistrations - 1);
+        if (activeRegistrations === 0) {
+            canvasBus.off('intent.node.create', handler);
+            activeDispatch = null;
+            registered = false;
+        }
+    };
 }

@@ -12,7 +12,7 @@ const GRID_LEVELS = [
 const DOT_MIN = 0.9;
 const DOT_MAX = 2.6;
 
-const OPACITY_MIN = 0.22;
+const OPACITY_MIN = 0.28;
 const OPACITY_MAX = 1;
 
 // 🔑 Critical clamps (THIS fixes smooth canvas)
@@ -25,9 +25,8 @@ const OVERSCAN_MAX = 60000;
 const MAJOR_FACTOR = 4;
 
 export function CanvasSurface({ surface, viewport, isDragging = false }) {
-    if (!surface || surface.type === 'smooth') return null;
-
     const { x = 0, y = 0, scale = 1 } = viewport ?? {};
+    const surfaceType = surface?.type ?? 'smooth';
 
     // LOD selection
     const idx = GRID_LEVELS.findIndex((l) => scale >= l.min);
@@ -80,6 +79,21 @@ export function CanvasSurface({ surface, viewport, isDragging = false }) {
         transition: 'opacity 120ms ease-out',
     });
 
+    const backgroundTint = (
+        <div
+            aria-hidden
+            style={{
+                position: 'absolute',
+                left: -overscan,
+                top: -overscan,
+                width,
+                height,
+                pointerEvents: 'none',
+                background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
+            }}
+        />
+    );
+
     function renderDots(spacingPx, layerOpacity) {
         return (
             <div
@@ -88,7 +102,7 @@ export function CanvasSurface({ surface, viewport, isDragging = false }) {
                     ...baseStyle(layerOpacity, dotOpacity),
 
                     backgroundImage: `radial-gradient(
-                        #94a3b8 ${dotRadius}px,
+                        rgba(100,116,139,0.72) ${dotRadius}px,
                         transparent ${dotRadius}px
                     )`,
                     backgroundSize: `${spacingPx}px ${spacingPx}px`,
@@ -107,8 +121,8 @@ export function CanvasSurface({ surface, viewport, isDragging = false }) {
                 style={{
                     ...baseStyle(layerOpacity, baseDotOpacity),
                     backgroundImage: `
-                        linear-gradient(#cbd5f5 1px, transparent 1px),
-                        linear-gradient(90deg, #cbd5f5 1px, transparent 1px)
+                        linear-gradient(rgba(148,163,184,0.58) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(148,163,184,0.58) 1px, transparent 1px)
                     `,
                     backgroundSize: `${spacingPx}px ${spacingPx}px`,
                     backgroundPosition: `${snapPx(-x * scale)}px ${snapPx(-y * scale)}px`,
@@ -128,7 +142,7 @@ export function CanvasSurface({ surface, viewport, isDragging = false }) {
                     width,
                     height,
                     pointerEvents: 'none',
-                    ...baseStyle(1, alpha * 0.25 * (emphasis ? emphasis.minor : 1)),
+                    ...baseStyle(1, alpha * 0.34 * (emphasis ? emphasis.minor : 1)),
                     backgroundImage: `
                         linear-gradient(
                             to right,
@@ -161,7 +175,7 @@ export function CanvasSurface({ surface, viewport, isDragging = false }) {
                     width,
                     height,
                     pointerEvents: 'none',
-                    ...baseStyle(1, alpha * 0.45 * (emphasis ? emphasis.major : 1)),
+                    ...baseStyle(1, alpha * 0.5 * (emphasis ? emphasis.major : 1)),
                     backgroundImage: `
                         linear-gradient(
                             to right,
@@ -183,7 +197,8 @@ export function CanvasSurface({ surface, viewport, isDragging = false }) {
 
     return (
         <>
-            {surface.type === 'dots' && (
+            {backgroundTint}
+            {surfaceType === 'dots' && (
                 <>
                     {/* Primary layer */}
                     {renderDots(spacing, next ? 1 - t : 1)}
@@ -199,13 +214,20 @@ export function CanvasSurface({ surface, viewport, isDragging = false }) {
                 </>
             )}
 
-            {surface.type === 'grid' && (
+            {surfaceType === 'grid' && (
                 <>
                     {/* Primary layer */}
                     {renderGrid(spacing, next ? 1 - t : 1)}
 
                     {/* Secondary layer (soft transition between scales) */}
                     {next && t > 0.15 && renderGrid(nextSpacing, t * 0.85)}
+                </>
+            )}
+
+            {surfaceType === 'smooth' && (
+                <>
+                    {renderDots(softClamp(28 * scale, 10, 60), 0.42)}
+                    {renderMajorGrid(softClamp(28 * scale, 10, 60), 0.16)}
                 </>
             )}
         </>

@@ -1,9 +1,9 @@
 'use client';
 
 import { mockLessons } from '@/marketplace/mockLessons';
-import { WorkspaceShell } from '@/ui/workspace/shared/WorkspaceShell';
 import { WorkspaceRoot } from '@/ui/workspace/root/WorkspaceRoot.jsx';
 import { normalizeEvents, snapshotToEvents } from '@/education/lessonEvents';
+import { WorkspaceShell } from '@/ui/workspace/shell/WorkspaceShell.jsx';
 
 export default function LessonPlaybackPage({ params }) {
   const lesson = mockLessons.find((l) => l.id === params.lessonId);

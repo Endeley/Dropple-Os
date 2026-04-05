@@ -5,6 +5,8 @@ import { createContext, useContext } from 'react';
 const CanvasContext = createContext({
     zoomTier: 'normal',
     onResizeHandlePointerDown: null,
+    onResizeHandlePointerMove: null,
+    onResizeHandlePointerUp: null,
     onRotateHandlePointerDown: null,
 });
 

@@ -19,6 +19,7 @@ import TimelinePanel from '@/ui/timeline/TimelinePanel.jsx';
 import { perfStart, perfEnd } from '@/ui/bridges/canvasRuntimeFacade.js';
 import { useWorkspaceViewState, useWorkspaceVisualState } from '@/runtime/projection';
 import { CanvasSurface } from '@/ui/canvas/surface/CanvasSurface.jsx';
+import { CanvasSurfaceSwitcher } from '@/ui/canvas/surface/CanvasSurfaceSwitcher.jsx';
 import { WorldOriginMarker } from '@/ui/canvas/WorldOriginMarker.jsx';
 import { computeCenteredViewport } from '@/ui/canvas/computeCenteredViewport.js';
 import { viewportIntent } from '@/ui/viewport/viewportIntent.js';
@@ -32,6 +33,7 @@ import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions';
 import { useCanvasInteractions } from '@/ui/interactions/useCanvasInteractions.js';
 import { resolveTargetNodeId } from '@/ui/interactions/resolveTargetNodeId.js';
 import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
+import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
 
 /** precision safety */
 const MIN_EFFECTIVE_ZOOM = 0.0005;
@@ -40,6 +42,43 @@ const REBASE_DISTANCE = 8000;
 
 function isSelectionModifierGesture(event) {
     return event?.shiftKey === true || event?.metaKey === true || event?.ctrlKey === true;
+}
+
+function isTransformHandleEventTarget(target) {
+    let current = target;
+
+    while (current && !(current instanceof Element)) {
+        current = current.parentNode;
+    }
+
+    return Boolean(
+        current?.closest?.(
+            '[data-testid="resize-handle"],[data-testid="rotate-handle"]',
+        ),
+    );
+}
+
+function isTransformHandleEvent(event) {
+    if (isTransformHandleEventTarget(event?.target)) {
+        return true;
+    }
+
+    if (
+        typeof document === 'undefined' ||
+        typeof document.elementsFromPoint !== 'function' ||
+        !Number.isFinite(event?.clientX) ||
+        !Number.isFinite(event?.clientY)
+    ) {
+        return false;
+    }
+
+    return document
+        .elementsFromPoint(event.clientX, event.clientY)
+        .some((element) =>
+            element?.closest?.(
+                '[data-testid="resize-handle"],[data-testid="rotate-handle"]',
+            ),
+        );
 }
 
 function screenToCanvasWorld(screenPoint, { viewport, worldOffset, cameraTransform }) {
@@ -71,6 +110,7 @@ function screenToCanvasWorld(screenPoint, { viewport, worldOffset, cameraTransfo
 
 export default function CanvasRoot({ workspaceId }) {
     perfStart('canvas.render');
+    const dispatcher = useDispatcher();
 
     const projectedWorkspaceId = useWorkspaceViewState((s) => s.id);
     const rootIds = useWorkspaceVisualState((s) => s.rootIds || []);
@@ -109,8 +149,11 @@ export default function CanvasRoot({ workspaceId }) {
         onPointerUp: onCanvasPointerUp,
         onPointerCancel: onCanvasPointerCancel,
         onResizeHandlePointerDown,
+        onResizeHandlePointerMove,
+        onResizeHandlePointerUp,
         onRotateHandlePointerDown,
     } = useCanvasInteractions({
+        dispatcher,
         getActiveToolId: (event) => {
             const toolDef = TOOL_DEFINITION_BY_ID[activeTool];
             const targetNodeId = resolveTargetNodeId(event?.target ?? null, {
@@ -204,6 +247,9 @@ export default function CanvasRoot({ workspaceId }) {
     }
 
     function handleCanvasHostPointerDown(e) {
+        if (isTransformHandleEvent(e)) {
+            return;
+        }
         handlePointerDown(e);
         if (panRef.current.active) return;
         onCanvasPointerDown(e);
@@ -315,7 +361,15 @@ export default function CanvasRoot({ workspaceId }) {
     perfEnd('canvas.render');
 
     return (
-        <CanvasProvider value={{ zoomTier, onResizeHandlePointerDown, onRotateHandlePointerDown }}>
+        <CanvasProvider
+            value={{
+                zoomTier,
+                onResizeHandlePointerDown,
+                onResizeHandlePointerMove,
+                onResizeHandlePointerUp,
+                onRotateHandlePointerDown,
+            }}
+        >
             <CanvasHost
                 ref={containerRef}
                 onMount={handleCanvasMount}
@@ -345,6 +399,15 @@ export default function CanvasRoot({ workspaceId }) {
 
                 {/* 🧭 UI */}
                 <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: 14,
+                            left: 14,
+                            zIndex: 40,
+                        }}>
+                        <CanvasSurfaceSwitcher />
+                    </div>
                     <RemoteCursors />
                     {workspace?.capabilities?.timeline && (
                         <div style={{ pointerEvents: 'auto' }}>

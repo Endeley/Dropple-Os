@@ -55,6 +55,8 @@ export function getRootIds(runtimeState) {
 function overlayDocumentLayout(node, layoutNode, computedLayout, computedSceneNode) {
     if (!node || (!layoutNode && !computedLayout && !computedSceneNode)) return node;
 
+    const transform = node?.props?.transform ?? {};
+
     const nextLayout = {
         ...(node?.layout ?? {}),
         ...(layoutNode ?? {}),
@@ -70,8 +72,8 @@ function overlayDocumentLayout(node, layoutNode, computedLayout, computedSceneNo
     if (computedLayout) {
         nextLayout.x = computedLayout.x;
         nextLayout.y = computedLayout.y;
-        nextLayout.width = computedLayout.width;
-        nextLayout.height = computedLayout.height;
+        nextLayout.width = nextLayout.width ?? computedLayout.width;
+        nextLayout.height = nextLayout.height ?? computedLayout.height;
     }
 
     if (computedSceneNode) {
@@ -83,18 +85,20 @@ function overlayDocumentLayout(node, layoutNode, computedLayout, computedSceneNo
 
     return {
         ...node,
-        x: computedLayout?.x ?? layoutNode?.x ?? computedSceneNode?.x ?? node?.x,
-        y: computedLayout?.y ?? layoutNode?.y ?? computedSceneNode?.y ?? node?.y,
+        x: computedLayout?.x ?? layoutNode?.x ?? computedSceneNode?.x ?? node?.x ?? transform.x,
+        y: computedLayout?.y ?? layoutNode?.y ?? computedSceneNode?.y ?? node?.y ?? transform.y,
         width:
-            computedLayout?.width ??
             layoutNode?.width ??
+            computedLayout?.width ??
             computedSceneNode?.width ??
-            node?.width,
+            node?.width ??
+            transform.width,
         height:
-            computedLayout?.height ??
             layoutNode?.height ??
+            computedLayout?.height ??
             computedSceneNode?.height ??
-            node?.height,
+            node?.height ??
+            transform.height,
         layout: nextLayout,
     };
 }

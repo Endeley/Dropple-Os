@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo } from 'react';
 import { useWorkspaceVisualState } from '@/runtime/projection';
+import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { nodeUpdateIntent } from '@/ui/inspector/nodeUpdateIntent.js';
 import { InspectorSection } from '@/ui/inspector/InspectorSection.jsx';
 import { NodeHeaderPanel } from '@/ui/inspector/NodeHeaderPanel.jsx';
@@ -28,6 +29,7 @@ export function UIUXInspectorPanel() {
 
   const parent = node?.parentId ? nodes[node.parentId] : null;
   const childCount = node?.children?.length ?? 0;
+  const resizeDebug = useRuntimeStore((s) => s.resizeDebug ?? '');
 
   const orderIndex = useMemo(() => {
     if (!node) return null;
@@ -81,6 +83,20 @@ export function UIUXInspectorPanel() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+      {resizeDebug ? (
+        <div
+          data-testid="resize-debug"
+          style={{
+            fontSize: 11,
+            color: '#991b1b',
+            background: '#fee2e2',
+            border: '1px solid #fecaca',
+            borderRadius: 6,
+            padding: '6px 8px',
+          }}>
+          {resizeDebug}
+        </div>
+      ) : null}
       <InspectorSection title="Node Header">
         <NodeHeaderPanel
           node={node}

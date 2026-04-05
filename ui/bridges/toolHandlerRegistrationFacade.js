@@ -31,6 +31,7 @@ import { selectNode } from '@/runtime/selection/selectNode.js';
 import { toggleNode } from '@/runtime/selection/toggleNode.js';
 import { resolveTargetNodeId } from '@/ui/interactions/resolveTargetNodeId.js';
 import { getNodes } from '@/runtime/document/documentAdapter.js';
+import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 
 const MOVE_DRAG_THRESHOLD = 3;
 
@@ -40,6 +41,10 @@ function getToolNodes(runtimeState) {
         return canonicalNodes;
     }
     return runtimeState?.viewNodes ?? {};
+}
+
+function setResizeDebug(value) {
+    useRuntimeStore.setState({ resizeDebug: value });
 }
 
 function normalizeAngle(angle) {
@@ -168,6 +173,40 @@ function resolveDirectTargetNodeId(element) {
     }
 
     return null;
+}
+
+function isTransformHandleInput(input) {
+    const target = input?.event?.target ?? null;
+    let current = target;
+
+    while (current && !(current instanceof Element)) {
+        current = current.parentNode;
+    }
+
+    if (
+        current?.closest?.(
+            '[data-testid="resize-handle"],[data-testid="rotate-handle"]',
+        )
+    ) {
+        return true;
+    }
+
+    if (
+        typeof document === 'undefined' ||
+        typeof document.elementsFromPoint !== 'function' ||
+        !Number.isFinite(input?.event?.clientX) ||
+        !Number.isFinite(input?.event?.clientY)
+    ) {
+        return false;
+    }
+
+    return document
+        .elementsFromPoint(input.event.clientX, input.event.clientY)
+        .some((element) =>
+            element?.closest?.(
+                '[data-testid="resize-handle"],[data-testid="rotate-handle"]',
+            ),
+        );
 }
 
 function isSelectionRectPastThreshold(bounds) {
@@ -345,6 +384,9 @@ function selectToolHandler(input, context) {
     }
 
     if (input.type === 'pointerdown') {
+        if (isTransformHandleInput(input)) {
+            return { handled: true };
+        }
         const hit = resolvePrimaryHit(runtimeState, worldPoint, input.event, input.targetNodeId);
         const directHitNodeId = resolveDirectTargetNodeId(input.event?.target ?? null);
         const additive = input.event?.shiftKey ?? input.modifiers?.shift ?? false;
@@ -688,8 +730,9 @@ function resizeToolHandler(input, context) {
     if (input.type === 'pointerdown') {
         if (selectedIds.length > 1) return null;
 
-        const handle = input.resizeHandle ?? null;
-        const nodeId = input.targetNodeId ?? null;
+        const handle = input.resizeHandle ?? input.handle ?? null;
+        const hit = resolvePrimaryHit(runtimeState, worldPoint, input.event, input.targetNodeId);
+        const nodeId = hit?.id ?? input.targetNodeId ?? null;
         if (!handle || !nodeId) return null;
 
         const node = getToolNodes(runtimeState)?.[nodeId];
@@ -710,6 +753,7 @@ function resizeToolHandler(input, context) {
                 originBounds,
             },
         });
+        setResizeDebug(`start:${nodeId}:${handle}`);
 
         return { handled: true };
     }
@@ -726,7 +770,9 @@ function resizeToolHandler(input, context) {
         };
         const rawDelta = computeRawDragDelta(nextDragState);
         const nextBounds = computeResizeDelta(drag, rawDelta);
-        if (!nextBounds) return null;
+        if (nextBounds) {
+            setResizeDebug(`move:${nodeId}:${Math.round(nextBounds.width)}x${Math.round(nextBounds.height)}`);
+        }
 
         dispatcher.dispatch({
             type: EventTypes.DRAG_UPDATE,
@@ -736,24 +782,39 @@ function resizeToolHandler(input, context) {
             },
         });
 
-        dispatcher.dispatch({
-            type: 'node.layout.bulk',
-            payload: {
-                updates: [{
-                    id: nodeId,
-                    x: nextBounds.x,
-                    y: nextBounds.y,
-                    width: nextBounds.width,
-                    height: nextBounds.height,
-                }],
-            },
-        });
-
         return { handled: true };
     }
 
     if (input.type === 'pointerup' || input.type === 'pointercancel') {
         if (!drag?.active || drag.type !== 'resize') return null;
+
+        const nodeId = Array.isArray(drag.nodeIds) ? drag.nodeIds[0] : null;
+        if (!nodeId) return null;
+
+        const nextDragState = {
+            ...drag,
+            currentPointer: worldPoint,
+        };
+        const rawDelta = computeRawDragDelta(nextDragState);
+        const nextBounds = computeResizeDelta(drag, rawDelta);
+        if (!nextBounds) return null;
+        setResizeDebug(`commit:${nodeId}:${Math.round(nextBounds.width)}x${Math.round(nextBounds.height)}`);
+
+        dispatcher.dispatch({
+            type: 'node.layout.bulk',
+            payload: {
+                updates: [
+                    {
+                        id: nodeId,
+                        x: nextBounds.x,
+                        y: nextBounds.y,
+                        width: nextBounds.width,
+                        height: nextBounds.height,
+                    },
+                ],
+            },
+        });
+
         dispatcher.dispatch({ type: EventTypes.DRAG_END });
         return { handled: true };
     }

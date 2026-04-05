@@ -1,25 +1,33 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
 let registered = false;
+let activeDispatch = null;
+let activeRegistrations = 0;
 
 export function registerNodeUpdateBridge(dispatcher) {
-    if (registered) return () => {};
-    registered = true;
-    const dispatch = dispatcher?.dispatch;
+    activeDispatch = dispatcher?.dispatch ?? null;
+    activeRegistrations += 1;
 
     const handler = (intent) => {
         const event = intent?.event;
         if (!event?.type || !event.type.startsWith('node.')) return;
-        if (typeof dispatch === 'function') {
-            dispatch(event);
+        if (typeof activeDispatch === 'function') {
+            activeDispatch(event);
         } else {
             console.warn('[nodeUpdateBridge] Dispatcher not provided; skipping node update.');
         }
     };
 
-    canvasBus.on('intent.node.update', handler);
+    if (!registered) {
+        canvasBus.on('intent.node.update', handler);
+        registered = true;
+    }
 
     return () => {
-        canvasBus.off('intent.node.update', handler);
-        registered = false;
+        activeRegistrations = Math.max(0, activeRegistrations - 1);
+        if (activeRegistrations === 0) {
+            canvasBus.off('intent.node.update', handler);
+            activeDispatch = null;
+            registered = false;
+        }
     };
 }

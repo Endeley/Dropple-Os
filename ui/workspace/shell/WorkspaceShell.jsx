@@ -12,7 +12,6 @@ import { useWorkspaceNavigation } from '@/ui/workspace/shared/useWorkspaceNaviga
 
 // 🔹 UX Workspace (read-only UI)
 import { UXWorkspaceShell } from '@/ui/workspace/ux/UXWorkspaceShell';
-import { UIUXAuthoringShell } from '@/ui/workspace/ux/UIUXAuthoringShell.jsx';
 
 /**
  * The authoritative editor surface for a workspace mode.
@@ -27,8 +26,7 @@ import { UIUXAuthoringShell } from '@/ui/workspace/ux/UIUXAuthoringShell.jsx';
  */
 export function WorkspaceShell({ workspace, modeId = null, workspaceContext = null }) {
     const capabilities = workspace.capabilities || {};
-    const isUX =
-        workspace.profile === 'ux-validation' || workspace.profile === 'uiux-authoring';
+    const isUX = workspace.profile === 'ux-validation';
     const { goToMode, goToWorkspace } = useWorkspaceNavigation();
     const activeWorkspace = workspaceContext?.workspace ?? 'design';
     const activeMode = workspaceContext?.mode ?? modeId ?? workspace.id;
@@ -109,11 +107,7 @@ export function WorkspaceShell({ workspace, modeId = null, workspaceContext = nu
                     /* ────────────────────────────────────────────── */
                     /* UX WORKSPACE                                   */
                     /* ────────────────────────────────────────────── */
-                    workspace.profile === 'uiux-authoring' ? (
-                        <UIUXAuthoringShell profile={workspace.profile} />
-                    ) : (
-                        <UXWorkspaceShell profile={workspace.profile} />
-                    )
+                    <UXWorkspaceShell profile={workspace.profile} />
                 ) : (
                     /* ────────────────────────────────────────────── */
                     /* EDITOR WORKSPACE                               */

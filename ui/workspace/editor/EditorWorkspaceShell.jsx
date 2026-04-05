@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { WorkspaceLayout } from '../shared/WorkspaceLayout.jsx';
+import { EditorWorkspaceLayout } from './EditorWorkspaceLayout.jsx';
 import { GridProvider } from '../shared/GridContext.jsx';
 import { ClipboardProvider } from '../shared/ClipboardContext.jsx';
 import { applyAutoLayoutIfNeeded } from '../shared/useAutoLayoutCommit.js';
@@ -169,7 +169,7 @@ export function EditorWorkspaceShell({
         }
 
         const last = events[events.length - 1];
-        if (!new Set(['node.layout.setAutoLayout', 'node.layout.clearAutoLayout', 'node.layout.resize', 'node.layout.rotate', 'node.create', 'node.delete', 'node.children.reorder']).has(last.type)) return;
+        if (!new Set(['node.layout.setAutoLayout', 'node.layout.clearAutoLayout', 'node.layout.bulk', 'node.layout.rotate', 'node.create', 'node.delete', 'node.children.reorder']).has(last.type)) return;
 
         applyAutoLayoutIfNeeded({
             state: getDesignStateAtCursor({
@@ -245,7 +245,7 @@ export function EditorWorkspaceShell({
                     />
                 </div>
             )}
-            <WorkspaceLayout
+            <EditorWorkspaceLayout
                 adapter={adapter}
                 events={events}
                 cursor={cursor}

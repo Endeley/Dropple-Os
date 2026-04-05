@@ -13,6 +13,7 @@ import AnnotationPanel from '@/review/panels/AnnotationPanel';
 import CurveEditorPanel from '@/ui/animation/curves/CurveEditorPanel';
 import SharingPanel from '@/collaboration/panels/SharingPanel';
 import { getNode } from '@/runtime/document/documentAdapter.js';
+import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 
 export default function RightPanel({
   panels = [],
@@ -34,6 +35,7 @@ export default function RightPanel({
   const selectedId =
     selectedIds && selectedIds.size === 1 ? Array.from(selectedIds)[0] : null;
   const node = selectedId ? getNode(state, selectedId) : null;
+  const resizeDebug = useRuntimeStore((s) => s.resizeDebug ?? '');
 
   const showInspector = panels.includes('InspectorPanel') && !!node;
   const showAutoLayout = panels.includes('AutoLayoutPanel') && !!node;
@@ -67,6 +69,22 @@ export default function RightPanel({
     >
       {showInspector && (
         <Panel title="Inspector">
+          {resizeDebug ? (
+            <div
+              data-testid="resize-debug"
+              style={{
+                fontSize: 11,
+                color: '#991b1b',
+                background: '#fee2e2',
+                border: '1px solid #fecaca',
+                borderRadius: 6,
+                padding: '6px 8px',
+                marginBottom: 8,
+              }}
+            >
+              {resizeDebug}
+            </div>
+          ) : null}
           <LayoutInspector node={node} emit={emit} />
         </Panel>
       )}

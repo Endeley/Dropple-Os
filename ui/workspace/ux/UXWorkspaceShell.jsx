@@ -3,9 +3,8 @@ import '@/ui/styles/uiux.css';
 import { useCallback } from 'react';
 import { UIUXTopBar } from './UIUXTopBar.jsx';
 import { UIUXToolRail } from './UIUXToolRail.jsx';
-import { UIUXCanvasStage } from './UIUXCanvasStage.jsx';
+import { WorkspaceCanvasRoot } from '@/ui/workspace/WorkspaceCanvasRoot.jsx';
 import { PanelRenderer } from '@/ui/workspace/shell/PanelRenderer.jsx';
-import { WorkspaceSessionsRoot } from '@/ui/workspace/root/DispatcherProvider/Sessions/WorkspaceSessionsRoot.jsx';
 import { useWorkspaceVisualState } from '@/runtime/projection';
 
 /**
@@ -40,7 +39,6 @@ import { useWorkspaceVisualState } from '@/runtime/projection';
 
 /**
  * DO NOT IMPORT:
- * - WorkspaceLayout
  * - Toolbar / PropertyBar / TimelineBar
  * - emit / MessageBus / canvasBus
  * - persistence, import, export modules
@@ -89,10 +87,11 @@ export function UXWorkspaceShell({ profile = 'ux-validation', modeId = 'uiux' })
       <UIUXTopBar />
       <div className="uiux-main">
         <UIUXToolRail />
-        <UIUXCanvasStage profile={profile} />
+        <main className="uiux-canvas-stage">
+          <WorkspaceCanvasRoot workspaceId={modeId} />
+        </main>
         <PanelRenderer workspaceId="uiux" node={node} emit={emit} />
       </div>
-      <WorkspaceSessionsRoot modeId={modeId} />
     </div>
   );
 }
