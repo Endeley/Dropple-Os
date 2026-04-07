@@ -7,6 +7,14 @@ export function useViewerControls(defaults = {}) {
   const [bg, setBg] = useState(defaults.bg ?? 'light');
   const [fullscreen, setFullscreen] = useState(false);
 
+  useEffect(() => {
+    setZoom(defaults.zoom ?? 1);
+  }, [defaults.zoom]);
+
+  useEffect(() => {
+    setBg(defaults.bg ?? 'light');
+  }, [defaults.bg]);
+
   const zoomIn = () => setZoom((z) => Math.min(4, +(z + 0.1).toFixed(2)));
   const zoomOut = () => setZoom((z) => Math.max(0.1, +(z - 0.1).toFixed(2)));
   const resetZoom = () => setZoom(1);

@@ -1,9 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import CanvasStage from '@/ui/layout/CanvasStage';
+import { useEffect, useMemo, useState } from 'react';
 import TimelineBar from '@/ui/layout/TimelineBar';
-import { WorkspaceRoot } from '@/ui/workspace/root/WorkspaceRoot.jsx';
+import { WorkspaceCanvasRoot } from '@/ui/workspace/WorkspaceCanvasRoot.jsx';
 import { GridProvider } from '@/ui/workspace/shared/GridContext';
 import { ModeProvider } from '@/ui/workspace/shared/ModeContext';
 import { hydrateLocalDocumentSnapshot } from '@/infrastructure/persistence/localDocumentSchema.js';
@@ -11,6 +10,13 @@ import { useViewerControls } from '@/viewer/useViewerControls';
 import { ViewerToolbar } from '@/viewer/ViewerToolbar';
 import { ViewerStage } from '@/viewer/ViewerStage';
 import { parseViewerParams } from '@/viewer/parseViewerParams';
+
+const DEFAULT_VIEWER_PARAMS = {
+  zoom: 1,
+  bg: 'light',
+  timeline: true,
+  controls: true,
+};
 
 function decodeSnapshot(payload) {
   if (!payload) return null;
@@ -25,20 +31,24 @@ function decodeSnapshot(payload) {
 }
 
 export default function ViewerPage() {
-  const initialSnapshot = useMemo(() => {
-    if (typeof window === 'undefined') return null;
+  const [snapshot, setSnapshot] = useState(null);
+  const [params, setParams] = useState(DEFAULT_VIEWER_PARAMS);
+  const [cursorIndex, setCursorIndex] = useState(-1);
+
+  useEffect(() => {
     const hash = window.location.hash.slice(1);
     const [payload] = hash.split('?');
-    return decodeSnapshot(payload);
+    const nextSnapshot = decodeSnapshot(payload);
+    const nextEvents = nextSnapshot?.events || [];
+    const maxIndex = nextEvents.length - 1;
+
+    setSnapshot(nextSnapshot);
+    setCursorIndex(Math.max(-1, Math.min(maxIndex, nextSnapshot?.cursorIndex ?? -1)));
+    setParams(parseViewerParams());
   }, []);
-  const [events] = useState(() => initialSnapshot?.events || []);
-  const [cursorIndex, setCursorIndex] = useState(() => {
-    const list = initialSnapshot?.events || [];
-    const maxIndex = list.length - 1;
-    return Math.max(-1, Math.min(maxIndex, initialSnapshot?.cursorIndex ?? -1));
-  });
-  const params = parseViewerParams();
+
   const controls = useViewerControls(params);
+  const events = snapshot?.events || [];
 
   const adapter = useMemo(
     () => ({
@@ -52,20 +62,18 @@ export default function ViewerPage() {
   const cursor = { index: cursorIndex };
 
   return (
-    <WorkspaceRoot profile="design">
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <GridProvider>
         <ModeProvider value="viewer">
           <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
             <div style={{ position: 'relative', flex: 1 }}>
               {params.controls && <ViewerToolbar {...controls} />}
               <ViewerStage zoom={controls.zoom} bg={controls.bg}>
-                <CanvasStage
-                  adapter={adapter}
+                <WorkspaceCanvasRoot
+                  workspaceId={adapter.id}
                   events={events}
                   cursor={cursor}
-                  emit={() => {}}
-                  educationReadOnly
-                  canImport={false}
+                  readOnly
                 />
               </ViewerStage>
             </div>
@@ -79,6 +87,6 @@ export default function ViewerPage() {
           </div>
         </ModeProvider>
       </GridProvider>
-    </WorkspaceRoot>
+    </div>
   );
 }

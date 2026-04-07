@@ -2,7 +2,7 @@
  * NON-CANONICAL INTERACTION SYSTEM
  *
  * Canvas authoring uses:
- * CanvasRoot -> useCanvasInteractions -> inputEngine -> toolHandlerRegistrationFacade
+ * WorkspaceCanvasRoot -> CanvasRoot -> useCanvasInteractions -> inputEngine -> toolHandlerRegistrationFacade
  *
  * This manager may remain for preview or non-canvas session flows, but it must
  * not become a competing execution authority for canvas drag, move, resize, or

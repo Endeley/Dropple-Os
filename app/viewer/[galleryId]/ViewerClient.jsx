@@ -3,9 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from 'convex/react';
-import CanvasStage from '@/ui/layout/CanvasStage';
 import TimelineBar from '@/ui/layout/TimelineBar';
-import { WorkspaceRoot } from '@/ui/workspace/root/WorkspaceRoot.jsx';
+import { WorkspaceCanvasRoot } from '@/ui/workspace/WorkspaceCanvasRoot.jsx';
 import { GridProvider } from '@/ui/workspace/shared/GridContext';
 import { ModeProvider } from '@/ui/workspace/shared/ModeContext';
 import { hydrateLocalDocumentSnapshot } from '@/infrastructure/persistence/localDocumentSchema.js';
@@ -17,9 +16,16 @@ import { useGalleryIdentity } from '@/gallery/useGalleryIdentity';
 import { openServerDocument } from '@/editor/openServerDocument';
 import { api } from '@/convex/_generated/api';
 
+const DEFAULT_VIEWER_PARAMS = {
+  zoom: 1,
+  bg: 'light',
+  timeline: true,
+  controls: true,
+};
+
 export default function ViewerClient({ snapshot, meta }) {
   const [cursorIndex, setCursorIndex] = useState(-1);
-  const paramsConfig = parseViewerParams();
+  const [paramsConfig, setParamsConfig] = useState(DEFAULT_VIEWER_PARAMS);
   const controls = useViewerControls(paramsConfig);
   const router = useRouter();
   const identity = useGalleryIdentity();
@@ -57,6 +63,10 @@ export default function ViewerClient({ snapshot, meta }) {
     if (!snapshot) return null;
     return hydrateLocalDocumentSnapshot(snapshot);
   }, [snapshot]);
+
+  useEffect(() => {
+    setParamsConfig(parseViewerParams());
+  }, []);
 
   const events = hydrated?.events || [];
   const cursor = {
@@ -108,7 +118,7 @@ export default function ViewerClient({ snapshot, meta }) {
   }
 
   return (
-    <WorkspaceRoot profile="design">
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <GridProvider>
         <ModeProvider value="viewer">
           <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -147,13 +157,11 @@ export default function ViewerClient({ snapshot, meta }) {
                 </div>
               )}
               <ViewerStage zoom={controls.zoom} bg={controls.bg}>
-                <CanvasStage
-                  adapter={adapter}
+                <WorkspaceCanvasRoot
+                  workspaceId={adapter.id}
                   events={events}
                   cursor={cursor}
-                  emit={() => {}}
-                  educationReadOnly
-                  canImport={false}
+                  readOnly
                 />
               </ViewerStage>
             </div>
@@ -167,6 +175,6 @@ export default function ViewerClient({ snapshot, meta }) {
           </div>
         </ModeProvider>
       </GridProvider>
-    </WorkspaceRoot>
+    </div>
   );
 }

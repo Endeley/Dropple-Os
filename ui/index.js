@@ -1,1 +1,1 @@
-export { default as CanvasRoot } from './canvas/CanvasRoot.jsx';
+export { WorkspaceCanvasRoot } from './workspace/WorkspaceCanvasRoot.jsx';

@@ -5,7 +5,7 @@ import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 
 let lastWorkspaceViewState = null;
 
-function selectWorkspaceViewState(state) {
+export function selectWorkspaceViewState(state) {
     const workspace = state?.workspace ?? null;
 
     const nextWorkspaceViewState = {

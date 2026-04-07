@@ -5,7 +5,7 @@ import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 
 let lastProjectedState = null;
 
-function selectProjectedVisualState(state) {
+export function selectProjectedVisualState(state) {
     const nextProjectedState = {
         nodes: state?.viewNodes ?? {},
         rootIds: state?.viewRootIds ?? [],

@@ -4,16 +4,16 @@ import CanvasSnapGuides from './CanvasSnapGuides.jsx';
 import InsertionLine from './InsertionLine.jsx';
 import FrameRulers from './FrameRulers.jsx';
 import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
-import { useWorkspaceViewState, useWorkspaceVisualState } from '@/runtime/projection';
 import { useEffect, useRef, useState } from 'react';
 import { getReorderPreviewOnly } from '@/ui/bridges/inputSessionRuntimeFacade.js';
+import { useCanvasViewState, useCanvasVisualState } from '@/ui/canvas/CanvasContext.jsx';
 
 export default function GuideLayer() {
     const nodes = useCharacterRenderNodes();
-    const selectedIds = useWorkspaceVisualState((s) => s.selection?.ids || []);
-    const guides = useWorkspaceVisualState((s) => s.guides || []);
-    const marquee = useWorkspaceVisualState((s) => s.marquee ?? null);
-    const viewport = useWorkspaceViewState((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
+    const selectedIds = useCanvasVisualState((s) => s.selection?.ids || []);
+    const guides = useCanvasVisualState((s) => s.guides || []);
+    const marquee = useCanvasVisualState((s) => s.marquee ?? null);
+    const viewport = useCanvasViewState((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
     const [reorderPreview, setReorderPreview] = useState(null);
     const lastPreviewRef = useRef(null);
 

@@ -1,12 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useWorkspaceViewState } from '@/runtime/projection';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext.jsx';
 import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useMotionTrailStore } from '@/ui/animation/useMotionTrailStore.js';
 import { evaluateMotionTrails } from '@/ui/animation/evaluateMotionTrails.js';
+import { useCanvasRuntimeState, useCanvasViewState } from '@/ui/canvas/CanvasContext.jsx';
 
 function projectPoint(point, viewport) {
     return {
@@ -16,7 +15,7 @@ function projectPoint(point, viewport) {
 }
 
 export default function MotionTrailLayer({ designState }) {
-    const viewport = useWorkspaceViewState((s) => s.viewport) || { x: 0, y: 0, scale: 1 };
+    const viewport = useCanvasViewState((s) => s.viewport) || { x: 0, y: 0, scale: 1 };
     const { selectedIds } = useSelection() || {};
     const selected = useMemo(() => Array.from(selectedIds || []), [selectedIds]);
 
@@ -26,7 +25,7 @@ export default function MotionTrailLayer({ designState }) {
     const opacity = useMotionTrailStore((s) => s.opacity);
     const fade = useMotionTrailStore((s) => s.fade);
 
-    const frameTime = useRuntimeStore((s) => s.frameTime);
+    const frameTime = useCanvasRuntimeState((s) => s.frameTime);
     const isPlaying = useTimelineStore((s) => s.isPlaying);
     const previewInterpolation = useTimelineStore((s) => s.previewInterpolation);
     const keyframeTimes = useTimelineStore((s) => s.keyframeTimes);

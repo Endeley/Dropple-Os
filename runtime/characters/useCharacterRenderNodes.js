@@ -1,14 +1,16 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
-import { useWorkspaceVisualState } from '@/runtime/projection/index.js';
 import { applyCharacterConstraints } from './applyCharacterConstraints.js';
 import { applyAttachments } from '@/runtime/attachments/applyAttachments.js';
+import {
+    useCanvasAnimatedState,
+    useCanvasVisualState,
+} from '@/ui/canvas/CanvasContext.jsx';
 
 export function useCharacterRenderNodes() {
-    const projectedNodes = useWorkspaceVisualState((s) => s.nodes || {});
-    const previewNodes = useAnimatedRuntimeStore((s) => s.previewNodes);
+    const projectedNodes = useCanvasVisualState((s) => s.nodes || {});
+    const previewNodes = useCanvasAnimatedState((s) => s.previewNodes);
 
     return useMemo(() => {
         const hasPreviewNodes = previewNodes && Object.keys(previewNodes).length > 0;

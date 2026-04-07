@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import CanvasHost from './CanvasHost.jsx';
 import NodeLayer from './NodeLayer.jsx';
@@ -33,7 +33,7 @@ import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions';
 import { useCanvasInteractions } from '@/ui/interactions/useCanvasInteractions.js';
 import { resolveTargetNodeId } from '@/ui/interactions/resolveTargetNodeId.js';
 import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
-import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
+import { DispatcherContext } from '@/runtime/boundary/DispatcherContext.jsx';
 
 /** precision safety */
 const MIN_EFFECTIVE_ZOOM = 0.0005;
@@ -110,21 +110,32 @@ function screenToCanvasWorld(screenPoint, { viewport, worldOffset, cameraTransfo
 
 export default function CanvasRoot({ workspaceId }) {
     perfStart('canvas.render');
-    const dispatcher = useDispatcher();
+    const dispatcher = useContext(DispatcherContext);
+    if (!dispatcher) {
+        throw new Error('[CanvasRoot] live canvas requires DispatcherContext');
+    }
 
-    const projectedWorkspaceId = useWorkspaceViewState((s) => s.id);
-    const rootIds = useWorkspaceVisualState((s) => s.rootIds || []);
+    const liveViewState = useWorkspaceViewState((s) => s);
+    const liveVisualState = useWorkspaceVisualState((s) => s);
+    const liveCameraTransform = useAnimatedRuntimeStore((s) => s.cameraTransform);
+    const liveDragState = useRuntimeStore((state) => state.interaction?.drag ?? null);
+    const liveActiveTool = useToolStore((s) => s.activeTool);
+    const viewState = liveViewState;
+    const visualState = liveVisualState;
+
+    const projectedWorkspaceId = viewState?.id;
+    const rootIds = visualState?.rootIds || [];
     const resolvedWorkspaceId = workspaceId ?? projectedWorkspaceId;
     const workspace = getWorkspaceActivation(resolvedWorkspaceId);
 
-    const viewport = useWorkspaceViewState((s) => s.viewport);
-    const canvasSurface = useWorkspaceViewState((s) => s.canvasSurface);
-    const projectedNodes = useWorkspaceVisualState((s) => s.nodes || {});
-    const projectedTimeline = useWorkspaceVisualState((s) => s.timeline);
-    const cameraTransform = useAnimatedRuntimeStore((s) => s.cameraTransform);
-    const dragState = useRuntimeStore((state) => state.interaction?.drag ?? null);
-    const activeTool = useToolStore((s) => s.activeTool);
-    const canvasPolicy = workspace?.canvasPolicy;
+    const viewport = viewState?.viewport;
+    const canvasSurface = viewState?.canvasSurface;
+    const projectedNodes = visualState?.nodes || {};
+    const projectedTimeline = visualState?.timeline;
+    const cameraTransform = liveCameraTransform;
+    const dragState = liveDragState;
+    const activeTool = liveActiveTool;
+    const canvasPolicy = viewState?.canvasPolicy ?? workspace?.canvasPolicy;
     const designState = useMemo(
         () => ({
             nodes: projectedNodes ?? {},
@@ -182,6 +193,12 @@ export default function CanvasRoot({ workspaceId }) {
 
     const allowPan = canvasPolicy?.allowPan ?? true;
     const allowZoom = canvasPolicy?.allowZoom ?? true;
+
+    const setCanvasSurface = useCallback((nextSurface) => {
+        canvasBus.emit('intent.workspace.canvasSurface.set', {
+            surface: nextSurface,
+        });
+    }, []);
 
     const zoomTier = useMemo(() => getZoomTier(viewport?.scale ?? 1), [viewport?.scale]);
 
@@ -326,7 +343,7 @@ export default function CanvasRoot({ workspaceId }) {
 
         setWorldOffset({ x: 0, y: 0 });
         viewportIntent({ viewport: nextViewport });
-    }, [cameraTransform, viewport, worldOffset]);
+    }, [viewport]);
 
     // 🔌 Listen for reset intent
     useEffect(() => {
@@ -364,6 +381,8 @@ export default function CanvasRoot({ workspaceId }) {
         <CanvasProvider
             value={{
                 zoomTier,
+                readOnly: false,
+                setCanvasSurface,
                 onResizeHandlePointerDown,
                 onResizeHandlePointerMove,
                 onResizeHandlePointerUp,
@@ -385,10 +404,10 @@ export default function CanvasRoot({ workspaceId }) {
                 <div style={{ position: 'absolute', inset: 0 }}>
                     <CanvasSurface surface={canvasSurface} viewport={viewport} emphasisMode={isNodeDragging ? 'drag' : isPanning ? 'pan' : 'none'} />
                     <WorldOriginMarker viewport={viewport} />
+                    <NodeLayer />
                     <GhostFrameLayer designState={designState} />
                     <MotionTrailLayer designState={designState} />
                     <ConstraintVisualizerLayer />
-                    <NodeLayer />
                     <BehaviorPreviewLayer />
                     <GhostLayer />
                     <GuideLayer />
@@ -399,16 +418,18 @@ export default function CanvasRoot({ workspaceId }) {
 
                 {/* 🧭 UI */}
                 <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-                    <div
-                        style={{
-                            position: 'absolute',
-                            top: 14,
-                            left: 14,
-                            zIndex: 40,
-                        }}>
-                        <CanvasSurfaceSwitcher />
-                    </div>
-                    <RemoteCursors />
+                    <>
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: 14,
+                                left: 14,
+                                zIndex: 40,
+                            }}>
+                            <CanvasSurfaceSwitcher />
+                        </div>
+                        <RemoteCursors />
+                    </>
                     {workspace?.capabilities?.timeline && (
                         <div style={{ pointerEvents: 'auto' }}>
                             <TimelinePanel designState={designState} />

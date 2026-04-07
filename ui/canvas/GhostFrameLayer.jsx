@@ -1,19 +1,18 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useWorkspaceViewState } from '@/runtime/projection';
 import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useOnionSkinStore } from '@/ui/animation/useOnionSkinStore.js';
 import { evaluateGhostFrames } from '@/ui/animation/evaluateGhostFrames.js';
+import { useCanvasRuntimeState, useCanvasViewState } from '@/ui/canvas/CanvasContext.jsx';
 
 function safeNumber(value, fallback = 0) {
     return Number.isFinite(value) ? value : fallback;
 }
 
 export default function GhostFrameLayer({ designState }) {
-    const viewport = useWorkspaceViewState((s) => s.viewport) || { x: 0, y: 0, scale: 1 };
-    const frameTime = useRuntimeStore((s) => s.frameTime);
+    const viewport = useCanvasViewState((s) => s.viewport) || { x: 0, y: 0, scale: 1 };
+    const frameTime = useCanvasRuntimeState((s) => s.frameTime);
     const isScrubbing = useTimelineStore((s) => s.isScrubbing);
     const enabled = useOnionSkinStore((s) => s.enabled);
     const prevFrames = useOnionSkinStore((s) => s.prevFrames);

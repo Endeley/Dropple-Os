@@ -4,7 +4,7 @@
  * This bridge may translate session commits for preview-oriented or legacy flows,
  * but it must not become the primary execution authority for canvas move/resize/
  * rotate commits while the canonical canvas path is:
- * CanvasRoot -> useCanvasInteractions -> inputEngine -> toolHandlerRegistrationFacade
+ * WorkspaceCanvasRoot -> CanvasRoot -> useCanvasInteractions -> inputEngine -> toolHandlerRegistrationFacade
  */
 
 import { EventTypes } from '../../core/events/eventTypes.js';

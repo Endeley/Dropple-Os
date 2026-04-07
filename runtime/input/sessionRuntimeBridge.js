@@ -3,7 +3,7 @@
  *
  * This module creates session objects for preview/session-driven flows. Canvas
  * authoring execution is owned by:
- * CanvasRoot -> useCanvasInteractions -> inputEngine -> toolHandlerRegistrationFacade
+ * WorkspaceCanvasRoot -> CanvasRoot -> useCanvasInteractions -> inputEngine -> toolHandlerRegistrationFacade
  *
  * Do not use this bridge to introduce a parallel canvas execution path.
  */

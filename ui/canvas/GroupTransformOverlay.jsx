@@ -1,9 +1,9 @@
 'use client';
 
-import { useWorkspaceVisualState } from '@/runtime/projection';
+import { useCanvasVisualState } from '@/ui/canvas/CanvasContext.jsx';
 
 export default function GroupTransformOverlay() {
-    const group = useWorkspaceVisualState((state) => state.groupTransform);
+    const group = useCanvasVisualState((state) => state.groupTransform);
 
     if (!group?.bounds) return null;
 

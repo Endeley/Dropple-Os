@@ -12,7 +12,8 @@ export function ViewerStage({ zoom, bg, children }) {
     <div
       style={{
         position: 'relative',
-        flex: 1,
+        width: '100%',
+        height: '100%',
         overflow: 'auto',
         background,
       }}
@@ -21,8 +22,8 @@ export function ViewerStage({ zoom, bg, children }) {
         style={{
           transform: `scale(${zoom})`,
           transformOrigin: '0 0',
-          width: 'fit-content',
-          height: 'fit-content',
+          width: '100%',
+          height: '100%',
         }}
       >
         {children}

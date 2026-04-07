@@ -1,7 +1,7 @@
 'use client';
 
 import { CanvasSurfaceTypes } from '@/platform/workspaces';
-import { useWorkspaceViewState } from '@/runtime/projection';
+import { useCanvasContext, useCanvasViewState } from '@/ui/canvas/CanvasContext.jsx';
 import { canvasSurfaceIntentSet } from '@/ui/workspace/canvasSurfaceIntent.js';
 
 const OPTIONS = [
@@ -11,21 +11,28 @@ const OPTIONS = [
 ];
 
 export function CanvasSurfaceSwitcher() {
-    const surface = useWorkspaceViewState((state) => state.canvasSurface);
+    const surface = useCanvasViewState((state) => state.canvasSurface);
+    const { readOnly, setCanvasSurface } = useCanvasContext();
     const currentType = surface?.type ?? CanvasSurfaceTypes.SMOOTH;
     const gridSize = surface?.gridSize ?? 8;
 
     function applySurface(nextType) {
+        if (readOnly) return;
         const nextOption = OPTIONS.find((option) => option.id === nextType);
         if (!nextOption) return;
 
-        canvasSurfaceIntentSet({
-            surface: {
-                type: nextOption.id,
-                gridSize,
-                snap: nextOption.snap,
-            },
-        });
+        const nextSurface = {
+            type: nextOption.id,
+            gridSize,
+            snap: nextOption.snap,
+        };
+
+        if (typeof setCanvasSurface === 'function') {
+            setCanvasSurface(nextSurface);
+            return;
+        }
+
+        canvasSurfaceIntentSet({ surface: nextSurface });
     }
 
     return (
@@ -58,7 +65,8 @@ export function CanvasSurfaceSwitcher() {
                             padding: '6px 10px',
                             fontSize: 12,
                             fontWeight: 600,
-                            cursor: 'pointer',
+                            cursor: readOnly ? 'default' : 'pointer',
+                            opacity: readOnly ? 0.6 : 1,
                         }}>
                         {option.label}
                     </button>

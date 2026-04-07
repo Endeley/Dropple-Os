@@ -2,7 +2,6 @@
 
 import { DispatcherProvider } from '@/runtime/boundary/DispatcherProvider.jsx';
 import { WorkspaceUIRoot } from './DispatcherProvider/UI/WorkspaceUIRoot.jsx';
-import { WorkspaceCanvasRoot } from '@/ui/workspace/WorkspaceCanvasRoot.jsx';
 import { WorkspaceSessionsRoot } from './DispatcherProvider/Sessions/WorkspaceSessionsRoot.jsx';
 import { WorkspaceBridgesRoot } from './DispatcherProvider/Bridges/WorkspaceBridgesRoot.jsx';
 import { SelectionProvider } from '@/ui/workspace/shared/SelectionContext';
@@ -29,6 +28,11 @@ export function WorkspaceRoot({
 }) {
     const isUXMode = profile === 'ux-validation';
     const workspaceRootKey = `${workspaceId ?? 'workspace'}:${branchId}:${profile}:${modeId ?? workspace?.id ?? 'mode'}`;
+    const hasExplicitContent = children != null || workspace != null;
+
+    if (!hasExplicitContent) {
+        throw new Error('[WorkspaceRoot] expected either workspace or children');
+    }
 
     return (
         <DispatcherProvider
@@ -71,16 +75,12 @@ export function WorkspaceRoot({
                             <WorkspaceBridgesRoot />
                             <WorkspaceSessionsRoot modeId={modeId ?? workspace?.id ?? null} />
                             <WorkspaceUIRoot />
-                            {workspace ? (
-                                <WorkspaceShell
-                                    workspace={workspace}
-                                    modeId={modeId}
-                                    workspaceContext={workspaceContext}
-                                    {...(shellProps || {})}
-                                />
-                            ) : (
-                                <WorkspaceCanvasRoot />
-                            )}
+                            <WorkspaceShell
+                                workspace={workspace}
+                                modeId={modeId}
+                                workspaceContext={workspaceContext}
+                                {...(shellProps || {})}
+                            />
                         </>
                     )}
                 </div>

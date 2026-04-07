@@ -6,7 +6,6 @@ import PropertyBar from '@/ui/layout/PropertyBar';
 import LeftPanel from '@/ui/layout/LeftPanel';
 import RightPanel from '@/ui/layout/RightPanel';
 import TimelineBar from '@/ui/layout/TimelineBar';
-import CanvasStage from '@/ui/layout/CanvasStage';
 import { WorkspaceCanvasRoot } from '@/ui/workspace/WorkspaceCanvasRoot.jsx';
 import { EducationToolbar } from '@/education/EducationToolbar';
 import ReviewToolbar from '@/review/ReviewToolbar';
@@ -60,7 +59,6 @@ function EditorWorkspaceLayoutInner({
   reviewerId,
   presence,
   railOffset = 0,
-  intents,
 }) {
   const { selectedIds, setSelection } = useSelection();
   const keyboardEnabled =
@@ -72,13 +70,11 @@ function EditorWorkspaceLayoutInner({
   const hintMode = adapter?.id === 'design' ? 'graphic' : adapter?.id;
   const hint = useModeOnboarding(hintMode);
   const mode = useMode();
-  const canEmitCursor = !readOnly && (documentRole === 'owner' || documentRole === 'editor');
 
   const { open: commandOpen, close: commandClose } = useCommandPalette({
     enabled: keyboardEnabled,
   });
   const galleryIdentity = useGalleryIdentity();
-  const selfUserId = galleryIdentity?.id ?? null;
   const publishToServer = usePublishToServer();
 
   const jsonReplaceRef = useRef(null);
@@ -167,6 +163,8 @@ function EditorWorkspaceLayoutInner({
     canManageSharing && !baseRightPanels.includes('SharingPanel')
       ? [...baseRightPanels, 'SharingPanel']
       : baseRightPanels;
+  const useReplayCanvas =
+    adapter?.id === 'education' || adapter?.id === 'review' || readOnly;
 
   useKeyboardShortcuts({
     enabled: keyboardEnabled,
@@ -294,28 +292,12 @@ function EditorWorkspaceLayoutInner({
       <div className="workspace-main">
         <LeftPanel panels={adapter.panels?.left} submission={reviewSubmission} />
 
-        {adapter?.id === 'education' || adapter?.id === 'review' ? (
-          <CanvasStage
-            adapter={adapter}
-            events={events}
-            cursor={cursor}
-            emit={emit}
-            educationReadOnly={educationReadOnly}
-            readOnly={readOnly}
-            documentId={documentId}
-            canEmitCursor={canEmitCursor}
-            presence={presence}
-            selfUserId={selfUserId}
-            intents={intents}
-            onImportJSONReplace={openImportJSONReplace}
-            onImportJSONMerge={openImportJSONMerge}
-            onImportSVGReplace={openImportSVGReplace}
-            onImportSVGMerge={openImportSVGMerge}
-            canImport={canImport}
-          />
-        ) : (
-          <WorkspaceCanvasRoot workspaceId={adapter?.workspaceId || adapter?.id || 'graphic'} />
-        )}
+        <WorkspaceCanvasRoot
+          workspaceId={adapter?.workspaceId || adapter?.id || 'graphic'}
+          events={useReplayCanvas ? events : null}
+          cursor={useReplayCanvas ? cursor : null}
+          readOnly={useReplayCanvas}
+        />
 
         <RightPanel
           panels={rightPanels}
@@ -373,7 +355,6 @@ export function EditorWorkspaceLayout({
   onReviewCriteriaChange,
   reviewerId,
   presence,
-  intents,
   railOffset = 0,
 }) {
   return (
@@ -407,7 +388,6 @@ export function EditorWorkspaceLayout({
           onReviewCriteriaChange={onReviewCriteriaChange}
           reviewerId={reviewerId}
           presence={presence}
-          intents={intents}
           railOffset={railOffset}
         />
       </ModeProvider>

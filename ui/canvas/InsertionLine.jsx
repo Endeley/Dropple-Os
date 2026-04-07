@@ -1,8 +1,8 @@
 'use client';
 
 import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
-import { useWorkspaceViewState } from '@/runtime/projection';
 import { projectToViewport } from '@/canvas/transform/projectToViewport.js';
+import { useCanvasViewState } from '@/ui/canvas/CanvasContext.jsx';
 
 /**
  * Renders a visual insertion line for auto-layout reordering.
@@ -10,7 +10,7 @@ import { projectToViewport } from '@/canvas/transform/projectToViewport.js';
  */
 export default function InsertionLine({ containerId, index }) {
     const nodes = useCharacterRenderNodes();
-    const viewport = useWorkspaceViewState((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
+    const viewport = useCanvasViewState((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
 
     const container = nodes[containerId];
     if (!container) return null;

@@ -68,3 +68,36 @@ for (const route of ROUTES) {
     ).toEqual([]);
   });
 }
+
+test('viewer smoke mounts canonical canvas without runtime errors', async ({ page }) => {
+  const errors = [];
+  const consoleErrors = [];
+
+  page.on('pageerror', (error) => {
+    errors.push(error.message);
+  });
+  page.on('console', (message) => {
+    if (message.type() === 'error') {
+      consoleErrors.push(message.text());
+    }
+  });
+
+  const response = await page.goto('/viewer?timeline=off&controls=off', {
+    waitUntil: 'networkidle',
+  });
+  const runtimeConsoleErrors = consoleErrors.filter(
+    (message) => !message.includes('Unchecked runtime.lastError')
+  );
+  const bodyText = await page.locator('body').innerText().catch(() => '');
+
+  expect(response?.ok(), 'viewer route should respond successfully').toBeTruthy();
+  expect(errors, `viewer pageerror: ${errors.join('\n')}`).toEqual([]);
+  expect(
+    runtimeConsoleErrors,
+    `viewer console errors: ${runtimeConsoleErrors.join('\n')}`
+  ).toEqual([]);
+  expect(bodyText, `viewer body: ${bodyText}`).not.toContain('Application error');
+  await expect(page.getByTestId('canvas-host')).toBeVisible();
+  await expect(page.locator('body')).not.toContainText('Module not found');
+  await expect(page.locator('body')).not.toContainText('Application error');
+});

@@ -2,10 +2,10 @@
 
 import { useMemo } from 'react';
 import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
-import { useWorkspaceViewState } from '@/runtime/projection';
 import { useConstraintVisualizerStore } from '@/ui/animation/useConstraintVisualizerStore.js';
 import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
 import { getConstraintVisuals } from '@/ui/animation/getConstraintVisuals.js';
+import { useCanvasViewState } from '@/ui/canvas/CanvasContext.jsx';
 
 function projectPoint(point, viewport) {
     return {
@@ -16,7 +16,7 @@ function projectPoint(point, viewport) {
 
 export default function ConstraintVisualizerLayer() {
     const nodes = useCharacterRenderNodes();
-    const viewport = useWorkspaceViewState((s) => s.viewport) || { x: 0, y: 0, scale: 1 };
+    const viewport = useCanvasViewState((s) => s.viewport) || { x: 0, y: 0, scale: 1 };
     const isPlaying = useTimelineStore((s) => s.isPlaying);
 
     const enabled = useConstraintVisualizerStore((s) => s.enabled);

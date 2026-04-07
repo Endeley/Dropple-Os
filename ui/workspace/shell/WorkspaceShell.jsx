@@ -1,7 +1,7 @@
 'use client';
 
-import CanvasRoot from '@/ui/canvas/CanvasRoot.jsx';
 import { Controls } from '@/ui/Controls.jsx';
+import { WorkspaceCanvasRoot } from '@/ui/workspace/WorkspaceCanvasRoot.jsx';
 
 import { isMediaWorkspaceId } from '@/platform/workspaces/mediaWorkspace.js';
 import { MediaWorkspaceShell } from '@/ui/workspace/media/MediaWorkspaceShell.jsx';
@@ -127,7 +127,7 @@ export function WorkspaceShell({ workspace, modeId = null, workspaceContext = nu
 
                         {/* Canvas */}
                         <main style={{ flex: 1, position: 'relative' }}>
-                            <CanvasRoot />
+                            <WorkspaceCanvasRoot workspaceId={activeMode} />
                             <Controls profile={workspace.profile} />
                         </main>
 
