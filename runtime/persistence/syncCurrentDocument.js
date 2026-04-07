@@ -1,19 +1,20 @@
-// persistence/saveCurrentDocument.js
+// runtime/persistence/syncCurrentDocument.js
 
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 
 /**
- * Explicitly persist the current runtime document to Convex.
+ * Explicitly sync the current runtime document to remote durable storage.
  *
  * 🔒 Rules:
  * - Manual call only
- * - Runtime is source of truth
+ * - Local replay snapshot remains canonical truth
+ * - Remote storage is secondary sync/publish infrastructure
  */
-export function useSaveCurrentDocument() {
+export function useSyncCurrentDocument() {
     const save = useMutation(api.saveDocumentSnapshot);
 
-    return async function saveCurrentDocument(runtimeSnapshot) {
+    return async function syncCurrentDocument(runtimeSnapshot) {
         const doc = runtimeSnapshot?.document;
 
         if (!doc) {

@@ -13,7 +13,7 @@ function createId() {
   return `doc-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-export function saveDocumentSnapshot({
+export function saveLocalDocumentSnapshot({
   id,
   name = 'Untitled',
   events = [],
@@ -34,7 +34,7 @@ export function saveDocumentSnapshot({
   return { id: docId, snapshot };
 }
 
-export function loadDocumentSnapshot(id) {
+export function loadLocalDocumentSnapshot(id) {
   const raw = loadDocumentFile(id);
   const hydrated = hydrateLocalDocumentSnapshot(raw);
   if (!hydrated) return null;

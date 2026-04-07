@@ -4,7 +4,6 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'r
 
 import CanvasHost from './CanvasHost.jsx';
 import NodeLayer from './NodeLayer.jsx';
-import GhostLayer from './GhostLayer.jsx';
 import GhostFrameLayer from './GhostFrameLayer.jsx';
 import MotionTrailLayer from './MotionTrailLayer.jsx';
 import { BehaviorPreviewLayer } from '@/design/canvas/behaviorPreview/BehaviorPreviewLayer.jsx';
@@ -115,13 +114,11 @@ export default function CanvasRoot({ workspaceId }) {
         throw new Error('[CanvasRoot] live canvas requires DispatcherContext');
     }
 
-    const liveViewState = useWorkspaceViewState((s) => s);
-    const liveVisualState = useWorkspaceVisualState((s) => s);
-    const liveCameraTransform = useAnimatedRuntimeStore((s) => s.cameraTransform);
-    const liveDragState = useRuntimeStore((state) => state.interaction?.drag ?? null);
-    const liveActiveTool = useToolStore((s) => s.activeTool);
-    const viewState = liveViewState;
-    const visualState = liveVisualState;
+    const viewState = useWorkspaceViewState((s) => s);
+    const visualState = useWorkspaceVisualState((s) => s);
+    const cameraTransform = useAnimatedRuntimeStore((s) => s.cameraTransform);
+    const dragState = useRuntimeStore((state) => state.interaction?.drag ?? null);
+    const activeTool = useToolStore((s) => s.activeTool);
 
     const projectedWorkspaceId = viewState?.id;
     const rootIds = visualState?.rootIds || [];
@@ -132,9 +129,6 @@ export default function CanvasRoot({ workspaceId }) {
     const canvasSurface = viewState?.canvasSurface;
     const projectedNodes = visualState?.nodes || {};
     const projectedTimeline = visualState?.timeline;
-    const cameraTransform = liveCameraTransform;
-    const dragState = liveDragState;
-    const activeTool = liveActiveTool;
     const canvasPolicy = viewState?.canvasPolicy ?? workspace?.canvasPolicy;
     const designState = useMemo(
         () => ({
@@ -409,7 +403,6 @@ export default function CanvasRoot({ workspaceId }) {
                     <MotionTrailLayer designState={designState} />
                     <ConstraintVisualizerLayer />
                     <BehaviorPreviewLayer />
-                    <GhostLayer />
                     <GuideLayer />
                     <GroupTransformOverlay />
                     <SelectionLayer />

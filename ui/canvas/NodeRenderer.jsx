@@ -1,7 +1,6 @@
 'use client';
 
 import React, { memo } from 'react';
-import { NodeView } from '@/ui/NodeView.jsx';
 import { useCanvasContext } from '@/ui/canvas/CanvasContext.jsx';
 
 const __DEV__ = process.env.NODE_ENV !== 'production';
@@ -10,7 +9,7 @@ function devSkip(reason, node, details = {}) {
     if (!__DEV__) return;
 
     console.groupCollapsed(
-        `%c[NodeView] render skipped – ${reason}`,
+        `%c[NodeRenderer] render skipped - ${reason}`,
         'color:#e5533d;font-weight:600'
     );
 
@@ -50,12 +49,44 @@ function NodeRendererImpl({ node }) {
         return null;
     }
 
+    const showLabel = zoomTier !== 'far';
+    const showFull = zoomTier === 'normal' || zoomTier === 'detail' || zoomTier === 'micro';
+    const isFar = zoomTier === 'far';
+    const isOverview = zoomTier === 'overview';
+    const background = isFar
+        ? 'rgba(147, 197, 253, 0.12)'
+        : isOverview
+            ? 'rgba(147, 197, 253, 0.2)'
+            : '#e0e7ff';
+    const border = isFar ? '1px solid rgba(59, 130, 246, 0.35)' : '1px solid #93c5fd';
+
     return (
-        <NodeView
-            node={node}
-            rect={{ left, top, width, height }}
-            zoomTier={zoomTier}
-        />
+        <div
+            data-node-id={node.id}
+            data-node-width={width}
+            data-node-height={height}
+            style={{
+                position: 'absolute',
+                left,
+                top,
+                width,
+                height,
+                background,
+                color: '#111827',
+                userSelect: 'none',
+                cursor: 'grab',
+                border,
+                borderRadius: 4,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: showFull ? 12 : 10,
+                letterSpacing: showFull ? 0 : 0.3,
+                boxSizing: 'border-box',
+                pointerEvents: 'auto',
+            }}>
+            {showLabel ? node.id : null}
+        </div>
     );
 }
 

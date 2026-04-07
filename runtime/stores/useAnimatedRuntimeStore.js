@@ -8,6 +8,5 @@ import { create } from 'zustand';
  */
 export const useAnimatedRuntimeStore = create(() => ({
     previewNodes: {},
-    ghostNodes: {},
     cameraTransform: null,
 }));

@@ -9,7 +9,10 @@ import {
 import { loadLocalDocument, saveLocalDocument } from '@/infrastructure/persistence/localDocumentStore.js';
 import { getActiveDocument, setActiveDocument } from '@/infrastructure/persistence/activeDocument.js';
 import { loadRegistry } from '@/infrastructure/persistence/documentRegistry.js';
-import { loadDocumentSnapshot, saveDocumentSnapshot } from '@/infrastructure/persistence/documentCommands.js';
+import {
+    loadLocalDocumentSnapshot,
+    saveLocalDocumentSnapshot,
+} from '@/infrastructure/persistence/documentCommands.js';
 import {
     hydratePersistenceSnapshot,
     usePersistenceBridgeState,
@@ -76,7 +79,7 @@ export function PersistenceBridge({
 
         const activeId = initialDocumentId || getActiveDocument();
         if (activeId) {
-            const loaded = loadDocumentSnapshot(activeId);
+            const loaded = loadLocalDocumentSnapshot(activeId);
             if (loaded?.snapshot) {
                 hydratePersistenceSnapshot({
                     dispatcher,
@@ -131,10 +134,14 @@ export function PersistenceBridge({
                 cursorIndex,
                 metadata: { name: documentName },
             });
+
+            // LOCAL is canonical replay truth.
             saveLocalDocument(snapshot);
 
             if (documentId) {
-                saveDocumentSnapshot({
+                // Local per-document snapshots are still local authority,
+                // not a remote persistence tier.
+                saveLocalDocumentSnapshot({
                     id: documentId,
                     name: documentName,
                     events,

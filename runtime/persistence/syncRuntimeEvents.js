@@ -1,20 +1,21 @@
-// persistence/appendRuntimeEvents.js
+// runtime/persistence/syncRuntimeEvents.js
 
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 
 /**
- * Append newly committed runtime events to Convex.
+ * Append newly committed runtime events to remote durable storage.
  *
  * 🔒 Rules:
  * - Call explicitly
  * - Append-only
  * - Idempotent
+ * - Secondary to local canonical replay truth
  */
-export function useAppendRuntimeEvents() {
+export function useSyncRuntimeEvents() {
     const append = useMutation(api.appendEvents);
 
-    return async function appendRuntimeEvents(events, runtimeSnapshot) {
+    return async function syncRuntimeEvents(events, runtimeSnapshot) {
         if (!Array.isArray(events) || events.length === 0) return;
 
         const doc = runtimeSnapshot?.document;
