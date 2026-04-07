@@ -1,6 +1,6 @@
 'use client';
 
-import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
+import { useCharacterRenderNodes } from '@/ui/canvas/hooks/useCharacterRenderNodes.js';
 import { NodeRenderer } from './NodeRenderer.jsx';
 
 export default function NodeLayer() {

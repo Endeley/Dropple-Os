@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
+import { useCharacterRenderNodes } from '@/ui/canvas/hooks/useCharacterRenderNodes.js';
 import { useConstraintVisualizerStore } from '@/ui/animation/useConstraintVisualizerStore.js';
 import { useTimelineStore } from '@/runtime/stores/useTimelineStore.js';
 import { getConstraintVisuals } from '@/ui/animation/getConstraintVisuals.js';

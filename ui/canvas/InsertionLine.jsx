@@ -1,6 +1,6 @@
 'use client';
 
-import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
+import { useCharacterRenderNodes } from '@/ui/canvas/hooks/useCharacterRenderNodes.js';
 import { projectToViewport } from '@/canvas/transform/projectToViewport.js';
 import { useCanvasViewState } from '@/ui/canvas/CanvasContext.jsx';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
+import { useCharacterRenderNodes } from '@/ui/canvas/hooks/useCharacterRenderNodes.js';
 import { useCanvasContext } from '@/ui/canvas/CanvasContext.jsx';
 
 export function SelectionOutline({

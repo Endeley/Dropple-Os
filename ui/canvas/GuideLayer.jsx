@@ -3,7 +3,7 @@
 import CanvasSnapGuides from './CanvasSnapGuides.jsx';
 import InsertionLine from './InsertionLine.jsx';
 import FrameRulers from './FrameRulers.jsx';
-import { useCharacterRenderNodes } from '@/runtime/characters/useCharacterRenderNodes.js';
+import { useCharacterRenderNodes } from '@/ui/canvas/hooks/useCharacterRenderNodes.js';
 import { useEffect, useRef, useState } from 'react';
 import { getReorderPreviewOnly } from '@/ui/bridges/inputSessionRuntimeFacade.js';
 import { useCanvasViewState, useCanvasVisualState } from '@/ui/canvas/CanvasContext.jsx';

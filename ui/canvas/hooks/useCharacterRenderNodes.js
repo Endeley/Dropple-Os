@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { applyCharacterConstraints } from './applyCharacterConstraints.js';
+import { applyCharacterConstraints } from '@/runtime/characters/applyCharacterConstraints.js';
 import { applyAttachments } from '@/runtime/attachments/applyAttachments.js';
 import {
     useCanvasAnimatedState,
