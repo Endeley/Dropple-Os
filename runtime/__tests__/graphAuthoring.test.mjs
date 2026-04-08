@@ -37,6 +37,37 @@ test('graph node add is deterministic for array-backed graphs', () => {
     });
 });
 
+test('graph update patches authored graph metadata immutably', () => {
+    const state = {
+        document: {
+            graphs: {
+                g1: {
+                    id: 'g1',
+                    enabled: true,
+                    rigId: null,
+                    nodes: {
+                        source: { id: 'source', type: 'value' },
+                    },
+                    output: 'source',
+                },
+            },
+        },
+    };
+
+    const next = reduce(state, EventTypes.GRAPH_UPDATE, {
+        graphId: 'g1',
+        patch: {
+            enabled: false,
+            rigId: 'heroRig',
+        },
+    });
+
+    assert.equal(next.document.graphs.g1.enabled, false);
+    assert.equal(next.document.graphs.g1.rigId, 'heroRig');
+    assert.equal(state.document.graphs.g1.enabled, true);
+    assert.equal(state.document.graphs.g1.rigId, null);
+});
+
 test('graph connect updates target dependency field for compiler-compatible graphs', () => {
     const state = {
         document: {

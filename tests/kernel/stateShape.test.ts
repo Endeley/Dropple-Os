@@ -43,6 +43,7 @@ test('runtime internal state accepts a canonical document envelope', () => {
     assert.equal(state.document.meta.id, document.meta.id);
     assert.deepEqual(state.document.sceneGraph.rootIds, []);
     assert.deepEqual(state.document.motion.clips, {});
+    assert.deepEqual(state.document.graphs, {});
     assert.deepEqual(state.document.app.screens, {});
     assert.equal(state.document.app.currentScreen, null);
     assert.deepEqual(state.document.variables, {});

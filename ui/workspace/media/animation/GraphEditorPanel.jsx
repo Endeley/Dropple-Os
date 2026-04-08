@@ -74,6 +74,16 @@ export function GraphEditorPanel() {
         });
     }
 
+    function patchGraph(patch) {
+        const graphId = getActiveGraphIdentifier();
+        if (!graphId || !patch) return;
+
+        void dispatchGraphEvent(EventTypes.GRAPH_UPDATE, {
+            graphId,
+            patch,
+        });
+    }
+
     function deleteNode(nodeId) {
         const graphId = getActiveGraphIdentifier();
         if (!graphId || !nodeId) return;
@@ -184,6 +194,7 @@ export function GraphEditorPanel() {
                 activeGraph={activeGraph}
                 selectedNode={selectedNode}
                 graphErrors={graphErrors}
+                onPatchGraph={patchGraph}
                 onPatchNode={patchNode}
                 onDeleteNode={deleteNode}
                 onSetOutputNode={setOutputNode}

@@ -57,6 +57,9 @@ function cloneEdges(edges) {
 
 function cloneGraph(graph) {
     return {
+        enabled: graph?.enabled !== false,
+        rigId: graph?.rigId ?? null,
+        priority: Number.isFinite(graph?.priority) ? graph.priority : 0,
         ...graph,
         nodes: cloneNodes(graph?.nodes),
         ...(Array.isArray(graph?.edges) ? { edges: cloneEdges(graph.edges) } : {}),
@@ -299,6 +302,7 @@ export function graphReducers(state, event) {
     const { type, payload } = event ?? {};
 
     if (
+        type !== EventTypes.GRAPH_UPDATE &&
         type !== EventTypes.GRAPH_NODE_ADD &&
         type !== EventTypes.GRAPH_NODE_UPDATE &&
         type !== EventTypes.GRAPH_NODE_DELETE &&
@@ -317,6 +321,30 @@ export function graphReducers(state, event) {
     const graph = assertGraphExists(ensured.document, graphId);
 
     switch (type) {
+        case EventTypes.GRAPH_UPDATE: {
+            const patch = payload?.patch;
+            if (!patch || typeof patch !== 'object') return state;
+            const currentGraph = cloneGraph(graph);
+
+            const nextGraph = {
+                ...currentGraph,
+                ...patch,
+                enabled: patch.enabled === undefined ? currentGraph.enabled : patch.enabled !== false,
+                rigId: patch.rigId === undefined ? currentGraph.rigId : patch.rigId ?? null,
+                priority:
+                    patch.priority === undefined
+                        ? currentGraph.priority
+                        : Number.isFinite(patch.priority)
+                          ? patch.priority
+                          : 0,
+            };
+
+            return {
+                ...ensured,
+                document: updateGraphDocument(ensured.document, graphId, nextGraph),
+            };
+        }
+
         case EventTypes.GRAPH_NODE_ADD: {
             const rawNode = payload?.node;
             if (!rawNode?.type) return state;

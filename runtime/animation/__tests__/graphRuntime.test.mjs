@@ -4,6 +4,10 @@ import assert from 'node:assert/strict';
 import { evaluateGraphs } from '../graph/graphRuntime.js';
 import { resolveGraphParameters } from '../graph/resolveGraphParameters.js';
 
+function orderOf(layers) {
+    return layers.map((layer) => layer.channels[0]?.controllerId);
+}
+
 test('evaluateGraphs returns graph layers in deterministic graph id order', () => {
     const runtime = {};
     const snapshot = {
@@ -54,6 +58,182 @@ test('evaluateGraphs returns graph layers in deterministic graph id order', () =
         Object.prototype.propertyIsEnumerable.call(runtime, '__graphCache'),
         false
     );
+});
+
+test('evaluateGraphs orders graphs by priority descending', () => {
+    const snapshot = {
+        document: {
+            graphs: [
+                {
+                    id: 'lowGraph',
+                    priority: 0,
+                    nodes: [
+                        {
+                            id: 'lowValue',
+                            type: 'value',
+                            controllerId: 'low_CTRL',
+                            channel: 'rotateX',
+                            value: 1,
+                        },
+                    ],
+                    output: 'lowValue',
+                },
+                {
+                    id: 'highGraph',
+                    priority: 10,
+                    nodes: [
+                        {
+                            id: 'highValue',
+                            type: 'value',
+                            controllerId: 'high_CTRL',
+                            channel: 'rotateX',
+                            value: 2,
+                        },
+                    ],
+                    output: 'highValue',
+                },
+            ],
+        },
+        runtime: {},
+    };
+
+    const result = evaluateGraphs(snapshot, { frame: 0 });
+
+    assert.deepEqual(orderOf(result), ['high_CTRL', 'low_CTRL']);
+    assert.deepEqual(result.map((layer) => layer.priority), [10, 0]);
+});
+
+test('evaluateGraphs orders equal-priority graphs by id ascending', () => {
+    const snapshot = {
+        document: {
+            graphs: [
+                {
+                    id: 'bGraph',
+                    priority: 0,
+                    nodes: [
+                        {
+                            id: 'bValue',
+                            type: 'value',
+                            controllerId: 'b_CTRL',
+                            channel: 'rotateX',
+                            value: 1,
+                        },
+                    ],
+                    output: 'bValue',
+                },
+                {
+                    id: 'aGraph',
+                    priority: 0,
+                    nodes: [
+                        {
+                            id: 'aValue',
+                            type: 'value',
+                            controllerId: 'a_CTRL',
+                            channel: 'rotateX',
+                            value: 2,
+                        },
+                    ],
+                    output: 'aValue',
+                },
+            ],
+        },
+        runtime: {},
+    };
+
+    const result = evaluateGraphs(snapshot, { frame: 0 });
+
+    assert.deepEqual(orderOf(result), ['a_CTRL', 'b_CTRL']);
+});
+
+test('evaluateGraphs is stable under graph array reordering', () => {
+    const graphA = {
+        id: 'aGraph',
+        priority: 1,
+        nodes: [
+            {
+                id: 'aValue',
+                type: 'value',
+                controllerId: 'a_CTRL',
+                channel: 'rotateX',
+                value: 1,
+            },
+        ],
+        output: 'aValue',
+    };
+    const graphB = {
+        id: 'bGraph',
+        priority: 2,
+        nodes: [
+            {
+                id: 'bValue',
+                type: 'value',
+                controllerId: 'b_CTRL',
+                channel: 'rotateX',
+                value: 2,
+            },
+        ],
+        output: 'bValue',
+    };
+
+    const resultA = evaluateGraphs(
+        {
+            document: { graphs: [graphA, graphB] },
+            runtime: {},
+        },
+        { frame: 0 },
+    );
+    const resultB = evaluateGraphs(
+        {
+            document: { graphs: [graphB, graphA] },
+            runtime: {},
+        },
+        { frame: 0 },
+    );
+
+    assert.deepEqual(resultA, resultB);
+});
+
+test('evaluateGraphs skips graphs that are authored as disabled', () => {
+    const snapshot = {
+        document: {
+            graphs: [
+                {
+                    id: 'disabledGraph',
+                    enabled: false,
+                    nodes: [
+                        {
+                            id: 'disabledValue',
+                            type: 'value',
+                            controllerId: 'disabled_CTRL',
+                            channel: 'rotateZ',
+                            value: 99,
+                        },
+                    ],
+                    output: 'disabledValue',
+                },
+                {
+                    id: 'enabledGraph',
+                    enabled: true,
+                    nodes: [
+                        {
+                            id: 'enabledValue',
+                            type: 'value',
+                            controllerId: 'enabled_CTRL',
+                            channel: 'rotateX',
+                            value: 3,
+                        },
+                    ],
+                    output: 'enabledValue',
+                },
+            ],
+        },
+        runtime: {},
+    };
+
+    const result = evaluateGraphs(snapshot, { frame: 0 });
+
+    assert.equal(result.length, 1);
+    assert.equal(result[0].channels[0].controllerId, 'enabled_CTRL');
 });
 
 test('evaluateGraphs reuses cached compiled graphs for the same source object', () => {

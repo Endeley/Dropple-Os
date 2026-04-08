@@ -359,3 +359,78 @@ test('evaluateSceneAnimation applies document constraint stack after rig evaluat
         },
     });
 });
+
+test('evaluateSceneAnimation composes global and rig-scoped graphs deterministically for the same rig', () => {
+    const graphA = {
+        id: 'globalGraph',
+        rigId: null,
+        priority: 1,
+        nodes: [
+            {
+                id: 'globalValue',
+                type: 'value',
+                controllerId: 'ctrl-hand',
+                channel: 'x',
+                value: 4,
+            },
+        ],
+        output: 'globalValue',
+    };
+    const graphB = {
+        id: 'rigGraph',
+        rigId: 'heroRig',
+        priority: 2,
+        nodes: [
+            {
+                id: 'rigValue',
+                type: 'value',
+                controllerId: 'ctrl-hand',
+                channel: 'x',
+                value: 7,
+            },
+        ],
+        output: 'rigValue',
+    };
+
+    const makeSnapshot = (graphs) => ({
+        document: {
+            rigs: [
+                {
+                    id: 'heroRig',
+                    controllers: [
+                        {
+                            id: 'ctrl-hand',
+                            nodeId: 'hand-node',
+                            channels: ['x'],
+                        },
+                    ],
+                    constraints: {
+                        handFollow: {
+                            id: 'handFollow',
+                            type: 'parent',
+                            parentControllerId: 'ctrl-hand',
+                            childNode: 'hand-bone',
+                        },
+                    },
+                },
+            ],
+            motion: {},
+            graphs,
+        },
+        runtime: {
+            scene: {
+                computed: {},
+            },
+        },
+    });
+
+    const left = evaluateSceneAnimation(makeSnapshot([graphA, graphB]), { frame: 0 });
+    const right = evaluateSceneAnimation(makeSnapshot([graphB, graphA]), { frame: 0 });
+
+    assert.deepEqual(left, right);
+    assert.deepEqual(left, {
+        'hand-bone': {
+            x: 7,
+        },
+    });
+});

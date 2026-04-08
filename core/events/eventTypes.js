@@ -130,6 +130,7 @@ export const EventTypes = Object.freeze({
 
     // Graph authoring
     GRAPH_NODE_ADD: 'graph/node/add',
+    GRAPH_UPDATE: 'graph/update',
     GRAPH_NODE_UPDATE: 'graph/node/update',
     GRAPH_NODE_DELETE: 'graph/node/delete',
     GRAPH_NODE_SELECT: 'graph/node/select',

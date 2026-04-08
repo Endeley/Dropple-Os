@@ -104,6 +104,7 @@ export function GraphInspectorPanel({
     activeGraph,
     selectedNode,
     graphErrors = [],
+    onPatchGraph,
     onPatchNode,
     onDeleteNode,
     onSetOutputNode,
@@ -141,6 +142,41 @@ export function GraphInspectorPanel({
                 'Graph',
                 <div style={{ display: 'grid', gap: 6 }}>
                     <div style={{ fontSize: 13, fontWeight: 700 }}>{activeGraph.id}</div>
+                    {fieldRow(
+                        'Enabled',
+                        <label
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 8,
+                                fontSize: 12,
+                                color: '#e2e8f0',
+                            }}>
+                            <input
+                                type='checkbox'
+                                checked={activeGraph.enabled !== false}
+                                onChange={(event) =>
+                                    onPatchGraph?.({
+                                        enabled: event.target.checked,
+                                    })
+                                }
+                            />
+                            <span>{activeGraph.enabled !== false ? 'Participates in runtime evaluation' : 'Excluded from runtime evaluation'}</span>
+                        </label>,
+                    )}
+                    {fieldRow(
+                        'Rig Id',
+                        <input
+                            value={toInputValue(activeGraph.rigId)}
+                            onChange={(event) =>
+                                onPatchGraph?.({
+                                    rigId: event.target.value.trim() || null,
+                                })
+                            }
+                            placeholder='optional rig binding'
+                            style={inputStyle()}
+                        />,
+                    )}
                     <div style={{ fontSize: 12, color: '#94a3b8' }}>
                         Output: {activeGraph.output ?? 'not set'}
                     </div>

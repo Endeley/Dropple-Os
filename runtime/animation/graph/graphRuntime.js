@@ -6,6 +6,10 @@ function stableCompare(left, right) {
     return String(left ?? '').localeCompare(String(right ?? ''));
 }
 
+function getGraphPriority(graph) {
+    return Number.isFinite(graph?.priority) ? graph.priority : 0;
+}
+
 function getGraphCache(runtime) {
     if (!runtime.__graphCache) {
         Object.defineProperty(runtime, '__graphCache', {
@@ -21,9 +25,12 @@ function getGraphCache(runtime) {
 
 function getDocumentGraphs(document) {
     if (!document?.graphs) return [];
-    if (Array.isArray(document.graphs)) return document.graphs;
-    if (typeof document.graphs === 'object') return Object.values(document.graphs);
-    return [];
+    const graphs = Array.isArray(document.graphs)
+        ? document.graphs
+        : typeof document.graphs === 'object'
+          ? Object.values(document.graphs)
+          : [];
+    return graphs.filter((graph) => graph?.enabled !== false);
 }
 
 function getCompiledGraph(graph, cache) {
@@ -54,7 +61,11 @@ export function evaluateGraphs(snapshot, context = {}) {
     const graphs = getDocumentGraphs(document)
         .filter(Boolean)
         .slice()
-        .sort((left, right) => stableCompare(left?.id, right?.id));
+        .sort((left, right) => {
+            const priorityDelta = getGraphPriority(right) - getGraphPriority(left);
+            if (priorityDelta !== 0) return priorityDelta;
+            return stableCompare(left?.id, right?.id);
+        });
 
     if (!graphs.length) return [];
 
@@ -78,6 +89,7 @@ export function evaluateGraphs(snapshot, context = {}) {
             layers.push({
                 ...layer,
                 id: layer?.id ?? `graph:${graph.id}`,
+                priority: Number.isFinite(layer?.priority) ? layer.priority : getGraphPriority(graph),
                 rigId: layer?.rigId ?? graph?.rigId ?? null,
             });
         }
