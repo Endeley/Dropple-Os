@@ -27,6 +27,7 @@ import {
     projectSequenceTimelineTracks,
     selectActiveSequence,
 } from '@/runtime/projection/selectors/sequenceSelectors.js';
+import { selectActiveSequenceView } from '@/runtime/projection/selectors/sequenceRuntimeSelectors.js';
 import {
     timelineIntentClockPause,
     timelineIntentClockSeek,
@@ -88,6 +89,7 @@ function sharedSelectionDescription({ selection, activeTrack, activeKeyframe, tr
 
 export function MediaInspectorPanel({ mode }) {
     const selectionState = useRuntimeStore(selectMediaSelection);
+    const runtimeScene = useRuntimeStore((state) => state.scene);
     const document = useRuntimeStore((state) => state.document);
     const timeline = useRuntimeStore(selectMediaTimeline);
     const playbackState = useRuntimeStore(selectMediaPlayback);
@@ -123,8 +125,14 @@ export function MediaInspectorPanel({ mode }) {
         [playbackState, cursorIndex, timeline]
     );
     const sequenceView = useMemo(
-        () => projectActiveSequenceView(document, { frame: Number(playback.time ?? 0) }),
-        [document, playback.time]
+        () =>
+            selectActiveSequenceView({
+                document,
+                scene: runtimeScene,
+                playback: playbackState,
+            }) ??
+            projectActiveSequenceView(document, { frame: Number(playback.time ?? 0) }),
+        [document, runtimeScene, playbackState, playback.time]
     );
     const allTracks = useMemo(
         () => [...sequenceTracks, ...projectedTracks],

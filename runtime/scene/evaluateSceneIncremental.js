@@ -108,7 +108,7 @@ export function evaluateSceneIncremental({ event, document, runtime = {} }) {
 
     scene.temporalContext = temporalContext;
     scene.activeShotId = temporalContext?.activeShot?.shotId ?? null;
-    scene.camera = temporalContext?.activeCamera ?? null;
+    scene.camera = temporalContext?.camera ?? null;
 
     if (isStructuralEvent(event?.type)) {
         scene.dependencyGraph = null;

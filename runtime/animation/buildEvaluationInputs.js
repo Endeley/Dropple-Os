@@ -1,5 +1,5 @@
 import { buildSceneTree } from '../../domain/scene/buildSceneTree.js';
-import { projectActiveSequenceView } from '../projection/selectors/sequenceSelectors.js';
+import { evaluateSequenceAtTime } from '../sequencer/evaluation/evaluateSequenceAtTime.js';
 import { getNode, getNodes, getRootIds, getSceneGraph } from '../document/documentAdapter.js';
 
 function buildShotTimeline(sceneGraph, activeSceneId) {
@@ -49,7 +49,10 @@ function buildShotTimeline(sceneGraph, activeSceneId) {
 }
 
 function buildSequenceCameraTransform(runtimeState, timeMs) {
-    const sequenceView = projectActiveSequenceView(runtimeState?.document, { timeMs });
+    const sequenceView = evaluateSequenceAtTime({
+        document: runtimeState?.document,
+        timeMs,
+    });
     const cameraNodeRef = sequenceView?.activeCamera?.cameraNodeRef ?? null;
     if (!cameraNodeRef) return null;
 

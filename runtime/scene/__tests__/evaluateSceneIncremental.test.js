@@ -344,4 +344,6 @@ test('incremental evaluator stores canonical temporal context on runtime scene',
     assert.equal(runtime.scene.temporalContext.activeShot.shotId, 'shot-a');
     assert.equal(runtime.scene.temporalContext.activeCamera.cameraNodeRef, 'camera-a');
     assert.equal(runtime.scene.activeShotId, 'shot-a');
+    assert.equal(runtime.scene.camera.source, 'sequence');
+    assert.equal(runtime.scene.camera.nodeRef, 'camera-a');
 });

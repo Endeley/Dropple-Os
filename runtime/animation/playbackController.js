@@ -2,10 +2,8 @@
 
 import { getRuntimeState } from '../state/runtimeState.js';
 import { useAnimatedRuntimeStore } from '../stores/useAnimatedRuntimeStore.js';
-import { resolveShotForTime } from '../scene/resolveShotForTime.js';
-import { getCameraTransformAtTime } from '@/core/scene/cameraPlayback.v1.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
-import { getSceneGraph } from '../document/documentAdapter.js';
+import { buildTemporalContext } from '@/runtime/temporal/buildTemporalContext.js';
 
 export function createPlaybackController({ animationController, dispatchEvent }) {
     let playing = false;
@@ -34,40 +32,43 @@ export function createPlaybackController({ animationController, dispatchEvent })
 
         const elapsed = now - startTime;
         const runtime = getRuntimeState();
-        const sceneGraph = getSceneGraph(runtime);
         const runtimeScene = runtime?.scene ?? null;
 
-        if (sceneGraph && runtimeScene) {
-            const resolved = resolveShotForTime({
-                sceneGraph,
-                activeSceneId: runtimeScene.activeSceneId,
-                globalTime: elapsed,
+        if (runtime?.document && runtimeScene) {
+            const temporalContext = buildTemporalContext({
+                document: runtime.document,
+                runtime: {
+                    ...runtime,
+                    playback: {
+                        ...(runtime?.playback ?? {}),
+                        timeMs: elapsed,
+                    },
+                },
             });
+            const resolvedShotId = temporalContext?.activeShot?.shotId ?? null;
 
             if (pendingShotId && pendingShotId === runtimeScene.activeShotId) {
                 pendingShotId = null;
             }
 
             if (
-                resolved?.shotId &&
-                resolved.shotId !== runtimeScene.activeShotId &&
-                resolved.shotId !== pendingShotId
+                resolvedShotId &&
+                resolvedShotId !== runtimeScene.activeShotId &&
+                resolvedShotId !== pendingShotId
             ) {
                 if (typeof dispatchEvent === 'function') {
-                    pendingShotId = resolved.shotId;
+                    pendingShotId = resolvedShotId;
                     dispatchEvent({
                         type: EventTypes.SHOT_SET_ACTIVE,
-                        payload: { shotId: resolved.shotId },
+                        payload: { shotId: resolvedShotId },
                     });
                 }
             }
 
-            const cameraTrack = resolved?.shot?.camera ?? null;
-            const localTime = resolved?.localTime ?? elapsed;
-            const cameraTransform = cameraTrack
-                ? getCameraTransformAtTime(cameraTrack, localTime)
-                : null;
-            useAnimatedRuntimeStore.setState({ cameraTransform }, false);
+            useAnimatedRuntimeStore.setState(
+                { cameraTransform: temporalContext?.camera?.transform ?? null },
+                false
+            );
         }
 
         if (hasAnimationFrame) {

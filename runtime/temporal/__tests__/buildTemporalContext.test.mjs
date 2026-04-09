@@ -101,6 +101,137 @@ test('buildTemporalContext resolves active shot from playback time', () => {
     assert.equal(result.activeShot?.localTime, 150);
 });
 
+test('buildTemporalContext resolves shot camera before sequence camera', () => {
+    const document = createDocument({
+        sequences: {
+            seqA: {
+                id: 'seqA',
+                frameRate: 24,
+                tracks: {
+                    cam: {
+                        id: 'cam',
+                        type: 'camera',
+                        order: 0,
+                        clips: {
+                            clip1: {
+                                id: 'clip1',
+                                start: 0,
+                                end: 24,
+                                cameraNodeRef: 'camera-node',
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        activeSequenceId: 'seqA',
+        shots: [
+            {
+                id: 'shot-a',
+                start: 0,
+                duration: 1000,
+                camera: {
+                    keyframes: [
+                        { time: 0, x: 10, y: 20, zoom: 1, rotation: 0 },
+                        { time: 1000, x: 30, y: 40, zoom: 2, rotation: 15 },
+                    ],
+                },
+            },
+        ],
+    });
+    document.sceneGraph.nodes = {
+        'camera-node': {
+            id: 'camera-node',
+            props: {
+                transform: {
+                    x: 320,
+                    y: 180,
+                    scale: 1.25,
+                    rotation: 12,
+                },
+            },
+        },
+    };
+
+    const runtime = {
+        playback: {
+            frame: 12,
+            timeMs: 500,
+        },
+        scene: {
+            activeSceneId: 'scene-1',
+        },
+    };
+
+    const result = buildTemporalContext({ document, runtime });
+
+    assert.equal(result.camera.source, 'shot');
+    assert.equal(result.camera.shotId, 'shot-a');
+    assert.equal(result.camera.transform.x, 20);
+    assert.equal(result.camera.transform.y, 30);
+    assert.equal(result.camera.transform.zoom, 1.5);
+    assert.equal(result.camera.transform.rotation, 7.5);
+});
+
+test('buildTemporalContext falls back to sequence camera when shot camera is absent', () => {
+    const document = createDocument({
+        sequences: {
+            seqA: {
+                id: 'seqA',
+                frameRate: 24,
+                tracks: {
+                    cam: {
+                        id: 'cam',
+                        type: 'camera',
+                        order: 0,
+                        clips: {
+                            clip1: {
+                                id: 'clip1',
+                                start: 0,
+                                end: 24,
+                                cameraNodeRef: 'camera-node',
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        activeSequenceId: 'seqA',
+        shots: [{ id: 'shot-a', start: 0, duration: 1000 }],
+    });
+    document.sceneGraph.nodes = {
+        'camera-node': {
+            id: 'camera-node',
+            props: {
+                transform: {
+                    x: 320,
+                    y: 180,
+                    scale: 1.25,
+                    rotation: 12,
+                },
+            },
+        },
+    };
+    const runtime = {
+        playback: {
+            frame: 12,
+            timeMs: 500,
+        },
+        scene: {
+            activeSceneId: 'scene-1',
+        },
+    };
+
+    const result = buildTemporalContext({ document, runtime });
+
+    assert.equal(result.camera.source, 'sequence');
+    assert.equal(result.camera.nodeRef, 'camera-node');
+    assert.equal(result.camera.transform.x, 320);
+    assert.equal(result.camera.transform.y, 180);
+    assert.equal(result.camera.transform.zoom, 1.25);
+    assert.equal(result.camera.transform.rotation, 12);
+});
+
 test('buildTemporalContext returns empty sequence context when no sequence exists', () => {
     const result = buildTemporalContext({
         document: createDocument({

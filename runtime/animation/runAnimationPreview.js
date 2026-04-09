@@ -37,10 +37,10 @@ export function runAnimationPreview({
             };
         });
 
-        const cameraTrack = getRuntimeState()?.scene?.camera ?? null;
-        const cameraTransform = cameraTrack
-            ? getCameraTransformAtTime(cameraTrack, time)
-            : null;
+        const camera = getRuntimeState()?.scene?.camera ?? null;
+        const cameraTransform = camera?.track
+            ? getCameraTransformAtTime(camera.track, time)
+            : camera?.transform ?? null;
 
         useAnimatedRuntimeStore.setState(
             {

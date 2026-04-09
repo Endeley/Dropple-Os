@@ -1,24 +1,39 @@
 import { evaluateSequence } from '../../sequencer/evaluation/evaluateSequence.js';
 
-export function selectSequenceState(document) {
+function getDocument(stateOrDocument) {
+    return stateOrDocument?.document ?? stateOrDocument ?? {};
+}
+
+function getRuntimeScene(stateOrDocument) {
+    return stateOrDocument?.scene ?? null;
+}
+
+function getRuntimePlayback(stateOrDocument) {
+    return stateOrDocument?.playback ?? null;
+}
+
+export function selectSequenceState(stateOrDocument) {
+    const document = getDocument(stateOrDocument);
     return document?.sequences ?? { sequences: {}, activeSequenceId: null };
 }
 
-export function selectSequenceMap(document) {
-    return selectSequenceState(document).sequences ?? {};
+export function selectSequenceMap(stateOrDocument) {
+    return selectSequenceState(stateOrDocument).sequences ?? {};
 }
 
-export function selectActiveSequenceId(document) {
-    return selectSequenceState(document).activeSequenceId ?? null;
+export function selectActiveSequenceId(stateOrDocument) {
+    const runtimeSequenceId = getRuntimeScene(stateOrDocument)?.temporalContext?.sequenceId ?? null;
+    if (runtimeSequenceId) return runtimeSequenceId;
+    return selectSequenceState(stateOrDocument).activeSequenceId ?? null;
 }
 
-export function selectActiveSequence(document) {
-    const sequenceId = selectActiveSequenceId(document);
-    return sequenceId ? selectSequenceMap(document)[sequenceId] ?? null : null;
+export function selectActiveSequence(stateOrDocument) {
+    const sequenceId = selectActiveSequenceId(stateOrDocument);
+    return sequenceId ? selectSequenceMap(stateOrDocument)[sequenceId] ?? null : null;
 }
 
-export function projectSequences(document) {
-    return Object.values(selectSequenceMap(document));
+export function projectSequences(stateOrDocument) {
+    return Object.values(selectSequenceMap(stateOrDocument));
 }
 
 export function projectSequenceTracks(sequence) {
@@ -57,11 +72,12 @@ export function projectSequenceTimelineTracks(sequence) {
     });
 }
 
-export function projectActiveSequenceView(document, playback = {}) {
-    const sequence = selectActiveSequence(document);
+export function projectActiveSequenceView(stateOrDocument, playback = {}) {
+    const runtimePlayback = getRuntimePlayback(stateOrDocument);
+    const sequence = selectActiveSequence(stateOrDocument);
     return evaluateSequence({
         sequence,
-        frame: playback?.frame ?? null,
-        timeMs: playback?.timeMs ?? null,
+        frame: playback?.frame ?? runtimePlayback?.frame ?? runtimePlayback?.time ?? null,
+        timeMs: playback?.timeMs ?? runtimePlayback?.timeMs ?? null,
     });
 }

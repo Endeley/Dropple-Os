@@ -1,5 +1,6 @@
 import { evaluateSequence } from '@/runtime/sequencer/evaluation/evaluateSequence.js';
 import { resolveShotForTime } from '@/runtime/scene/resolveShotForTime.js';
+import { getCameraTransformAtTime } from '@/core/scene/cameraPlayback.v1.js';
 
 function getSequenceMap(document) {
     const sequences = document?.sequences?.sequences;
@@ -60,6 +61,45 @@ function resolveActiveSceneId(document, runtime) {
     );
 }
 
+function resolveSequenceCameraTransform(document, activeCamera) {
+    const cameraNodeRef = activeCamera?.cameraNodeRef ?? null;
+    if (!cameraNodeRef) return null;
+
+    const node = document?.sceneGraph?.nodes?.[cameraNodeRef] ?? null;
+    const transform = node?.props?.transform ?? {};
+
+    return {
+        source: 'sequence',
+        nodeRef: cameraNodeRef,
+        clipId: activeCamera?.clipId ?? null,
+        trackId: activeCamera?.trackId ?? null,
+        transform: {
+            x: Number(transform.x ?? 0),
+            y: Number(transform.y ?? 0),
+            zoom: Number(transform.scale ?? transform.zoom ?? 1),
+            rotation: Number(transform.rotation ?? 0),
+        },
+    };
+}
+
+function resolveShotCamera(activeShot) {
+    const cameraTrack = activeShot?.shot?.camera ?? null;
+    if (!cameraTrack) return null;
+
+    const transform = getCameraTransformAtTime(
+        cameraTrack,
+        Number(activeShot?.localTime ?? 0),
+    );
+    if (!transform) return null;
+
+    return {
+        source: 'shot',
+        shotId: activeShot?.shotId ?? null,
+        track: cameraTrack,
+        transform,
+    };
+}
+
 export function buildTemporalContext({ document, runtime, cursorIndex } = {}) {
     const sequenceMap = getSequenceMap(document);
     const sequenceId = resolveActiveSequenceId(document, runtime, sequenceMap);
@@ -81,6 +121,14 @@ export function buildTemporalContext({ document, runtime, cursorIndex } = {}) {
         activeSceneId,
         globalTime: resolvedTimeMs,
     });
+    const activeCamera = sequenceView?.activeCamera
+        ? {
+              cameraNodeRef: sequenceView.activeCamera.cameraNodeRef ?? null,
+              clipId: sequenceView.activeCamera.clipId ?? null,
+              trackId: sequenceView.activeCamera.trackId ?? null,
+          }
+        : null;
+    const camera = resolveShotCamera(activeShot) ?? resolveSequenceCameraTransform(document, activeCamera);
 
     return {
         sequenceId,
@@ -94,12 +142,7 @@ export function buildTemporalContext({ document, runtime, cursorIndex } = {}) {
                   localTime: Number(activeShot.localTime ?? 0),
               }
             : null,
-        activeCamera: sequenceView?.activeCamera
-            ? {
-                  cameraNodeRef: sequenceView.activeCamera.cameraNodeRef ?? null,
-                  clipId: sequenceView.activeCamera.clipId ?? null,
-                  trackId: sequenceView.activeCamera.trackId ?? null,
-              }
-            : null,
+        activeCamera,
+        camera,
     };
 }

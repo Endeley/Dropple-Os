@@ -5,6 +5,7 @@ import {
     projectActiveSequenceView,
     projectSequenceTimelineTracks,
 } from '@/runtime/projection/selectors/sequenceSelectors.js';
+import { selectActiveSequenceView } from '@/runtime/projection/selectors/sequenceRuntimeSelectors.js';
 import {
     createSequence,
     createSequenceClip,
@@ -73,4 +74,50 @@ test('projectActiveSequenceView resolves active camera from document.sequences',
 
     assert.equal(view.sequenceId, 'fight-sequence');
     assert.equal(view.activeCamera.cameraNodeRef, 'camera-a');
+});
+
+test('selectActiveSequenceView reads canonical runtime temporal context', () => {
+    const state = {
+        document: {
+            sequences: {
+                activeSequenceId: 'fight-sequence',
+                sequences: {
+                    'fight-sequence': createSequence({
+                        id: 'fight-sequence',
+                        frameRate: 24,
+                        tracks: {},
+                    }),
+                },
+            },
+        },
+        scene: {
+            temporalContext: {
+                sequenceId: 'fight-sequence',
+                frame: 32,
+                timeMs: 1333,
+                activeClips: [],
+                activeShot: {
+                    shotId: 'shot-a',
+                    sceneId: 'scene-1',
+                    localTime: 333,
+                },
+                activeCamera: {
+                    cameraNodeRef: 'camera-runtime',
+                    clipId: 'clip-runtime',
+                    trackId: 'track-runtime',
+                },
+            },
+        },
+        playback: {
+            frame: 0,
+        },
+    };
+
+    const view = selectActiveSequenceView(state);
+
+    assert.equal(view.sequenceId, 'fight-sequence');
+    assert.equal(view.frame, 32);
+    assert.equal(view.timeMs, 1333);
+    assert.equal(view.activeCamera.cameraNodeRef, 'camera-runtime');
+    assert.equal(view.activeShot.shotId, 'shot-a');
 });

@@ -1,5 +1,6 @@
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { projectActiveSequenceView } from '@/runtime/projection/selectors/sequenceSelectors.js';
+import { selectActiveSequenceView } from '@/runtime/projection/selectors/sequenceRuntimeSelectors.js';
 
 /**
  * Canonical non-React projection access.
@@ -13,9 +14,11 @@ export function getProjectedRuntimeViewState() {
 
     return {
         ...state,
-        sequencer: projectActiveSequenceView(state.document, {
-            frame: Number(state?.cursorIndex ?? 0),
-        }),
+        sequencer:
+            selectActiveSequenceView(state) ??
+            projectActiveSequenceView(state.document, {
+                frame: Number(state?.cursorIndex ?? 0),
+            }),
         isReplaying: state.isReplaying ?? false,
     };
 }
