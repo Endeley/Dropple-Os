@@ -268,3 +268,80 @@ test('incremental evaluator applies runtime animation transforms into scene comp
     });
     assert.deepEqual(runtime.scene.computed.child.worldTransform, [1, 0, 0, 1, 50, 80]);
 });
+
+test('incremental evaluator stores canonical temporal context on runtime scene', () => {
+    const document = {
+        sceneGraph: {
+            activeSceneId: 'scene-1',
+            rootIds: ['root'],
+            nodes: {
+                root: {
+                    id: 'root',
+                    type: 'frame',
+                    children: [],
+                    props: { transform: { x: 0, y: 0, rotation: 0 } },
+                },
+            },
+            scenes: [
+                {
+                    id: 'scene-1',
+                    shots: [{ id: 'shot-a', start: 0, duration: 1000 }],
+                },
+            ],
+        },
+        sequences: {
+            sequences: {
+                seqA: {
+                    id: 'seqA',
+                    frameRate: 24,
+                    tracks: {
+                        cam: {
+                            id: 'cam',
+                            type: 'camera',
+                            order: 0,
+                            clips: {
+                                clip1: {
+                                    id: 'clip1',
+                                    start: 0,
+                                    end: 24,
+                                    cameraNodeRef: 'camera-a',
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            activeSequenceId: 'seqA',
+        },
+    };
+    const runtime = {
+        playback: {
+            frame: 12,
+            timeMs: 500,
+        },
+        scene: {
+            activeSceneId: 'scene-1',
+            activeShotId: null,
+            camera: null,
+            computed: {},
+            transformDirty: new Set(),
+            layoutDirty: new Set(),
+            paintDirty: new Set(),
+            indexDirty: new Set(),
+            layoutRoots: new Map(),
+            dependencyGraph: null,
+            spatialIndex: null,
+        },
+    };
+
+    evaluateSceneIncremental({
+        event: { type: 'clock/seek', payload: { time: 12 } },
+        document,
+        runtime,
+    });
+
+    assert.equal(runtime.scene.temporalContext.sequenceId, 'seqA');
+    assert.equal(runtime.scene.temporalContext.activeShot.shotId, 'shot-a');
+    assert.equal(runtime.scene.temporalContext.activeCamera.cameraNodeRef, 'camera-a');
+    assert.equal(runtime.scene.activeShotId, 'shot-a');
+});

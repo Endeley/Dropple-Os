@@ -64,6 +64,7 @@ export const initialRuntimeState = {
     activeSceneId: null,
     activeShotId: null,
     camera: null,
+    temporalContext: null,
     computed: {},
     transformDirty: new Set(),
     layoutDirty: new Set(),

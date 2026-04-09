@@ -21,6 +21,7 @@ import {
     translationMatrix,
 } from '../math/matrix2d.js';
 import { evaluateSceneAnimation } from '@/runtime/animation/evaluateSceneAnimation.js';
+import { buildTemporalContext } from '@/runtime/temporal/buildTemporalContext.js';
 
 function isStructuralEvent(eventType) {
     return (
@@ -99,6 +100,15 @@ function applyAnimationTransformsToScene({ document, scene, transforms }) {
 export function evaluateSceneIncremental({ event, document, runtime = {} }) {
     const scene = ensureSceneCache(runtime);
     computeDirtyDomains({ event, runtime });
+    const temporalContext = buildTemporalContext({
+        document,
+        runtime,
+        cursorIndex: runtime?.cursorIndex ?? null,
+    });
+
+    scene.temporalContext = temporalContext;
+    scene.activeShotId = temporalContext?.activeShot?.shotId ?? null;
+    scene.camera = temporalContext?.activeCamera ?? null;
 
     if (isStructuralEvent(event?.type)) {
         scene.dependencyGraph = null;
@@ -206,6 +216,7 @@ export function evaluateSceneIncremental({ event, document, runtime = {} }) {
             },
             {
                 event,
+                temporalContext,
                 frame:
                     runtime?.playback?.frame ??
                     runtime?.playback?.time ??

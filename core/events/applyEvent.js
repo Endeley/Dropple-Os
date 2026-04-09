@@ -13,6 +13,7 @@ const initialState = Object.freeze({
         activeSceneId: null,
         activeShotId: null,
         camera: null,
+        temporalContext: null,
     }),
     // ✅ Always includes default timeline so animation reducers never no-op on replay
     timeline: Object.freeze({
