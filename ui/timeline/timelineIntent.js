@@ -1,4 +1,5 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
+import { shotEditorIntentSetActive } from '@/ui/workspace/editor/shotEditorIntent.js';
 
 export function timelineIntentAdd(payload) {
     if (!payload) return;
@@ -106,8 +107,7 @@ export function timelineIntentClockPause() {
 }
 
 export function timelineIntentShotSetActive(payload) {
-    if (!payload?.shotId) return;
-    canvasBus.emit('intent.shot.setActive', payload);
+    shotEditorIntentSetActive(payload);
 }
 
 export function timelineIntentSequenceCreate(payload) {

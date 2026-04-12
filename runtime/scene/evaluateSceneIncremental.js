@@ -99,6 +99,9 @@ function applyAnimationTransformsToScene({ document, scene, transforms }) {
 
 export function evaluateSceneIncremental({ event, document, runtime = {} }) {
     const scene = ensureSceneCache(runtime);
+    if (scene.activeSceneId == null) {
+        scene.activeSceneId = document?.sceneGraph?.activeSceneId ?? null;
+    }
     computeDirtyDomains({ event, runtime });
     const temporalContext = buildTemporalContext({
         document,
@@ -107,6 +110,7 @@ export function evaluateSceneIncremental({ event, document, runtime = {} }) {
     });
 
     scene.temporalContext = temporalContext;
+    scene.activeSceneId = scene.activeSceneId ?? null;
     scene.activeShotId = temporalContext?.activeShot?.shotId ?? null;
     scene.camera = temporalContext?.camera ?? null;
 

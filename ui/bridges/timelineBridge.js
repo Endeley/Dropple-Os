@@ -86,14 +86,6 @@ export function registerTimelineBridge(dispatcher) {
             console.warn('[timelineBridge] Dispatcher not provided; skipping clock pause.');
         }
     };
-    const onShotSetActive = (payload) => {
-        if (!payload) return;
-        if (typeof dispatch === 'function') {
-            dispatch({ type: EventTypes.SHOT_SET_ACTIVE, payload });
-        } else {
-            console.warn('[timelineBridge] Dispatcher not provided; skipping shot set active.');
-        }
-    };
     const onSequenceCreate = (payload) => {
         if (!payload) return;
         if (typeof dispatch === 'function') {
@@ -153,7 +145,6 @@ export function registerTimelineBridge(dispatcher) {
     canvasBus.on('intent.clock.seek', onClockSeek);
     canvasBus.on('intent.clock.play', onClockPlay);
     canvasBus.on('intent.clock.pause', onClockPause);
-    canvasBus.on('intent.shot.setActive', onShotSetActive);
     canvasBus.on('intent.sequence.create', onSequenceCreate);
     canvasBus.on('intent.sequence.setActive', onSequenceSetActive);
     canvasBus.on('intent.sequence.track.create', onSequenceTrackCreate);
@@ -172,7 +163,6 @@ export function registerTimelineBridge(dispatcher) {
         canvasBus.off('intent.clock.seek', onClockSeek);
         canvasBus.off('intent.clock.play', onClockPlay);
         canvasBus.off('intent.clock.pause', onClockPause);
-        canvasBus.off('intent.shot.setActive', onShotSetActive);
         canvasBus.off('intent.sequence.create', onSequenceCreate);
         canvasBus.off('intent.sequence.setActive', onSequenceSetActive);
         canvasBus.off('intent.sequence.track.create', onSequenceTrackCreate);

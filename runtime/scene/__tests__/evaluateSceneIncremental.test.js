@@ -347,3 +347,59 @@ test('incremental evaluator stores canonical temporal context on runtime scene',
     assert.equal(runtime.scene.camera.source, 'sequence');
     assert.equal(runtime.scene.camera.nodeRef, 'camera-a');
 });
+
+test('incremental evaluator bootstraps activeSceneId into runtime scene once', () => {
+    const runtime = evaluateSceneIncremental({
+        event: {
+            type: 'clock/seek',
+            payload: { time: 0 },
+        },
+        document: {
+            sceneGraph: {
+                activeSceneId: 'scene-boot',
+                rootIds: [],
+                nodes: {},
+                scenes: [],
+            },
+        },
+        runtime: {},
+    });
+
+    assert.equal(runtime.scene.activeSceneId, 'scene-boot');
+});
+
+test('incremental evaluator keeps runtime activeSceneId authoritative over document defaults', () => {
+    const runtime = evaluateSceneIncremental({
+        event: {
+            type: 'clock/seek',
+            payload: { time: 100 },
+        },
+        document: {
+            sceneGraph: {
+                activeSceneId: 'scene-a',
+                rootIds: [],
+                nodes: {},
+                scenes: [
+                    { id: 'scene-a', shots: [{ id: 'shot-a', start: 0, duration: 500 }] },
+                    { id: 'scene-b', shots: [{ id: 'shot-b', start: 0, duration: 500 }] },
+                ],
+            },
+            sequences: {
+                sequences: {},
+                activeSequenceId: null,
+            },
+        },
+        runtime: {
+            scene: {
+                activeSceneId: 'scene-b',
+            },
+            playback: {
+                timeMs: 100,
+            },
+        },
+    });
+
+    assert.equal(runtime.scene.activeSceneId, 'scene-b');
+    assert.equal(runtime.scene.temporalContext.activeShot.shotId, 'shot-b');
+    assert.equal(runtime.scene.temporalContext.activeShot.sceneId, 'scene-b');
+});

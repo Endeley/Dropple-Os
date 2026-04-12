@@ -248,6 +248,41 @@ test('buildTemporalContext returns empty sequence context when no sequence exist
     assert.equal(result.activeCamera, null);
 });
 
+test('buildTemporalContext does not fall back to document activeSceneId when runtime scene differs', () => {
+    const document = {
+        sceneGraph: {
+            activeSceneId: 'scene-a',
+            scenes: [
+                {
+                    id: 'scene-a',
+                    shots: [{ id: 'shot-a', start: 0, duration: 500 }],
+                },
+                {
+                    id: 'scene-b',
+                    shots: [{ id: 'shot-b', start: 0, duration: 500 }],
+                },
+            ],
+        },
+        sequences: {
+            sequences: {},
+            activeSequenceId: null,
+        },
+    };
+    const runtime = {
+        playback: {
+            timeMs: 100,
+        },
+        scene: {
+            activeSceneId: 'scene-b',
+        },
+    };
+
+    const result = buildTemporalContext({ document, runtime });
+
+    assert.equal(result.activeShot?.sceneId, 'scene-b');
+    assert.equal(result.activeShot?.shotId, 'shot-b');
+});
+
 test('buildTemporalContext is stable under sequence track and clip reordering', () => {
     const sequenceA = {
         id: 'seqA',

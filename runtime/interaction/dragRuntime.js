@@ -11,6 +11,9 @@ export const initialDragState = Object.freeze({
     rotation: null,
     meta: null,
     guides: [],
+
+    // 🔑 NEW: interaction projection layer
+    interactionTransforms: null,
 });
 
 export function startDrag(state, payload = {}) {
@@ -27,39 +30,43 @@ export function startDrag(state, payload = {}) {
         resize:
             payload.type === 'resize'
                 ? {
-                    handle: payload.handle ?? null,
-                    originBounds: payload.originBounds ?? null,
-                }
+                      handle: payload.handle ?? null,
+                      originBounds: payload.originBounds ?? null,
+                  }
                 : null,
         rotation:
             payload.type === 'rotate'
                 ? {
-                    originAngle: payload.originAngle ?? 0,
-                    center: payload.center ?? null,
-                }
+                      originAngle: payload.originAngle ?? 0,
+                      center: payload.center ?? null,
+                  }
                 : null,
         meta: payload.meta ?? null,
         guides: Array.isArray(payload.guides) ? [...payload.guides] : [],
+
+        // 🔑 INIT interaction layer
+        interactionTransforms: null,
     };
 }
 
 export function updateDrag(state, payload) {
     if (!state?.active) return state ?? initialDragState;
 
-    const pointer =
-        payload && typeof payload === 'object' && !Array.isArray(payload) && 'pointer' in payload
-            ? payload.pointer
-            : payload;
-    const guides =
-        payload && typeof payload === 'object' && !Array.isArray(payload) && 'guides' in payload
-            ? payload.guides
-            : state.guides;
+    const pointer = payload && typeof payload === 'object' && !Array.isArray(payload) && 'pointer' in payload ? payload.pointer : payload;
+
+    const guides = payload && typeof payload === 'object' && !Array.isArray(payload) && 'guides' in payload ? payload.guides : state.guides;
+
+    // 🔑 NEW: interaction transforms from computeDragDelta
+    const interactionTransforms = payload && typeof payload === 'object' && !Array.isArray(payload) && 'interactionTransforms' in payload ? payload.interactionTransforms : state.interactionTransforms;
 
     return {
         ...state,
         previousPointer: state.currentPointer ?? state.startPointer ?? null,
         currentPointer: pointer ?? null,
         guides: Array.isArray(guides) ? [...guides] : [],
+
+        // 🔑 STORE interaction layer
+        interactionTransforms,
     };
 }
 

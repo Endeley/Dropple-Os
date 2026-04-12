@@ -194,6 +194,13 @@ export const EventTypes = Object.freeze({
     // ─────────────────────────────
     // Scene (runtime projection state)
     // ─────────────────────────────
+    SCENE_SHOT_TRACK_CREATE: 'scene/shot-track/create',
+    SCENE_SHOT_TRACK_UPDATE: 'scene/shot-track/update',
+    SCENE_SHOT_TRACK_DELETE: 'scene/shot-track/delete',
+    SCENE_SHOT_CREATE: 'scene/shot/create',
+    SCENE_SHOT_MOVE: 'scene/shot/move',
+    SCENE_SHOT_UPDATE: 'scene/shot/update',
+    SCENE_SHOT_DELETE: 'scene/shot/delete',
     SHOT_SET_ACTIVE: 'scene/shot/set-active',
 
     // ─────────────────────────────

@@ -32,11 +32,39 @@ export function applyAxisLock(delta, options = {}) {
     };
 }
 
+/**
+ * 🔑 NEW: resolves animation base transform (read-only)
+ */
+function resolveBaseTransform(nodeId, runtime) {
+    const computed = runtime?.scene?.computed?.transforms?.[nodeId];
+    if (computed) return computed;
+
+    return null;
+}
+
+/**
+ * 🔑 NEW: builds interaction layer (non-mutating)
+ */
+function buildInteractionTransform(nodeId, delta, runtime) {
+    const base = resolveBaseTransform(nodeId, runtime);
+
+    const baseX = base?.x ?? 0;
+    const baseY = base?.y ?? 0;
+
+    return {
+        x: baseX + delta.dx,
+        y: baseY + delta.dy,
+    };
+}
+
 export function computeDragDelta(dragState, options = {}) {
     let delta = computeRawDragDelta(dragState);
     delta = applyAxisLock(delta, options);
-    let { dx, dy } = delta;
 
+    let { dx, dy } = delta;
+    let guides = [];
+
+    // 🔑 Snap resolver (priority)
     if (typeof options.snapResolver === 'function') {
         const resolved = options.snapResolver(
             { dx, dy },
@@ -47,19 +75,14 @@ export function computeDragDelta(dragState, options = {}) {
         );
 
         if (resolved && Number.isFinite(resolved.dx) && Number.isFinite(resolved.dy)) {
-            return {
-                dx: resolved.dx,
-                dy: resolved.dy,
-                guides: Array.isArray(resolved.guides) ? resolved.guides : [],
-            };
+            dx = resolved.dx;
+            dy = resolved.dy;
+            guides = Array.isArray(resolved.guides) ? resolved.guides : [];
         }
     }
-
-    if (options.snap) {
-        const snapped =
-            typeof options.snap === 'function'
-                ? options.snap(delta, options.snapOptions)
-                : snapDelta(delta, options.snapOptions);
+    // 🔑 Grid / fallback snap
+    else if (options.snap) {
+        const snapped = typeof options.snap === 'function' ? options.snap(delta, options.snapOptions) : snapDelta(delta, options.snapOptions);
 
         if (snapped && Number.isFinite(snapped.dx) && Number.isFinite(snapped.dy)) {
             dx = snapped.dx;
@@ -67,5 +90,25 @@ export function computeDragDelta(dragState, options = {}) {
         }
     }
 
-    return { dx, dy, guides: [] };
+    // 🔑 NEW: build interaction transforms per node
+    const runtime = options.runtime ?? null;
+    const nodeIds = dragState?.nodeIds ?? [];
+
+    let interactionTransforms = null;
+
+    if (runtime && nodeIds.length > 0) {
+        interactionTransforms = {};
+
+        for (const nodeId of nodeIds) {
+            interactionTransforms[nodeId] = buildInteractionTransform(nodeId, { dx, dy }, runtime);
+        }
+    }
+
+    return {
+        dx,
+        dy,
+        guides,
+        // 🔑 NEW OUTPUT
+        interactionTransforms,
+    };
 }

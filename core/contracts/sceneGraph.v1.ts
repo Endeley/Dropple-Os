@@ -37,9 +37,16 @@ export type SceneV1 = {
     duration: number;
 
     /**
-     * Ordered shot list.
+     * Legacy single-track shot list kept for compatibility.
+     * Canonical authoring truth lives in shotTracks.
      */
-    shots: ShotV1[];
+    shots?: ShotV1[];
+
+    /**
+     * Ordered shot track list.
+     * Canonical authoring truth.
+     */
+    shotTracks?: ShotTrackV1[];
 
     /**
      * Optional scene-level audio
@@ -74,9 +81,27 @@ export type ShotV1 = {
     camera?: CameraTrackV1;
 
     /**
+     * Optional transition into the next adjacent shot.
+     */
+    transitionOut?: TransitionV1 | null;
+
+    /**
      * Optional per-shot audio.
      */
     audioTracks?: AudioTrackV1[];
+};
+
+export type ShotTrackV1 = {
+    id: string;
+    name?: string;
+    order: number;
+    kind?: 'shot';
+    shots: ShotV1[];
+};
+
+export type TransitionV1 = {
+    type: 'cut' | 'crossfade';
+    durationMs: number;
 };
 
 export type CameraTrackV1 = {

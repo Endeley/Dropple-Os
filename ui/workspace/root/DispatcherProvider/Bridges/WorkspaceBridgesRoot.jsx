@@ -13,6 +13,7 @@ import { registerEditEventBridge } from '@/ui/bridges/editEventBridge.js';
 import { registerAnimationKeyframeBridge } from '@/ui/bridges/animationKeyframeBridge.js';
 import { registerLayoutConvertBridge } from '@/ui/bridges/layoutConvertBridge.js';
 import { registerTimelineBridge } from '@/ui/bridges/timelineBridge.js';
+import { registerShotEditorBridge } from '@/ui/bridges/shotEditorBridge.js';
 import { registerToolIntentBridge } from '@/ui/bridges/toolIntentBridge.js';
 import { registerSelectionIntentBridge } from '@/ui/bridges/selectionIntentBridge.js';
 import { registerInputIntentBridge } from '@/ui/bridges/inputIntentBridge.js';
@@ -37,6 +38,7 @@ export function WorkspaceBridgesRoot() {
       registerAnimationKeyframeBridge(dispatch),
       registerLayoutConvertBridge(dispatcher),
       registerTimelineBridge(dispatcher),
+      registerShotEditorBridge(dispatcher),
       registerToolIntentBridge(dispatcher),
       registerSelectionIntentBridge(dispatcher),
       registerInputIntentBridge(),

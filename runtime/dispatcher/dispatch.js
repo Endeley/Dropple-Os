@@ -74,6 +74,7 @@ import {
     startDrag,
     updateDrag,
 } from '@/runtime/interaction/dragRuntime.js';
+import { isShotTransitionValidationError } from '@/core/project/normalizeShotTransitionOut.js';
 
 function clearAnimatedPreview() {
     useAnimatedRuntimeStore.setState(
@@ -768,6 +769,10 @@ export function createEventDispatcher({
                 }
                 return committed;
             } catch (err) {
+                if (isShotTransitionValidationError(err)) {
+                    __setRuntimeErrorInternal(err);
+                    return __getRuntimeStateInternal();
+                }
                 console.error('[Dispatcher error]', err, rawEvent);
                 __setRuntimeErrorInternal(err);
                 return __getRuntimeStateInternal();

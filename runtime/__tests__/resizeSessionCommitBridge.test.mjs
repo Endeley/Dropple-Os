@@ -20,6 +20,15 @@ const actions = createSessionCommitActions({
   event: { sessionType: 'resize', payload },
   context: {
     nodesById,
+    runtime: {
+      scene: {
+        computed: {
+          transforms: {
+            a: { x: 25, y: 10 },
+          },
+        },
+      },
+    },
     selectedIds: ['a'],
     frameTime: 0,
     autoKeyframeEnabled: false,
@@ -37,6 +46,11 @@ if (dispatchEvents.length !== 1) {
 
 if (dispatchEvents[0].type !== EventTypes.NODE_UPDATE) {
   console.error('Unexpected dispatch event type');
+  process.exit(1);
+}
+
+if (dispatchEvents[0].payload.patch.x !== 27.5 || dispatchEvents[0].payload.patch.y !== 11) {
+  console.error('Expected transform-aware resize math to scale from computed position');
   process.exit(1);
 }
 

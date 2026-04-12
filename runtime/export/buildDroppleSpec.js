@@ -1,6 +1,6 @@
-import { deriveEdgesFromNodes } from './deriveEdgesFromNodes';
-import { exportModes } from './exportModes';
-import { exportMetadata } from './exportMetadata';
+import { deriveEdgesFromNodes } from './deriveEdgesFromNodes.js';
+import { exportModes } from './exportModes.js';
+import { exportMetadata } from './exportMetadata.js';
 
 /**
  * Build authoritative DroppleSpec from runtime workspace.

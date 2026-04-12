@@ -8,6 +8,8 @@ export function executeExport(shot, timeline, options = {}) {
         presentHash: shot?.presentHash ?? null,
         activeShotId: shot?.activeShotId ?? null,
         frames: options.frames ?? undefined,
+        evaluateShotAtFn: options.evaluateShotAtFn ?? undefined,
+        hashEvaluatedSceneFn: options.hashEvaluatedSceneFn ?? undefined,
     });
 
     if (!result.allowed) {

@@ -3,6 +3,10 @@ import { createSpatialIndex } from '@/runtime/spatial/index.js';
 export function ensureSceneCache(runtime) {
     if (!runtime.scene) {
         runtime.scene = {
+            activeSceneId: null,
+            activeShotId: null,
+            camera: null,
+            temporalContext: null,
             computed: {},
             transformDirty: new Set(),
             layoutDirty: new Set(),
@@ -20,6 +24,22 @@ export function ensureSceneCache(runtime) {
             nodeToPartition: null,
         };
         return runtime.scene;
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(runtime.scene, 'activeSceneId')) {
+        runtime.scene.activeSceneId = null;
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(runtime.scene, 'activeShotId')) {
+        runtime.scene.activeShotId = null;
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(runtime.scene, 'camera')) {
+        runtime.scene.camera = null;
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(runtime.scene, 'temporalContext')) {
+        runtime.scene.temporalContext = null;
     }
 
     if (!runtime.scene.computed) {
@@ -77,6 +97,10 @@ export function ensureSceneCache(runtime) {
 export function clearSceneCache(runtime) {
     const scene = ensureSceneCache(runtime);
 
+    scene.activeSceneId = null;
+    scene.activeShotId = null;
+    scene.camera = null;
+    scene.temporalContext = null;
     scene.computed = {};
     scene.transformDirty = new Set();
     scene.layoutDirty = new Set();

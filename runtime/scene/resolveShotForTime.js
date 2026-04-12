@@ -1,17 +1,20 @@
+import { getCanonicalShotTrack } from '@/core/scene/shotTracks.js';
+
 export function resolveShotForTime({ sceneGraph, activeSceneId, globalTime }) {
     if (!sceneGraph || !activeSceneId) return null;
     if (!Number.isFinite(globalTime)) return null;
 
     const scene = sceneGraph.scenes?.find((item) => item.id === activeSceneId);
-    if (!scene || !Array.isArray(scene.shots) || scene.shots.length === 0) return null;
+    const shots = getCanonicalShotTrack(scene)?.shots ?? [];
+    if (!scene || shots.length === 0) return null;
 
     let match = null;
-    for (const shot of scene.shots) {
+    for (const shot of shots) {
         if (!shot) continue;
         const start = Number.isFinite(shot.start) ? shot.start : 0;
         const duration = Number.isFinite(shot.duration) ? shot.duration : 0;
         const end = start + duration;
-        const isLast = shot === scene.shots[scene.shots.length - 1];
+        const isLast = shot === shots[shots.length - 1];
         if (globalTime >= start && (globalTime < end || (isLast && globalTime <= end))) {
             match = { shot, start, end, duration };
             break;

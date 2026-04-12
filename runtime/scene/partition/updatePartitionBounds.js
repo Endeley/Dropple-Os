@@ -1,3 +1,23 @@
+function normalizeBounds(bounds) {
+    if (!bounds) return null;
+
+    const x = Number(bounds.x);
+    const y = Number(bounds.y);
+    const width = Number(bounds.width);
+    const height = Number(bounds.height);
+
+    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(width) || !Number.isFinite(height)) {
+        return null;
+    }
+
+    return {
+        x,
+        y,
+        width: Math.max(0, width),
+        height: Math.max(0, height),
+    };
+}
+
 export function updatePartitionBounds(scene) {
     const partitions = scene?.partitions;
     const computed = scene?.computed;
@@ -11,7 +31,7 @@ export function updatePartitionBounds(scene) {
         let maxY = -Infinity;
 
         for (const nodeId of partition.nodes) {
-            const bounds = computed?.[nodeId]?.worldBounds;
+            const bounds = normalizeBounds(computed?.[nodeId]?.worldBounds);
             if (!bounds) continue;
 
             minX = Math.min(minX, bounds.x);
@@ -22,13 +42,14 @@ export function updatePartitionBounds(scene) {
 
         if (minX === Infinity) {
             partition.bounds = null;
-        } else {
-            partition.bounds = {
-                x: minX,
-                y: minY,
-                width: maxX - minX,
-                height: maxY - minY,
-            };
+            continue;
         }
+
+        partition.bounds = {
+            x: minX,
+            y: minY,
+            width: Math.max(0, maxX - minX),
+            height: Math.max(0, maxY - minY),
+        };
     }
 }

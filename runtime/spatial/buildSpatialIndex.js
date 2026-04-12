@@ -1,23 +1,26 @@
 import { createSpatialIndex } from './createSpatialIndex.js';
-import { indexNodeBounds } from './indexNodeBounds.js';
+import { indexComputedNodeBounds } from './indexNodeBounds.js';
+
+function getComputedEntries(runtimeScene) {
+    const computed = runtimeScene?.computed;
+
+    if (computed instanceof Map) {
+        return Array.from(computed.entries()).sort(([leftId], [rightId]) => String(leftId).localeCompare(String(rightId)));
+    }
+
+    if (computed && typeof computed === 'object') {
+        return Object.entries(computed).sort(([leftId], [rightId]) => String(leftId).localeCompare(String(rightId)));
+    }
+
+    return [];
+}
 
 export function buildSpatialIndex(runtimeScene, cellSize = 128) {
     const index = createSpatialIndex(cellSize);
-    const computed = runtimeScene?.computed || {};
-    const nodeIds = Object.keys(computed).sort();
+    const computedEntries = getComputedEntries(runtimeScene);
 
-    for (const nodeId of nodeIds) {
-        const entry = computed[nodeId];
-        if (!entry) continue;
-
-        const bounds = entry.worldBounds ?? {
-            x: entry.x ?? 0,
-            y: entry.y ?? 0,
-            width: entry.width ?? 0,
-            height: entry.height ?? 0,
-        };
-
-        indexNodeBounds(index, nodeId, bounds);
+    for (const [nodeId, entry] of computedEntries) {
+        indexComputedNodeBounds(index, nodeId, entry);
     }
 
     return index;

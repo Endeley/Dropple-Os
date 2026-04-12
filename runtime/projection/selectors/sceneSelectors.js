@@ -3,6 +3,7 @@ export {
     selectActiveScene,
     selectSceneById,
     selectShots,
+    selectShotTracks,
     selectActiveShot,
     selectCompositionForShot,
     selectShotEnd,

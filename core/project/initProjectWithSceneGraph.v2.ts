@@ -1,6 +1,7 @@
 import { v4 as uuid } from 'uuid';
 
 import type { ProjectV2 } from '../contracts/project.v2';
+import { PRIMARY_SHOT_TRACK_ID } from '@/core/scene/shotTracks.js';
 
 export const DEFAULT_SHOT_DURATION_MS = 5000;
 
@@ -48,6 +49,25 @@ export function createProjectV2({
                             start: 0,
                             duration: DEFAULT_SHOT_DURATION_MS,
                             compositionId: rootCompositionId,
+                            transitionOut: null,
+                        },
+                    ],
+                    shotTracks: [
+                        {
+                            id: PRIMARY_SHOT_TRACK_ID,
+                            name: 'Primary',
+                            order: 0,
+                            kind: 'shot',
+                            shots: [
+                                {
+                                    id: shotId,
+                                    name: 'Shot 1',
+                                    start: 0,
+                                    duration: DEFAULT_SHOT_DURATION_MS,
+                                    compositionId: rootCompositionId,
+                                    transitionOut: null,
+                                },
+                            ],
                         },
                     ],
                 },

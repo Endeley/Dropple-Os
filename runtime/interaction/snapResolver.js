@@ -60,20 +60,21 @@ function normalizeTarget(target) {
     return null;
 }
 
-function normalizeLayoutNode(node) {
+function normalizeLayoutNode(node, computedTransforms = {}) {
     const layout = node?.layout ?? {};
+    const transform = computedTransforms[node?.id] ?? node?.transform ?? {};
     return {
         id: node?.id ?? null,
-        x: layout.x ?? node?.x ?? 0,
-        y: layout.y ?? node?.y ?? 0,
-        width: layout.width ?? node?.width ?? 0,
-        height: layout.height ?? node?.height ?? 0,
+        x: transform.x ?? layout.x ?? node?.x ?? 0,
+        y: transform.y ?? layout.y ?? node?.y ?? 0,
+        width: transform.width ?? layout.width ?? node?.width ?? 0,
+        height: transform.height ?? layout.height ?? node?.height ?? 0,
     };
 }
 
-function collectSpacingTargetsX(nodesById, excludedIds) {
+function collectSpacingTargetsX(nodesById, excludedIds, computedTransforms) {
     const items = Object.values(nodesById ?? {})
-        .map(normalizeLayoutNode)
+        .map((node) => normalizeLayoutNode(node, computedTransforms))
         .filter((node) => node.id && !excludedIds.has(node.id))
         .sort((a, b) => a.x - b.x || a.y - b.y || a.id.localeCompare(b.id));
     const targets = [];
@@ -99,9 +100,9 @@ function collectSpacingTargetsX(nodesById, excludedIds) {
     return targets;
 }
 
-function collectSpacingTargetsY(nodesById, excludedIds) {
+function collectSpacingTargetsY(nodesById, excludedIds, computedTransforms) {
     const items = Object.values(nodesById ?? {})
-        .map(normalizeLayoutNode)
+        .map((node) => normalizeLayoutNode(node, computedTransforms))
         .filter((node) => node.id && !excludedIds.has(node.id))
         .sort((a, b) => a.y - b.y || a.x - b.x || a.id.localeCompare(b.id));
     const targets = [];
@@ -130,12 +131,13 @@ function collectSpacingTargetsY(nodesById, excludedIds) {
 export function collectSnapTargets(state, dragState) {
     const excludedIds = Array.isArray(dragState?.nodeIds) ? dragState.nodeIds : [];
     const excluded = new Set(excludedIds);
+    const computedTransforms = state?.scene?.computed?.transforms ?? {};
     const axisTargets = computeSnapTargets(state?.scene?.computed ?? {}, excludedIds)
         .map(normalizeTarget)
         .filter(Boolean);
     const spacingTargets = [
-        ...collectSpacingTargetsX(state?.nodes ?? {}, excluded),
-        ...collectSpacingTargetsY(state?.nodes ?? {}, excluded),
+        ...collectSpacingTargetsX(state?.nodes ?? {}, excluded, computedTransforms),
+        ...collectSpacingTargetsY(state?.nodes ?? {}, excluded, computedTransforms),
     ];
 
     return [...axisTargets, ...spacingTargets];

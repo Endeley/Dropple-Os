@@ -1,5 +1,6 @@
 export * from './runtimeSelectors.js';
 export * from './sceneSelectors.js';
+export * from './shotTimelineSelectors.js';
 export * from './appSelectors.js';
 export * from './mediaSelectors.js';
 export * from './graphSelectors.js';

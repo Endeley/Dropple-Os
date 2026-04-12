@@ -71,7 +71,7 @@ test('computeDragDelta resolves pointer delta deterministically', () => {
         currentPointer: { x: 16, y: 25 },
     });
 
-    assert.deepEqual(delta, { dx: 6, dy: 10, guides: [] });
+    assert.deepEqual(delta, { dx: 6, dy: 10, guides: [], interactionTransforms: null });
 });
 
 test('computeDragDelta snaps to grid before apply when enabled', () => {
@@ -86,7 +86,7 @@ test('computeDragDelta snaps to grid before apply when enabled', () => {
         },
     );
 
-    assert.deepEqual(delta, { dx: 10, dy: 10, guides: [] });
+    assert.deepEqual(delta, { dx: 10, dy: 10, guides: [], interactionTransforms: null });
 });
 
 test('computeDragDelta axis-locks to the dominant direction when enabled', () => {
@@ -100,7 +100,7 @@ test('computeDragDelta axis-locks to the dominant direction when enabled', () =>
         },
     );
 
-    assert.deepEqual(delta, { dx: 20, dy: 0, guides: [] });
+    assert.deepEqual(delta, { dx: 20, dy: 0, guides: [], interactionTransforms: null });
 });
 
 test('computeDragDelta applies axis lock before snapping', () => {
@@ -116,7 +116,7 @@ test('computeDragDelta applies axis lock before snapping', () => {
         },
     );
 
-    assert.deepEqual(delta, { dx: 0, dy: 20, guides: [] });
+    assert.deepEqual(delta, { dx: 0, dy: 20, guides: [], interactionTransforms: null });
 });
 
 test('computeDragDelta delegates snapping to custom resolver and returns guides', () => {
@@ -140,6 +140,37 @@ test('computeDragDelta delegates snapping to custom resolver and returns guides'
         dx: 5,
         dy: 5,
         guides: [{ type: 'vertical', x: 20 }],
+        interactionTransforms: null,
+    });
+});
+
+test('computeDragDelta builds interaction transforms from runtime computed transforms when provided', () => {
+    const delta = computeDragDelta(
+        {
+            nodeIds: ['a'],
+            startPointer: { x: 10, y: 10 },
+            currentPointer: { x: 16, y: 25 },
+        },
+        {
+            runtime: {
+                scene: {
+                    computed: {
+                        transforms: {
+                            a: { x: 100, y: 200 },
+                        },
+                    },
+                },
+            },
+        },
+    );
+
+    assert.deepEqual(delta, {
+        dx: 6,
+        dy: 15,
+        guides: [],
+        interactionTransforms: {
+            a: { x: 106, y: 215 },
+        },
     });
 });
 
@@ -190,6 +221,30 @@ test('collectSnapTargets includes adjacent spacing targets for non-dragged nodes
     );
     assert.ok(
         targets.some((target) => target.kind === 'spacing' && target.axis === 'y' && target.spacing === 40),
+    );
+});
+
+test('collectSnapTargets derives spacing from computed transforms ahead of authored layout', () => {
+    const targets = collectRuntimeSnapTargets(
+        {
+            nodes: {
+                a: { id: 'a', layout: { x: 0, y: 0, width: 20, height: 20 } },
+                b: { id: 'b', layout: { x: 40, y: 0, width: 20, height: 20 } },
+            },
+            scene: {
+                computed: {
+                    transforms: {
+                        a: { x: 100, y: 50 },
+                        b: { x: 150, y: 50 },
+                    },
+                },
+            },
+        },
+        { nodeIds: ['dragging'] },
+    );
+
+    assert.ok(
+        targets.some((target) => target.kind === 'spacing' && target.axis === 'x' && target.spacing === 30),
     );
 });
 

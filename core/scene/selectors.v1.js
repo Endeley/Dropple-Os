@@ -1,3 +1,5 @@
+import { findSceneShot, getSceneShots, getSceneShotTracks } from '@/core/scene/shotTracks.js';
+
 export function selectSceneGraph(project) {
     return project?.sceneGraph ?? null;
 }
@@ -17,7 +19,11 @@ export function selectSceneById(project, sceneId) {
 }
 
 export function selectShots(scene) {
-    return scene?.shots ?? [];
+    return getSceneShots(scene);
+}
+
+export function selectShotTracks(scene) {
+    return getSceneShotTracks(scene);
 }
 
 export function selectActiveShot(project) {
@@ -27,7 +33,7 @@ export function selectActiveShot(project) {
     const scene = graph.scenes.find((item) => item.id === graph.activeSceneId);
     if (!scene) return null;
 
-    return scene.shots.find((shot) => shot.id === graph.activeShotId) ?? null;
+    return findSceneShot(scene, graph.activeShotId)?.shot ?? null;
 }
 
 export function selectCompositionForShot(project, shot) {

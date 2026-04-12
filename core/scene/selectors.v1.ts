@@ -1,5 +1,6 @@
 import type { ProjectV2 } from '../contracts/project.v2';
-import type { SceneGraphV1, SceneV1, ShotV1 } from '../contracts/sceneGraph.v1';
+import type { SceneGraphV1, SceneV1, ShotTrackV1, ShotV1 } from '../contracts/sceneGraph.v1';
+import { findSceneShot, getSceneShots, getSceneShotTracks } from '@/core/scene/shotTracks.js';
 
 export function selectSceneGraph(project: ProjectV2 | null | undefined): SceneGraphV1 | null {
     return project?.sceneGraph ?? null;
@@ -23,7 +24,11 @@ export function selectSceneById(
 }
 
 export function selectShots(scene: SceneV1 | null | undefined): ShotV1[] {
-    return scene?.shots ?? [];
+    return getSceneShots(scene);
+}
+
+export function selectShotTracks(scene: SceneV1 | null | undefined): ShotTrackV1[] {
+    return getSceneShotTracks(scene);
 }
 
 export function selectActiveShot(project: ProjectV2 | null | undefined): ShotV1 | null {
@@ -33,7 +38,7 @@ export function selectActiveShot(project: ProjectV2 | null | undefined): ShotV1 
     const scene = graph.scenes.find((item) => item.id === graph.activeSceneId);
     if (!scene) return null;
 
-    return scene.shots.find((shot) => shot.id === graph.activeShotId) ?? null;
+    return findSceneShot(scene, graph.activeShotId)?.shot ?? null;
 }
 
 export function selectCompositionForShot(project: ProjectV2 | null | undefined, shot: ShotV1 | null | undefined) {

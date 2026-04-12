@@ -1,5 +1,7 @@
 import type { ProjectV2, Composition, Asset } from '../contracts/project.v2';
 import { DEFAULT_SHOT_DURATION_MS } from './initProjectWithSceneGraph.v2';
+import { normalizeShotTransitionOut } from './normalizeShotTransitionOut.js';
+import { PRIMARY_SHOT_TRACK_ID, getCanonicalShotTrack, getSceneShotTracks } from '@/core/scene/shotTracks.js';
 
 type ProjectV1 = {
     version: 1;
@@ -48,6 +50,25 @@ function migrateProjectV1ToV2(project: ProjectV1): ProjectV2 {
                             start: 0,
                             duration: DEFAULT_SHOT_DURATION_MS,
                             compositionId: rootCompositionId,
+                            transitionOut: null,
+                        },
+                    ],
+                    shotTracks: [
+                        {
+                            id: PRIMARY_SHOT_TRACK_ID,
+                            name: 'Primary',
+                            order: 0,
+                            kind: 'shot',
+                            shots: [
+                                {
+                                    id: shotId,
+                                    name: 'Shot 1',
+                                    start: 0,
+                                    duration: DEFAULT_SHOT_DURATION_MS,
+                                    compositionId: rootCompositionId,
+                                    transitionOut: null,
+                                },
+                            ],
                         },
                     ],
                 },
@@ -76,7 +97,7 @@ function normalizeProjectV2(project: ProjectV2): ProjectV2 {
     }
 
     const scene = normalizedGraph.scenes?.find((item) => item.id === normalizedGraph.activeSceneId);
-    const firstShotId = scene?.shots?.[0]?.id ?? null;
+    const firstShotId = getCanonicalShotTrack(scene)?.shots?.[0]?.id ?? null;
 
     return {
         ...normalized,
@@ -93,34 +114,50 @@ function normalizeShotTimelines(project: ProjectV2): ProjectV2 {
 
     let changed = false;
     const scenes = graph.scenes.map((scene) => {
-        if (!scene?.shots?.length) return scene;
-        const shots = scene.shots.map((shot) => {
-            if (!shot?.timeline) return shot;
+        const shotTracks = getSceneShotTracks(scene).map((track) => {
+            const shots = track.shots.map((shot) => {
+                let nextShot = normalizeShotTransitionOut(shot);
+                if (nextShot !== shot) {
+                    changed = true;
+                }
 
-            if (typeof shot.timeline === 'object' && 'animations' in shot.timeline) {
+                if (!shot?.timeline) return nextShot;
+
+                if (typeof shot.timeline === 'object' && 'animations' in shot.timeline) {
+                    if (process.env.NODE_ENV === 'development') {
+                        console.warn('[SceneGraph] Nested timeline shape detected; normalized.');
+                    }
+                    changed = true;
+                    return {
+                        ...nextShot,
+                        timeline: shot.timeline.motion ?? shot.timeline.animations,
+                    };
+                }
+
                 if (process.env.NODE_ENV === 'development') {
-                    console.warn('[SceneGraph] Nested timeline shape detected; normalized.');
+                    const hasClips = Boolean(shot.timeline?.clips);
+                    const hasTracks = Boolean(shot.timeline?.tracks);
+                    if (!hasClips && !hasTracks) {
+                        console.warn('[SceneGraph] Timeline shape looks invalid.', {
+                            shotId: shot.id,
+                        });
+                    }
                 }
-                changed = true;
-                return {
-                    ...shot,
-                    timeline: shot.timeline.motion ?? shot.timeline.animations,
-                };
-            }
 
-            if (process.env.NODE_ENV === 'development') {
-                const hasClips = Boolean(shot.timeline?.clips);
-                const hasTracks = Boolean(shot.timeline?.tracks);
-                if (!hasClips && !hasTracks) {
-                    console.warn('[SceneGraph] Timeline shape looks invalid.', {
-                        shotId: shot.id,
-                    });
-                }
-            }
+                return nextShot;
+            });
 
-            return shot;
+            return shots === track.shots ? track : { ...track, shots };
         });
-        return shots === scene.shots ? scene : { ...scene, shots };
+
+        const canonicalTrack = getCanonicalShotTrack({ ...scene, shotTracks });
+        changed = changed || shotTracks !== scene.shotTracks || canonicalTrack?.shots !== scene.shots;
+
+        return {
+            ...scene,
+            shotTracks,
+            shots: canonicalTrack?.shots ?? [],
+        };
     });
 
     if (!changed) return project;

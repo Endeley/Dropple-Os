@@ -232,10 +232,14 @@ export function createSessionCommitActions({ event, context }) {
 
         const originX = bounds.minX + offset.x;
         const originY = bounds.minY + offset.y;
+        const computedTransforms = context?.runtime?.scene?.computed?.transforms ?? {};
 
         nodes.forEach((node) => {
-            const relX = bounds.width === 0 ? 0 : (node.x - bounds.minX) / bounds.width;
-            const relY = bounds.height === 0 ? 0 : (node.y - bounds.minY) / bounds.height;
+            const transform = computedTransforms[node.id] ?? node.transform ?? {};
+            const x = transform.x ?? node.x ?? 0;
+            const y = transform.y ?? node.y ?? 0;
+            const relX = bounds.width === 0 ? 0 : (x - bounds.minX) / bounds.width;
+            const relY = bounds.height === 0 ? 0 : (y - bounds.minY) / bounds.height;
 
             actions.dispatchEvents.push({
                 type: EventTypes.NODE_UPDATE,

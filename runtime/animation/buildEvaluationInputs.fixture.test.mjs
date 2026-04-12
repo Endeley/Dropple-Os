@@ -9,11 +9,13 @@ function assert(condition, message) {
 const runtimeState = {
     document: {
         sceneGraph: {
-            rootIds: ['root'],
+            rootIds: ['root', 'other-root'],
             nodes: {
                 root: { id: 'root', type: 'frame', children: ['childA', 'childB'] },
                 childA: { id: 'childA', type: 'rect', children: [] },
                 childB: { id: 'childB', type: 'rect', children: [] },
+                'other-root': { id: 'other-root', type: 'frame', children: ['other-child'] },
+                'other-child': { id: 'other-child', type: 'rect', children: [] },
             },
             activeSceneId: 'scene1',
             activeShotId: 'shotB',
@@ -25,6 +27,7 @@ const runtimeState = {
                             id: 'shotA',
                             start: 0,
                             duration: 1000,
+                            compositionId: 'root',
                             camera: {
                                 keyframes: [
                                     { time: 0, x: 0, y: 0, zoom: 1 },
@@ -36,6 +39,7 @@ const runtimeState = {
                             id: 'shotB',
                             start: 1000,
                             duration: 1000,
+                            compositionId: 'root',
                         },
                     ],
                 },
@@ -59,12 +63,14 @@ assert(result.sceneGraphTree.length === 1, 'sceneGraphTree length mismatch');
 assert(result.sceneGraphTree[0].id === 'root', 'root id mismatch');
 assert(result.sceneGraphTree[0].children[0].id === 'childA', 'child order mismatch: childA');
 assert(result.sceneGraphTree[0].children[1].id === 'childB', 'child order mismatch: childB');
+assert(result.sceneGraphTree[0].id !== 'other-root', 'sceneGraphTree should exclude inactive scene root');
 
 assert(result.shotTimeline.shots.length === 2, 'shotTimeline length mismatch');
 assert(result.shotTimeline.shots[0].startMs === 0, 'shotA startMs mismatch');
 assert(result.shotTimeline.shots[0].endMs === 1000, 'shotA endMs mismatch');
 assert(result.shotTimeline.shots[1].startMs === 1000, 'shotB startMs mismatch');
 assert(result.shotTimeline.shots[1].endMs === 2000, 'shotB endMs mismatch');
+assert(result.activeSceneId === 'scene1', 'activeSceneId mismatch');
 
 const camera = result.shotTimeline.shots[0].cameraTransform;
 assert(camera && camera.x && camera.y, 'cameraTransform missing');
@@ -74,5 +80,28 @@ assert(camera.y.keyframes[0].t === 0 && camera.y.keyframes[0].v === 0, 'camera y
 assert(camera.y.keyframes[1].t === 1000 && camera.y.keyframes[1].v === 20, 'camera y keyframe[1] mismatch');
 
 assert(result.activeShotId === 'shotA', 'activeShotId precedence mismatch');
+
+const conflictingRuntimeState = {
+    ...runtimeState,
+    document: {
+        ...runtimeState.document,
+        sceneGraph: {
+            ...runtimeState.document.sceneGraph,
+            activeSceneId: 'scene2',
+            scenes: [
+                ...runtimeState.document.sceneGraph.scenes,
+                {
+                    id: 'scene2',
+                    shots: [{ id: 'shotC', start: 0, duration: 500, compositionId: 'other-root' }],
+                },
+            ],
+        },
+    },
+};
+const conflictResult = buildEvaluationInputs(conflictingRuntimeState);
+
+assert(conflictResult.activeSceneId === 'scene1', 'runtime activeSceneId must win over document');
+assert(conflictResult.shotTimeline.shots.length === 2, 'shotTimeline should stay scoped to runtime active scene');
+assert(conflictResult.sceneGraphTree[0].id === 'root', 'sceneGraphTree must stay scoped to runtime active scene');
 
 console.log('buildEvaluationInputs deterministic fixture: OK');

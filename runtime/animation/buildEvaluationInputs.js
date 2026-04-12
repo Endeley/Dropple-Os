@@ -1,6 +1,7 @@
-import { buildSceneTree } from '../../domain/scene/buildSceneTree.js';
 import { evaluateSequenceAtTime } from '../sequencer/evaluation/evaluateSequenceAtTime.js';
-import { getNode, getNodes, getRootIds, getSceneGraph } from '../document/documentAdapter.js';
+import { getNode, getSceneGraph } from '../document/documentAdapter.js';
+import { extractActiveSceneTree } from '../scene/extractActiveSceneTree.js';
+import { getCanonicalShotTrack } from '@/core/scene/shotTracks.js';
 
 function buildShotTimeline(sceneGraph, activeSceneId) {
     if (!sceneGraph || !Array.isArray(sceneGraph.scenes)) {
@@ -8,11 +9,12 @@ function buildShotTimeline(sceneGraph, activeSceneId) {
     }
 
     const scene = sceneGraph.scenes.find((item) => item.id === activeSceneId) ?? null;
-    if (!scene || !Array.isArray(scene.shots)) {
+    const shotsInTrack = getCanonicalShotTrack(scene)?.shots ?? [];
+    if (!scene || shotsInTrack.length === 0) {
         return { shots: [] };
     }
 
-    const shots = scene.shots.map((shot) => {
+    const shots = shotsInTrack.map((shot) => {
         const startMs = Number.isFinite(shot.start) ? shot.start : 0;
         const durationMs = Number.isFinite(shot.duration) ? shot.duration : 0;
         const endMs = startMs + durationMs;
@@ -41,6 +43,7 @@ function buildShotTimeline(sceneGraph, activeSceneId) {
             startMs,
             endMs,
             cameraTransform,
+            transitionOut: shot?.transitionOut ?? null,
             timeOffsetMs: Number.isFinite(shot.timeOffsetMs) ? shot.timeOffsetMs : undefined,
         };
     });
@@ -70,31 +73,22 @@ function buildSequenceCameraTransform(runtimeState, timeMs) {
     };
 }
 
-export function buildEvaluationInputs(runtimeState, { timeMs = 0 } = {}) {
-    const nodesById = getNodes(runtimeState);
-    const rootIds = getRootIds(runtimeState);
+export function buildEvaluationInputs(runtimeState, { timeMs = 0, strictSceneScope = false } = {}) {
     const sceneGraph = getSceneGraph(runtimeState);
-    const activeSceneId = runtimeState?.scene?.activeSceneId ?? sceneGraph?.activeSceneId ?? null;
+    const activeSceneId = runtimeState?.scene?.activeSceneId ?? null;
     const sceneActiveShotId = runtimeState?.scene?.activeShotId ?? null;
     const graphActiveShotId = sceneGraph?.activeShotId ?? null;
-
-    const root = buildSceneTree({
-        rootId: rootIds[0] ?? null,
-        nodes: Object.values(nodesById),
-        tree: Object.fromEntries(
-            Object.entries(nodesById).map(([id, node]) => [
-                id,
-                Array.isArray(node?.children) ? node.children : [],
-            ])
-        ),
-    });
-    const sceneGraphTree = root ? [root] : [];
-    const shotTimeline = buildShotTimeline(sceneGraph, activeSceneId);
     const activeShotId = sceneActiveShotId || graphActiveShotId || null;
+
+    const sceneGraphTree = extractActiveSceneTree(sceneGraph, activeSceneId, activeShotId, {
+        strict: strictSceneScope,
+    });
+    const shotTimeline = buildShotTimeline(sceneGraph, activeSceneId);
     const cameraTransform = buildSequenceCameraTransform(runtimeState, timeMs);
 
     return {
         sceneGraphTree,
+        activeSceneId,
         shotTimeline,
         activeShotId,
         cameraTransform,

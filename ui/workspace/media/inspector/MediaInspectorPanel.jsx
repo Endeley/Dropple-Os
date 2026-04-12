@@ -17,6 +17,7 @@ import {
     selectMediaSelection,
     selectMediaTimeline,
 } from '@/runtime/projection/selectors/mediaSelectors.js';
+import { selectShotInspectorView } from '@/runtime/projection/selectors/shotTimelineSelectors.js';
 import {
     projectRigControllers,
     projectRigControllerTimelineTracks,
@@ -43,6 +44,7 @@ import { RigInspectorPanel } from '@/ui/rigging/RigInspectorPanel.jsx';
 import { MediaInspectorHeader } from './MediaInspectorHeader.jsx';
 import { AnimationKeyframeInspector } from './animation/AnimationKeyframeInspector.jsx';
 import { AnimationMultiKeyframeInspector } from './animation/AnimationMultiKeyframeInspector.jsx';
+import { ShotInspectorPanel } from './animation/ShotInspectorPanel.jsx';
 import { AnimationTrackInspector } from './animation/AnimationTrackInspector.jsx';
 import { AnimationTweenInspector } from './animation/AnimationTweenInspector.jsx';
 import { PodcastCueInspector } from './podcast/PodcastCueInspector.jsx';
@@ -97,6 +99,7 @@ export function MediaInspectorPanel({ mode }) {
     const activeRig = useRuntimeStore(selectActiveRig);
     const activeSequence = useRuntimeStore((state) => selectActiveSequence(state.document));
     const nodes = useWorkspaceVisualState((state) => state.nodes || {});
+    const shotInspector = useWorkspaceVisualState(selectShotInspectorView);
     const selectedTrackId = useMediaTimelineSelectionStore((state) => state.selectedTrackId);
     const selectedKeyframeId = useMediaTimelineSelectionStore((state) => state.selectedKeyframeId);
     const selectedKeyframeIds = useMediaTimelineSelectionStore((state) => state.selectedKeyframeIds);
@@ -341,6 +344,7 @@ export function MediaInspectorPanel({ mode }) {
                 ) : null}
                 {mode.id === 'animation' ? (
                     <>
+                        <ShotInspectorPanel inspector={shotInspector} />
                         {selectedKeyframes.length > 1 ? (
                             <AnimationMultiKeyframeInspector
                                 selectionSpan={selectionSpan}

@@ -52,13 +52,8 @@ function resolveFrameAndTime(runtime, cursorIndex) {
     return { frame, timeMs };
 }
 
-function resolveActiveSceneId(document, runtime) {
-    return (
-        runtime?.scene?.activeSceneId ??
-        document?.scenes?.activeSceneId ??
-        document?.sceneGraph?.activeSceneId ??
-        null
-    );
+function resolveRuntimeActiveSceneId(runtime) {
+    return runtime?.scene?.activeSceneId ?? null;
 }
 
 function resolveSequenceCameraTransform(document, activeCamera) {
@@ -104,7 +99,7 @@ export function buildTemporalContext({ document, runtime, cursorIndex } = {}) {
     const sequenceMap = getSequenceMap(document);
     const sequenceId = resolveActiveSequenceId(document, runtime, sequenceMap);
     const { frame, timeMs } = resolveFrameAndTime(runtime, cursorIndex);
-    const activeSceneId = resolveActiveSceneId(document, runtime);
+    const activeSceneId = resolveRuntimeActiveSceneId(runtime);
     const sceneGraph = document?.sceneGraph ?? null;
 
     const sequence = sequenceId ? sequenceMap[sequenceId] ?? null : null;

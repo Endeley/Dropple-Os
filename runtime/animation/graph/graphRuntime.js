@@ -25,11 +25,7 @@ function getGraphCache(runtime) {
 
 function getDocumentGraphs(document) {
     if (!document?.graphs) return [];
-    const graphs = Array.isArray(document.graphs)
-        ? document.graphs
-        : typeof document.graphs === 'object'
-          ? Object.values(document.graphs)
-          : [];
+    const graphs = Array.isArray(document.graphs) ? document.graphs : typeof document.graphs === 'object' ? Object.values(document.graphs) : [];
     return graphs.filter((graph) => graph?.enabled !== false);
 }
 
@@ -78,6 +74,7 @@ export function evaluateGraphs(snapshot, context = {}) {
             graph,
             injected: context?.parameters,
         });
+
         const graphLayers = evaluateGraph(compiled, {
             ...context,
             snapshot,
@@ -96,4 +93,29 @@ export function evaluateGraphs(snapshot, context = {}) {
     }
 
     return layers;
+}
+
+/**
+ * 🔥 CANONICAL PIPELINE ENTRY
+ * This is what runFramePipeline should call
+ */
+export function runAnimationGraph(context) {
+    const runtimeState = context?.runtimeState ?? {};
+    const snapshot = {
+        document: runtimeState?.document,
+        runtime: runtimeState,
+    };
+
+    const layers = evaluateGraphs(snapshot, {
+        time: context?.time,
+        parameters: context?.input?.parameters ?? null,
+    });
+
+    // IMPORTANT: projection only — no document mutation
+    return {
+        ...context,
+        animation: {
+            layers,
+        },
+    };
 }

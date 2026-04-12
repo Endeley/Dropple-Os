@@ -10,6 +10,7 @@ export function selectProjectedVisualState(state) {
         nodes: state?.viewNodes ?? {},
         rootIds: state?.viewRootIds ?? [],
         sceneGraph: state?.viewSceneGraph ?? null,
+        runtimeScene: state?.scene ?? null,
         timeline: state?.timeline ?? null,
         selection: state?.selection ?? { ids: [], primary: null, count: 0 },
         selectionBounds: state?.selectionBounds ?? { bounds: null, center: null },
@@ -29,6 +30,7 @@ export function selectProjectedVisualState(state) {
         lastProjectedState.nodes === nextProjectedState.nodes &&
         lastProjectedState.rootIds === nextProjectedState.rootIds &&
         lastProjectedState.sceneGraph === nextProjectedState.sceneGraph &&
+        lastProjectedState.runtimeScene === nextProjectedState.runtimeScene &&
         lastProjectedState.timeline === nextProjectedState.timeline &&
         lastProjectedState.selection === nextProjectedState.selection &&
         lastProjectedState.selectionBounds === nextProjectedState.selectionBounds &&
