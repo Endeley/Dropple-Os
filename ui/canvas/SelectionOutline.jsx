@@ -22,9 +22,10 @@ export function SelectionOutline({
     } = useCanvasContext();
     if (!node) return null;
     const layout = node.layout ?? {};
+    const transform = node.transform ?? {};
     const rect = {
-        x: layout.x ?? node.x ?? 0,
-        y: layout.y ?? node.y ?? 0,
+        x: layout.x ?? transform.x ?? node.x ?? 0,
+        y: layout.y ?? transform.y ?? node.y ?? 0,
         width: layout.width ?? node.width ?? 0,
         height: layout.height ?? node.height ?? 0,
     };

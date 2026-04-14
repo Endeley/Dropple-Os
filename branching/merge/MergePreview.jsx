@@ -4,8 +4,6 @@
 
 import React, { useState } from 'react';
 import { getRuntimeState } from '@/runtime/state/runtimeState';
-import { computeMergeDiff } from './computeMergeDiff';
-import { planMerge } from './planMerge';
 import { applyMerge } from './applyMerge';
 import { simulateMergeState } from './simulateMergeState';
 import { computeNodeDiff } from './computeNodeDiff';
@@ -14,6 +12,7 @@ import { generateExportPair } from '@/runtime/export/generateExportPair';
 import { diffLines } from '@/runtime/export/diffLines';
 import ExportDiffViewer from '@/runtime/export/ExportDiffViewer';
 import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
+import { resolveBranchMergeArtifacts } from './resolveBranchMergeArtifacts.js';
 
 export default function MergePreview() {
     const dispatcher = useDispatcher();
@@ -28,16 +27,15 @@ export default function MergePreview() {
     const targetBranch = doc.branches[doc.currentBranch];
     const sourceBranch = sourceBranchId ? doc.branches[sourceBranchId] : null;
 
-    const diff = sourceBranch
-        ? computeMergeDiff({
+    const artifacts = sourceBranch && targetBranch
+        ? resolveBranchMergeArtifacts({
               targetBranch,
               sourceBranch,
           })
         : null;
-
-    const mergePlan = sourceBranch && targetBranch ? planMerge({ targetBranch, sourceBranch }) : [];
-
-    const runtimeState = state;
+    const diff = artifacts?.diff ?? null;
+    const mergePlan = artifacts?.events ?? [];
+    const runtimeState = artifacts?.targetState ?? state;
     const simulatedState =
         diff && mergePlan.length
             ? simulateMergeState({
@@ -106,11 +104,21 @@ export default function MergePreview() {
                 {diff && (
                     <div style={{ marginTop: 8 }}>
                         <div>
-                            <strong>{diff.eventCount}</strong> event(s) will be merged
+                            <strong>{mergePlan.length}</strong> event(s) will be merged
                         </div>
 
                         <div style={{ marginTop: 4, opacity: 0.8 }}>
-                            Affected nodes: {diff.affectedNodeIds.length ? diff.affectedNodeIds.join(', ') : 'none'}
+                            Affected nodes: {[...new Set([
+                                ...(diff.added ?? []).map((entry) => entry.nodeId),
+                                ...(diff.removed ?? []).map((entry) => entry.nodeId),
+                                ...(diff.updated ?? []).map((entry) => entry.nodeId),
+                            ])].length
+                                ? [...new Set([
+                                      ...(diff.added ?? []).map((entry) => entry.nodeId),
+                                      ...(diff.removed ?? []).map((entry) => entry.nodeId),
+                                      ...(diff.updated ?? []).map((entry) => entry.nodeId),
+                                  ])].join(', ')
+                                : 'none'}
                         </div>
 
                         <button
@@ -130,9 +138,9 @@ export default function MergePreview() {
                         </button>
 
                         <div style={eventListStyle}>
-                            {mergePlan.map((e) => (
-                                <div key={e.id} style={{ opacity: 0.7 }}>
-                                    {e.type} ({e.id})
+                            {mergePlan.map((e, index) => (
+                                <div key={`${e.type}:${index}`} style={{ opacity: 0.7 }}>
+                                    {e.type}
                                 </div>
                             ))}
                         </div>

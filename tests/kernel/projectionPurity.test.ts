@@ -107,3 +107,54 @@ test('projection sync does not mutate runtime truth', () => {
     });
     assert.ok(Array.isArray(projection.guides));
 });
+
+test('projection sync overlays active interaction transforms into projected view nodes only', () => {
+    const runtimeState = {
+        document: {
+            sceneGraph: {
+                rootIds: ['nodeA'],
+                nodes: {
+                    nodeA: {
+                        id: 'nodeA',
+                        type: 'frame',
+                        parentId: null,
+                        children: [],
+                    },
+                },
+            },
+            layout: {
+                version: 1,
+                nodes: {
+                    nodeA: { x: 10, y: 20, width: 80, height: 40 },
+                },
+                computed: {},
+                breakpoints: { mobile: 480, tablet: 768, desktop: 1200 },
+                dirty: { nodeIds: [], fullPass: false, revision: 0 },
+                metadata: { schemaVersion: 1 },
+            },
+        },
+        selection: { ids: new Set(['nodeA']), primary: 'nodeA' },
+        interaction: {
+            drag: {
+                active: true,
+                type: 'move',
+                interactionTransforms: {
+                    nodeA: { x: 110, y: 220 },
+                },
+            },
+        },
+    };
+
+    const before = structuredClone(runtimeState);
+    syncRuntimeToZustand(runtimeState);
+
+    assert.deepEqual(runtimeState, before);
+
+    const projection = useRuntimeStore.getState();
+    assert.equal(projection.viewNodes.nodeA.layout.x, 110);
+    assert.equal(projection.viewNodes.nodeA.layout.y, 220);
+    assert.equal(projection.viewNodes.nodeA.transform.x, 110);
+    assert.equal(projection.viewNodes.nodeA.transform.y, 220);
+    assert.equal(runtimeState.document.layout.nodes.nodeA.x, 10);
+    assert.equal(runtimeState.document.layout.nodes.nodeA.y, 20);
+});

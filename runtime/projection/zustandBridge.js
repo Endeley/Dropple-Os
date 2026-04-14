@@ -134,13 +134,38 @@ export function syncRuntimeToZustand(nextState, options = {}) {
 
     const prev = useRuntimeStore.getState();
     const nodesById = getNodes(nextState);
+    const interactionTransforms =
+        nextState?.interaction?.drag?.active === true
+            ? nextState?.interaction?.drag?.interactionTransforms ?? null
+            : null;
     const projectedNodes = {};
 
     Object.keys(nodesById).forEach((id) => {
         const node = nodesById[id];
         if (!node) return;
+        const interaction = interactionTransforms?.[id] ?? null;
+        const baseLayout = node.layout ?? {};
+        const projectedLayout = interaction
+            ? {
+                ...baseLayout,
+                x: interaction.x ?? baseLayout.x ?? node.x ?? 0,
+                y: interaction.y ?? baseLayout.y ?? node.y ?? 0,
+            }
+            : baseLayout;
+
         projectedNodes[id] = {
             ...node,
+            ...(interaction
+                ? {
+                    x: interaction.x ?? node.x,
+                    y: interaction.y ?? node.y,
+                    transform: {
+                        ...(node.transform ?? {}),
+                        ...interaction,
+                    },
+                    layout: projectedLayout,
+                }
+                : {}),
             isAutoLayoutChild: computeIsAutoLayoutChild(node, nodesById),
             resizeLocked: computeIsAutoLayoutChild(node, nodesById),
         };

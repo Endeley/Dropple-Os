@@ -4,8 +4,10 @@
 
 import React, { useState } from 'react';
 import { useBranchState } from './useBranchState';
-import { getRuntimeState, setRuntimeState } from '@/runtime/state/runtimeState';
-import { syncRuntimeToZustand } from '@/runtime/projection/zustandBridge';
+import { getRuntimeState } from '@/runtime/state/runtimeState';
+import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
+import { resolveBranchMergeArtifacts } from '@/branching/merge/resolveBranchMergeArtifacts.js';
+import { applyMerge } from '@/branching/merge/applyMerge.js';
 
 /**
  * Merge Branch UI (explicit + guarded).
@@ -18,6 +20,7 @@ import { syncRuntimeToZustand } from '@/runtime/projection/zustandBridge';
  */
 export default function MergeBranch() {
     const { currentBranch, branches } = useBranchState();
+    const dispatcher = useDispatcher();
     const [sourceBranchId, setSourceBranchId] = useState('');
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
@@ -51,39 +54,19 @@ export default function MergeBranch() {
             return;
         }
 
-        // 🔒 Build set of existing event IDs in target
-        const existingIds = new Set(target.events.map((e) => e.id));
+        const { events } = resolveBranchMergeArtifacts({
+            targetBranch: target,
+            sourceBranch: source,
+        });
 
-        // 🔒 Select only new events from source
-        const incomingEvents = source.events.filter((e) => !existingIds.has(e.id));
-
-        if (incomingEvents.length === 0) {
+        if (events.length === 0) {
             setSuccess('Nothing to merge (branches already aligned)');
             return;
         }
 
-        // 🔒 Append events deterministically
-        const nextDoc = {
-            ...doc,
-            branches: {
-                ...doc.branches,
-                [currentBranch]: {
-                    ...target,
-                    events: [...target.events, ...incomingEvents],
-                    head: incomingEvents[incomingEvents.length - 1]?.id ?? target.head,
-                },
-            },
-        };
+        const result = applyMerge({ dispatcher, events });
 
-        const nextState = {
-            ...state,
-            document: nextDoc,
-        };
-
-        setRuntimeState(nextState);
-        syncRuntimeToZustand(nextState);
-
-        setSuccess(`Merged ${incomingEvents.length} event(s) from "${sourceBranchId}"`);
+        setSuccess(`Merged ${result.applied} event(s) from "${sourceBranchId}"`);
         setSourceBranchId('');
     };
 

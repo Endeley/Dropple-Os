@@ -1,24 +1,20 @@
-// branching/merge/applyMerge.js
-
-/**
- * Apply a merge plan into the active branch.
- *
- * 🔒 Uses dispatcher only
- * 🔒 No persistence writes
- */
 export function applyMerge({ dispatcher, events }) {
-    if (!dispatcher || !Array.isArray(events)) {
-        throw new Error('applyMerge: invalid args');
+    if (!dispatcher || typeof dispatcher.dispatch !== 'function') {
+        throw new Error('applyMerge: dispatcher is required');
     }
 
-    for (const evt of events) {
-        dispatcher.dispatch({
-            id: evt.id,
-            type: evt.type,
-            payload: evt.payload,
-            meta: {
-                mergedFrom: evt.branchId ?? 'unknown',
-            },
-        });
+    if (!Array.isArray(events) || events.length === 0) {
+        return { applied: 0 };
     }
+
+    let applied = 0;
+
+    for (const event of events) {
+        if (!event?.type) continue;
+
+        dispatcher.dispatch(event);
+        applied += 1;
+    }
+
+    return { applied };
 }

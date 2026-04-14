@@ -1,19 +1,26 @@
 import { getNodes } from '@/runtime/document/documentAdapter.js';
 
 export function buildRenderGraph(context) {
-    const nodes = getNodes(context.runtimeState);
+    const runtimeState = context.runtimeState;
+    const nodes = getNodes(runtimeState);
+
+    const scene = runtimeState?.scene ?? {};
+    const drag = runtimeState?.interaction?.drag ?? null;
 
     // ✅ Engine truth (animation / evaluation)
-    const computedTransforms = context.runtimeState?.scene?.computed?.transforms ?? {};
+    const computedTransforms = scene?.computed?.transforms ?? {};
 
-    // 🔑 NEW: interaction layer (drag / resize / rotate preview)
-    const interactionTransforms = context.runtimeState?.interaction?.drag?.interactionTransforms ?? null;
+    // ✅ Interaction layer (drag / resize / rotate preview)
+    const interactionTransforms =
+        drag && drag.active && drag.interactionTransforms
+            ? drag.interactionTransforms
+            : null;
 
     const projectedNodes = Object.values(nodes).map((node) => {
         const animated = computedTransforms[node.id];
         const interaction = interactionTransforms?.[node.id];
 
-        // 🔑 Compose transforms in correct order
+        // Nothing to project → return original node (no mutation)
         if (!animated && !interaction) return node;
 
         return {
@@ -21,10 +28,10 @@ export function buildRenderGraph(context) {
             transform: {
                 ...(node.transform ?? {}),
 
-                // engine layer
+                // 🔹 Engine layer (animation / layout / constraints)
                 ...(animated ?? {}),
 
-                // interaction layer (always last = override)
+                // 🔹 Interaction layer (ALWAYS LAST → overrides)
                 ...(interaction ?? {}),
             },
         };
