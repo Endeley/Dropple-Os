@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { canvasBus } from '@/ui/eventBus/canvasBus.js';
 import {
+    SHOT_EDITOR_INTENTS,
     createShotEditorCommandLayer,
     shotEditorIntentCreateTrack,
     shotEditorIntentCreate,
@@ -47,14 +48,14 @@ test('shot editor command layer emits canonical shot intents on the canvas bus',
         setActive: (payload) => received.push(['setActive', payload]),
     };
 
-    canvasBus.on('intent.scene.shotTrack.create', handlers.createTrack);
-    canvasBus.on('intent.scene.shotTrack.update', handlers.updateTrack);
-    canvasBus.on('intent.scene.shotTrack.delete', handlers.deleteTrack);
-    canvasBus.on('intent.scene.shot.create', handlers.create);
-    canvasBus.on('intent.scene.shot.move', handlers.move);
-    canvasBus.on('intent.scene.shot.update', handlers.update);
-    canvasBus.on('intent.scene.shot.delete', handlers.delete);
-    canvasBus.on('intent.scene.shot.setActive', handlers.setActive);
+    canvasBus.on(SHOT_EDITOR_INTENTS.createTrack, handlers.createTrack);
+    canvasBus.on(SHOT_EDITOR_INTENTS.updateTrack, handlers.updateTrack);
+    canvasBus.on(SHOT_EDITOR_INTENTS.deleteTrack, handlers.deleteTrack);
+    canvasBus.on(SHOT_EDITOR_INTENTS.create, handlers.create);
+    canvasBus.on(SHOT_EDITOR_INTENTS.move, handlers.move);
+    canvasBus.on(SHOT_EDITOR_INTENTS.update, handlers.update);
+    canvasBus.on(SHOT_EDITOR_INTENTS.delete, handlers.delete);
+    canvasBus.on(SHOT_EDITOR_INTENTS.setActive, handlers.setActive);
 
     try {
         commands.createTrack({ track: { id: 'track-a' } });
@@ -66,14 +67,14 @@ test('shot editor command layer emits canonical shot intents on the canvas bus',
         commands.delete({ shotId: 'shot-a' });
         commands.setActive({ shotId: 'shot-a' });
     } finally {
-        canvasBus.off('intent.scene.shotTrack.create', handlers.createTrack);
-        canvasBus.off('intent.scene.shotTrack.update', handlers.updateTrack);
-        canvasBus.off('intent.scene.shotTrack.delete', handlers.deleteTrack);
-        canvasBus.off('intent.scene.shot.create', handlers.create);
-        canvasBus.off('intent.scene.shot.move', handlers.move);
-        canvasBus.off('intent.scene.shot.update', handlers.update);
-        canvasBus.off('intent.scene.shot.delete', handlers.delete);
-        canvasBus.off('intent.scene.shot.setActive', handlers.setActive);
+        canvasBus.off(SHOT_EDITOR_INTENTS.createTrack, handlers.createTrack);
+        canvasBus.off(SHOT_EDITOR_INTENTS.updateTrack, handlers.updateTrack);
+        canvasBus.off(SHOT_EDITOR_INTENTS.deleteTrack, handlers.deleteTrack);
+        canvasBus.off(SHOT_EDITOR_INTENTS.create, handlers.create);
+        canvasBus.off(SHOT_EDITOR_INTENTS.move, handlers.move);
+        canvasBus.off(SHOT_EDITOR_INTENTS.update, handlers.update);
+        canvasBus.off(SHOT_EDITOR_INTENTS.delete, handlers.delete);
+        canvasBus.off(SHOT_EDITOR_INTENTS.setActive, handlers.setActive);
     }
 
     assert.deepEqual(received, [

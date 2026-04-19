@@ -122,6 +122,7 @@ export const EventTypes = Object.freeze({
     SCENE_SHOT_UPDATE: 'scene/shot/update',
     SCENE_SHOT_DELETE: 'scene/shot/delete',
     SCENE_SHOT_MOVE: 'scene/shot/move',
+    SHOT_SET_ACTIVE: 'scene/shot/set-active',
 
     // ─────────────────────────────
     // Sequences

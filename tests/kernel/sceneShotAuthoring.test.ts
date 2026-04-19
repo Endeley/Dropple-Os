@@ -134,6 +134,42 @@ test('dispatcher updates shots and re-normalizes transition metadata', async () 
     });
 });
 
+test('dispatcher update reducer infers authoritative scene and owning track from canonical truth', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(createStateWithSceneShots(), { animate: false });
+    await activateAuthoringWorkspace(dispatcher);
+
+    await dispatcher.dispatch({
+        type: EventTypes.SCENE_SHOT_TRACK_CREATE,
+        payload: {
+            sceneId: 'scene-1',
+            track: { id: 'secondary', name: 'Secondary', order: 1, kind: 'shot' },
+        },
+    });
+    await dispatcher.dispatch({
+        type: EventTypes.SCENE_SHOT_CREATE,
+        payload: {
+            sceneId: 'scene-1',
+            trackId: 'secondary',
+            shot: { id: 'shot-a', name: 'Shot A', start: 0, duration: 300, compositionId: 'comp-a' },
+        },
+    });
+
+    const next = await dispatcher.dispatch({
+        type: EventTypes.SCENE_SHOT_UPDATE,
+        payload: {
+            shotId: 'shot-a',
+            patch: { duration: 450 },
+        },
+    });
+
+    assert.equal(
+        next.document.sceneGraph.scenes[0].shotTracks?.find((track) => track.id === 'secondary')?.shots?.[0]?.duration,
+        450,
+    );
+    assert.deepEqual(next.document.sceneGraph.scenes[0].shots, []);
+});
+
 test('dispatcher deletes shots cleanly and repairs active shot', async () => {
     const dispatcher = createEventDispatcher({ headless: true });
     dispatcher.hydrateRuntimeState(createStateWithSceneShots(), { animate: false });
@@ -169,6 +205,41 @@ test('dispatcher deletes shots cleanly and repairs active shot', async () => {
     assert.equal(next.document.sceneGraph.activeShotId, 'shot-b');
 });
 
+test('dispatcher delete reducer infers authoritative scene and owning track from canonical truth', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(createStateWithSceneShots(), { animate: false });
+    await activateAuthoringWorkspace(dispatcher);
+
+    await dispatcher.dispatch({
+        type: EventTypes.SCENE_SHOT_TRACK_CREATE,
+        payload: {
+            sceneId: 'scene-1',
+            track: { id: 'secondary', name: 'Secondary', order: 1, kind: 'shot' },
+        },
+    });
+    await dispatcher.dispatch({
+        type: EventTypes.SCENE_SHOT_CREATE,
+        payload: {
+            sceneId: 'scene-1',
+            trackId: 'secondary',
+            shot: { id: 'shot-a', name: 'Shot A', start: 0, duration: 300, compositionId: 'comp-a' },
+        },
+    });
+
+    const next = await dispatcher.dispatch({
+        type: EventTypes.SCENE_SHOT_DELETE,
+        payload: {
+            shotId: 'shot-a',
+        },
+    });
+
+    assert.deepEqual(
+        next.document.sceneGraph.scenes[0].shotTracks?.find((track) => track.id === 'secondary')?.shots ?? [],
+        [],
+    );
+    assert.deepEqual(next.document.sceneGraph.scenes[0].shots, []);
+});
+
 test('dispatcher stores shots in deterministic order by start then id', async () => {
     const dispatcher = createEventDispatcher({ headless: true });
     dispatcher.hydrateRuntimeState(createStateWithSceneShots(), { animate: false });
@@ -199,6 +270,36 @@ test('dispatcher stores shots in deterministic order by start then id', async ()
     assert.deepEqual(
         next.document.sceneGraph.scenes[0].shots.map((shot) => shot.id),
         ['shot-a', 'shot-b', 'shot-c'],
+    );
+});
+
+test('dispatcher create reducer infers authoritative scene and canonical track from runtime truth', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(createStateWithSceneShots(), { animate: false });
+    await activateAuthoringWorkspace(dispatcher);
+
+    await dispatcher.dispatch({
+        type: EventTypes.SCENE_SHOT_TRACK_CREATE,
+        payload: {
+            sceneId: 'scene-1',
+            track: { id: 'secondary', name: 'Secondary', order: 1, kind: 'shot' },
+        },
+    });
+
+    const next = await dispatcher.dispatch({
+        type: EventTypes.SCENE_SHOT_CREATE,
+        payload: {
+            shot: { id: 'shot-a', name: 'Shot A', start: 0, duration: 300, compositionId: 'comp-a' },
+        },
+    });
+
+    assert.deepEqual(
+        next.document.sceneGraph.scenes[0].shotTracks?.find((track) => track.id === 'primary')?.shots?.map((shot) => shot.id),
+        ['shot-a'],
+    );
+    assert.deepEqual(
+        next.document.sceneGraph.scenes[0].shotTracks?.find((track) => track.id === 'secondary')?.shots?.map((shot) => shot.id) ?? [],
+        [],
     );
 });
 
@@ -233,6 +334,50 @@ test('dispatcher creates, updates, and deletes shot tracks deterministically', a
         type: EventTypes.SCENE_SHOT_TRACK_DELETE,
         payload: {
             sceneId: 'scene-1',
+            trackId: 'secondary',
+        },
+    });
+
+    assert.deepEqual(
+        deleted.document.sceneGraph.scenes[0].shotTracks?.map((track) => track.id),
+        ['primary'],
+    );
+});
+
+test('dispatcher track reducers infer authoritative scene from runtime truth', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(createStateWithSceneShots(), { animate: false });
+    await activateAuthoringWorkspace(dispatcher);
+
+    const created = await dispatcher.dispatch({
+        type: EventTypes.SCENE_SHOT_TRACK_CREATE,
+        payload: {
+            track: { id: 'secondary', name: 'Secondary', order: 2, kind: 'shot' },
+        },
+    });
+
+    assert.deepEqual(
+        created.document.sceneGraph.scenes[0].shotTracks?.map((track) => track.id),
+        ['primary', 'secondary'],
+    );
+
+    const updated = await dispatcher.dispatch({
+        type: EventTypes.SCENE_SHOT_TRACK_UPDATE,
+        payload: {
+            trackId: 'secondary',
+            patch: { order: -1, name: 'B Track' },
+        },
+    });
+
+    assert.deepEqual(
+        updated.document.sceneGraph.scenes[0].shotTracks?.map((track) => track.id),
+        ['secondary', 'primary'],
+    );
+    assert.equal(updated.document.sceneGraph.scenes[0].shotTracks?.[0]?.name, 'B Track');
+
+    const deleted = await dispatcher.dispatch({
+        type: EventTypes.SCENE_SHOT_TRACK_DELETE,
+        payload: {
             trackId: 'secondary',
         },
     });
@@ -325,4 +470,83 @@ test('dispatcher moves shots within and across tracks without changing identity'
     assert.equal(crossTrack.document.sceneGraph.scenes[0].shotTracks?.find((t) => t.id === 'secondary')?.shots?.[0]?.id, 'shot-a');
     assert.equal(crossTrack.document.sceneGraph.scenes[0].shotTracks?.find((t) => t.id === 'secondary')?.shots?.[0]?.start, 200);
     assert.equal(crossTrack.document.sceneGraph.activeShotId, 'shot-a');
+});
+
+test('dispatcher move reducer infers owning track and clamps same-track movement from canonical scene truth', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(createStateWithSceneShots(), { animate: false });
+    await activateAuthoringWorkspace(dispatcher);
+
+    await dispatcher.dispatch({
+        type: EventTypes.SCENE_SHOT_CREATE,
+        payload: {
+            sceneId: 'scene-1',
+            shot: { id: 'shot-a', name: 'Shot A', start: 0, duration: 300, compositionId: 'comp-a' },
+        },
+    });
+    await dispatcher.dispatch({
+        type: EventTypes.SCENE_SHOT_CREATE,
+        payload: {
+            sceneId: 'scene-1',
+            shot: { id: 'shot-b', name: 'Shot B', start: 400, duration: 300, compositionId: 'comp-b' },
+        },
+    });
+
+    const next = await dispatcher.dispatch({
+        type: EventTypes.SCENE_SHOT_MOVE,
+        payload: {
+            shotId: 'shot-a',
+            startMs: 350,
+            endMs: 850,
+        },
+    });
+
+    assert.deepEqual(
+        next.document.sceneGraph.scenes[0].shots.map((shot) => ({
+            id: shot.id,
+            start: shot.start,
+            duration: shot.duration,
+        })),
+        [
+            { id: 'shot-a', start: 0, duration: 400 },
+            { id: 'shot-b', start: 400, duration: 300 },
+        ],
+    );
+});
+
+test('dispatcher set-active reducer validates membership from canonical scene truth', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(createStateWithSceneShots(), { animate: false });
+    await activateAuthoringWorkspace(dispatcher);
+
+    await dispatcher.dispatch({
+        type: EventTypes.SCENE_SHOT_CREATE,
+        payload: {
+            shot: { id: 'shot-a', name: 'Shot A', start: 0, duration: 300, compositionId: 'comp-a' },
+        },
+    });
+    await dispatcher.dispatch({
+        type: EventTypes.SCENE_SHOT_CREATE,
+        payload: {
+            shot: { id: 'shot-b', name: 'Shot B', start: 400, duration: 300, compositionId: 'comp-b' },
+        },
+    });
+
+    const activated = await dispatcher.dispatch({
+        type: EventTypes.SHOT_SET_ACTIVE,
+        payload: {
+            shotId: 'shot-b',
+        },
+    });
+
+    assert.equal(activated.document.sceneGraph.activeShotId, 'shot-b');
+
+    const unchanged = await dispatcher.dispatch({
+        type: EventTypes.SHOT_SET_ACTIVE,
+        payload: {
+            shotId: 'shot-missing',
+        },
+    });
+
+    assert.equal(unchanged.document.sceneGraph.activeShotId, 'shot-b');
 });

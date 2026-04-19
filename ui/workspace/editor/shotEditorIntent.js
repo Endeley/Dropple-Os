@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { canvasBus } from '@/ui/eventBus/canvasBus.js';
 
-const SHOT_EDITOR_EVENTS = Object.freeze({
+export const SHOT_EDITOR_INTENTS = Object.freeze({
     createTrack: 'intent.scene.shotTrack.create',
     updateTrack: 'intent.scene.shotTrack.update',
     deleteTrack: 'intent.scene.shotTrack.delete',
@@ -19,7 +19,7 @@ function emitIntent(type, payload, validate) {
 
 export function shotEditorIntentCreate(payload) {
     emitIntent(
-        SHOT_EDITOR_EVENTS.create,
+        SHOT_EDITOR_INTENTS.create,
         payload,
         (value) => Boolean(value?.shot?.id),
     );
@@ -27,7 +27,7 @@ export function shotEditorIntentCreate(payload) {
 
 export function shotEditorIntentMove(payload) {
     emitIntent(
-        SHOT_EDITOR_EVENTS.move,
+        SHOT_EDITOR_INTENTS.move,
         payload,
         (value) =>
             Boolean(value?.shotId) &&
@@ -40,7 +40,7 @@ export function shotEditorIntentMove(payload) {
 
 export function shotEditorIntentCreateTrack(payload) {
     emitIntent(
-        SHOT_EDITOR_EVENTS.createTrack,
+        SHOT_EDITOR_INTENTS.createTrack,
         payload,
         (value) => Boolean(value?.track?.id),
     );
@@ -48,7 +48,7 @@ export function shotEditorIntentCreateTrack(payload) {
 
 export function shotEditorIntentUpdateTrack(payload) {
     emitIntent(
-        SHOT_EDITOR_EVENTS.updateTrack,
+        SHOT_EDITOR_INTENTS.updateTrack,
         payload,
         (value) =>
             Boolean(value?.trackId) &&
@@ -60,7 +60,7 @@ export function shotEditorIntentUpdateTrack(payload) {
 
 export function shotEditorIntentDeleteTrack(payload) {
     emitIntent(
-        SHOT_EDITOR_EVENTS.deleteTrack,
+        SHOT_EDITOR_INTENTS.deleteTrack,
         payload,
         (value) => Boolean(value?.trackId),
     );
@@ -68,7 +68,7 @@ export function shotEditorIntentDeleteTrack(payload) {
 
 export function shotEditorIntentUpdate(payload) {
     emitIntent(
-        SHOT_EDITOR_EVENTS.update,
+        SHOT_EDITOR_INTENTS.update,
         payload,
         (value) =>
             Boolean(value?.shotId) &&
@@ -80,7 +80,7 @@ export function shotEditorIntentUpdate(payload) {
 
 export function shotEditorIntentDelete(payload) {
     emitIntent(
-        SHOT_EDITOR_EVENTS.delete,
+        SHOT_EDITOR_INTENTS.delete,
         payload,
         (value) => Boolean(value?.shotId),
     );
@@ -88,7 +88,7 @@ export function shotEditorIntentDelete(payload) {
 
 export function shotEditorIntentSetActive(payload) {
     emitIntent(
-        SHOT_EDITOR_EVENTS.setActive,
+        SHOT_EDITOR_INTENTS.setActive,
         payload,
         (value) => Boolean(value?.shotId),
     );

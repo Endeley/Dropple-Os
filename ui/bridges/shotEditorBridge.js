@@ -1,22 +1,10 @@
 import { canvasBus } from '@/ui/eventBus/canvasBus.js';
-import {
-    createSceneShotTrack,
-    createSceneShot,
-    deleteSceneShotTrack,
-    deleteSceneShot,
-    moveSceneShot,
-    setActiveSceneShot,
-    updateSceneShotTrack,
-    updateSceneShot,
-} from '@/runtime/commands/scene/shotCommands.js';
+import { SHOT_EDITOR_INTENTS } from '@/ui/workspace/editor/shotEditorIntent.js';
+import { EventTypes } from '@/core/events/eventTypes.js';
 
 let registered = false;
 let activeDispatcher = null;
 let activeRegistrations = 0;
-
-function getRuntimeState() {
-    return activeDispatcher?.getState?.() ?? null;
-}
 
 function dispatch() {
     return activeDispatcher?.dispatch ?? null;
@@ -27,103 +15,109 @@ export function registerShotEditorBridge(dispatcher) {
     activeRegistrations += 1;
 
     const onCreate = (payload) =>
-        createSceneShot({
-            dispatch: dispatch(),
-            runtimeState: getRuntimeState(),
-            sceneId: payload?.sceneId,
-            trackId: payload?.trackId,
-            shot: payload?.shot,
+        dispatch()?.({
+            type: EventTypes.SCENE_SHOT_CREATE,
+            payload: {
+                sceneId: payload?.sceneId,
+                trackId: payload?.trackId,
+                shot: payload?.shot,
+            },
         });
 
     const onCreateTrack = (payload) =>
-        createSceneShotTrack({
-            dispatch: dispatch(),
-            runtimeState: getRuntimeState(),
-            sceneId: payload?.sceneId,
-            track: payload?.track,
+        dispatch()?.({
+            type: EventTypes.SCENE_SHOT_TRACK_CREATE,
+            payload: {
+                sceneId: payload?.sceneId,
+                track: payload?.track,
+            },
         });
 
     const onUpdate = (payload) =>
-        updateSceneShot({
-            dispatch: dispatch(),
-            runtimeState: getRuntimeState(),
-            sceneId: payload?.sceneId,
-            trackId: payload?.trackId,
-            shotId: payload?.shotId,
-            patch: payload?.patch,
+        dispatch()?.({
+            type: EventTypes.SCENE_SHOT_UPDATE,
+            payload: {
+                sceneId: payload?.sceneId,
+                trackId: payload?.trackId,
+                shotId: payload?.shotId,
+                patch: payload?.patch,
+            },
         });
 
     const onMove = (payload) =>
-        moveSceneShot({
-            dispatch: dispatch(),
-            runtimeState: getRuntimeState(),
-            sceneId: payload?.sceneId,
-            shotId: payload?.shotId,
-            fromTrackId: payload?.fromTrackId,
-            toTrackId: payload?.toTrackId,
-            startMs: payload?.startMs,
-            endMs: payload?.endMs,
+        dispatch()?.({
+            type: EventTypes.SCENE_SHOT_MOVE,
+            payload: {
+                sceneId: payload?.sceneId,
+                shotId: payload?.shotId,
+                fromTrackId: payload?.fromTrackId,
+                toTrackId: payload?.toTrackId,
+                startMs: payload?.startMs,
+                endMs: payload?.endMs,
+            },
         });
 
     const onUpdateTrack = (payload) =>
-        updateSceneShotTrack({
-            dispatch: dispatch(),
-            runtimeState: getRuntimeState(),
-            sceneId: payload?.sceneId,
-            trackId: payload?.trackId,
-            patch: payload?.patch,
+        dispatch()?.({
+            type: EventTypes.SCENE_SHOT_TRACK_UPDATE,
+            payload: {
+                sceneId: payload?.sceneId,
+                trackId: payload?.trackId,
+                patch: payload?.patch,
+            },
         });
 
     const onDelete = (payload) =>
-        deleteSceneShot({
-            dispatch: dispatch(),
-            runtimeState: getRuntimeState(),
-            sceneId: payload?.sceneId,
-            trackId: payload?.trackId,
-            shotId: payload?.shotId,
+        dispatch()?.({
+            type: EventTypes.SCENE_SHOT_DELETE,
+            payload: {
+                sceneId: payload?.sceneId,
+                trackId: payload?.trackId,
+                shotId: payload?.shotId,
+            },
         });
 
     const onDeleteTrack = (payload) =>
-        deleteSceneShotTrack({
-            dispatch: dispatch(),
-            runtimeState: getRuntimeState(),
-            sceneId: payload?.sceneId,
-            trackId: payload?.trackId,
+        dispatch()?.({
+            type: EventTypes.SCENE_SHOT_TRACK_DELETE,
+            payload: {
+                sceneId: payload?.sceneId,
+                trackId: payload?.trackId,
+            },
         });
 
     const onSetActive = (payload) =>
-        setActiveSceneShot({
-            dispatch: dispatch(),
-            runtimeState: getRuntimeState(),
-            sceneId: payload?.sceneId,
-            shotId: payload?.shotId,
+        dispatch()?.({
+            type: EventTypes.SHOT_SET_ACTIVE,
+            payload: {
+                sceneId: payload?.sceneId,
+                shotId: payload?.shotId,
+            },
         });
 
     if (!registered) {
-        canvasBus.on('intent.scene.shotTrack.create', onCreateTrack);
-        canvasBus.on('intent.scene.shotTrack.update', onUpdateTrack);
-        canvasBus.on('intent.scene.shotTrack.delete', onDeleteTrack);
-        canvasBus.on('intent.scene.shot.create', onCreate);
-        canvasBus.on('intent.scene.shot.move', onMove);
-        canvasBus.on('intent.scene.shot.update', onUpdate);
-        canvasBus.on('intent.scene.shot.delete', onDelete);
-        canvasBus.on('intent.scene.shot.setActive', onSetActive);
-        canvasBus.on('intent.shot.setActive', onSetActive);
+        canvasBus.on(SHOT_EDITOR_INTENTS.createTrack, onCreateTrack);
+        canvasBus.on(SHOT_EDITOR_INTENTS.updateTrack, onUpdateTrack);
+        canvasBus.on(SHOT_EDITOR_INTENTS.deleteTrack, onDeleteTrack);
+        canvasBus.on(SHOT_EDITOR_INTENTS.create, onCreate);
+        canvasBus.on(SHOT_EDITOR_INTENTS.move, onMove);
+        canvasBus.on(SHOT_EDITOR_INTENTS.update, onUpdate);
+        canvasBus.on(SHOT_EDITOR_INTENTS.delete, onDelete);
+        canvasBus.on(SHOT_EDITOR_INTENTS.setActive, onSetActive);
         registered = true;
     }
 
     return () => {
         activeRegistrations = Math.max(0, activeRegistrations - 1);
         if (activeRegistrations === 0) {
-            canvasBus.off('intent.scene.shotTrack.create', onCreateTrack);
-            canvasBus.off('intent.scene.shotTrack.update', onUpdateTrack);
-            canvasBus.off('intent.scene.shotTrack.delete', onDeleteTrack);
-            canvasBus.off('intent.scene.shot.create', onCreate);
-            canvasBus.off('intent.scene.shot.move', onMove);
-            canvasBus.off('intent.scene.shot.update', onUpdate);
-            canvasBus.off('intent.scene.shot.delete', onDelete);
-            canvasBus.off('intent.scene.shot.setActive', onSetActive);
-            canvasBus.off('intent.shot.setActive', onSetActive);
+            canvasBus.off(SHOT_EDITOR_INTENTS.createTrack, onCreateTrack);
+            canvasBus.off(SHOT_EDITOR_INTENTS.updateTrack, onUpdateTrack);
+            canvasBus.off(SHOT_EDITOR_INTENTS.deleteTrack, onDeleteTrack);
+            canvasBus.off(SHOT_EDITOR_INTENTS.create, onCreate);
+            canvasBus.off(SHOT_EDITOR_INTENTS.move, onMove);
+            canvasBus.off(SHOT_EDITOR_INTENTS.update, onUpdate);
+            canvasBus.off(SHOT_EDITOR_INTENTS.delete, onDelete);
+            canvasBus.off(SHOT_EDITOR_INTENTS.setActive, onSetActive);
             activeDispatcher = null;
             registered = false;
         }

@@ -1223,7 +1223,6 @@ dropple/  # Project root.
 │   ├── commands/  # Command handling and command registries.
 │   │   ├── scene/  # Scene graph and scene-specific helpers.
 │   │   │   ├── __tests__/  # Tests colocated with the owning module.
-│   │   │   └── shotCommands.js  # shot Commands module.
 │   │   ├── structure/  # Structure rules, tree edits, and structural helpers.
 │   │   │   ├── moveNode.js  # move Node module.
 │   │   │   ├── unwrapNode.js  # unwrap Node module.

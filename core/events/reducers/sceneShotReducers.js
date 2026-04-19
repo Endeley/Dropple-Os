@@ -9,6 +9,7 @@ import {
     sortShots,
     sortShotTracks,
 } from '@/core/scene/shotTracks.js';
+import { clampShotMoveWithinTrack } from '@/core/scene/shotTrackOverlapPolicy.js';
 
 function getSceneGraph(state) {
     return state?.document?.sceneGraph ?? null;
@@ -68,13 +69,17 @@ function normalizeCreatedShot(shot) {
     });
 }
 
+function resolveAuthoritativeSceneId(state, sceneGraph, sceneId) {
+    return state?.scene?.activeSceneId ?? sceneGraph?.activeSceneId ?? sceneId ?? null;
+}
+
 export function sceneShotReducers(state, event) {
     const { type, payload } = event;
     const sceneGraph = getSceneGraph(state);
 
     switch (type) {
         case EventTypes.SCENE_SHOT_TRACK_CREATE: {
-            const sceneId = payload?.sceneId;
+            const sceneId = resolveAuthoritativeSceneId(state, sceneGraph, payload?.sceneId);
             const track = payload?.track;
             if (!sceneId || !track?.id) return state;
 
@@ -95,7 +100,7 @@ export function sceneShotReducers(state, event) {
         }
 
         case EventTypes.SCENE_SHOT_TRACK_UPDATE: {
-            const sceneId = payload?.sceneId;
+            const sceneId = resolveAuthoritativeSceneId(state, sceneGraph, payload?.sceneId);
             const trackId = payload?.trackId;
             const patch = payload?.patch;
             if (!sceneId || !trackId || !patch || typeof patch !== 'object') return state;
@@ -117,7 +122,7 @@ export function sceneShotReducers(state, event) {
         }
 
         case EventTypes.SCENE_SHOT_TRACK_DELETE: {
-            const sceneId = payload?.sceneId;
+            const sceneId = resolveAuthoritativeSceneId(state, sceneGraph, payload?.sceneId);
             const trackId = payload?.trackId;
             if (!sceneId || !trackId) return state;
 
@@ -139,16 +144,19 @@ export function sceneShotReducers(state, event) {
         }
 
         case EventTypes.SCENE_SHOT_CREATE: {
-            const sceneId = payload?.sceneId;
-            const trackId = payload?.trackId ?? PRIMARY_SHOT_TRACK_ID;
+            const sceneId = resolveAuthoritativeSceneId(state, sceneGraph, payload?.sceneId);
+            const requestedTrackId = payload?.trackId;
             const shot = normalizeCreatedShot(payload?.shot);
-            if (!sceneId || !trackId || !shot?.id) return state;
+            if (!sceneId || !shot?.id) return state;
 
-            const nextSceneGraph = updateSceneTracks(sceneGraph, sceneId, (tracks) => {
+            const nextSceneGraph = updateSceneTracks(sceneGraph, sceneId, (tracks, scene) => {
+                const trackId = requestedTrackId ?? getCanonicalShotTrack(scene)?.id ?? PRIMARY_SHOT_TRACK_ID;
+                if (!trackId) return tracks;
+                if (findSceneShot(scene, shot.id)) return tracks;
+
                 let changed = false;
                 const nextTracks = tracks.map((track) => {
                     if (track?.id !== trackId) return track;
-                    if (track.shots.some((entry) => entry?.id === shot.id)) return track;
                     changed = true;
                     return {
                         ...track,
@@ -168,17 +176,15 @@ export function sceneShotReducers(state, event) {
         }
 
         case EventTypes.SCENE_SHOT_MOVE: {
-            const sceneId = payload?.sceneId;
+            const sceneId = resolveAuthoritativeSceneId(state, sceneGraph, payload?.sceneId);
             const shotId = payload?.shotId;
-            const fromTrackId = payload?.fromTrackId;
-            const toTrackId = payload?.toTrackId;
+            const requestedFromTrackId = payload?.fromTrackId;
+            const requestedToTrackId = payload?.toTrackId;
             const startMs = payload?.startMs;
             const endMs = payload?.endMs;
             if (
                 !sceneId ||
                 !shotId ||
-                !fromTrackId ||
-                !toTrackId ||
                 !Number.isFinite(startMs) ||
                 !Number.isFinite(endMs) ||
                 endMs < startMs
@@ -186,16 +192,34 @@ export function sceneShotReducers(state, event) {
                 return state;
             }
 
-            const nextSceneGraph = updateSceneTracks(sceneGraph, sceneId, (tracks) => {
+            const nextSceneGraph = updateSceneTracks(sceneGraph, sceneId, (tracks, scene) => {
+                const resolvedShot = findSceneShot(scene, shotId);
+                if (!resolvedShot?.shot) return tracks;
+
+                const fromTrackId = requestedFromTrackId ?? resolvedShot.trackId;
+                const toTrackId = requestedToTrackId ?? fromTrackId;
                 const sourceTrack = tracks.find((track) => track?.id === fromTrackId) ?? null;
                 const targetTrack = tracks.find((track) => track?.id === toTrackId) ?? null;
                 const shot = sourceTrack?.shots?.find((entry) => entry?.id === shotId) ?? null;
                 if (!sourceTrack || !targetTrack || !shot) return tracks;
 
+                const clampedMove =
+                    fromTrackId === toTrackId
+                        ? clampShotMoveWithinTrack({
+                              shots: targetTrack.shots ?? [],
+                              shotId,
+                              startMs,
+                              endMs,
+                          })
+                        : {
+                              startMs: Number(startMs),
+                              endMs: Number(endMs),
+                          };
+
                 const movedShot = normalizeShotTransitionOut({
                     ...shot,
-                    start: Number(startMs),
-                    duration: Math.max(0, Number(endMs) - Number(startMs)),
+                    start: clampedMove.startMs,
+                    duration: Math.max(0, clampedMove.endMs - clampedMove.startMs),
                 });
 
                 if (fromTrackId === toTrackId) {
@@ -236,13 +260,19 @@ export function sceneShotReducers(state, event) {
         }
 
         case EventTypes.SCENE_SHOT_UPDATE: {
-            const sceneId = payload?.sceneId;
-            const trackId = payload?.trackId ?? PRIMARY_SHOT_TRACK_ID;
+            const sceneId = resolveAuthoritativeSceneId(state, sceneGraph, payload?.sceneId);
+            const requestedTrackId = payload?.trackId;
             const shotId = payload?.shotId;
             const patch = payload?.patch;
-            if (!sceneId || !trackId || !shotId || !patch || typeof patch !== 'object') return state;
+            if (!sceneId || !shotId || !patch || typeof patch !== 'object') return state;
 
-            const nextSceneGraph = updateSceneTracks(sceneGraph, sceneId, (tracks) => {
+            const nextSceneGraph = updateSceneTracks(sceneGraph, sceneId, (tracks, scene) => {
+                const resolvedShot = findSceneShot(scene, shotId);
+                if (!resolvedShot?.shot) return tracks;
+
+                const trackId = requestedTrackId ?? resolvedShot.trackId ?? PRIMARY_SHOT_TRACK_ID;
+                if (!trackId) return tracks;
+
                 let changed = false;
                 const nextTracks = tracks.map((track) => {
                     if (track?.id !== trackId) return track;
@@ -267,12 +297,18 @@ export function sceneShotReducers(state, event) {
         }
 
         case EventTypes.SCENE_SHOT_DELETE: {
-            const sceneId = payload?.sceneId;
-            const trackId = payload?.trackId ?? PRIMARY_SHOT_TRACK_ID;
+            const sceneId = resolveAuthoritativeSceneId(state, sceneGraph, payload?.sceneId);
+            const requestedTrackId = payload?.trackId;
             const shotId = payload?.shotId;
-            if (!sceneId || !trackId || !shotId) return state;
+            if (!sceneId || !shotId) return state;
 
-            const nextSceneGraph = updateSceneTracks(sceneGraph, sceneId, (tracks) => {
+            const nextSceneGraph = updateSceneTracks(sceneGraph, sceneId, (tracks, scene) => {
+                const resolvedShot = findSceneShot(scene, shotId);
+                if (!resolvedShot?.shot) return tracks;
+
+                const trackId = requestedTrackId ?? resolvedShot.trackId ?? PRIMARY_SHOT_TRACK_ID;
+                if (!trackId) return tracks;
+
                 let changed = false;
                 const nextTracks = tracks.map((track) => {
                     if (track?.id !== trackId) return track;
@@ -297,6 +333,21 @@ export function sceneShotReducers(state, event) {
             return updateSceneGraph(state, {
                 ...nextSceneGraph,
                 activeShotId: nextActiveShotId,
+            });
+        }
+
+        case EventTypes.SHOT_SET_ACTIVE: {
+            const sceneId = resolveAuthoritativeSceneId(state, sceneGraph, payload?.sceneId);
+            const shotId = payload?.shotId;
+            if (!sceneId || !shotId) return state;
+
+            const scene = sceneGraph?.scenes?.find((entry) => entry?.id === sceneId) ?? null;
+            if (!findSceneShot(scene, shotId)) return state;
+            if (sceneGraph?.activeShotId === shotId) return state;
+
+            return updateSceneGraph(state, {
+                ...sceneGraph,
+                activeShotId: shotId,
             });
         }
 
