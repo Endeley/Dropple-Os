@@ -1,10 +1,9 @@
 'use client';
 
-import { CANONICAL_WORKSPACES } from '@/platform/workspaces';
+import { listCanonicalModesForWorkspace } from '@/platform/workspaces';
 
 export function ModeSwitcher({ workspace, activeMode, onChange }) {
-    const workspaceDefinition = CANONICAL_WORKSPACES[workspace];
-    const modes = Object.values(workspaceDefinition?.modes ?? {});
+    const modes = listCanonicalModesForWorkspace(workspace);
 
     if (!modes.length) return null;
 

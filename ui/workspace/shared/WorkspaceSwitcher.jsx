@@ -1,9 +1,11 @@
 'use client';
 
-import { CANONICAL_WORKSPACES } from '@/platform/workspaces';
+import { CANONICAL_WORKSPACES, listCanonicalWorkspaceIds } from '@/platform/workspaces';
 
 export function WorkspaceSwitcher({ activeWorkspace, onChange }) {
-    const workspaces = Object.values(CANONICAL_WORKSPACES);
+    const workspaces = listCanonicalWorkspaceIds()
+        .map((workspaceId) => CANONICAL_WORKSPACES[workspaceId])
+        .filter(Boolean);
 
     return (
         <div

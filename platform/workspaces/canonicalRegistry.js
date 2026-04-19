@@ -124,6 +124,14 @@ export function listCanonicalModeIds() {
     return Object.keys(CANONICAL_MODES).sort();
 }
 
+export function listCanonicalModesForWorkspace(workspaceId) {
+    if (!hasCanonicalWorkspace(workspaceId)) return [];
+
+    return Object.values(CANONICAL_MODES).filter(
+        (mode) => mode.workspaceId === workspaceId,
+    );
+}
+
 export function hasCanonicalWorkspace(workspaceId) {
     return Boolean(workspaceId && CANONICAL_WORKSPACES[workspaceId]);
 }

@@ -1,7 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { CANONICAL_WORKSPACES, CANONICAL_MODES, listCanonicalWorkspaceIds, listCanonicalModeIds, resolveWorkspaceDefaultMode } from '@/platform/workspaces/canonicalRegistry.js';
+import {
+    CANONICAL_WORKSPACES,
+    CANONICAL_MODES,
+    listCanonicalWorkspaceIds,
+    listCanonicalModeIds,
+    listCanonicalModesForWorkspace,
+    resolveWorkspaceDefaultMode,
+} from '@/platform/workspaces/canonicalRegistry.js';
 
 test('exactly 5 canonical workspaces exist', () => {
     const ids = listCanonicalWorkspaceIds();
@@ -25,6 +32,21 @@ test('every mode belongs to exactly one canonical workspace', () => {
 
         assert.ok(mode.workspaceId);
         assert.ok(CANONICAL_WORKSPACES[mode.workspaceId]);
+    }
+});
+
+test('workspace mode listings only include modes owned by that workspace', () => {
+    for (const workspaceId of listCanonicalWorkspaceIds()) {
+        const modes = listCanonicalModesForWorkspace(workspaceId);
+
+        assert.ok(modes.length > 0);
+
+        for (const mode of modes) {
+            assert.equal(mode.workspaceId, workspaceId);
+        }
+
+        const defaultMode = resolveWorkspaceDefaultMode(workspaceId);
+        assert.ok(modes.some((mode) => mode.id === defaultMode));
     }
 });
 

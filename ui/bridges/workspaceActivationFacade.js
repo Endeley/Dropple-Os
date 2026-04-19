@@ -1,5 +1,6 @@
 import { resolveWorkspaceActivationContract } from '@/platform/capabilities/workspaceActivation.js';
-import { resolveCanonicalWorkspaceContext, resolveWorkspaceDefinition as resolveCanonicalWorkspaceDefinition, resolveModeDefinition } from '@/platform/workspaces/modeResolution.js';
+import { resolveWorkspaceContext } from '@/platform/workspaces/resolveWorkspaceContext.js';
+import { resolveModeDefinition } from '@/platform/workspaces/modeResolution.js';
 import { getWorkspaceDefinition as getResolvedWorkspaceDefinition } from '@/platform/workspaces/workspaceRegistry.js';
 import { adaptWorkspaceToContractV1 } from '@/core/contracts/adaptWorkspaceToContractV1.js';
 
@@ -15,7 +16,7 @@ function safeSet(values) {
 }
 
 function resolveContext(input) {
-    return resolveCanonicalWorkspaceContext(input);
+    return resolveWorkspaceContext(input);
 }
 
 export function resolveWorkspaceId(input) {
