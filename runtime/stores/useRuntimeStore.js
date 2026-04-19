@@ -56,9 +56,4 @@ export const useRuntimeStore = create((set) => ({
     // Event log mirror
     events: [],
     cursorIndex: -1,
-
-    setCursorIndex: (index) =>
-        set(() => ({
-            cursorIndex: index,
-        })),
 }));

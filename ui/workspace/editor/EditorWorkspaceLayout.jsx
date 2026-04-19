@@ -184,8 +184,7 @@ function EditorWorkspaceLayoutInner({
                 <RightPanel panels={adapter.panels?.right} events={events} cursor={cursor} emit={emit} rubric={reviewRubric} reviewCriteria={reviewSubmission?.review?.criteria} onReviewCriteriaChange={onReviewCriteriaChange} submissionId={reviewSubmission?.id} documentId={documentId} />
             </div>
 
-            {/* ✅ FINAL FIX HERE */}
-            <TimelineBar events={events} cursor={cursor} submissionId={reviewSubmission?.id} emit={emit} />
+            <TimelineBar events={events} cursor={cursor} submissionId={reviewSubmission?.id} />
 
             <ExportGateOverlay />
         </div>

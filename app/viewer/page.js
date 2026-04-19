@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import TimelineBar from '@/ui/layout/TimelineBar';
 import { WorkspaceCanvasRoot } from '@/ui/workspace/WorkspaceCanvasRoot.jsx';
 import { GridProvider } from '@/ui/workspace/shared/GridContext';
 import { ModeProvider } from '@/ui/workspace/shared/ModeContext';
 import { hydrateLocalDocumentSnapshot } from '@/infrastructure/persistence/localDocumentSchema.js';
 import { useViewerControls } from '@/viewer/useViewerControls';
+import { ViewerTimelineBar } from '@/viewer/ViewerTimelineBar.jsx';
 import { ViewerToolbar } from '@/viewer/ViewerToolbar';
 import { ViewerStage } from '@/viewer/ViewerStage';
 import { parseViewerParams } from '@/viewer/parseViewerParams';
@@ -49,6 +49,7 @@ export default function ViewerPage() {
 
   const controls = useViewerControls(params);
   const events = snapshot?.events || [];
+  const maxCursorIndex = events.length - 1;
 
   const adapter = useMemo(
     () => ({
@@ -59,7 +60,9 @@ export default function ViewerPage() {
     []
   );
 
-  const cursor = { index: cursorIndex };
+  const cursor = {
+    index: Math.max(-1, Math.min(maxCursorIndex, cursorIndex)),
+  };
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -78,10 +81,12 @@ export default function ViewerPage() {
               </ViewerStage>
             </div>
             {params.timeline && (
-              <TimelineBar
+              <ViewerTimelineBar
                 events={events}
-                cursor={cursor}
-                setCursorIndex={setCursorIndex}
+                cursorIndex={cursor.index}
+                onSeek={(nextCursorIndex) => {
+                  setCursorIndex(Math.max(-1, Math.min(maxCursorIndex, nextCursorIndex)));
+                }}
               />
             )}
           </div>

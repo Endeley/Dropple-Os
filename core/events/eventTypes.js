@@ -169,7 +169,11 @@ export const EventTypes = Object.freeze({
 
     // Graph
     GRAPH_NODE_ADD: 'graph/node/add',
-    GRAPH_UPDATE: 'graph/update',
+    GRAPH_ENABLE: 'graph/enable',
+    GRAPH_DISABLE: 'graph/disable',
+    GRAPH_SET_RIG: 'graph/set-rig',
+    GRAPH_SET_PRIORITY: 'graph/set-priority',
+    GRAPH_METADATA_UPDATE: 'graph/metadata/update',
     GRAPH_NODE_UPDATE: 'graph/node/update',
     GRAPH_NODE_DELETE: 'graph/node/delete',
     GRAPH_CONNECT: 'graph/connect',

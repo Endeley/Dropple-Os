@@ -101,7 +101,6 @@ export function EditorWorkspaceShell({
 
     const events = useRuntimeStore((s) => s.events);
     const cursorIndex = useRuntimeStore((s) => s.cursorIndex);
-    const setCursorIndex = useRuntimeStore((s) => s.setCursorIndex);
     const [hydrated, setHydrated] = useState(false);
     const [documentId, setDocumentId] = useState(null);
     const [documentName, setDocumentName] = useState('Untitled');
@@ -223,7 +222,6 @@ export function EditorWorkspaceShell({
                 adapter={adapter}
                 events={events}
                 cursor={cursor}
-                setCursorIndex={setCursorIndex}
                 emit={emit}
                 documentName={documentName}
                 canPersist={persistenceEnabled}

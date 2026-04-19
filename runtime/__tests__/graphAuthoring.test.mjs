@@ -37,7 +37,7 @@ test('graph node add is deterministic for array-backed graphs', () => {
     });
 });
 
-test('graph update patches authored graph metadata immutably', () => {
+test('graph enable and disable update runtime participation immutably', () => {
     const state = {
         document: {
             graphs: {
@@ -54,18 +54,129 @@ test('graph update patches authored graph metadata immutably', () => {
         },
     };
 
-    const next = reduce(state, EventTypes.GRAPH_UPDATE, {
+    const disabled = reduce(state, EventTypes.GRAPH_DISABLE, {
+        graphId: 'g1',
+    });
+
+    const enabled = reduce(disabled, EventTypes.GRAPH_ENABLE, {
+        graphId: 'g1',
+    });
+
+    assert.equal(disabled.document.graphs.g1.enabled, false);
+    assert.equal(enabled.document.graphs.g1.enabled, true);
+    assert.equal(state.document.graphs.g1.enabled, true);
+});
+
+test('graph set rig updates rig binding immutably', () => {
+    const state = {
+        document: {
+            graphs: {
+                g1: {
+                    id: 'g1',
+                    enabled: true,
+                    rigId: null,
+                    nodes: {
+                        source: { id: 'source', type: 'value' },
+                    },
+                    output: 'source',
+                },
+            },
+        },
+    };
+
+    const next = reduce(state, EventTypes.GRAPH_SET_RIG, {
+        graphId: 'g1',
+        rigId: 'heroRig',
+    });
+
+    assert.equal(next.document.graphs.g1.rigId, 'heroRig');
+    assert.equal(state.document.graphs.g1.rigId, null);
+});
+
+test('graph set priority updates execution priority immutably', () => {
+    const state = {
+        document: {
+            graphs: {
+                g1: {
+                    id: 'g1',
+                    enabled: true,
+                    rigId: null,
+                    priority: 0,
+                    nodes: {
+                        source: { id: 'source', type: 'value' },
+                    },
+                    output: 'source',
+                },
+            },
+        },
+    };
+
+    const next = reduce(state, EventTypes.GRAPH_SET_PRIORITY, {
+        graphId: 'g1',
+        priority: 7,
+    });
+
+    assert.equal(next.document.graphs.g1.priority, 7);
+    assert.equal(state.document.graphs.g1.priority, 0);
+});
+
+test('graph metadata update only patches allowed metadata fields immutably', () => {
+    const state = {
+        document: {
+            graphs: {
+                g1: {
+                    id: 'g1',
+                    enabled: true,
+                    rigId: null,
+                    nodes: {
+                        source: { id: 'source', type: 'value' },
+                    },
+                    output: 'source',
+                },
+            },
+        },
+    };
+
+    const next = reduce(state, EventTypes.GRAPH_METADATA_UPDATE, {
         graphId: 'g1',
         patch: {
-            enabled: false,
-            rigId: 'heroRig',
+            label: 'Hero Graph',
+            color: '#60a5fa',
         },
     });
 
-    assert.equal(next.document.graphs.g1.enabled, false);
-    assert.equal(next.document.graphs.g1.rigId, 'heroRig');
-    assert.equal(state.document.graphs.g1.enabled, true);
-    assert.equal(state.document.graphs.g1.rigId, null);
+    assert.equal(next.document.graphs.g1.label, 'Hero Graph');
+    assert.equal(next.document.graphs.g1.color, '#60a5fa');
+    assert.equal(state.document.graphs.g1.label, undefined);
+});
+
+test('graph metadata update rejects execution fields', () => {
+    const state = {
+        document: {
+            graphs: {
+                g1: {
+                    id: 'g1',
+                    enabled: true,
+                    rigId: null,
+                    nodes: {
+                        source: { id: 'source', type: 'value' },
+                    },
+                    output: 'source',
+                },
+            },
+        },
+    };
+
+    assert.throws(
+        () =>
+            reduce(state, EventTypes.GRAPH_METADATA_UPDATE, {
+                graphId: 'g1',
+                patch: {
+                    enabled: false,
+                },
+            }),
+        /GRAPH_METADATA_UPDATE: illegal field "enabled"/,
+    );
 });
 
 test('graph connect updates target dependency field for compiler-compatible graphs', () => {

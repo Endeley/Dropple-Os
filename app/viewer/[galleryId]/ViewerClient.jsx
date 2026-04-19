@@ -3,12 +3,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from 'convex/react';
-import TimelineBar from '@/ui/layout/TimelineBar';
 import { WorkspaceCanvasRoot } from '@/ui/workspace/WorkspaceCanvasRoot.jsx';
 import { GridProvider } from '@/ui/workspace/shared/GridContext';
 import { ModeProvider } from '@/ui/workspace/shared/ModeContext';
 import { hydrateLocalDocumentSnapshot } from '@/infrastructure/persistence/localDocumentSchema.js';
 import { useViewerControls } from '@/viewer/useViewerControls';
+import { ViewerTimelineBar } from '@/viewer/ViewerTimelineBar.jsx';
 import { ViewerToolbar } from '@/viewer/ViewerToolbar';
 import { ViewerStage } from '@/viewer/ViewerStage';
 import { parseViewerParams } from '@/viewer/parseViewerParams';
@@ -65,15 +65,20 @@ export default function ViewerClient({ snapshot, meta }) {
   }, [snapshot]);
 
   useEffect(() => {
+    const nextEvents = hydrated?.events || [];
+    const maxIndex = nextEvents.length - 1;
+    const nextCursorIndex = Math.max(-1, Math.min(maxIndex, hydrated?.cursorIndex ?? -1));
+    setCursorIndex(nextCursorIndex);
+  }, [hydrated]);
+
+  useEffect(() => {
     setParamsConfig(parseViewerParams());
   }, []);
 
   const events = hydrated?.events || [];
+  const maxCursorIndex = events.length - 1;
   const cursor = {
-    index:
-      hydrated?.cursorIndex != null
-        ? hydrated.cursorIndex
-        : Math.min(events.length - 1, cursorIndex),
+    index: Math.max(-1, Math.min(maxCursorIndex, cursorIndex)),
   };
 
   const adapter = useMemo(
@@ -166,10 +171,12 @@ export default function ViewerClient({ snapshot, meta }) {
               </ViewerStage>
             </div>
             {paramsConfig.timeline && (
-              <TimelineBar
+              <ViewerTimelineBar
                 events={events}
-                cursor={cursor}
-                setCursorIndex={setCursorIndex}
+                cursorIndex={cursor.index}
+                onSeek={(nextCursorIndex) => {
+                  setCursorIndex(Math.max(-1, Math.min(maxCursorIndex, nextCursorIndex)));
+                }}
               />
             )}
           </div>

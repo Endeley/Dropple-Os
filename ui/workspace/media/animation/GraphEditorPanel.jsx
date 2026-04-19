@@ -2,7 +2,19 @@
 
 import { useMemo } from 'react';
 import { nanoid } from 'nanoid';
-import { EventTypes } from '@/core/events/eventTypes.js';
+import {
+    graphIntentDisable,
+    graphIntentEnable,
+    graphIntentConnectionCreate,
+    graphIntentConnectionDelete,
+    graphIntentMetadataUpdate,
+    graphIntentNodeCreate,
+    graphIntentNodeDelete,
+    graphIntentNodeUpdate,
+    graphIntentOutputSet,
+    graphIntentSetPriority,
+    graphIntentSetRig,
+} from '@/ui/graph/graphIntent.js';
 import { useWorkspaceVisualState } from '@/runtime/projection';
 import {
     clearGraphSelection,
@@ -16,7 +28,6 @@ import { GraphCanvas } from './GraphCanvas.jsx';
 import { canConnect } from './graphConnectionGuards.js';
 import { GraphInspectorPanel } from './GraphInspectorPanel.jsx';
 import { GraphNodeCreationPanel } from './GraphNodeCreationPanel.jsx';
-import { getGraphNodeTemplate } from './graphNodeCatalog.js';
 
 const EMPTY_GRAPH_ITEMS = [];
 
@@ -36,11 +47,6 @@ export function GraphEditorPanel() {
         return activeGraph?.id ?? activeGraphId ?? null;
     }
 
-    function dispatchGraphEvent(type, payload) {
-        emitGraphIntent({ type, payload });
-        return null;
-    }
-
     function createNode(type) {
         const graphId = getActiveGraphIdentifier();
         if (!graphId) return;
@@ -49,36 +55,65 @@ export function GraphEditorPanel() {
             x: 48 - (graph?.viewport?.x ?? 0) / (graph?.viewport?.zoom ?? 1) + (nodes.length % 3) * 164,
             y: 48 - (graph?.viewport?.y ?? 0) / (graph?.viewport?.zoom ?? 1) + Math.floor(nodes.length / 3) * 104,
         };
-        const nextNode = getGraphNodeTemplate(type, {
-            id: `${type}-${nanoid(6)}`,
+        const nodeId = `${type}-${nanoid(6)}`;
+
+        graphIntentNodeCreate({
+            graphId,
+            nodeId,
+            nodeType: type,
             position,
         });
-
-        if (!nextNode) return;
-
-        void dispatchGraphEvent(EventTypes.GRAPH_NODE_ADD, {
-            graphId,
-            node: nextNode,
-        });
-        emitGraphIntent(selectGraphNode(nextNode.id));
+        emitGraphIntent(selectGraphNode(nodeId));
     }
 
     function patchNode(nodeId, patch) {
         const graphId = getActiveGraphIdentifier();
         if (!graphId || !nodeId || !patch) return;
 
-        void dispatchGraphEvent(EventTypes.GRAPH_NODE_UPDATE, {
+        graphIntentNodeUpdate({
             graphId,
             nodeId,
             patch,
         });
     }
 
-    function patchGraph(patch) {
+    function setGraphEnabled(enabled) {
+        const graphId = getActiveGraphIdentifier();
+        if (!graphId) return;
+
+        if (enabled) {
+            graphIntentEnable({ graphId });
+            return;
+        }
+
+        graphIntentDisable({ graphId });
+    }
+
+    function setGraphRig(rigId) {
+        const graphId = getActiveGraphIdentifier();
+        if (!graphId) return;
+
+        graphIntentSetRig({
+            graphId,
+            rigId,
+        });
+    }
+
+    function setGraphPriority(priority) {
+        const graphId = getActiveGraphIdentifier();
+        if (!graphId || !Number.isFinite(priority)) return;
+
+        graphIntentSetPriority({
+            graphId,
+            priority,
+        });
+    }
+
+    function patchGraphMetadata(patch) {
         const graphId = getActiveGraphIdentifier();
         if (!graphId || !patch) return;
 
-        void dispatchGraphEvent(EventTypes.GRAPH_UPDATE, {
+        graphIntentMetadataUpdate({
             graphId,
             patch,
         });
@@ -88,7 +123,7 @@ export function GraphEditorPanel() {
         const graphId = getActiveGraphIdentifier();
         if (!graphId || !nodeId) return;
 
-        void dispatchGraphEvent(EventTypes.GRAPH_NODE_DELETE, {
+        graphIntentNodeDelete({
             graphId,
             nodeId,
         });
@@ -98,7 +133,7 @@ export function GraphEditorPanel() {
         const graphId = getActiveGraphIdentifier();
         if (!graphId || !nodeId) return;
 
-        void dispatchGraphEvent(EventTypes.GRAPH_OUTPUT_SET, {
+        graphIntentOutputSet({
             graphId,
             nodeId,
         });
@@ -136,7 +171,7 @@ export function GraphEditorPanel() {
         const graphId = getActiveGraphIdentifier();
         if (!graphId) return;
 
-        void dispatchGraphEvent(EventTypes.GRAPH_CONNECT, {
+        graphIntentConnectionCreate({
             graphId,
             from,
             to,
@@ -148,7 +183,7 @@ export function GraphEditorPanel() {
         const graphId = getActiveGraphIdentifier();
         if (!graphId) return;
 
-        void dispatchGraphEvent(EventTypes.GRAPH_DISCONNECT, {
+        graphIntentConnectionDelete({
             graphId,
             from,
             to,
@@ -194,7 +229,10 @@ export function GraphEditorPanel() {
                 activeGraph={activeGraph}
                 selectedNode={selectedNode}
                 graphErrors={graphErrors}
-                onPatchGraph={patchGraph}
+                onSetGraphEnabled={setGraphEnabled}
+                onSetGraphRig={setGraphRig}
+                onSetGraphPriority={setGraphPriority}
+                onPatchGraphMetadata={patchGraphMetadata}
                 onPatchNode={patchNode}
                 onDeleteNode={deleteNode}
                 onSetOutputNode={setOutputNode}

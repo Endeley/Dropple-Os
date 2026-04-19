@@ -69,6 +69,27 @@ function cloneGraph(graph) {
     };
 }
 
+const GRAPH_METADATA_FIELDS = new Set([
+    'label',
+    'description',
+    'color',
+    'uiCollapsed',
+    'uiPosition',
+]);
+
+function applyGraphMetadataUpdate(graph, patch) {
+    for (const key of Object.keys(patch)) {
+        if (!GRAPH_METADATA_FIELDS.has(key)) {
+            throw new Error(`GRAPH_METADATA_UPDATE: illegal field "${key}"`);
+        }
+    }
+
+    return {
+        ...graph,
+        ...patch,
+    };
+}
+
 function listGraphs(document) {
     if (Array.isArray(document?.graphs)) {
         return sortById(document.graphs.filter(Boolean));
@@ -302,7 +323,11 @@ export function graphReducers(state, event) {
     const { type, payload } = event ?? {};
 
     if (
-        type !== EventTypes.GRAPH_UPDATE &&
+        type !== EventTypes.GRAPH_ENABLE &&
+        type !== EventTypes.GRAPH_DISABLE &&
+        type !== EventTypes.GRAPH_SET_RIG &&
+        type !== EventTypes.GRAPH_SET_PRIORITY &&
+        type !== EventTypes.GRAPH_METADATA_UPDATE &&
         type !== EventTypes.GRAPH_NODE_ADD &&
         type !== EventTypes.GRAPH_NODE_UPDATE &&
         type !== EventTypes.GRAPH_NODE_DELETE &&
@@ -321,27 +346,57 @@ export function graphReducers(state, event) {
     const graph = assertGraphExists(ensured.document, graphId);
 
     switch (type) {
-        case EventTypes.GRAPH_UPDATE: {
+        case EventTypes.GRAPH_ENABLE: {
+            return {
+                ...ensured,
+                document: updateGraphDocument(ensured.document, graphId, {
+                    ...cloneGraph(graph),
+                    enabled: true,
+                }),
+            };
+        }
+
+        case EventTypes.GRAPH_DISABLE: {
+            return {
+                ...ensured,
+                document: updateGraphDocument(ensured.document, graphId, {
+                    ...cloneGraph(graph),
+                    enabled: false,
+                }),
+            };
+        }
+
+        case EventTypes.GRAPH_SET_RIG: {
+            return {
+                ...ensured,
+                document: updateGraphDocument(ensured.document, graphId, {
+                    ...cloneGraph(graph),
+                    rigId: payload?.rigId ?? null,
+                }),
+            };
+        }
+
+        case EventTypes.GRAPH_SET_PRIORITY: {
+            return {
+                ...ensured,
+                document: updateGraphDocument(ensured.document, graphId, {
+                    ...cloneGraph(graph),
+                    priority: Number.isFinite(payload?.priority) ? payload.priority : 0,
+                }),
+            };
+        }
+
+        case EventTypes.GRAPH_METADATA_UPDATE: {
             const patch = payload?.patch;
             if (!patch || typeof patch !== 'object') return state;
-            const currentGraph = cloneGraph(graph);
-
-            const nextGraph = {
-                ...currentGraph,
-                ...patch,
-                enabled: patch.enabled === undefined ? currentGraph.enabled : patch.enabled !== false,
-                rigId: patch.rigId === undefined ? currentGraph.rigId : patch.rigId ?? null,
-                priority:
-                    patch.priority === undefined
-                        ? currentGraph.priority
-                        : Number.isFinite(patch.priority)
-                          ? patch.priority
-                          : 0,
-            };
 
             return {
                 ...ensured,
-                document: updateGraphDocument(ensured.document, graphId, nextGraph),
+                document: updateGraphDocument(
+                    ensured.document,
+                    graphId,
+                    applyGraphMetadataUpdate(cloneGraph(graph), patch),
+                ),
             };
         }
 

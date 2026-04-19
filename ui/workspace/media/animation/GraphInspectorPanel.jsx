@@ -104,7 +104,10 @@ export function GraphInspectorPanel({
     activeGraph,
     selectedNode,
     graphErrors = [],
-    onPatchGraph,
+    onSetGraphEnabled,
+    onSetGraphRig,
+    onSetGraphPriority,
+    onPatchGraphMetadata,
     onPatchNode,
     onDeleteNode,
     onSetOutputNode,
@@ -156,9 +159,7 @@ export function GraphInspectorPanel({
                                 type='checkbox'
                                 checked={activeGraph.enabled !== false}
                                 onChange={(event) =>
-                                    onPatchGraph?.({
-                                        enabled: event.target.checked,
-                                    })
+                                    onSetGraphEnabled?.(event.target.checked)
                                 }
                             />
                             <span>{activeGraph.enabled !== false ? 'Participates in runtime evaluation' : 'Excluded from runtime evaluation'}</span>
@@ -169,11 +170,20 @@ export function GraphInspectorPanel({
                         <input
                             value={toInputValue(activeGraph.rigId)}
                             onChange={(event) =>
-                                onPatchGraph?.({
-                                    rigId: event.target.value.trim() || null,
-                                })
+                                onSetGraphRig?.(event.target.value.trim() || null)
                             }
                             placeholder='optional rig binding'
+                            style={inputStyle()}
+                        />,
+                    )}
+                    {fieldRow(
+                        'Priority',
+                        <input
+                            type='number'
+                            value={toInputValue(activeGraph.priority ?? 0)}
+                            onChange={(event) =>
+                                onSetGraphPriority?.(Number(event.target.value) || 0)
+                            }
                             style={inputStyle()}
                         />,
                     )}
