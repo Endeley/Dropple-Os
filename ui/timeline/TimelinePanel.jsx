@@ -7,7 +7,7 @@ import TimelineTrackList from './TimelineTrackList.jsx';
 import TimelineTimeScale from './TimelineTimeScale.jsx';
 import ShotTimelineBar from './ShotTimelineBar.jsx';
 import { ShotHUD } from './ShotHUD.jsx';
-import { useTimelineController } from './useTimelineController.js';
+import { historyIntentRedo, historyIntentUndo } from '@/ui/history/historyIntent.js';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext.jsx';
 import { canvasBus } from '../eventBus/canvasBus.js';
 import {
@@ -33,6 +33,7 @@ import {
   getNearestKeyframeTime,
   getNextKeyframeTime,
   getPrevKeyframeTime,
+  projectTimeline,
   runAnimationPreview,
   selectIsReplaying,
   useRuntimeStore,
@@ -47,6 +48,8 @@ export default function TimelinePanel({ designState }) {
   const sceneGraph = useWorkspaceVisualState((s) => s.sceneGraph);
   const runtimeTimeline = useRuntimeStore((s) => s.timeline);
   const runtimeScene = useRuntimeStore((s) => s.scene);
+  const runtimeEvents = useRuntimeStore((s) => s.events);
+  const runtimeCursorIndex = useRuntimeStore((s) => s.cursorIndex);
   const frameTime = useRuntimeStore((s) => s.frameTime) ?? 0;
   const isPlaying = useTimelineStore((s) => s.isPlaying);
   const [isLooping, setIsLooping] = useState(true);
@@ -80,17 +83,10 @@ export default function TimelinePanel({ designState }) {
       { duration: 0, tracks: [], channels: [] },
     [designState, runtimeTimeline]
   );
-  const {
-    projection,
-    undo,
-    redo,
-    checkout,
-    setSnapshotLabel,
-    canUndo,
-    canRedo,
-    snapshots,
-    currentSnapshotId,
-  } = useTimelineController(timelineSource);
+  const projection = useMemo(() => projectTimeline(timelineSource), [timelineSource]);
+  const canUndo = Number.isFinite(runtimeCursorIndex) && runtimeCursorIndex >= 0;
+  const canRedo =
+    Array.isArray(runtimeEvents) && runtimeCursorIndex < runtimeEvents.length - 1;
   const selectedId = selectedIds?.size === 1 ? Array.from(selectedIds)[0] : null;
   const selectedNode = useMemo(
     () => (selectedId ? designState?.nodes?.[selectedId] : null),
@@ -356,71 +352,6 @@ export default function TimelinePanel({ designState }) {
           marginBottom: 8,
         }}
       >
-        <div style={{ display: 'grid', gap: 6, marginBottom: 8 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: '#0f172a' }}>
-            Snapshots
-          </div>
-          <div style={{ display: 'grid', gap: 4 }}>
-            {snapshots.map((snapshot) => (
-              <div
-                key={snapshot.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '4px 6px',
-                  borderRadius: 6,
-                  border: '1px solid #e2e8f0',
-                  background: snapshot.id === currentSnapshotId ? '#e2e8f0' : '#ffffff',
-                  fontSize: 11,
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => checkout(snapshot.id)}
-                  style={{
-                    border: 'none',
-                    background: 'transparent',
-                    padding: 0,
-                    fontSize: 11,
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    color: '#0f172a',
-                  }}
-                >
-                  {snapshot.label || snapshot.shortId}
-                </button>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <input
-                    key={`${snapshot.id}:${snapshot.label}`}
-                    type="text"
-                    defaultValue={snapshot.label}
-                    onBlur={(event) => {
-                      setSnapshotLabel(snapshot.id, event.target.value);
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') {
-                        event.currentTarget.blur();
-                      }
-                    }}
-                    placeholder={snapshot.shortId}
-                    style={{
-                      fontSize: 10,
-                      padding: '2px 4px',
-                      borderRadius: 4,
-                      border: '1px solid #e2e8f0',
-                      background: '#ffffff',
-                      width: 120,
-                    }}
-                  />
-                  <span style={{ color: '#64748b' }}>
-                    p:{snapshot.parentCount} c:{snapshot.childCount}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: '#0f172a' }}>
             Tracks
@@ -445,7 +376,7 @@ export default function TimelinePanel({ designState }) {
           </button>
           <button
             type="button"
-            onClick={undo}
+            onClick={() => historyIntentUndo()}
             disabled={!canUndo}
             style={{
               padding: '4px 8px',
@@ -461,7 +392,7 @@ export default function TimelinePanel({ designState }) {
           </button>
           <button
             type="button"
-            onClick={redo}
+            onClick={() => historyIntentRedo()}
             disabled={!canRedo}
             style={{
               padding: '4px 8px',

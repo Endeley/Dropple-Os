@@ -152,6 +152,52 @@ test('selection events update runtime state without entering persisted event mir
     assert.deepEqual(useRuntimeStore.getState().events, []);
 });
 
+test('dispatcher undo and redo replay canonical persisted truth while preserving runtime workspace', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });
+
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: {
+                id: 'animation',
+                tools: ['select', 'keyframe'],
+                allowedEventTypes: [EventTypes.TIMELINE_TRACK_CREATE],
+                policy: {
+                    mutation: 'allow',
+                    capabilities: ['timeline:edit'],
+                },
+            },
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.TIMELINE_TRACK_CREATE,
+        payload: {
+            id: 'track-undo-redo',
+            type: 'standard',
+        },
+    });
+
+    const afterCreate = dispatcher.getState();
+    assert.equal(afterCreate?.timeline?.timelines?.default?.tracks?.length, 1);
+    assert.equal(afterCreate?.workspace?.id, 'animation');
+    assert.equal(afterCreate?.cursorIndex, 0);
+
+    const afterUndo = dispatcher.undo();
+    assert.equal(afterUndo?.timeline?.timelines?.default?.tracks?.length, 0);
+    assert.equal(afterUndo?.workspace?.id, 'animation');
+    assert.equal(afterUndo?.cursorIndex, -1);
+    assert.equal(afterUndo?.events?.length, 1);
+
+    const afterRedo = dispatcher.redo();
+    assert.equal(afterRedo?.timeline?.timelines?.default?.tracks?.length, 1);
+    assert.equal(afterRedo?.timeline?.timelines?.default?.tracks?.[0]?.id, 'track-undo-redo');
+    assert.equal(afterRedo?.workspace?.id, 'animation');
+    assert.equal(afterRedo?.cursorIndex, 0);
+    assert.equal(afterRedo?.events?.length, 1);
+});
+
 test('clipboard system events update runtime clipboard without entering persisted event mirrors', async () => {
     const dispatcher = createEventDispatcher({ headless: true });
     dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });

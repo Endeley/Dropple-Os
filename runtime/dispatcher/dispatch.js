@@ -14,7 +14,8 @@ import { easeOutCubic } from '../animation/easing.js';
 import { useAnimatedRuntimeStore } from '../stores/useAnimatedRuntimeStore.js';
 import { useRuntimeStore } from '../stores/useRuntimeStore.js';
 import { syncRuntimeToZustand } from '../projection/zustandBridge.js';
-import { createHistory } from './history.js';
+import { getDesignStateAtCursor } from '@/core/persistence/index.js';
+import { bootWorkspaceDocument } from '@/runtime/workspaces/index.js';
 
 import { getRuntimeState as getRuntimeStatePublic } from '../state/runtimeState.js';
 import {
@@ -214,7 +215,6 @@ function inferMutationType(event) {
 }
 
 export function createEventDispatcher({ maxHistory = 100, workspaceId = null, branchId = 'main', profile = 'design', uxEnforcementTier = defaultUXEnforcementTier, headless = false } = {}) {
-    const history = createHistory(maxHistory);
     const sequencer = new EventSequencer();
     const uxAuditLog = createUXAuditLog();
     const emitUXWarning = createUXWarningEmitter({
@@ -495,9 +495,71 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
         return hydratedState;
     }
 
+    function replayRuntimeToCursor(nextCursorIndex) {
+        const currentState = __getRuntimeStateInternal() ?? initialRuntimeState;
+        const events = Array.isArray(currentState?.events) ? currentState.events : [];
+        const maxCursorIndex = events.length - 1;
+        const cursorIndex = Math.max(-1, Math.min(maxCursorIndex, nextCursorIndex));
+        const replayedRuntimeState = __ensureDefaultWorkspaceInternal(
+            __ensureDefaultTimelineInternal(
+                getDesignStateAtCursor({ events, uptoIndex: cursorIndex }) ?? initialRuntimeState,
+            ),
+        );
+        const bootedDocument =
+            replayedRuntimeState?.document && typeof replayedRuntimeState.document === 'object'
+                ? bootWorkspaceDocument({
+                      document: replayedRuntimeState.document,
+                      workspace: currentState?.workspace?.id ?? workspaceId ?? null,
+                      mode: currentState?.workspace?.modeId ?? profile ?? null,
+                  })
+                : replayedRuntimeState?.document;
+
+        return hydrateRuntimeState(
+            {
+                ...replayedRuntimeState,
+                document: bootedDocument ?? replayedRuntimeState?.document,
+                workspace: currentState?.workspace ?? initialRuntimeState.workspace,
+                tools: currentState?.tools ?? initialRuntimeState.tools,
+                playback: currentState?.playback ?? initialRuntimeState.playback,
+                clipboard: currentState?.clipboard ?? initialRuntimeState.clipboard,
+                interaction: createDefaultInteractionState(),
+                preview: initialRuntimeState.preview,
+                events,
+                cursorIndex,
+            },
+            { animate: false },
+        );
+    }
+
     return {
         dispatch,
         hydrateRuntimeState,
+        undo() {
+            const currentState = __getRuntimeStateInternal() ?? initialRuntimeState;
+            const events = Array.isArray(currentState?.events) ? currentState.events : [];
+            const currentCursorIndex = Number.isFinite(currentState?.cursorIndex)
+                ? currentState.cursorIndex
+                : events.length - 1;
+
+            if (events.length === 0 || currentCursorIndex <= -1) {
+                return currentState;
+            }
+
+            return replayRuntimeToCursor(currentCursorIndex - 1);
+        },
+        redo() {
+            const currentState = __getRuntimeStateInternal() ?? initialRuntimeState;
+            const events = Array.isArray(currentState?.events) ? currentState.events : [];
+            const currentCursorIndex = Number.isFinite(currentState?.cursorIndex)
+                ? currentState.cursorIndex
+                : events.length - 1;
+
+            if (events.length === 0 || currentCursorIndex >= events.length - 1) {
+                return currentState;
+            }
+
+            return replayRuntimeToCursor(currentCursorIndex + 1);
+        },
         setReplaying(value) {
             __setIsReplayingInternal(value);
             const runtimeState = __getRuntimeStateInternal() ?? initialRuntimeState;

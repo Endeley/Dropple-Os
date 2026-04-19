@@ -9,16 +9,16 @@ import {
   getNextKeyframeTime,
   getPrevKeyframeTime,
 } from '@/runtime/timeline/keyframeTimeUtils.js';
+import { projectTimeline } from '@/runtime/projection/timelineProjection.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
-import { TrackActions } from '@/runtime/timeline/trackControllerBridge.js';
 
 export {
-  TrackActions,
   cancelAnimationPreview,
   collectKeyframeTimes,
   getNearestKeyframeTime,
   getNextKeyframeTime,
   getPrevKeyframeTime,
+  projectTimeline,
   runAnimationPreview,
   selectIsReplaying,
   useRuntimeStore,
