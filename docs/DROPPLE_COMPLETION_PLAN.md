@@ -247,7 +247,7 @@ Definition of done:
 Primary files:
 
 - `ui/bridges/historyBridge.js`
-- `runtime/dispatcher/history.js`
+- `runtime/dispatcher/dispatch.js`
 - `core/history/historyStack.js`
 
 Definition of done:

@@ -1263,7 +1263,6 @@ dropple/  # Project root.
 │   │   │   └── uxWarningBus.js  # ux Warning Bus module.
 │   │   ├── dispatch.js  # dispatch dispatcher or mutation-funnel implementation.
 │   │   ├── dispatcherHandle.js  # dispatcher Handle dispatcher or mutation-funnel implementation.
-│   │   ├── history.js  # history module.
 │   │   └── replayEvents.js  # replay Events event definition, adapter, or event helper.
 │   ├── document/  # Document model, document adapters, and boot helpers.
 │   │   ├── documentAdapter.js  # document Adapter module.
@@ -1689,7 +1688,6 @@ dropple/  # Project root.
 │   │   ├── keyframeTimeUtils.js  # keyframe Time Utils module.
 │   │   ├── README.md  # Module-level documentation and orientation for this area.
 │   │   ├── scrubTimeline.js  # scrub Timeline timeline-related helper or UI surface.
-│   │   └── trackControllerBridge.js  # track Controller Bridge translation bridge between layers or buses.
 │   ├── tools/  # Tool definitions, tool availability, and tool helpers.
 │   │   ├── __tests__/  # Tests colocated with the owning module.
 │   │   │   ├── toolControllerRegistry.test.mjs  # Automated test covering behavior in this area.
@@ -1972,7 +1970,6 @@ dropple/  # Project root.
 │   │   ├── sessionCommitRuntimeFacade.js  # session Commit Runtime Facade runtime logic for this feature.
 │   │   ├── shotEditorBridge.js  # shot Editor Bridge translation bridge between layers or buses.
 │   │   ├── timelineBridge.js  # timeline Bridge translation bridge between layers or buses.
-│   │   ├── timelineControllerBridge.js  # timeline Controller Bridge translation bridge between layers or buses.
 │   │   ├── timelinePanelBridge.js  # timeline Panel Bridge translation bridge between layers or buses.
 │   │   ├── timelinePreviewRuntimeBridge.js  # timeline Preview Runtime Bridge translation bridge between layers or buses.
 │   │   ├── toolHandlerRegistrationFacade.js  # tool Handler Registration Facade module.
@@ -2181,7 +2178,6 @@ dropple/  # Project root.
 │   │   ├── useKeyframeDragPreview.js  # use Keyframe Drag Preview hook/helper for consuming or deriving feature state.
 │   │   ├── useKeyframePointer.js  # use Keyframe Pointer hook/helper for consuming or deriving feature state.
 │   │   ├── useTimelineBounds.js  # use Timeline Bounds hook/helper for consuming or deriving feature state.
-│   │   ├── useTimelineController.js  # use Timeline Controller hook/helper for consuming or deriving feature state.
 │   │   ├── useTimelinePreviewBridge.js  # use Timeline Preview Bridge hook/helper for consuming or deriving feature state.
 │   │   ├── useTimelinePreviewStore.js  # use Timeline Preview Store hook/helper for consuming or deriving feature state.
 │   │   ├── useTimelineSelectionStore.js  # use Timeline Selection Store hook/helper for consuming or deriving feature state.

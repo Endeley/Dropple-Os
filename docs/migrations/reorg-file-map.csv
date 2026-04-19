@@ -516,7 +516,6 @@ runtime/projection/zustandBridge.js,runtime/projection/zustandBridge.js,keep
 runtime/cursor/createCursor.js,runtime/cursor/createCursor.js,keep
 runtime/cursor/resolveCursor.js,runtime/cursor/resolveCursor.js,keep
 runtime/dispatcher/dispatch.js,runtime/dispatcher/dispatch.js,keep
-runtime/dispatcher/history.js,runtime/dispatcher/history.js,keep
 runtime/dispatcher/ux/emitUXWarning.js,runtime/dispatcher/ux/emitUXWarning.js,keep
 runtime/dispatcher/ux/observeUXIntent.js,runtime/dispatcher/ux/observeUXIntent.js,keep
 runtime/dispatcher/ux/shouldConfirmUXAction.js,runtime/dispatcher/ux/shouldConfirmUXAction.js,keep
