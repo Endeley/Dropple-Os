@@ -2,7 +2,6 @@
 
 import TopBar from '@/ui/layout/TopBar';
 import Toolbar from '@/ui/layout/Toolbar';
-import PropertyBar from '@/ui/layout/PropertyBar';
 import LeftPanel from '@/ui/layout/LeftPanel';
 import RightPanel from '@/ui/layout/RightPanel';
 import TimelineBar from '@/ui/layout/TimelineBar';
@@ -13,14 +12,13 @@ import { SelectionProvider, useSelection } from '@/ui/workspace/shared/Selection
 import { ModeProvider, useMode } from '@/ui/workspace/shared/ModeContext.jsx';
 import { useKeyboardShortcuts } from '@/ui/interaction/interaction/useKeyboardShortcuts.js';
 import { getDesignStateAtCursor } from '@/core/persistence/index.js';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { registerWorkspaceTools } from '@/ui/interaction/toolRegistration';
 import { useKeyboardNudge } from '@/ui/keyboard/useKeyboardNudge';
 import { useAlignmentShortcuts } from '@/ui/keyboard/useAlignmentShortcuts';
 import { useGroupShortcuts } from '@/ui/keyboard/useGroupShortcuts';
 import { useModeOnboarding } from '@/onboarding/useModeOnboarding';
 import { ModeHint } from '@/onboarding/ModeHint';
-import { FilePicker } from '@/ui/files/FilePicker';
 import { useCommandPalette } from '@/commands/useCommandPalette';
 import { CommandPalette } from '@/commands/CommandPalette';
 import { buildCommands } from '@/commands/commandRegistry';
@@ -31,366 +29,175 @@ import { ExportGateOverlay } from '@/ui/export/ExportGateOverlay';
 import { getNodes } from '@/runtime/document/documentAdapter.js';
 
 function EditorWorkspaceLayoutInner({
-  adapter,
-  events,
-  cursor,
-  setCursorIndex,
-  emit,
-  documentName,
-  onSave,
-  onSaveAs,
-  recentDocs,
-  onOpenDocument,
-  canPersist = true,
-  onImportJSONReplace,
-  onImportJSONMerge,
-  onImportSVGReplace,
-  onImportSVGMerge,
-  canImport = true,
-  onOpenTemplateGenerator,
-  educationReadOnly = false,
-  readOnly = false,
-  documentRole = null,
-  documentId = null,
-  reviewSubmission,
-  reviewRubric,
-  onReviewDecision,
-  onReviewCriteriaChange,
-  reviewerId,
-  presence,
-  railOffset = 0,
+    adapter,
+    events,
+    cursor,
+    emit,
+    documentName,
+    onSave,
+    onSaveAs,
+    recentDocs,
+    onOpenDocument,
+    canPersist = true,
+    onImportJSONReplace,
+    onImportJSONMerge,
+    onImportSVGReplace,
+    onImportSVGMerge,
+    canImport = true,
+    onOpenTemplateGenerator,
+    educationReadOnly = false,
+    readOnly = false,
+    documentRole = null,
+    documentId = null,
+    reviewSubmission,
+    reviewRubric,
+    onReviewDecision,
+    onReviewCriteriaChange,
+    reviewerId,
+    presence,
+    railOffset = 0,
 }) {
-  const { selectedIds, setSelection } = useSelection();
-  const keyboardEnabled =
-    adapter?.interactions?.keyboard !== false &&
-    adapter?.ui?.editing !== false &&
-    adapter?.id !== 'review' &&
-    !readOnly;
-  const canManageSharing = documentRole === 'owner' && !readOnly && !!documentId;
-  const hintMode = adapter?.id === 'design' ? 'graphic' : adapter?.id;
-  const hint = useModeOnboarding(hintMode);
-  const mode = useMode();
+    const { selectedIds, setSelection } = useSelection();
 
-  const { open: commandOpen, close: commandClose } = useCommandPalette({
-    enabled: keyboardEnabled,
-  });
-  const galleryIdentity = useGalleryIdentity();
-  const publishToServer = usePublishToServer();
+    const keyboardEnabled = adapter?.interactions?.keyboard !== false && adapter?.ui?.editing !== false && adapter?.id !== 'review' && !readOnly;
 
-  const jsonReplaceRef = useRef(null);
-  const jsonMergeRef = useRef(null);
-  const svgReplaceRef = useRef(null);
-  const svgMergeRef = useRef(null);
+    const hintMode = adapter?.id === 'design' ? 'graphic' : adapter?.id;
 
-  const openImportJSONReplace = () => jsonReplaceRef.current?.click();
-  const openImportJSONMerge = () => jsonMergeRef.current?.click();
-  const openImportSVGReplace = () => svgReplaceRef.current?.click();
-  const openImportSVGMerge = () => svgMergeRef.current?.click();
+    const hint = useModeOnboarding(hintMode);
+    const mode = useMode();
 
-  const undo = useCallback(() => {
-    setCursorIndex((current) => {
-      if (current < 0) return current;
-      const groupId = events[current]?.groupId || events[current]?.id;
-      let idx = current;
-      while (idx >= 0) {
-        const prevGroupId = events[idx]?.groupId || events[idx]?.id;
-        if (prevGroupId !== groupId) break;
-        idx -= 1;
-      }
-      return idx;
+    const { open: commandOpen, close: commandClose } = useCommandPalette({
+        enabled: keyboardEnabled,
     });
-  }, [events, setCursorIndex]);
 
-  const redo = useCallback(() => {
-    setCursorIndex((current) => {
-      const start = current + 1;
-      if (start >= events.length) return current;
-      const groupId = events[start]?.groupId || events[start]?.id;
-      let idx = start;
-      while (idx + 1 < events.length) {
-        const nextGroupId = events[idx + 1]?.groupId || events[idx + 1]?.id;
-        if (nextGroupId !== groupId) break;
-        idx += 1;
-      }
-      return idx;
-    });
-  }, [events, setCursorIndex]);
+    const galleryIdentity = useGalleryIdentity();
+    const publishToServer = usePublishToServer();
 
-  const getState = useCallback(() => {
-    return getDesignStateAtCursor({
-      events,
-      uptoIndex: cursor.index,
-    });
-  }, [events, cursor.index]);
+    const workspaceId = adapter?.workspaceId || adapter?.id || 'graphic';
 
-  const replayState = useMemo(() => getState() ?? { nodes: {} }, [getState]);
-  const replayNodes = useMemo(() => getNodes(replayState), [replayState]);
-  const selected = useMemo(() => {
-    if (!selectedIds || selectedIds.size === 0) return [];
-    return Array.from(selectedIds)
-      .map((id) => replayNodes?.[id])
-      .filter(Boolean);
-  }, [selectedIds, replayNodes]);
+    const getState = useCallback(() => {
+        return getDesignStateAtCursor({
+            events,
+            uptoIndex: cursor.index,
+        });
+    }, [events, cursor.index]);
 
-  const commands = useMemo(
-    () =>
-      buildCommands({
+    const replayState = useMemo(() => {
+        return getState() ?? { nodes: {} };
+    }, [getState]);
+
+    const replayNodes = useMemo(() => getNodes(replayState), [replayState]);
+
+    const selected = useMemo(() => {
+        if (!selectedIds || selectedIds.size === 0) return [];
+
+        return Array.from(selectedIds)
+            .map((id) => replayNodes?.[id])
+            .filter(Boolean);
+    }, [selectedIds, replayNodes]);
+
+    const commands = useMemo(
+        () =>
+            buildCommands({
+                emit,
+                nodes: replayNodes || {},
+                selectedIds: selectedIds ? Array.from(selectedIds) : [],
+                events,
+                cursorIndex: cursor.index,
+                selected,
+                mode: hintMode || mode,
+                workspaceId,
+                publishToServer,
+            }),
+        [emit, events, cursor.index, replayNodes, selectedIds, selected, hintMode, mode, publishToServer, workspaceId],
+    );
+
+    useKeyboardShortcuts({
+        enabled: keyboardEnabled,
+        selectedIds,
+        setSelection,
         emit,
-        nodes: replayNodes || {},
-        selectedIds: selectedIds ? Array.from(selectedIds) : [],
-        events,
-        cursorIndex: cursor.index,
-        selected,
-        mode: hintMode || mode,
-        workspaceId: adapter?.workspaceId || adapter?.id || 'graphic',
-        publishToServer,
-      }),
-    [
-      emit,
-      events,
-      cursor.index,
-      replayNodes,
-      selectedIds,
-      selected,
-      hintMode,
-      mode,
-      publishToServer,
-    ]
-  );
-
-  const baseRightPanels = adapter?.panels?.right || [];
-  const rightPanels =
-    canManageSharing && !baseRightPanels.includes('SharingPanel')
-      ? [...baseRightPanels, 'SharingPanel']
-      : baseRightPanels;
-  const useReplayCanvas =
-    adapter?.id === 'education' || adapter?.id === 'review' || readOnly;
-
-  useKeyboardShortcuts({
-    enabled: keyboardEnabled,
-    selectedIds,
-    setSelection,
-    emit,
-    undo,
-    redo,
-    getState,
-  });
-
-  useKeyboardNudge({
-    enabled: keyboardEnabled,
-    emit,
-    getState,
-  });
-
-  useAlignmentShortcuts({
-    enabled: keyboardEnabled,
-    emit,
-    getState,
-  });
-
-  useGroupShortcuts({
-    enabled: keyboardEnabled,
-    selectedIds,
-    emit,
-    getState,
-    workspaceId: adapter?.workspaceId || adapter?.id || 'graphic',
-  });
-
-  useEffect(() => {
-    const unregisterTools = registerWorkspaceTools({
-      workspaceId: adapter?.workspaceId || adapter?.id,
+        getState,
     });
 
-    return () => {
-      unregisterTools?.();
-    };
-  }, [adapter?.id, adapter?.workspaceId]);
+    useKeyboardNudge({
+        enabled: keyboardEnabled,
+        emit,
+        getState,
+    });
 
-  return (
-    <div className="workspace-root" style={railOffset > 0 ? { paddingLeft: railOffset } : undefined}>
-      <PresenceDots presence={presence} />
-      {commandOpen && (
-        <CommandPalette
-          commands={commands}
-          context={{
-            selected,
-            mode: hintMode || mode,
-            readOnly: false,
-            authenticated: !!galleryIdentity,
-          }}
-          onClose={commandClose}
-        />
-      )}
-      <FilePicker
-        accept=".json,application/json"
-        inputRef={jsonReplaceRef}
-        onFile={onImportJSONReplace}
-      />
-      <FilePicker
-        accept=".json,application/json"
-        inputRef={jsonMergeRef}
-        onFile={onImportJSONMerge}
-      />
-      <FilePicker
-        accept=".svg,image/svg+xml"
-        inputRef={svgReplaceRef}
-        onFile={onImportSVGReplace}
-      />
-      <FilePicker
-        accept=".svg,image/svg+xml"
-        inputRef={svgMergeRef}
-        onFile={onImportSVGMerge}
-      />
-      {hint && <ModeHint text={hint} />}
-      <TopBar modeLabel={adapter.label} />
+    useAlignmentShortcuts({
+        enabled: keyboardEnabled,
+        emit,
+        getState,
+    });
 
-      {adapter?.id === 'education' ? (
-        <EducationToolbar
-          emit={emit}
-          cursor={cursor}
-          events={events}
-          selectedId={
-            selectedIds && selectedIds.size === 1
-              ? Array.from(selectedIds)[0]
-              : null
-          }
-          readOnly={educationReadOnly}
-        />
-      ) : adapter?.id === 'review' ? (
-        <ReviewToolbar
-          submission={reviewSubmission}
-          onDecision={onReviewDecision}
-          reviewerId={reviewerId}
-          cursor={cursor}
-        />
-      ) : readOnly ? null : (
-        <Toolbar
-          mode={adapter}
-          onOpenTemplateGenerator={onOpenTemplateGenerator}
-          emit={emit}
-          getState={getState}
-          events={events}
-          cursor={cursor}
-          documentName={documentName}
-          onSave={onSave}
-          onSaveAs={onSaveAs}
-          recentDocs={recentDocs}
-          onOpenDocument={onOpenDocument}
-          canPersist={canPersist}
-          onImportJSONReplace={openImportJSONReplace}
-          onImportJSONMerge={openImportJSONMerge}
-          onImportSVGReplace={openImportSVGReplace}
-          onImportSVGMerge={openImportSVGMerge}
-          canImport={canImport}
-        />
-      )}
+    useGroupShortcuts({
+        enabled: keyboardEnabled,
+        selectedIds,
+        emit,
+        getState,
+        workspaceId,
+    });
 
-      {adapter?.id === 'education' || adapter?.id === 'review' || readOnly ? null : (
-        <PropertyBar events={events} cursor={cursor} emit={emit} />
-      )}
+    useEffect(() => {
+        const unregister = registerWorkspaceTools({
+            workspaceId,
+        });
+        return () => unregister?.();
+    }, [workspaceId]);
 
-      <div className="workspace-main">
-        <LeftPanel panels={adapter.panels?.left} submission={reviewSubmission} />
+    return (
+        <div className='workspace-root' style={railOffset > 0 ? { paddingLeft: railOffset } : undefined}>
+            <PresenceDots presence={presence} />
 
-        <WorkspaceCanvasRoot
-          workspaceId={adapter?.workspaceId || adapter?.id || 'graphic'}
-          events={useReplayCanvas ? events : null}
-          cursor={useReplayCanvas ? cursor : null}
-          readOnly={useReplayCanvas}
-        />
+            {commandOpen && (
+                <CommandPalette
+                    commands={commands}
+                    context={{
+                        selected,
+                        mode: hintMode || mode,
+                        readOnly: false,
+                        authenticated: !!galleryIdentity,
+                    }}
+                    onClose={commandClose}
+                />
+            )}
 
-        <RightPanel
-          panels={rightPanels}
-          events={events}
-          cursor={cursor}
-          emit={emit}
-          capabilities={adapter?.capabilities}
-          rubric={reviewRubric}
-          reviewCriteria={reviewSubmission?.review?.criteria}
-          onReviewCriteriaChange={onReviewCriteriaChange}
-          submissionId={reviewSubmission?.id}
-          setCursorIndex={setCursorIndex}
-          documentId={documentId}
-        />
-      </div>
+            {hint && <ModeHint text={hint} />}
 
-      <TimelineBar
-        events={events}
-        cursor={cursor}
-        setCursorIndex={setCursorIndex}
-        onUndo={readOnly ? undefined : undo}
-        onRedo={readOnly ? undefined : redo}
-        submissionId={reviewSubmission?.id}
-      />
-      <ExportGateOverlay />
-    </div>
-  );
+            <TopBar modeLabel={adapter.label} />
+
+            {adapter?.id === 'education' ? (
+                <EducationToolbar emit={emit} cursor={cursor} events={events} readOnly={educationReadOnly} />
+            ) : adapter?.id === 'review' ? (
+                <ReviewToolbar submission={reviewSubmission} onDecision={onReviewDecision} reviewerId={reviewerId} cursor={cursor} />
+            ) : readOnly ? null : (
+                <Toolbar mode={adapter} emit={emit} getState={getState} events={events} cursor={cursor} documentName={documentName} onSave={onSave} onSaveAs={onSaveAs} recentDocs={recentDocs} onOpenDocument={onOpenDocument} canPersist={canPersist} />
+            )}
+
+            <div className='workspace-main'>
+                <LeftPanel panels={adapter.panels?.left} />
+
+                <WorkspaceCanvasRoot workspaceId={workspaceId} />
+
+                <RightPanel panels={adapter.panels?.right} events={events} cursor={cursor} emit={emit} rubric={reviewRubric} reviewCriteria={reviewSubmission?.review?.criteria} onReviewCriteriaChange={onReviewCriteriaChange} submissionId={reviewSubmission?.id} documentId={documentId} />
+            </div>
+
+            {/* ✅ FINAL FIX HERE */}
+            <TimelineBar events={events} cursor={cursor} submissionId={reviewSubmission?.id} emit={emit} />
+
+            <ExportGateOverlay />
+        </div>
+    );
 }
 
-export function EditorWorkspaceLayout({
-  adapter,
-  events,
-  cursor,
-  setCursorIndex,
-  emit,
-  documentName,
-  onSave,
-  onSaveAs,
-  recentDocs,
-  onOpenDocument,
-  canPersist = true,
-  onImportJSONReplace,
-  onImportJSONMerge,
-  onImportSVGReplace,
-  onImportSVGMerge,
-  canImport = true,
-  onOpenTemplateGenerator,
-  educationReadOnly = false,
-  readOnly = false,
-  documentRole = null,
-  documentId = null,
-  reviewSubmission,
-  reviewRubric,
-  onReviewDecision,
-  onReviewCriteriaChange,
-  reviewerId,
-  presence,
-  railOffset = 0,
-}) {
-  return (
-    <SelectionProvider>
-      <ModeProvider value={adapter?.id || 'graphic'}>
-        <EditorWorkspaceLayoutInner
-          adapter={adapter}
-          events={events}
-          cursor={cursor}
-          setCursorIndex={setCursorIndex}
-          emit={emit}
-          documentName={documentName}
-          onSave={onSave}
-          onSaveAs={onSaveAs}
-          recentDocs={recentDocs}
-          onOpenDocument={onOpenDocument}
-          canPersist={canPersist}
-          onImportJSONReplace={onImportJSONReplace}
-          onImportJSONMerge={onImportJSONMerge}
-          onImportSVGReplace={onImportSVGReplace}
-          onImportSVGMerge={onImportSVGMerge}
-          canImport={canImport}
-          onOpenTemplateGenerator={onOpenTemplateGenerator}
-          educationReadOnly={educationReadOnly}
-          readOnly={readOnly}
-          documentRole={documentRole}
-          documentId={documentId}
-          reviewSubmission={reviewSubmission}
-          reviewRubric={reviewRubric}
-          onReviewDecision={onReviewDecision}
-          onReviewCriteriaChange={onReviewCriteriaChange}
-          reviewerId={reviewerId}
-          presence={presence}
-          railOffset={railOffset}
-        />
-      </ModeProvider>
-    </SelectionProvider>
-  );
+export function EditorWorkspaceLayout(props) {
+    return (
+        <SelectionProvider>
+            <ModeProvider value={props.adapter?.id || 'graphic'}>
+                <EditorWorkspaceLayoutInner {...props} />
+            </ModeProvider>
+        </SelectionProvider>
+    );
 }

@@ -33,7 +33,7 @@ export const EventTypes = Object.freeze({
     CLIPBOARD_CLEAR: 'CLIPBOARD_CLEAR',
 
     // ─────────────────────────────
-    // State identity (Phase 1½)
+    // State identity
     // ─────────────────────────────
     STATE_SET: 'state/set',
     STATE_MACHINE_CREATE: 'state-machine/create',
@@ -42,10 +42,16 @@ export const EventTypes = Object.freeze({
     STATE_MACHINE_SET_ACTIVE: 'state-machine/set-active',
     STATE_MACHINE_PARAMETER_SET: 'state-machine/parameter/set',
     STATE_MACHINE_TRANSITION: 'state-machine/transition',
+
     NAVIGATION_NAVIGATE: 'navigation/navigate',
+
     VECTOR_CREATE: 'vector/create',
     VECTOR_UPDATE: 'vector/update',
     VECTOR_DELETE: 'vector/delete',
+
+    // ─────────────────────────────
+    // Collaboration
+    // ─────────────────────────────
     COLLABORATION_SESSION_START: 'collaboration/session/start',
     COLLABORATION_SESSION_END: 'collaboration/session/end',
     COLLABORATION_SESSION_USER_JOIN: 'collaboration/session/user/join',
@@ -54,34 +60,32 @@ export const EventTypes = Object.freeze({
     COLLABORATION_PRESENCE_REMOVE: 'collaboration/presence/remove',
     COLLABORATION_CURSOR_UPDATE: 'collaboration/cursor/update',
     COLLABORATION_CURSOR_REMOVE: 'collaboration/cursor/remove',
+
+    // ─────────────────────────────
+    // AI
+    // ─────────────────────────────
     AI_REQUEST_ENQUEUE: 'ai/request/enqueue',
     AI_REQUEST_COMPLETE: 'ai/request/complete',
     AI_REQUEST_FAIL: 'ai/request/fail',
 
     // ─────────────────────────────
-    // Behavior graph (Phase B1)
+    // Behavior graph
     // ─────────────────────────────
     BEHAVIOR_STATE_CREATE: 'behavior/state/create',
     BEHAVIOR_STATE_UPDATE: 'behavior/state/update',
     BEHAVIOR_STATE_DELETE: 'behavior/state/delete',
-
     BEHAVIOR_TRANSITION_CREATE: 'behavior/transition/create',
     BEHAVIOR_TRANSITION_DELETE: 'behavior/transition/delete',
-
     BEHAVIOR_TRIGGER_CREATE: 'behavior/trigger/create',
     BEHAVIOR_TRIGGER_DELETE: 'behavior/trigger/delete',
-
     BEHAVIOR_TRANSITION_DEFINE: 'behavior/transition/define',
-
     BEHAVIOR_TRIGGER_BIND: 'behavior/trigger/bind',
     BEHAVIOR_TRIGGER_UNBIND: 'behavior/trigger/unbind',
-
     BEHAVIOR_TRIGGER_FIRE: 'behavior/trigger_fire',
-
     BEHAVIOR_STATE_COMMIT: 'behavior/state/commit',
 
     // ─────────────────────────────
-    // Component identity (Phase 1¾)
+    // Components
     // ─────────────────────────────
     COMPONENT_CREATE: 'component/create',
     COMPONENT_INSTANCE_CREATE: 'component/instance/create',
@@ -90,7 +94,7 @@ export const EventTypes = Object.freeze({
     COMPONENT_SET_ACTIVE: 'component/set-active',
 
     // ─────────────────────────────
-    // Timeline (keyframes, not animation tracks)
+    // Timeline
     // ─────────────────────────────
     TIMELINE_TRACK_CREATE: 'timeline/track/create',
     TIMELINE_TRACK_DELETE: 'timeline/track/delete',
@@ -109,18 +113,41 @@ export const EventTypes = Object.freeze({
     TIMELINE_EVENT_ADD: 'timeline/event/add',
 
     // ─────────────────────────────
-    // Animation authoring (Phase 5)
-    // Truth = timeline tracks + keyframes
+    // Scene shots
+    // ─────────────────────────────
+    SCENE_SHOT_TRACK_CREATE: 'scene/shot-track/create',
+    SCENE_SHOT_TRACK_UPDATE: 'scene/shot-track/update',
+    SCENE_SHOT_TRACK_DELETE: 'scene/shot-track/delete',
+    SCENE_SHOT_CREATE: 'scene/shot/create',
+    SCENE_SHOT_UPDATE: 'scene/shot/update',
+    SCENE_SHOT_DELETE: 'scene/shot/delete',
+    SCENE_SHOT_MOVE: 'scene/shot/move',
+
+    // ─────────────────────────────
+    // Sequences
+    // ─────────────────────────────
+    SEQUENCE_CREATE: 'sequence/create',
+    SEQUENCE_UPDATE: 'sequence/update',
+    SEQUENCE_DELETE: 'sequence/delete',
+    SEQUENCE_SET_ACTIVE: 'sequence/set-active',
+    SEQUENCE_TRACK_CREATE: 'sequence/track/create',
+    SEQUENCE_TRACK_UPDATE: 'sequence/track/update',
+    SEQUENCE_TRACK_DELETE: 'sequence/track/delete',
+    SEQUENCE_CLIP_CREATE: 'sequence/clip/create',
+    SEQUENCE_CLIP_UPDATE: 'sequence/clip/update',
+    SEQUENCE_CLIP_DELETE: 'sequence/clip/delete',
+
+    // ─────────────────────────────
+    // Animation
     // ─────────────────────────────
     ANIMATION_TRACK_CREATE: 'animation/track/create',
     ANIMATION_TRACK_DELETE: 'animation/track/delete',
-
     ANIMATION_KEYFRAME_ADD: 'animation/keyframe/add',
     ANIMATION_KEYFRAME_CREATE: 'animation/keyframe/create',
     ANIMATION_KEYFRAME_UPDATE: 'animation/keyframe/update',
     ANIMATION_KEYFRAME_DELETE: 'animation/keyframe/delete',
 
-    // Canonical motion document mutations
+    // Motion
     MOTION_CLIP_CREATE: 'motion/clipCreate',
     MOTION_CLIP_UPDATE: 'motion/clipUpdate',
     MOTION_CLIP_DELETE: 'motion/clipDelete',
@@ -140,57 +167,18 @@ export const EventTypes = Object.freeze({
     RIG_CONSTRAINT_UPDATE: 'rig/constraint/update',
     RIG_CONSTRAINT_DELETE: 'rig/constraint/delete',
 
-    // Graph authoring
+    // Graph
     GRAPH_NODE_ADD: 'graph/node/add',
     GRAPH_UPDATE: 'graph/update',
     GRAPH_NODE_UPDATE: 'graph/node/update',
     GRAPH_NODE_DELETE: 'graph/node/delete',
-    GRAPH_NODE_SELECT: 'graph/node/select',
-    GRAPH_NODE_TOGGLE: 'graph/node/toggle',
-    GRAPH_NODE_CLEAR: 'graph/node/clear',
-    GRAPH_DRAG_START: 'graph/drag/start',
-    GRAPH_DRAG_UPDATE: 'graph/drag/update',
-    GRAPH_DRAG_END: 'graph/drag/end',
-    GRAPH_PAN_START: 'graph/pan/start',
-    GRAPH_PAN_UPDATE: 'graph/pan/update',
-    GRAPH_PAN_END: 'graph/pan/end',
-    GRAPH_VIEWPORT_ZOOM: 'graph/viewport/zoom',
-    GRAPH_CONNECTION_START: 'graph/connection/start',
-    GRAPH_CONNECTION_UPDATE: 'graph/connection/update',
-    GRAPH_CONNECTION_END: 'graph/connection/end',
     GRAPH_CONNECT: 'graph/connect',
     GRAPH_DISCONNECT: 'graph/disconnect',
     GRAPH_OUTPUT_SET: 'graph/output/set',
     GRAPH_PARAMETER_UPDATE: 'graph/parameter/update',
 
-    // Sequencer
-    SEQUENCE_CREATE: 'sequence/create',
-    SEQUENCE_UPDATE: 'sequence/update',
-    SEQUENCE_DELETE: 'sequence/delete',
-    SEQUENCE_SET_ACTIVE: 'sequence/set-active',
-    SEQUENCE_TRACK_CREATE: 'sequence/track/create',
-    SEQUENCE_TRACK_UPDATE: 'sequence/track/update',
-    SEQUENCE_TRACK_DELETE: 'sequence/track/delete',
-    SEQUENCE_CLIP_CREATE: 'sequence/clip/create',
-    SEQUENCE_CLIP_UPDATE: 'sequence/clip/update',
-    SEQUENCE_CLIP_DELETE: 'sequence/clip/delete',
-
     // ─────────────────────────────
-    // Transitions (between states)
-    // ─────────────────────────────
-    TRANSITION_CREATE: 'transition/create',
-    TRANSITION_UPDATE: 'transition/update',
-    TRANSITION_DELETE: 'transition/delete',
-
-    // ─────────────────────────────
-    // Interactions (Phase 3)
-    // ─────────────────────────────
-    INTERACTION_CREATE: 'interaction/create',
-    INTERACTION_UPDATE: 'interaction/update',
-    INTERACTION_DELETE: 'interaction/delete',
-
-    // ─────────────────────────────
-    // Workspace (projection state)
+    // Workspace
     // ─────────────────────────────
     WORKSPACE_SET_ACTIVE: 'workspace/set-active',
     WORKSPACE_SET_VIEWPORT: 'workspace/viewport/set',
@@ -198,25 +186,12 @@ export const EventTypes = Object.freeze({
     TOOLS_REGISTER: 'tools/register',
     TOOLS_UNREGISTER: 'tools/unregister',
     TOOL_SET_ACTIVE: 'tools/set-active',
-    INPUT_CREATE_COMMIT: 'input/create-commit',
     DRAG_START: 'interaction/drag/start',
     DRAG_UPDATE: 'interaction/drag/update',
     DRAG_END: 'interaction/drag/end',
 
     // ─────────────────────────────
-    // Scene (runtime projection state)
-    // ─────────────────────────────
-    SCENE_SHOT_TRACK_CREATE: 'scene/shot-track/create',
-    SCENE_SHOT_TRACK_UPDATE: 'scene/shot-track/update',
-    SCENE_SHOT_TRACK_DELETE: 'scene/shot-track/delete',
-    SCENE_SHOT_CREATE: 'scene/shot/create',
-    SCENE_SHOT_MOVE: 'scene/shot/move',
-    SCENE_SHOT_UPDATE: 'scene/shot/update',
-    SCENE_SHOT_DELETE: 'scene/shot/delete',
-    SHOT_SET_ACTIVE: 'scene/shot/set-active',
-
-    // ─────────────────────────────
-    // Clock (system time authority)
+    // Clock
     // ─────────────────────────────
     CLOCK_SEEK: 'clock/seek',
     CLOCK_PLAY: 'clock/play',

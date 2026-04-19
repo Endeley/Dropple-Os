@@ -15,128 +15,109 @@ import SharingPanel from '@/collaboration/panels/SharingPanel';
 import { getNode } from '@/runtime/document/documentAdapter.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 
-export default function RightPanel({
-  panels = [],
-  events,
-  cursor,
-  emit,
-  capabilities,
-  rubric,
-  reviewCriteria,
-  onReviewCriteriaChange,
-  submissionId,
-  setCursorIndex,
-  documentId,
-}) {
-  const { selectedIds } = useSelection();
-  const state = useReplayState({ events, cursor });
-  const educationState = getEducationAtCursor(state, cursor);
+export default function RightPanel({ panels = [], events, cursor, emit, capabilities, rubric, reviewCriteria, onReviewCriteriaChange, submissionId, documentId }) {
+    const { selectedIds } = useSelection();
 
-  const selectedId =
-    selectedIds && selectedIds.size === 1 ? Array.from(selectedIds)[0] : null;
-  const node = selectedId ? getNode(state, selectedId) : null;
-  const resizeDebug = useRuntimeStore((s) => s.resizeDebug ?? '');
+    const state = useReplayState({ events, cursor });
+    const educationState = getEducationAtCursor(state, cursor);
 
-  const showInspector = panels.includes('InspectorPanel') && !!node;
-  const showAutoLayout = panels.includes('AutoLayoutPanel') && !!node;
-  const showEducationInspector = panels.includes('EducationInspector');
-  const showEducationTimeline = panels.includes('EducationTimelinePanel');
-  const showRubric = panels.includes('RubricPanel');
-  const showAnnotation = panels.includes('AnnotationPanel') && !!submissionId;
-  const showCurveEditor = !!capabilities?.animation;
-  const showSharing = panels.includes('SharingPanel') && !!documentId;
+    const selectedId = selectedIds && selectedIds.size === 1 ? Array.from(selectedIds)[0] : null;
 
-  const isRelevant =
-    showInspector ||
-    showAutoLayout ||
-    showEducationInspector ||
-    showEducationTimeline ||
-    showRubric ||
-    showAnnotation ||
-    showCurveEditor ||
-    showSharing;
+    const node = selectedId ? getNode(state, selectedId) : null;
 
-  return (
-    <aside
-      className="right-panel"
-      aria-hidden={!isRelevant}
-      style={{
-        transition: 'opacity 120ms ease, transform 120ms ease',
-        opacity: isRelevant ? 1 : 0,
-        transform: isRelevant ? 'translateX(0)' : 'translateX(8px)',
-        pointerEvents: isRelevant ? 'auto' : 'none',
-      }}
-    >
-      {showInspector && (
-        <Panel title="Inspector">
-          {resizeDebug ? (
-            <div
-              data-testid="resize-debug"
-              style={{
-                fontSize: 11,
-                color: '#991b1b',
-                background: '#fee2e2',
-                border: '1px solid #fecaca',
-                borderRadius: 6,
-                padding: '6px 8px',
-                marginBottom: 8,
-              }}
-            >
-              {resizeDebug}
-            </div>
-          ) : null}
-          <LayoutInspector node={node} emit={emit} />
-        </Panel>
-      )}
+    const resizeDebug = useRuntimeStore((s) => s.resizeDebug ?? '');
 
-      {showAutoLayout && (
-        <Panel title="Auto Layout">
-          <AutoLayoutPanel node={node} emit={emit} />
-        </Panel>
-      )}
+    const showInspector = panels.includes('InspectorPanel') && !!node;
 
-      {showEducationInspector && (
-        <Panel title="Education Inspector">
-          <EducationInspector />
-        </Panel>
-      )}
+    const showAutoLayout = panels.includes('AutoLayoutPanel') && !!node;
 
-      {showEducationTimeline && (
-        <Panel title="Education Timeline">
-          <EducationTimelinePanel explanations={educationState.explanations} />
-        </Panel>
-      )}
+    const showEducationInspector = panels.includes('EducationInspector');
 
-      {showRubric && (
-        <Panel title="Rubric">
-          <RubricPanel
-            rubric={rubric}
-            initialScores={reviewCriteria}
-            onUpdate={onReviewCriteriaChange}
-          />
-        </Panel>
-      )}
+    const showEducationTimeline = panels.includes('EducationTimelinePanel');
 
-      {showAnnotation && (
-        <Panel title="Annotations">
-          <AnnotationPanel
-            submissionId={submissionId}
-            setCursorIndex={setCursorIndex}
-          />
-        </Panel>
-      )}
+    const showRubric = panels.includes('RubricPanel');
 
-      {showCurveEditor && (
-        <Panel title="Easing Curve">
-          <CurveEditorPanel capabilities={capabilities} />
-        </Panel>
-      )}
+    const showAnnotation = panels.includes('AnnotationPanel') && !!submissionId;
 
-      {showSharing && (
-        <Panel title="Sharing">
-          <SharingPanel docId={documentId} />
-        </Panel>
-      )}
-    </aside>
-  );
+    const showCurveEditor = !!capabilities?.animation;
+
+    const showSharing = panels.includes('SharingPanel') && !!documentId;
+
+    const isRelevant = showInspector || showAutoLayout || showEducationInspector || showEducationTimeline || showRubric || showAnnotation || showCurveEditor || showSharing;
+
+    return (
+        <aside
+            className='right-panel'
+            aria-hidden={!isRelevant}
+            style={{
+                transition: 'opacity 120ms ease, transform 120ms ease',
+                opacity: isRelevant ? 1 : 0,
+                transform: isRelevant ? 'translateX(0)' : 'translateX(8px)',
+                pointerEvents: isRelevant ? 'auto' : 'none',
+            }}>
+            {showInspector && (
+                <Panel title='Inspector'>
+                    {resizeDebug ? (
+                        <div
+                            data-testid='resize-debug'
+                            style={{
+                                fontSize: 11,
+                                color: '#991b1b',
+                                background: '#fee2e2',
+                                border: '1px solid #fecaca',
+                                borderRadius: 6,
+                                padding: '6px 8px',
+                                marginBottom: 8,
+                            }}>
+                            {resizeDebug}
+                        </div>
+                    ) : null}
+
+                    <LayoutInspector node={node} emit={emit} />
+                </Panel>
+            )}
+
+            {showAutoLayout && (
+                <Panel title='Auto Layout'>
+                    <AutoLayoutPanel node={node} emit={emit} />
+                </Panel>
+            )}
+
+            {showEducationInspector && (
+                <Panel title='Education Inspector'>
+                    <EducationInspector />
+                </Panel>
+            )}
+
+            {showEducationTimeline && (
+                <Panel title='Education Timeline'>
+                    <EducationTimelinePanel explanations={educationState.explanations} />
+                </Panel>
+            )}
+
+            {showRubric && (
+                <Panel title='Rubric'>
+                    <RubricPanel rubric={rubric} initialScores={reviewCriteria} onUpdate={onReviewCriteriaChange} />
+                </Panel>
+            )}
+
+            {showAnnotation && (
+                <Panel title='Annotations'>
+                    <AnnotationPanel submissionId={submissionId} />
+                </Panel>
+            )}
+
+            {showCurveEditor && (
+                <Panel title='Easing Curve'>
+                    <CurveEditorPanel capabilities={capabilities} />
+                </Panel>
+            )}
+
+            {showSharing && (
+                <Panel title='Sharing'>
+                    <SharingPanel docId={documentId} />
+                </Panel>
+            )}
+        </aside>
+    );
 }

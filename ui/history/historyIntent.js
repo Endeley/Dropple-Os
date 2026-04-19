@@ -7,3 +7,8 @@ export function historyIntentUndo() {
 export function historyIntentRedo() {
     canvasBus.emit('intent.history.redo', {});
 }
+
+export function historyIntentSeek(cursorIndex) {
+    if (!Number.isInteger(cursorIndex) || cursorIndex < -1) return;
+    canvasBus.emit('intent.history.seek', { cursorIndex });
+}

@@ -68,22 +68,30 @@ import { isShotTransitionValidationError } from '@/core/project/normalizeShotTra
 // --- unchanged helpers omitted for brevity (your original file content stays exactly the same above dispatch) ---
 
 const NON_PERSISTED_EVENTS = new Set([
+    // Workspace / tools
     EventTypes.WORKSPACE_SET_ACTIVE,
     EventTypes.WORKSPACE_SET_VIEWPORT,
     EventTypes.WORKSPACE_SET_CANVAS_SURFACE,
     EventTypes.TOOLS_REGISTER,
     EventTypes.TOOLS_UNREGISTER,
     EventTypes.TOOL_SET_ACTIVE,
+
+    // Selection
     EventTypes.SELECTION_SET,
     EventTypes.SELECTION_CLEAR,
     EventTypes.SELECTION_TOGGLE,
     EventTypes.SELECTION_ADD,
     EventTypes.SELECTION_REMOVE,
+
+    // Clipboard
     EventTypes.CLIPBOARD_SET,
     EventTypes.CLIPBOARD_CLEAR,
+
+    // Interaction
     EventTypes.DRAG_START,
     EventTypes.DRAG_UPDATE,
     EventTypes.DRAG_END,
+
 ]);
 
 function normalizeClipboardState(clipboard) {
@@ -102,11 +110,7 @@ function normalizeClipboardState(clipboard) {
 
 function normalizeSceneState(scene) {
     const baseScene = initialRuntimeState.scene ?? {};
-    const hasMutableScene =
-        scene &&
-        typeof scene === 'object' &&
-        Object.isExtensible(scene) &&
-        Object.isExtensible(scene.computed ?? {});
+    const hasMutableScene = scene && typeof scene === 'object' && Object.isExtensible(scene) && Object.isExtensible(scene.computed ?? {});
 
     if (!hasMutableScene) {
         return {
@@ -276,11 +280,7 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
 
                 rawEvent = guardedEvent;
 
-                if (
-                    !isWorkspaceAllowlistExempt(rawEvent?.type) &&
-                    workspaceAllowsEvent(prev?.workspace) &&
-                    !prev.workspace.allowedEventTypes.has(rawEvent.type)
-                ) {
+                if (!isWorkspaceAllowlistExempt(rawEvent?.type) && workspaceAllowsEvent(prev?.workspace) && !prev.workspace.allowedEventTypes.has(rawEvent.type)) {
                     return prev;
                 }
 
@@ -306,6 +306,9 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
                 }
 
                 switch (rawEvent?.type) {
+                    // ─────────────────────────────
+                    // WORKSPACE
+                    // ─────────────────────────────
                     case EventTypes.WORKSPACE_SET_ACTIVE: {
                         const workspaceDef = rawEvent?.payload?.workspaceDef ?? rawEvent?.payload ?? null;
                         const workspace = applyWorkspaceActivation(prev?.workspace, workspaceDef);
@@ -322,45 +325,49 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
                         };
                         break;
                     }
+
                     case EventTypes.WORKSPACE_SET_VIEWPORT:
                         next = {
                             ...prev,
                             workspace: applyViewportUpdate(prev?.workspace, rawEvent?.payload),
                         };
                         break;
+
                     case EventTypes.WORKSPACE_SET_CANVAS_SURFACE:
                         next = {
                             ...prev,
                             workspace: applyCanvasSurfaceUpdate(prev?.workspace, rawEvent?.payload),
                         };
                         break;
+
                     case EventTypes.TOOLS_REGISTER:
                         next = {
                             ...prev,
                             tools: registerToolSource(prev?.tools ?? initialToolRuntimeState, rawEvent?.payload),
                         };
                         break;
+
                     case EventTypes.TOOLS_UNREGISTER:
                         next = {
                             ...prev,
                             tools: unregisterToolSource(prev?.tools ?? initialToolRuntimeState, rawEvent?.payload),
                         };
                         break;
+
                     case EventTypes.TOOL_SET_ACTIVE:
                         next = {
                             ...prev,
-                            tools: setRuntimeActiveTool(
-                                prev?.tools ?? initialToolRuntimeState,
-                                resolveActiveToolPayload(rawEvent?.payload),
-                            ),
+                            tools: setRuntimeActiveTool(prev?.tools ?? initialToolRuntimeState, resolveActiveToolPayload(rawEvent?.payload)),
                         };
                         break;
+
+                    // ─────────────────────────────
+                    // DRAG
+                    // ─────────────────────────────
                     case EventTypes.DRAG_START: {
                         const interaction = resolveInteractionState(prev?.interaction);
                         const pointer = rawEvent?.payload?.pointer ?? null;
-                        const nodeIds = Array.isArray(rawEvent?.payload?.nodeIds)
-                            ? [...rawEvent.payload.nodeIds]
-                            : [];
+                        const nodeIds = Array.isArray(rawEvent?.payload?.nodeIds) ? [...rawEvent.payload.nodeIds] : [];
 
                         next = {
                             ...prev,
@@ -376,6 +383,7 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
                         };
                         break;
                     }
+
                     case EventTypes.DRAG_UPDATE: {
                         const interaction = resolveInteractionState(prev?.interaction);
                         const nextDrag = updateDrag(interaction.drag, rawEvent?.payload);
@@ -384,18 +392,14 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
                             ...prev,
                             interaction: {
                                 ...interaction,
-                                pointerCurrent:
-                                    nextDrag?.currentPointer ??
-                                    interaction.pointerCurrent ??
-                                    null,
-                                nodeIds: Array.isArray(nextDrag?.nodeIds)
-                                    ? [...nextDrag.nodeIds]
-                                    : interaction.nodeIds,
+                                pointerCurrent: nextDrag?.currentPointer ?? interaction.pointerCurrent ?? null,
+                                nodeIds: Array.isArray(nextDrag?.nodeIds) ? [...nextDrag.nodeIds] : interaction.nodeIds,
                                 drag: nextDrag,
                             },
                         };
                         break;
                     }
+
                     case EventTypes.DRAG_END:
                         next = {
                             ...prev,
@@ -405,12 +409,17 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
                             },
                         };
                         break;
+
+                    // ─────────────────────────────
+                    // CLIPBOARD
+                    // ─────────────────────────────
                     case EventTypes.CLIPBOARD_SET:
                         next = {
                             ...prev,
                             clipboard: normalizeClipboardState(rawEvent?.payload?.clipboard),
                         };
                         break;
+
                     case EventTypes.CLIPBOARD_CLEAR:
                         next = {
                             ...prev,
@@ -420,6 +429,10 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
                             },
                         };
                         break;
+
+                    // ─────────────────────────────
+                    // DEFAULT
+                    // ─────────────────────────────
                     default:
                         next = applyEvent(prev, rawEvent);
                         break;
@@ -446,6 +459,9 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
 
                 return committed;
             } catch (err) {
+                if (isShotTransitionValidationError(err)) {
+                    return __getRuntimeStateInternal();
+                }
                 console.error('[Dispatcher error]', err, rawEvent);
                 return __getRuntimeStateInternal();
             } finally {
@@ -500,11 +516,7 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
         const events = Array.isArray(currentState?.events) ? currentState.events : [];
         const maxCursorIndex = events.length - 1;
         const cursorIndex = Math.max(-1, Math.min(maxCursorIndex, nextCursorIndex));
-        const replayedRuntimeState = __ensureDefaultWorkspaceInternal(
-            __ensureDefaultTimelineInternal(
-                getDesignStateAtCursor({ events, uptoIndex: cursorIndex }) ?? initialRuntimeState,
-            ),
-        );
+        const replayedRuntimeState = __ensureDefaultWorkspaceInternal(__ensureDefaultTimelineInternal(getDesignStateAtCursor({ events, uptoIndex: cursorIndex }) ?? initialRuntimeState));
         const bootedDocument =
             replayedRuntimeState?.document && typeof replayedRuntimeState.document === 'object'
                 ? bootWorkspaceDocument({
@@ -537,9 +549,7 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
         undo() {
             const currentState = __getRuntimeStateInternal() ?? initialRuntimeState;
             const events = Array.isArray(currentState?.events) ? currentState.events : [];
-            const currentCursorIndex = Number.isFinite(currentState?.cursorIndex)
-                ? currentState.cursorIndex
-                : events.length - 1;
+            const currentCursorIndex = Number.isFinite(currentState?.cursorIndex) ? currentState.cursorIndex : events.length - 1;
 
             if (events.length === 0 || currentCursorIndex <= -1) {
                 return currentState;
@@ -550,15 +560,22 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
         redo() {
             const currentState = __getRuntimeStateInternal() ?? initialRuntimeState;
             const events = Array.isArray(currentState?.events) ? currentState.events : [];
-            const currentCursorIndex = Number.isFinite(currentState?.cursorIndex)
-                ? currentState.cursorIndex
-                : events.length - 1;
+            const currentCursorIndex = Number.isFinite(currentState?.cursorIndex) ? currentState.cursorIndex : events.length - 1;
 
             if (events.length === 0 || currentCursorIndex >= events.length - 1) {
                 return currentState;
             }
 
             return replayRuntimeToCursor(currentCursorIndex + 1);
+        },
+        seek(cursorIndex) {
+            const currentState = __getRuntimeStateInternal() ?? initialRuntimeState;
+            const events = Array.isArray(currentState?.events) ? currentState.events : [];
+            if (!Number.isInteger(cursorIndex) || cursorIndex < -1 || events.length === 0) {
+                return currentState;
+            }
+
+            return replayRuntimeToCursor(cursorIndex);
         },
         setReplaying(value) {
             __setIsReplayingInternal(value);
@@ -594,9 +611,7 @@ function createCommittedEvent(rawEvent, { branchId, sequencer }) {
 
 function appendCommittedEvent(prevState, nextState, event) {
     const previousEvents = Array.isArray(prevState?.events) ? prevState.events : [];
-    const previousCursorIndex = Number.isFinite(prevState?.cursorIndex)
-        ? prevState.cursorIndex
-        : previousEvents.length - 1;
+    const previousCursorIndex = Number.isFinite(prevState?.cursorIndex) ? prevState.cursorIndex : previousEvents.length - 1;
 
     if (!isPersistedEvent(event?.type)) {
         return {
