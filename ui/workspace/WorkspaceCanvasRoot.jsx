@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import CanvasRoot from '@/ui/canvas/CanvasRoot.jsx';
 import CanvasHost from '@/ui/canvas/CanvasHost.jsx';
 import NodeLayer from '@/ui/canvas/NodeLayer.jsx';
@@ -10,6 +10,7 @@ import { WorldOriginMarker } from '@/ui/canvas/WorldOriginMarker.jsx';
 import { getZoomTier } from '@/runtime/canvas/zoomTiers.js';
 import { useReplayState } from '@/runtime/replay/useReplayState.js';
 import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
+import { workspaceIntentSetActive } from '@/ui/workspace/workspaceIntent.js';
 
 function buildReplayVisualState(replayState) {
     return {
@@ -79,6 +80,14 @@ export function WorkspaceCanvasRoot({
     cursor = null,
     readOnly = false,
 }) {
+    useEffect(() => {
+        if (!workspaceId) return;
+
+        workspaceIntentSetActive({
+            workspaceId,
+        });
+    }, [workspaceId]);
+
     const replayState = useReplayState({ events, cursor });
     const workspace = useMemo(
         () => getWorkspaceActivation(workspaceId),
@@ -111,3 +120,5 @@ export function WorkspaceCanvasRoot({
         />
     );
 }
+
+export default WorkspaceCanvasRoot;

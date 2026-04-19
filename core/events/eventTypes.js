@@ -92,6 +92,18 @@ export const EventTypes = Object.freeze({
     // ─────────────────────────────
     // Timeline (keyframes, not animation tracks)
     // ─────────────────────────────
+    TIMELINE_TRACK_CREATE: 'timeline/track/create',
+    TIMELINE_TRACK_DELETE: 'timeline/track/delete',
+    TIMELINE_TRACK_REORDER: 'timeline/track/reorder',
+    TIMELINE_TRACK_CHANNEL_ASSIGN: 'timeline/track/channel/assign',
+    TIMELINE_TRACK_LOCK_TOGGLE: 'timeline/track/lock/toggle',
+    TIMELINE_TRACK_BLEND_MODE_SET: 'timeline/track/blend-mode/set',
+    TIMELINE_GROUP_CREATE: 'timeline/group/create',
+    TIMELINE_GROUP_DELETE: 'timeline/group/delete',
+    TIMELINE_GROUP_LOCK_TOGGLE: 'timeline/group/lock/toggle',
+    TIMELINE_GROUP_COLLAPSE_TOGGLE: 'timeline/group/collapse/toggle',
+    TIMELINE_GROUP_TRACK_ASSIGN: 'timeline/group/track/assign',
+    TIMELINE_GROUP_TRACK_UNASSIGN: 'timeline/group/track/unassign',
     TIMELINE_KEYFRAME_ADD: 'timeline/keyframe/add',
     TIMELINE_KEYFRAME_MOVE: 'timeline/keyframe/move',
     TIMELINE_EVENT_ADD: 'timeline/event/add',

@@ -1,5 +1,6 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
+import { TIMELINE_INTENTS } from '@/ui/timeline/timelineIntent.js';
 
 let registered = false;
 
@@ -14,6 +15,168 @@ export function registerTimelineBridge(dispatcher) {
             dispatch({ type: EventTypes.TIMELINE_EVENT_ADD, payload });
         } else {
             console.warn('[timelineBridge] Dispatcher not provided; skipping timeline add.');
+        }
+    };
+    const onTimelineTrackCreate = (payload) => {
+        if (!payload?.id) return;
+        if (typeof dispatch === 'function') {
+            dispatch({
+                type: EventTypes.TIMELINE_TRACK_CREATE,
+                payload: {
+                    id: payload.id,
+                    type: payload.type ?? 'standard',
+                },
+            });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping timeline track create.');
+        }
+    };
+    const onTimelineTrackDelete = (payload) => {
+        if (!payload?.id) return;
+        if (typeof dispatch === 'function') {
+            dispatch({
+                type: EventTypes.TIMELINE_TRACK_DELETE,
+                payload: {
+                    id: payload.id,
+                },
+            });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping timeline track delete.');
+        }
+    };
+    const onTimelineTrackReorder = (payload) => {
+        if (!payload?.id || !Number.isInteger(payload?.toIndex)) return;
+        if (typeof dispatch === 'function') {
+            dispatch({
+                type: EventTypes.TIMELINE_TRACK_REORDER,
+                payload: {
+                    id: payload.id,
+                    toIndex: payload.toIndex,
+                },
+            });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping timeline track reorder.');
+        }
+    };
+    const onTimelineTrackChannelAssign = (payload) => {
+        if (!payload?.trackId || !payload?.channelId) return;
+        if (typeof dispatch === 'function') {
+            dispatch({
+                type: EventTypes.TIMELINE_TRACK_CHANNEL_ASSIGN,
+                payload: {
+                    trackId: payload.trackId,
+                    channelId: payload.channelId,
+                },
+            });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping timeline track channel assign.');
+        }
+    };
+    const onTimelineTrackLockToggle = (payload) => {
+        if (!payload?.id) return;
+        if (typeof dispatch === 'function') {
+            dispatch({
+                type: EventTypes.TIMELINE_TRACK_LOCK_TOGGLE,
+                payload: {
+                    id: payload.id,
+                },
+            });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping timeline track lock toggle.');
+        }
+    };
+    const onTimelineTrackBlendModeSet = (payload) => {
+        if (!payload?.id || !payload?.blendMode) return;
+        if (typeof dispatch === 'function') {
+            dispatch({
+                type: EventTypes.TIMELINE_TRACK_BLEND_MODE_SET,
+                payload: {
+                    id: payload.id,
+                    blendMode: payload.blendMode,
+                },
+            });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping timeline track blend mode set.');
+        }
+    };
+    const onTimelineGroupCreate = (payload) => {
+        if (!payload?.id) return;
+        if (typeof dispatch === 'function') {
+            dispatch({
+                type: EventTypes.TIMELINE_GROUP_CREATE,
+                payload: {
+                    id: payload.id,
+                },
+            });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping timeline group create.');
+        }
+    };
+    const onTimelineGroupDelete = (payload) => {
+        if (!payload?.id) return;
+        if (typeof dispatch === 'function') {
+            dispatch({
+                type: EventTypes.TIMELINE_GROUP_DELETE,
+                payload: {
+                    id: payload.id,
+                },
+            });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping timeline group delete.');
+        }
+    };
+    const onTimelineGroupLockToggle = (payload) => {
+        if (!payload?.id) return;
+        if (typeof dispatch === 'function') {
+            dispatch({
+                type: EventTypes.TIMELINE_GROUP_LOCK_TOGGLE,
+                payload: {
+                    id: payload.id,
+                },
+            });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping timeline group lock toggle.');
+        }
+    };
+    const onTimelineGroupCollapseToggle = (payload) => {
+        if (!payload?.id) return;
+        if (typeof dispatch === 'function') {
+            dispatch({
+                type: EventTypes.TIMELINE_GROUP_COLLAPSE_TOGGLE,
+                payload: {
+                    id: payload.id,
+                },
+            });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping collapse toggle.');
+        }
+    };
+    const onTimelineGroupTrackAssign = (payload) => {
+        if (!payload?.groupId || !payload?.trackId) return;
+        if (typeof dispatch === 'function') {
+            dispatch({
+                type: EventTypes.TIMELINE_GROUP_TRACK_ASSIGN,
+                payload: {
+                    groupId: payload.groupId,
+                    trackId: payload.trackId,
+                },
+            });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping timeline group track assign.');
+        }
+    };
+    const onTimelineGroupTrackUnassign = (payload) => {
+        if (!payload?.groupId || !payload?.trackId) return;
+        if (typeof dispatch === 'function') {
+            dispatch({
+                type: EventTypes.TIMELINE_GROUP_TRACK_UNASSIGN,
+                payload: {
+                    groupId: payload.groupId,
+                    trackId: payload.trackId,
+                },
+            });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping timeline group track unassign.');
         }
     };
     const onTimelineUpdate = (payload) => {
@@ -135,6 +298,18 @@ export function registerTimelineBridge(dispatcher) {
         }
     };
 
+    canvasBus.on(TIMELINE_INTENTS.TRACK_CREATE, onTimelineTrackCreate);
+    canvasBus.on(TIMELINE_INTENTS.TRACK_DELETE, onTimelineTrackDelete);
+    canvasBus.on(TIMELINE_INTENTS.TRACK_REORDER, onTimelineTrackReorder);
+    canvasBus.on(TIMELINE_INTENTS.TRACK_CHANNEL_ASSIGN, onTimelineTrackChannelAssign);
+    canvasBus.on(TIMELINE_INTENTS.TRACK_LOCK_TOGGLE, onTimelineTrackLockToggle);
+    canvasBus.on(TIMELINE_INTENTS.TRACK_BLEND_MODE_SET, onTimelineTrackBlendModeSet);
+    canvasBus.on(TIMELINE_INTENTS.GROUP_CREATE, onTimelineGroupCreate);
+    canvasBus.on(TIMELINE_INTENTS.GROUP_DELETE, onTimelineGroupDelete);
+    canvasBus.on(TIMELINE_INTENTS.GROUP_LOCK_TOGGLE, onTimelineGroupLockToggle);
+    canvasBus.on(TIMELINE_INTENTS.GROUP_COLLAPSE_TOGGLE, onTimelineGroupCollapseToggle);
+    canvasBus.on(TIMELINE_INTENTS.GROUP_TRACK_ASSIGN, onTimelineGroupTrackAssign);
+    canvasBus.on(TIMELINE_INTENTS.GROUP_TRACK_UNASSIGN, onTimelineGroupTrackUnassign);
     canvasBus.on('intent.timeline.add', onTimelineAdd);
     canvasBus.on('intent.timeline.update', onTimelineUpdate);
     canvasBus.on('intent.timeline.remove', onTimelineRemove);
@@ -153,6 +328,18 @@ export function registerTimelineBridge(dispatcher) {
     canvasBus.on('intent.sequence.clip.delete', onSequenceClipDelete);
 
     return () => {
+        canvasBus.off(TIMELINE_INTENTS.TRACK_CREATE, onTimelineTrackCreate);
+        canvasBus.off(TIMELINE_INTENTS.TRACK_DELETE, onTimelineTrackDelete);
+        canvasBus.off(TIMELINE_INTENTS.TRACK_REORDER, onTimelineTrackReorder);
+        canvasBus.off(TIMELINE_INTENTS.TRACK_CHANNEL_ASSIGN, onTimelineTrackChannelAssign);
+        canvasBus.off(TIMELINE_INTENTS.TRACK_LOCK_TOGGLE, onTimelineTrackLockToggle);
+        canvasBus.off(TIMELINE_INTENTS.TRACK_BLEND_MODE_SET, onTimelineTrackBlendModeSet);
+        canvasBus.off(TIMELINE_INTENTS.GROUP_CREATE, onTimelineGroupCreate);
+        canvasBus.off(TIMELINE_INTENTS.GROUP_DELETE, onTimelineGroupDelete);
+        canvasBus.off(TIMELINE_INTENTS.GROUP_LOCK_TOGGLE, onTimelineGroupLockToggle);
+        canvasBus.off(TIMELINE_INTENTS.GROUP_COLLAPSE_TOGGLE, onTimelineGroupCollapseToggle);
+        canvasBus.off(TIMELINE_INTENTS.GROUP_TRACK_ASSIGN, onTimelineGroupTrackAssign);
+        canvasBus.off(TIMELINE_INTENTS.GROUP_TRACK_UNASSIGN, onTimelineGroupTrackUnassign);
         canvasBus.off('intent.timeline.add', onTimelineAdd);
         canvasBus.off('intent.timeline.update', onTimelineUpdate);
         canvasBus.off('intent.timeline.remove', onTimelineRemove);

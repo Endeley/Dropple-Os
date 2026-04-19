@@ -12,7 +12,10 @@ export const initialDragState = Object.freeze({
     meta: null,
     guides: [],
 
-    // 🔑 NEW: interaction projection layer
+    // 🔥 REQUIRED for progressive resize
+    bounds: null,
+
+    // 🔑 interaction projection layer
     interactionTransforms: null,
 });
 
@@ -27,6 +30,7 @@ export function startDrag(state, payload = {}) {
         currentPointer: payload.pointer ?? null,
         origin: payload.origin ?? null,
         group: payload.group ?? null,
+
         resize:
             payload.type === 'resize'
                 ? {
@@ -34,6 +38,7 @@ export function startDrag(state, payload = {}) {
                       originBounds: payload.originBounds ?? null,
                   }
                 : null,
+
         rotation:
             payload.type === 'rotate'
                 ? {
@@ -41,10 +46,13 @@ export function startDrag(state, payload = {}) {
                       center: payload.center ?? null,
                   }
                 : null,
+
         meta: payload.meta ?? null,
         guides: Array.isArray(payload.guides) ? [...payload.guides] : [],
 
-        // 🔑 INIT interaction layer
+        // 🔥 initialize live bounds for resize
+        bounds: payload.type === 'resize' ? (payload.originBounds ?? null) : null,
+
         interactionTransforms: null,
     };
 }
@@ -56,7 +64,6 @@ export function updateDrag(state, payload) {
 
     const guides = payload && typeof payload === 'object' && !Array.isArray(payload) && 'guides' in payload ? payload.guides : state.guides;
 
-    // 🔑 NEW: interaction transforms from computeDragDelta
     const interactionTransforms = payload && typeof payload === 'object' && !Array.isArray(payload) && 'interactionTransforms' in payload ? payload.interactionTransforms : state.interactionTransforms;
 
     return {
@@ -65,7 +72,9 @@ export function updateDrag(state, payload) {
         currentPointer: pointer ?? null,
         guides: Array.isArray(guides) ? [...guides] : [],
 
-        // 🔑 STORE interaction layer
+        // 🔥 CRITICAL: preserve bounds across frames
+        bounds: state.bounds ?? null,
+
         interactionTransforms,
     };
 }

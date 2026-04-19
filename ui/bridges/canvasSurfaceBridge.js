@@ -1,16 +1,18 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
+import { resolveBridgeDispatch } from '@/ui/bridges/resolveBridgeDispatch.js';
 
 let registered = false;
 
-export function registerCanvasSurfaceBridge(dispatch) {
+export function registerCanvasSurfaceBridge(dispatcherOrDispatch) {
     if (registered) return () => {};
     registered = true;
+    const dispatch = resolveBridgeDispatch(dispatcherOrDispatch);
 
     const onSetSurface = (intent) => {
         const surface = intent?.surface;
         if (!surface) return;
-        if (typeof dispatch === 'function') {
+        if (dispatch) {
             dispatch({
                 type: EventTypes.WORKSPACE_SET_CANVAS_SURFACE,
                 payload: { surface },

@@ -1,22 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect } from 'react';
 import { registerSessionBindings } from '@/ui/interaction/sessionBinding.js';
 import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
-import { workspaceIntentSetActive } from '@/ui/workspace/workspaceIntent.js';
-import {
-  getWorkspaceContractDefinition,
-  resolveWorkspaceId,
-} from '@/ui/bridges/workspaceActivationFacade.js';
 
 export function WorkspaceSessionsRoot({ modeId = null }) {
   const dispatcher = useDispatcher();
-  const lastActivatedRef = useRef(null);
-  const normalizedId = useMemo(() => (modeId ? resolveWorkspaceId(modeId) : null), [modeId]);
-  const workspaceDef = useMemo(() => {
-    if (!normalizedId) return null;
-    return getWorkspaceContractDefinition(normalizedId);
-  }, [normalizedId]);
 
   useEffect(() => {
     let cleanup = null;
@@ -28,20 +17,7 @@ export function WorkspaceSessionsRoot({ modeId = null }) {
     return () => {
       cleanup?.();
     };
-  }, [dispatcher]);
-
-  useEffect(() => {
-    if (!dispatcher?.dispatch) return;
-    if (!workspaceDef?.id) return;
-    if (lastActivatedRef.current === workspaceDef.id) return;
-
-    lastActivatedRef.current = workspaceDef.id;
-    console.log('Activating workspace:', normalizedId);
-    workspaceIntentSetActive({
-      id: workspaceDef.id,
-      workspaceDef,
-    });
-  }, [dispatcher, normalizedId, workspaceDef]);
+  }, [dispatcher, modeId]);
 
   return null;
 }

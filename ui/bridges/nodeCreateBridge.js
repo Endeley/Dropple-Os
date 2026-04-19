@@ -1,12 +1,13 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
 import { createNodeCreateBridgeEvent } from '@/ui/bridges/intentEventFacade.js';
+import { resolveBridgeDispatch } from '@/ui/bridges/resolveBridgeDispatch.js';
 
 let registered = false;
 let activeDispatch = null;
 let activeRegistrations = 0;
 
-export function registerNodeCreateBridge(dispatch) {
-    activeDispatch = dispatch ?? null;
+export function registerNodeCreateBridge(dispatcherOrDispatch) {
+    activeDispatch = resolveBridgeDispatch(dispatcherOrDispatch);
     activeRegistrations += 1;
 
     const handler = (intent) => {
@@ -21,7 +22,7 @@ export function registerNodeCreateBridge(dispatch) {
             );
         }
 
-        if (typeof activeDispatch === 'function') {
+        if (activeDispatch) {
             activeDispatch(result.event);
         } else {
             console.warn('[nodeCreateBridge] Dispatch not provided; skipping node create.');

@@ -1,13 +1,7 @@
-export function createCapabilityContext({
-    dispatcher,
-    workspace,
-    mode,
-} = {}) {
+export function createCapabilityContext({ emit, workspace, mode } = {}) {
     return Object.freeze({
-        dispatcher: dispatcher ?? null,
+        emit: typeof emit === 'function' ? emit : null,
         workspace: workspace ?? null,
         mode: mode ?? null,
-        getState: () => dispatcher?.getState?.(),
-        dispatch: (action) => dispatcher?.dispatch?.(action),
     });
 }

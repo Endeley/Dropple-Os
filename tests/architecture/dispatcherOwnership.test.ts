@@ -17,6 +17,8 @@ const IGNORE_FILES = new Set(["tests/architecture/dispatcherOwnership.test.ts"])
 
 function shouldIgnore(relPath) {
   const normalized = relPath.replaceAll("\\", "/");
+  const [rootDir] = normalized.split("/");
+  if (rootDir?.startsWith(".next")) return true;
   if (IGNORE_FILES.has(normalized)) return true;
   for (const item of IGNORE_DIRS) {
     if (normalized === item || normalized.startsWith(`${item}/`)) return true;

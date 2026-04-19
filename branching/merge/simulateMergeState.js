@@ -1,17 +1,12 @@
-import { applyEvent } from '@/core/events/applyEvent.js';
+import { replayEvents } from '@/core/persistence/replayEngine.js';
 
 export function simulateMergeState({ baseState, events }) {
     if (!baseState || !Array.isArray(events)) {
         return baseState;
     }
 
-    let state = structuredClone(baseState);
-
-    for (const event of events) {
-        if (!event?.type) continue;
-
-        state = applyEvent(state, event);
-    }
-
-    return state;
+    return replayEvents({
+        events,
+        initialState: structuredClone(baseState),
+    });
 }

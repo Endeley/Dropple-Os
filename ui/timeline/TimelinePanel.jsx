@@ -14,9 +14,20 @@ import {
   timelineIntentClockPause,
   timelineIntentClockPlay,
   timelineIntentClockSeek,
+  timelineIntentTrackBlendModeSet,
+  timelineIntentTrackChannelAssign,
+  timelineIntentGroupCollapseToggle,
+  timelineIntentGroupCreate,
+  timelineIntentGroupDelete,
+  timelineIntentGroupLockToggle,
+  timelineIntentGroupTrackAssign,
+  timelineIntentGroupTrackUnassign,
+  timelineIntentTrackCreate,
+  timelineIntentTrackDelete,
+  timelineIntentTrackLockToggle,
+  timelineIntentTrackReorder,
 } from '@/ui/timeline/timelineIntent.js';
 import {
-  TrackActions,
   cancelAnimationPreview,
   collectKeyframeTimes,
   getNearestKeyframeTime,
@@ -34,6 +45,7 @@ export default function TimelinePanel({ designState }) {
   const workspaceId = useWorkspaceViewState((s) => s.id);
   const isAnimationWorkspace = workspaceId === 'animation';
   const sceneGraph = useWorkspaceVisualState((s) => s.sceneGraph);
+  const runtimeTimeline = useRuntimeStore((s) => s.timeline);
   const runtimeScene = useRuntimeStore((s) => s.scene);
   const frameTime = useRuntimeStore((s) => s.frameTime) ?? 0;
   const isPlaying = useTimelineStore((s) => s.isPlaying);
@@ -62,14 +74,14 @@ export default function TimelinePanel({ designState }) {
   }, [setIsPlayingFlag]);
   const timelineSource = useMemo(
     () =>
+      runtimeTimeline?.timelines?.default ??
       designState?.timeline?.timelines?.default ??
       designState?.timeline ??
       { duration: 0, tracks: [], channels: [] },
-    [designState]
+    [designState, runtimeTimeline]
   );
   const {
     projection,
-    dispatch,
     undo,
     redo,
     checkout,
@@ -416,9 +428,9 @@ export default function TimelinePanel({ designState }) {
           <button
             type="button"
             onClick={() =>
-              dispatch({
-                type: TrackActions.ADD_TRACK,
-                payload: { id: `track_${projection.trackCount + 1}`, type: 'standard' },
+              timelineIntentTrackCreate({
+                id: `track_${projection.trackCount + 1}`,
+                type: 'standard',
               })}
             style={{
               padding: '4px 8px',
@@ -481,9 +493,8 @@ export default function TimelinePanel({ designState }) {
             <button
               type="button"
               onClick={() =>
-                dispatch({
-                  type: TrackActions.ADD_GROUP,
-                  payload: { id: `group_${(projection.groupCount ?? 0) + 1}` },
+                timelineIntentGroupCreate({
+                  id: `group_${(projection.groupCount ?? 0) + 1}`,
                 })}
               style={{
                 padding: '2px 6px',
@@ -515,9 +526,9 @@ export default function TimelinePanel({ designState }) {
               onDrop={(event) => {
                 if (!draggingId) return;
                 event.preventDefault();
-                dispatch({
-                  type: TrackActions.ASSIGN_TRACK_TO_GROUP,
-                  payload: { groupId: group.id, trackId: draggingId },
+                timelineIntentGroupTrackAssign({
+                  groupId: group.id,
+                  trackId: draggingId,
                 });
                 setHoverGroupId(null);
               }}
@@ -538,11 +549,7 @@ export default function TimelinePanel({ designState }) {
                 </span>
                 <button
                   type="button"
-                  onClick={() =>
-                    dispatch({
-                      type: TrackActions.TOGGLE_GROUP_COLLAPSE,
-                      payload: { id: group.id },
-                    })}
+                  onClick={() => timelineIntentGroupCollapseToggle({ id: group.id })}
                   style={{
                     padding: '2px 6px',
                     borderRadius: 6,
@@ -558,11 +565,7 @@ export default function TimelinePanel({ designState }) {
               <div style={{ display: 'flex', gap: 6 }}>
                 <button
                   type="button"
-                  onClick={() =>
-                    dispatch({
-                      type: TrackActions.TOGGLE_GROUP_LOCK,
-                      payload: { id: group.id },
-                    })}
+                  onClick={() => timelineIntentGroupLockToggle({ id: group.id })}
                   style={{
                     padding: '2px 6px',
                     borderRadius: 6,
@@ -576,11 +579,7 @@ export default function TimelinePanel({ designState }) {
                 </button>
                 <button
                   type="button"
-                  onClick={() =>
-                    dispatch({
-                      type: TrackActions.REMOVE_GROUP,
-                      payload: { id: group.id },
-                    })}
+                  onClick={() => timelineIntentGroupDelete({ id: group.id })}
                   style={{
                     padding: '2px 6px',
                     borderRadius: 6,
@@ -633,21 +632,15 @@ export default function TimelinePanel({ designState }) {
                 event.preventDefault();
                 if (dragChannelId && hoverTrackId) {
                   if (dragChannelSourceTrackId !== hoverTrackId) {
-                    dispatch({
-                      type: TrackActions.ASSIGN_CHANNEL,
-                      payload: {
-                        trackId: hoverTrackId,
-                        channelId: dragChannelId,
-                      },
+                    timelineIntentTrackChannelAssign({
+                      trackId: hoverTrackId,
+                      channelId: dragChannelId,
                     });
                   }
                 } else {
                   const targetIndex = track.index;
                   if (draggingId != null && hoverIndex != null && hoverIndex !== targetIndex) {
-                    dispatch({
-                      type: TrackActions.REORDER_TRACK,
-                      payload: { id: draggingId, toIndex: targetIndex },
-                    });
+                    timelineIntentTrackReorder({ id: draggingId, toIndex: targetIndex });
                   }
                 }
                 setDraggingId(null);
@@ -736,10 +729,7 @@ export default function TimelinePanel({ designState }) {
                   <button
                     type="button"
                     onClick={() =>
-                      dispatch({
-                        type: TrackActions.UNASSIGN_TRACK_FROM_GROUP,
-                        payload: { groupId, trackId: track.id },
-                      })}
+                      timelineIntentGroupTrackUnassign({ groupId, trackId: track.id })}
                     style={{
                       padding: '2px 6px',
                       borderRadius: 6,
@@ -754,11 +744,7 @@ export default function TimelinePanel({ designState }) {
                 )}
                 <button
                   type="button"
-                  onClick={() =>
-                    dispatch({
-                      type: TrackActions.TOGGLE_TRACK_LOCK,
-                      payload: { id: track.id },
-                    })}
+                  onClick={() => timelineIntentTrackLockToggle({ id: track.id })}
                   style={{
                     padding: '2px 6px',
                     borderRadius: 6,
@@ -775,10 +761,7 @@ export default function TimelinePanel({ designState }) {
                   disabled={track.meta?.locked || track.type === 'overlay'}
                   onChange={(event) => {
                     const next = event.target.value;
-                    dispatch({
-                      type: TrackActions.SET_TRACK_BLEND_MODE,
-                      payload: { id: track.id, blendMode: next },
-                    });
+                    timelineIntentTrackBlendModeSet({ id: track.id, blendMode: next });
                   }}
                   style={{
                     padding: '2px 6px',
@@ -797,9 +780,28 @@ export default function TimelinePanel({ designState }) {
                 <button
                   type="button"
                   onClick={() =>
-                    dispatch({
-                      type: TrackActions.REORDER_TRACK,
-                      payload: { id: track.id, toIndex: Math.max(0, track.index - 1) },
+                    timelineIntentTrackDelete({
+                      id: track.id,
+                    })}
+                  disabled={track.meta?.locked}
+                  style={{
+                    padding: '2px 6px',
+                    borderRadius: 6,
+                    border: '1px solid #e2e8f0',
+                    background: '#ffffff',
+                    fontSize: 11,
+                    cursor: track.meta?.locked ? 'not-allowed' : 'pointer',
+                    opacity: track.meta?.locked ? 0.5 : 1,
+                  }}
+                >
+                  Remove
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    timelineIntentTrackReorder({
+                      id: track.id,
+                      toIndex: Math.max(0, track.index - 1),
                     })}
                   disabled={track.index === 0}
                   style={{
@@ -817,9 +819,9 @@ export default function TimelinePanel({ designState }) {
                 <button
                   type="button"
                   onClick={() =>
-                    dispatch({
-                      type: TrackActions.REORDER_TRACK,
-                      payload: { id: track.id, toIndex: track.index + 1 },
+                    timelineIntentTrackReorder({
+                      id: track.id,
+                      toIndex: track.index + 1,
                     })}
                   disabled={track.index === projection.trackCount - 1}
                   style={{

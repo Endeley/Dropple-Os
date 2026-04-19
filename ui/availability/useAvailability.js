@@ -5,16 +5,18 @@ import { useWorkspaceViewState } from '@/runtime/projection';
 import { resolveAvailability } from './resolveAvailability';
 
 export function useAvailability({ readCaps = [], writeCaps = [], modeId = null }) {
-  const workspaceId = useWorkspaceViewState((state) => state.id);
+  const projectedWorkspace = useWorkspaceViewState((state) => state);
+  const workspaceId = projectedWorkspace?.modeId ?? projectedWorkspace?.id ?? null;
+  const resolvedModeId = modeId ?? projectedWorkspace?.modeId ?? null;
 
   return useMemo(
     () =>
       resolveAvailability({
         workspaceId,
-        modeId,
+        modeId: resolvedModeId,
         readCaps,
         writeCaps,
       }),
-    [workspaceId, modeId, readCaps, writeCaps]
+    [workspaceId, resolvedModeId, readCaps, writeCaps]
   );
 }

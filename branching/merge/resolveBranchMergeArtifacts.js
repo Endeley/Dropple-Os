@@ -1,16 +1,9 @@
-import { applyEvent } from '@/core/events/applyEvent.js';
+import { replayEvents } from '@/core/persistence/replayEngine.js';
 import { computeMergeDiff } from './computeMergeDiff.js';
 import { planMerge } from './planMerge.js';
 
 function replayBranch(events = []) {
-    let state;
-
-    for (const event of events) {
-        if (!event?.type) continue;
-        state = applyEvent(state, event);
-    }
-
-    return state;
+    return replayEvents({ events });
 }
 
 function getSharedBaseEvents(targetBranch, sourceBranch) {

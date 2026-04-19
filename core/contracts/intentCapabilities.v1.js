@@ -24,6 +24,18 @@ export const INTENT_CAPS = {
   [EventTypes.BEHAVIOR_STATE_DELETE]: ['node:mutate'],
 
   // timeline / animation
+  [EventTypes.TIMELINE_TRACK_CREATE]: ['timeline:edit'],
+  [EventTypes.TIMELINE_TRACK_DELETE]: ['timeline:edit'],
+  [EventTypes.TIMELINE_TRACK_REORDER]: ['timeline:edit'],
+  [EventTypes.TIMELINE_TRACK_CHANNEL_ASSIGN]: ['timeline:edit'],
+  [EventTypes.TIMELINE_TRACK_LOCK_TOGGLE]: ['timeline:edit'],
+  [EventTypes.TIMELINE_TRACK_BLEND_MODE_SET]: ['timeline:edit'],
+  [EventTypes.TIMELINE_GROUP_CREATE]: ['timeline:edit'],
+  [EventTypes.TIMELINE_GROUP_DELETE]: ['timeline:edit'],
+  [EventTypes.TIMELINE_GROUP_LOCK_TOGGLE]: ['timeline:edit'],
+  [EventTypes.TIMELINE_GROUP_COLLAPSE_TOGGLE]: ['timeline:edit'],
+  [EventTypes.TIMELINE_GROUP_TRACK_ASSIGN]: ['timeline:edit'],
+  [EventTypes.TIMELINE_GROUP_TRACK_UNASSIGN]: ['timeline:edit'],
   [EventTypes.TIMELINE_KEYFRAME_ADD]: ['timeline:edit'],
   [EventTypes.TIMELINE_KEYFRAME_MOVE]: ['timeline:edit'],
   [EventTypes.TIMELINE_EVENT_ADD]: ['timeline:edit'],

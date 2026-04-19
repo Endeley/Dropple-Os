@@ -30,5 +30,5 @@ test('tool intent bridge rebinds to the latest registered dispatcher', () => {
     assert.equal(staleDispatched.length, 0);
     assert.equal(dispatched.length, 1);
     assert.equal(dispatched[0]?.type, EventTypes.TOOL_SET_ACTIVE);
-    assert.equal(dispatched[0]?.payload, 'select');
+    assert.deepEqual(dispatched[0]?.payload, { toolId: 'select' });
 });

@@ -42,6 +42,9 @@ export function resolveWorkspacePolicy(id) {
     const base = WorkspaceRegistry[id];
     if (!base) return { error: 'unknown-workspace' };
 
+    const baseAllowedEventTypes = base.allowedEventTypes ?? base.events?.allowedEventTypes;
+    const baseEnabledTriggerTypes = base.enabledTriggerTypes ?? base.events?.enabledTriggerTypes;
+
     // Inherited workspace
     if (base.extends) {
         const parent = resolveWorkspacePolicy(base.extends);
@@ -64,12 +67,12 @@ export function resolveWorkspacePolicy(id) {
             timeline: base.timeline || parent.timeline || null,
 
             allowedEventTypes: mergeAllowedEvents(
-                parent.events?.allowedEventTypes,
-                base.events?.allowedEventTypes
+                parent.allowedEventTypes ?? parent.events?.allowedEventTypes,
+                baseAllowedEventTypes
             ),
             enabledTriggerTypes: mergeAllowedEvents(
-                parent.events?.enabledTriggerTypes,
-                base.events?.enabledTriggerTypes
+                parent.enabledTriggerTypes ?? parent.events?.enabledTriggerTypes,
+                baseEnabledTriggerTypes
             ),
 
             readonly: base.status === 'stub' || base.policy?.mutation === 'readonly',
@@ -80,8 +83,8 @@ export function resolveWorkspacePolicy(id) {
             ...merged,
             allowedEventTypes: new Set(merged.allowedEventTypes || []),
             enabledTriggerTypes: new Set(asArray(merged.enabledTriggerTypes)),
-            tools: merged.tools ?? merged.ui?.tools ?? [],
-            panels: merged.panels ?? merged.ui?.panels ?? [],
+            tools: base.tools ?? base.ui?.tools ?? merged.tools ?? merged.ui?.tools ?? [],
+            panels: base.panels ?? base.ui?.panels ?? merged.panels ?? merged.ui?.panels ?? [],
             canvasPolicy: merged.canvas?.policy ?? null,
             canvasSurface: merged.canvas?.surface ?? null,
         };
@@ -90,8 +93,8 @@ export function resolveWorkspacePolicy(id) {
     // Root workspace (no inheritance)
     const merged = {
         ...base,
-        allowedEventTypes: base.events?.allowedEventTypes || null,
-        enabledTriggerTypes: base.events?.enabledTriggerTypes || null,
+        allowedEventTypes: baseAllowedEventTypes || null,
+        enabledTriggerTypes: baseEnabledTriggerTypes || null,
         readonly: base.status === 'stub' || base.policy?.mutation === 'readonly',
         allowedTools: base.status === 'stub' ? [] : base.ui?.tools || [],
         allowedPanels: base.status === 'stub' ? [] : base.ui?.panels || [],
@@ -100,8 +103,8 @@ export function resolveWorkspacePolicy(id) {
         ...merged,
         allowedEventTypes: new Set(merged.allowedEventTypes || []),
         enabledTriggerTypes: new Set(asArray(merged.enabledTriggerTypes)),
-        tools: merged.tools ?? merged.ui?.tools ?? [],
-        panels: merged.panels ?? merged.ui?.panels ?? [],
+        tools: base.tools ?? base.ui?.tools ?? merged.tools ?? merged.ui?.tools ?? [],
+        panels: base.panels ?? base.ui?.panels ?? merged.panels ?? merged.ui?.panels ?? [],
         canvasPolicy: merged.canvas?.policy ?? null,
         canvasSurface: merged.canvas?.surface ?? null,
     };

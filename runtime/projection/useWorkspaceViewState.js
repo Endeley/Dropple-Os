@@ -10,6 +10,8 @@ export function selectWorkspaceViewState(state) {
 
     const nextWorkspaceViewState = {
         id: workspace?.id ?? null,
+        modeId: workspace?.modeId ?? workspace?.legacy?.modeId ?? null,
+        definitionId: workspace?.definitionId ?? workspace?.legacy?.definitionId ?? null,
         viewport: workspace?.viewport ?? null,
         canvasSurface: workspace?.canvasSurface ?? null,
         canvasPolicy: workspace?.canvasPolicy ?? null,
@@ -24,6 +26,8 @@ export function selectWorkspaceViewState(state) {
     if (
         lastWorkspaceViewState &&
         lastWorkspaceViewState.id === nextWorkspaceViewState.id &&
+        lastWorkspaceViewState.modeId === nextWorkspaceViewState.modeId &&
+        lastWorkspaceViewState.definitionId === nextWorkspaceViewState.definitionId &&
         lastWorkspaceViewState.viewport === nextWorkspaceViewState.viewport &&
         lastWorkspaceViewState.canvasSurface === nextWorkspaceViewState.canvasSurface &&
         lastWorkspaceViewState.canvasPolicy === nextWorkspaceViewState.canvasPolicy &&

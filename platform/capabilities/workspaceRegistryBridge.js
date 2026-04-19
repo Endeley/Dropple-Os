@@ -2,6 +2,7 @@ import {
     getWorkspaceDefinition,
     getWorkspaceRegistry,
 } from '@/platform/workspaces/workspaceRegistry.js';
+import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
 import { getWorkspacePolicy, registerWorkspacePolicy } from './workspacePolicy.js';
 
 export { getWorkspaceDefinition };
@@ -14,33 +15,44 @@ function toArray(value) {
 }
 
 function normalizeWorkspacePolicy(definition) {
+    const resolvedDefinition =
+        definition?.id ? resolveWorkspacePolicy(definition.id) : null;
+    const source =
+        resolvedDefinition && !resolvedDefinition.error
+            ? resolvedDefinition
+            : definition;
+
     return {
-        workspace: definition.id,
-        capabilities: [...new Set(definition.policy?.capabilities ?? [])].sort((a, b) =>
+        workspace: source.id,
+        capabilities: [...new Set(source.policy?.capabilities ?? [])].sort((a, b) =>
             String(a).localeCompare(String(b))
         ),
-        denies: [...new Set(definition.policy?.denies ?? [])].sort((a, b) =>
+        denies: [...new Set(source.policy?.denies ?? [])].sort((a, b) =>
             String(a).localeCompare(String(b))
         ),
-        readonly: definition.readonly ?? definition.policy?.mutation === 'readonly',
-        tools: [...new Set(definition.ui?.tools ?? [])].sort((a, b) =>
+        readonly: source.readonly ?? source.policy?.mutation === 'readonly',
+        tools: [...new Set(source.tools ?? source.ui?.tools ?? [])].sort((a, b) =>
             String(a).localeCompare(String(b))
         ),
-        panels: [...new Set(definition.ui?.panels ?? [])].sort((a, b) =>
+        panels: [...new Set(source.panels ?? source.ui?.panels ?? [])].sort((a, b) =>
             String(a).localeCompare(String(b))
         ),
-        allowedEventTypes: toArray(definition.events?.allowedEventTypes).sort((a, b) =>
+        allowedEventTypes: toArray(source.allowedEventTypes ?? source.events?.allowedEventTypes)
+            .filter(Boolean)
+            .sort((a, b) =>
             String(a).localeCompare(String(b))
         ),
-        enabledTriggerTypes: toArray(definition.events?.enabledTriggerTypes).sort((a, b) =>
+        enabledTriggerTypes: toArray(source.enabledTriggerTypes ?? source.events?.enabledTriggerTypes)
+            .filter(Boolean)
+            .sort((a, b) =>
             String(a).localeCompare(String(b))
         ),
-        canvasPolicy: definition.canvas?.policy ?? null,
-        canvasSurface: definition.canvas?.surface ?? null,
-        timeline: definition.timeline ?? null,
-        media: definition.media ?? null,
-        render: definition.render ?? null,
-        export: definition.export ?? null,
+        canvasPolicy: source.canvasPolicy ?? source.canvas?.policy ?? null,
+        canvasSurface: source.canvasSurface ?? source.canvas?.surface ?? null,
+        timeline: source.timeline ?? null,
+        media: source.media ?? null,
+        render: source.render ?? null,
+        export: source.export ?? null,
     };
 }
 

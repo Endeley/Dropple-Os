@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { applyEvent } from '@/core/events/applyEvent.js';
+import { replayEvents } from '@/core/persistence/replayEngine.js';
 import { applyMerge } from '@/branching/merge/applyMerge.js';
 import { simulateMergeState } from '@/branching/merge/simulateMergeState.js';
 
@@ -102,14 +102,18 @@ test('applyMerge dispatch replay matches simulateMergeState', () => {
     const events = createEvents();
     const simulated = simulateMergeState({ baseState, events });
 
-    let real = structuredClone(baseState);
+    const dispatched = [];
     const dispatcher = {
         dispatch: (event) => {
-            real = applyEvent(real, event);
+            dispatched.push(event);
         },
     };
 
     applyMerge({ dispatcher, events });
+    const real = replayEvents({
+        events: dispatched,
+        initialState: structuredClone(baseState),
+    });
 
     assert.deepEqual(simulated, real);
 });

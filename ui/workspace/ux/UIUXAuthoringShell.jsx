@@ -11,7 +11,6 @@ import { useWorkspaceVisualState } from '@/runtime/projection';
 import { CertifiedTemplatesPanel } from '@/ui/workspace/ux/panels/CertifiedTemplatesPanel.jsx';
 import { useWorkspaceCapabilities } from '@/ui/workspace/useWorkspaceCapabilities.js';
 import { useCapabilityLifecycle } from '@/ui/workspace/useCapabilityLifecycle.js';
-import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
 
 /**
  * UIUXAuthoringShell
@@ -21,7 +20,6 @@ import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
  */
 export function UIUXAuthoringShell({ profile = 'uiux-authoring', modeId = 'uiux' }) {
   const emit = useCallback((event) => nodeUpdateIntent(event), []);
-  const dispatcher = useDispatcher();
   const { capabilities } = useWorkspaceCapabilities({
     workspace: 'design',
     mode: 'uiux',
@@ -34,7 +32,7 @@ export function UIUXAuthoringShell({ profile = 'uiux-authoring', modeId = 'uiux'
 
   useCapabilityLifecycle({
     capabilities,
-    dispatcher,
+    emit,
     workspace: 'design',
     mode: 'uiux',
   });

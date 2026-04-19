@@ -24,6 +24,7 @@ function runCommand(commandId, dispatcher) {
     if (!runtimeState || typeof dispatch !== 'function') return null;
 
     const workspaceId =
+        runtimeState?.workspace?.modeId ??
         runtimeState?.workspace?.id ??
         runtimeState?.workspaceId ??
         'graphic';

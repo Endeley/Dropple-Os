@@ -18,26 +18,17 @@ import { useIntentPreview } from '@/collab/useIntentPreview';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { PersistenceBridge } from '@/ui/bridges/PersistenceBridge.jsx';
 import { SessionGroupingBridge } from '@/ui/interactions/sessionGrouping.js';
-import { getWorkspaceAdapter, resolveWorkspaceId } from '@/ui/bridges/workspaceActivationFacade.js';
+import { getWorkspaceAdapter } from '@/ui/bridges/workspaceActivationFacade.js';
 import { resolveWorkspaceContext } from '@/platform/workspaces/resolveWorkspaceContext.js';
 import { useWorkspaceCapabilities } from '@/ui/workspace/useWorkspaceCapabilities.js';
 import { useCapabilityLifecycle } from '@/ui/workspace/useCapabilityLifecycle.js';
-import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
 import { WorkspaceSwitcher } from '@/ui/workspace/shared/WorkspaceSwitcher.jsx';
 import { ModeSwitcher } from '@/ui/workspace/shared/ModeSwitcher.jsx';
 import { useWorkspaceNavigation } from '@/ui/workspace/shared/useWorkspaceNavigation.js';
 import { UIUXToolRail } from '@/ui/workspace/ux/UIUXToolRail.jsx';
 
 const PANEL_LEFT = new Set(['SubmissionInfoPanel', 'LessonOutlinePanel']);
-const PANEL_RIGHT = new Set([
-    'InspectorPanel',
-    'AutoLayoutPanel',
-    'EducationInspector',
-    'EducationTimelinePanel',
-    'RubricPanel',
-    'AnnotationPanel',
-    'SharingPanel',
-]);
+const PANEL_RIGHT = new Set(['InspectorPanel', 'AutoLayoutPanel', 'EducationInspector', 'EducationTimelinePanel', 'RubricPanel', 'AnnotationPanel', 'SharingPanel']);
 const PANEL_TOP = new Set(['EducationToolbar', 'ReviewToolbar']);
 const PANEL_BOTTOM = new Set(['TimelineBar']);
 
@@ -100,15 +91,11 @@ export function EditorWorkspaceShell({
     reviewerId,
 }) {
     const adapter = resolveWorkspaceAdapter(modeId);
-    const workspaceContext = useMemo(
-        () => providedWorkspaceContext ?? resolveWorkspaceContext({ workspace: modeId }),
-        [modeId, providedWorkspaceContext],
-    );
-    const dispatcher = useDispatcher();
+    const workspaceContext = useMemo(() => providedWorkspaceContext ?? resolveWorkspaceContext({ workspace: modeId }), [modeId, providedWorkspaceContext]);
     const { goToMode, goToWorkspace } = useWorkspaceNavigation();
     const { capabilities } = useWorkspaceCapabilities({
-        workspace: workspaceContext.workspace,
-        mode: workspaceContext.mode,
+        workspace: workspaceContext.workspaceId,
+        mode: workspaceContext.modeId,
     });
     const templateGen = useTemplateGenerator();
 
@@ -140,26 +127,16 @@ export function EditorWorkspaceShell({
         selfUserId,
     });
 
-    const persistenceEnabled =
-        !effectiveReadOnly &&
-        adapter?.ui?.editing !== false &&
-        adapter?.id !== 'review' &&
-        !(adapter?.id === 'education' && educationReadOnly);
+    const persistenceEnabled = !effectiveReadOnly && adapter?.ui?.editing !== false && adapter?.id !== 'review' && !(adapter?.id === 'education' && educationReadOnly);
 
-    const importEnabled =
-        !effectiveReadOnly &&
-        adapter?.ui?.editing !== false &&
-        adapter?.id !== 'review' &&
-        !(adapter?.id === 'education' && educationReadOnly);
+    const importEnabled = !effectiveReadOnly && adapter?.ui?.editing !== false && adapter?.id !== 'review' && !(adapter?.id === 'education' && educationReadOnly);
 
     useCapabilityLifecycle({
         capabilities,
-        dispatcher,
-        workspace: workspaceContext.workspace,
-        mode: workspaceContext.mode,
+        emit,
+        workspace: workspaceContext.workspaceId,
+        mode: workspaceContext.modeId,
     });
-
-    /* ---------------- layout & seed ---------------- */
 
     useEffect(() => {
         if (!hydrated || events.length === 0) return;
@@ -169,7 +146,9 @@ export function EditorWorkspaceShell({
         }
 
         const last = events[events.length - 1];
-        if (!new Set(['node.layout.setAutoLayout', 'node.layout.clearAutoLayout', 'node.layout.bulk', 'node.layout.rotate', 'node.create', 'node.delete', 'node.children.reorder']).has(last.type)) return;
+        if (!new Set(['node.layout.setAutoLayout', 'node.layout.clearAutoLayout', 'node.layout.bulk', 'node.layout.rotate', 'node.create', 'node.delete', 'node.children.reorder']).has(last.type)) {
+            return;
+        }
 
         applyAutoLayoutIfNeeded({
             state: getDesignStateAtCursor({
@@ -179,8 +158,6 @@ export function EditorWorkspaceShell({
             emit,
         });
     }, [events, emit, hydrated]);
-
-    /* ---------------- render ---------------- */
 
     const cursor = { index: cursorIndex };
 
@@ -195,7 +172,7 @@ export function EditorWorkspaceShell({
 
     const workspace = (
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-            {workspaceContext.workspace === 'design' && adapter?.ui?.editing !== false && (
+            {workspaceContext.workspaceId === 'design' && adapter?.ui?.editing !== false && (
                 <div
                     style={{
                         position: 'absolute',
@@ -207,6 +184,7 @@ export function EditorWorkspaceShell({
                     <UIUXToolRail />
                 </div>
             )}
+
             {showWorkspaceNavigation && (
                 <div
                     style={{
@@ -232,19 +210,15 @@ export function EditorWorkspaceShell({
                             textTransform: 'uppercase',
                             backdropFilter: 'blur(10px)',
                         }}>
-                        {`${workspaceContext.label} ${workspaceContext.modeLabel ? `· ${workspaceContext.modeLabel}` : ''}`}
+                        {`${workspaceContext.label}${workspaceContext.modeLabel ? ` · ${workspaceContext.modeLabel}` : ''}`}
                     </div>
-                    <WorkspaceSwitcher
-                        activeWorkspace={workspaceContext.workspace}
-                        onChange={goToWorkspace}
-                    />
-                    <ModeSwitcher
-                        workspace={workspaceContext.workspace}
-                        activeMode={workspaceContext.mode}
-                        onChange={(nextMode) => goToMode(workspaceContext.workspace, nextMode)}
-                    />
+
+                    <WorkspaceSwitcher activeWorkspace={workspaceContext.workspaceId} onChange={goToWorkspace} />
+
+                    <ModeSwitcher workspace={workspaceContext.workspaceId} activeMode={workspaceContext.modeId} onChange={(nextMode) => goToMode(workspaceContext.workspaceId, nextMode)} />
                 </div>
             )}
+
             <EditorWorkspaceLayout
                 adapter={adapter}
                 events={events}
@@ -266,7 +240,7 @@ export function EditorWorkspaceShell({
                 onReviewCriteriaChange={onReviewCriteriaChange}
                 reviewerId={reviewerId}
                 presence={presence}
-                railOffset={workspaceContext.workspace === 'design' && adapter?.ui?.editing !== false ? 56 : 0}
+                railOffset={workspaceContext.workspaceId === 'design' && adapter?.ui?.editing !== false ? 56 : 0}
             />
         </div>
     );
@@ -284,10 +258,12 @@ export function EditorWorkspaceShell({
                 onDocumentNameChange={setDocumentName}
                 onRecentDocsChange={setRecentDocs}
                 onHydratedChange={setHydrated}
-                workspace={workspaceContext.workspace}
-                mode={workspaceContext.mode}
+                workspace={workspaceContext.workspaceId}
+                mode={workspaceContext.modeId}
             />
+
             <SessionGroupingBridge />
+
             <GridProvider>
                 <ClipboardProvider>
                     {modeId === 'education' ? (
@@ -297,6 +273,7 @@ export function EditorWorkspaceShell({
                     ) : (
                         workspace
                     )}
+
                     <TemplateGeneratorOverlay open={templateGen.open} onClose={templateGen.closeGenerator} state={replayState} events={events} mode={adapter} />
                 </ClipboardProvider>
             </GridProvider>

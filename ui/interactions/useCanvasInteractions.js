@@ -35,7 +35,6 @@ export function useCanvasInteractions({
       x: e.clientX,
       y: e.clientY,
     });
-
     return handleInputEvent(
       {
         type,

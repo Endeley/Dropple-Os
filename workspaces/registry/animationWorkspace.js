@@ -42,6 +42,18 @@ export const animationWorkspace = {
     },
 
     allowedEventTypes: [
+        EventTypes.TIMELINE_TRACK_CREATE,
+        EventTypes.TIMELINE_TRACK_DELETE,
+        EventTypes.TIMELINE_TRACK_REORDER,
+        EventTypes.TIMELINE_TRACK_CHANNEL_ASSIGN,
+        EventTypes.TIMELINE_TRACK_LOCK_TOGGLE,
+        EventTypes.TIMELINE_TRACK_BLEND_MODE_SET,
+        EventTypes.TIMELINE_GROUP_CREATE,
+        EventTypes.TIMELINE_GROUP_DELETE,
+        EventTypes.TIMELINE_GROUP_LOCK_TOGGLE,
+        EventTypes.TIMELINE_GROUP_COLLAPSE_TOGGLE,
+        EventTypes.TIMELINE_GROUP_TRACK_ASSIGN,
+        EventTypes.TIMELINE_GROUP_TRACK_UNASSIGN,
         EventTypes.ANIMATION_TRACK_CREATE,
         EventTypes.ANIMATION_TRACK_DELETE,
         EventTypes.ANIMATION_KEYFRAME_ADD,

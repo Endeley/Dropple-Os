@@ -17,6 +17,13 @@ if (!fs.existsSync(AI_DIR)) fs.mkdirSync(AI_DIR);
 const IGNORE = ['node_modules', '.git', '.next', 'dist', 'build', '.ai'];
 const EXTENSIONS = ['.js', '.jsx', '.ts', '.tsx'];
 
+function shouldIgnoreEntry(relPath) {
+    const normalized = relPath.replace(/\\/g, '/');
+    const rootDir = normalized.split('/')[0];
+    if (rootDir && rootDir.startsWith('.next')) return true;
+    return IGNORE.some((entry) => normalized === entry || normalized.startsWith(`${entry}/`));
+}
+
 /**
  * Layer hierarchy (lower = deeper)
  */
@@ -129,8 +136,9 @@ function hash(content) {
 function walk(dir, result = []) {
     const entries = fs.readdirSync(dir);
     for (const entry of entries) {
-        if (IGNORE.includes(entry)) continue;
         const full = path.join(dir, entry);
+        const rel = path.relative(ROOT, full);
+        if (shouldIgnoreEntry(rel)) continue;
         const stat = fs.statSync(full);
 
         if (stat.isDirectory()) {

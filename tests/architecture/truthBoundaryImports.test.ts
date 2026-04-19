@@ -9,6 +9,8 @@ const IGNORE_DIRS = new Set(['.git', '.next', 'node_modules', 'out', 'build']);
 
 function shouldIgnore(relPath) {
     const normalized = relPath.replaceAll('\\', '/');
+    const [rootDir] = normalized.split('/');
+    if (rootDir?.startsWith('.next')) return true;
     for (const dir of IGNORE_DIRS) {
         if (normalized === dir || normalized.startsWith(`${dir}/`)) return true;
     }

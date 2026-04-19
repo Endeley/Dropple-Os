@@ -37,17 +37,16 @@ function projectMarquee(runtime) {
 
 /**
  * Syncs authoritative runtime state into Zustand (read-only mirror).
- * ❗ Zustand never mutates runtime directly.
  */
 export function syncRuntimeToZustand(nextState, options = {}) {
     const sanitizedUxAudit = Array.isArray(options?.uxAudit)
         ? options.uxAudit.map((entry) => ({
-            id: entry?.id,
-            type: entry?.type,
-            timestamp: entry?.timestamp,
-            message: entry?.message,
-            level: entry?.level,
-        }))
+              id: entry?.id,
+              type: entry?.type,
+              timestamp: entry?.timestamp,
+              message: entry?.message,
+              level: entry?.level,
+          }))
         : [];
 
     if (!nextState) {
@@ -73,22 +72,11 @@ export function syncRuntimeToZustand(nextState, options = {}) {
                 marquee: null,
                 groupTransform: null,
                 components: {
-                    index: {
-                        definitions: {},
-                        instances: {},
-                        instanceOverrides: {},
-                    },
+                    index: { definitions: {}, instances: {}, instanceOverrides: {} },
                     resolvedInstances: {},
-                    counts: {
-                        definitions: 0,
-                        instances: 0,
-                        resolvedInstances: 0,
-                    },
+                    counts: { definitions: 0, instances: 0, resolvedInstances: 0 },
                 },
-                data: {
-                    resolvedBindings: {},
-                    resolvedValues: {},
-                },
+                data: { resolvedBindings: {}, resolvedValues: {} },
                 app: {
                     screens: {},
                     currentScreen: null,
@@ -99,79 +87,76 @@ export function syncRuntimeToZustand(nextState, options = {}) {
                 vectors: {},
                 stateMachines: {},
                 navigation: {},
-                collaboration: {
-                    session: null,
-                    presence: [],
-                    cursors: [],
-                },
-                ai: {
-                    requests: [],
-                    latestRequest: null,
-                },
-                graph: {
-                    activeGraphId: null,
-                    activeGraph: null,
-                    nodes: [],
-                    edges: [],
-                    errors: [],
-                    selection: { ids: [], primary: null },
-                    viewport: { x: 0, y: 0, zoom: 1 },
-                    drag: { active: false, nodeId: null, origin: null, startPointer: null, currentPointer: null },
-                    connection: { active: false, fromNodeId: null, pointerX: 0, pointerY: 0 },
-                    dragPreviewPositions: {},
-                },
+                collaboration: { session: null, presence: [], cursors: [] },
+                ai: { requests: [], latestRequest: null },
+                graph: projectGraphInteraction(nextState),
                 tools: {
                     activeTool: 'select',
                     registeredTools: {},
                     visibleTools: [],
                 },
                 interaction: null,
+                events: [],
+                cursorIndex: -1,
             },
-            false
+            false,
         );
         return;
     }
 
     const prev = useRuntimeStore.getState();
     const nodesById = getNodes(nextState);
-    const interactionTransforms =
-        nextState?.interaction?.drag?.active === true
-            ? nextState?.interaction?.drag?.interactionTransforms ?? null
-            : null;
+
+    const interactionTransforms = nextState?.interaction?.drag?.active === true ? (nextState?.interaction?.drag?.interactionTransforms ?? null) : null;
+
     const projectedNodes = {};
 
     Object.keys(nodesById).forEach((id) => {
         const node = nodesById[id];
         if (!node) return;
+
         const interaction = interactionTransforms?.[id] ?? null;
         const baseLayout = node.layout ?? {};
+
+        // 🔥 FIX: include width + height
         const projectedLayout = interaction
             ? {
-                ...baseLayout,
-                x: interaction.x ?? baseLayout.x ?? node.x ?? 0,
-                y: interaction.y ?? baseLayout.y ?? node.y ?? 0,
-            }
+                  ...baseLayout,
+                  x: interaction.x ?? baseLayout.x ?? node.x ?? 0,
+                  y: interaction.y ?? baseLayout.y ?? node.y ?? 0,
+                  width: interaction.width ?? baseLayout.width ?? node.width ?? 0,
+                  height: interaction.height ?? baseLayout.height ?? node.height ?? 0,
+              }
             : baseLayout;
 
         projectedNodes[id] = {
             ...node,
+
             ...(interaction
                 ? {
-                    x: interaction.x ?? node.x,
-                    y: interaction.y ?? node.y,
-                    transform: {
-                        ...(node.transform ?? {}),
-                        ...interaction,
-                    },
-                    layout: projectedLayout,
-                }
+                      x: interaction.x ?? node.x,
+                      y: interaction.y ?? node.y,
+
+                      // 🔥 CRITICAL FIX
+                      width: interaction.width ?? node.width,
+                      height: interaction.height ?? node.height,
+
+                      transform: {
+                          ...(node.transform ?? {}),
+                          ...interaction,
+                      },
+
+                      layout: projectedLayout,
+                  }
                 : {}),
+
             isAutoLayoutChild: computeIsAutoLayoutChild(node, nodesById),
             resizeLocked: computeIsAutoLayoutChild(node, nodesById),
         };
     });
 
     const selectionBounds = selectionBoundsProjection(nextState);
+
     const nextProjection = {
         viewNodes: projectedNodes,
         viewRootIds: getRootIds(nextState),
@@ -203,39 +188,38 @@ export function syncRuntimeToZustand(nextState, options = {}) {
         navigation: nextState.navigation ?? {},
         collaboration: {
             session: nextState.collaboration?.session ?? null,
-            presence: Object.values(nextState.collaboration?.presence ?? {}).sort((a, b) =>
-                String(a?.id ?? '').localeCompare(String(b?.id ?? ''))
-            ),
-            cursors: Object.entries(nextState.collaboration?.cursors ?? {})
-                .map(([userId, cursor]) => ({
-                    userId,
-                    ...cursor,
-                }))
-                .sort((a, b) => String(a.userId).localeCompare(String(b.userId))),
+            presence: Object.values(nextState.collaboration?.presence ?? {}),
+            cursors: Object.entries(nextState.collaboration?.cursors ?? {}).map(([userId, cursor]) => ({
+                userId,
+                ...cursor,
+            })),
         },
         ai: {
-            requests: (nextState.ai?.order ?? [])
-                .map((requestId) => nextState.ai?.requests?.[requestId] ?? null)
-                .filter(Boolean),
+            requests: (nextState.ai?.order ?? []).map((id) => nextState.ai?.requests?.[id]).filter(Boolean),
             latestRequest: (() => {
                 const order = nextState.ai?.order ?? [];
-                const latestId = order.length ? order[order.length - 1] : null;
-                return latestId ? nextState.ai?.requests?.[latestId] ?? null : null;
+                const latestId = order[order.length - 1];
+                return latestId ? nextState.ai?.requests?.[latestId] : null;
             })(),
         },
         graph: projectGraphInteraction(nextState),
+
         tools: {
             activeTool: selectActiveTool(nextState),
             registeredTools: nextState.tools?.registeredTools ?? {},
             visibleTools: selectVisibleTools(nextState),
         },
+
         interaction: nextState.interaction ?? null,
+        events: Array.isArray(nextState.events) ? nextState.events : [],
+        cursorIndex: Number.isFinite(nextState.cursorIndex) ? nextState.cursorIndex : -1,
     };
 
     const nextSceneGraph = getSceneGraph(nextState);
     if (prev.viewSceneGraph !== nextSceneGraph) {
         nextProjection.viewSceneGraph = nextSceneGraph;
     }
+
     if (prev.scene !== nextState.scene) {
         nextProjection.scene = nextState.scene ?? null;
     }

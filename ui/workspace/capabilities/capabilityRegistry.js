@@ -2,28 +2,54 @@
 
 import { GraphEditorPanel } from '@/ui/workspace/media/animation/GraphEditorPanel.jsx';
 import { RigControllerOverlay } from '@/ui/rigging/RigControllerOverlay.jsx';
-import {
-    registerTools,
-    unregisterTools,
-} from '@/runtime/actions/toolActions.js';
-import {
-    registerDefaultGraphToolHandlers,
-    unregisterDefaultGraphToolHandlers,
-} from '@/ui/bridges/toolHandlerRegistrationFacade.js';
 
-function safeDispatch(context, action, capability) {
+function safeEmit(context, event, capability, phase = 'emit') {
     try {
-        const result = context.dispatch?.(action);
+        const emit = context?.emit;
+        if (typeof emit !== 'function') return null;
+
+        const result = emit(event);
+
         if (result && typeof result.catch === 'function') {
             result.catch((error) => {
-                console.error(`[Capability:${capability}] dispatch failed`, error);
+                console.error(`[Capability:${capability}] ${phase} failed`, error);
             });
         }
+
         return result;
     } catch (error) {
-        console.error(`[Capability:${capability}] dispatch failed`, error);
+        console.error(`[Capability:${capability}] ${phase} failed`, error);
         return null;
     }
+}
+
+function emitToolRegistration(context, capability, tools) {
+    return safeEmit(
+        context,
+        {
+            type: 'capability.tools.register.requested',
+            payload: {
+                source: capability,
+                tools: Array.isArray(tools) ? tools : [],
+            },
+        },
+        capability,
+        'register-tools',
+    );
+}
+
+function emitToolUnregistration(context, capability) {
+    return safeEmit(
+        context,
+        {
+            type: 'capability.tools.unregister.requested',
+            payload: {
+                source: capability,
+            },
+        },
+        capability,
+        'unregister-tools',
+    );
 }
 
 export const CAPABILITY_COMPONENTS = Object.freeze({
@@ -40,28 +66,14 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
         }),
         lifecycle: Object.freeze({
             onMount(context) {
-                registerDefaultGraphToolHandlers();
-                safeDispatch(
-                    context,
-                    registerTools({
-                        source: 'graph',
-                        tools: ['select', 'move', 'resize', 'rotate', 'pan', 'frame', 'shape'],
-                    }),
-                    'graph',
-                );
+                emitToolRegistration(context, 'graph', ['select', 'move', 'resize', 'rotate', 'pan', 'frame', 'shape']);
             },
             onUnmount(context) {
-                unregisterDefaultGraphToolHandlers();
-                safeDispatch(
-                    context,
-                    unregisterTools({
-                        source: 'graph',
-                    }),
-                    'graph',
-                );
+                emitToolUnregistration(context, 'graph');
             },
         }),
     }),
+
     timeline: Object.freeze({
         id: 'timeline',
         tools: Object.freeze(['keyframe', 'cut', 'trim', 'overlay']),
@@ -70,26 +82,14 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
         }),
         lifecycle: Object.freeze({
             onMount(context) {
-                safeDispatch(
-                    context,
-                    registerTools({
-                        source: 'timeline',
-                        tools: ['keyframe', 'cut', 'trim', 'overlay'],
-                    }),
-                    'timeline',
-                );
+                emitToolRegistration(context, 'timeline', ['keyframe', 'cut', 'trim', 'overlay']);
             },
             onUnmount(context) {
-                safeDispatch(
-                    context,
-                    unregisterTools({
-                        source: 'timeline',
-                    }),
-                    'timeline',
-                );
+                emitToolUnregistration(context, 'timeline');
             },
         }),
     }),
+
     rig: Object.freeze({
         id: 'rig',
         tools: Object.freeze(['rig-select', 'rig-move']),
@@ -103,26 +103,14 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
         }),
         lifecycle: Object.freeze({
             onMount(context) {
-                safeDispatch(
-                    context,
-                    registerTools({
-                        source: 'rig',
-                        tools: ['rig-select', 'rig-move'],
-                    }),
-                    'rig',
-                );
+                emitToolRegistration(context, 'rig', ['rig-select', 'rig-move']);
             },
             onUnmount(context) {
-                safeDispatch(
-                    context,
-                    unregisterTools({
-                        source: 'rig',
-                    }),
-                    'rig',
-                );
+                emitToolUnregistration(context, 'rig');
             },
         }),
     }),
+
     stateMachine: Object.freeze({
         id: 'stateMachine',
         tools: Object.freeze([]),

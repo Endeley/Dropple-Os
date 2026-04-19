@@ -1,4 +1,5 @@
 import { WorkspaceRegistry } from '@/workspaces/registry/index.js';
+import { resolveWorkspacePolicy } from '@/workspaces/registry/resolveWorkspacePolicy.js';
 
 const MODE_ALIASES = Object.freeze({
     design: 'graphic',
@@ -27,6 +28,11 @@ export function resolveWorkspaceId(modeId) {
 
 export function getWorkspaceDefinition(workspaceId) {
     const normalizedId = resolveWorkspaceId(workspaceId);
+    const resolved = resolveWorkspacePolicy(normalizedId);
+    if (resolved && !resolved.error) {
+        return resolved;
+    }
+
     return WorkspaceRegistry[normalizedId] ?? null;
 }
 

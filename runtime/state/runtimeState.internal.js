@@ -59,6 +59,8 @@ export const initialRuntimeState = {
   },
   interaction: initialInteractionState(),
   preview: createPreviewState(),
+  events: [],
+  cursorIndex: -1,
   // 🔹 Narrative slice (runtime only)
   scene: {
     activeSceneId: null,

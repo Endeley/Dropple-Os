@@ -1,9 +1,8 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   createTimelineController,
-  dispatchTrack,
   undoTimeline,
   redoTimeline,
   checkoutSnapshot,
@@ -15,6 +14,16 @@ export function useTimelineController(initialTimeline) {
   const [controller, setController] = useState(() =>
     createTimelineController(initialTimeline)
   );
+  const lastCanonicalTimelineRef = useRef(initialTimeline);
+
+  useEffect(() => {
+    if (lastCanonicalTimelineRef.current === initialTimeline) {
+      return;
+    }
+
+    lastCanonicalTimelineRef.current = initialTimeline;
+    setController(createTimelineController(initialTimeline));
+  }, [initialTimeline]);
 
   // 🔒 Projection is always derived from canonical present
   const projection = useMemo(() => {
@@ -22,11 +31,6 @@ export function useTimelineController(initialTimeline) {
       controller.snapshotGraph.nodes[controller.headId]?.timeline ?? initialTimeline;
     return projectTimeline(current);
   }, [controller, initialTimeline]);
-
-  // 🔒 UI intent → controller → dispatcher → history → hash gate
-  const dispatch = useCallback((action) => {
-    setController((prev) => dispatchTrack(prev, action));
-  }, []);
 
   const undo = useCallback(() => {
     setController((prev) => undoTimeline(prev));
@@ -71,7 +75,6 @@ export function useTimelineController(initialTimeline) {
 
   return {
     projection,
-    dispatch,
     undo,
     redo,
     checkout,
