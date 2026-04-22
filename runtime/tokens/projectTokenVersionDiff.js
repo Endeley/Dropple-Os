@@ -1,5 +1,5 @@
-import { applyEvent } from '@/core/events/applyEvent.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
+import { replayEvents } from '@/runtime/dispatcher/replayEvents.js';
 import { projectActiveTokens } from '@/runtime/tokens/projectActiveTokens.js';
 import { resolveActiveVersionHead } from '@/runtime/tokens/tokenVersionGraph.js';
 
@@ -261,42 +261,48 @@ function compareThemeBindings(baseSnapshot, compareSnapshot) {
 
 function snapshotForVersionEntries(events, tokenVersionGraph) {
     const snapshots = new Map();
-    let replayState;
+    replayEvents({
+        events,
+        onEvent(replayState, event) {
+            if (!VERSION_EVENT_TYPES.has(event?.type)) {
+                return replayState;
+            }
 
-    for (const event of Array.isArray(events) ? events : []) {
-        if (!event?.type) continue;
-        replayState = applyEvent(replayState, event);
+            const versionId = event?.payload?.versionId ?? event?.payload?.id ?? null;
+            if (!versionId) {
+                return replayState;
+            }
 
-        if (!VERSION_EVENT_TYPES.has(event.type)) continue;
+            const versionEntry =
+                replayState?.document?.tokenVersions?.entries?.[versionId] ??
+                tokenVersionGraph?.entries?.[versionId] ??
+                null;
+            if (!versionEntry) {
+                return replayState;
+            }
 
-        const versionId = event?.payload?.versionId ?? event?.payload?.id ?? null;
-        if (!versionId) continue;
-
-        const versionEntry =
-            replayState?.document?.tokenVersions?.entries?.[versionId] ??
-            tokenVersionGraph?.entries?.[versionId] ??
-            null;
-        if (!versionEntry) continue;
-
-        snapshots.set(
-            versionId,
-            Object.freeze({
-                document: Object.freeze({
-                    tokens: clone(replayState?.document?.tokens ?? {}),
-                    themes: clone(
-                        replayState?.document?.themes ?? {
-                            activeThemeId: null,
-                            byId: {},
-                            order: [],
-                        },
-                    ),
+            snapshots.set(
+                versionId,
+                Object.freeze({
+                    document: Object.freeze({
+                        tokens: clone(replayState?.document?.tokens ?? {}),
+                        themes: clone(
+                            replayState?.document?.themes ?? {
+                                activeThemeId: null,
+                                byId: {},
+                                order: [],
+                            },
+                        ),
+                    }),
+                    projectedTokens: Object.freeze(projectActiveTokens(replayState?.document ?? null)),
+                    activeThemeId: replayState?.document?.themes?.activeThemeId ?? null,
+                    versionThemeId: versionEntry?.themeId ?? null,
                 }),
-                projectedTokens: Object.freeze(projectActiveTokens(replayState?.document ?? null)),
-                activeThemeId: replayState?.document?.themes?.activeThemeId ?? null,
-                versionThemeId: versionEntry?.themeId ?? null,
-            }),
-        );
-    }
+            );
+
+            return replayState;
+        },
+    });
 
     return snapshots;
 }
