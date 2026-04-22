@@ -1,103 +1,131 @@
 'use client';
 
 import React, { memo } from 'react';
-import { useCanvasContext } from '@/ui/canvas/CanvasContext.jsx';
+import { useCanvasContext, useCanvasVisualState } from '@/ui/canvas/CanvasContext.jsx';
+import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { resolveToken } from '@/runtime/tokens/resolveToken.js';
 
 const __DEV__ = process.env.NODE_ENV !== 'production';
 
 function devSkip(reason, node, details = {}) {
     if (!__DEV__) return;
 
-    console.groupCollapsed(
-        `%c[NodeRenderer] render skipped - ${reason}`,
-        'color:#e5533d;font-weight:600'
-    );
+    console.groupCollapsed(`%c[NodeRenderer] render skipped - ${reason}`, 'color:#e5533d;font-weight:600');
 
     console.log('nodeId:', node?.id);
     console.log('layout:', node?.layout);
-    if (Object.keys(details).length) {
-        console.log('details:', details);
-    }
+    if (Object.keys(details).length) console.log('details:', details);
 
     console.groupEnd();
 }
 
 function NodeRendererImpl({ node }) {
     const { zoomTier } = useCanvasContext();
+    const selection = useCanvasVisualState((s) => s.selection);
+    const tokens = useRuntimeStore((state) => state.tokens || {});
+
     if (!node) return null;
 
     const layout = node.layout;
+
     if (!layout) {
         devSkip('missing layout', node);
         return null;
     }
-    if (!Number.isFinite(layout.x) || !Number.isFinite(layout.y) || !Number.isFinite(layout.width) || !Number.isFinite(layout.height)) {
-        devSkip('non-finite layout values', node);
-        return null;
-    }
-    const left = layout.x;
-    const top = layout.y;
-    const width = layout.width;
-    const height = layout.height;
-    if (!Number.isFinite(left) || !Number.isFinite(top) || !Number.isFinite(width) || !Number.isFinite(height)) {
-        devSkip('projection produced non-finite values', node, {
-            left,
-            top,
-            width,
-            height,
-        });
+
+    const { x, y, width, height, rotation = 0 } = layout;
+
+    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(width) || !Number.isFinite(height)) {
+        devSkip('invalid layout', node, { x, y, width, height });
         return null;
     }
 
+    const isSelected = selection?.ids?.includes(node.id);
+    const isPrimary = selection?.primary === node.id;
+    const style = node.style || {};
+    const rawFill =
+        style.fills?.find((entry) => entry?.enabled !== false)?.color ??
+        style.fill ??
+        null;
+    const fillColor = resolveToken(rawFill, tokens);
+    const opacity = Number.isFinite(style.opacity) ? Math.max(0, Math.min(style.opacity, 1)) : 1;
+    const rawStroke =
+        style.strokes?.find((entry) => entry?.enabled !== false) ??
+        style.stroke ??
+        null;
+    const strokeColor = rawStroke ? resolveToken(rawStroke.color, tokens) : null;
+
+    // ----- ZOOM LOGIC -----
     const showLabel = zoomTier !== 'far';
     const showFull = zoomTier === 'normal' || zoomTier === 'detail' || zoomTier === 'micro';
-    const isFar = zoomTier === 'far';
-    const isOverview = zoomTier === 'overview';
-    const background = isFar
-        ? 'rgba(147, 197, 253, 0.12)'
-        : isOverview
-            ? 'rgba(147, 197, 253, 0.2)'
-            : '#e0e7ff';
-    const border = isFar ? '1px solid rgba(59, 130, 246, 0.35)' : '1px solid #93c5fd';
+
+    // ----- VISUAL STYLE -----
+    const fallbackBackground = zoomTier === 'far' ? 'rgba(147,197,253,0.12)' : zoomTier === 'overview' ? 'rgba(147,197,253,0.2)' : '#e0e7ff';
+    const background = fillColor ?? fallbackBackground;
+
+    const baseBorder = rawStroke
+        ? `${Number.isFinite(rawStroke.width) ? rawStroke.width : 1}px solid ${strokeColor || '#000000'}`
+        : '1px solid #93c5fd';
+    const border = isPrimary ? '2px solid #3b82f6' : isSelected ? '1px solid #60a5fa' : baseBorder;
+
+    const zIndex = node.zIndex ?? 0;
 
     return (
         <div
             data-node-id={node.id}
-            data-node-width={width}
-            data-node-height={height}
+            className={`node-renderer ${isSelected ? 'is-selected' : ''} ${isPrimary ? 'is-primary' : ''}`}
             style={{
                 position: 'absolute',
-                left,
-                top,
+                left: x,
+                top: y,
                 width,
                 height,
+                transform: `rotate(${rotation}deg)`,
+                transformOrigin: 'center',
+                zIndex,
+
                 background,
-                color: '#111827',
-                userSelect: 'none',
-                cursor: 'grab',
                 border,
                 borderRadius: 4,
+                opacity,
+
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+
                 fontSize: showFull ? 12 : 10,
                 letterSpacing: showFull ? 0 : 0.3,
+
+                color: '#111827',
+                userSelect: 'none',
+                cursor: 'grab',
                 boxSizing: 'border-box',
-                pointerEvents: 'auto',
             }}>
             {showLabel ? node.id : null}
         </div>
     );
 }
 
-export const NodeRenderer = memo(
-    NodeRendererImpl,
-    (prev, next) => {
-        const a = prev.node;
-        const b = next.node;
-        if (!a || !b) return a === b;
-        const la = a.layout || {};
-        const lb = b.layout || {};
-        return la.x === lb.x && la.y === lb.y && la.width === lb.width && la.height === lb.height && a.opacity === b.opacity;
-    }
-);
+export const NodeRenderer = memo(NodeRendererImpl, (prev, next) => {
+    const a = prev.node;
+    const b = next.node;
+
+    if (!a || !b) return a === b;
+
+    const la = a.layout || {};
+    const lb = b.layout || {};
+    const sa = a.style || {};
+    const sb = b.style || {};
+
+    return la.x === lb.x &&
+        la.y === lb.y &&
+        la.width === lb.width &&
+        la.height === lb.height &&
+        la.rotation === lb.rotation &&
+        a.zIndex === b.zIndex &&
+        sa.fill === sb.fill &&
+        sa.opacity === sb.opacity &&
+        JSON.stringify(sa.fills ?? null) === JSON.stringify(sb.fills ?? null) &&
+        JSON.stringify(sa.strokes ?? null) === JSON.stringify(sb.strokes ?? null) &&
+        JSON.stringify(sa.stroke ?? null) === JSON.stringify(sb.stroke ?? null);
+});

@@ -16,6 +16,9 @@ import { sequenceReducers } from "./sequenceReducers.js";
 import { sceneShotReducers } from "./sceneShotReducers.js";
 import { behaviorReducers } from "./behaviorReducers.js";
 import { stateMachineReducers } from "./stateMachineReducers.js";
+import { tokenReducers } from './tokenReducers.js';
+import { themeReducers } from './themeReducers.js';
+import { tokenVersionReducers } from './tokenVersionReducers.js';
 import { navigationReducers } from "./navigationReducers.js";
 import { collaborationReducers } from "./collaborationReducers.js";
 import { vectorReducers } from "./vectorReducers.js";
@@ -91,6 +94,18 @@ export function rootReducer(state, event) {
   next = applyOwnedReducer(next, event, vectorReducers, 'vectorReducers', {
     allowedDocumentSlices: ['vectors'],
     allowedRuntimeSlices: ['vectors'],
+  });
+  next = applyOwnedReducer(next, event, tokenReducers, 'tokenReducers', {
+    allowedDocumentSlices: ['tokens', 'themes'],
+    allowedRuntimeSlices: [],
+  });
+  next = applyOwnedReducer(next, event, themeReducers, 'themeReducers', {
+    allowedDocumentSlices: ['themes'],
+    allowedRuntimeSlices: [],
+  });
+  next = applyOwnedReducer(next, event, tokenVersionReducers, 'tokenVersionReducers', {
+    allowedDocumentSlices: ['tokenVersions'],
+    allowedRuntimeSlices: [],
   });
   next = applyOwnedReducer(next, event, selectionReducer, 'selectionReducer', {
     allowedDocumentSlices: [],

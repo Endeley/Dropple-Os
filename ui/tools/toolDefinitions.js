@@ -1,145 +1,140 @@
 import { TOOL_CAPABILITIES as BASE_TOOL_CAPABILITIES } from '@/ui/capabilities/toolCapabilities';
 import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
 
+/**
+ * TOOL BUS TOPICS
+ * (kept for capability mapping)
+ */
 export const TOOL_BUS_TOPICS = Object.freeze({
-  select: 'tool.select',
-  pan: 'tool.pan',
-  zoom: 'tool.zoom',
-  fit: 'tool.fit',
-  frame: 'tool.create.frame',
-  shape: 'tool.create.shape',
-  text: 'tool.create.text',
-  image: 'tool.create.image',
-  layer: 'tool.create.layer',
-  defaultCreate: 'tool.create.default',
+    select: 'tool.select',
+    pan: 'tool.pan',
+    zoom: 'tool.zoom',
+    fit: 'tool.fit',
+    frame: 'tool.create.frame',
+    shape: 'tool.create.shape',
+    text: 'tool.create.text',
+    image: 'tool.create.image',
+    layer: 'tool.create.layer',
+    defaultCreate: 'tool.create.default',
 });
 
+/**
+ * CANONICAL TOOL ORDER (prevents UI drift)
+ */
+const TOOL_GROUP_ORDER = ['navigate', 'create', 'edit', 'vector', 'timeline', 'components', 'document', 'education', 'dev', 'branding'];
+
+/**
+ * TOOL DEFINITIONS
+ */
 export const TOOL_DEFINITIONS = Object.freeze([
-  { id: 'select', label: 'Select', group: 'navigate' },
-  { id: 'pan', label: 'Pan', group: 'navigate' },
-  { id: 'zoom', label: 'Zoom', group: 'navigate' },
-  { id: 'fit', label: 'Fit', group: 'navigate' },
+    { id: 'select', label: 'Select', group: 'navigate' },
+    { id: 'pan', label: 'Pan', group: 'navigate' },
+    { id: 'zoom', label: 'Zoom', group: 'navigate' },
+    { id: 'fit', label: 'Fit', group: 'navigate' },
 
-  { id: 'frame', label: 'Frame', group: 'create', createsNode: true, nodeType: 'frame' },
-  { id: 'text', label: 'Text', group: 'create', createsNode: true, nodeType: 'text' },
-  { id: 'shape', label: 'Shape', group: 'create', createsNode: true, nodeType: 'shape' },
-  { id: 'image', label: 'Image', group: 'create', createsNode: true, nodeType: 'image' },
-  { id: 'layer', label: 'Layer', group: 'create', createsNode: true, nodeType: 'layer' },
-  { id: 'defaultCreate', label: 'Default Create', group: 'create', createsNode: true, nodeType: 'shape' },
+    { id: 'frame', label: 'Frame', group: 'create', createsNode: true, nodeType: 'frame' },
+    { id: 'text', label: 'Text', group: 'create', createsNode: true, nodeType: 'text' },
+    { id: 'shape', label: 'Shape', group: 'create', createsNode: true, nodeType: 'shape' },
+    { id: 'image', label: 'Image', group: 'create', createsNode: true, nodeType: 'image' },
+    { id: 'layer', label: 'Layer', group: 'create', createsNode: true, nodeType: 'layer' },
 
-  { id: 'move', label: 'Move', group: 'edit' },
-  { id: 'resize', label: 'Resize', group: 'edit' },
+    { id: 'move', label: 'Move', group: 'edit' },
+    { id: 'resize', label: 'Resize', group: 'edit' },
 
-  { id: 'path', label: 'Path', group: 'vector' },
-  { id: 'stroke', label: 'Stroke', group: 'vector' },
+    { id: 'path', label: 'Path', group: 'vector' },
+    { id: 'stroke', label: 'Stroke', group: 'vector' },
 
-  { id: 'keyframe', label: 'Keyframe', group: 'timeline' },
-  { id: 'cut', label: 'Cut', group: 'timeline' },
-  { id: 'trim', label: 'Trim', group: 'timeline' },
-  { id: 'overlay', label: 'Overlay', group: 'timeline' },
-  { id: 'mute', label: 'Mute', group: 'timeline' },
-  { id: 'chapter', label: 'Chapter', group: 'timeline' },
+    { id: 'keyframe', label: 'Keyframe', group: 'timeline' },
+    { id: 'cut', label: 'Cut', group: 'timeline' },
+    { id: 'trim', label: 'Trim', group: 'timeline' },
 
-  { id: 'component', label: 'Component', group: 'components' },
-  { id: 'variant', label: 'Variant', group: 'components' },
-  { id: 'token', label: 'Token', group: 'components' },
+    { id: 'component', label: 'Component', group: 'components' },
+    { id: 'variant', label: 'Variant', group: 'components' },
+    { id: 'token', label: 'Token', group: 'components' },
 
-  { id: 'section', label: 'Section', group: 'document' },
-  { id: 'page', label: 'Page', group: 'document' },
+    { id: 'section', label: 'Section', group: 'document' },
+    { id: 'page', label: 'Page', group: 'document' },
 
-  { id: 'step', label: 'Step', group: 'education' },
-  { id: 'explain', label: 'Explain', group: 'education' },
+    { id: 'step', label: 'Step', group: 'education' },
+    { id: 'explain', label: 'Explain', group: 'education' },
 
-  { id: 'inspect', label: 'Inspect', group: 'dev' },
-  { id: 'translate', label: 'Translate', group: 'dev' },
-  { id: 'refactor', label: 'Refactor', group: 'dev' },
+    { id: 'inspect', label: 'Inspect', group: 'dev' },
+    { id: 'translate', label: 'Translate', group: 'dev' },
 
-  { id: 'edit', label: 'Edit', group: 'branding' },
-  { id: 'apply', label: 'Apply', group: 'branding' },
-  { id: 'validate', label: 'Validate', group: 'branding' },
+    { id: 'edit', label: 'Edit', group: 'branding' },
+    { id: 'apply', label: 'Apply', group: 'branding' },
 ]);
 
 export const TOOL_DEFINITION_BY_ID = Object.freeze(
-  TOOL_DEFINITIONS.reduce((acc, tool) => {
-    acc[tool.id] = tool;
-    return acc;
-  }, {})
+    TOOL_DEFINITIONS.reduce((acc, tool) => {
+        acc[tool.id] = tool;
+        return acc;
+    }, {}),
 );
 
 export const TOOL_CAPABILITIES = BASE_TOOL_CAPABILITIES;
 
+/**
+ * FALLBACKS (pure classification — no merging logic)
+ */
 const FALLBACK_WORKSPACE_TOOLS = Object.freeze({
-  uiux: ['select', 'pan', 'zoom', 'fit', 'frame', 'text', 'shape', 'image'],
-  graphic: ['select', 'pan', 'zoom', 'fit', 'shape'],
-  animation: ['select', 'pan', 'zoom', 'fit', 'layer'],
-  icon: ['select', 'pan', 'zoom', 'fit', 'stroke', 'path'],
-  icons: ['select', 'pan', 'zoom', 'fit', 'stroke', 'path'],
-  document: ['text', 'section', 'page'],
-  dev: ['inspect', 'translate', 'refactor'],
-  branding: ['edit', 'apply', 'validate'],
+    uiux: ['select', 'pan', 'zoom', 'fit', 'frame', 'text', 'shape', 'image'],
+    graphic: ['select', 'pan', 'zoom', 'fit', 'shape'],
+    animation: ['select', 'pan', 'zoom', 'fit', 'layer'],
+    icons: ['select', 'pan', 'zoom', 'fit', 'stroke', 'path'],
+    document: ['text', 'section', 'page'],
+    dev: ['inspect', 'translate'],
+    branding: ['edit', 'apply'],
 });
 
-function normalizeWorkspaceId(workspaceId) {
-  if (!workspaceId) return null;
-  if (workspaceId === 'icon') return 'icons';
-  return workspaceId;
-}
-
+/**
+ * WORKSPACE TOOL RESOLUTION (STRICT — no merging)
+ */
 function resolveWorkspaceTools(workspaceId) {
-  const normalizedId = normalizeWorkspaceId(workspaceId);
-  if (!normalizedId) return [];
+    if (!workspaceId) return [];
 
-  const activation = getWorkspaceActivation(normalizedId);
-  const fallback = FALLBACK_WORKSPACE_TOOLS[normalizedId] || null;
+    const activation = getWorkspaceActivation(workspaceId);
 
-  if (!activation) {
-    return fallback || [];
-  }
-
-  const policyTools = Array.isArray(activation?.tools) ? activation.tools : [];
-
-  if (!policyTools.length) {
-    return fallback || [];
-  }
-
-  if (!fallback) {
-    return policyTools;
-  }
-
-  const merged = [...policyTools];
-  fallback.forEach((toolId) => {
-    if (!merged.includes(toolId)) {
-      merged.push(toolId);
+    if (Array.isArray(activation?.tools) && activation.tools.length > 0) {
+        return activation.tools;
     }
-  });
 
-  return merged;
+    return FALLBACK_WORKSPACE_TOOLS[workspaceId] || [];
 }
 
+/**
+ * CAPABILITY CHECK
+ */
 function hasAll(capSet, required = []) {
-  if (!required.length) return true;
-  if (!capSet || typeof capSet.has !== 'function') return false;
-  return required.every((cap) => capSet.has(cap));
+    if (!required.length) return true;
+    if (!capSet || typeof capSet.has !== 'function') return false;
+    return required.every((cap) => capSet.has(cap));
 }
 
 function isToolVisible(toolId, capabilitySet) {
-  if (!capabilitySet) return true;
+    if (!capabilitySet) return true;
 
-  const topic = TOOL_BUS_TOPICS[toolId];
-  if (!topic) return true;
+    const topic = TOOL_BUS_TOPICS[toolId];
+    const caps = TOOL_CAPABILITIES?.[topic];
 
-  const caps = TOOL_CAPABILITIES[topic];
-  if (!caps) return true;
+    if (!caps) return true;
 
-  const { readCaps = [], writeCaps = [] } = caps;
-  return hasAll(capabilitySet, readCaps) && hasAll(capabilitySet, writeCaps);
+    return hasAll(capabilitySet, caps.readCaps) && hasAll(capabilitySet, caps.writeCaps);
 }
 
+/**
+ * FINAL API
+ */
 export function getVisibleToolsForWorkspace({ workspaceId, capabilitySet }) {
-  const allowed = new Set(resolveWorkspaceTools(workspaceId));
+    const allowed = new Set(resolveWorkspaceTools(workspaceId));
 
-  return TOOL_DEFINITIONS.filter((tool) => {
-    if (!allowed.has(tool.id)) return false;
-    return isToolVisible(tool.id, capabilitySet);
-  });
+    const filtered = TOOL_DEFINITIONS.filter((tool) => {
+        if (!allowed.has(tool.id)) return false;
+        return isToolVisible(tool.id, capabilitySet);
+    });
+
+    // Stable grouping order
+    return filtered.sort((a, b) => {
+        return TOOL_GROUP_ORDER.indexOf(a.group) - TOOL_GROUP_ORDER.indexOf(b.group);
+    });
 }

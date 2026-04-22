@@ -13,6 +13,7 @@ import { projectGroupTransform } from '@/runtime/projection/groupTransformProjec
 import { selectActiveTool, selectVisibleTools } from '@/runtime/selectors/toolSelectors.js';
 import { projectGraphInteraction } from '@/runtime/graph/index.js';
 import { getNodes, getRootIds, getSceneGraph } from '@/runtime/document/documentAdapter.js';
+import { projectActiveTokens } from '@/runtime/tokens/projectActiveTokens.js';
 
 function projectMarquee(runtime) {
     const drag = runtime?.interaction?.drag ?? null;
@@ -52,10 +53,11 @@ export function syncRuntimeToZustand(nextState, options = {}) {
     if (!nextState) {
         useRuntimeStore.setState(
             {
-                viewNodes: {},
-                viewRootIds: [],
-                document: null,
-                timeline: null,
+        viewNodes: {},
+        viewRootIds: [],
+        document: null,
+        tokens: projectActiveTokens(null),
+        timeline: null,
                 playback: { isPlaying: false },
                 isReplaying: false,
                 uxAudit: [],
@@ -161,6 +163,7 @@ export function syncRuntimeToZustand(nextState, options = {}) {
         viewNodes: projectedNodes,
         viewRootIds: getRootIds(nextState),
         document: nextState.document ?? null,
+        tokens: projectActiveTokens(nextState.document),
         workspace: nextState.workspace ?? null,
         timeline: nextState.timeline ?? null,
         playback: nextState.playback ?? { isPlaying: false },

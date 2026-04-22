@@ -1,4 +1,3 @@
-import { colors, spacing } from '@/ui/tokens';
 import { ValidationIssueRow } from './ValidationIssueRow';
 import { EXPORT_GATE_STATUS } from '@/runtime/export/exportGateStatus';
 
@@ -8,7 +7,7 @@ function SectionHeader({ title }) {
       style={{
         fontSize: 12,
         fontWeight: 600,
-        color: colors.text,
+        color: 'var(--text-primary)',
         textTransform: 'uppercase',
         letterSpacing: 0.6,
       }}
@@ -28,13 +27,13 @@ export function SheetIssues({ blockingIssues: criticalIssues = [], warnings = []
       <div
         style={{
           display: 'grid',
-          gap: spacing.sm,
-          paddingBottom: spacing.md,
-          borderBottom: `1px solid ${colors.border}`,
+          gap: 'var(--space-2)',
+          paddingBottom: 'var(--space-3)',
+          borderBottom: '1px solid var(--border-default)',
         }}
       >
         <SectionHeader title="Critical issues" />
-        <div style={{ fontSize: 12, color: colors.textMuted }}>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
           No critical issues or warnings.
         </div>
       </div>
@@ -45,18 +44,18 @@ export function SheetIssues({ blockingIssues: criticalIssues = [], warnings = []
     <div
       style={{
         display: 'grid',
-        gap: spacing.md,
-        paddingBottom: spacing.md,
-        borderBottom: `1px solid ${colors.border}`,
+        gap: 'var(--space-3)',
+        paddingBottom: 'var(--space-3)',
+        borderBottom: '1px solid var(--border-default)',
       }}
     >
       {showCritical && (
-        <div style={{ display: 'grid', gap: spacing.sm }}>
+        <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
           <SectionHeader title="Critical issues" />
-          <div style={{ fontSize: 12, color: colors.textMuted }}>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
             Resolve these issues before export.
           </div>
-          <div style={{ display: 'grid', gap: spacing.sm }}>
+          <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
             {criticalIssues.map((issue) => (
               <ValidationIssueRow key={issue.id || issue.message} issue={issue} />
             ))}
@@ -64,17 +63,17 @@ export function SheetIssues({ blockingIssues: criticalIssues = [], warnings = []
         </div>
       )}
       {showNoCriticalNotice && (
-        <div style={{ fontSize: 12, color: colors.textMuted }}>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
           No critical issues detected.
         </div>
       )}
       {showWarnings && (
-        <div style={{ display: 'grid', gap: spacing.sm }}>
+        <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
           <SectionHeader title="Warnings" />
-          <div style={{ fontSize: 12, color: colors.textMuted }}>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
             Warnings may affect quality.
           </div>
-          <div style={{ display: 'grid', gap: spacing.sm }}>
+          <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
             {warnings.map((issue) => (
               <ValidationIssueRow key={issue.id || issue.message} issue={issue} />
             ))}

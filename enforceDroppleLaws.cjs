@@ -109,6 +109,18 @@ const PANEL_DISALLOWED_EXACT = new Set([
     'core/events/applyEvent.js',
     'core/mutationContext.js',
 ]);
+const LEGACY_TOKEN_IMPORT = /@\/ui\/tokens\b/;
+const CSS_SET_PROPERTY = /\.style\.setProperty\s*\(/;
+const TOKEN_TABLE_PATTERNS = [
+    /\bcolor\s*:\s*\{/,
+    /\bspace\s*:\s*\{/,
+    /\bradius\s*:\s*\{/,
+    /\bmotion\s*:\s*\{/,
+];
+const TOKEN_TABLE_ALLOWLIST = new Set([
+    'runtime/tokens/tokenRegistry.js',
+    'ui/bridges/tokenCssBridge.js',
+]);
 
 const ZONE_ENTRYPOINTS = new Set(['@core', '@engine', '@runtime', '@platform', '@workspace', '@ui']);
 const ZONE_DEEP_PREFIXES = [
@@ -232,7 +244,35 @@ function run() {
     });
 
     files.forEach((f) => {
+        const isTestFile = f.path.startsWith('tests/');
         const imports = extractImports(f.content);
+
+        if (!isTestFile && imports.some((imp) => LEGACY_TOKEN_IMPORT.test(imp))) {
+            console.error(`TOKEN AUTHORITY VIOLATION: ${f.path} imports deprecated @/ui/tokens`);
+            violationCount += 1;
+            process.exit(1);
+        }
+
+        if (!isTestFile && CSS_SET_PROPERTY.test(f.content) && f.path !== 'ui/bridges/tokenCssBridge.js') {
+            console.error(`TOKEN AUTHORITY VIOLATION: ${f.path} attempted CSS token projection outside ui/bridges/tokenCssBridge.js`);
+            violationCount += 1;
+            process.exit(1);
+        }
+
+        if (!isTestFile && !TOKEN_TABLE_ALLOWLIST.has(f.path)) {
+            const tokenTableSignalCount = TOKEN_TABLE_PATTERNS.reduce(
+                (count, pattern) => count + (pattern.test(f.content) ? 1 : 0),
+                0,
+            );
+            if (tokenTableSignalCount >= 3) {
+                console.error(
+                    `TOKEN AUTHORITY VIOLATION: ${f.path} defines a duplicate token table candidate (${tokenTableSignalCount} token groups)`
+                );
+                violationCount += 1;
+                process.exit(1);
+            }
+        }
+
         const isTool = isToolFile(f.path);
         const isPanel = isPanelFile(f.path);
 

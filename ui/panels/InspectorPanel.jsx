@@ -7,7 +7,6 @@ import { ContentPanel } from '@/ui/inspector/ContentPanel.jsx';
 import { SemanticsPanel } from '@/ui/inspector/SemanticsPanel.jsx';
 import { MotionPanel } from '@/ui/inspector/MotionPanel.jsx';
 import { ExportPreviewPanel } from '@/ui/inspector/ExportPreviewPanel.jsx';
-import { colors, spacing } from '@/ui/tokens';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 
 export function InspectorPanel({ node, emit }) {
@@ -15,7 +14,7 @@ export function InspectorPanel({ node, emit }) {
 
     if (!node) {
         return (
-            <div style={{ fontSize: 12, color: colors.textMuted }}>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                 Select a node to inspect.
             </div>
         );
@@ -24,7 +23,7 @@ export function InspectorPanel({ node, emit }) {
     const childCount = node?.children?.length ?? 0;
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
             {resizeDebug ? (
                 <div
                     data-testid="resize-debug"

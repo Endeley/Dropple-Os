@@ -1,7 +1,6 @@
 'use client';
 
 import { Control, Input } from '@/ui/Control';
-import { colors, spacing } from '@/ui/tokens';
 
 function AspectRatioControl({ node, emit, readOnly = false }) {
   const layout = node.layout || {};
@@ -31,15 +30,7 @@ function AspectRatioControl({ node, emit, readOnly = false }) {
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        gap: spacing.sm,
-        alignItems: 'center',
-        fontSize: 13,
-        color: colors.text,
-      }}
-    >
+    <div className="inspector-row" style={{ justifyContent: 'flex-start', fontSize: 13 }}>
       <input
         type="checkbox"
         checked={locked}
@@ -54,8 +45,6 @@ function AspectRatioControl({ node, emit, readOnly = false }) {
 export default function LayoutInspector({ node, emit, readOnly = false }) {
   if (!node) return null;
   const layout = node.layout || {};
-  const style = node.style || {};
-
   function updateLayout(patch) {
     if (readOnly) return;
     emit({
@@ -67,25 +56,14 @@ export default function LayoutInspector({ node, emit, readOnly = false }) {
     });
   }
 
-  function updateStyle(patch) {
-    if (readOnly) return;
-    emit({
-      type: 'node.style.update',
-      payload: {
-        nodeId: node.id,
-        style: patch,
-      },
-    });
-  }
-
   function safeNumber(value) {
     return Number.isFinite(value) ? value : '';
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
-      <div style={{ fontSize: 12, color: colors.textMuted }}>Position</div>
-      <div style={{ display: 'flex', gap: spacing.sm }}>
+    <div className="inspector-group">
+      <div className="inspector-title">Position</div>
+      <div className="inspector-row">
         <Control label="X">
           <Input
             type="number"
@@ -104,8 +82,8 @@ export default function LayoutInspector({ node, emit, readOnly = false }) {
         </Control>
       </div>
 
-      <div style={{ fontSize: 12, color: colors.textMuted }}>Size</div>
-      <div style={{ display: 'flex', gap: spacing.sm }}>
+      <div className="inspector-title">Size</div>
+      <div className="inspector-row">
         <Control label="W">
           <Input
             type="number"
@@ -125,18 +103,6 @@ export default function LayoutInspector({ node, emit, readOnly = false }) {
           />
         </Control>
       </div>
-
-      <Control label="Opacity">
-        <Input
-          type="number"
-          min={0}
-          max={1}
-          step={0.05}
-          value={safeNumber(style.opacity ?? 1)}
-          onChange={(e) => updateStyle({ opacity: Number(e.target.value) })}
-          disabled={readOnly}
-        />
-      </Control>
 
       <Control label="Aspect Ratio">
         <AspectRatioControl node={node} emit={emit} readOnly={readOnly} />

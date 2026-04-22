@@ -1,7 +1,5 @@
 'use client';
 
-import { colors, radius, spacing } from '@/ui/tokens';
-
 export default function LessonFilterBar({
   query,
   setQuery,
@@ -12,19 +10,20 @@ export default function LessonFilterBar({
 }) {
   const inputStyle = {
     height: 32,
-    padding: `0 ${spacing.sm}px`,
-    border: `1px solid ${colors.border}`,
-    borderRadius: radius.sm,
+    padding: '0 var(--space-sm)',
+    border: '1px solid var(--border-default)',
+    borderRadius: 'var(--radius-sm)',
     fontSize: 13,
-    background: '#fff',
+    background: 'var(--surface-1)',
+    color: 'var(--text-primary)',
   };
 
   return (
     <div
       style={{
         display: 'flex',
-        gap: spacing.md,
-        marginBottom: spacing.lg,
+        gap: 'var(--space-md)',
+        marginBottom: 'var(--space-lg)',
         flexWrap: 'wrap',
       }}
     >

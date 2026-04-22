@@ -43,6 +43,16 @@ export const materialWorkspace = {
         EventTypes.VECTOR_CREATE,
         EventTypes.VECTOR_UPDATE,
         EventTypes.VECTOR_DELETE,
+        EventTypes.TOKEN_CREATE,
+        EventTypes.TOKEN_SET,
+        EventTypes.TOKEN_DELETE,
+        EventTypes.TOKEN_ALIAS_SET,
+        EventTypes.THEME_CREATE,
+        EventTypes.THEME_SWITCH,
+        EventTypes.TOKEN_VERSION_TAG,
+        EventTypes.TOKEN_VERSION_FORK,
+        EventTypes.TOKEN_VERSION_MERGE,
+        EventTypes.TOKEN_VERSION_ROLLBACK,
     ],
 
     export: {

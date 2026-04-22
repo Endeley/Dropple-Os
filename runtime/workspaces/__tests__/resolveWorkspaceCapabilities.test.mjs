@@ -31,3 +31,29 @@ test('resolveWorkspaceCapabilities returns an empty list for unknown workspaces'
         [],
     );
 });
+
+test('resolveWorkspaceCapabilities exposes system authoring overlays per mode deterministically', () => {
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'system',
+            mode: 'tokens',
+        }),
+        ['token-authoring'],
+    );
+
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'system',
+            mode: 'themes',
+        }),
+        ['theme-authoring'],
+    );
+
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'system',
+            mode: 'versioning',
+        }),
+        ['token-versioning'],
+    );
+});

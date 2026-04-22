@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { colors, spacing, radius } from '@/ui/tokens';
 
 const SEVERITY_STYLES = {
   error: { dot: '#F87171', text: '#991B1B', border: '#FECACA', bg: '#FEF2F2' },
@@ -23,14 +22,14 @@ export function ValidationIssueRow({ issue }) {
     <div
       style={{
         border: `1px solid ${tone.border}`,
-        borderRadius: radius.sm,
-        padding: spacing.sm,
+        borderRadius: 'var(--radius-sm)',
+        padding: 'var(--space-2)',
         background: tone.bg,
         display: 'grid',
-        gap: spacing.xs,
+        gap: 'var(--space-1)',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
         <span
           style={{
             width: 8,
@@ -44,9 +43,9 @@ export function ValidationIssueRow({ issue }) {
           {humanizeRule(issue?.ruleId)}
         </div>
       </div>
-      <div style={{ fontSize: 12, color: colors.text }}>{issue?.message}</div>
+      <div style={{ fontSize: 12, color: 'var(--text-primary)' }}>{issue?.message}</div>
       {issue?.explain && (
-        <div style={{ display: 'grid', gap: spacing.xs }}>
+        <div style={{ display: 'grid', gap: 'var(--space-1)' }}>
           <button
             type="button"
             onClick={() => setExpanded((prev) => !prev)}
@@ -54,7 +53,7 @@ export function ValidationIssueRow({ issue }) {
               background: 'none',
               border: 'none',
               padding: 0,
-              color: colors.textMuted,
+              color: 'var(--text-muted)',
               fontSize: 11,
               textAlign: 'left',
               cursor: 'pointer',
@@ -64,7 +63,7 @@ export function ValidationIssueRow({ issue }) {
             Why this matters
           </button>
           {expanded && (
-            <div style={{ fontSize: 11, color: colors.textMuted }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
               {issue.explain}
             </div>
           )}

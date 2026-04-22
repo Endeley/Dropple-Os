@@ -33,6 +33,10 @@ const ROUTES = [
     path: '/workspace/new',
     expectedToolId: 'select',
   },
+  {
+    path: '/workspace/versioning',
+    expected: 'Token Version Graph',
+  },
 ];
 
 for (const route of ROUTES) {

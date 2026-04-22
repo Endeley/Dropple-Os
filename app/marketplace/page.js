@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { mockTemplates } from '@/marketplace/mockTemplates';
 import TemplateCard from '@/marketplace/TemplateCard';
-import { spacing } from '@/ui/tokens';
 import { useMarketplaceFilters } from '@/marketplace/useMarketplaceFilters';
 import MarketplaceFilterBar from '@/marketplace/MarketplaceFilterBar';
 import { filterTemplates } from '@/marketplace/filterTemplates';
@@ -19,33 +18,33 @@ export default function MarketplacePage() {
   }
 
   return (
-    <div style={{ padding: spacing.xl }}>
+    <div style={{ padding: 'var(--space-6)' }}>
       <h2>Templates</h2>
 
       <MarketplaceFilterBar {...filters} />
 
-      <h3 style={{ marginTop: spacing.lg }}>Featured Collections</h3>
+      <h3 style={{ marginTop: 'var(--space-4)' }}>Featured Collections</h3>
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-          gap: spacing.md,
-          marginTop: spacing.sm,
+          gap: 'var(--space-3)',
+          marginTop: 'var(--space-2)',
         }}
       >
         {collections.map((collection) => (
           <div
             key={collection.id}
             style={{
-              border: '1px solid #e5e7eb',
-              borderRadius: 8,
-              padding: spacing.md,
-              background: '#fff',
+              border: '1px solid var(--border-default)',
+              borderRadius: 'var(--radius-md)',
+              padding: 'var(--space-3)',
+              background: 'var(--surface-1)',
               fontSize: 13,
             }}
           >
             <div style={{ fontWeight: 600 }}>{collection.title}</div>
-            <div style={{ marginTop: spacing.xs, color: '#64748b' }}>
+            <div style={{ marginTop: 'var(--space-xs)', color: 'var(--text-muted)' }}>
               {collection.templateIds.length} templates
             </div>
           </div>
@@ -56,8 +55,8 @@ export default function MarketplacePage() {
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-          gap: spacing.lg,
-          marginTop: spacing.lg,
+          gap: 'var(--space-4)',
+          marginTop: 'var(--space-4)',
         }}
       >
         {visibleTemplates.length ? (
@@ -65,7 +64,7 @@ export default function MarketplacePage() {
             <TemplateCard key={tpl.id} template={tpl} onOpen={openTemplate} />
           ))
         ) : (
-          <div style={{ fontSize: 13, color: '#64748b' }}>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
             No templates found.
           </div>
         )}

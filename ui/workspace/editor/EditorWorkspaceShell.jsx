@@ -17,59 +17,18 @@ import { useGalleryIdentity } from '@/gallery/useGalleryIdentity';
 import { useIntentPreview } from '@/collab/useIntentPreview';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { PersistenceBridge } from '@/ui/bridges/PersistenceBridge.jsx';
+import { TokenCssBridge } from '@/ui/bridges/tokenCssBridge.js';
 import { SessionGroupingBridge } from '@/ui/interactions/sessionGrouping.js';
 import { getWorkspaceAdapter } from '@/ui/bridges/workspaceActivationFacade.js';
 import { resolveWorkspaceContext } from '@/platform/workspaces/resolveWorkspaceContext.js';
 import { useWorkspaceCapabilities } from '@/ui/workspace/useWorkspaceCapabilities.js';
 import { useCapabilityLifecycle } from '@/ui/workspace/useCapabilityLifecycle.js';
-import { WorkspaceSwitcher } from '@/ui/workspace/shared/WorkspaceSwitcher.jsx';
-import { ModeSwitcher } from '@/ui/workspace/shared/ModeSwitcher.jsx';
 import { useWorkspaceNavigation } from '@/ui/workspace/shared/useWorkspaceNavigation.js';
-import { UIUXToolRail } from '@/ui/workspace/ux/UIUXToolRail.jsx';
 
-const PANEL_LEFT = new Set(['SubmissionInfoPanel', 'LessonOutlinePanel']);
-const PANEL_RIGHT = new Set(['InspectorPanel', 'AutoLayoutPanel', 'EducationInspector', 'EducationTimelinePanel', 'RubricPanel', 'AnnotationPanel', 'SharingPanel']);
-const PANEL_TOP = new Set(['EducationToolbar', 'ReviewToolbar']);
-const PANEL_BOTTOM = new Set(['TimelineBar']);
-
-function mapPanels(panels = []) {
-    const layout = {
-        left: [],
-        right: [],
-        top: [],
-        bottom: [],
-    };
-
-    panels.forEach((panel) => {
-        if (PANEL_LEFT.has(panel)) {
-            layout.left.push(panel);
-            return;
-        }
-        if (PANEL_TOP.has(panel)) {
-            layout.top.push(panel);
-            return;
-        }
-        if (PANEL_BOTTOM.has(panel)) {
-            layout.bottom.push(panel);
-            return;
-        }
-        if (PANEL_RIGHT.has(panel)) {
-            layout.right.push(panel);
-            return;
-        }
-        layout.right.push(panel);
-    });
-
-    return layout;
-}
-
-function resolveWorkspaceAdapter(modeId) {
-    const adapter = getWorkspaceAdapter(modeId);
-    return {
-        ...adapter,
-        panels: mapPanels(adapter?.panels || []),
-    };
-}
+/**
+ * Stable event types (no reallocation)
+ */
+const AUTO_LAYOUT_EVENTS = new Set(['node.layout.setAutoLayout', 'node.layout.clearAutoLayout', 'node.layout.bulk', 'node.layout.rotate', 'node.create', 'node.delete', 'node.children.reorder']);
 
 export function EditorWorkspaceShell({
     modeId,
@@ -80,9 +39,7 @@ export function EditorWorkspaceShell({
     educationReadOnly = false,
     initialEvents = [],
     initialCursorIndex = -1,
-    disableSeed = false,
     initialDocumentId = null,
-    skipDraftRestore = false,
     readOnly = false,
     reviewSubmission,
     reviewRubric,
@@ -90,28 +47,54 @@ export function EditorWorkspaceShell({
     onReviewCriteriaChange,
     reviewerId,
 }) {
-    const adapter = resolveWorkspaceAdapter(modeId);
+    /**
+     * Workspace + mode resolution
+     */
     const workspaceContext = useMemo(() => providedWorkspaceContext ?? resolveWorkspaceContext({ workspace: modeId }), [modeId, providedWorkspaceContext]);
+
+    const adapter = useMemo(() => getWorkspaceAdapter(modeId), [modeId]);
+
     const { goToMode, goToWorkspace } = useWorkspaceNavigation();
-    const { capabilities } = useWorkspaceCapabilities({
+
+    /**
+     * Capabilities
+     */
+    const { capabilities, surfacePanels } = useWorkspaceCapabilities({
         workspace: workspaceContext.workspaceId,
         mode: workspaceContext.modeId,
     });
-    const templateGen = useTemplateGenerator();
 
+    /**
+     * Stable emit (intent-only)
+     */
+    const emit = useCallback((type, payload) => {
+        canvasBus.emit(type, payload);
+    }, []);
+
+    /**
+     * Runtime state
+     */
     const events = useRuntimeStore((s) => s.events);
     const cursorIndex = useRuntimeStore((s) => s.cursorIndex);
+
+    /**
+     * Document state
+     */
     const [hydrated, setHydrated] = useState(false);
     const [documentId, setDocumentId] = useState(null);
     const [documentName, setDocumentName] = useState('Untitled');
     const [recentDocs, setRecentDocs] = useState(() => loadRegistry());
-    const skipAutoLayoutOnce = useRef(initialEvents.length > 0);
-    const emit = useCallback((event) => canvasBus.emit(event), []);
 
+    const skipAutoLayoutOnce = useRef(initialEvents.length > 0);
+
+    /**
+     * Collaboration
+     */
     const documentRole = useDocumentRole(documentId);
     const effectiveReadOnly = readOnly || documentRole === 'viewer';
 
     const canEmitPresence = documentRole === 'owner' || documentRole === 'editor';
+
     const presence = usePresence({
         docId: documentId,
         enabled: canEmitPresence,
@@ -119,17 +102,21 @@ export function EditorWorkspaceShell({
 
     const galleryIdentity = useGalleryIdentity();
     const selfUserId = galleryIdentity?.id ?? null;
-    const canEmitIntent = documentRole === 'owner' || documentRole === 'editor';
+
     const intents = useIntentPreview({
         docId: documentId,
-        enabled: canEmitIntent,
+        enabled: canEmitPresence,
         selfUserId,
     });
 
+    /**
+     * Persistence flags
+     */
     const persistenceEnabled = !effectiveReadOnly && adapter?.ui?.editing !== false && adapter?.id !== 'review' && !(adapter?.id === 'education' && educationReadOnly);
 
-    const importEnabled = !effectiveReadOnly && adapter?.ui?.editing !== false && adapter?.id !== 'review' && !(adapter?.id === 'education' && educationReadOnly);
-
+    /**
+     * Capability lifecycle
+     */
     useCapabilityLifecycle({
         capabilities,
         emit,
@@ -137,17 +124,19 @@ export function EditorWorkspaceShell({
         mode: workspaceContext.modeId,
     });
 
+    /**
+     * Auto-layout reaction
+     */
     useEffect(() => {
         if (!hydrated || events.length === 0) return;
+
         if (skipAutoLayoutOnce.current) {
             skipAutoLayoutOnce.current = false;
             return;
         }
 
         const last = events[events.length - 1];
-        if (!new Set(['node.layout.setAutoLayout', 'node.layout.clearAutoLayout', 'node.layout.bulk', 'node.layout.rotate', 'node.create', 'node.delete', 'node.children.reorder']).has(last.type)) {
-            return;
-        }
+        if (!AUTO_LAYOUT_EVENTS.has(last.type)) return;
 
         applyAutoLayoutIfNeeded({
             state: getDesignStateAtCursor({
@@ -158,6 +147,9 @@ export function EditorWorkspaceShell({
         });
     }, [events, emit, hydrated]);
 
+    /**
+     * Cursor + replay state
+     */
     const cursor = { index: cursorIndex };
 
     const replayState = useMemo(
@@ -169,82 +161,42 @@ export function EditorWorkspaceShell({
         [events, cursorIndex],
     );
 
+    /**
+     * Workspace UI
+     */
     const workspace = (
-        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-            {workspaceContext.workspaceId === 'design' && adapter?.ui?.editing !== false && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: 48,
-                        left: 0,
-                        bottom: 0,
-                        zIndex: 900,
-                    }}>
-                    <UIUXToolRail />
-                </div>
-            )}
-
-            {showWorkspaceNavigation && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: 12,
-                        right: 12,
-                        zIndex: 1200,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'flex-end',
-                        gap: 8,
-                    }}>
-                    <div
-                        style={{
-                            padding: '6px 10px',
-                            borderRadius: 999,
-                            border: '1px solid rgba(148, 163, 184, 0.35)',
-                            background: 'rgba(15, 23, 42, 0.84)',
-                            color: '#e2e8f0',
-                            fontSize: 11,
-                            fontWeight: 700,
-                            letterSpacing: '0.04em',
-                            textTransform: 'uppercase',
-                            backdropFilter: 'blur(10px)',
-                        }}>
-                        {`${workspaceContext.label}${workspaceContext.modeLabel ? ` · ${workspaceContext.modeLabel}` : ''}`}
-                    </div>
-
-                    <WorkspaceSwitcher activeWorkspace={workspaceContext.workspaceId} onChange={goToWorkspace} />
-
-                    <ModeSwitcher workspace={workspaceContext.workspaceId} activeMode={workspaceContext.modeId} onChange={(nextMode) => goToMode(workspaceContext.workspaceId, nextMode)} />
-                </div>
-            )}
-
-            <EditorWorkspaceLayout
-                adapter={adapter}
-                events={events}
-                cursor={cursor}
-                emit={emit}
-                documentName={documentName}
-                canPersist={persistenceEnabled}
-                canImport={importEnabled}
-                onOpenTemplateGenerator={templateGen.openGenerator}
-                educationReadOnly={educationReadOnly}
-                readOnly={effectiveReadOnly}
-                documentRole={documentRole}
-                documentId={documentId}
-                intents={intents}
-                reviewSubmission={reviewSubmission}
-                reviewRubric={reviewRubric}
-                onReviewDecision={onReviewDecision}
-                onReviewCriteriaChange={onReviewCriteriaChange}
-                reviewerId={reviewerId}
-                presence={presence}
-                railOffset={workspaceContext.workspaceId === 'design' && adapter?.ui?.editing !== false ? 56 : 0}
-            />
-        </div>
+        <EditorWorkspaceLayout
+            adapter={adapter}
+            workspaceContext={workspaceContext}
+            showWorkspaceNavigation={showWorkspaceNavigation}
+            onGoToWorkspace={goToWorkspace}
+            onGoToMode={goToMode}
+            events={events}
+            cursor={cursor}
+            emit={emit}
+            documentName={documentName}
+            canPersist={persistenceEnabled}
+            canImport={persistenceEnabled}
+            onOpenTemplateGenerator={useTemplateGenerator().openGenerator}
+            educationReadOnly={educationReadOnly}
+            readOnly={effectiveReadOnly}
+            documentRole={documentRole}
+            documentId={documentId}
+            intents={intents}
+            reviewSubmission={reviewSubmission}
+            reviewRubric={reviewRubric}
+            onReviewDecision={onReviewDecision}
+            onReviewCriteriaChange={onReviewCriteriaChange}
+            reviewerId={reviewerId}
+            presence={presence}
+            capabilitySurfacePanels={surfacePanels}
+        />
     );
 
     return (
         <>
+            <TokenCssBridge />
+
             <PersistenceBridge
                 enabled={persistenceEnabled}
                 initialDocumentId={initialDocumentId}
@@ -272,7 +224,7 @@ export function EditorWorkspaceShell({
                         workspace
                     )}
 
-                    <TemplateGeneratorOverlay open={templateGen.open} onClose={templateGen.closeGenerator} state={replayState} events={events} mode={adapter} />
+                    <TemplateGeneratorOverlay open={useTemplateGenerator().open} onClose={useTemplateGenerator().closeGenerator} state={replayState} events={events} mode={adapter} />
                 </ClipboardProvider>
             </GridProvider>
         </>

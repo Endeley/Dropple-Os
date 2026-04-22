@@ -150,6 +150,12 @@ export function adaptWorkspaceToContractV1(ws) {
     denies.push('ai:generate');
   }
 
+  if (tools.includes('token') || (ws.engines ?? []).includes('tokens')) {
+    caps.push('token:author', 'theme:author', 'token:version');
+  } else {
+    denies.push('token:author', 'theme:author', 'token:version');
+  }
+
   // nesting / shapes
   if (ws.capabilities?.allowFrameNesting) caps.push('node:nesting:frames');
   else denies.push('node:nesting:frames');

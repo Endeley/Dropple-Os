@@ -18,6 +18,18 @@ export const INTENT_CAPS = {
   [EventTypes.STATE_MACHINE_TRANSITION]: ['app:state-machine'],
   [EventTypes.NAVIGATION_NAVIGATE]: ['app:navigate'],
 
+  // tokens / themes
+  [EventTypes.TOKEN_CREATE]: ['token:author'],
+  [EventTypes.TOKEN_SET]: ['token:author'],
+  [EventTypes.TOKEN_DELETE]: ['token:author'],
+  [EventTypes.TOKEN_ALIAS_SET]: ['token:author'],
+  [EventTypes.THEME_CREATE]: ['theme:author'],
+  [EventTypes.THEME_SWITCH]: ['theme:author'],
+  [EventTypes.TOKEN_VERSION_TAG]: ['token:version'],
+  [EventTypes.TOKEN_VERSION_FORK]: ['token:version'],
+  [EventTypes.TOKEN_VERSION_MERGE]: ['token:version'],
+  [EventTypes.TOKEN_VERSION_ROLLBACK]: ['token:version'],
+
   // behavior authoring (v1)
   [EventTypes.BEHAVIOR_STATE_CREATE]: ['node:mutate'],
   [EventTypes.BEHAVIOR_STATE_UPDATE]: ['node:mutate'],

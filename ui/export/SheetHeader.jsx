@@ -1,4 +1,3 @@
-import { colors, spacing } from '@/ui/tokens';
 import { EXPORT_GATE_STATUS } from '@/runtime/export/exportGateStatus';
 
 const STATUS_STYLES = {
@@ -25,13 +24,13 @@ export function SheetHeader({ status, onCancel }) {
     <div
       style={{
         display: 'grid',
-        gap: spacing.sm,
-        paddingBottom: spacing.md,
-        borderBottom: `1px solid ${colors.border}`,
+        gap: 'var(--space-2)',
+        paddingBottom: 'var(--space-3)',
+        borderBottom: '1px solid var(--border-default)',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md }}>
-        <div style={{ flex: 1, fontSize: 16, fontWeight: 600, color: colors.text }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+        <div style={{ flex: 1, fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>
           Export review
         </div>
         <span
@@ -55,13 +54,13 @@ export function SheetHeader({ status, onCancel }) {
             aria-label="Cancel export"
             onClick={onCancel}
             style={{
-              marginLeft: spacing.xs,
+              marginLeft: 'var(--space-1)',
               width: 28,
               height: 28,
               borderRadius: 999,
-              border: `1px solid ${colors.border}`,
+              border: '1px solid var(--border-default)',
               background: 'transparent',
-              color: colors.textMuted,
+              color: 'var(--text-muted)',
               cursor: 'pointer',
               fontSize: 16,
               lineHeight: '24px',
@@ -71,7 +70,7 @@ export function SheetHeader({ status, onCancel }) {
           </button>
         )}
       </div>
-      <div style={{ fontSize: 12, color: colors.textMuted }}>{tone.subtitle}</div>
+      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{tone.subtitle}</div>
     </div>
   );
 }

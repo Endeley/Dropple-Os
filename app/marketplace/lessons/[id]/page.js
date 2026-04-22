@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { mockLessons } from '@/marketplace/mockLessons';
-import { colors, spacing, radius } from '@/ui/tokens';
 
 export default function LessonDetailPage({ params }) {
   const router = useRouter();
@@ -19,20 +18,20 @@ export default function LessonDetailPage({ params }) {
   }
 
   return (
-    <div style={{ padding: spacing.xl }}>
+    <div style={{ padding: 'var(--space-6)' }}>
       <h2>{lesson.metadata.title}</h2>
-      <p style={{ color: colors.textMuted }}>{lesson.metadata.description}</p>
+      <p style={{ color: 'var(--text-muted)' }}>{lesson.metadata.description}</p>
 
-      <div style={{ marginTop: spacing.sm }}>
+      <div style={{ marginTop: 'var(--space-sm)' }}>
         Level: {lesson.metadata.level} · {lesson.metadata.duration}
       </div>
 
       {lesson.metadata.goals?.length ? (
-        <div style={{ marginTop: spacing.md }}>
-          <div style={{ fontSize: 12, color: colors.textMuted }}>
+        <div style={{ marginTop: 'var(--space-md)' }}>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
             What you’ll learn
           </div>
-          <ul style={{ marginTop: spacing.xs, paddingLeft: 18 }}>
+          <ul style={{ marginTop: 'var(--space-xs)', paddingLeft: 18 }}>
             {lesson.metadata.goals.map((goal) => (
               <li key={goal} style={{ fontSize: 13 }}>
                 {goal}
@@ -42,19 +41,20 @@ export default function LessonDetailPage({ params }) {
         </div>
       ) : null}
 
-      <div style={{ marginTop: spacing.sm }}>
+      <div style={{ marginTop: 'var(--space-sm)' }}>
         By {lesson.metadata.creator.name}
       </div>
 
-      <div style={{ marginTop: spacing.lg, display: 'flex', gap: spacing.sm }}>
+      <div style={{ marginTop: 'var(--space-lg)', display: 'flex', gap: 'var(--space-sm)' }}>
         <button
           style={{
             minWidth: 32,
             height: 32,
-            padding: `0 ${spacing.sm}px`,
-            border: `1px solid ${colors.border}`,
-            borderRadius: radius.sm,
-            background: '#fff',
+            padding: '0 var(--space-sm)',
+            border: '1px solid var(--border-default)',
+            borderRadius: 'var(--radius-sm)',
+            background: 'var(--surface-1)',
+            color: 'var(--text-primary)',
             fontSize: 12,
           }}
           onClick={startLesson}
@@ -65,10 +65,11 @@ export default function LessonDetailPage({ params }) {
           style={{
             minWidth: 32,
             height: 32,
-            padding: `0 ${spacing.sm}px`,
-            border: `1px solid ${colors.border}`,
-            borderRadius: radius.sm,
-            background: '#fff',
+            padding: '0 var(--space-sm)',
+            border: '1px solid var(--border-default)',
+            borderRadius: 'var(--radius-sm)',
+            background: 'var(--surface-1)',
+            color: 'var(--text-primary)',
             fontSize: 12,
           }}
           onClick={practiceLesson}

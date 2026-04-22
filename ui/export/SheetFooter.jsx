@@ -1,4 +1,3 @@
-import { colors, spacing } from '@/ui/tokens';
 import { Button } from '@/ui/controls/ui/button.jsx';
 import { EXPORT_GATE_STATUS } from '@/runtime/export/exportGateStatus';
 
@@ -6,13 +5,13 @@ export function SheetFooter({ status, onCancel, onProceed }) {
   const isHalted = status === EXPORT_GATE_STATUS.HALT;
 
   return (
-    <div style={{ display: 'grid', gap: spacing.md }}>
-      <div style={{ fontSize: 12, color: colors.textMuted }}>
+    <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
+      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
         {isHalted
           ? 'Resolve critical issues to export.'
           : 'Warnings may affect quality.'}
       </div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: spacing.sm }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
         {isHalted ? (
           <Button variant="primary" onClick={onCancel} aria-label="Cancel export">
             Cancel export

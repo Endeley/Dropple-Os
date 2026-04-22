@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { mockTemplates } from '@/marketplace/mockTemplates';
 import { useOwnership } from '@/marketplace/useOwnershipStore';
-import { colors, spacing, radius } from '@/ui/tokens';
 
 export default function TemplateDetailPage({ params }) {
   const router = useRouter();
@@ -38,21 +37,21 @@ export default function TemplateDetailPage({ params }) {
   }
 
   return (
-    <div style={{ padding: spacing.xl }}>
+    <div style={{ padding: 'var(--space-6)' }}>
       <h2>{template.metadata.title}</h2>
-      <p style={{ color: colors.textMuted }}>{template.metadata.description}</p>
+      <p style={{ color: 'var(--text-muted)' }}>{template.metadata.description}</p>
 
-      <div style={{ marginTop: spacing.sm, fontSize: 12, color: colors.textMuted }}>
+      <div style={{ marginTop: 'var(--space-sm)', fontSize: 12, color: 'var(--text-muted)' }}>
         By {creator.name || 'Unknown'}
         {creator.region ? ` · ${creator.region}` : ''}
       </div>
 
-      <div style={{ marginTop: spacing.lg }}>
-        <div style={{ fontSize: 12, color: colors.textMuted }}>Licenses</div>
+      <div style={{ marginTop: 'var(--space-lg)' }}>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Licenses</div>
         {pricing.free ? (
-          <div style={{ marginTop: spacing.xs, fontSize: 13 }}>Free</div>
+          <div style={{ marginTop: 'var(--space-xs)', fontSize: 13 }}>Free</div>
         ) : (
-          <div style={{ display: 'flex', gap: spacing.sm, marginTop: spacing.sm }}>
+          <div style={{ display: 'flex', gap: 'var(--space-sm)', marginTop: 'var(--space-sm)' }}>
             <label style={{ fontSize: 13 }}>
               <input
                 type="radio"
@@ -61,7 +60,7 @@ export default function TemplateDetailPage({ params }) {
                 checked={license === 'personal'}
                 onChange={(e) => setLicense(e.target.value)}
               />
-              <span style={{ marginLeft: spacing.xs }}>
+              <span style={{ marginLeft: 'var(--space-xs)' }}>
                 Personal · ${pricing.personal}
               </span>
             </label>
@@ -73,7 +72,7 @@ export default function TemplateDetailPage({ params }) {
                 checked={license === 'commercial'}
                 onChange={(e) => setLicense(e.target.value)}
               />
-              <span style={{ marginLeft: spacing.xs }}>
+              <span style={{ marginLeft: 'var(--space-xs)' }}>
                 Commercial · ${pricing.commercial}
               </span>
             </label>
@@ -81,20 +80,21 @@ export default function TemplateDetailPage({ params }) {
         )}
       </div>
 
-      <div style={{ marginTop: spacing.lg, fontSize: 12, color: colors.textMuted }}>
+      <div style={{ marginTop: 'var(--space-lg)', fontSize: 12, color: 'var(--text-muted)' }}>
         ✔ Fork & edit · ✔ Use in projects · ✖ Resell template
       </div>
 
       {!pricing.free && !owned ? (
         <button
           style={{
-            marginTop: spacing.lg,
+            marginTop: 'var(--space-lg)',
             minWidth: 32,
             height: 32,
-            padding: `0 ${spacing.sm}px`,
-            border: `1px solid ${colors.border}`,
-            borderRadius: radius.sm,
-            background: '#fff',
+            padding: '0 var(--space-sm)',
+            border: '1px solid var(--border-default)',
+            borderRadius: 'var(--radius-sm)',
+            background: 'var(--surface-1)',
+            color: 'var(--text-primary)',
             fontSize: 12,
           }}
           onClick={buySelectedLicense}
@@ -105,13 +105,14 @@ export default function TemplateDetailPage({ params }) {
 
       <button
         style={{
-          marginTop: spacing.lg,
+          marginTop: 'var(--space-lg)',
           minWidth: 32,
           height: 32,
-          padding: `0 ${spacing.sm}px`,
-          border: `1px solid ${colors.border}`,
-          borderRadius: radius.sm,
-          background: '#fff',
+          padding: '0 var(--space-sm)',
+          border: '1px solid var(--border-default)',
+          borderRadius: 'var(--radius-sm)',
+          background: 'var(--surface-1)',
+          color: 'var(--text-primary)',
           fontSize: 12,
         }}
         onClick={useTemplate}

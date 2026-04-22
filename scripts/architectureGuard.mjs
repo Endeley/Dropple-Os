@@ -5,6 +5,18 @@ import { pathToFileURL } from 'node:url';
 const ROOT = process.cwd();
 const ALLOWED_EXT = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs']);
 const IGNORE_DIRS = new Set(['.git', '.next', 'node_modules', 'out', 'build']);
+const TOKEN_IMPORT = /@\/ui\/tokens\b/;
+const CSS_SET_PROPERTY = /\.style\.setProperty\s*\(/;
+const TOKEN_TABLE_PATTERNS = [
+    /\bcolor\s*:\s*\{/,
+    /\bspace\s*:\s*\{/,
+    /\bradius\s*:\s*\{/,
+    /\bmotion\s*:\s*\{/,
+];
+const TOKEN_TABLE_ALLOWLIST = new Set([
+    'runtime/tokens/tokenRegistry.js',
+    'ui/bridges/tokenCssBridge.js',
+]);
 
 function shouldIgnore(relPath) {
     const normalized = relPath.replaceAll('\\', '/');
@@ -71,6 +83,35 @@ function collectViolations({
     return violations;
 }
 
+function collectTokenTableViolations(scopes, exclude = []) {
+    const violations = [];
+    const excluded = exclude.map((entry) => entry.replaceAll('\\', '/'));
+
+    for (const scope of scopes) {
+        const scopeRoot = path.join(ROOT, scope);
+        const files = walk(scopeRoot, scope);
+
+        for (const file of files) {
+            const normalized = file.relPath.replaceAll('\\', '/');
+            if (excluded.some((entry) => normalized === entry || normalized.startsWith(`${entry}/`))) {
+                continue;
+            }
+            if (TOKEN_TABLE_ALLOWLIST.has(normalized)) continue;
+
+            const content = fs.readFileSync(file.fullPath, 'utf8');
+            const signalCount = TOKEN_TABLE_PATTERNS.reduce(
+                (count, pattern) => count + (pattern.test(content) ? 1 : 0),
+                0,
+            );
+            if (signalCount >= 3) {
+                violations.push(`${file.relPath}: duplicate token table candidate (${signalCount} token groups)`);
+            }
+        }
+    }
+
+    return violations;
+}
+
 export function runArchitectureGuard() {
     const guards = [
         {
@@ -131,6 +172,29 @@ export function runArchitectureGuard() {
                     /\bexecuteTool\s*\(/,
                     /\btoolController\.run\s*\(/,
                 ],
+            }),
+        },
+        {
+            name: 'token-authority-legacy-imports',
+            violations: collectViolations({
+                scopes: ['app', 'ui', 'runtime', 'platform', 'workspaces', 'education', 'marketplace', 'review', 'templates'],
+                patterns: [TOKEN_IMPORT],
+                includeImportsOnly: true,
+            }),
+        },
+        {
+            name: 'token-authority-duplicate-tables',
+            violations: collectTokenTableViolations(
+                ['app', 'ui', 'runtime', 'platform', 'workspaces', 'education', 'marketplace', 'review', 'templates', 'engine', 'core'],
+                ['tests'],
+            ),
+        },
+        {
+            name: 'token-authority-css-projection',
+            violations: collectViolations({
+                scopes: ['app', 'ui', 'runtime', 'platform', 'workspaces', 'education', 'marketplace', 'review', 'templates'],
+                exclude: ['ui/bridges/tokenCssBridge.js'],
+                patterns: [CSS_SET_PROPERTY],
             }),
         },
     ];

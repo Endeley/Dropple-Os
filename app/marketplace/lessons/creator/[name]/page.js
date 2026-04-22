@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { mockLessons } from '@/marketplace/mockLessons';
-import { colors, spacing, radius } from '@/ui/tokens';
 
 export default function LessonCreatorPage({ params }) {
   const router = useRouter();
@@ -12,15 +11,15 @@ export default function LessonCreatorPage({ params }) {
   );
 
   return (
-    <div style={{ padding: spacing.xl }}>
+    <div style={{ padding: 'var(--space-6)' }}>
       <h2>{name}</h2>
-      <p style={{ color: colors.textMuted }}>Lessons by this educator</p>
+      <p style={{ color: 'var(--text-muted)' }}>Lessons by this educator</p>
 
       <div
         style={{
-          marginTop: spacing.lg,
+          marginTop: 'var(--space-lg)',
           display: 'grid',
-          gap: spacing.md,
+          gap: 'var(--space-md)',
         }}
       >
         {lessons.length ? (
@@ -29,18 +28,18 @@ export default function LessonCreatorPage({ params }) {
               key={lesson.id}
               onClick={() => router.push(`/marketplace/lessons/${lesson.id}`)}
               style={{
-                padding: spacing.md,
-                border: `1px solid ${colors.border}`,
-                borderRadius: radius.md,
+                padding: 'var(--space-md)',
+                border: '1px solid var(--border-default)',
+                borderRadius: 'var(--radius-md)',
                 cursor: 'pointer',
-                background: '#fff',
+                background: 'var(--surface-1)',
               }}
             >
               {lesson.metadata.title}
             </div>
           ))
         ) : (
-          <div style={{ fontSize: 13, color: colors.textMuted }}>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
             No lessons from this educator yet.
           </div>
         )}

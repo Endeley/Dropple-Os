@@ -1,7 +1,6 @@
 'use client';
 
 import { Control, Input, Select } from '@/ui/Control';
-import { colors, radius, spacing } from '@/ui/tokens';
 
 function ReorderList({ parent, emit, readOnly = false }) {
   const children = parent.children;
@@ -19,26 +18,20 @@ function ReorderList({ parent, emit, readOnly = false }) {
   }
 
   return (
-    <div style={{ marginTop: 12 }}>
-      <strong>Order</strong>
+    <div className="inspector-group" style={{ marginTop: 'var(--space-md)' }}>
+      <strong className="inspector-title">Order</strong>
       {children.map((id, index) => (
-        <div
-          key={id}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            marginTop: 4,
-          }}
-        >
+        <div key={id} className="inspector-row" style={{ marginTop: 'var(--space-xs)' }}>
           <span style={{ flex: 1 }}>{id}</span>
           <button
+            className="inspector-button"
             disabled={readOnly || index === 0}
             onClick={() => move(index, index - 1)}
           >
             ↑
           </button>
           <button
+            className="inspector-button"
             disabled={readOnly || index === children.length - 1}
             onClick={() => move(index, index + 1)}
           >
@@ -74,16 +67,9 @@ export function AutoLayoutPanel({ node, emit, readOnly = false }) {
   if (!auto) {
     return (
       <button
+        className="inspector-button"
         onClick={enable}
         disabled={readOnly}
-        style={{
-          height: 32,
-          padding: `0 ${spacing.sm}px`,
-          border: `1px solid ${colors.border}`,
-          borderRadius: radius.sm,
-          background: '#fff',
-          fontSize: 12,
-        }}
       >
         Enable Auto-Layout
       </button>
@@ -91,18 +77,11 @@ export function AutoLayoutPanel({ node, emit, readOnly = false }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+    <div className="inspector-group" style={{ gap: 'var(--space-md)' }}>
       <button
+        className="inspector-button"
         onClick={disable}
         disabled={readOnly}
-        style={{
-          height: 32,
-          padding: `0 ${spacing.sm}px`,
-          border: `1px solid ${colors.border}`,
-          borderRadius: radius.sm,
-          background: '#fff',
-          fontSize: 12,
-        }}
       >
         Remove Auto-Layout
       </button>

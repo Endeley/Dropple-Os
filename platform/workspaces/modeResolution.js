@@ -56,6 +56,11 @@ export const WORKSPACE_ALIASES = Object.freeze({
     conversion: Object.freeze({ workspaceId: 'build', modeId: 'conversion' }),
 
     material: Object.freeze({ workspaceId: 'system', modeId: 'components' }),
+    tokens: Object.freeze({ workspaceId: 'system', modeId: 'tokens' }),
+    components: Object.freeze({ workspaceId: 'system', modeId: 'components' }),
+    variants: Object.freeze({ workspaceId: 'system', modeId: 'variants' }),
+    themes: Object.freeze({ workspaceId: 'system', modeId: 'themes' }),
+    versioning: Object.freeze({ workspaceId: 'system', modeId: 'versioning' }),
 
     review: Object.freeze({ workspaceId: 'collaborate', modeId: 'review' }),
     education: Object.freeze({ workspaceId: 'collaborate', modeId: 'education' }),

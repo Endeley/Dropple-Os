@@ -1,7 +1,6 @@
 'use client';
 
 import { useEducationCursor } from './EducationCursorContext';
-import { colors, spacing, radius } from '@/ui/tokens';
 
 export function EducationToolbar({
   emit,
@@ -54,10 +53,10 @@ export function EducationToolbar({
         height: 48,
         display: 'flex',
         alignItems: 'center',
-        gap: spacing.md,
-        padding: `0 ${spacing.lg}px`,
-        borderBottom: `1px solid ${colors.border}`,
-        background: '#fff',
+        gap: 'var(--space-md)',
+        padding: '0 var(--space-lg)',
+        borderBottom: '1px solid var(--border-default)',
+        background: 'var(--surface-1)',
       }}
     >
       <strong style={{ fontSize: 13 }}>Education Mode</strong>
@@ -67,10 +66,11 @@ export function EducationToolbar({
         style={{
           minWidth: 32,
           height: 32,
-          padding: `0 ${spacing.sm}px`,
-          border: `1px solid ${colors.border}`,
-          borderRadius: radius.sm,
-          background: '#fff',
+          padding: '0 var(--space-sm)',
+          border: '1px solid var(--border-default)',
+          borderRadius: 'var(--radius-sm)',
+          background: 'var(--surface-1)',
+          color: 'var(--text-primary)',
           fontSize: 12,
         }}
       >
@@ -84,10 +84,11 @@ export function EducationToolbar({
             style={{
               minWidth: 32,
               height: 32,
-              padding: `0 ${spacing.sm}px`,
-              border: `1px solid ${colors.border}`,
-              borderRadius: radius.sm,
-              background: '#fff',
+              padding: '0 var(--space-sm)',
+              border: '1px solid var(--border-default)',
+              borderRadius: 'var(--radius-sm)',
+              background: 'var(--surface-1)',
+              color: 'var(--text-primary)',
               fontSize: 12,
             }}
           >
@@ -99,10 +100,11 @@ export function EducationToolbar({
             style={{
               minWidth: 32,
               height: 32,
-              padding: `0 ${spacing.sm}px`,
-              border: `1px solid ${colors.border}`,
-              borderRadius: radius.sm,
-              background: '#fff',
+              padding: '0 var(--space-sm)',
+              border: '1px solid var(--border-default)',
+              borderRadius: 'var(--radius-sm)',
+              background: 'var(--surface-1)',
+              color: 'var(--text-primary)',
               fontSize: 12,
             }}
           >

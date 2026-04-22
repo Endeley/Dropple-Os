@@ -6,330 +6,441 @@ import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
 import { resolveTargetNodeId } from '@/ui/interactions/resolveTargetNodeId.js';
 
 function setOverlayDebug(value) {
-  if (typeof document === 'undefined') return;
-  document.documentElement.dataset.droppleOverlayDebug = value;
+    if (typeof document === 'undefined') return;
+    document.documentElement.dataset.droppleOverlayDebug = value;
 }
 
-export function useCanvasInteractions({
-  dispatcher = null,
-  getActiveToolId,
-  getWorldPointFromEvent,
-  getDefaultParentId,
-}) {
-  const createSessionRef = useRef(null);
-  const overlaySessionRef = useRef(null);
-  const overlayCleanupRef = useRef(null);
-  const handleDownRef = useRef(null);
+export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getWorldPointFromEvent, getDefaultParentId }) {
+    const createSessionRef = useRef(null);
+    const overlaySessionRef = useRef(null);
+    const overlayCleanupRef = useRef(null);
+    const handleDownRef = useRef(null);
+    const dragStartRef = useRef(null);
 
-  const toWorldPoint = useCallback((e) => {
-    if (typeof getWorldPointFromEvent === 'function') {
-      return getWorldPointFromEvent(e);
-    }
-    return { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY };
-  }, [getWorldPointFromEvent]);
+    const DRAG_THRESHOLD = 6;
 
-  const routePointerInput = useCallback((type, e, overrides = null) => {
-    const worldPoint = toWorldPoint(e);
-    const tool = overrides?.tool ?? (typeof getActiveToolId === 'function' ? getActiveToolId(e) : 'select');
-    const targetNodeId = overrides?.targetNodeId ?? resolveTargetNodeId(e.target, {
-      x: e.clientX,
-      y: e.clientY,
-    });
-    return handleInputEvent(
-      {
-        type,
-        event: e,
-        pointerId: e.pointerId,
-        worldPoint,
-        targetNodeId,
-        resizeHandle: overrides?.resizeHandle ?? null,
-      },
-      {
-        dispatcher,
-        tool,
-      },
+    const toWorldPoint = useCallback(
+        (e) => {
+            if (typeof getWorldPointFromEvent === 'function') {
+                return getWorldPointFromEvent(e);
+            }
+            return { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY };
+        },
+        [getWorldPointFromEvent],
     );
-  }, [dispatcher, getActiveToolId, toWorldPoint]);
 
-  const clearOverlaySession = useCallback(() => {
-    setOverlayDebug('idle');
-    overlaySessionRef.current = null;
-    if (typeof overlayCleanupRef.current === 'function') {
-      overlayCleanupRef.current();
-      overlayCleanupRef.current = null;
-    }
-  }, []);
+    const routePointerInput = useCallback(
+        (type, e, overrides = null) => {
+            const worldPoint = toWorldPoint(e);
+            const tool = overrides?.tool ?? (typeof getActiveToolId === 'function' ? getActiveToolId(e) : 'select');
 
-  const scheduleOverlaySessionClear = useCallback(() => {
-    if (typeof queueMicrotask === 'function') {
-      queueMicrotask(() => {
-        clearOverlaySession();
-      });
-      return;
-    }
+            const targetNodeId =
+                overrides?.targetNodeId ??
+                resolveTargetNodeId(e.target, {
+                    x: e.clientX,
+                    y: e.clientY,
+                });
 
-    setTimeout(() => {
-      clearOverlaySession();
-    }, 0);
-  }, [clearOverlaySession]);
+            return handleInputEvent(
+                {
+                    type,
+                    event: e,
+                    pointerId: e.pointerId,
+                    worldPoint,
+                    targetNodeId,
+                    resizeHandle: overrides?.resizeHandle ?? null,
+                },
+                {
+                    dispatcher,
+                    tool,
+                },
+            );
+        },
+        [dispatcher, getActiveToolId, toWorldPoint],
+    );
 
-  const bindOverlayPointerSession = useCallback((event, overrides) => {
-    if (typeof window === 'undefined') return;
+    const clearOverlaySession = useCallback(() => {
+        setOverlayDebug('idle');
+        overlaySessionRef.current = null;
 
-    clearOverlaySession();
-
-    const session = {
-      pointerId: event.pointerId,
-      overrides,
-    };
-    overlaySessionRef.current = session;
-    setOverlayDebug(`${overrides?.tool ?? 'unknown'}:start`);
-
-    const handleMove = (nextEvent) => {
-      if (overlaySessionRef.current?.pointerId !== nextEvent.pointerId) return;
-      setOverlayDebug(`${overlaySessionRef.current?.overrides?.tool ?? 'unknown'}:pointermove`);
-      routePointerInput('pointermove', nextEvent, overlaySessionRef.current.overrides);
-    };
-
-    const handleEnd = (type) => (nextEvent) => {
-      if (overlaySessionRef.current?.pointerId !== nextEvent.pointerId) return;
-      routePointerInput(type, nextEvent, overlaySessionRef.current.overrides);
-      scheduleOverlaySessionClear();
-    };
-
-    const handlePointerUp = handleEnd('pointerup');
-    const handlePointerCancel = handleEnd('pointercancel');
-    const handleMouseMove = (nextEvent) => {
-      if (!overlaySessionRef.current) return;
-      setOverlayDebug(`${overlaySessionRef.current?.overrides?.tool ?? 'unknown'}:mousemove`);
-      routePointerInput('pointermove', nextEvent, overlaySessionRef.current.overrides);
-    };
-    const handleMouseUp = (nextEvent) => {
-      if (!overlaySessionRef.current) return;
-      setOverlayDebug(`${overlaySessionRef.current?.overrides?.tool ?? 'unknown'}:mouseup`);
-      routePointerInput('pointerup', nextEvent, overlaySessionRef.current.overrides);
-      scheduleOverlaySessionClear();
-    };
-
-    window.addEventListener('pointermove', handleMove, true);
-    window.addEventListener('pointerup', handlePointerUp, true);
-    window.addEventListener('pointercancel', handlePointerCancel, true);
-    window.addEventListener('mousemove', handleMouseMove, true);
-    window.addEventListener('mouseup', handleMouseUp, true);
-
-    overlayCleanupRef.current = () => {
-      window.removeEventListener('pointermove', handleMove, true);
-      window.removeEventListener('pointerup', handlePointerUp, true);
-      window.removeEventListener('pointercancel', handlePointerCancel, true);
-      window.removeEventListener('mousemove', handleMouseMove, true);
-      window.removeEventListener('mouseup', handleMouseUp, true);
-    };
-  }, [clearOverlaySession, dispatcher, routePointerInput, scheduleOverlaySessionClear, toWorldPoint]);
-
-  useEffect(() => () => {
-    clearOverlaySession();
-  }, [clearOverlaySession]);
-
-  const isDuplicateHandleDown = useCallback((event, key) => {
-    const previous = handleDownRef.current;
-    const current = {
-      key,
-      type: event?.type ?? null,
-      clientX: event?.clientX ?? null,
-      clientY: event?.clientY ?? null,
-      timeStamp: Number(event?.timeStamp ?? 0),
-    };
-
-    handleDownRef.current = current;
-
-    if (!previous) return false;
-    if (current.type !== 'mousedown') return false;
-    if (previous.type !== 'pointerdown') return false;
-    if (previous.key !== current.key) return false;
-    if (previous.clientX !== current.clientX || previous.clientY !== current.clientY) return false;
-
-    return Math.abs(current.timeStamp - previous.timeStamp) < 64;
-  }, []);
-
-  const onPointerDown = useCallback((e) => {
-    if (e.defaultPrevented) return;
-    e.stopPropagation();
-
-    const worldPoint = toWorldPoint(e);
-    const tool = typeof getActiveToolId === 'function' ? getActiveToolId(e) : 'select';
-    const toolDef = TOOL_DEFINITION_BY_ID[tool];
-    const targetNodeId = resolveTargetNodeId(e.target, {
-      x: e.clientX,
-      y: e.clientY,
-    });
-
-    if (toolDef?.createsNode && !targetNodeId) {
-      createSessionRef.current = {
-        tool,
-        nodeType: toolDef.nodeType,
-        start: worldPoint,
-        current: worldPoint,
-      };
-      e.currentTarget.setPointerCapture?.(e.pointerId);
-      return;
-    }
-
-    e.currentTarget.setPointerCapture?.(e.pointerId);
-    routePointerInput('pointerdown', e);
-  }, [getActiveToolId, routePointerInput, toWorldPoint]);
-
-  const onPointerMove = useCallback((e) => {
-    if (e.defaultPrevented) return;
-    e.stopPropagation();
-
-    if (overlaySessionRef.current) {
-      return;
-    }
-
-    if (createSessionRef.current) {
-      createSessionRef.current = {
-        ...createSessionRef.current,
-        current: toWorldPoint(e),
-      };
-      return;
-    }
-
-    routePointerInput('pointermove', e);
-  }, [routePointerInput, toWorldPoint]);
-
-  const onPointerUp = useCallback((e) => {
-    if (e.defaultPrevented) return;
-    e.stopPropagation();
-
-    if (overlaySessionRef.current) {
-      return;
-    }
-
-    if (createSessionRef.current) {
-      const { start, current, nodeType, tool } = createSessionRef.current;
-      const width = Math.abs(current.x - start.x);
-      const height = Math.abs(current.y - start.y);
-
-      if (width > 6 && height > 6) {
-        const bounds = {
-          x: Math.min(start.x, current.x),
-          y: Math.min(start.y, current.y),
-          width,
-          height,
-        };
-        const parentId = typeof getDefaultParentId === 'function' ? getDefaultParentId() : null;
-
-        const handled = handleInputEvent(
-          {
-            type: EventTypes.INPUT_CREATE_COMMIT,
-            event: e,
-            worldPoint: start,
-            bounds,
-            nodeType,
-            parentId,
-          },
-          {
-            dispatcher,
-            tool,
-            fallbackHandler() {
-              nodeCreateIntent({
-                type: nodeType,
-                bounds,
-                parentId,
-              });
-              return { handled: true };
-            },
-          },
-        );
-
-        if (!handled) {
-          nodeCreateIntent({
-            type: nodeType,
-            bounds,
-            parentId,
-          });
+        if (typeof overlayCleanupRef.current === 'function') {
+            overlayCleanupRef.current();
+            overlayCleanupRef.current = null;
         }
-      }
+    }, []);
 
-      createSessionRef.current = null;
-      e.currentTarget.releasePointerCapture?.(e.pointerId);
-      return;
-    }
+    const scheduleOverlaySessionClear = useCallback(() => {
+        if (typeof queueMicrotask === 'function') {
+            queueMicrotask(() => {
+                clearOverlaySession();
+            });
+            return;
+        }
 
-    routePointerInput('pointerup', e);
-    e.currentTarget.releasePointerCapture?.(e.pointerId);
-  }, [getDefaultParentId, routePointerInput]);
+        setTimeout(() => {
+            clearOverlaySession();
+        }, 0);
+    }, [clearOverlaySession]);
 
-  const onPointerCancel = useCallback((e) => {
-    if (!e.defaultPrevented) {
-      e.stopPropagation();
-    }
+    const bindOverlayPointerSession = useCallback(
+        (event, overrides) => {
+            if (typeof window === 'undefined') return;
 
-    if (overlaySessionRef.current) {
-      return;
-    }
+            clearOverlaySession();
 
-    if (!createSessionRef.current) {
-      routePointerInput('pointercancel', e);
-    }
+            const session = {
+                pointerId: event.pointerId,
+                overrides,
+            };
 
-    createSessionRef.current = null;
-    e.currentTarget.releasePointerCapture?.(e.pointerId);
-  }, [routePointerInput]);
+            overlaySessionRef.current = session;
+            setOverlayDebug(`${overrides?.tool ?? 'unknown'}:start`);
 
-  const onResizeHandlePointerDown = useCallback((e, { nodeId, handle }) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (isDuplicateHandleDown(e, `resize:${nodeId}:${handle}`)) return;
-    const overrides = {
-      tool: 'resize',
-      targetNodeId: nodeId,
-      resizeHandle: handle,
+            const handleMove = (nextEvent) => {
+                if (overlaySessionRef.current?.pointerId !== nextEvent.pointerId) return;
+
+                setOverlayDebug(`${overlaySessionRef.current?.overrides?.tool ?? 'unknown'}:pointermove`);
+
+                routePointerInput('pointermove', nextEvent, overlaySessionRef.current.overrides);
+            };
+
+            const handleEnd = (type) => (nextEvent) => {
+                if (overlaySessionRef.current?.pointerId !== nextEvent.pointerId) return;
+
+                routePointerInput(type, nextEvent, overlaySessionRef.current.overrides);
+                scheduleOverlaySessionClear();
+            };
+
+            const handlePointerUp = handleEnd('pointerup');
+            const handlePointerCancel = handleEnd('pointercancel');
+
+            const handleMouseMove = (nextEvent) => {
+                if (!overlaySessionRef.current) return;
+
+                setOverlayDebug(`${overlaySessionRef.current?.overrides?.tool ?? 'unknown'}:mousemove`);
+
+                routePointerInput('pointermove', nextEvent, overlaySessionRef.current.overrides);
+            };
+
+            const handleMouseUp = (nextEvent) => {
+                if (!overlaySessionRef.current) return;
+
+                setOverlayDebug(`${overlaySessionRef.current?.overrides?.tool ?? 'unknown'}:mouseup`);
+
+                routePointerInput('pointerup', nextEvent, overlaySessionRef.current.overrides);
+
+                scheduleOverlaySessionClear();
+            };
+
+            window.addEventListener('pointermove', handleMove, true);
+            window.addEventListener('pointerup', handlePointerUp, true);
+            window.addEventListener('pointercancel', handlePointerCancel, true);
+            window.addEventListener('mousemove', handleMouseMove, true);
+            window.addEventListener('mouseup', handleMouseUp, true);
+
+            overlayCleanupRef.current = () => {
+                window.removeEventListener('pointermove', handleMove, true);
+                window.removeEventListener('pointerup', handlePointerUp, true);
+                window.removeEventListener('pointercancel', handlePointerCancel, true);
+                window.removeEventListener('mousemove', handleMouseMove, true);
+                window.removeEventListener('mouseup', handleMouseUp, true);
+            };
+        },
+        [clearOverlaySession, routePointerInput, scheduleOverlaySessionClear],
+    );
+
+    useEffect(
+        () => () => {
+            clearOverlaySession();
+        },
+        [clearOverlaySession],
+    );
+
+    const isDuplicateHandleDown = useCallback((event, key) => {
+        const previous = handleDownRef.current;
+        const current = {
+            key,
+            type: event?.type ?? null,
+            clientX: event?.clientX ?? null,
+            clientY: event?.clientY ?? null,
+            timeStamp: Number(event?.timeStamp ?? 0),
+        };
+
+        handleDownRef.current = current;
+
+        if (!previous) return false;
+        if (current.type !== 'mousedown') return false;
+        if (previous.type !== 'pointerdown') return false;
+        if (previous.key !== current.key) return false;
+        if (previous.clientX !== current.clientX || previous.clientY !== current.clientY) {
+            return false;
+        }
+
+        return Math.abs(current.timeStamp - previous.timeStamp) < 64;
+    }, []);
+
+    const onPointerDown = useCallback(
+        (e) => {
+            if (e.defaultPrevented) return;
+            e.stopPropagation();
+
+            const worldPoint = toWorldPoint(e);
+            const tool = typeof getActiveToolId === 'function' ? getActiveToolId(e) : 'select';
+            const toolDef = TOOL_DEFINITION_BY_ID[tool];
+
+            const targetNodeId = resolveTargetNodeId(e.target, {
+                x: e.clientX,
+                y: e.clientY,
+            });
+
+            dragStartRef.current = {
+                start: worldPoint,
+                pointerId: e.pointerId,
+                tool,
+                targetNodeId,
+                hasMoved: false,
+            };
+
+            if (toolDef?.createsNode && !targetNodeId) {
+                createSessionRef.current = {
+                    tool,
+                    nodeType: toolDef.nodeType,
+                    start: worldPoint,
+                    current: worldPoint,
+                };
+                e.currentTarget.setPointerCapture?.(e.pointerId);
+                setOverlayDebug(`${tool}:create-start`);
+                return;
+            }
+
+            e.currentTarget.setPointerCapture?.(e.pointerId);
+            setOverlayDebug(`${tool}:pending`);
+        },
+        [getActiveToolId, toWorldPoint],
+    );
+
+    const onPointerMove = useCallback(
+        (e) => {
+            if (e.defaultPrevented) return;
+            e.stopPropagation();
+
+            if (overlaySessionRef.current) return;
+
+            const worldPoint = toWorldPoint(e);
+
+            if (createSessionRef.current) {
+                createSessionRef.current = {
+                    ...createSessionRef.current,
+                    current: worldPoint,
+                };
+                setOverlayDebug(`${createSessionRef.current.tool}:create-drag`);
+                return;
+            }
+
+            if (dragStartRef.current && !dragStartRef.current.hasMoved) {
+                const dx = Math.abs(worldPoint.x - dragStartRef.current.start.x);
+                const dy = Math.abs(worldPoint.y - dragStartRef.current.start.y);
+
+                if (dx < DRAG_THRESHOLD && dy < DRAG_THRESHOLD) {
+                    return;
+                }
+
+                dragStartRef.current.hasMoved = true;
+                setOverlayDebug(`${dragStartRef.current.tool}:drag-start`);
+
+                routePointerInput('pointerdown', e, {
+                    tool: dragStartRef.current.tool,
+                    targetNodeId: dragStartRef.current.targetNodeId,
+                });
+            }
+
+            if (dragStartRef.current?.hasMoved) {
+                setOverlayDebug(`${dragStartRef.current.tool}:drag-move`);
+            }
+
+            routePointerInput('pointermove', e);
+        },
+        [routePointerInput, toWorldPoint],
+    );
+
+    const onPointerUp = useCallback(
+        (e) => {
+            if (e.defaultPrevented) return;
+            e.stopPropagation();
+
+            if (overlaySessionRef.current) {
+                return;
+            }
+
+            if (createSessionRef.current) {
+                const { start, current, nodeType, tool } = createSessionRef.current;
+                const width = Math.abs(current.x - start.x);
+                const height = Math.abs(current.y - start.y);
+
+                if (width > DRAG_THRESHOLD && height > DRAG_THRESHOLD) {
+                    const bounds = {
+                        x: Math.min(start.x, current.x),
+                        y: Math.min(start.y, current.y),
+                        width,
+                        height,
+                    };
+
+                    const parentId = typeof getDefaultParentId === 'function' ? getDefaultParentId() : null;
+
+                    const handled = handleInputEvent(
+                        {
+                            type: EventTypes.INPUT_CREATE_COMMIT,
+                            event: e,
+                            worldPoint: start,
+                            bounds,
+                            nodeType,
+                            parentId,
+                        },
+                        {
+                            dispatcher,
+                            tool,
+                            fallbackHandler() {
+                                nodeCreateIntent({
+                                    type: nodeType,
+                                    bounds,
+                                    parentId,
+                                });
+                                return { handled: true };
+                            },
+                        },
+                    );
+
+                    if (!handled) {
+                        nodeCreateIntent({
+                            type: nodeType,
+                            bounds,
+                            parentId,
+                        });
+                    }
+                }
+
+                createSessionRef.current = null;
+                dragStartRef.current = null;
+                setOverlayDebug('idle');
+                e.currentTarget.releasePointerCapture?.(e.pointerId);
+                return;
+            }
+
+            if (dragStartRef.current && !dragStartRef.current.hasMoved) {
+                setOverlayDebug(`${dragStartRef.current.tool}:click`);
+
+                routePointerInput('pointerdown', e, {
+                    tool: dragStartRef.current.tool,
+                    targetNodeId: dragStartRef.current.targetNodeId,
+                });
+            }
+
+            routePointerInput('pointerup', e);
+
+            dragStartRef.current = null;
+            setOverlayDebug('idle');
+
+            e.currentTarget.releasePointerCapture?.(e.pointerId);
+        },
+        [dispatcher, getDefaultParentId, routePointerInput],
+    );
+
+    const onPointerCancel = useCallback(
+        (e) => {
+            if (!e.defaultPrevented) {
+                e.stopPropagation();
+            }
+
+            if (overlaySessionRef.current) {
+                return;
+            }
+
+            if (!createSessionRef.current) {
+                routePointerInput('pointercancel', e);
+            }
+
+            createSessionRef.current = null;
+            dragStartRef.current = null;
+            setOverlayDebug('idle');
+
+            e.currentTarget.releasePointerCapture?.(e.pointerId);
+        },
+        [routePointerInput],
+    );
+
+    const onResizeHandlePointerDown = useCallback(
+        (e, { nodeId, handle }) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (isDuplicateHandleDown(e, `resize:${nodeId}:${handle}`)) return;
+
+            const overrides = {
+                tool: 'resize',
+                targetNodeId: nodeId,
+                resizeHandle: handle,
+            };
+
+            routePointerInput('pointerdown', e, overrides);
+            bindOverlayPointerSession(e, overrides);
+        },
+        [bindOverlayPointerSession, isDuplicateHandleDown, routePointerInput],
+    );
+
+    const onResizeHandlePointerMove = useCallback(
+        (e, { nodeId, handle }) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            routePointerInput('pointermove', e, {
+                tool: 'resize',
+                targetNodeId: nodeId,
+                resizeHandle: handle,
+            });
+        },
+        [routePointerInput],
+    );
+
+    const onResizeHandlePointerUp = useCallback(
+        (e, { nodeId, handle, type = 'pointerup' }) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            routePointerInput(type, e, {
+                tool: 'resize',
+                targetNodeId: nodeId,
+                resizeHandle: handle,
+            });
+        },
+        [routePointerInput],
+    );
+
+    const onRotateHandlePointerDown = useCallback(
+        (e, { nodeId }) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (isDuplicateHandleDown(e, `rotate:${nodeId}`)) return;
+
+            const overrides = {
+                tool: 'rotate',
+                targetNodeId: nodeId,
+            };
+
+            routePointerInput('pointerdown', e, overrides);
+            bindOverlayPointerSession(e, overrides);
+        },
+        [bindOverlayPointerSession, isDuplicateHandleDown, routePointerInput],
+    );
+
+    return {
+        onPointerDown,
+        onPointerMove,
+        onPointerUp,
+        onPointerCancel,
+        onResizeHandlePointerDown,
+        onResizeHandlePointerMove,
+        onResizeHandlePointerUp,
+        onRotateHandlePointerDown,
     };
-    routePointerInput('pointerdown', e, overrides);
-    bindOverlayPointerSession(e, overrides);
-  }, [bindOverlayPointerSession, isDuplicateHandleDown, routePointerInput]);
-
-  const onResizeHandlePointerMove = useCallback((e, { nodeId, handle }) => {
-    e.preventDefault();
-    e.stopPropagation();
-    routePointerInput('pointermove', e, {
-      tool: 'resize',
-      targetNodeId: nodeId,
-      resizeHandle: handle,
-    });
-  }, [routePointerInput]);
-
-  const onResizeHandlePointerUp = useCallback((e, { nodeId, handle, type = 'pointerup' }) => {
-    e.preventDefault();
-    e.stopPropagation();
-    routePointerInput(type, e, {
-      tool: 'resize',
-      targetNodeId: nodeId,
-      resizeHandle: handle,
-    });
-  }, [routePointerInput]);
-
-  const onRotateHandlePointerDown = useCallback((e, { nodeId }) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (isDuplicateHandleDown(e, `rotate:${nodeId}`)) return;
-    const overrides = {
-      tool: 'rotate',
-      targetNodeId: nodeId,
-    };
-    routePointerInput('pointerdown', e, overrides);
-    bindOverlayPointerSession(e, overrides);
-  }, [bindOverlayPointerSession, isDuplicateHandleDown, routePointerInput]);
-
-  return {
-    onPointerDown,
-    onPointerMove,
-    onPointerUp,
-    onPointerCancel,
-    onResizeHandlePointerDown,
-    onResizeHandlePointerMove,
-    onResizeHandlePointerUp,
-    onRotateHandlePointerDown,
-  };
 }

@@ -15,13 +15,14 @@ const DOT_MAX = 2.6;
 const OPACITY_MIN = 0.28;
 const OPACITY_MAX = 1;
 
-// 🔑 Critical clamps (THIS fixes smooth canvas)
+// Screen-space spacing clamps
 const MIN_SPACING_PX = 3.5;
 const MAX_SPACING_PX = 260;
 
-// Overscan keeps the surface infinite-feeling
+// Overscan for infinite-feeling stage
 const OVERSCAN_MIN = 1500;
 const OVERSCAN_MAX = 60000;
+
 const MAJOR_FACTOR = 4;
 
 export function CanvasSurface({ surface, viewport, isDragging = false }) {
@@ -41,74 +42,79 @@ export function CanvasSurface({ surface, viewport, isDragging = false }) {
         t = clamp(t, 0, 1);
     }
 
-    // 🔒 Clamp spacing in SCREEN SPACE
     const spacing = softClamp(current.size * scale, MIN_SPACING_PX, MAX_SPACING_PX);
+
     const nextSpacing = next ? softClamp(next.size * scale, MIN_SPACING_PX, MAX_SPACING_PX) : null;
 
-    // Dot radius morph (perceptual)
     const dotRadius = clamp(Math.sqrt(scale) * 1.4, DOT_MIN, DOT_MAX);
-
-    // Opacity never hits zero
     const baseDotOpacity = dotOpacityForScale(scale);
 
-    // Overscan in world px, clamped for perf
     const overscan = clamp(Math.round(2800 / scale), OVERSCAN_MIN, OVERSCAN_MAX);
+
     const width = `calc(100% + ${overscan * 2}px)`;
     const height = `calc(100% + ${overscan * 2}px)`;
 
     const minorAlpha = smoothstep(14, 28, spacing);
     const majorAlpha = smoothstep(24, 48, spacing);
+
     const SNAP_EMPHASIS = {
         dots: 0.75,
         minor: 1.35,
         major: 1.6,
     };
+
     const emphasis = isDragging ? SNAP_EMPHASIS : null;
 
-    const dotOpacity =
-        baseDotOpacity * (1 - minorAlpha * 0.5) * (emphasis ? emphasis.dots : 1);
+    const dotOpacity = baseDotOpacity * (1 - minorAlpha * 0.5) * (emphasis ? emphasis.dots : 1);
 
-    const baseStyle = (layerOpacity, opacity) => ({
-        position: 'absolute',
-        left: -overscan,
-        top: -overscan,
-        width,
-        height,
-        pointerEvents: 'none',
-        opacity: layerOpacity * opacity,
-        transition: 'opacity 120ms ease-out',
-    });
+    const worldOffsetX = snapPx(-x * scale);
+    const worldOffsetY = snapPx(-y * scale);
 
-    const backgroundTint = (
-        <div
-            aria-hidden
-            style={{
-                position: 'absolute',
-                left: -overscan,
-                top: -overscan,
-                width,
-                height,
-                pointerEvents: 'none',
-                background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
-            }}
-        />
-    );
+    function layerBase(zIndex = 0) {
+        return {
+            position: 'absolute',
+            left: -overscan,
+            top: -overscan,
+            width,
+            height,
+            pointerEvents: 'none',
+            zIndex,
+        };
+    }
+
+    function renderBackgroundTint() {
+        return (
+            <div
+                aria-hidden
+                style={{
+                    ...layerBase(0),
+                    background: `
+                        radial-gradient(
+                            circle at top left,
+                            rgba(255,255,255,0.75) 0%,
+                            rgba(248,250,252,1) 35%,
+                            rgba(241,245,249,1) 100%
+                        )
+                    `,
+                }}
+            />
+        );
+    }
 
     function renderDots(spacingPx, layerOpacity) {
         return (
             <div
                 aria-hidden
                 style={{
-                    ...baseStyle(layerOpacity, dotOpacity),
-
+                    ...layerBase(1),
+                    opacity: layerOpacity * dotOpacity,
+                    transition: 'opacity 120ms ease-out',
                     backgroundImage: `radial-gradient(
                         rgba(100,116,139,0.72) ${dotRadius}px,
                         transparent ${dotRadius}px
                     )`,
                     backgroundSize: `${spacingPx}px ${spacingPx}px`,
-
-                    // 🌍 world-locked
-                    backgroundPosition: `${snapPx(-x * scale)}px ${snapPx(-y * scale)}px`,
+                    backgroundPosition: `${worldOffsetX}px ${worldOffsetY}px`,
                 }}
             />
         );
@@ -119,13 +125,15 @@ export function CanvasSurface({ surface, viewport, isDragging = false }) {
             <div
                 aria-hidden
                 style={{
-                    ...baseStyle(layerOpacity, baseDotOpacity),
+                    ...layerBase(1),
+                    opacity: layerOpacity * baseDotOpacity,
+                    transition: 'opacity 120ms ease-out',
                     backgroundImage: `
-                        linear-gradient(rgba(148,163,184,0.58) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(148,163,184,0.58) 1px, transparent 1px)
+                        linear-gradient(rgba(148,163,184,0.42) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(148,163,184,0.42) 1px, transparent 1px)
                     `,
                     backgroundSize: `${spacingPx}px ${spacingPx}px`,
-                    backgroundPosition: `${snapPx(-x * scale)}px ${snapPx(-y * scale)}px`,
+                    backgroundPosition: `${worldOffsetX}px ${worldOffsetY}px`,
                 }}
             />
         );
@@ -136,27 +144,23 @@ export function CanvasSurface({ surface, viewport, isDragging = false }) {
             <div
                 aria-hidden
                 style={{
-                    position: 'absolute',
-                    left: -overscan,
-                    top: -overscan,
-                    width,
-                    height,
-                    pointerEvents: 'none',
-                    ...baseStyle(1, alpha * 0.34 * (emphasis ? emphasis.minor : 1)),
+                    ...layerBase(2),
+                    opacity: alpha * 0.28 * (emphasis ? emphasis.minor : 1),
+                    transition: 'opacity 120ms ease-out',
                     backgroundImage: `
                         linear-gradient(
                             to right,
-                            rgba(148,163,184,0.8) 1px,
+                            rgba(148,163,184,0.62) 1px,
                             transparent 1px
                         ),
                         linear-gradient(
                             to bottom,
-                            rgba(148,163,184,0.8) 1px,
+                            rgba(148,163,184,0.62) 1px,
                             transparent 1px
                         )
                     `,
                     backgroundSize: `${spacingPx}px ${spacingPx}px`,
-                    backgroundPosition: `${snapPx(-x * scale)}px ${snapPx(-y * scale)}px`,
+                    backgroundPosition: `${worldOffsetX}px ${worldOffsetY}px`,
                 }}
             />
         );
@@ -169,27 +173,23 @@ export function CanvasSurface({ surface, viewport, isDragging = false }) {
             <div
                 aria-hidden
                 style={{
-                    position: 'absolute',
-                    left: -overscan,
-                    top: -overscan,
-                    width,
-                    height,
-                    pointerEvents: 'none',
-                    ...baseStyle(1, alpha * 0.5 * (emphasis ? emphasis.major : 1)),
+                    ...layerBase(3),
+                    opacity: alpha * 0.42 * (emphasis ? emphasis.major : 1),
+                    transition: 'opacity 120ms ease-out',
                     backgroundImage: `
                         linear-gradient(
                             to right,
-                            rgba(148,163,184,1) 2px,
+                            rgba(100,116,139,0.88) 2px,
                             transparent 2px
                         ),
                         linear-gradient(
                             to bottom,
-                            rgba(148,163,184,1) 2px,
+                            rgba(100,116,139,0.88) 2px,
                             transparent 2px
                         )
                     `,
                     backgroundSize: `${majorSpacing}px ${majorSpacing}px`,
-                    backgroundPosition: `${snapPx(-x * scale)}px ${snapPx(-y * scale)}px`,
+                    backgroundPosition: `${worldOffsetX}px ${worldOffsetY}px`,
                 }}
             />
         );
@@ -197,30 +197,23 @@ export function CanvasSurface({ surface, viewport, isDragging = false }) {
 
     return (
         <>
-            {backgroundTint}
+            {renderBackgroundTint()}
+
             {surfaceType === 'dots' && (
                 <>
-                    {/* Primary layer */}
                     {renderDots(spacing, next ? 1 - t : 1)}
+                    {next && t > 0.15 && nextSpacing ? renderDots(nextSpacing, t * 0.85) : null}
 
-                    {/* Secondary layer (fade early to avoid double dots) */}
-                    {next && t > 0.15 && renderDots(nextSpacing, t * 0.85)}
+                    {minorAlpha > 0.02 ? renderMinorGrid(spacing, minorAlpha) : null}
 
-                    {/* Minor grid */}
-                    {minorAlpha > 0.02 && renderMinorGrid(spacing, minorAlpha)}
-
-                    {/* Major grid */}
-                    {majorAlpha > 0.02 && renderMajorGrid(spacing, majorAlpha)}
+                    {majorAlpha > 0.02 ? renderMajorGrid(spacing, majorAlpha) : null}
                 </>
             )}
 
             {surfaceType === 'grid' && (
                 <>
-                    {/* Primary layer */}
                     {renderGrid(spacing, next ? 1 - t : 1)}
-
-                    {/* Secondary layer (soft transition between scales) */}
-                    {next && t > 0.15 && renderGrid(nextSpacing, t * 0.85)}
+                    {next && t > 0.15 && nextSpacing ? renderGrid(nextSpacing, t * 0.85) : null}
                 </>
             )}
 

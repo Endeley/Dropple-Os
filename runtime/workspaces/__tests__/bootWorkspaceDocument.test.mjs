@@ -68,3 +68,28 @@ test('bootWorkspaceDocument leaves unknown workspaces unchanged', () => {
 
     assert.equal(next, input);
 });
+
+test('bootWorkspaceDocument injects token governance slices for system workspace', () => {
+    const input = {
+        meta: { id: 'doc-system' },
+    };
+
+    const next = bootWorkspaceDocument({
+        document: input,
+        workspace: 'system',
+        mode: 'tokens',
+    });
+
+    assert.notEqual(next, input);
+    assert.deepEqual(next.tokens, {});
+    assert.deepEqual(next.themes, {
+        activeThemeId: null,
+        byId: {},
+        order: [],
+    });
+    assert.deepEqual(next.tokenVersions, {
+        entries: {},
+        order: [],
+        activeVersionId: null,
+    });
+});

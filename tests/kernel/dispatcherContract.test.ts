@@ -262,3 +262,120 @@ test('style events write truth into document.sceneGraph through the dispatcher',
     assert.equal(next.document.sceneGraph.nodes['styled-1']?.style?.fill, '#ff0000');
     assert.equal(useRuntimeStore.getState().viewNodes['styled-1']?.style?.opacity, 0.4);
 });
+
+test('structured fills and strokes propagate through dispatcher truth and projected view nodes', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: {
+                id: 'graphic',
+                policy: {
+                    mutation: 'allow',
+                    capabilities: ['node:create', 'node:mutate'],
+                },
+            },
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.NODE_CREATE,
+        payload: {
+            node: {
+                id: 'styled-structured-1',
+                type: 'frame',
+                children: [],
+                props: {
+                    transform: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 },
+                },
+                layout: { x: 0, y: 0, width: 120, height: 80 },
+            },
+        },
+    });
+
+    const next = await dispatcher.dispatch({
+        type: 'node.style.update',
+        payload: {
+            nodeId: 'styled-structured-1',
+            style: {
+                fill: '#ff0000',
+                stroke: { color: '#000000', width: 2 },
+                fills: [{ type: 'solid', color: '#ff0000', enabled: true }],
+                strokes: [{ color: '#000000', width: 2, enabled: true }],
+                opacity: 0.75,
+            },
+        },
+    });
+
+    const truthStyle = next.document.sceneGraph.nodes['styled-structured-1']?.style;
+    const viewStyle = useRuntimeStore.getState().viewNodes['styled-structured-1']?.style;
+
+    assert.deepEqual(truthStyle?.fills, [{ type: 'solid', color: '#ff0000', enabled: true }]);
+    assert.deepEqual(truthStyle?.strokes, [{ color: '#000000', width: 2, enabled: true }]);
+    assert.equal(truthStyle?.fill, '#ff0000');
+    assert.deepEqual(truthStyle?.stroke, { color: '#000000', width: 2 });
+    assert.equal(truthStyle?.opacity, 0.75);
+
+    assert.deepEqual(viewStyle?.fills, [{ type: 'solid', color: '#ff0000', enabled: true }]);
+    assert.deepEqual(viewStyle?.strokes, [{ color: '#000000', width: 2, enabled: true }]);
+    assert.equal(viewStyle?.fill, '#ff0000');
+    assert.deepEqual(viewStyle?.stroke, { color: '#000000', width: 2 });
+    assert.equal(viewStyle?.opacity, 0.75);
+});
+
+test('legacy style fields remain supported when structured fills and strokes are absent', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: {
+                id: 'graphic',
+                policy: {
+                    mutation: 'allow',
+                    capabilities: ['node:create', 'node:mutate'],
+                },
+            },
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.NODE_CREATE,
+        payload: {
+            node: {
+                id: 'styled-legacy-1',
+                type: 'frame',
+                children: [],
+                props: {
+                    transform: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 },
+                },
+                layout: { x: 0, y: 0, width: 90, height: 60 },
+            },
+        },
+    });
+
+    const next = await dispatcher.dispatch({
+        type: 'node.style.update',
+        payload: {
+            nodeId: 'styled-legacy-1',
+            style: {
+                fill: '#00ff00',
+                stroke: { color: '#111111', width: 1 },
+            },
+        },
+    });
+
+    const truthStyle = next.document.sceneGraph.nodes['styled-legacy-1']?.style;
+    const viewStyle = useRuntimeStore.getState().viewNodes['styled-legacy-1']?.style;
+
+    assert.equal(truthStyle?.fill, '#00ff00');
+    assert.deepEqual(truthStyle?.stroke, { color: '#111111', width: 1 });
+    assert.equal(truthStyle?.fills, undefined);
+    assert.equal(truthStyle?.strokes, undefined);
+
+    assert.equal(viewStyle?.fill, '#00ff00');
+    assert.deepEqual(viewStyle?.stroke, { color: '#111111', width: 1 });
+    assert.equal(viewStyle?.fills, undefined);
+    assert.equal(viewStyle?.strokes, undefined);
+});

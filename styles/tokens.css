@@ -1,64 +1,69 @@
+/*
+  CSS TOKEN PROJECTION LAYER
+
+  This file is not the source of truth.
+
+  Canonical token seed:
+  runtime/tokens/tokenRegistry.js
+
+  These CSS variables are the shell/UI projection of canonical token paths.
+  Keep direct value mappings here until a runtime -> CSS token bridge replaces
+  the manual projection.
+*/
+
 :root {
+  /* Core color projection */
+  --color-primary: #3b82f6; /* token.color.primary */
+  --color-secondary: #6366f1; /* token.color.secondary */
 
-  /* Neutral scale (cool computational) */
-  --neutral-950: #0F172A;
-  --neutral-900: #1E293B;
-  --neutral-800: #334155;
-  --neutral-700: #475569;
-  --neutral-600: #64748B;
-  --neutral-500: #94A3B8;
-  --neutral-400: #CBD5E1;
-  --neutral-300: #E2E8F0;
-  --neutral-200: #EEF3F8;
-  --neutral-100: #F5F8FC;
+  /* Surface projection */
+  --surface-0: #f8fafc; /* token.color.bg */
+  --surface-1: #ffffff; /* token.color.panelBg */
+  --surface-2: #eef3f8; /* shell projection: tool rail */
+  --surface-3: #e2e8f0; /* shell projection: active control */
+  --surface-4: #ffffff; /* shell projection: floating */
+  --surface-panel: var(--surface-1); /* semantic alias: panel chrome */
+  --surface-toolbar: var(--surface-2); /* semantic alias: toolbar/tool chrome */
+  --surface-hover: var(--surface-3); /* semantic alias: hover/active affordance */
 
-  /* Indigo accent primitives */
-  --indigo-400: #7C83F7;
-  --indigo-500: #6366F1;
-  --indigo-600: #4F46E5;
+  /* Text projection */
+  --text-primary: #0f172a; /* token.color.text */
+  --text-secondary: #334155; /* shell projection */
+  --text-muted: #64748b; /* token.color.textMuted */
+  --text-subtle: #94a3b8; /* shell projection */
 
-  /* Surface hierarchy */
-  --surface-0: var(--neutral-100); /* Canvas */
-  --surface-1: var(--neutral-200); /* Panels */
-  --surface-2: var(--neutral-300); /* Tool rail */
-  --surface-3: var(--neutral-400); /* Active control */
-  --surface-4: #FFFFFF;            /* Floating */
+  /* Border projection */
+  --border-subtle: rgba(15, 23, 42, 0.06); /* shell projection */
+  --border-default: #e5e7eb; /* token.color.border */
+  --border-strong: #cbd5e1; /* token.color.borderStrong */
 
-  /* Text */
-  --text-primary: var(--neutral-950);
-  --text-secondary: var(--neutral-800);
-  --text-muted: var(--neutral-600);
-  --text-subtle: var(--neutral-500);
+  /* Accent projection */
+  --accent: #3b82f6; /* token.color.primary */
+  --accent-strong: #6366f1; /* token.color.secondary */
+  --accent-soft: #eef2ff; /* shell projection */
 
-  /* Borders */
-  --border-subtle: rgba(15,23,42,0.06);
-  --border-default: rgba(15,23,42,0.08);
-  --border-strong: rgba(15,23,42,0.12);
+  /* Spacing projection */
+  --space-1: 4px; /* token.space.xs */
+  --space-2: 8px; /* token.space.sm */
+  --space-3: 12px; /* token.space.md */
+  --space-4: 16px; /* token.space.lg */
+  --space-6: 24px; /* token.space.xl */
+  --space-8: 32px; /* token.space.xxl */
+  --space-12: 48px; /* shell projection */
+  --space-xs: var(--space-1); /* semantic alias */
+  --space-sm: var(--space-2); /* semantic alias */
+  --space-md: var(--space-3); /* semantic alias */
+  --space-lg: var(--space-4); /* semantic alias */
 
-  /* Accent (default Indigo theme) */
-  --accent: var(--indigo-500);
-  --accent-strong: var(--indigo-600);
-  --accent-soft: #EEF2FF;
+  /* Radius projection */
+  --radius-xs: 4px; /* shell projection */
+  --radius-sm: 6px; /* token.radius.sm */
+  --radius-md: 8px; /* token.radius.md */
+  --radius-lg: 12px; /* token.radius.lg */
 
-  /* Spacing scale */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-12: 48px;
-
-  /* Radius */
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-
-  /* Motion */
-  --motion-fast: 120ms;
-  --motion-base: 160ms;
-  --motion-slow: 220ms;
-
-  --motion-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Motion projection */
+  --motion-fast: 120ms; /* token.motion.fast duration */
+  --motion-base: 150ms; /* token.motion.base duration */
+  --motion-slow: 220ms; /* shell projection */
+  --motion-ease: cubic-bezier(0.4, 0, 0.2, 1); /* token.motion.* easing */
 }

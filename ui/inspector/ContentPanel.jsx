@@ -1,7 +1,6 @@
 'use client';
 
 import { Control, Input, Select } from '@/ui/Control';
-import { colors, spacing, radius } from '@/ui/tokens';
 
 function TextArea(props) {
   return (
@@ -9,11 +8,13 @@ function TextArea(props) {
       {...props}
       style={{
         minHeight: 72,
-        padding: `${spacing.sm}px`,
-        border: `1px solid ${colors.border}`,
-        borderRadius: radius.sm,
+        padding: 'var(--space-sm)',
+        border: '1px solid var(--border-default)',
+        borderRadius: 'var(--radius-sm)',
         fontSize: 13,
         resize: 'vertical',
+        color: 'var(--text-primary)',
+        background: 'var(--surface-1)',
       }}
     />
   );
@@ -52,7 +53,7 @@ export function ContentPanel({ node, emit, readOnly = false }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+    <div className="inspector-group" style={{ gap: 'var(--space-md)' }}>
       {isText && (
         <>
           <Control label="Text">
@@ -122,7 +123,7 @@ export function ContentPanel({ node, emit, readOnly = false }) {
       )}
 
       {!isText && !isImage && !isButton && (
-        <div style={{ fontSize: 12, color: colors.textMuted }}>
+        <div className="inspector-subtle" style={{ fontSize: 12 }}>
           No editable content for this node type.
         </div>
       )}

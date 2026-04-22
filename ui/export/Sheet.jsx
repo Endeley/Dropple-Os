@@ -1,5 +1,3 @@
-import { colors, spacing, radius } from '@/ui/tokens';
-
 export function Sheet({
   open = false,
   side = 'right',
@@ -18,14 +16,14 @@ export function Sheet({
       style={{
         position: 'fixed',
         top: 64,
-        right: isRight ? spacing.lg : 'auto',
-        left: isRight ? 'auto' : spacing.lg,
+        right: isRight ? 'var(--space-4)' : 'auto',
+        left: isRight ? 'auto' : 'var(--space-4)',
         width,
         maxWidth: 'min(420px, 92vw)',
         maxHeight: 'calc(100vh - 80px)',
-        background: colors.panelBg,
-        border: `1px solid ${colors.border}`,
-        borderRadius: radius.md,
+        background: 'var(--surface-1)',
+        border: '1px solid var(--border-default)',
+        borderRadius: 'var(--radius-md)',
         boxShadow: '0 12px 32px rgba(15, 23, 42, 0.08)',
         overflow: 'hidden',
         zIndex: 40,
@@ -35,8 +33,8 @@ export function Sheet({
       <div
         style={{
           display: 'grid',
-          gap: spacing.lg,
-          padding: spacing.lg,
+          gap: 'var(--space-4)',
+          padding: 'var(--space-4)',
           overflow: 'auto',
           maxHeight: 'calc(100vh - 80px)',
         }}

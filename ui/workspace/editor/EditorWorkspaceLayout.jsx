@@ -8,54 +8,76 @@ import TimelineBar from '@/ui/layout/TimelineBar';
 import { WorkspaceCanvasRoot } from '@/ui/workspace/WorkspaceCanvasRoot.jsx';
 import { EducationToolbar } from '@/education/EducationToolbar';
 import ReviewToolbar from '@/review/ReviewToolbar';
+
 import { SelectionProvider, useSelection } from '@/ui/workspace/shared/SelectionContext.jsx';
 import { ModeProvider, useMode } from '@/ui/workspace/shared/ModeContext.jsx';
+
 import { useKeyboardShortcuts } from '@/ui/interaction/interaction/useKeyboardShortcuts.js';
 import { getDesignStateAtCursor } from '@/core/persistence/index.js';
+
 import { useEffect, useMemo, useCallback } from 'react';
+
 import { registerWorkspaceTools } from '@/ui/interaction/toolRegistration';
 import { useKeyboardNudge } from '@/ui/keyboard/useKeyboardNudge';
 import { useAlignmentShortcuts } from '@/ui/keyboard/useAlignmentShortcuts';
 import { useGroupShortcuts } from '@/ui/keyboard/useGroupShortcuts';
+
 import { useModeOnboarding } from '@/onboarding/useModeOnboarding';
 import { ModeHint } from '@/onboarding/ModeHint';
+
 import { useCommandPalette } from '@/commands/useCommandPalette';
 import { CommandPalette } from '@/commands/CommandPalette';
 import { buildCommands } from '@/commands/commandRegistry';
+
 import { useGalleryIdentity } from '@/gallery/useGalleryIdentity';
 import { usePublishToServer } from '@/gallery/usePublishToServer';
+
 import PresenceDots from '@/collab/PresenceDots';
+
 import { ExportGateOverlay } from '@/ui/export/ExportGateOverlay';
 import { getNodes } from '@/runtime/document/documentAdapter.js';
 
+import { UIUXToolRail } from '@/ui/workspace/ux/UIUXToolRail.jsx';
+import { WorkspaceSwitcher } from '@/ui/workspace/shared/WorkspaceSwitcher.jsx';
+import { ModeSwitcher } from '@/ui/workspace/shared/ModeSwitcher.jsx';
+
 function EditorWorkspaceLayoutInner({
     adapter,
+    workspaceContext,
+    showWorkspaceNavigation,
+    onGoToWorkspace,
+    onGoToMode,
+
     events,
     cursor,
     emit,
+
     documentName,
     onSave,
     onSaveAs,
     recentDocs,
     onOpenDocument,
+
     canPersist = true,
-    onImportJSONReplace,
-    onImportJSONMerge,
-    onImportSVGReplace,
-    onImportSVGMerge,
+
     canImport = true,
+
     onOpenTemplateGenerator,
+
     educationReadOnly = false,
     readOnly = false,
+
     documentRole = null,
     documentId = null,
+
     reviewSubmission,
     reviewRubric,
     onReviewDecision,
     onReviewCriteriaChange,
     reviewerId,
+
     presence,
-    railOffset = 0,
+    capabilitySurfacePanels = [],
 }) {
     const { selectedIds, setSelection } = useSelection();
 
@@ -74,6 +96,12 @@ function EditorWorkspaceLayoutInner({
     const publishToServer = usePublishToServer();
 
     const workspaceId = adapter?.workspaceId || adapter?.id || 'graphic';
+    const showToolRail = adapter?.ui?.canvas !== false && adapter?.ui?.editing !== false;
+    const showSystemVersioningPanels =
+        workspaceContext?.workspaceId === 'system' &&
+        workspaceContext?.modeId === 'versioning' &&
+        Array.isArray(capabilitySurfacePanels) &&
+        capabilitySurfacePanels.length > 0;
 
     const getState = useCallback(() => {
         return getDesignStateAtCursor({
@@ -148,9 +176,10 @@ function EditorWorkspaceLayoutInner({
     }, [workspaceId]);
 
     return (
-        <div className='workspace-root' style={railOffset > 0 ? { paddingLeft: railOffset } : undefined}>
+        <div className='workspace-root'>
             <PresenceDots presence={presence} />
 
+            {/* Command palette */}
             {commandOpen && (
                 <CommandPalette
                     commands={commands}
@@ -166,8 +195,18 @@ function EditorWorkspaceLayoutInner({
 
             {hint && <ModeHint text={hint} />}
 
-            <TopBar modeLabel={adapter.label} />
+            {/* Navigation UI (moved from Shell → correct) */}
+            {showWorkspaceNavigation && workspaceContext && (
+                <div className='workspace-nav'>
+                    <WorkspaceSwitcher activeWorkspace={workspaceContext.workspaceId} onChange={onGoToWorkspace} />
+                    <ModeSwitcher workspace={workspaceContext.workspaceId} activeMode={workspaceContext.modeId} onChange={(nextMode) => onGoToMode(workspaceContext.workspaceId, nextMode)} />
+                </div>
+            )}
 
+            {/* Top bar */}
+            <TopBar workspaceLabel={workspaceContext?.workspaceId} modeLabel={adapter.label} documentName={documentName} onSave={onSave} readOnly={readOnly} />
+
+            {/* Toolbar */}
             {adapter?.id === 'education' ? (
                 <EducationToolbar emit={emit} cursor={cursor} events={events} readOnly={educationReadOnly} />
             ) : adapter?.id === 'review' ? (
@@ -176,12 +215,31 @@ function EditorWorkspaceLayoutInner({
                 <Toolbar mode={adapter} emit={emit} getState={getState} events={events} cursor={cursor} documentName={documentName} onSave={onSave} onSaveAs={onSaveAs} recentDocs={recentDocs} onOpenDocument={onOpenDocument} canPersist={canPersist} />
             )}
 
+            {/* Main workspace */}
             <div className='workspace-main'>
-                <LeftPanel panels={adapter.panels?.left} />
+                {/* Tool rail (correct ownership now) */}
+                {showToolRail && <UIUXToolRail />}
 
-                <WorkspaceCanvasRoot workspaceId={workspaceId} />
+                <LeftPanel panels={adapter.panels?.left} events={events} cursor={cursor} workspaceId={workspaceId} />
 
-                <RightPanel panels={adapter.panels?.right} events={events} cursor={cursor} emit={emit} rubric={reviewRubric} reviewCriteria={reviewSubmission?.review?.criteria} onReviewCriteriaChange={onReviewCriteriaChange} submissionId={reviewSubmission?.id} documentId={documentId} />
+                <div className='workspace-canvas-cell'>
+                    <WorkspaceCanvasRoot workspaceId={workspaceId} />
+
+                    {showSystemVersioningPanels && (
+                        <div className='workspace-capability-panels'>
+                            {capabilitySurfacePanels.map((CapabilityPanel, index) => (
+                                <div
+                                    key={`${CapabilityPanel.displayName ?? CapabilityPanel.name ?? 'capability-panel'}-${index}`}
+                                    className='workspace-capability-panel'
+                                >
+                                    <CapabilityPanel />
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                <RightPanel panels={adapter.panels?.right} events={events} cursor={cursor} emit={emit} capabilities={adapter?.capabilities} rubric={reviewRubric} reviewCriteria={reviewSubmission?.review?.criteria} onReviewCriteriaChange={onReviewCriteriaChange} submissionId={reviewSubmission?.id} documentId={documentId} readOnly={readOnly} />
             </div>
 
             <TimelineBar events={events} cursor={cursor} submissionId={reviewSubmission?.id} />

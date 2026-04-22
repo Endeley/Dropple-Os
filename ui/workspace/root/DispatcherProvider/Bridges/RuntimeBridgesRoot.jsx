@@ -15,6 +15,7 @@ import { registerAnimationKeyframeBridge } from '@/ui/bridges/animationKeyframeB
 import { registerLayoutConvertBridge } from '@/ui/bridges/layoutConvertBridge.js';
 import { registerTimelineBridge } from '@/ui/bridges/timelineBridge.js';
 import { registerShotEditorBridge } from '@/ui/bridges/shotEditorBridge.js';
+import { registerTokenAuthoringBridge } from '@/ui/bridges/tokenAuthoringBridge.js';
 import { registerToolIntentBridge } from '@/ui/bridges/toolIntentBridge.js';
 import { registerCapabilityToolBridge } from '@/ui/bridges/capabilityToolBridge.js';
 import { registerSelectionIntentBridge } from '@/ui/bridges/selectionIntentBridge.js';
@@ -46,6 +47,7 @@ export function RuntimeBridgesRoot() {
       registerLayoutConvertBridge(dispatcher),
       registerTimelineBridge(dispatcher),
       registerShotEditorBridge(dispatcher),
+      registerTokenAuthoringBridge(dispatcher),
       registerToolIntentBridge(dispatcher),
       registerCapabilityToolBridge(dispatcher),
       registerSelectionIntentBridge(dispatcher),

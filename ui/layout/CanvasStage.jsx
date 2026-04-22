@@ -10,7 +10,7 @@ import { PaddingOverlay } from '@/ui/canvas/canvas/overlays/PaddingOverlay.jsx';
 import { GapOverlay } from '@/ui/canvas/canvas/overlays/GapOverlay.jsx';
 import { GridOverlay } from '@/ui/canvas/canvas/overlays/GridOverlay.jsx';
 import { ReorderIndicator } from '@/ui/canvas/canvas/overlays/ReorderIndicator.jsx';
-import { colors } from '@/ui/tokens';
+import { useToken } from '@/ui/hooks/useToken.js';
 import { AnnotationOverlay } from '@/education/AnnotationOverlay';
 import { useEducationCursor } from '@/education/EducationCursorContext';
 import { getEducationAtCursor } from '@/education/selectEducationState';
@@ -70,6 +70,7 @@ export default function CanvasStage({
   const educationState = getEducationAtCursor(state, cursor);
   const isPreview =
     adapter?.id === 'preview' || adapter?.id === 'prototype' || adapter?.isPreview;
+  const canvasBackground = useToken('color.bg');
   const isReview = adapter?.id === 'review';
   const isReadOnly =
     readOnly ||
@@ -247,7 +248,7 @@ export default function CanvasStage({
     <div
       ref={containerRef}
       className="canvas-viewport"
-      style={{ background: colors.bg }}
+      style={{ background: canvasBackground }}
       onMouseDown={(e) => {
         if (!isReview && e.button !== 2) {
           clear();

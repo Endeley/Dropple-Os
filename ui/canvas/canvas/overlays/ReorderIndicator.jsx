@@ -1,6 +1,8 @@
-import { colors, motion } from '@/ui/tokens';
+import { useToken } from '@/ui/hooks/useToken.js';
 
 export function ReorderIndicator({ parent, nodes, toIndex, active }) {
+  const primary = useToken('color.primary');
+  const motionFast = useToken('motion.fast');
   if (toIndex == null) return null;
 
   const children = parent.children.map((id) => nodes[id]).filter(Boolean);
@@ -16,9 +18,9 @@ export function ReorderIndicator({ parent, nodes, toIndex, active }) {
         top: target.layout.y,
         width: 4,
         height: target.layout.height,
-        background: colors.primary,
+        background: primary,
         opacity: active ? 1 : 0,
-        transition: `opacity ${motion.fast}`,
+        transition: `opacity ${motionFast}`,
         zIndex: 4,
         pointerEvents: 'none',
       }}

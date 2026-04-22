@@ -12,7 +12,6 @@ import { ContentPanel } from '@/ui/inspector/ContentPanel.jsx';
 import { SemanticsPanel } from '@/ui/inspector/SemanticsPanel.jsx';
 import { MotionPanel } from '@/ui/inspector/MotionPanel.jsx';
 import { ExportPreviewPanel } from '@/ui/inspector/ExportPreviewPanel.jsx';
-import { colors, spacing } from '@/ui/tokens';
 import { Availability } from '@/ui/availability/availability';
 import { useAvailability } from '@/ui/availability/useAvailability';
 import { Capability } from '@/ui/capabilities/capabilityVocabulary';
@@ -67,7 +66,7 @@ export function UIUXInspectorPanel() {
 
   if (nodeRead === Availability.HIDDEN) {
     return (
-      <div style={{ fontSize: 12, color: colors.textMuted }}>
+      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
         No access to inspect nodes in this workspace.
       </div>
     );
@@ -75,14 +74,14 @@ export function UIUXInspectorPanel() {
 
   if (!node) {
     return (
-      <div style={{ fontSize: 12, color: colors.textMuted }}>
+      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
         Select a node to inspect.
       </div>
     );
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
       {resizeDebug ? (
         <div
           data-testid="resize-debug"
@@ -113,12 +112,12 @@ export function UIUXInspectorPanel() {
             readOnly={layoutAvail === Availability.READ_ONLY}
           />
           {orderIndex !== null && orderIndex >= 0 && (
-            <div style={{ marginTop: spacing.sm, fontSize: 12, color: colors.textMuted }}>
+            <div style={{ marginTop: 'var(--space-2)', fontSize: 12, color: 'var(--text-muted)' }}>
               Order index: {orderIndex}
             </div>
           )}
           {autoLayoutAvail !== Availability.HIDDEN && (
-            <div style={{ marginTop: spacing.sm }}>
+            <div style={{ marginTop: 'var(--space-2)' }}>
               <AutoLayoutPanel
                 node={node}
                 emit={emit}

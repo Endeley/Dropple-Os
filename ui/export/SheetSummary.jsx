@@ -1,5 +1,3 @@
-import { colors, spacing, radius } from '@/ui/tokens';
-
 function SummaryItem({ label, value, tone }) {
   const tones = {
     error: { bg: '#FEF2F2', border: '#FECACA', text: '#991B1B' },
@@ -12,7 +10,7 @@ function SummaryItem({ label, value, tone }) {
     <div
       style={{
         border: `1px solid ${style.border}`,
-        borderRadius: radius.sm,
+        borderRadius: 'var(--radius-sm)',
         padding: '8px 10px',
         background: style.bg,
         display: 'grid',
@@ -36,16 +34,16 @@ export function SheetSummary({ summary }) {
     <div
       style={{
         display: 'grid',
-        gap: spacing.sm,
-        paddingBottom: spacing.md,
-        borderBottom: `1px solid ${colors.border}`,
+        gap: 'var(--space-2)',
+        paddingBottom: 'var(--space-3)',
+        borderBottom: '1px solid var(--border-default)',
       }}
     >
       <div
         style={{
           fontSize: 11,
           fontWeight: 600,
-          color: colors.textMuted,
+          color: 'var(--text-muted)',
           textTransform: 'uppercase',
           letterSpacing: 0.6,
         }}
@@ -56,7 +54,7 @@ export function SheetSummary({ summary }) {
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))',
-          gap: spacing.sm,
+          gap: 'var(--space-2)',
         }}
       >
         <SummaryItem label="Errors" value={errorCount} tone="error" />

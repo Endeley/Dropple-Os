@@ -1,7 +1,5 @@
 'use client';
 
-import { colors, spacing } from '@/ui/tokens';
-
 export function MotionPanel({ node }) {
   if (!node) return null;
 
@@ -9,7 +7,7 @@ export function MotionPanel({ node }) {
 
   if (!motion) {
     return (
-      <div style={{ fontSize: 12, color: colors.textMuted }}>
+      <div className="inspector-subtle" style={{ fontSize: 12 }}>
         No motion attached.
       </div>
     );
@@ -24,13 +22,10 @@ export function MotionPanel({ node }) {
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+    <div className="inspector-group">
       {rows.map((row) => (
-        <div
-          key={row.label}
-          style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}
-        >
-          <span style={{ color: colors.textMuted }}>{row.label}</span>
+        <div key={row.label} className="inspector-row" style={{ fontSize: 12 }}>
+          <span className="inspector-subtle">{row.label}</span>
           <span>{row.value ?? '—'}</span>
         </div>
       ))}

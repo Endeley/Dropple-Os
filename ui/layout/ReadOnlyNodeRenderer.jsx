@@ -17,11 +17,27 @@ import {
   computeFlexReorderIndex,
   computeGridReorderIndex,
 } from '@/ui/layout/computeReorderIndex';
-import { colors, motion } from '@/ui/tokens';
+import { useToken } from '@/ui/hooks/useToken.js';
 import { canvasBus } from '../eventBus/canvasBus.js';
 import { getZoomTier } from '@/runtime/canvas/zoomTiers.js';
 
 const RESIZE_DISABLED = true;
+
+function withAlpha(color, alpha) {
+  if (typeof color !== 'string') return color;
+  const hex = color.trim().replace('#', '');
+  if (![3, 6].includes(hex.length)) return color;
+
+  const normalized = hex.length === 3
+    ? hex.split('').map((char) => char + char).join('')
+    : hex;
+  const clamped = Math.max(0, Math.min(alpha, 1));
+  const alphaHex = Math.round(clamped * 255)
+    .toString(16)
+    .padStart(2, '0');
+
+  return `#${normalized}${alphaHex}`;
+}
 
 export default function ReadOnlyNodeRenderer({
   nodes,
@@ -42,6 +58,10 @@ export default function ReadOnlyNodeRenderer({
     modeId === 'education' && (educationReadOnly || educationRole !== 'teacher');
   const isReadOnly = readOnly || modeId === 'review' || isEducationReadOnly;
   const zoomTier = getZoomTier(viewport?.scale ?? 1);
+  const primary = useToken('color.primary');
+  const borderStrong = useToken('color.borderStrong');
+  const motionBase = useToken('motion.base');
+  const primarySoft = withAlpha(primary, 0.12);
 
   const dragRef = useRef({
     dragging: false,
@@ -649,14 +669,14 @@ export default function ReadOnlyNodeRenderer({
               width: previewWidth,
               height: previewHeight,
               border: isSelected
-                ? `1px solid ${colors.primary}`
-                : `1px solid ${colors.borderStrong}`,
+                ? `1px solid ${primary}`
+                : `1px solid ${borderStrong}`,
               boxShadow: isSelected
-                ? `0 0 0 1px ${colors.primarySoft}`
+                ? `0 0 0 1px ${primarySoft}`
                 : undefined,
               background:
                 hoveredId === node.id || isSelected
-                  ? colors.primarySoft
+                  ? primarySoft
                   : 'transparent',
               boxSizing: 'border-box',
               cursor: isSelected ? (isAutoChild ? 'default' : 'move') : 'default',
@@ -668,7 +688,7 @@ export default function ReadOnlyNodeRenderer({
                   : undefined,
               transition: isDragging
                 ? 'none'
-                : `left ${motion.base}, top ${motion.base}`,
+                : `left ${motionBase}, top ${motionBase}`,
             }}
           >
             {node.type} · {node.id}

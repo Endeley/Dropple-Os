@@ -30,7 +30,7 @@
 
 .uiux-topbar .frame-indicator {
   font-size: 12px;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .uiux-main {
@@ -63,10 +63,10 @@
   height: 28px;
   padding: 0 8px;
   border: 1px solid var(--border-default);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: var(--surface-1);
   font-size: 11px;
-  color: #0f172a;
+  color: var(--text-primary);
 }
 
 .uiux-topbar button:disabled,
@@ -86,11 +86,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 120ms ease, transform 120ms ease;
+  transition:
+    background var(--motion-fast) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
 }
 
 .tool-button:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--border-subtle);
 }
 
 .tool-button.is-active {
@@ -100,7 +102,7 @@
 .tool-icon {
   width: 18px;
   height: 18px;
-  color: #0f172a;
+  color: var(--text-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -115,11 +117,11 @@
 .tool-tooltip {
   position: absolute;
   left: calc(100% + 8px);
-  background: #111111;
-  color: #ffffff;
+  background: var(--text-primary);
+  color: var(--surface-1);
   font-size: 12px;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   display: none;
   pointer-events: none;
   transform: translateY(-50%);
@@ -143,7 +145,7 @@
 }
 
 .uiux-canvas-stage .canvas-placeholder {
-  color: #94a3b8;
+  color: var(--text-subtle);
   font-size: 13px;
 }
 
@@ -168,13 +170,13 @@
 }
 
 .uiux-rightpanel .panel-tabs button.active {
-  border-color: #94a3b8;
+  border-color: var(--text-subtle);
   background: var(--surface-4);
 }
 
 .uiux-rightpanel .panel-content {
   padding: 12px;
   flex: 1;
-  color: #475569;
+  color: var(--text-secondary);
   font-size: 12px;
 }

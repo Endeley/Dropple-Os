@@ -94,6 +94,20 @@ export const EventTypes = Object.freeze({
     COMPONENT_SET_ACTIVE: 'component/set-active',
 
     // ─────────────────────────────
+    // Tokens / themes
+    // ─────────────────────────────
+    TOKEN_CREATE: 'token/create',
+    TOKEN_SET: 'token/set',
+    TOKEN_DELETE: 'token/delete',
+    TOKEN_ALIAS_SET: 'token/alias/set',
+    THEME_CREATE: 'theme/create',
+    THEME_SWITCH: 'theme/switch',
+    TOKEN_VERSION_TAG: 'token/version/tag',
+    TOKEN_VERSION_FORK: 'token/version/fork',
+    TOKEN_VERSION_MERGE: 'token/version/merge',
+    TOKEN_VERSION_ROLLBACK: 'token/version/rollback',
+
+    // ─────────────────────────────
     // Timeline
     // ─────────────────────────────
     TIMELINE_TRACK_CREATE: 'timeline/track/create',

@@ -8,4 +8,7 @@ export const WORKSPACE_CAPABILITIES = Object.freeze({
 
 export const WORKSPACE_MODE_CAPABILITIES = Object.freeze({
     'media:animation': Object.freeze(['rig', 'stateMachine']),
+    'system:tokens': Object.freeze(['token-authoring']),
+    'system:themes': Object.freeze(['theme-authoring']),
+    'system:versioning': Object.freeze(['token-versioning']),
 });

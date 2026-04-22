@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { mockLessons } from '@/marketplace/mockLessons';
-import { colors, spacing, radius } from '@/ui/tokens';
 import { useLessonFilters } from '@/marketplace/lessons/useLessonFilters';
 import LessonFilterBar from '@/marketplace/lessons/LessonFilterBar';
 import { filterLessons } from '@/marketplace/lessons/filterLessons';
@@ -14,33 +13,33 @@ export default function LessonsPage() {
   const visibleLessons = filterLessons(mockLessons, filters);
 
   return (
-    <div style={{ padding: spacing.xl }}>
+    <div style={{ padding: 'var(--space-6)' }}>
       <h2>Lessons</h2>
 
       <LessonFilterBar {...filters} />
 
-      <h3 style={{ marginTop: spacing.lg }}>Curated Paths</h3>
+      <h3 style={{ marginTop: 'var(--space-lg)' }}>Curated Paths</h3>
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-          gap: spacing.md,
-          marginTop: spacing.sm,
+          gap: 'var(--space-md)',
+          marginTop: 'var(--space-sm)',
         }}
       >
         {lessonCollections.map((collection) => (
           <div
             key={collection.id}
             style={{
-              padding: spacing.md,
-              border: `1px solid ${colors.border}`,
-              borderRadius: radius.md,
-              background: '#fff',
+              padding: 'var(--space-md)',
+              border: '1px solid var(--border-default)',
+              borderRadius: 'var(--radius-md)',
+              background: 'var(--surface-1)',
               fontSize: 13,
             }}
           >
             <div style={{ fontWeight: 600 }}>{collection.title}</div>
-            <div style={{ marginTop: spacing.xs, color: colors.textMuted }}>
+            <div style={{ marginTop: 'var(--space-xs)', color: 'var(--text-muted)' }}>
               {collection.lessonIds.length} lessons
             </div>
           </div>
@@ -49,9 +48,9 @@ export default function LessonsPage() {
 
       <div
         style={{
-          marginTop: spacing.lg,
+          marginTop: 'var(--space-lg)',
           display: 'grid',
-          gap: spacing.md,
+          gap: 'var(--space-md)',
         }}
       >
         {visibleLessons.length ? (
@@ -60,27 +59,27 @@ export default function LessonsPage() {
               key={lesson.id}
               onClick={() => router.push(`/marketplace/lessons/${lesson.id}`)}
               style={{
-                padding: spacing.md,
-                border: `1px solid ${colors.border}`,
-                borderRadius: radius.md,
+                padding: 'var(--space-md)',
+                border: '1px solid var(--border-default)',
+                borderRadius: 'var(--radius-md)',
                 cursor: 'pointer',
-                background: '#fff',
+                background: 'var(--surface-1)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: spacing.xs,
+                gap: 'var(--space-xs)',
               }}
             >
               <strong>{lesson.metadata.title}</strong>
-              <div style={{ fontSize: 12, color: colors.textMuted }}>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                 {lesson.metadata.description}
               </div>
-              <div style={{ marginTop: spacing.xs, fontSize: 11 }}>
+              <div style={{ marginTop: 'var(--space-xs)', fontSize: 11 }}>
                 By {lesson.metadata.creator.name}
               </div>
             </div>
           ))
         ) : (
-          <div style={{ fontSize: 13, color: colors.textMuted }}>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
             No lessons found.
           </div>
         )}

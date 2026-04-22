@@ -3,6 +3,23 @@ export function createDefaultSlice(slice) {
         case 'graphs':
             return {};
 
+        case 'tokens':
+            return {};
+
+        case 'themes':
+            return {
+                activeThemeId: null,
+                byId: {},
+                order: [],
+            };
+
+        case 'tokenVersions':
+            return {
+                entries: {},
+                order: [],
+                activeVersionId: null,
+            };
+
         case 'motion':
             return {
                 clips: {},

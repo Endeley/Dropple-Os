@@ -2,7 +2,6 @@
 
 import { useAnnotations } from '@/certification/annotations/useAnnotationStore';
 import { useCertificates } from '@/certification/certificates/useCertificateStore';
-import { colors, radius, spacing } from '@/ui/tokens';
 
 export default function ReviewToolbar({ submission, onDecision, reviewerId, cursor }) {
   const { addAnnotation } = useAnnotations();
@@ -43,21 +42,22 @@ export default function ReviewToolbar({ submission, onDecision, reviewerId, curs
         height: 48,
         display: 'flex',
         alignItems: 'center',
-        gap: spacing.md,
-        padding: `0 ${spacing.lg}px`,
-        borderBottom: `1px solid ${colors.border}`,
-        background: '#fff',
+        gap: 'var(--space-md)',
+        padding: '0 var(--space-lg)',
+        borderBottom: '1px solid var(--border-default)',
+        background: 'var(--surface-1)',
       }}
     >
-      <div style={{ fontSize: 13, color: colors.textMuted }}>Review</div>
+      <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Review</div>
       <button
         onClick={annotate}
         style={{
           height: 32,
-          padding: `0 ${spacing.sm}px`,
-          border: `1px solid ${colors.border}`,
-          borderRadius: radius.sm,
-          background: '#fff',
+          padding: '0 var(--space-sm)',
+          border: '1px solid var(--border-default)',
+          borderRadius: 'var(--radius-sm)',
+          background: 'var(--surface-1)',
+          color: 'var(--text-primary)',
           fontSize: 12,
         }}
       >
@@ -67,10 +67,11 @@ export default function ReviewToolbar({ submission, onDecision, reviewerId, curs
         onClick={() => onDecision?.('passed')}
         style={{
           height: 32,
-          padding: `0 ${spacing.sm}px`,
-          border: `1px solid ${colors.border}`,
-          borderRadius: radius.sm,
-          background: '#fff',
+          padding: '0 var(--space-sm)',
+          border: '1px solid var(--border-default)',
+          borderRadius: 'var(--radius-sm)',
+          background: 'var(--surface-1)',
+          color: 'var(--text-primary)',
           fontSize: 12,
         }}
       >
@@ -80,10 +81,11 @@ export default function ReviewToolbar({ submission, onDecision, reviewerId, curs
         onClick={() => onDecision?.('failed')}
         style={{
           height: 32,
-          padding: `0 ${spacing.sm}px`,
-          border: `1px solid ${colors.border}`,
-          borderRadius: radius.sm,
-          background: '#fff',
+          padding: '0 var(--space-sm)',
+          border: '1px solid var(--border-default)',
+          borderRadius: 'var(--radius-sm)',
+          background: 'var(--surface-1)',
+          color: 'var(--text-primary)',
           fontSize: 12,
         }}
       >
@@ -93,10 +95,11 @@ export default function ReviewToolbar({ submission, onDecision, reviewerId, curs
         onClick={() => onDecision?.('revision')}
         style={{
           height: 32,
-          padding: `0 ${spacing.sm}px`,
-          border: `1px solid ${colors.border}`,
-          borderRadius: radius.sm,
-          background: '#fff',
+          padding: '0 var(--space-sm)',
+          border: '1px solid var(--border-default)',
+          borderRadius: 'var(--radius-sm)',
+          background: 'var(--surface-1)',
+          color: 'var(--text-primary)',
           fontSize: 12,
         }}
       >
@@ -107,10 +110,11 @@ export default function ReviewToolbar({ submission, onDecision, reviewerId, curs
         onClick={issue}
         style={{
           height: 32,
-          padding: `0 ${spacing.sm}px`,
-          border: `1px solid ${colors.border}`,
-          borderRadius: radius.sm,
-          background: '#fff',
+          padding: '0 var(--space-sm)',
+          border: '1px solid var(--border-default)',
+          borderRadius: 'var(--radius-sm)',
+          background: 'var(--surface-1)',
+          color: 'var(--text-primary)',
           fontSize: 12,
         }}
       >

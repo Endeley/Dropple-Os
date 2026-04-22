@@ -1,5 +1,3 @@
-import { colors, spacing, radius } from '@/ui/tokens';
-
 export function AnnotationOverlay({ annotations }) {
   return (
     <>
@@ -10,12 +8,12 @@ export function AnnotationOverlay({ annotations }) {
             position: 'absolute',
             left: a.x,
             top: a.y,
-            background: colors.panelBg,
-            border: `1px solid ${colors.borderStrong}`,
-            padding: spacing.sm,
+            background: 'var(--surface-panel)',
+            border: '1px solid var(--border-strong)',
+            padding: 'var(--space-sm)',
             fontSize: 12,
             maxWidth: 240,
-            borderRadius: radius.sm,
+            borderRadius: 'var(--radius-sm)',
             pointerEvents: 'none',
           }}
         >

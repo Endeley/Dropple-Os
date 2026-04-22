@@ -2,6 +2,8 @@
 
 import { GraphEditorPanel } from '@/ui/workspace/media/animation/GraphEditorPanel.jsx';
 import { RigControllerOverlay } from '@/ui/rigging/RigControllerOverlay.jsx';
+import { createTokenAuthoringCommandLayer } from '@/ui/workspace/system/tokenAuthoringIntent.js';
+import { TokenVersionGraphPanel } from '@/ui/workspace/system/TokenVersionGraphPanel.jsx';
 
 function safeEmit(context, event, capability, phase = 'emit') {
     try {
@@ -116,6 +118,47 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
         tools: Object.freeze([]),
         ui: Object.freeze({
             surfacePanels: Object.freeze([]),
+        }),
+        lifecycle: Object.freeze({}),
+    }),
+
+    'token-authoring': Object.freeze({
+        id: 'token-authoring',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([]),
+        }),
+        authoring: Object.freeze({
+            createCommandLayer: createTokenAuthoringCommandLayer,
+        }),
+        lifecycle: Object.freeze({}),
+    }),
+
+    'theme-authoring': Object.freeze({
+        id: 'theme-authoring',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([]),
+        }),
+        authoring: Object.freeze({
+            createCommandLayer: createTokenAuthoringCommandLayer,
+        }),
+        lifecycle: Object.freeze({}),
+    }),
+
+    'token-versioning': Object.freeze({
+        id: 'token-versioning',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([
+                Object.freeze({
+                    component: TokenVersionGraphPanel,
+                    priority: 10,
+                }),
+            ]),
+        }),
+        authoring: Object.freeze({
+            createCommandLayer: createTokenAuthoringCommandLayer,
         }),
         lifecycle: Object.freeze({}),
     }),

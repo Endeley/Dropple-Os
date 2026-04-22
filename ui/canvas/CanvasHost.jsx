@@ -30,6 +30,10 @@ const CanvasHost = forwardRef(function CanvasHost(
     const localRef = useRef(null);
     useImperativeHandle(ref, () => localRef.current);
 
+    function emitPointer(type, payload) {
+        canvasBus.emit(type, payload);
+    }
+
     // Notify parent once when DOM is ready
     useEffect(() => {
         if (!localRef.current) return;
@@ -43,7 +47,10 @@ const CanvasHost = forwardRef(function CanvasHost(
         const target = localRef.current;
         if (!target || !onWheel) return;
 
-        const handleWheel = (e) => onWheel(e);
+        const handleWheel = (e) => {
+            e.preventDefault();
+            onWheel(e);
+        };
         target.addEventListener('wheel', handleWheel, { passive: false });
 
         return () => target.removeEventListener('wheel', handleWheel);
@@ -64,22 +71,22 @@ const CanvasHost = forwardRef(function CanvasHost(
             data-testid="canvas-host"
             onPointerDown={(e) => {
                 onPointerDown?.(e);
-                canvasBus.emit('pointer.down', {
+                emitPointer('pointer.down', {
                     event: e,
                     session: null,
                 });
             }}
             onPointerMove={(e) => {
                 onPointerMove?.(e);
-                canvasBus.emit('pointer.move', e);
+                emitPointer('pointer.move', e);
             }}
             onPointerUp={(e) => {
                 onPointerUp?.(e);
-                canvasBus.emit('pointer.up', e);
+                emitPointer('pointer.up', e);
             }}
             onPointerCancel={(e) => {
                 onPointerCancel?.(e);
-                canvasBus.emit('pointer.cancel', e);
+                emitPointer('pointer.cancel', e);
             }}
             onDoubleClick={onDoubleClick}
             style={{
@@ -88,6 +95,7 @@ const CanvasHost = forwardRef(function CanvasHost(
                 height: '100%',
                 overflow: 'hidden',
                 touchAction: 'none',
+                userSelect: 'none',
             }}>
             {/* 🌍 WORLD — FULLSCREEN, TRANSFORMED */}
             <div

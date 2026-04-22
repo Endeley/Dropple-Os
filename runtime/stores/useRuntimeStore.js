@@ -1,6 +1,7 @@
 // runtime/stores/useRuntimeStore.js
 
 import { create } from 'zustand';
+import { DEFAULT_TOKENS } from '../tokens/tokenRegistry.js';
 
 /**
  * Read-only mirror of runtime state for React.
@@ -10,6 +11,7 @@ export const useRuntimeStore = create((set) => ({
     document: null,
     viewNodes: {},
     viewRootIds: [],
+    tokens: structuredClone(DEFAULT_TOKENS),
     workspace: null,
     viewSceneGraph: null,
     scene: null,

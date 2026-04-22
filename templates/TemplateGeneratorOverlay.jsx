@@ -3,7 +3,6 @@
 import { createTemplateArtifact } from './templateTypes';
 import { serializeWorkspaceForTemplate } from './TemplateSerializer';
 import { validateTemplate } from './TemplateValidator';
-import { colors, spacing, radius } from '@/ui/tokens';
 
 export default function TemplateGeneratorOverlay({
   open,
@@ -67,28 +66,29 @@ export default function TemplateGeneratorOverlay({
     >
       <div
         style={{
-          background: colors.panelBg,
-          padding: spacing.lg,
+          background: 'var(--surface-panel)',
+          padding: 'var(--space-lg)',
           width: 420,
-          borderRadius: radius.md,
-          border: `1px solid ${colors.border}`,
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--border-default)',
         }}
       >
         <h3 style={{ marginTop: 0 }}>Create Template</h3>
-        <p style={{ color: colors.textMuted }}>
+        <p style={{ color: 'var(--text-muted)' }}>
           This will package your current design as a reusable template.
         </p>
 
-        <div style={{ display: 'flex', gap: spacing.sm }}>
+        <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
           <button
             onClick={publish}
             style={{
               minWidth: 32,
               height: 32,
-              padding: `0 ${spacing.sm}px`,
-              border: `1px solid ${colors.border}`,
-              borderRadius: radius.sm,
-              background: '#fff',
+              padding: '0 var(--space-sm)',
+              border: '1px solid var(--border-default)',
+              borderRadius: 'var(--radius-sm)',
+              background: 'var(--surface-1)',
+              color: 'var(--text-primary)',
               fontSize: 12,
             }}
           >
@@ -99,10 +99,11 @@ export default function TemplateGeneratorOverlay({
             style={{
               minWidth: 32,
               height: 32,
-              padding: `0 ${spacing.sm}px`,
-              border: `1px solid ${colors.border}`,
-              borderRadius: radius.sm,
-              background: '#fff',
+              padding: '0 var(--space-sm)',
+              border: '1px solid var(--border-default)',
+              borderRadius: 'var(--radius-sm)',
+              background: 'var(--surface-1)',
+              color: 'var(--text-primary)',
               fontSize: 12,
             }}
           >

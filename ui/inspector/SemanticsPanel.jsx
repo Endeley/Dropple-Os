@@ -1,7 +1,6 @@
 'use client';
 
 import { Control, Input, Select } from '@/ui/Control';
-import { spacing } from '@/ui/tokens';
 
 const TAG_OPTIONS = [
   'div',
@@ -36,7 +35,7 @@ export function SemanticsPanel({ node, emit, readOnly = false }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+    <div className="inspector-group">
       <Control label="Semantic Tag">
         <Select
           value={semantic.tag || ''}

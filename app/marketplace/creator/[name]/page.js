@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { mockTemplates } from '@/marketplace/mockTemplates';
 import TemplateCard from '@/marketplace/TemplateCard';
-import { spacing } from '@/ui/tokens';
 
 export default function CreatorPage({ params }) {
   const router = useRouter();
@@ -17,15 +16,15 @@ export default function CreatorPage({ params }) {
   }
 
   return (
-    <div style={{ padding: spacing.xl }}>
+    <div style={{ padding: 'var(--space-6)' }}>
       <h2>{name}</h2>
 
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-          gap: spacing.lg,
-          marginTop: spacing.lg,
+          gap: 'var(--space-4)',
+          marginTop: 'var(--space-4)',
         }}
       >
         {templates.length ? (
@@ -33,7 +32,7 @@ export default function CreatorPage({ params }) {
             <TemplateCard key={tpl.id} template={tpl} onOpen={openTemplate} />
           ))
         ) : (
-          <div style={{ fontSize: 13, color: '#64748b' }}>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
             No templates from this creator yet.
           </div>
         )}
