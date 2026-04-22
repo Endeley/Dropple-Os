@@ -4,7 +4,7 @@ import {
     normalizeParentVersionIds,
     rollbackTokenVersion,
     validateMergeLegality,
-} from '@/runtime/tokens/tokenVersioning.js';
+} from '@/core/events/tokenVersionGraph.js';
 
 function ensureTokenVersionState(state) {
     if (state?.document?.tokenVersions) {
