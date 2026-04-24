@@ -47,6 +47,8 @@ export function EditorWorkspaceShell({
     onReviewCriteriaChange,
     reviewerId,
 }) {
+    const templateGenerator = useTemplateGenerator();
+
     /**
      * Workspace + mode resolution
      */
@@ -177,7 +179,7 @@ export function EditorWorkspaceShell({
             documentName={documentName}
             canPersist={persistenceEnabled}
             canImport={persistenceEnabled}
-            onOpenTemplateGenerator={useTemplateGenerator().openGenerator}
+            onOpenTemplateGenerator={templateGenerator.openGenerator}
             educationReadOnly={educationReadOnly}
             readOnly={effectiveReadOnly}
             documentRole={documentRole}
@@ -224,7 +226,12 @@ export function EditorWorkspaceShell({
                         workspace
                     )}
 
-                    <TemplateGeneratorOverlay open={useTemplateGenerator().open} onClose={useTemplateGenerator().closeGenerator} state={replayState} events={events} mode={adapter} />
+                    <TemplateGeneratorOverlay
+                        generator={templateGenerator}
+                        state={replayState}
+                        events={events}
+                        mode={adapter}
+                    />
                 </ClipboardProvider>
             </GridProvider>
         </>

@@ -11,6 +11,7 @@ const IGNORE_DIRS = new Set(['.git', '.next', 'node_modules', 'out', 'build']);
 const TOKEN_DOCUMENT_PATTERNS = [
     /document\.tokens\b/,
     /document\.themes\b/,
+    /document\.tokenReviews\b/,
     /document\.tokenVersions\b/,
 ];
 
@@ -19,6 +20,7 @@ const TOKEN_DOCUMENT_ALLOWLIST = new Set([
     'core/events/reducers/themeReducers.js',
     'core/events/reducers/tokenReducers.js',
     'core/events/reducers/tokenVersionReducers.js',
+    'core/events/reducers/tokenReviewReducers.js',
     'core/persistence/documentEnvelope.js',
     'runtime/projection/zustandBridge.js',
     'runtime/tokens/projectActiveTokens.js',
@@ -27,6 +29,8 @@ const TOKEN_DOCUMENT_ALLOWLIST = new Set([
     'runtime/workspaces/workspaceContracts.js',
     'runtime/__tests__/tokenVersionDiff.test.mjs',
     'runtime/__tests__/tokenMergePreview.test.mjs',
+    'runtime/__tests__/tokenConflictResolution.test.mjs',
+    'runtime/__tests__/tokenReviewWorkflow.test.mjs',
 ]);
 
 function shouldIgnore(relPath) {

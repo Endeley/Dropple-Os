@@ -12,6 +12,10 @@ export const TOKEN_AUTHORING_INTENTS = Object.freeze({
     forkTokenVersion: 'intent.system.token-version.fork',
     mergeTokenVersion: 'intent.system.token-version.merge',
     rollbackTokenVersion: 'intent.system.token-version.rollback',
+    applyResolvedMerge: 'intent.system.token-version.merge.apply-resolved',
+    approveTokenReview: 'intent.system.token-review.approve',
+    rejectTokenReview: 'intent.system.token-review.reject',
+    requestTokenReviewChanges: 'intent.system.token-review.request-changes',
 });
 
 function emitIntent(type, payload, validate) {
@@ -113,6 +117,43 @@ export function rollbackTokenVersionCommand(payload) {
     );
 }
 
+export function applyResolvedMergeCommand(payload) {
+    emitIntent(
+        TOKEN_AUTHORING_INTENTS.applyResolvedMerge,
+        payload,
+        (value) =>
+            typeof value?.versionId === 'string' &&
+            value.versionId.length > 0 &&
+            Array.isArray(value?.parentVersionIds) &&
+            value.parentVersionIds.filter((parentId) => typeof parentId === 'string' && parentId.length > 0).length >= 2 &&
+            Number(value?.unresolvedCount ?? 0) === 0,
+    );
+}
+
+export function approveTokenReviewCommand(payload) {
+    emitIntent(
+        TOKEN_AUTHORING_INTENTS.approveTokenReview,
+        payload,
+        (value) => typeof value?.reviewId === 'string' && value.reviewId.length > 0,
+    );
+}
+
+export function rejectTokenReviewCommand(payload) {
+    emitIntent(
+        TOKEN_AUTHORING_INTENTS.rejectTokenReview,
+        payload,
+        (value) => typeof value?.reviewId === 'string' && value.reviewId.length > 0,
+    );
+}
+
+export function requestTokenReviewChangesCommand(payload) {
+    emitIntent(
+        TOKEN_AUTHORING_INTENTS.requestTokenReviewChanges,
+        payload,
+        (value) => typeof value?.reviewId === 'string' && value.reviewId.length > 0,
+    );
+}
+
 export function createTokenAuthoringCommandLayer() {
     const layer = {
         createToken: createTokenCommand,
@@ -126,6 +167,10 @@ export function createTokenAuthoringCommandLayer() {
         forkTokenVersion: forkTokenVersionCommand,
         mergeTokenVersion: mergeTokenVersionCommand,
         rollbackTokenVersion: rollbackTokenVersionCommand,
+        applyResolvedMerge: applyResolvedMergeCommand,
+        approveTokenReview: approveTokenReviewCommand,
+        rejectTokenReview: rejectTokenReviewCommand,
+        requestTokenReviewChanges: requestTokenReviewChangesCommand,
         tagVersion: tagTokenVersionCommand,
         forkVersion: forkTokenVersionCommand,
         mergeVersion: mergeTokenVersionCommand,

@@ -29,6 +29,10 @@ export const INTENT_CAPS = {
   [EventTypes.TOKEN_VERSION_FORK]: ['token:version'],
   [EventTypes.TOKEN_VERSION_MERGE]: ['token:version'],
   [EventTypes.TOKEN_VERSION_ROLLBACK]: ['token:version'],
+  [EventTypes.TOKEN_REVIEW_SUBMIT]: ['token:review'],
+  [EventTypes.TOKEN_REVIEW_APPROVE]: ['token:review'],
+  [EventTypes.TOKEN_REVIEW_REJECT]: ['token:review'],
+  [EventTypes.TOKEN_REVIEW_REQUEST_CHANGES]: ['token:review'],
 
   // behavior authoring (v1)
   [EventTypes.BEHAVIOR_STATE_CREATE]: ['node:mutate'],

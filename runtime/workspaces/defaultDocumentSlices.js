@@ -13,6 +13,13 @@ export function createDefaultSlice(slice) {
                 order: [],
             };
 
+        case 'tokenReviews':
+            return {
+                entries: {},
+                order: [],
+                activeReviewId: null,
+            };
+
         case 'tokenVersions':
             return {
                 entries: {},

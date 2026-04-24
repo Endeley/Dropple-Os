@@ -4,6 +4,23 @@ This is the **authoritative, single-file documentation** for Dropple OS — an *
 
 ---
 
+## Workspace Policy Pack
+
+For workspace and mode build policy, use these companion docs:
+
+- [Workspace Mode Build Policy](./WORKSPACE_MODE_BUILD_POLICY.md)
+- [Workspace Mode Policy Executive](./WORKSPACE_MODE_POLICY_EXECUTIVE.md)
+- [Workspace Mode Ownership Map](./WORKSPACE_MODE_OWNERSHIP_MAP.md)
+- [Mode Status Matrix](./MODE_STATUS_MATRIX.md)
+
+These documents define:
+- which workspaces and modes are active
+- which areas are frozen infrastructure
+- which modes should stay hidden
+- where code ownership should live
+
+---
+
 ## 1) Public Overview
 
 ### What Is Dropple OS?

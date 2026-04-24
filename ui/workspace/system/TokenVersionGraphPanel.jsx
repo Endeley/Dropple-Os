@@ -7,11 +7,15 @@ import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { selectActiveTokenVersionGraph } from '@/runtime/tokens/selectActiveTokenVersionGraph.js';
 import { selectActiveTokenVersionDiff } from '@/runtime/tokens/selectActiveTokenVersionDiff.js';
 import { selectActiveTokenMergePreview } from '@/runtime/tokens/selectActiveTokenMergePreview.js';
+import { selectActiveConflictResolution } from '@/runtime/tokens/selectActiveConflictResolution.js';
+import { selectActiveTokenReviewWorkflow } from '@/runtime/tokens/selectActiveTokenReviewWorkflow.js';
 import { useTokenAuthoringIntent } from '@/ui/workspace/system/tokenAuthoringIntent.js';
 import { TokenVersionInspector } from '@/ui/workspace/system/TokenVersionInspector.jsx';
 import { TokenVersionComparePanel } from '@/ui/workspace/system/TokenVersionComparePanel.jsx';
+import { TokenConflictResolutionPanel } from '@/ui/workspace/system/TokenConflictResolutionPanel.jsx';
 import { TokenVersionDiffPanel } from '@/ui/workspace/system/TokenVersionDiffPanel.jsx';
 import { TokenMergePreviewPanel } from '@/ui/workspace/system/TokenMergePreviewPanel.jsx';
+import { TokenReviewPanel } from '@/ui/workspace/system/TokenReviewPanel.jsx';
 
 function VersionNode({ node, isSelected, onSelect }) {
     return (
@@ -51,6 +55,15 @@ export function TokenVersionGraphPanel() {
     const [mergeVersionId, setMergeVersionId] = useState('');
     const [mergeLabel, setMergeLabel] = useState('');
     const [selectedVersionId, setSelectedVersionId] = useState('');
+    const [tokenPath, setTokenPath] = useState('color.primary');
+    const [tokenValue, setTokenValue] = useState('');
+    const [conflictSelections, setConflictSelections] = useState({});
+    const [resolvedMergeVersionId, setResolvedMergeVersionId] = useState('');
+    const [resolvedMergeLabel, setResolvedMergeLabel] = useState('');
+    const [proposalStatus, setProposalStatus] = useState('No proposal applied');
+    const [selectedReviewId, setSelectedReviewId] = useState('');
+    const [reviewerId, setReviewerId] = useState('');
+    const [decisionNote, setDecisionNote] = useState('');
 
     const {
         activeHead,
@@ -102,12 +115,42 @@ export function TokenVersionGraphPanel() {
             ),
         [activeHead, document, events, selectedVersionId],
     );
+    const projectedConflictResolution = useMemo(
+        () =>
+            selectActiveConflictResolution(
+                {
+                    document,
+                    events,
+                },
+                {
+                    mergePreview: projectedMergePreview,
+                    selectedResolutionChoices: conflictSelections,
+                    leftVersionId: activeHead || null,
+                    rightVersionId: selectedVersionId && selectedVersionId !== activeHead ? selectedVersionId : null,
+                },
+            ),
+        [activeHead, conflictSelections, document, events, projectedMergePreview, selectedVersionId],
+    );
+    const projectedReviewWorkflow = useMemo(
+        () =>
+            selectActiveTokenReviewWorkflow(
+                { document },
+                { selectedReviewId },
+            ),
+        [document, selectedReviewId],
+    );
 
     useEffect(() => {
         if (!nodes.some((node) => node.id === selectedVersionId)) {
             setSelectedVersionId(activeHead ?? '');
         }
     }, [activeHead, nodes, selectedVersionId]);
+
+    useEffect(() => {
+        if (!projectedReviewWorkflow?.reviews?.some((review) => review.id === selectedReviewId)) {
+            setSelectedReviewId(projectedReviewWorkflow?.selectedReview?.id ?? '');
+        }
+    }, [projectedReviewWorkflow, selectedReviewId]);
 
     function isAncestor(ancestorId, descendantId) {
         if (!ancestorId || !descendantId) return false;
@@ -190,6 +233,106 @@ export function TokenVersionGraphPanel() {
         commands.rollbackTokenVersion({
             rollbackTargetId: targetId,
             label: `Rollback to ${targetId}`,
+        });
+    }
+
+    function handleSetTokenValue() {
+        const nextPath = tokenPath.trim();
+        const nextValue = tokenValue.trim();
+        if (!nextPath || !nextValue) return;
+
+        commands.setTokenValue({
+            tokenPath: nextPath,
+            value: nextValue,
+            scope: 'global',
+        });
+        setProposalStatus('Token value updated');
+    }
+
+    function updateConflictChoice(entityKey, choice) {
+        setConflictSelections((current) => ({
+            ...current,
+            [entityKey]: {
+                ...(current[entityKey] ?? {}),
+                choice,
+            },
+        }));
+        setProposalStatus('Conflict choices updated');
+    }
+
+    function updateConflictManualValue(entityKey, manualValue) {
+        setConflictSelections((current) => ({
+            ...current,
+            [entityKey]: {
+                ...(current[entityKey] ?? {}),
+                manualValue,
+            },
+        }));
+    }
+
+    function updateConflictManualTargetPath(entityKey, manualTargetPath) {
+        setConflictSelections((current) => ({
+            ...current,
+            [entityKey]: {
+                ...(current[entityKey] ?? {}),
+                manualTargetPath,
+            },
+        }));
+    }
+
+    function handleApplyResolvedMerge() {
+        const versionId = resolvedMergeVersionId.trim() || buildSuggestedVersionId();
+        const parentVersionIds =
+            activeHead && selectedNode?.id ? [activeHead, selectedNode.id] : [];
+
+        if (projectedConflictResolution.unresolvedCount > 0 || parentVersionIds.length < 2) {
+            return;
+        }
+
+        commands.applyResolvedMerge({
+            reviewId: `review-${versionId}`,
+            versionId,
+            label: resolvedMergeLabel.trim() || `Resolved merge ${versionId}`,
+            parentVersionIds,
+            unresolvedCount: projectedConflictResolution.unresolvedCount,
+            resolutions: projectedConflictResolution.resolutions,
+            predictedMergedResult: projectedConflictResolution.predictedMergedResult,
+            impactSummary: projectedConflictResolution.impactSummary,
+        });
+        setSelectedReviewId(`review-${versionId}`);
+        setProposalStatus(`Submitted review proposal review-${versionId}`);
+    }
+
+    function handleApproveReview() {
+        const reviewId = projectedReviewWorkflow.selectedReview?.id ?? null;
+        if (!reviewId) return;
+
+        commands.approveTokenReview({
+            reviewId,
+            reviewerId: reviewerId.trim() || null,
+            decisionNote: decisionNote.trim() || null,
+        });
+    }
+
+    function handleRejectReview() {
+        const reviewId = projectedReviewWorkflow.selectedReview?.id ?? null;
+        if (!reviewId) return;
+
+        commands.rejectTokenReview({
+            reviewId,
+            reviewerId: reviewerId.trim() || null,
+            decisionNote: decisionNote.trim() || null,
+        });
+    }
+
+    function handleRequestReviewChanges() {
+        const reviewId = projectedReviewWorkflow.selectedReview?.id ?? null;
+        if (!reviewId) return;
+
+        commands.requestTokenReviewChanges({
+            reviewId,
+            reviewerId: reviewerId.trim() || null,
+            decisionNote: decisionNote.trim() || null,
         });
     }
 
@@ -330,6 +473,37 @@ export function TokenVersionGraphPanel() {
 
                         <div className='token-version-graph__action-card inspector-group'>
                             <div className='inspector-row'>
+                                <span>Token change</span>
+                                <button
+                                    type='button'
+                                    className='inspector-button'
+                                    onClick={handleSetTokenValue}
+                                    data-testid='token-version-token-set-button'
+                                >
+                                    Set
+                                </button>
+                            </div>
+                            <input
+                                className='token-version-graph__input'
+                                placeholder='Token path'
+                                value={tokenPath}
+                                onChange={(event) => setTokenPath(event.target.value)}
+                                data-testid='token-version-token-path'
+                            />
+                            <input
+                                className='token-version-graph__input'
+                                placeholder='Token value'
+                                value={tokenValue}
+                                onChange={(event) => setTokenValue(event.target.value)}
+                                data-testid='token-version-token-value'
+                            />
+                            <div className='inspector-muted'>
+                                Writes a global token value through canonical token authoring commands.
+                            </div>
+                        </div>
+
+                        <div className='token-version-graph__action-card inspector-group'>
+                            <div className='inspector-row'>
                                 <span>Rollback head</span>
                                 <button
                                     type='button'
@@ -363,6 +537,31 @@ export function TokenVersionGraphPanel() {
                 />
                 <TokenVersionDiffPanel diff={projectedDiff} />
                 <TokenMergePreviewPanel preview={projectedMergePreview} />
+                <TokenConflictResolutionPanel
+                    resolution={projectedConflictResolution}
+                    canApply={projectedConflictResolution.unresolvedCount === 0 && Boolean(activeHead && selectedNode?.id)}
+                    onChoose={updateConflictChoice}
+                    onManualValueChange={updateConflictManualValue}
+                    onManualTargetPathChange={updateConflictManualTargetPath}
+                    onApply={handleApplyResolvedMerge}
+                    proposalStatus={proposalStatus}
+                    applyVersionId={resolvedMergeVersionId}
+                    applyLabel={resolvedMergeLabel}
+                    onApplyVersionIdChange={setResolvedMergeVersionId}
+                    onApplyLabelChange={setResolvedMergeLabel}
+                />
+                <TokenReviewPanel
+                    workflow={projectedReviewWorkflow}
+                    selectedReviewId={selectedReviewId}
+                    onSelectReview={setSelectedReviewId}
+                    reviewerId={reviewerId}
+                    onReviewerIdChange={setReviewerId}
+                    decisionNote={decisionNote}
+                    onDecisionNoteChange={setDecisionNote}
+                    onApprove={handleApproveReview}
+                    onReject={handleRejectReview}
+                    onRequestChanges={handleRequestReviewChanges}
+                />
 
                 <div className='token-version-graph__lane inspector-block'>
                     <div className='inspector-title'>Topological Order</div>

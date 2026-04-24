@@ -87,6 +87,11 @@ test('bootWorkspaceDocument injects token governance slices for system workspace
         byId: {},
         order: [],
     });
+    assert.deepEqual(next.tokenReviews, {
+        entries: {},
+        order: [],
+        activeReviewId: null,
+    });
     assert.deepEqual(next.tokenVersions, {
         entries: {},
         order: [],

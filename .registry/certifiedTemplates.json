@@ -65,5 +65,251 @@
       "signature": "8dfaf39b1b54440976e5f314ea208743f1e868cdb1e05eaad8ab5ac892b391af7f64695750259945e1ec6946c002541830a0e995ae8786009e0b335d0fedbb9aa85da5b984473db5c64c386e52b17b8917b17b1a8fdd78f551def282b8124d1a3ce7d6941dc83adfd8f523093fe01a0f5f49444eac0ceb9e180060d68ce128a8d39fa1bb9cf6883e6949de7bb9f5d7623006a19e1a3012cec8da12bfa771526fec548332bda815148aae16547aa9d6f0d334eedc5e0e3acde1d53d7dd02ac7350845ad8c12b35324365d1210d5c25a28b0880ab04562e4d5dc5d4e7f7ac248a585b61b5fb228b00a298184f9362dff07d01a58fb8f50bfd67a713d4610966eab",
       "certifiedAt": "2026-03-01T09:33:35.831Z"
     }
+  },
+  {
+    "id": "tpl.design.hero-motion-template",
+    "version": "1.0.0",
+    "snapshotHash": "8577f710e3849515a9c1a4aea8ea6b8235c04182a78e598c7a5f1430e4f41514",
+    "baseSceneGraph": {
+      "rootId": "root",
+      "nodes": [
+        {
+          "id": "headline",
+          "type": "text",
+          "transform": {
+            "x": 0,
+            "y": 0,
+            "scale": 1
+          },
+          "opacity": 1,
+          "channels": {}
+        },
+        {
+          "id": "root",
+          "type": "frame",
+          "transform": {
+            "x": 0,
+            "y": 0,
+            "scale": 1
+          },
+          "opacity": 1,
+          "channels": {}
+        }
+      ],
+      "tree": {
+        "headline": [],
+        "root": [
+          "headline"
+        ]
+      },
+      "layout": {}
+    },
+    "states": {
+      "default": {
+        "duration": 500,
+        "tracks": [
+          {
+            "id": "track:opacity",
+            "type": "standard",
+            "order": 0,
+            "channelIds": [
+              "opacity"
+            ],
+            "meta": {
+              "name": "headline.opacity",
+              "locked": false,
+              "blendMode": "add"
+            }
+          }
+        ],
+        "groups": [],
+        "channels": [
+          {
+            "id": "opacity",
+            "target": "headline",
+            "property": "opacity",
+            "keyframes": [
+              {
+                "time": 0,
+                "value": 0,
+                "easing": "linear"
+              },
+              {
+                "time": 500,
+                "value": 1,
+                "easing": "easeInOut"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "defaultState": "default",
+    "capabilityProfile": {
+      "complexity": {
+        "trackCount": 1,
+        "groupCount": 0,
+        "channelCount": 1,
+        "channelDensity": 1
+      },
+      "performance": {
+        "evalP95Ms": null,
+        "withinBudget": null
+      },
+      "readiness": {
+        "withinTrackLimit": true,
+        "withinChannelDensity": true,
+        "withinEvalBudget": null,
+        "ok": true
+      },
+      "warnings": [
+        "Evaluation p95 unavailable"
+      ]
+    },
+    "metadata": {
+      "name": "Hero Motion Template",
+      "description": "Roundtrip fixture",
+      "author": "",
+      "license": "dropple-marketplace-standard",
+      "createdAt": "2026-04-24T12:50:43.429Z"
+    },
+    "params": {
+      "content": {},
+      "style": {},
+      "motion": {}
+    },
+    "certification": {
+      "certified": true,
+      "fingerprint": "bbf9bc1c04d969a9c684dc908a61ae1f993f72cb86871f71ef3a6094db5cab9e",
+      "snapshotHash": "8577f710e3849515a9c1a4aea8ea6b8235c04182a78e598c7a5f1430e4f41514",
+      "capabilityHash": "44ffe1dac90073c8063cf8bacc1321d7872267c8da4d114bd47e0d3d8a2d0d3b",
+      "engineVersion": "dropple-motion@1.x",
+      "certifiedAt": "derived:8577f710e384",
+      "engineHash": "dd3425bd740d26c0c2cb071a4338c5c16a6d98f8ca313494cd3c1e6d89b8ea81"
+    },
+    "mode": "design"
+  },
+  {
+    "id": "tpl.design.installable-motion-template",
+    "version": "1.0.0",
+    "snapshotHash": "8577f710e3849515a9c1a4aea8ea6b8235c04182a78e598c7a5f1430e4f41514",
+    "baseSceneGraph": {
+      "rootId": "root",
+      "nodes": [
+        {
+          "id": "headline",
+          "type": "text",
+          "transform": {
+            "x": 0,
+            "y": 0,
+            "scale": 1
+          },
+          "opacity": 1,
+          "channels": {}
+        },
+        {
+          "id": "root",
+          "type": "frame",
+          "transform": {
+            "x": 0,
+            "y": 0,
+            "scale": 1
+          },
+          "opacity": 1,
+          "channels": {}
+        }
+      ],
+      "tree": {
+        "headline": [],
+        "root": [
+          "headline"
+        ]
+      },
+      "layout": {}
+    },
+    "states": {
+      "default": {
+        "duration": 500,
+        "tracks": [
+          {
+            "id": "track:opacity",
+            "type": "standard",
+            "order": 0,
+            "channelIds": [
+              "opacity"
+            ],
+            "meta": {
+              "name": "headline.opacity",
+              "locked": false,
+              "blendMode": "add"
+            }
+          }
+        ],
+        "groups": [],
+        "channels": [
+          {
+            "id": "opacity",
+            "target": "headline",
+            "property": "opacity",
+            "keyframes": [
+              {
+                "time": 0,
+                "value": 0,
+                "easing": "linear"
+              },
+              {
+                "time": 500,
+                "value": 1,
+                "easing": "easeInOut"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "defaultState": "default",
+    "capabilityProfile": {
+      "complexity": {
+        "trackCount": 1,
+        "groupCount": 0,
+        "channelCount": 1,
+        "channelDensity": 1
+      },
+      "performance": {
+        "evalP95Ms": null,
+        "withinBudget": null
+      },
+      "readiness": {
+        "withinTrackLimit": true,
+        "withinChannelDensity": true,
+        "withinEvalBudget": null,
+        "ok": true
+      },
+      "warnings": [
+        "Evaluation p95 unavailable"
+      ]
+    },
+    "metadata": {
+      "name": "Installable Motion Template",
+      "description": "",
+      "author": "",
+      "license": "dropple-marketplace-standard",
+      "createdAt": "2026-04-24T12:50:43.452Z"
+    },
+    "params": {
+      "content": {},
+      "style": {},
+      "motion": {}
+    },
+    "certification": {
+      "certified": true,
+      "fingerprint": "bbf9bc1c04d969a9c684dc908a61ae1f993f72cb86871f71ef3a6094db5cab9e",
+      "snapshotHash": "8577f710e3849515a9c1a4aea8ea6b8235c04182a78e598c7a5f1430e4f41514",
+      "capabilityHash": "44ffe1dac90073c8063cf8bacc1321d7872267c8da4d114bd47e0d3d8a2d0d3b",
+      "engineVersion": "dropple-motion@1.x",
+      "certifiedAt": "derived:8577f710e384",
+      "engineHash": "dd3425bd740d26c0c2cb071a4338c5c16a6d98f8ca313494cd3c1e6d89b8ea81"
+    },
+    "mode": "design"
   }
 ]

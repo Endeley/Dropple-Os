@@ -26,7 +26,7 @@ test('system workspace modes expose canonical authoring capabilities through mod
             workspace: 'system',
             mode: 'versioning',
         }),
-        ['token-versioning'],
+        ['token-versioning', 'token-review'],
     );
 });
 
@@ -37,11 +37,13 @@ test('system authoring capabilities expose command layers without owning dispatc
     assert.match(registrySource, /'token-authoring'/);
     assert.match(registrySource, /'theme-authoring'/);
     assert.match(registrySource, /'token-versioning'/);
+    assert.match(registrySource, /'token-review'/);
     assert.match(registrySource, /createTokenAuthoringCommandLayer/);
     assert.match(registrySource, /TokenVersionGraphPanel/);
     assert.match(registrySource, /tools:\s*Object\.freeze\(\[\]\)/);
     assert.match(intentSource, /mergeTokenVersion/);
     assert.match(intentSource, /rollbackTokenVersion/);
+    assert.match(intentSource, /approveTokenReview/);
 });
 
 test('system authoring intent and capability files do not import reducers or dispatcher internals', () => {

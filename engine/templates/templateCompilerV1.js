@@ -85,24 +85,27 @@ function compileMotionState(name, timeline) {
 
     for (const track of timeline.tracks || []) {
         const property = track.property;
+        const target = track.target;
         if (!property) {
             throw new Error(`Timeline ${name} track property is required`);
         }
-
-        if (track.target) {
-            const existingTarget = targetByProperty.get(property);
-            if (existingTarget && existingTarget !== track.target) {
-                throw new Error(
-                    `Timeline ${name} cannot target multiple nodes for property ${property}`
-                );
-            }
-            targetByProperty.set(property, track.target);
+        if (!target) {
+            throw new Error(`Timeline ${name} track target is required`);
         }
+
+        const existingTarget = targetByProperty.get(property);
+        if (existingTarget && existingTarget !== target) {
+            throw new Error(
+                `Timeline ${name} cannot target multiple nodes for property ${property}`,
+            );
+        }
+        targetByProperty.set(property, target);
 
         if (trackGroups.has(property)) {
             throw new Error(`Timeline ${name} defines duplicate tracks for ${property}`);
         }
         trackGroups.set(property, {
+            target,
             property,
             keyframes: [...(track.keyframes || [])],
         });
@@ -116,6 +119,7 @@ function compileMotionState(name, timeline) {
         const canonicalKeyframes = group.keyframes.map((frame) => ({
             time: frame.t ?? frame.time,
             value: frame.v ?? frame.value,
+            easing: frame.easing ?? 'linear',
         }));
 
         if (canonicalKeyframes.length === 0) {
@@ -125,6 +129,8 @@ function compileMotionState(name, timeline) {
 
         channels.set(channelId, {
             id: channelId,
+            target: group.target,
+            property: group.property,
             keyframes: canonicalKeyframes,
         });
 
@@ -133,7 +139,10 @@ function compileMotionState(name, timeline) {
             type: 'standard',
             order: 0,
             channelIds: [channelId],
-            meta: { blendMode: 'add' },
+            meta: {
+                blendMode: 'add',
+                name: `${group.target}.${group.property}`,
+            },
         });
     }
 

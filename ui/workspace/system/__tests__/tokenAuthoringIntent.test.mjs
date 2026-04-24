@@ -11,6 +11,10 @@ import {
     forkTokenVersionCommand,
     mergeTokenVersionCommand,
     rollbackTokenVersionCommand,
+    applyResolvedMergeCommand,
+    approveTokenReviewCommand,
+    rejectTokenReviewCommand,
+    requestTokenReviewChangesCommand,
     setTokenAliasCommand,
     setTokenValueCommand,
     switchThemeCommand,
@@ -31,6 +35,10 @@ test('createTokenAuthoringCommandLayer exposes canonical token authoring command
     assert.equal(commands.forkTokenVersion, forkTokenVersionCommand);
     assert.equal(commands.mergeTokenVersion, mergeTokenVersionCommand);
     assert.equal(commands.rollbackTokenVersion, rollbackTokenVersionCommand);
+    assert.equal(commands.applyResolvedMerge, applyResolvedMergeCommand);
+    assert.equal(commands.approveTokenReview, approveTokenReviewCommand);
+    assert.equal(commands.rejectTokenReview, rejectTokenReviewCommand);
+    assert.equal(commands.requestTokenReviewChanges, requestTokenReviewChangesCommand);
     assert.equal(commands.tagVersion, tagTokenVersionCommand);
     assert.equal(commands.forkVersion, forkTokenVersionCommand);
     assert.equal(commands.mergeVersion, mergeTokenVersionCommand);
@@ -53,6 +61,10 @@ test('token authoring command layer emits canonical system intents on the canvas
         forkTokenVersion: (payload) => received.push(['forkTokenVersion', payload]),
         mergeTokenVersion: (payload) => received.push(['mergeTokenVersion', payload]),
         rollbackTokenVersion: (payload) => received.push(['rollbackTokenVersion', payload]),
+        applyResolvedMerge: (payload) => received.push(['applyResolvedMerge', payload]),
+        approveTokenReview: (payload) => received.push(['approveTokenReview', payload]),
+        rejectTokenReview: (payload) => received.push(['rejectTokenReview', payload]),
+        requestTokenReviewChanges: (payload) => received.push(['requestTokenReviewChanges', payload]),
     };
 
     canvasBus.on(TOKEN_AUTHORING_INTENTS.createToken, handlers.createToken);
@@ -65,6 +77,10 @@ test('token authoring command layer emits canonical system intents on the canvas
     canvasBus.on(TOKEN_AUTHORING_INTENTS.forkTokenVersion, handlers.forkTokenVersion);
     canvasBus.on(TOKEN_AUTHORING_INTENTS.mergeTokenVersion, handlers.mergeTokenVersion);
     canvasBus.on(TOKEN_AUTHORING_INTENTS.rollbackTokenVersion, handlers.rollbackTokenVersion);
+    canvasBus.on(TOKEN_AUTHORING_INTENTS.applyResolvedMerge, handlers.applyResolvedMerge);
+    canvasBus.on(TOKEN_AUTHORING_INTENTS.approveTokenReview, handlers.approveTokenReview);
+    canvasBus.on(TOKEN_AUTHORING_INTENTS.rejectTokenReview, handlers.rejectTokenReview);
+    canvasBus.on(TOKEN_AUTHORING_INTENTS.requestTokenReviewChanges, handlers.requestTokenReviewChanges);
 
     try {
         commands.createToken({ tokenPath: 'color.brand', value: '#ff0000', scope: 'global' });
@@ -77,6 +93,14 @@ test('token authoring command layer emits canonical system intents on the canvas
         commands.forkTokenVersion({ versionId: 'v2', sourceVersionId: 'v1', label: 'Fork' });
         commands.mergeTokenVersion({ versionId: 'v3', parentVersionIds: ['v2', 'v1'], label: 'Merge' });
         commands.rollbackTokenVersion({ rollbackTargetId: 'v1', label: 'Rollback' });
+        commands.applyResolvedMerge({
+            versionId: 'v4',
+            parentVersionIds: ['v3', 'v2'],
+            unresolvedCount: 0,
+        });
+        commands.approveTokenReview({ reviewId: 'review-v4', reviewerId: 'qa' });
+        commands.rejectTokenReview({ reviewId: 'review-v4', reviewerId: 'qa' });
+        commands.requestTokenReviewChanges({ reviewId: 'review-v4', reviewerId: 'qa' });
     } finally {
         canvasBus.off(TOKEN_AUTHORING_INTENTS.createToken, handlers.createToken);
         canvasBus.off(TOKEN_AUTHORING_INTENTS.setTokenValue, handlers.setTokenValue);
@@ -88,6 +112,10 @@ test('token authoring command layer emits canonical system intents on the canvas
         canvasBus.off(TOKEN_AUTHORING_INTENTS.forkTokenVersion, handlers.forkTokenVersion);
         canvasBus.off(TOKEN_AUTHORING_INTENTS.mergeTokenVersion, handlers.mergeTokenVersion);
         canvasBus.off(TOKEN_AUTHORING_INTENTS.rollbackTokenVersion, handlers.rollbackTokenVersion);
+        canvasBus.off(TOKEN_AUTHORING_INTENTS.applyResolvedMerge, handlers.applyResolvedMerge);
+        canvasBus.off(TOKEN_AUTHORING_INTENTS.approveTokenReview, handlers.approveTokenReview);
+        canvasBus.off(TOKEN_AUTHORING_INTENTS.rejectTokenReview, handlers.rejectTokenReview);
+        canvasBus.off(TOKEN_AUTHORING_INTENTS.requestTokenReviewChanges, handlers.requestTokenReviewChanges);
     }
 
     assert.deepEqual(received, [
@@ -101,5 +129,9 @@ test('token authoring command layer emits canonical system intents on the canvas
         ['forkTokenVersion', { versionId: 'v2', sourceVersionId: 'v1', label: 'Fork' }],
         ['mergeTokenVersion', { versionId: 'v3', parentVersionIds: ['v2', 'v1'], label: 'Merge' }],
         ['rollbackTokenVersion', { rollbackTargetId: 'v1', label: 'Rollback' }],
+        ['applyResolvedMerge', { versionId: 'v4', parentVersionIds: ['v3', 'v2'], unresolvedCount: 0 }],
+        ['approveTokenReview', { reviewId: 'review-v4', reviewerId: 'qa' }],
+        ['rejectTokenReview', { reviewId: 'review-v4', reviewerId: 'qa' }],
+        ['requestTokenReviewChanges', { reviewId: 'review-v4', reviewerId: 'qa' }],
     ]);
 });

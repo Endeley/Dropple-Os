@@ -162,6 +162,18 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
         }),
         lifecycle: Object.freeze({}),
     }),
+
+    'token-review': Object.freeze({
+        id: 'token-review',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([]),
+        }),
+        authoring: Object.freeze({
+            createCommandLayer: createTokenAuthoringCommandLayer,
+        }),
+        lifecycle: Object.freeze({}),
+    }),
 });
 
 export const CAPABILITY_REGISTRY = CAPABILITY_COMPONENTS;

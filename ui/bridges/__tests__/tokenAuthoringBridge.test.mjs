@@ -65,6 +65,25 @@ test('token authoring bridge rebinds to the latest dispatcher for canonical syst
             rollbackTargetId: 'v1',
             label: 'Rollback',
         });
+        canvasBus.emit(TOKEN_AUTHORING_INTENTS.applyResolvedMerge, {
+            reviewId: 'review-v4',
+            versionId: 'v4',
+            parentVersionIds: ['v3', 'v2'],
+            unresolvedCount: 0,
+            label: 'Resolved merge',
+        });
+        canvasBus.emit(TOKEN_AUTHORING_INTENTS.approveTokenReview, {
+            reviewId: 'review-v4',
+            reviewerId: 'qa',
+        });
+        canvasBus.emit(TOKEN_AUTHORING_INTENTS.rejectTokenReview, {
+            reviewId: 'review-v4',
+            reviewerId: 'qa',
+        });
+        canvasBus.emit(TOKEN_AUTHORING_INTENTS.requestTokenReviewChanges, {
+            reviewId: 'review-v4',
+            reviewerId: 'qa',
+        });
     } finally {
         cleanupActive?.();
         cleanupStale?.();
@@ -82,8 +101,14 @@ test('token authoring bridge rebinds to the latest dispatcher for canonical syst
         EventTypes.TOKEN_VERSION_FORK,
         EventTypes.TOKEN_VERSION_MERGE,
         EventTypes.TOKEN_VERSION_ROLLBACK,
+        EventTypes.TOKEN_REVIEW_SUBMIT,
+        EventTypes.TOKEN_REVIEW_APPROVE,
+        EventTypes.TOKEN_REVIEW_REJECT,
+        EventTypes.TOKEN_REVIEW_REQUEST_CHANGES,
     ]);
     assert.equal(dispatched[7]?.payload?.parentVersionId, 'v1');
     assert.deepEqual(dispatched[8]?.payload?.parentVersionIds, ['v2', 'v1']);
     assert.equal(dispatched[9]?.payload?.rollbackTargetId, 'v1');
+    assert.equal(dispatched[10]?.payload?.reviewId, 'review-v4');
+    assert.equal(dispatched[11]?.payload?.reviewId, 'review-v4');
 });

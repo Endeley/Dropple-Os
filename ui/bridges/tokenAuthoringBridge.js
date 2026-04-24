@@ -121,6 +121,56 @@ export function registerTokenAuthoringBridge(dispatcher) {
             },
         });
 
+    const onApplyResolvedMerge = (payload) =>
+        dispatch()?.({
+            type: EventTypes.TOKEN_REVIEW_SUBMIT,
+            payload: {
+                reviewId: payload?.reviewId ?? (payload?.versionId ? `review-${payload.versionId}` : null),
+                proposalType: 'resolved-merge',
+                versionId: payload?.versionId ?? null,
+                parentVersionIds: payload?.parentVersionIds ?? [],
+                label: payload?.label ?? null,
+                unresolvedCount: payload?.unresolvedCount ?? 0,
+                resolutions: payload?.resolutions ?? [],
+                predictedMergedResult: payload?.predictedMergedResult ?? [],
+                impactSummary: payload?.impactSummary ?? null,
+                timestamp: payload?.timestamp ?? null,
+            },
+        });
+
+    const onApproveTokenReview = (payload) =>
+        dispatch()?.({
+            type: EventTypes.TOKEN_REVIEW_APPROVE,
+            payload: {
+                reviewId: payload?.reviewId ?? null,
+                reviewerId: payload?.reviewerId ?? null,
+                decisionNote: payload?.decisionNote ?? null,
+                timestamp: payload?.timestamp ?? null,
+            },
+        });
+
+    const onRejectTokenReview = (payload) =>
+        dispatch()?.({
+            type: EventTypes.TOKEN_REVIEW_REJECT,
+            payload: {
+                reviewId: payload?.reviewId ?? null,
+                reviewerId: payload?.reviewerId ?? null,
+                decisionNote: payload?.decisionNote ?? null,
+                timestamp: payload?.timestamp ?? null,
+            },
+        });
+
+    const onRequestTokenReviewChanges = (payload) =>
+        dispatch()?.({
+            type: EventTypes.TOKEN_REVIEW_REQUEST_CHANGES,
+            payload: {
+                reviewId: payload?.reviewId ?? null,
+                reviewerId: payload?.reviewerId ?? null,
+                decisionNote: payload?.decisionNote ?? null,
+                timestamp: payload?.timestamp ?? null,
+            },
+        });
+
     if (!registered) {
         canvasBus.on(TOKEN_AUTHORING_INTENTS.createToken, onCreateToken);
         canvasBus.on(TOKEN_AUTHORING_INTENTS.setTokenValue, onSetTokenValue);
@@ -132,6 +182,10 @@ export function registerTokenAuthoringBridge(dispatcher) {
         canvasBus.on(TOKEN_AUTHORING_INTENTS.forkTokenVersion, onForkTokenVersion);
         canvasBus.on(TOKEN_AUTHORING_INTENTS.mergeTokenVersion, onMergeTokenVersion);
         canvasBus.on(TOKEN_AUTHORING_INTENTS.rollbackTokenVersion, onRollbackTokenVersion);
+        canvasBus.on(TOKEN_AUTHORING_INTENTS.applyResolvedMerge, onApplyResolvedMerge);
+        canvasBus.on(TOKEN_AUTHORING_INTENTS.approveTokenReview, onApproveTokenReview);
+        canvasBus.on(TOKEN_AUTHORING_INTENTS.rejectTokenReview, onRejectTokenReview);
+        canvasBus.on(TOKEN_AUTHORING_INTENTS.requestTokenReviewChanges, onRequestTokenReviewChanges);
         registered = true;
     }
 
@@ -148,6 +202,10 @@ export function registerTokenAuthoringBridge(dispatcher) {
             canvasBus.off(TOKEN_AUTHORING_INTENTS.forkTokenVersion, onForkTokenVersion);
             canvasBus.off(TOKEN_AUTHORING_INTENTS.mergeTokenVersion, onMergeTokenVersion);
             canvasBus.off(TOKEN_AUTHORING_INTENTS.rollbackTokenVersion, onRollbackTokenVersion);
+            canvasBus.off(TOKEN_AUTHORING_INTENTS.applyResolvedMerge, onApplyResolvedMerge);
+            canvasBus.off(TOKEN_AUTHORING_INTENTS.approveTokenReview, onApproveTokenReview);
+            canvasBus.off(TOKEN_AUTHORING_INTENTS.rejectTokenReview, onRejectTokenReview);
+            canvasBus.off(TOKEN_AUTHORING_INTENTS.requestTokenReviewChanges, onRequestTokenReviewChanges);
             activeDispatcher = null;
             registered = false;
         }

@@ -53,6 +53,10 @@ export const materialWorkspace = {
         EventTypes.TOKEN_VERSION_FORK,
         EventTypes.TOKEN_VERSION_MERGE,
         EventTypes.TOKEN_VERSION_ROLLBACK,
+        EventTypes.TOKEN_REVIEW_SUBMIT,
+        EventTypes.TOKEN_REVIEW_APPROVE,
+        EventTypes.TOKEN_REVIEW_REJECT,
+        EventTypes.TOKEN_REVIEW_REQUEST_CHANGES,
     ],
 
     export: {

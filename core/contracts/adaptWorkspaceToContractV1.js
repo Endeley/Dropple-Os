@@ -151,9 +151,9 @@ export function adaptWorkspaceToContractV1(ws) {
   }
 
   if (tools.includes('token') || (ws.engines ?? []).includes('tokens')) {
-    caps.push('token:author', 'theme:author', 'token:version');
+    caps.push('token:author', 'theme:author', 'token:version', 'token:review');
   } else {
-    denies.push('token:author', 'theme:author', 'token:version');
+    denies.push('token:author', 'theme:author', 'token:version', 'token:review');
   }
 
   // nesting / shapes

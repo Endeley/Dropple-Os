@@ -45,7 +45,7 @@ function createSystemWorkspaceDef() {
         tools: ['select'],
         policy: {
             mutation: 'open',
-            capabilities: ['token:author', 'theme:author', 'token:version'],
+            capabilities: ['token:author', 'theme:author', 'token:version', 'token:review'],
             denies: [],
         },
         events: {
@@ -60,6 +60,10 @@ function createSystemWorkspaceDef() {
                 EventTypes.TOKEN_VERSION_FORK,
                 EventTypes.TOKEN_VERSION_MERGE,
                 EventTypes.TOKEN_VERSION_ROLLBACK,
+                EventTypes.TOKEN_REVIEW_SUBMIT,
+                EventTypes.TOKEN_REVIEW_APPROVE,
+                EventTypes.TOKEN_REVIEW_REJECT,
+                EventTypes.TOKEN_REVIEW_REQUEST_CHANGES,
             ],
             enabledTriggerTypes: [],
         },
@@ -263,6 +267,52 @@ test('token version fork, merge, and rollback stay lawful through the dispatcher
     assert.equal(tokenVersions?.activeVersionId, 'v1');
 });
 
+test('token review submission and decisions persist through the dispatcher', async () => {
+    const dispatcher = await createSystemDispatcher();
+
+    await dispatcher.dispatch({
+        type: EventTypes.TOKEN_REVIEW_SUBMIT,
+        payload: {
+            reviewId: 'review-v4',
+            versionId: 'v4',
+            parentVersionIds: ['v3', 'v2'],
+            label: 'Resolved merge',
+            unresolvedCount: 0,
+            resolutions: [{ entityKey: 'color.primary', selectedChoice: 'keep-left' }],
+            predictedMergedResult: [{ entityKey: 'color.primary', next: '#222222' }],
+            impactSummary: { breaking: 0, additive: 1, cosmetic: 0 },
+            timestamp: 4,
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.TOKEN_REVIEW_REQUEST_CHANGES,
+        payload: {
+            reviewId: 'review-v4',
+            reviewerId: 'qa',
+            decisionNote: 'needs cleanup',
+            timestamp: 5,
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.TOKEN_REVIEW_APPROVE,
+        payload: {
+            reviewId: 'review-v4',
+            reviewerId: 'lead',
+            decisionNote: 'approved',
+            timestamp: 6,
+        },
+    });
+
+    const tokenReviews = dispatcher.getState()?.document?.tokenReviews;
+    assert.deepEqual(tokenReviews?.order, ['review-v4']);
+    assert.equal(tokenReviews?.entries?.['review-v4']?.status, 'approved');
+    assert.equal(tokenReviews?.entries?.['review-v4']?.reviewerId, 'lead');
+    assert.equal(tokenReviews?.entries?.['review-v4']?.versionId, 'v4');
+    assert.equal(tokenReviews?.activeReviewId, 'review-v4');
+});
+
 test('token event replay is deterministic for the same event stream', async () => {
     const events = [
         {
@@ -341,6 +391,27 @@ test('token event replay is deterministic for the same event stream', async () =
                 rollbackTargetId: 'v1',
             },
         },
+        {
+            type: EventTypes.TOKEN_REVIEW_SUBMIT,
+            payload: {
+                reviewId: 'review-v3',
+                versionId: 'v3',
+                parentVersionIds: ['v2', 'v1'],
+                label: 'Review merge',
+                unresolvedCount: 0,
+                resolutions: [],
+                predictedMergedResult: [],
+                impactSummary: { breaking: 0, additive: 0, cosmetic: 0 },
+            },
+        },
+        {
+            type: EventTypes.TOKEN_REVIEW_APPROVE,
+            payload: {
+                reviewId: 'review-v3',
+                reviewerId: 'qa',
+                decisionNote: 'approved',
+            },
+        },
     ];
 
     const first = await replayEventStream(events);
@@ -348,6 +419,7 @@ test('token event replay is deterministic for the same event stream', async () =
 
     assert.deepEqual(first.state?.document?.tokens, second.state?.document?.tokens);
     assert.deepEqual(first.state?.document?.themes, second.state?.document?.themes);
+    assert.deepEqual(first.state?.document?.tokenReviews, second.state?.document?.tokenReviews);
     assert.deepEqual(first.state?.document?.tokenVersions, second.state?.document?.tokenVersions);
     assert.deepEqual(first.projection, second.projection);
 });

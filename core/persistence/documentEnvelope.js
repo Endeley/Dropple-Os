@@ -14,6 +14,7 @@ export const CANONICAL_DOCUMENT_SLICES = Object.freeze([
     'sequences',
     'stateMachines',
     'themes',
+    'tokenReviews',
     'tokenVersions',
     'tokens',
     'variables',
@@ -73,6 +74,11 @@ export function createCanonicalDocumentEnvelope({
             activeThemeId: null,
             byId: {},
             order: [],
+        },
+        tokenReviews: {
+            entries: {},
+            order: [],
+            activeReviewId: null,
         },
         tokenVersions: {
             entries: {},

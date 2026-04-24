@@ -106,6 +106,10 @@ export const EventTypes = Object.freeze({
     TOKEN_VERSION_FORK: 'token/version/fork',
     TOKEN_VERSION_MERGE: 'token/version/merge',
     TOKEN_VERSION_ROLLBACK: 'token/version/rollback',
+    TOKEN_REVIEW_SUBMIT: 'token/review/submit',
+    TOKEN_REVIEW_APPROVE: 'token/review/approve',
+    TOKEN_REVIEW_REJECT: 'token/review/reject',
+    TOKEN_REVIEW_REQUEST_CHANGES: 'token/review/request-changes',
 
     // ─────────────────────────────
     // Timeline

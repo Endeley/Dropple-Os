@@ -9,7 +9,7 @@ export const WORKSPACE_CONTRACTS = Object.freeze({
         required: Object.freeze(['graphs']),
     }),
     system: Object.freeze({
-        required: Object.freeze(['tokens', 'themes', 'tokenVersions']),
+        required: Object.freeze(['tokens', 'themes', 'tokenReviews', 'tokenVersions']),
     }),
     collaborate: Object.freeze({
         required: Object.freeze([]),

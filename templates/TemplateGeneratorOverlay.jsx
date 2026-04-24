@@ -1,116 +1,143 @@
 'use client';
 
-import { createTemplateArtifact } from './templateTypes';
-import { serializeWorkspaceForTemplate } from './TemplateSerializer';
-import { validateTemplate } from './TemplateValidator';
-
 export default function TemplateGeneratorOverlay({
-  open,
-  onClose,
-  state,
-  events,
-  mode,
+    generator,
+    state,
+    events,
+    mode,
 }) {
-  if (!open) return null;
+    if (!generator?.open) return null;
 
-  function publish() {
-    const { snapshot, events: sliced } = serializeWorkspaceForTemplate({
-      state,
-      events,
-      startCursor: -1,
-    });
+    const metadata = generator.metadata ?? {};
 
-    const errors = validateTemplate({ snapshot, events: sliced });
-    if (errors.length) {
-      alert(errors.join('\n'));
-      return;
+    function updateField(field, value) {
+        generator.setMetadata((current) => ({
+            ...current,
+            [field]: value,
+        }));
     }
 
-    const artifact = createTemplateArtifact({
-      id: crypto.randomUUID(),
-      mode: mode.id,
-      snapshot,
-      events: sliced,
-      metadata: {
-        title: 'Untitled Template',
-        description: '',
-      },
-    });
-
-    try {
-      validateTemplate(artifact);
-    } catch (err) {
-      console.error(err);
-      alert(
-        'Template is invalid and was rejected.\n\n' +
-          (err instanceof Error ? err.message : 'Unknown validation error')
-      );
-      return;
+    async function publish() {
+        try {
+            await generator.publish({
+                state,
+                events,
+                mode,
+            });
+        } catch (err) {
+            console.error(err);
+        }
     }
 
-    console.log('TEMPLATE ARTIFACT', artifact);
-    onClose();
-  }
-
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.3)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
-    >
-      <div
-        style={{
-          background: 'var(--surface-panel)',
-          padding: 'var(--space-lg)',
-          width: 420,
-          borderRadius: 'var(--radius-md)',
-          border: '1px solid var(--border-default)',
-        }}
-      >
-        <h3 style={{ marginTop: 0 }}>Create Template</h3>
-        <p style={{ color: 'var(--text-muted)' }}>
-          This will package your current design as a reusable template.
-        </p>
-
-        <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
-          <button
-            onClick={publish}
+    return (
+        <div
             style={{
-              minWidth: 32,
-              height: 32,
-              padding: '0 var(--space-sm)',
-              border: '1px solid var(--border-default)',
-              borderRadius: 'var(--radius-sm)',
-              background: 'var(--surface-1)',
-              color: 'var(--text-primary)',
-              fontSize: 12,
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0,0,0,0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000,
             }}
-          >
-            Publish Template
-          </button>
-          <button
-            onClick={onClose}
-            style={{
-              minWidth: 32,
-              height: 32,
-              padding: '0 var(--space-sm)',
-              border: '1px solid var(--border-default)',
-              borderRadius: 'var(--radius-sm)',
-              background: 'var(--surface-1)',
-              color: 'var(--text-primary)',
-              fontSize: 12,
-            }}
-          >
-            Cancel
-          </button>
+        >
+            <div
+                style={{
+                    background: 'var(--surface-panel)',
+                    padding: 'var(--space-lg)',
+                    width: 420,
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--border-default)',
+                    display: 'grid',
+                    gap: 'var(--space-sm)',
+                }}
+            >
+                <h3 style={{ margin: 0 }}>Create Template</h3>
+                <p style={{ color: 'var(--text-muted)', margin: 0 }}>
+                    Publish the current workspace through the certified template pipeline.
+                </p>
+
+                <label style={{ display: 'grid', gap: 6, fontSize: 12 }}>
+                    <span>Template Name</span>
+                    <input
+                        type='text'
+                        value={metadata.title ?? ''}
+                        onChange={(event) => updateField('title', event.target.value)}
+                        placeholder='Untitled Template'
+                        style={{
+                            width: '100%',
+                            minHeight: 36,
+                            padding: '0 10px',
+                            border: '1px solid var(--border-default)',
+                            borderRadius: 'var(--radius-sm)',
+                            background: 'var(--surface-1)',
+                            color: 'var(--text-primary)',
+                        }}
+                    />
+                </label>
+
+                <label style={{ display: 'grid', gap: 6, fontSize: 12 }}>
+                    <span>Description</span>
+                    <textarea
+                        value={metadata.description ?? ''}
+                        onChange={(event) => updateField('description', event.target.value)}
+                        placeholder='What does this template preserve?'
+                        rows={4}
+                        style={{
+                            width: '100%',
+                            padding: '10px',
+                            border: '1px solid var(--border-default)',
+                            borderRadius: 'var(--radius-sm)',
+                            background: 'var(--surface-1)',
+                            color: 'var(--text-primary)',
+                            resize: 'vertical',
+                        }}
+                    />
+                </label>
+
+                {generator.error ? (
+                    <div style={{ color: 'var(--danger-500, #b91c1c)', fontSize: 12 }}>
+                        {generator.error instanceof Error
+                            ? generator.error.message
+                            : 'Template publish failed.'}
+                    </div>
+                ) : null}
+
+                <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
+                    <button
+                        onClick={publish}
+                        disabled={generator.isPublishing}
+                        style={{
+                            minWidth: 32,
+                            height: 32,
+                            padding: '0 var(--space-sm)',
+                            border: '1px solid var(--border-default)',
+                            borderRadius: 'var(--radius-sm)',
+                            background: 'var(--surface-1)',
+                            color: 'var(--text-primary)',
+                            fontSize: 12,
+                        }}
+                    >
+                        {generator.isPublishing ? 'Publishing...' : 'Publish Template'}
+                    </button>
+                    <button
+                        onClick={generator.closeGenerator}
+                        disabled={generator.isPublishing}
+                        style={{
+                            minWidth: 32,
+                            height: 32,
+                            padding: '0 var(--space-sm)',
+                            border: '1px solid var(--border-default)',
+                            borderRadius: 'var(--radius-sm)',
+                            background: 'var(--surface-1)',
+                            color: 'var(--text-primary)',
+                            fontSize: 12,
+                        }}
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 }

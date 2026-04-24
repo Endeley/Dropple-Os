@@ -17,6 +17,13 @@ Enforcement references:
 - `docs/PROJECTION_LAYER_V1.md`
 - `docs/AUTHORITY_TRANSLATION_LAYER_V1.md`
 
+Workspace and mode policy references:
+
+- `docs/WORKSPACE_MODE_BUILD_POLICY.md`
+- `docs/WORKSPACE_MODE_POLICY_EXECUTIVE.md`
+- `docs/WORKSPACE_MODE_OWNERSHIP_MAP.md`
+- `docs/MODE_STATUS_MATRIX.md`
+
 ## Purpose
 
 This document defines the non-negotiable architectural contracts for rendering, interaction, and mutation in Dropple-OS.
