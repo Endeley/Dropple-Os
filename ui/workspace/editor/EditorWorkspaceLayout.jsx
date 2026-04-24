@@ -212,7 +212,7 @@ function EditorWorkspaceLayoutInner({
             ) : adapter?.id === 'review' ? (
                 <ReviewToolbar submission={reviewSubmission} onDecision={onReviewDecision} reviewerId={reviewerId} cursor={cursor} />
             ) : readOnly ? null : (
-                <Toolbar mode={adapter} emit={emit} getState={getState} events={events} cursor={cursor} documentName={documentName} onSave={onSave} onSaveAs={onSaveAs} recentDocs={recentDocs} onOpenDocument={onOpenDocument} canPersist={canPersist} />
+                <Toolbar mode={adapter} emit={emit} getState={getState} events={events} cursor={cursor} documentName={documentName} onSave={onSave} onSaveAs={onSaveAs} recentDocs={recentDocs} onOpenDocument={onOpenDocument} canPersist={canPersist} onOpenTemplateGenerator={onOpenTemplateGenerator} />
             )}
 
             {/* Main workspace */}

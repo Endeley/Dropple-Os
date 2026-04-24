@@ -20,6 +20,15 @@ function createDocument(nodes, rootIds = ['root'], motionTarget = 'headline') {
                         { id: 'kf-600', t: 600, v: 1 },
                     ],
                 },
+                'clip-headline-translateY': {
+                    id: 'clip-headline-translateY',
+                    target: motionTarget,
+                    property: 'translateY',
+                    keyframes: [
+                        { id: 'kf-y-0', t: 0, v: 20 },
+                        { id: 'kf-y-600', t: 600, v: 0, easing: 'ease-in-out' },
+                    ],
+                },
             },
         },
     };
@@ -60,6 +69,7 @@ test('workspaceToCCMTemplate emits a valid CCM artifact for a simple UIUX scene'
     assert.equal(artifact.motion.timelines.default.duration, 600);
     assert.equal(artifact.motion.timelines.default.tracks[0].target, 'headline');
     assert.equal(artifact.motion.timelines.default.tracks[0].property, 'opacity');
+    assert.equal(artifact.motion.timelines.default.tracks[1].property, 'translateY');
 });
 
 test('workspaceToCCMTemplate is deterministic under node storage reordering', () => {

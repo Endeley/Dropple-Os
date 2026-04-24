@@ -14,8 +14,11 @@ function safeNumber(value, fallback = 0) {
 
 function cloneNode(node) {
     if (!node || typeof node !== 'object') return node;
+
     return {
         ...node,
+        worldTransform: node.worldTransform ? { ...node.worldTransform } : undefined,
+        viewTransform: node.viewTransform ? { ...node.viewTransform } : undefined,
         children: Array.isArray(node.children) ? node.children.map(cloneNode) : [],
     };
 }
@@ -29,17 +32,26 @@ function mergeChildren(childrenA = [], childrenB = []) {
     const byId = new Map();
 
     for (const child of childrenA) {
-        if (child?.id) byId.set(child.id, { left: child, right: null });
-    }
-    for (const child of childrenB) {
-        if (!child?.id) continue;
-        const current = byId.get(child.id);
-        byId.set(child.id, { left: current?.left ?? null, right: child });
+        if (child?.id) {
+            byId.set(child.id, {
+                left: child,
+                right: null,
+            });
+        }
     }
 
-    return [...byId.entries()]
-        .sort((left, right) => String(left[0]).localeCompare(String(right[0])))
-        .map(([, pair]) => pair);
+    for (const child of childrenB) {
+        if (!child?.id) continue;
+
+        const current = byId.get(child.id);
+
+        byId.set(child.id, {
+            left: current?.left ?? null,
+            right: child,
+        });
+    }
+
+    return [...byId.entries()].sort((a, b) => String(a[0]).localeCompare(String(b[0]))).map(([, pair]) => pair);
 }
 
 function composeNode(nodeA, nodeB, t) {
@@ -61,31 +73,32 @@ function composeNode(nodeA, nodeB, t) {
         ...(nodeA ?? {}),
         ...(nodeB ?? {}),
         id: nodeA?.id ?? nodeB?.id ?? null,
-        x: lerp(safeNumber(nodeA?.x), safeNumber(nodeB?.x), t),
-        y: lerp(safeNumber(nodeA?.y), safeNumber(nodeB?.y), t),
+
         opacity: lerp(safeNumber(nodeA?.opacity, 1), safeNumber(nodeB?.opacity, 1), t),
-        rotation: shortestAngleLerp(
-            safeNumber(nodeA?.rotation),
-            safeNumber(nodeB?.rotation),
-            t,
-        ),
+
+        rotation: shortestAngleLerp(safeNumber(nodeA?.rotation), safeNumber(nodeB?.rotation), t),
+
         scale: lerp(safeNumber(nodeA?.scale, 1), safeNumber(nodeB?.scale, 1), t),
     };
 
+    next.worldTransform = {
+        x: lerp(safeNumber(nodeA?.worldTransform?.x), safeNumber(nodeB?.worldTransform?.x), t),
+        y: lerp(safeNumber(nodeA?.worldTransform?.y), safeNumber(nodeB?.worldTransform?.y), t),
+    };
+
+    next.viewTransform = {
+        x: lerp(safeNumber(nodeA?.viewTransform?.x), safeNumber(nodeB?.viewTransform?.x), t),
+        y: lerp(safeNumber(nodeA?.viewTransform?.y), safeNumber(nodeB?.viewTransform?.y), t),
+    };
+
     const childPairs = mergeChildren(nodeA?.children, nodeB?.children);
-    next.children = childPairs
-        .map(({ left, right }) => composeNode(left, right, t))
-        .filter(Boolean);
+
+    next.children = childPairs.map(({ left, right }) => composeNode(left, right, t)).filter(Boolean);
 
     return next;
 }
 
-export function composeSceneTransition({
-    sceneA,
-    sceneB,
-    transition,
-    t,
-} = {}) {
+export function composeSceneTransition({ sceneA, sceneB, transition, t } = {}) {
     const progress = clamp01(safeNumber(t));
 
     if (!transition || transition?.type === 'cut') {

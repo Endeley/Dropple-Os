@@ -178,18 +178,37 @@ function resolveChannelValue(channel, timeMs, label) {
     throw new Error(`evaluateShotAt: ${label} must be a number or keyframes`);
 }
 
-function applyResolvedChannelsToRuntime(node, resolvedChannels) {
+function buildChannelDescriptorMap(timeline) {
+    const descriptors = new Map();
+
+    for (const channel of timeline?.channels || []) {
+        if (!channel || typeof channel !== 'object' || typeof channel.id !== 'string') continue;
+        descriptors.set(channel.id, channel);
+    }
+
+    return descriptors;
+}
+
+function applyResolvedChannelsToRuntime(node, resolvedChannels, channelDescriptors, rootNodeId) {
     if (!node || typeof node !== 'object') return node;
 
     const next = { ...node };
     const childrenIn = Array.isArray(node.children) ? node.children : [];
-    const children = childrenIn.map((child) => applyResolvedChannelsToRuntime(child, resolvedChannels));
+    const children = childrenIn.map((child) =>
+        applyResolvedChannelsToRuntime(child, resolvedChannels, channelDescriptors, rootNodeId)
+    );
     next.children = children;
 
     const baseChannels = node.channels && typeof node.channels === 'object' ? node.channels : {};
     const nextChannels = { ...baseChannels };
     const keys = Object.keys(resolvedChannels).sort();
     for (const key of keys) {
+        const channel = channelDescriptors.get(key) ?? null;
+        const targetId = typeof channel?.target === 'string' && channel.target.length > 0
+            ? channel.target
+            : rootNodeId;
+        if (targetId !== node.id) continue;
+
         nextChannels[key] = { value: resolvedChannels[key] };
     }
     next.channels = nextChannels;
@@ -214,6 +233,7 @@ export function evaluateShotAt(shotTimeline, sceneGraph, timeMs, options = {}) {
 
     let graphForEval = sceneGraph;
     if (shot.timeline) {
+        const channelDescriptors = buildChannelDescriptorMap(shot.timeline);
         const evaluateChannel = (channelId, time) => {
             const channel = (shot.timeline.channels || []).find((c) => c.id === channelId);
             if (!channel) return undefined;
@@ -221,7 +241,12 @@ export function evaluateShotAt(shotTimeline, sceneGraph, timeMs, options = {}) {
         };
         const blend = (a, b) => (Number.isFinite(a) && Number.isFinite(b) ? a + b : b);
         const resolved = evaluateChannelTimeline(shot.timeline, shotTimeMs, evaluateChannel, blend);
-        graphForEval = applyResolvedChannelsToRuntime(sceneGraph, resolved);
+        graphForEval = applyResolvedChannelsToRuntime(
+            sceneGraph,
+            resolved,
+            channelDescriptors,
+            sceneGraph?.id ?? null,
+        );
     }
 
     const evaluatedScene = evaluateScene(graphForEval, shotTimeMs, { cameraTransform });

@@ -16,6 +16,12 @@ const NODE_TYPE_MAP = Object.freeze({
     Overlay: 'overlay',
 });
 
+const ENGINE_CHANNEL_BY_TEMPLATE_PROPERTY = Object.freeze({
+    opacity: 'opacity',
+    translateX: 'transform.x',
+    translateY: 'transform.y',
+});
+
 function mapNodeType(type) {
     if (type in NODE_TYPE_MAP) return NODE_TYPE_MAP[type];
     return type;
@@ -27,6 +33,15 @@ function cloneParams(params) {
         return structuredClone(params);
     }
     return JSON.parse(JSON.stringify(params));
+}
+
+function resolveEngineChannelKey(property) {
+    const channelKey = ENGINE_CHANNEL_BY_TEMPLATE_PROPERTY[property];
+    if (channelKey) return channelKey;
+
+    throw new Error(
+        `Template property ${property} is not supported by the current engine channel dialect`,
+    );
 }
 
 function compileStructure(structure) {
@@ -80,7 +95,7 @@ function ensureKeyframesAscending(keyframes, label) {
 function compileMotionState(name, timeline) {
     const channels = new Map();
     const tracks = [];
-    const targetByProperty = new Map();
+    const targetByChannel = new Map();
     const trackGroups = new Map();
 
     for (const track of timeline.tracks || []) {
@@ -92,19 +107,21 @@ function compileMotionState(name, timeline) {
         if (!target) {
             throw new Error(`Timeline ${name} track target is required`);
         }
+        const channelKey = resolveEngineChannelKey(property);
 
-        const existingTarget = targetByProperty.get(property);
+        const existingTarget = targetByChannel.get(channelKey);
         if (existingTarget && existingTarget !== target) {
             throw new Error(
-                `Timeline ${name} cannot target multiple nodes for property ${property}`,
+                `Timeline ${name} cannot target multiple nodes for engine channel ${channelKey}`,
             );
         }
-        targetByProperty.set(property, target);
+        targetByChannel.set(channelKey, target);
 
-        if (trackGroups.has(property)) {
-            throw new Error(`Timeline ${name} defines duplicate tracks for ${property}`);
+        if (trackGroups.has(channelKey)) {
+            throw new Error(`Timeline ${name} defines duplicate tracks for engine channel ${channelKey}`);
         }
-        trackGroups.set(property, {
+        trackGroups.set(channelKey, {
+            channelKey,
             target,
             property,
             keyframes: [...(track.keyframes || [])],
@@ -112,9 +129,9 @@ function compileMotionState(name, timeline) {
     }
 
     const groupedKeys = Array.from(trackGroups.keys()).sort();
-    for (const property of groupedKeys) {
-        const group = trackGroups.get(property);
-        const channelId = property;
+    for (const channelKey of groupedKeys) {
+        const group = trackGroups.get(channelKey);
+        const channelId = group.channelKey;
 
         const canonicalKeyframes = group.keyframes.map((frame) => ({
             time: frame.t ?? frame.time,

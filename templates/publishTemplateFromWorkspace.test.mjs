@@ -35,6 +35,15 @@ function createDocument() {
                         { id: 'kf-500', t: 500, v: 1, easing: 'ease-in' },
                     ],
                 },
+                'clip-headline-translateY': {
+                    id: 'clip-headline-translateY',
+                    target: 'headline',
+                    property: 'translateY',
+                    keyframes: [
+                        { id: 'kf-y-0', t: 0, v: 24 },
+                        { id: 'kf-y-500', t: 500, v: 0, easing: 'ease-in-out' },
+                    ],
+                },
             },
         },
     };
@@ -58,6 +67,18 @@ test('publishTemplateFromWorkspace closes publish -> compile -> certify -> regis
 
         assert.equal(result.artifact.motion.timelines.default.duration, 500);
         assert.equal(result.artifact.motion.timelines.default.tracks[0].target, 'headline');
+        assert.equal(result.artifact.motion.timelines.default.tracks[1].property, 'translateY');
+        assert.deepEqual(
+            result.seed.states.default.channels.map((channel) => ({
+                id: channel.id,
+                property: channel.property,
+                target: channel.target,
+            })),
+            [
+                { id: 'opacity', property: 'opacity', target: 'headline' },
+                { id: 'transform.y', property: 'translateY', target: 'headline' },
+            ],
+        );
         assert.equal(result.seed.certification.certified, true);
         assert.equal(result.seed.mode, 'design');
         assert.ok(fs.existsSync(path.join(tempDir, '.registry', 'certifiedTemplates.json')));
@@ -104,10 +125,24 @@ test('installCertifiedTemplate hydrates seed-backed templates into canonical run
         assert.equal(result.installed, true);
         assert.ok(hydrated);
         assert.deepEqual(hydrated.document.sceneGraph.rootIds, ['root']);
-        assert.equal(hydrated.timeline.timelines.default.channels[0].target, 'headline');
+        assert.deepEqual(
+            hydrated.timeline.timelines.default.channels.map((channel) => ({
+                id: channel.id,
+                property: channel.property,
+                target: channel.target,
+            })),
+            [
+                { id: 'opacity', property: 'opacity', target: 'headline' },
+                { id: 'transform.y', property: 'translateY', target: 'headline' },
+            ],
+        );
         assert.equal(
             hydrated.document.motion.clips['clip:headline:opacity'].keyframes[1].easing,
             'easeInOut',
+        );
+        assert.equal(
+            hydrated.document.motion.clips['clip:headline:translateY'].keyframes[0].v,
+            24,
         );
     } finally {
         process.chdir(originalCwd);

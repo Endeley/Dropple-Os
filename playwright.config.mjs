@@ -17,10 +17,10 @@ export default defineConfig({
   },
   webServer: SHOULD_START_WEBSERVER
     ? {
-        command: `npm run start -- --hostname ${HOST} --port ${PORT}`,
+        command: `npm run build:e2e && npm run start:e2e -- --hostname ${HOST} --port ${PORT}`,
         url: BASE_URL,
         timeout: 120_000,
-        reuseExistingServer: true,
+        reuseExistingServer: false,
       }
     : undefined,
 });

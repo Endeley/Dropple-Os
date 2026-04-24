@@ -104,15 +104,19 @@ function buildRuntimeSnapshotFromSeed(seed) {
     };
 }
 
+export function buildRuntimeSnapshotFromCertifiedTemplate(template) {
+    return isSeedTemplate(template)
+        ? buildRuntimeSnapshotFromSeed(template)
+        : buildRuntimeSnapshotFromTemplateGraph(template?.graph);
+}
+
 export function installCertifiedTemplate({ dispatcher, template } = {}) {
     const resolved = dispatcher ?? globalThis.__droppleDispatcher ?? null;
     if (!resolved?.hydrateRuntimeState) {
         throw new Error('Missing dispatcher.');
     }
 
-    const snapshot = isSeedTemplate(template)
-        ? buildRuntimeSnapshotFromSeed(template)
-        : buildRuntimeSnapshotFromTemplateGraph(template?.graph);
+    const snapshot = buildRuntimeSnapshotFromCertifiedTemplate(template);
 
     resolved.hydrateRuntimeState(snapshot, { animate: false });
 

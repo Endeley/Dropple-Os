@@ -54,6 +54,6 @@ test('resolveWorkspaceCapabilities exposes system authoring overlays per mode de
             workspace: 'system',
             mode: 'versioning',
         }),
-        ['token-versioning'],
+        ['token-versioning', 'token-review'],
     );
 });

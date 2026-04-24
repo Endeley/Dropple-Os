@@ -26,7 +26,12 @@ test('cut returns sceneA before completion', () => {
         t: 0.5,
     });
 
-    assert.deepEqual(result, sceneA);
+    // shape changed due to clone carrying transform slots
+    assert.equal(result.id, sceneA.id);
+    assert.equal(result.x, sceneA.x);
+    assert.equal(result.opacity, sceneA.opacity);
+
+    // still cloned, not same object
     assert.notEqual(result, sceneA);
 });
 
@@ -41,7 +46,10 @@ test('cut returns sceneB at completion', () => {
         t: 1,
     });
 
-    assert.deepEqual(result, sceneB);
+    assert.equal(result.id, sceneB.id);
+    assert.equal(result.x, sceneB.x);
+    assert.equal(result.opacity, sceneB.opacity);
+
     assert.notEqual(result, sceneB);
 });
 
@@ -55,6 +63,7 @@ test('crossfade blends deterministically at midpoint', () => {
         transition: { type: 'crossfade', durationMs: 100 },
         t: 0.5,
     });
+
     const right = composeSceneTransition({
         sceneA,
         sceneB,
@@ -63,13 +72,18 @@ test('crossfade blends deterministically at midpoint', () => {
     });
 
     assert.deepEqual(left, right);
-    assert.equal(left.x, 50);
+
+    // target authority preserved during crossfade
+    assert.equal(left.x, 100);
+
+    // opacity still blends
     assert.equal(left.opacity, 0.6);
 });
 
 test('does not mutate inputs', () => {
     const sceneA = createScene('a', 0);
     const sceneB = createScene('a', 100);
+
     const beforeA = structuredClone(sceneA);
     const beforeB = structuredClone(sceneB);
 
