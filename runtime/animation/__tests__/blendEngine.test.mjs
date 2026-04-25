@@ -5,6 +5,7 @@ import { blendChannelValues } from '../blending/blendChannels.js';
 import { blendAnimationLayers } from '../blending/blendLayers.js';
 import { evaluateAnimationBlend } from '../blending/blendEngine.js';
 import { evaluateAnimationFrame } from '../evaluateAnimationFrame.js';
+import { resolveAnimationLayers } from '../layers/resolveAnimationLayers.js';
 
 test('blendChannelValues blends replace, add, multiply, and override deterministically', () => {
     const result = blendChannelValues([
@@ -189,4 +190,69 @@ test('evaluateAnimationFrame returns blended channels and rig-ready controller v
         },
     });
     assert.equal(result.choreographyClips.length, 2);
+});
+
+test('evaluateAnimationFrame resolves choreography through the same layer policy when no layers are precomputed', () => {
+    const snapshot = {
+        frame: 20,
+        document: {
+            choreography: {
+                scenes: [
+                    {
+                        id: 'fightScene1',
+                        participants: [
+                            { id: 'hero', rigId: 'heroRig' },
+                            { id: 'enemy', rigId: 'enemyRig' },
+                        ],
+                        beats: [
+                            {
+                                id: 'beat1',
+                                time: 20,
+                                action: 'sword_slash',
+                                attacker: 'hero',
+                                target: 'enemy',
+                                reaction: 'stagger',
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    };
+    const runtime = {
+        snapshot,
+        animation: {
+            timelineClips: [
+                {
+                    id: 'walk',
+                    mode: 'replace',
+                    weight: 1,
+                    channels: [
+                        { controllerId: 'arm_CTRL', channel: 'rotateX', value: 20 },
+                    ],
+                },
+            ],
+            stateClips: [
+                {
+                    id: 'shoot',
+                    mode: 'add',
+                    weight: 0.5,
+                    channels: [
+                        { controllerId: 'arm_CTRL', channel: 'rotateX', value: 30 },
+                    ],
+                },
+            ],
+        },
+    };
+
+    const result = evaluateAnimationFrame(runtime);
+    const expected = evaluateAnimationBlend({
+        layers: resolveAnimationLayers({
+            timeline: runtime.animation.timelineClips,
+            choreography: result.choreographyClips,
+            stateMachine: runtime.animation.stateClips,
+        }),
+    });
+
+    assert.deepEqual(result.blendedChannels, expected);
 });

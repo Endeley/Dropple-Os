@@ -91,7 +91,7 @@ const evalB = evaluateChannelTimeline(
 console.log('DETERMINISM UNAFFECTED:', JSON.stringify(evalA) === JSON.stringify(evalB));
 
 const shotTimeline = { shots: [{ id: 's1', startMs: 0, endMs: 1000 }] };
-const sceneGraph = [{ id: 'root', type: 'frame', children: [] }];
+const sceneGraph = { id: 'root', type: 'frame', children: [] };
 const exportCheck = runExportStabilityGate({
     timeline: graph.nodes[graph.headId].timeline,
     shotTimeline,

@@ -137,7 +137,7 @@ console.log(
 );
 
 const shotTimeline = { shots: [{ id: 's1', startMs: 0, endMs: 1000 }] };
-const sceneGraph = [{ id: 'root', type: 'frame', children: [] }];
+const sceneGraph = { id: 'root', type: 'frame', children: [] };
 const gateA = runExportStabilityGate({
     timeline,
     shotTimeline,

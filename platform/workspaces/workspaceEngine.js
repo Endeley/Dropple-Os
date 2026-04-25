@@ -1,7 +1,6 @@
 import { resolveWorkspaceActivationContract } from '@/platform/capabilities/workspaceActivation.js';
 import {
     getWorkspaceDefinition,
-    resolveWorkspaceId,
 } from './workspaceRegistry.js';
 
 function safeArray(values) {
@@ -34,5 +33,5 @@ export function getWorkspaceActivation(workspaceId) {
 }
 
 export function getResolvedWorkspaceDefinition(workspaceId) {
-    return getWorkspaceDefinition(resolveWorkspaceId(workspaceId));
+    return getWorkspaceDefinition(workspaceId);
 }

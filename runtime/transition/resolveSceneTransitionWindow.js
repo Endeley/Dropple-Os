@@ -1,3 +1,5 @@
+import { assertCanonicalShotSequence } from '@/core/scene/sceneGraphInvariants.js';
+
 function safeNumber(value, fallback = 0) {
     return Number.isFinite(value) ? Number(value) : fallback;
 }
@@ -54,6 +56,7 @@ export function resolveSceneTransitionWindow({
     timeMs = 0,
 } = {}) {
     const orderedShots = getOrderedShots({ shots });
+    assertCanonicalShotSequence(orderedShots, { sceneId: 'transition-window' });
     const now = safeNumber(timeMs);
     const fromShot = resolveCurrentShot(orderedShots, activeShotId, now);
 

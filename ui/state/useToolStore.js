@@ -1,4 +1,4 @@
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useWorkspaceProjectionState as useRuntimeStore } from '@/runtime/projection';
 
 export function useToolStore(selector) {
     return useRuntimeStore((state) => {

@@ -1,10 +1,16 @@
 import { getCanonicalShotTrack } from '@/core/scene/shotTracks.js';
+import { assertSceneGraphInvariants } from '@/core/scene/sceneGraphInvariants.js';
 
 export function resolveShotForTime({ sceneGraph, activeSceneId, globalTime }) {
     if (!sceneGraph || !activeSceneId) return null;
     if (!Number.isFinite(globalTime)) return null;
 
     const scene = sceneGraph.scenes?.find((item) => item.id === activeSceneId);
+    assertSceneGraphInvariants({
+        sceneGraph,
+        activeSceneId,
+        requireActiveShot: false,
+    });
     const shots = getCanonicalShotTrack(scene)?.shots ?? [];
     if (!scene || shots.length === 0) return null;
 

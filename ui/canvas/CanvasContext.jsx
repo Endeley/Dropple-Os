@@ -3,12 +3,10 @@
 import { createContext, useContext, useSyncExternalStore } from 'react';
 import {
     selectProjectedVisualState,
-} from '@/runtime/projection/useWorkspaceVisualState.js';
-import {
     selectWorkspaceViewState,
-} from '@/runtime/projection/useWorkspaceViewState.js';
+    workspaceProjectionStore,
+} from '@/runtime/projection';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 
 const CanvasContext = createContext({
     zoomTier: 'normal',
@@ -60,7 +58,7 @@ export function useCanvasViewState(selector = (state) => state) {
 
     return useOverrideAwareStoreValue({
         override: viewStateOverride,
-        store: useRuntimeStore,
+        store: workspaceProjectionStore,
         projectState: selectWorkspaceViewState,
         selector,
     });
@@ -71,7 +69,7 @@ export function useCanvasVisualState(selector = (state) => state) {
 
     return useOverrideAwareStoreValue({
         override: visualStateOverride,
-        store: useRuntimeStore,
+        store: workspaceProjectionStore,
         projectState: selectProjectedVisualState,
         selector,
     });
@@ -90,7 +88,7 @@ export function useCanvasAnimatedState(selector = (state) => state) {
 export function useCanvasRuntimeState(selector = (state) => state) {
     return useOverrideAwareStoreValue({
         override: null,
-        store: useRuntimeStore,
+        store: workspaceProjectionStore,
         selector,
     });
 }

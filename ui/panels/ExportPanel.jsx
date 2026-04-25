@@ -2,7 +2,7 @@
 
 import { exportTimelineToCSS } from '@/timeline/export/cssExporter.js';
 import { exportCSSAnimation } from '@/ui/bridges/exportAnimationBridge.js';
-import { useWorkspaceVisualState } from '@/runtime/projection/useWorkspaceVisualState.js';
+import { useWorkspaceVisualState } from '@/runtime/projection';
 
 /**
  * Minimal export UI. Proof-of-concept only.

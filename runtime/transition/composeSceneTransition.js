@@ -98,6 +98,22 @@ function composeNode(nodeA, nodeB, t) {
     return next;
 }
 
+function composeDistinctRoots(sceneA, sceneB, t) {
+    const left = composeNode(sceneA, null, t);
+    const right = composeNode(null, sceneB, t);
+
+    return {
+        id: '__transition_root__',
+        type: 'transition-root',
+        opacity: 1,
+        rotation: 0,
+        scale: 1,
+        worldTransform: { x: 0, y: 0 },
+        viewTransform: { x: 0, y: 0 },
+        children: [left, right].filter(Boolean),
+    };
+}
+
 export function composeSceneTransition({ sceneA, sceneB, transition, t } = {}) {
     const progress = clamp01(safeNumber(t));
 
@@ -107,6 +123,10 @@ export function composeSceneTransition({ sceneA, sceneB, transition, t } = {}) {
 
     if (transition.type !== 'crossfade') {
         throw new Error(`composeSceneTransition: unsupported transition type ${transition.type}`);
+    }
+
+    if (sceneA?.id && sceneB?.id && sceneA.id !== sceneB.id) {
+        return composeDistinctRoots(sceneA, sceneB, progress);
     }
 
     return composeNode(sceneA, sceneB, progress);

@@ -18,7 +18,7 @@ let controller = createTimelineController(base);
 const headId = controller.headId;
 
 const shotTimeline = { shots: [{ id: 's1', startMs: 0, endMs: 1000 }] };
-const sceneGraph = [{ id: 'root', type: 'frame', children: [] }];
+const sceneGraph = { id: 'root', type: 'frame', children: [] };
 
 const pre = runExportStabilityGate({
     timeline: controller.snapshotGraph.nodes[controller.headId].timeline,

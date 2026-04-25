@@ -2,7 +2,7 @@
 
 import React, { memo } from 'react';
 import { useCanvasContext, useCanvasVisualState } from '@/ui/canvas/CanvasContext.jsx';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useWorkspaceProjectionState as useRuntimeStore } from '@/runtime/projection';
 import { resolveToken } from '@/runtime/tokens/resolveToken.js';
 
 const __DEV__ = process.env.NODE_ENV !== 'production';

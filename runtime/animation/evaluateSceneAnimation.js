@@ -7,6 +7,7 @@ import { resolveLayerAuthority } from './graph/resolveLayerAuthority.js';
 import { applyConstraintStack } from './constraints/applyConstraintStack.js';
 import { resolveAnimationLayers } from './layers/resolveAnimationLayers.js';
 import { applyStateMachineParameters } from './state/applyStateMachineParameters.js';
+import { evaluateChoreography } from '../choreography/evaluateChoreography.js';
 
 function getDocumentRigs(document) {
     if (Array.isArray(document?.rigs)) return document.rigs;
@@ -152,6 +153,7 @@ export function evaluateSceneAnimation(snapshot, context = {}) {
     const frame = getCurrentFrame(snapshot, context);
     const sceneNodeTransforms = getSceneNodeTransforms(runtime?.scene);
     const animationRuntime = runtime?.animation || {};
+    const choreographyClips = evaluateChoreography(snapshot);
     const parameters = {
         ...(context?.parameters || {}),
         ...applyStateMachineParameters({
@@ -206,6 +208,9 @@ export function evaluateSceneAnimation(snapshot, context = {}) {
                 ...sampledTimelineClips,
                 ...(animationRuntime?.timelineClips || []),
             ],
+            choreography: choreographyClips.filter(
+                (clip) => !clip?.rigId || clip.rigId === rigId
+            ),
             stateMachine:
                 animationRuntime?.stateMachineClips ?? animationRuntime?.stateClips ?? [],
             graph: graphAuthorityLayers,

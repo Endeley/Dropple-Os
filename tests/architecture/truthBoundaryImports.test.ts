@@ -148,6 +148,33 @@ test('non-bridge ui modules do not import runtime implementation paths directly'
     assert.deepEqual(violations, []);
 });
 
+test('non-bridge ui modules import projection only through the public runtime/projection entrypoint', () => {
+    const violations = [];
+    const files = walk(path.join(ROOT, 'ui'), 'ui');
+
+    for (const file of files) {
+        const normalized = file.relPath.replaceAll('\\', '/');
+        if (normalized.includes('/bridges/')) continue;
+
+        const content = fs.readFileSync(file.fullPath, 'utf8');
+        const lines = content.split('\n');
+        lines.forEach((line, index) => {
+            if (!line.includes('import') && !line.includes('import(')) return;
+
+            const importsRawStore = /runtime\/stores\/useRuntimeStore\.js/.test(line);
+            const importsDeepProjection =
+                /runtime\/projection\//.test(line) &&
+                !/runtime\/projection\/index\.js/.test(line);
+
+            if (importsRawStore || importsDeepProjection) {
+                violations.push(`${file.relPath}:${index + 1}: ${line.trim()}`);
+            }
+        });
+    }
+
+    assert.deepEqual(violations, []);
+});
+
 test('non-core modules do not import legacy selector entrypoints directly', () => {
     const scopes = ['ui', 'platform', 'ai', 'workspaces', 'tests', 'runtime'];
     const violations = [];

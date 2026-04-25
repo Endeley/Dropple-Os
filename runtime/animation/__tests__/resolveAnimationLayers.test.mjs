@@ -6,6 +6,7 @@ import { resolveAnimationLayers } from '../layers/resolveAnimationLayers.js';
 test('resolveAnimationLayers preserves source authority order and annotates intents', () => {
     const result = resolveAnimationLayers({
         timeline: [{ id: 'timeline:walk', channels: [] }],
+        choreography: [{ id: 'choreo:beat', channels: [] }],
         stateMachine: [{ id: 'state:attack', channels: [] }],
         graph: [{ id: 'graph:aim', channels: [] }],
     });
@@ -20,6 +21,12 @@ test('resolveAnimationLayers preserves source authority order and annotates inte
         [
             {
                 id: 'timeline:walk',
+                intent: 'base',
+                priority: 0,
+                mode: null,
+            },
+            {
+                id: 'choreo:beat',
                 intent: 'base',
                 priority: 0,
                 mode: null,

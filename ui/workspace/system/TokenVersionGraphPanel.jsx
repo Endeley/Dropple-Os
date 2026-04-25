@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { Panel } from '@/ui/Panel';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useWorkspaceProjectionState as useRuntimeStore } from '@/runtime/projection';
 import { selectActiveTokenVersionGraph } from '@/runtime/tokens/selectActiveTokenVersionGraph.js';
 import { selectActiveTokenVersionDiff } from '@/runtime/tokens/selectActiveTokenVersionDiff.js';
 import { selectActiveTokenMergePreview } from '@/runtime/tokens/selectActiveTokenMergePreview.js';

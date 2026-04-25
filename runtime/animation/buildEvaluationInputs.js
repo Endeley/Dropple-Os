@@ -2,6 +2,10 @@ import { evaluateSequenceAtTime } from '../sequencer/evaluation/evaluateSequence
 import { getNode, getSceneGraph } from '../document/documentAdapter.js';
 import { extractActiveSceneTree } from '../scene/extractActiveSceneTree.js';
 import { getCanonicalShotTrack } from '@/core/scene/shotTracks.js';
+import {
+    assertSceneGraphInvariants,
+    resolveCanonicalSceneSelection,
+} from '@/core/scene/sceneGraphInvariants.js';
 
 function buildShotTimeline(sceneGraph, activeSceneId) {
     if (!sceneGraph || !Array.isArray(sceneGraph.scenes)) {
@@ -75,10 +79,21 @@ function buildSequenceCameraTransform(runtimeState, timeMs) {
 
 export function buildEvaluationInputs(runtimeState, { timeMs = 0, strictSceneScope = false } = {}) {
     const sceneGraph = getSceneGraph(runtimeState);
-    const activeSceneId = runtimeState?.scene?.activeSceneId ?? null;
-    const sceneActiveShotId = runtimeState?.scene?.activeShotId ?? null;
-    const graphActiveShotId = sceneGraph?.activeShotId ?? null;
-    const activeShotId = sceneActiveShotId || graphActiveShotId || null;
+    const selection = resolveCanonicalSceneSelection({
+        sceneGraph,
+        preferredSceneId: runtimeState?.scene?.activeSceneId ?? null,
+        preferredShotId: runtimeState?.scene?.activeShotId ?? null,
+    });
+    const activeSceneId = selection.activeSceneId;
+    const activeShotId = selection.activeShotId;
+
+    assertSceneGraphInvariants({
+        sceneGraph,
+        compositions: runtimeState?.document?.compositions ?? null,
+        activeSceneId,
+        activeShotId,
+        requireActiveShot: false,
+    });
 
     const sceneGraphTree = extractActiveSceneTree(sceneGraph, activeSceneId, activeShotId, {
         strict: strictSceneScope,

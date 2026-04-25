@@ -57,6 +57,7 @@ Global animation layering:
 
 - `resolveAnimationLayers` merges:
   - timeline layers
+  - choreography layers
   - state-machine layers
   - graph authority layers
 - `evaluateAnimationFrame` blends those layers into controller values
@@ -68,6 +69,7 @@ Global animation layering:
 The current default policy is:
 
 - timeline: base, priority `0`
+- choreography: base, priority `0`
 - state machine: override, priority `1`
 - graph: modifier, priority `2`
 

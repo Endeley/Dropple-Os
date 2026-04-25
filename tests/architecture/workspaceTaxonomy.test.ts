@@ -4,11 +4,13 @@ import assert from 'node:assert/strict';
 import {
     CANONICAL_WORKSPACES,
     CANONICAL_MODES,
+    getCanonicalMode,
     listCanonicalWorkspaceIds,
     listCanonicalModeIds,
     listCanonicalModesForWorkspace,
     resolveWorkspaceDefaultMode,
 } from '@/platform/workspaces/canonicalRegistry.js';
+import { resolveWorkspaceId } from '@/platform/workspaces/workspaceRegistry.js';
 
 test('exactly 5 canonical workspaces exist', () => {
     const ids = listCanonicalWorkspaceIds();
@@ -64,5 +66,19 @@ test('no extra top-level workspace-like entries exist', () => {
 
     for (const workspaceId of Object.keys(CANONICAL_WORKSPACES)) {
         assert.equal(allowed.has(workspaceId), true);
+    }
+});
+
+test('workspace identity resolution preserves canonical workspace ids instead of collapsing into mode ids', () => {
+    const inputs = ['design', 'graphic', 'uiux', 'media', 'animation', 'review'];
+
+    for (const input of inputs) {
+        const workspaceId = resolveWorkspaceId(input);
+        const canonicalMode = getCanonicalMode(input);
+        const expectedWorkspaceId = canonicalMode?.workspaceId ?? (CANONICAL_WORKSPACES[input] ? input : null);
+
+        assert.ok(workspaceId);
+        assert.ok(CANONICAL_WORKSPACES[workspaceId]);
+        assert.equal(workspaceId, expectedWorkspaceId ?? workspaceId);
     }
 });

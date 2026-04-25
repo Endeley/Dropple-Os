@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import {
     projectAnimationTrackGroups,
     projectMediaPlaybackState,
@@ -9,15 +8,12 @@ import {
     selectMediaCursorIndex,
     selectMediaPlayback,
     selectMediaTimeline,
-} from '@/runtime/projection/selectors/mediaSelectors.js';
-import {
     projectRigControllerTimelineTracks,
     selectActiveRig,
-} from '@/runtime/projection/selectors/rigSelectors.js';
-import {
     projectSequenceTimelineTracks,
     selectActiveSequence,
-} from '@/runtime/projection/selectors/sequenceSelectors.js';
+    useWorkspaceProjectionState as useRuntimeStore,
+} from '@/runtime/projection';
 import {
     timelineIntentClockPause,
     timelineIntentClockSeek,

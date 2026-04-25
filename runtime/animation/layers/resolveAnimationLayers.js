@@ -2,10 +2,20 @@ export function resolveAnimationLayers({
     timeline = [],
     stateMachine = [],
     graph = [],
+    choreography = [],
 } = {}) {
     const resolved = [];
 
     for (const layer of timeline) {
+        if (!layer) continue;
+        resolved.push({
+            ...layer,
+            intent: 'base',
+            priority: 0,
+        });
+    }
+
+    for (const layer of choreography) {
         if (!layer) continue;
         resolved.push({
             ...layer,

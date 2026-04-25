@@ -7,7 +7,7 @@ import { ContentPanel } from '@/ui/inspector/ContentPanel.jsx';
 import { SemanticsPanel } from '@/ui/inspector/SemanticsPanel.jsx';
 import { MotionPanel } from '@/ui/inspector/MotionPanel.jsx';
 import { ExportPreviewPanel } from '@/ui/inspector/ExportPreviewPanel.jsx';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useWorkspaceProjectionState as useRuntimeStore } from '@/runtime/projection';
 
 export function InspectorPanel({ node, emit }) {
     const resizeDebug = useRuntimeStore((s) => s.resizeDebug ?? '');

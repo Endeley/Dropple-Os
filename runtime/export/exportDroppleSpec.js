@@ -10,7 +10,7 @@ import { validateDroppleSpec } from './validateDroppleSpec.js';
 export function exportDroppleSpec(workspace) {
     const timeline = workspace?.timeline?.timelines?.default ?? null;
     const inputs = buildEvaluationInputs(workspace, { timeMs: 0, strictSceneScope: true });
-    if (!Array.isArray(inputs.sceneGraphTree) || inputs.sceneGraphTree.length === 0) {
+    if (!inputs.sceneGraphTree) {
         throw new Error('Export blocked: no valid scene scope');
     }
     const shot = {

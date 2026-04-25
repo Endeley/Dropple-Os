@@ -1,11 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import {
     projectRigControllerTimelineTracks,
-} from '@/runtime/projection/selectors/rigControllerSelectors.js';
-import { projectRigControllerOverlayNodes } from '@/runtime/projection/selectors/rigControllerOverlaySelectors.js';
+    projectRigControllerOverlayNodes,
+    useWorkspaceProjectionState as useRuntimeStore,
+} from '@/runtime/projection';
 import { useMediaTimelineSelectionStore } from '@/ui/workspace/media/shared/useMediaTimelineSelectionStore.js';
 
 function overlayCardStyle(selected) {

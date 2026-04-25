@@ -58,7 +58,7 @@ export function extractActiveSceneTree(
         if (strict) {
             throwStrictScopeError('root node not found', String(rootId ?? 'null'));
         }
-        return [];
+        return null;
     }
 
     const root = buildSceneTree({
@@ -72,5 +72,5 @@ export function extractActiveSceneTree(
         ),
     });
 
-    return root ? [root] : [];
+    return root ?? null;
 }

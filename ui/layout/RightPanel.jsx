@@ -19,7 +19,7 @@ import CurveEditorPanel from '@/ui/animation/curves/CurveEditorPanel';
 import SharingPanel from '@/collaboration/panels/SharingPanel';
 
 import { getNode } from '@/runtime/document/documentAdapter.js';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useWorkspaceProjectionState as useRuntimeStore } from '@/runtime/projection';
 
 export default function RightPanel({ panels = [], events, cursor, emit, capabilities, rubric, reviewCriteria, onReviewCriteriaChange, submissionId, documentId, readOnly = false }) {
     const { selectedIds } = useSelection();

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useWorkspaceProjectionState as useRuntimeStore } from '@/runtime/projection';
 import { selectVersionComparison } from '@/runtime/tokens/selectVersionComparison.js';
 import { TokenVersionDiffPanel } from '@/ui/workspace/system/TokenVersionDiffPanel.jsx';
 

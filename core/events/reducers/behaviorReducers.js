@@ -76,33 +76,33 @@ function applyStatePatch(state, patch) {
   return next;
 }
 
-// ---- apply patch to node (pure) ----
-// Adjust this to your actual node storage location.
-// Common patterns:
-// - world.nodes[entityId]
-// - world.scene.nodes[entityId]
-// - world.tree.nodes[entityId]
-function applyNodePatch(world, entityId, patch) {
-  const nodes = world.nodes;
-  if (!nodes || !nodes[entityId]) {
+function buildPatchedSceneGraph(world, entityId, patch) {
+  const sceneGraph = world?.document?.sceneGraph ?? null;
+  const nodes = sceneGraph?.nodes ?? null;
+  const prev = nodes?.[entityId] ?? null;
+  if (!prev) {
     throw new Error(`BEHAVIOR_STATE_COMMIT: node not found: ${entityId}`);
   }
 
-  const prev = nodes[entityId];
-  // shallow merge top-level domains; deeper merge per domain
-  const next = { ...prev };
+  const nextNode = { ...prev };
 
-  if (patch.layout) next.layout = { ...(prev.layout ?? {}), ...patch.layout };
-  if (patch.style) next.style = { ...(prev.style ?? {}), ...patch.style };
+  if (patch.layout) nextNode.layout = { ...(prev.layout ?? {}), ...patch.layout };
+  if (patch.style) nextNode.style = { ...(prev.style ?? {}), ...patch.style };
   if (patch.content)
-    next.content = { ...(prev.content ?? {}), ...patch.content };
+    nextNode.content = { ...(prev.content ?? {}), ...patch.content };
   if (patch.transform)
-    next.transform = { ...(prev.transform ?? {}), ...patch.transform };
+    nextNode.transform = { ...(prev.transform ?? {}), ...patch.transform };
 
-  if (typeof patch.visible === 'boolean') next.visible = patch.visible;
-  if (typeof patch.opacity === 'number') next.opacity = patch.opacity;
+  if (typeof patch.visible === 'boolean') nextNode.visible = patch.visible;
+  if (typeof patch.opacity === 'number') nextNode.opacity = patch.opacity;
 
-  nodes[entityId] = next;
+  return {
+    ...(sceneGraph ?? {}),
+    nodes: {
+      ...(nodes ?? {}),
+      [entityId]: nextNode,
+    },
+  };
 }
 
 export function behaviorReducers(world, event, ctx) {
@@ -258,6 +258,7 @@ export function behaviorReducers(world, event, ctx) {
 
       const transition =
         findTransition(graph, currentStateId, targetStateId) ?? null;
+      const patch = filterBehaviorOverrides(targetState.propertyOverrides);
 
       // Canonical commit (truth changes immediately)
       const nextRuntime = {
@@ -277,14 +278,11 @@ export function behaviorReducers(world, event, ctx) {
           ...behaviorRuntime,
           [entityId]: nextRuntime,
         },
-        nodes: {
-          ...(world.nodes || {}),
+        document: {
+          ...(world.document || {}),
+          sceneGraph: buildPatchedSceneGraph(world, entityId, patch),
         },
       };
-
-      // Apply overrides into canonical node truth (STRICT)
-      const patch = filterBehaviorOverrides(targetState.propertyOverrides);
-      applyNodePatch(nextWorld, entityId, patch);
 
       return nextWorld;
     }

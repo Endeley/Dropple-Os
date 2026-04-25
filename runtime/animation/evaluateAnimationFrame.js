@@ -1,5 +1,6 @@
 import { evaluateAnimationBlend } from './blending/blendEngine.js';
 import { evaluateChoreography } from '../choreography/evaluateChoreography.js';
+import { resolveAnimationLayers } from './layers/resolveAnimationLayers.js';
 
 function isObject(value) {
     return Boolean(value) && typeof value === 'object';
@@ -43,19 +44,14 @@ export function evaluateAnimationFrame(runtime) {
         (clip) => !clip?.rigId || !rigId || clip.rigId === rigId
     );
     const blendedLayers = layers.length
-        ? [
-              ...layers,
-              ...choreographyClips.map((clip) => ({
-                  ...clip,
-                  intent: clip?.intent ?? 'base',
-                  priority: Number.isFinite(clip?.priority) ? Number(clip.priority) : 0,
-              })),
-          ]
-        : null;
+        ? layers
+        : resolveAnimationLayers({
+              timeline: timelineClips,
+              choreography: choreographyClips,
+              stateMachine: stateMachineClips,
+          });
     const blendedChannels = evaluateAnimationBlend({
         layers: blendedLayers,
-        timelineClips: [...timelineClips, ...choreographyClips],
-        stateMachineClips,
     });
 
     return {

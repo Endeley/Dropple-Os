@@ -164,7 +164,7 @@ export default function Toolbar({ mode, onOpenTemplateGenerator, emit, getState,
             </div>
 
             {/* TEMPLATE */}
-            {(mode?.workspaceId === 'design' || mode?.id === 'design') && onOpenTemplateGenerator && (
+            {mode?.workspaceId === 'design' && onOpenTemplateGenerator && (
                 <div className='toolbar-group'>
                     <button className='toolbar-btn' onClick={onOpenTemplateGenerator}>
                         Publish

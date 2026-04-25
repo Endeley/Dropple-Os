@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useWorkspaceVisualState } from '@/runtime/projection/useWorkspaceVisualState.js';
-import { selectShotTimelineView } from '@/runtime/projection/selectors/shotTimelineSelectors.js';
+import {
+  selectShotTimelineView,
+  useWorkspaceProjectionState as useRuntimeStore,
+  useWorkspaceVisualState,
+} from '@/runtime/projection';
 import { useShotEditorIntent } from '@/ui/workspace/editor/shotEditorIntent.js';
 import TransitionHandle from '@/ui/timeline/components/TransitionHandle.jsx';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import {
   computeShotDragPreview,
   computeShotResizePreview,

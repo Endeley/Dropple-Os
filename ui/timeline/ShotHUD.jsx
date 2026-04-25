@@ -1,6 +1,6 @@
 'use client';
 
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useWorkspaceProjectionState as useRuntimeStore } from '@/runtime/projection';
 
 export function ShotHUD() {
     const { shotId, shotTimeMs, evalStatus, frameTime } = useRuntimeStore((s) => ({

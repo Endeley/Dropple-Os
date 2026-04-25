@@ -50,3 +50,26 @@ test('handles zero-duration cut at boundary deterministically', () => {
     assert.equal(result.toShotId, 'b');
     assert.equal(result.t, 1);
 });
+
+test('rejects overlapping shot windows before transition resolution', () => {
+    assert.throws(
+        () =>
+            resolveSceneTransitionWindow({
+                shots: [
+                    {
+                        id: 'a',
+                        startMs: 0,
+                        endMs: 1000,
+                        transitionOut: { type: 'crossfade', durationMs: 200 },
+                    },
+                    {
+                        id: 'b',
+                        startMs: 900,
+                        endMs: 1500,
+                    },
+                ],
+                timeMs: 950,
+            }),
+        /sceneGraph: shots must not overlap \(transition-window:b\)/,
+    );
+});

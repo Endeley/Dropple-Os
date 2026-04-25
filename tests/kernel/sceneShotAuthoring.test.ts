@@ -249,7 +249,7 @@ test('dispatcher stores shots in deterministic order by start then id', async ()
         type: EventTypes.SCENE_SHOT_CREATE,
         payload: {
             sceneId: 'scene-1',
-            shot: { id: 'shot-b', name: 'Shot B', start: 500, duration: 200, compositionId: 'comp-b' },
+            shot: { id: 'shot-b', name: 'Shot B', start: 500, duration: 0, compositionId: 'comp-b' },
         },
     });
     await dispatcher.dispatch({
@@ -263,7 +263,7 @@ test('dispatcher stores shots in deterministic order by start then id', async ()
         type: EventTypes.SCENE_SHOT_CREATE,
         payload: {
             sceneId: 'scene-1',
-            shot: { id: 'shot-c', name: 'Shot C', start: 500, duration: 200, compositionId: 'comp-c' },
+            shot: { id: 'shot-c', name: 'Shot C', start: 500, duration: 0, compositionId: 'comp-c' },
         },
     });
 

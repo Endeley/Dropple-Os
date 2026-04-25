@@ -49,8 +49,8 @@ export function rootReducer(state, event) {
     allowedRuntimeSlices: ['interactions'],
   });
   next = applyOwnedReducer(next, event, behaviorReducers, 'behaviorReducers', {
-    allowedDocumentSlices: [],
-    allowedRuntimeSlices: ['behaviors', 'behaviorRuntime', 'nodes'],
+    allowedDocumentSlices: ['sceneGraph'],
+    allowedRuntimeSlices: ['behaviors', 'behaviorRuntime'],
   });
   next = applyOwnedReducer(next, event, motionReducers, 'motionReducers', {
     allowedDocumentSlices: ['motion'],

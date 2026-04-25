@@ -283,6 +283,40 @@ test('buildTemporalContext does not fall back to document activeSceneId when run
     assert.equal(result.activeShot?.shotId, 'shot-b');
 });
 
+test('buildTemporalContext repairs invalid runtime scene selection back to canonical document truth', () => {
+    const document = {
+        sceneGraph: {
+            activeSceneId: 'scene-a',
+            activeShotId: 'shot-a',
+            scenes: [
+                {
+                    id: 'scene-a',
+                    duration: 500,
+                    shots: [{ id: 'shot-a', start: 0, duration: 500 }],
+                },
+            ],
+        },
+        sequences: {
+            sequences: {},
+            activeSequenceId: null,
+        },
+    };
+    const runtime = {
+        playback: {
+            timeMs: 100,
+        },
+        scene: {
+            activeSceneId: 'missing-scene',
+            activeShotId: 'missing-shot',
+        },
+    };
+
+    const result = buildTemporalContext({ document, runtime });
+
+    assert.equal(result.activeShot?.sceneId, 'scene-a');
+    assert.equal(result.activeShot?.shotId, 'shot-a');
+});
+
 test('buildTemporalContext is stable under sequence track and clip reordering', () => {
     const sequenceA = {
         id: 'seqA',

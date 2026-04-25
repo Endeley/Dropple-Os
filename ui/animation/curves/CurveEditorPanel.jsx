@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useWorkspaceViewState } from "@/runtime/projection";
-import { useRuntimeStore } from "@/runtime/stores/useRuntimeStore.js";
+import { useWorkspaceProjectionState as useRuntimeStore, useWorkspaceViewState } from "@/runtime/projection";
 import { useTimelineSelectionStore } from "@/ui/timeline/useTimelineSelectionStore.js";
 import { commitCurveChange } from "./commitCurveChange.js";
 import BezierCurveCanvas from "./BezierCurveCanvas.jsx";

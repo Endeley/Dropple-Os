@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useWorkspaceVisualState } from '@/runtime/projection';
 import { useCanvasContext } from '@/ui/canvas/CanvasContext.jsx';
 import { getNearRadius } from '@/ui/canvas/nearest/nearRadius.js';
 import { findNearestNodes } from '@/ui/canvas/nearest/nearestWorldNodes.js';
@@ -11,7 +11,7 @@ export function useNearestWorldObjects({
     enabled = true,
     maxResults = 5,
 } = {}) {
-    const nodesById = useRuntimeStore((state) => state.nodes);
+    const nodesById = useWorkspaceVisualState((state) => state.nodes || {});
     const { zoomTier } = useCanvasContext();
     const radius = getNearRadius(zoomTier);
     const rawResults = useMemo(() => {

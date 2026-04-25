@@ -189,6 +189,10 @@ function buildChannelDescriptorMap(timeline) {
     return descriptors;
 }
 
+function resolveRootNodeId(sceneGraph) {
+    return sceneGraph?.id ?? null;
+}
+
 function applyResolvedChannelsToRuntime(node, resolvedChannels, channelDescriptors, rootNodeId) {
     if (!node || typeof node !== 'object') return node;
 
@@ -221,6 +225,9 @@ export function evaluateShotAt(shotTimeline, sceneGraph, timeMs, options = {}) {
     if (!Number.isFinite(timeMs)) {
         throw new Error('evaluateShotAt: timeMs must be a finite number');
     }
+    if (!sceneGraph || typeof sceneGraph !== 'object' || Array.isArray(sceneGraph)) {
+        throw new Error('evaluateShotAt: sceneGraph must be a singular scene root object');
+    }
 
     const shot = selectShot(shotTimeline, timeMs, options);
     if (!shot) {
@@ -245,7 +252,7 @@ export function evaluateShotAt(shotTimeline, sceneGraph, timeMs, options = {}) {
             sceneGraph,
             resolved,
             channelDescriptors,
-            sceneGraph?.id ?? null,
+            resolveRootNodeId(sceneGraph),
         );
     }
 

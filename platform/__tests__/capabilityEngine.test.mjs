@@ -181,8 +181,9 @@ test('platform workspace registry resolves canonical workspace definitions', () 
     const animationDefinition = getWorkspaceDefinition('animation');
     const workspaceList = listWorkspaceDefinitions();
 
-    assert.equal(resolveWorkspaceId('design'), 'graphic');
-    assert.equal(definition.id, 'graphic');
+    assert.equal(resolveWorkspaceId('design'), 'design');
+    assert.equal(resolveWorkspaceId('graphic'), 'design');
+    assert.equal(definition.id, 'uiux');
     assert.equal(resolveWorkspaceId('media'), 'media');
     assert.equal(mediaDefinition.id, 'media');
     assert.equal(animationDefinition.id, 'animation');

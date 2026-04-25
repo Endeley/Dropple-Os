@@ -1,6 +1,10 @@
 import { evaluateSequence } from '@/runtime/sequencer/evaluation/evaluateSequence.js';
 import { resolveShotForTime } from '@/runtime/scene/resolveShotForTime.js';
 import { getCameraTransformAtTime } from '@/core/scene/cameraPlayback.v1.js';
+import {
+    assertSceneGraphInvariants,
+    resolveCanonicalSceneSelection,
+} from '@/core/scene/sceneGraphInvariants.js';
 
 function getSequenceMap(document) {
     const sequences = document?.sequences?.sequences;
@@ -52,10 +56,6 @@ function resolveFrameAndTime(runtime, cursorIndex) {
     return { frame, timeMs };
 }
 
-function resolveRuntimeActiveSceneId(runtime) {
-    return runtime?.scene?.activeSceneId ?? null;
-}
-
 function resolveSequenceCameraTransform(document, activeCamera) {
     const cameraNodeRef = activeCamera?.cameraNodeRef ?? null;
     if (!cameraNodeRef) return null;
@@ -99,8 +99,21 @@ export function buildTemporalContext({ document, runtime, cursorIndex } = {}) {
     const sequenceMap = getSequenceMap(document);
     const sequenceId = resolveActiveSequenceId(document, runtime, sequenceMap);
     const { frame, timeMs } = resolveFrameAndTime(runtime, cursorIndex);
-    const activeSceneId = resolveRuntimeActiveSceneId(runtime);
     const sceneGraph = document?.sceneGraph ?? null;
+    const selection = resolveCanonicalSceneSelection({
+        sceneGraph,
+        preferredSceneId: runtime?.scene?.activeSceneId ?? null,
+        preferredShotId: runtime?.scene?.activeShotId ?? null,
+    });
+    const activeSceneId = selection.activeSceneId;
+
+    assertSceneGraphInvariants({
+        sceneGraph,
+        compositions: document?.compositions ?? null,
+        activeSceneId,
+        activeShotId: selection.activeShotId,
+        requireActiveShot: false,
+    });
 
     const sequence = sequenceId ? sequenceMap[sequenceId] ?? null : null;
     const sequenceView = sequence

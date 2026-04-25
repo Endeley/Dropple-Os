@@ -1,13 +1,13 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import {
     projectMediaPlaybackState,
     selectMediaCursorIndex,
     selectMediaPlayback,
     selectMediaTimeline,
-} from '@/runtime/projection/selectors/mediaSelectors.js';
+    useWorkspaceProjectionState as useRuntimeStore,
+} from '@/runtime/projection';
 import {
     timelineIntentClockPause,
     timelineIntentClockPlay,

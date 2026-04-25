@@ -1,11 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import {
     projectMediaAssets,
     selectMediaAssets,
-} from '@/runtime/projection/selectors/mediaSelectors.js';
+    useWorkspaceProjectionState as useRuntimeStore,
+} from '@/runtime/projection';
 
 function cardStyle() {
     return {

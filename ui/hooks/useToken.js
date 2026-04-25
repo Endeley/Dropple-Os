@@ -1,6 +1,6 @@
 'use client';
 
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useWorkspaceProjectionState as useRuntimeStore } from '@/runtime/projection';
 import { resolveToken } from '@/runtime/tokens/resolveToken.js';
 
 function normalizeTokenQuery(pathOrValue) {

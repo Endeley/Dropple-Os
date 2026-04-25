@@ -1,8 +1,7 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
-import { useWorkspaceVisualState } from '@/runtime/projection';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useWorkspaceProjectionState as useRuntimeStore, useWorkspaceVisualState } from '@/runtime/projection';
 import { nodeUpdateIntent } from '@/ui/inspector/nodeUpdateIntent.js';
 import { InspectorSection } from '@/ui/inspector/InspectorSection.jsx';
 import { NodeHeaderPanel } from '@/ui/inspector/NodeHeaderPanel.jsx';

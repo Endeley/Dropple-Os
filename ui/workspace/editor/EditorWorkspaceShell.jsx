@@ -15,7 +15,7 @@ import { useDocumentRole } from '@/collab/useDocumentRole';
 import { usePresence } from '@/collab/usePresence';
 import { useGalleryIdentity } from '@/gallery/useGalleryIdentity';
 import { useIntentPreview } from '@/collab/useIntentPreview';
-import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { useWorkspaceProjectionState as useRuntimeStore } from '@/runtime/projection';
 import { PersistenceBridge } from '@/ui/bridges/PersistenceBridge.jsx';
 import { TokenCssBridge } from '@/ui/bridges/tokenCssBridge.js';
 import { SessionGroupingBridge } from '@/ui/interactions/sessionGrouping.js';

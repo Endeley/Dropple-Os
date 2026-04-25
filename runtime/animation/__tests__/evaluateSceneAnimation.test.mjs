@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { evaluateSceneAnimation } from '../evaluateSceneAnimation.js';
+import { evaluateChoreography } from '../../choreography/evaluateChoreography.js';
+import { resolveAnimationLayers } from '../layers/resolveAnimationLayers.js';
+import { evaluateAnimationBlend } from '../blending/blendEngine.js';
 
 test('evaluateSceneAnimation returns a transform map', () => {
     const snapshot = {
@@ -431,6 +434,126 @@ test('evaluateSceneAnimation composes global and rig-scoped graphs deterministic
     assert.deepEqual(left, {
         'hand-bone': {
             x: 7,
+        },
+    });
+});
+
+test('evaluateSceneAnimation applies choreography through the same canonical layer resolver as other motion sources', () => {
+    const snapshot = {
+        document: {
+            rigs: [
+                {
+                    id: 'heroRig',
+                    controllers: [
+                        {
+                            id: 'arm_R_CTRL',
+                            nodeId: 'hand-node',
+                            channels: ['rotateX'],
+                        },
+                    ],
+                    constraints: {
+                        handFollow: {
+                            id: 'handFollow',
+                            type: 'parent',
+                            parentControllerId: 'arm_R_CTRL',
+                            childNode: 'hand-bone',
+                        },
+                    },
+                },
+            ],
+            motion: {
+                'hand-node': {
+                    rotateX: {
+                        keyframes: [{ frame: 20, value: 10 }],
+                    },
+                },
+            },
+            stateMachines: {
+                locomotion: {
+                    states: [
+                        {
+                            id: 'attack',
+                            parameters: {},
+                        },
+                    ],
+                },
+            },
+            choreography: {
+                scenes: [
+                    {
+                        id: 'fightScene1',
+                        participants: [
+                            { id: 'hero', rigId: 'heroRig' },
+                            { id: 'enemy', rigId: 'enemyRig' },
+                        ],
+                        beats: [
+                            {
+                                id: 'beat1',
+                                time: 20,
+                                action: 'sword_slash',
+                                attacker: 'hero',
+                                target: 'enemy',
+                                reaction: 'stagger',
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+        runtime: {
+            stateMachines: {
+                locomotion: { current: 'attack' },
+            },
+            animation: {
+                stateClips: [
+                    {
+                        id: 'state:attack',
+                        mode: 'add',
+                        weight: 0.5,
+                        rigId: 'heroRig',
+                        channels: [
+                            { controllerId: 'arm_R_CTRL', channel: 'rotateX', value: 30 },
+                        ],
+                    },
+                ],
+            },
+            scene: {
+                computed: {},
+            },
+        },
+        playback: {
+            frame: 20,
+        },
+    };
+
+    const transforms = evaluateSceneAnimation(snapshot, { frame: 20 });
+    const choreographyClips = evaluateChoreography(snapshot).filter(
+        (clip) => !clip?.rigId || clip.rigId === 'heroRig'
+    );
+    const resolved = resolveAnimationLayers({
+        timeline: [
+            {
+                id: 'rig-motion:heroRig:20',
+                rigId: 'heroRig',
+                mode: 'replace',
+                weight: 1,
+                channels: [
+                    {
+                        controllerId: 'arm_R_CTRL',
+                        channel: 'rotateX',
+                        value: 10,
+                    },
+                ],
+            },
+        ],
+        choreography: choreographyClips,
+        stateMachine: snapshot.runtime.animation.stateClips,
+    });
+    const expected = evaluateAnimationBlend({ layers: resolved });
+
+    assert.deepEqual(transforms, {
+        'hand-bone': {
+            rotateX: expected['arm_R_CTRL:rotateX'],
         },
     });
 });

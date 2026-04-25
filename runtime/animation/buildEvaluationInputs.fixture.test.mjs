@@ -58,12 +58,12 @@ const after = JSON.stringify(runtimeState);
 
 assert(before === after, 'runtimeState mutated');
 
-assert(Array.isArray(result.sceneGraphTree), 'sceneGraphTree should be array');
-assert(result.sceneGraphTree.length === 1, 'sceneGraphTree length mismatch');
-assert(result.sceneGraphTree[0].id === 'root', 'root id mismatch');
-assert(result.sceneGraphTree[0].children[0].id === 'childA', 'child order mismatch: childA');
-assert(result.sceneGraphTree[0].children[1].id === 'childB', 'child order mismatch: childB');
-assert(result.sceneGraphTree[0].id !== 'other-root', 'sceneGraphTree should exclude inactive scene root');
+assert(result.sceneGraphTree && typeof result.sceneGraphTree === 'object', 'sceneGraphTree should be singular root object');
+assert(!Array.isArray(result.sceneGraphTree), 'sceneGraphTree must not be array-wrapped');
+assert(result.sceneGraphTree.id === 'root', 'root id mismatch');
+assert(result.sceneGraphTree.children[0].id === 'childA', 'child order mismatch: childA');
+assert(result.sceneGraphTree.children[1].id === 'childB', 'child order mismatch: childB');
+assert(result.sceneGraphTree.id !== 'other-root', 'sceneGraphTree should exclude inactive scene root');
 
 assert(result.shotTimeline.shots.length === 2, 'shotTimeline length mismatch');
 assert(result.shotTimeline.shots[0].startMs === 0, 'shotA startMs mismatch');
@@ -102,6 +102,6 @@ const conflictResult = buildEvaluationInputs(conflictingRuntimeState);
 
 assert(conflictResult.activeSceneId === 'scene1', 'runtime activeSceneId must win over document');
 assert(conflictResult.shotTimeline.shots.length === 2, 'shotTimeline should stay scoped to runtime active scene');
-assert(conflictResult.sceneGraphTree[0].id === 'root', 'sceneGraphTree must stay scoped to runtime active scene');
+assert(conflictResult.sceneGraphTree.id === 'root', 'sceneGraphTree must stay scoped to runtime active scene');
 
 console.log('buildEvaluationInputs deterministic fixture: OK');

@@ -26,9 +26,8 @@ test('extractActiveSceneTree scopes to the active shot composition root', () => 
 
     const result = extractActiveSceneTree(sceneGraph, 'sceneA', 'shotB');
 
-    assert.equal(result.length, 1);
-    assert.equal(result[0].id, 'compB');
-    assert.equal(result[0].children[0].id, 'childB');
+    assert.equal(result.id, 'compB');
+    assert.equal(result.children[0].id, 'childB');
 });
 
 test('extractActiveSceneTree throws deterministically in strict mode when scene has no composition root', () => {
