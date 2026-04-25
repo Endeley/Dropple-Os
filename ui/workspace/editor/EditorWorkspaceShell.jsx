@@ -7,8 +7,6 @@ import { ClipboardProvider } from '../shared/ClipboardContext.jsx';
 import { applyAutoLayoutIfNeeded } from '../shared/useAutoLayoutCommit.js';
 import { getDesignStateAtCursor } from '@/core/persistence/index.js';
 import { EducationCursorProvider } from '@/education/EducationCursorContext';
-import TemplateGeneratorOverlay from '@/templates/TemplateGeneratorOverlay';
-import { useTemplateGenerator } from '@/templates/useTemplateGenerator';
 import { canvasBus } from '../../eventBus/canvasBus.js';
 import { loadRegistry } from '@/infrastructure/persistence/documentRegistry.js';
 import { useDocumentRole } from '@/collab/useDocumentRole';
@@ -24,6 +22,7 @@ import { resolveWorkspaceContext } from '@/platform/workspaces/resolveWorkspaceC
 import { useWorkspaceCapabilities } from '@/ui/workspace/useWorkspaceCapabilities.js';
 import { useCapabilityLifecycle } from '@/ui/workspace/useCapabilityLifecycle.js';
 import { useWorkspaceNavigation } from '@/ui/workspace/shared/useWorkspaceNavigation.js';
+import { openTemplatePublishDialog } from '@/ui/bridges/templatePublishRuntimeFacade.js';
 
 /**
  * Stable event types (no reallocation)
@@ -47,8 +46,6 @@ export function EditorWorkspaceShell({
     onReviewCriteriaChange,
     reviewerId,
 }) {
-    const templateGenerator = useTemplateGenerator();
-
     /**
      * Workspace + mode resolution
      */
@@ -150,18 +147,9 @@ export function EditorWorkspaceShell({
     }, [events, emit, hydrated]);
 
     /**
-     * Cursor + replay state
+     * Cursor state
      */
     const cursor = { index: cursorIndex };
-
-    const replayState = useMemo(
-        () =>
-            getDesignStateAtCursor({
-                events,
-                uptoIndex: cursorIndex,
-            }),
-        [events, cursorIndex],
-    );
 
     /**
      * Workspace UI
@@ -179,7 +167,14 @@ export function EditorWorkspaceShell({
             documentName={documentName}
             canPersist={persistenceEnabled}
             canImport={persistenceEnabled}
-            onOpenTemplateGenerator={templateGenerator.openGenerator}
+            onOpenTemplateGenerator={() =>
+                openTemplatePublishDialog({
+                    mode: {
+                        id: workspaceContext.modeId,
+                        workspaceId: workspaceContext.workspaceId,
+                    },
+                })
+            }
             educationReadOnly={educationReadOnly}
             readOnly={effectiveReadOnly}
             documentRole={documentRole}
@@ -225,13 +220,6 @@ export function EditorWorkspaceShell({
                     ) : (
                         workspace
                     )}
-
-                    <TemplateGeneratorOverlay
-                        generator={templateGenerator}
-                        state={replayState}
-                        events={events}
-                        mode={adapter}
-                    />
                 </ClipboardProvider>
             </GridProvider>
         </>

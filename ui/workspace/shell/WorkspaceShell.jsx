@@ -1,162 +1,57 @@
 'use client';
 
-import { Controls } from '@/ui/Controls.jsx';
-import { WorkspaceCanvasRoot } from '@/ui/workspace/WorkspaceCanvasRoot.jsx';
-
 import { isMediaWorkspaceId } from '@/platform/workspaces/mediaWorkspace.js';
+
 import { MediaWorkspaceShell } from '@/ui/workspace/media/MediaWorkspaceShell.jsx';
 import { EditorWorkspaceShell } from '@/ui/workspace/editor/EditorWorkspaceShell.jsx';
-import { ModeSwitcher } from '@/ui/workspace/shared/ModeSwitcher.jsx';
-import { WorkspaceSwitcher } from '@/ui/workspace/shared/WorkspaceSwitcher.jsx';
-import { useWorkspaceNavigation } from '@/ui/workspace/shared/useWorkspaceNavigation.js';
-
-// 🔹 UX Workspace (read-only UI)
+import { UIUXAuthoringShell } from '@/ui/workspace/uiux/UIUXAuthoringShell.jsx';
 import { UXWorkspaceShell } from '@/ui/workspace/ux/UXWorkspaceShell';
 
 /**
- * The authoritative editor surface for a workspace mode.
+ * Authoritative workspace shell router.
  *
- * IMPORTANT:
- * - This file is UI composition ONLY
+ * Constitutional law:
+ * - Composition only
  * - No dispatcher logic
  * - No execution authority
+ * - One shell decision point
  *
- * UX Workspace is mounted here when:
- *   workspace.profile === 'ux-validation'
+ * Routing law:
+ * media modes       -> MediaWorkspaceShell
+ * ux-validation     -> UXWorkspaceShell
+ * uiux mode         -> UIUXAuthoringShell
+ * all other modes   -> EditorWorkspaceShell
  */
 export function WorkspaceShell({ workspace, modeId = null, workspaceContext = null }) {
-    const capabilities = workspace.capabilities || {};
-    const isUX = workspace.profile === 'ux-validation';
-    const { goToMode, goToWorkspace } = useWorkspaceNavigation();
-    const activeWorkspace = workspaceContext?.workspace ?? 'design';
-    const activeMode = workspaceContext?.mode ?? modeId ?? workspace.id;
+    const activeMode = workspaceContext?.mode || modeId;
+    const isUXValidation = workspace.profile === 'ux-validation';
+    const isUIUX = activeMode === 'uiux';
 
+    /**
+     * Media workspaces own their own shell authority.
+     */
     if (isMediaWorkspaceId(workspace.id)) {
-        return (
-            <MediaWorkspaceShell
-                workspace={workspace}
-                modeId={activeMode}
-                workspaceContext={workspaceContext}
-            />
-        );
+        return <MediaWorkspaceShell workspace={workspace} modeId={activeMode} workspaceContext={workspaceContext} />;
     }
 
-    if (!isUX) {
-        return (
-            <EditorWorkspaceShell
-                workspace={workspace}
-                modeId={activeMode}
-                workspaceContext={workspaceContext}
-            />
-        );
+    /**
+     * UX validation is a distinct read-only shell.
+     */
+    if (isUXValidation) {
+        return <UXWorkspaceShell workspace={workspace} modeId={activeMode} workspaceContext={workspaceContext} profile={workspace.profile} />;
     }
 
-    return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-            {/* ===== Header / Mode Bar ===== */}
-            <header
-                style={{
-                    padding: '8px 12px',
-                    borderBottom: '1px solid #e5e7eb',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 12,
-                    background: '#f8fafc',
-                }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <strong style={{ fontSize: 14 }}>
-                        {workspaceContext?.label ?? workspace.label}
-                    </strong>
-                    <WorkspaceSwitcher
-                        activeWorkspace={activeWorkspace}
-                        onChange={goToWorkspace}
-                    />
-                    <ModeSwitcher
-                        workspace={activeWorkspace}
-                        activeMode={activeMode}
-                        onChange={(nextMode) => goToMode(activeWorkspace, nextMode)}
-                    />
-                </div>
+    /**
+     * UIUX owns a dedicated product shell.
+     * Do not route uiux through generic editor shell.
+     */
+    if (isUIUX) {
+        return <UIUXAuthoringShell workspace={workspace} modeId={activeMode} workspaceContext={workspaceContext} />;
+    }
 
-                {/* Optional workspace nav (if defined) */}
-                {workspace.routes && (
-                    <nav style={{ display: 'flex', gap: 6 }}>
-                        {Object.entries(workspace.routes).map(([routeKey, route]) => (
-                            <a
-                                key={routeKey}
-                                href={route.href}
-                                style={{
-                                    padding: '4px 8px',
-                                    borderRadius: 4,
-                                    background: 'rgba(59,130,246,0.1)',
-                                    color: '#2563eb',
-                                    textDecoration: 'none',
-                                    fontSize: 12,
-                                }}>
-                                {route.label}
-                            </a>
-                        ))}
-                    </nav>
-                )}
-            </header>
-
-            {/* ===== Main Workspace Area ===== */}
-            <div style={{ display: 'flex', flex: 1, position: 'relative' }}>
-                {isUX ? (
-                    /* ────────────────────────────────────────────── */
-                    /* UX WORKSPACE                                   */
-                    /* ────────────────────────────────────────────── */
-                    <UXWorkspaceShell profile={workspace.profile} />
-                ) : (
-                    /* ────────────────────────────────────────────── */
-                    /* EDITOR WORKSPACE                               */
-                    /* ────────────────────────────────────────────── */
-                    <>
-                        {/* Left sidebar (layers, etc.) */}
-                        {capabilities.layers && (
-                            <aside
-                                style={{
-                                    width: 240,
-                                    borderRight: '1px solid #e5e7eb',
-                                    background: '#ffffff',
-                                }}>
-                                {/* Layers panel placeholder */}
-                            </aside>
-                        )}
-
-                        {/* Canvas */}
-                        <main style={{ flex: 1, position: 'relative' }}>
-                            <WorkspaceCanvasRoot workspaceId={activeMode} />
-                            <Controls profile={workspace.profile} />
-                        </main>
-
-                        {/* Right sidebar (properties) */}
-                        {capabilities.properties && (
-                            <aside
-                                style={{
-                                    width: 300,
-                                    borderLeft: '1px solid #e5e7eb',
-                                    background: '#ffffff',
-                                }}>
-                                {/* Properties panel placeholder */}
-                            </aside>
-                        )}
-                    </>
-                )}
-            </div>
-
-            {/* ===== Timeline ===== */}
-            {!isUX && capabilities.timeline && (
-                <footer
-                    style={{
-                        height: 180,
-                        borderTop: '1px solid #e5e7eb',
-                        background: '#f8fafc',
-                    }}>
-                    {/* Timeline panel placeholder */}
-                </footer>
-            )}
-        </div>
-    );
+    /**
+     * Generic fallback for remaining non-media,
+     * non-uiux authoring modes.
+     */
+    return <EditorWorkspaceShell workspace={workspace} modeId={activeMode} workspaceContext={workspaceContext} />;
 }

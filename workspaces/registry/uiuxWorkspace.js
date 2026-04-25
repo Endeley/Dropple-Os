@@ -6,7 +6,6 @@ export const uiuxWorkspace = {
     id: 'uiux',
     label: 'UI / UX Design',
 
-    // 🔹 UI SEMANTIC FLAG (AUTHORING UX MODE)
     profile: 'uiux-authoring',
 
     extends: 'graphic',
@@ -21,6 +20,7 @@ export const uiuxWorkspace = {
         showPageBounds: false,
         snapToBounds: false,
     },
+
     canvasSurface: {
         type: 'dots',
         gridSize: 8,
@@ -28,40 +28,37 @@ export const uiuxWorkspace = {
     },
 
     engines: ['nodeTree', 'layout', 'constraints', 'autoLayout', 'vector'],
+
     tools: ['select', 'move', 'resize', 'text', 'image', 'frame', 'shape', 'path'],
-    panels: [
-        'NodeHeaderPanel',
-        'SemanticsPanel',
-        'ExportPreviewPanel',
-        'CanvasSurfacePanel',
-    ],
+
+    /*
+      Canonical UIUX authoring panel stack
+      Activation truth owns exposure.
+    */
+    panels: ['NodeHeaderPanel', 'LayoutInspector', 'AutoLayoutPanel', 'ContentPanel', 'SemanticsPanel', 'MotionPanel', 'CanvasSurfacePanel', 'UXValidationPanel', 'UXSuggestionsPanel', 'UXRiskImpactPanel', 'UXEventListPanel', 'CertifiedTemplatesPanel', 'ExportPreviewPanel'],
+
     activeDomains: ['canvas', 'state', 'motion'],
-    enabledTriggerTypes: new Set([
-        'pointer_enter',
-        'pointer_leave',
-        'click',
-        'manual',
-    ]),
+
+    enabledTriggerTypes: new Set(['pointer_enter', 'pointer_leave', 'click', 'manual']),
 
     capabilities: {
         canvas: true,
         timeline: true,
+
         animation: false,
         audio: false,
         video: false,
         codegen: false,
+
         'node:create': true,
+
         rootNodeTypes: ['frame'],
         allowFrameNesting: false,
         allowRootShapes: false,
         autoLayoutParents: ['container'],
     },
 
-    allowedEventTypes: [
-        EventTypes.VECTOR_CREATE,
-        EventTypes.VECTOR_UPDATE,
-        EventTypes.VECTOR_DELETE,
-    ],
+    allowedEventTypes: [EventTypes.VECTOR_CREATE, EventTypes.VECTOR_UPDATE, EventTypes.VECTOR_DELETE],
 
     timeline: createTimelineCapability({
         readOnly: true,

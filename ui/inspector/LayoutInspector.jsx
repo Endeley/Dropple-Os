@@ -3,6 +3,7 @@
 import { Control, Input } from '@/ui/Control';
 
 function AspectRatioControl({ node, emit, readOnly = false }) {
+  if (!node) return null;
   const layout = node.layout || {};
   const locked = !!layout.constraints?.aspectRatio;
 

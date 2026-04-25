@@ -13,7 +13,7 @@ async function fetchCertifiedTemplates({ mode }) {
     return payload?.templates ?? [];
 }
 
-export function CertifiedTemplatesPanel({ mode = null }) {
+export function CertifiedTemplatesPanel({ mode = 'uiux' }) {
     const { templates, install, loading, error } = useCertifiedTemplates({
         mode,
         loadCertifiedTemplates: fetchCertifiedTemplates,
