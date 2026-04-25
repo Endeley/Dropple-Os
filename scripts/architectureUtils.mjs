@@ -191,6 +191,7 @@ export function scoreToStatus(score) {
 function resolveStatus({
   missingRequiredFiles,
   missingRequiredTests,
+  missingOptionalFiles,
   blockedBy,
   verifyCommands
 }) {
@@ -206,7 +207,7 @@ function resolveStatus({
     return STATUS.PARTIAL;
   }
 
-  if (Array.isArray(verifyCommands) && verifyCommands.length > 0) {
+  if (missingOptionalFiles.length === 0) {
     return STATUS.VERIFIED;
   }
 
@@ -236,6 +237,7 @@ export function buildStatusReport(systemMap, dependencyGraph, phaseMap) {
     const status = resolveStatus({
       missingRequiredFiles,
       missingRequiredTests,
+      missingOptionalFiles,
       blockedBy,
       verifyCommands
     });
@@ -247,6 +249,8 @@ export function buildStatusReport(systemMap, dependencyGraph, phaseMap) {
       requiredTestsTotal: config.requiredTests.length,
       optionalFilesPresent: config.optionalFiles.length - missingOptionalFiles.length,
       optionalFilesTotal: config.optionalFiles.length,
+      optionalEvidenceComplete: missingOptionalFiles.length === 0,
+      verifyCommandsConfigured: verifyCommands.length,
       verifyCommandsTotal: verifyCommands.length
     };
 

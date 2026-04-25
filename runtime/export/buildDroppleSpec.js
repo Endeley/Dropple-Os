@@ -1,6 +1,7 @@
 import { deriveEdgesFromNodes } from './deriveEdgesFromNodes.js';
 import { exportModes } from './exportModes.js';
 import { exportMetadata } from './exportMetadata.js';
+import { normalizeExportSettings } from '@/core/export/exportTargetContract.js';
 
 /**
  * Build authoritative DroppleSpec from runtime workspace.
@@ -14,6 +15,7 @@ export function buildDroppleSpec(workspace) {
         world: buildWorld(workspace),
         nodes: exportNodes(nodes),
         edges: deriveEdgesFromNodes(nodes),
+        media: exportMedia(workspace),
         modes: exportModes(workspace),
         metadata: exportMetadata(workspace),
     };
@@ -38,4 +40,23 @@ function exportNodes(nodes) {
         props: n.props ?? {},
         meta: n.meta,
     }));
+}
+
+function exportMedia(workspace) {
+    const document = workspace?.document ?? {};
+
+    return {
+        assets: document.assets ?? {
+            images: {},
+            videos: {},
+            audio: {},
+        },
+        sequences: document.sequences ?? {
+            sequences: {},
+            activeSequenceId: null,
+        },
+        exports: normalizeExportSettings(document.exports ?? {
+            targets: [],
+        }),
+    };
 }

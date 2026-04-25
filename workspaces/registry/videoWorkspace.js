@@ -45,6 +45,14 @@ export const videoWorkspace = {
         EventTypes.SEQUENCE_CLIP_CREATE,
         EventTypes.SEQUENCE_CLIP_UPDATE,
         EventTypes.SEQUENCE_CLIP_DELETE,
+        EventTypes.SEQUENCE_CLIP_MOVE,
+        EventTypes.SEQUENCE_CLIP_TRIM,
+        EventTypes.SEQUENCE_CLIP_SPLIT,
+        EventTypes.MEDIA_ASSET_REGISTER,
+        EventTypes.MEDIA_ASSET_UPDATE,
+        EventTypes.MEDIA_ASSET_DELETE,
+        EventTypes.EXPORT_TARGET_UPSERT,
+        EventTypes.EXPORT_TARGET_DELETE,
     ],
 
     timeline: createTimelineCapability({

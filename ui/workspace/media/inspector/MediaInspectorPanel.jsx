@@ -8,9 +8,12 @@ import {
     projectMediaSelection,
     projectMediaSelectionSpan,
     projectMediaSelectedKeyframes,
+    projectMediaExportTargets,
     projectMediaTimelineTracks,
     projectMediaTweenSpan,
     selectMediaCursorIndex,
+    selectMediaAssets,
+    selectMediaExports,
     selectMediaPlayback,
     selectMediaSelection,
     selectMediaTimeline,
@@ -19,6 +22,7 @@ import {
     projectRigControllerTimelineTracks,
     selectActiveRig,
     projectActiveSequenceView,
+    projectSequenceInspectorView,
     projectSequenceTimelineTracks,
     selectActiveSequence,
     selectActiveSequenceView,
@@ -92,6 +96,8 @@ export function MediaInspectorPanel({ mode }) {
     const timeline = useRuntimeStore(selectMediaTimeline);
     const playbackState = useRuntimeStore(selectMediaPlayback);
     const cursorIndex = useRuntimeStore(selectMediaCursorIndex);
+    const mediaAssets = useRuntimeStore(selectMediaAssets);
+    const exportState = useRuntimeStore(selectMediaExports);
     const activeRig = useRuntimeStore(selectActiveRig);
     const activeSequence = useRuntimeStore((state) => selectActiveSequence(state.document));
     const nodes = useWorkspaceVisualState((state) => state.nodes || {});
@@ -133,6 +139,23 @@ export function MediaInspectorPanel({ mode }) {
             projectActiveSequenceView(document, { frame: Number(playback.time ?? 0) }),
         [document, runtimeScene, playbackState, playback.time]
     );
+    const exportTargets = useMemo(
+        () => projectMediaExportTargets(exportState),
+        [exportState]
+    );
+    const sequenceInspector = useMemo(
+        () =>
+            activeSequence
+                ? projectSequenceInspectorView({
+                      sequence: activeSequence,
+                      assets: mediaAssets,
+                      sequenceView,
+                      selectedTrackId,
+                      selectedClipId: selectedSequenceClipId,
+                  })
+                : null,
+        [activeSequence, mediaAssets, sequenceView, selectedTrackId, selectedSequenceClipId]
+    );
     const allTracks = useMemo(
         () => [...sequenceTracks, ...projectedTracks],
         [sequenceTracks, projectedTracks]
@@ -140,13 +163,6 @@ export function MediaInspectorPanel({ mode }) {
     const activeTrack = useMemo(
         () => allTracks.find((track) => track.id === selectedTrackId) ?? null,
         [allTracks, selectedTrackId]
-    );
-    const activeSequenceClip = useMemo(
-        () =>
-            activeTrack?.kind === 'sequence-track' && selectedSequenceClipId
-                ? (activeTrack.clips || []).find((clip) => clip?.id === selectedSequenceClipId) ?? null
-                : null,
-        [activeTrack, selectedSequenceClipId]
     );
     const activeKeyframe = useMemo(
         () => projectMediaActiveKeyframe(activeTrack, selectedKeyframeId),
@@ -332,10 +348,11 @@ export function MediaInspectorPanel({ mode }) {
                         sequence={activeSequence}
                         sequenceView={sequenceView}
                         track={activeTrack?.kind === 'sequence-track' ? activeTrack : null}
-                        clip={activeSequenceClip}
                         modeId={mode.id}
                         currentFrame={currentFrame}
                         selection={selection}
+                        inspector={sequenceInspector}
+                        exportTargets={exportTargets}
                     />
                 ) : null}
                 {mode.id === 'animation' ? (

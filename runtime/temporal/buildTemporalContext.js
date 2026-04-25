@@ -119,6 +119,7 @@ export function buildTemporalContext({ document, runtime, cursorIndex } = {}) {
     const sequenceView = sequence
         ? evaluateSequence({
               sequence,
+              assets: document?.assets ?? null,
               frame,
               timeMs,
           })
@@ -143,6 +144,8 @@ export function buildTemporalContext({ document, runtime, cursorIndex } = {}) {
         frame: Number(sequenceView?.frame ?? frame),
         timeMs: resolvedTimeMs,
         activeClips: Array.isArray(sequenceView?.activeClips) ? sequenceView.activeClips : [],
+        activeAudioClips: Array.isArray(sequenceView?.activeAudioClips) ? sequenceView.activeAudioClips : [],
+        activeVideoClips: Array.isArray(sequenceView?.activeVideoClips) ? sequenceView.activeVideoClips : [],
         activeShot: activeShot
             ? {
                   shotId: activeShot.shotId ?? null,

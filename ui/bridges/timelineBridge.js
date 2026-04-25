@@ -297,6 +297,30 @@ export function registerTimelineBridge(dispatcher) {
             console.warn('[timelineBridge] Dispatcher not provided; skipping sequence clip delete.');
         }
     };
+    const onSequenceClipMove = (payload) => {
+        if (!payload) return;
+        if (typeof dispatch === 'function') {
+            dispatch({ type: EventTypes.SEQUENCE_CLIP_MOVE, payload });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping sequence clip move.');
+        }
+    };
+    const onSequenceClipTrim = (payload) => {
+        if (!payload) return;
+        if (typeof dispatch === 'function') {
+            dispatch({ type: EventTypes.SEQUENCE_CLIP_TRIM, payload });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping sequence clip trim.');
+        }
+    };
+    const onSequenceClipSplit = (payload) => {
+        if (!payload) return;
+        if (typeof dispatch === 'function') {
+            dispatch({ type: EventTypes.SEQUENCE_CLIP_SPLIT, payload });
+        } else {
+            console.warn('[timelineBridge] Dispatcher not provided; skipping sequence clip split.');
+        }
+    };
 
     canvasBus.on(TIMELINE_INTENTS.TRACK_CREATE, onTimelineTrackCreate);
     canvasBus.on(TIMELINE_INTENTS.TRACK_DELETE, onTimelineTrackDelete);
@@ -326,6 +350,9 @@ export function registerTimelineBridge(dispatcher) {
     canvasBus.on('intent.sequence.clip.create', onSequenceClipCreate);
     canvasBus.on('intent.sequence.clip.update', onSequenceClipUpdate);
     canvasBus.on('intent.sequence.clip.delete', onSequenceClipDelete);
+    canvasBus.on('intent.sequence.clip.move', onSequenceClipMove);
+    canvasBus.on('intent.sequence.clip.trim', onSequenceClipTrim);
+    canvasBus.on('intent.sequence.clip.split', onSequenceClipSplit);
 
     return () => {
         canvasBus.off(TIMELINE_INTENTS.TRACK_CREATE, onTimelineTrackCreate);
@@ -356,6 +383,9 @@ export function registerTimelineBridge(dispatcher) {
         canvasBus.off('intent.sequence.clip.create', onSequenceClipCreate);
         canvasBus.off('intent.sequence.clip.update', onSequenceClipUpdate);
         canvasBus.off('intent.sequence.clip.delete', onSequenceClipDelete);
+        canvasBus.off('intent.sequence.clip.move', onSequenceClipMove);
+        canvasBus.off('intent.sequence.clip.trim', onSequenceClipTrim);
+        canvasBus.off('intent.sequence.clip.split', onSequenceClipSplit);
         registered = false;
     };
 }

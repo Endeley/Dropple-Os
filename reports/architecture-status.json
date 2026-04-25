@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-25T11:36:37.715Z",
+  "generatedAt": "2026-04-25T14:53:04.669Z",
   "statusScale": [
     "MISSING",
     "SCAFFOLDED",
@@ -23,8 +23,8 @@
       "layer": "foundation",
       "critical": true,
       "order": 10,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [],
       "blockedBy": [],
       "requiredFiles": [
@@ -46,6 +46,8 @@
         "requiredTestsTotal": 2,
         "optionalFilesPresent": 0,
         "optionalFilesTotal": 0,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -57,8 +59,8 @@
       "layer": "foundation",
       "critical": true,
       "order": 20,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "dispatcher"
       ],
@@ -83,6 +85,8 @@
         "requiredTestsTotal": 2,
         "optionalFilesPresent": 0,
         "optionalFilesTotal": 0,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -94,8 +98,8 @@
       "layer": "foundation",
       "critical": true,
       "order": 30,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "dispatcher",
         "reducers"
@@ -121,6 +125,8 @@
         "requiredTestsTotal": 2,
         "optionalFilesPresent": 0,
         "optionalFilesTotal": 0,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -132,8 +138,8 @@
       "layer": "foundation",
       "critical": true,
       "order": 40,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "dispatcher",
         "reducers",
@@ -160,6 +166,8 @@
         "requiredTestsTotal": 2,
         "optionalFilesPresent": 0,
         "optionalFilesTotal": 0,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -171,8 +179,8 @@
       "layer": "foundation",
       "critical": true,
       "order": 50,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "dispatcher",
         "reducers"
@@ -201,6 +209,8 @@
         "requiredTestsTotal": 2,
         "optionalFilesPresent": 1,
         "optionalFilesTotal": 1,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -212,8 +222,8 @@
       "layer": "sceneRuntime",
       "critical": true,
       "order": 60,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "documentModel"
       ],
@@ -244,6 +254,8 @@
         "requiredTestsTotal": 3,
         "optionalFilesPresent": 2,
         "optionalFilesTotal": 2,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -255,8 +267,8 @@
       "layer": "sceneRuntime",
       "critical": true,
       "order": 70,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "sceneEvaluation"
       ],
@@ -283,6 +295,8 @@
         "requiredTestsTotal": 2,
         "optionalFilesPresent": 0,
         "optionalFilesTotal": 0,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -294,8 +308,8 @@
       "layer": "sceneRuntime",
       "critical": true,
       "order": 80,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "spatialIndex"
       ],
@@ -322,6 +336,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 1,
         "optionalFilesTotal": 1,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -333,8 +349,8 @@
       "layer": "sceneRuntime",
       "critical": true,
       "order": 90,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "hitTesting"
       ],
@@ -362,6 +378,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 1,
         "optionalFilesTotal": 1,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -373,8 +391,8 @@
       "layer": "sceneRuntime",
       "critical": true,
       "order": 100,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "selection"
       ],
@@ -416,6 +434,8 @@
         "requiredTestsTotal": 3,
         "optionalFilesPresent": 11,
         "optionalFilesTotal": 11,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -427,8 +447,8 @@
       "layer": "sceneRuntime",
       "critical": true,
       "order": 110,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "interactionRuntime"
       ],
@@ -457,6 +477,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 3,
         "optionalFilesTotal": 3,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -468,8 +490,8 @@
       "layer": "sceneRuntime",
       "critical": false,
       "order": 120,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "previewRuntime"
       ],
@@ -496,6 +518,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 1,
         "optionalFilesTotal": 1,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -507,8 +531,8 @@
       "layer": "sceneRuntime",
       "critical": false,
       "order": 130,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "previewRuntime"
       ],
@@ -534,6 +558,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 1,
         "optionalFilesTotal": 1,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -545,8 +571,8 @@
       "layer": "sceneRuntime",
       "critical": false,
       "order": 140,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "previewRuntime"
       ],
@@ -572,6 +598,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 1,
         "optionalFilesTotal": 1,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -583,8 +611,8 @@
       "layer": "authoringRuntime",
       "critical": false,
       "order": 150,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "documentModel"
       ],
@@ -613,6 +641,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 1,
         "optionalFilesTotal": 1,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -624,8 +654,8 @@
       "layer": "authoringRuntime",
       "critical": false,
       "order": 160,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "componentRuntime"
       ],
@@ -651,6 +681,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 2,
         "optionalFilesTotal": 2,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -662,8 +694,8 @@
       "layer": "authoringRuntime",
       "critical": false,
       "order": 170,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "dataRuntime"
       ],
@@ -689,6 +721,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 2,
         "optionalFilesTotal": 2,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -700,8 +734,8 @@
       "layer": "authoringRuntime",
       "critical": false,
       "order": 171,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "appRuntime",
         "dispatcher",
@@ -730,6 +764,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 1,
         "optionalFilesTotal": 1,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -741,8 +777,8 @@
       "layer": "authoringRuntime",
       "critical": false,
       "order": 172,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "stateMachineRuntime",
         "appRuntime",
@@ -772,6 +808,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 1,
         "optionalFilesTotal": 1,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -783,8 +821,8 @@
       "layer": "platform",
       "critical": true,
       "order": 180,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "appRuntime"
       ],
@@ -815,6 +853,8 @@
         "requiredTestsTotal": 2,
         "optionalFilesPresent": 2,
         "optionalFilesTotal": 2,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -826,8 +866,8 @@
       "layer": "platform",
       "critical": true,
       "order": 185,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "compilerIR",
         "appRuntime"
@@ -855,6 +895,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 1,
         "optionalFilesTotal": 1,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -866,8 +908,8 @@
       "layer": "platform",
       "critical": false,
       "order": 186,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "compilerPipeline"
       ],
@@ -896,6 +938,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 3,
         "optionalFilesTotal": 3,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -907,8 +951,8 @@
       "layer": "platform",
       "critical": false,
       "order": 187,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "compilerPipeline"
       ],
@@ -943,6 +987,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 6,
         "optionalFilesTotal": 6,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -954,8 +1000,8 @@
       "layer": "platform",
       "critical": true,
       "order": 188,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "compilerPipeline",
         "appRuntime"
@@ -995,6 +1041,8 @@
         "requiredTestsTotal": 4,
         "optionalFilesPresent": 6,
         "optionalFilesTotal": 6,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -1006,8 +1054,8 @@
       "layer": "platform",
       "critical": false,
       "order": 190,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "compilerIR",
         "compilerPipeline",
@@ -1039,6 +1087,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 2,
         "optionalFilesTotal": 2,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -1050,8 +1100,8 @@
       "layer": "platform",
       "critical": false,
       "order": 200,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "reactCompiler"
       ],
@@ -1077,6 +1127,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 2,
         "optionalFilesTotal": 2,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -1088,8 +1140,8 @@
       "layer": "platform",
       "critical": false,
       "order": 205,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "dispatcher",
         "compilerIR"
@@ -1119,6 +1171,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 2,
         "optionalFilesTotal": 2,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -1130,8 +1184,8 @@
       "layer": "platform",
       "critical": false,
       "order": 206,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "pluginPlatform"
       ],
@@ -1157,6 +1211,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 0,
         "optionalFilesTotal": 0,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -1168,8 +1224,8 @@
       "layer": "platform",
       "critical": true,
       "order": 210,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "documentModel",
         "replay",
@@ -1202,6 +1258,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 2,
         "optionalFilesTotal": 2,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -1213,8 +1271,8 @@
       "layer": "platform",
       "critical": true,
       "order": 215,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "documentModel",
         "dispatcher",
@@ -1246,6 +1304,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 0,
         "optionalFilesTotal": 0,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     },
@@ -1257,8 +1317,8 @@
       "layer": "platform",
       "critical": false,
       "order": 220,
-      "status": "INTEGRATED",
-      "score": 80,
+      "status": "VERIFIED",
+      "score": 100,
       "dependencies": [
         "appRuntime",
         "compilerIR",
@@ -1290,6 +1350,8 @@
         "requiredTestsTotal": 1,
         "optionalFilesPresent": 3,
         "optionalFilesTotal": 3,
+        "optionalEvidenceComplete": true,
+        "verifyCommandsConfigured": 0,
         "verifyCommandsTotal": 0
       }
     }

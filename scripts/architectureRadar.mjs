@@ -1,13 +1,21 @@
-import { loadArchitectureInputs, loadOrBuildStatusReport, compareSystems, writeReport } from './architectureUtils.mjs';
+import {
+  loadArchitectureInputs,
+  loadOrBuildStatusReport,
+  compareSystems,
+  isIntegratedOrBetter,
+  writeReport
+} from './architectureUtils.mjs';
 
 const { systemMap, dependencyGraph } = loadArchitectureInputs();
 const statusReport = loadOrBuildStatusReport();
 
 const candidates = Object.entries(statusReport.systems)
-  .filter(([, entry]) => entry.status !== 'INTEGRATED')
+  .filter(([, entry]) => !isIntegratedOrBetter(entry.status))
   .filter(([systemId]) => {
     const dependencies = dependencyGraph[systemId] ?? [];
-    return dependencies.every((dependencyId) => statusReport.systems[dependencyId]?.status === 'INTEGRATED');
+    return dependencies.every((dependencyId) =>
+      isIntegratedOrBetter(statusReport.systems[dependencyId]?.status)
+    );
   })
   .sort(([leftId, leftEntry], [rightId, rightEntry]) => {
     if (leftEntry.critical !== rightEntry.critical) {
@@ -39,7 +47,7 @@ console.log('Dropple Development Radar');
 console.log('');
 
 if (nextTargets.length === 0) {
-  console.log('No next targets available. All tracked systems are integrated.');
+  console.log('No next targets available. All tracked systems are integrated or verified.');
 } else {
   console.log('Recommended Next Systems');
   console.log('');

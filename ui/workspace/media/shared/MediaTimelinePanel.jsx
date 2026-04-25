@@ -17,7 +17,8 @@ import {
 import {
     timelineIntentClockPause,
     timelineIntentClockSeek,
-    timelineIntentSequenceClipUpdate,
+    timelineIntentSequenceClipMove,
+    timelineIntentSequenceClipTrim,
 } from '@/ui/timeline/timelineIntent.js';
 import { useMediaTimelineSelectionStore } from './useMediaTimelineSelectionStore.js';
 
@@ -260,14 +261,12 @@ export function MediaTimelinePanel({ mode }) {
                     nextStart = Math.max(0, nextEnd - span);
                 }
 
-                timelineIntentSequenceClipUpdate({
+                timelineIntentSequenceClipMove({
                     sequenceId: clipDrag.sequenceId,
                     trackId: clipDrag.trackId,
                     clipId: clipDrag.clipId,
-                    patch: {
-                        start: nextStart,
-                        end: nextEnd,
-                    },
+                    start: nextStart,
+                    end: nextEnd,
                 });
                 return;
             }
@@ -277,13 +276,11 @@ export function MediaTimelinePanel({ mode }) {
                     0,
                     Math.min(clipDrag.initialEnd, clipDrag.initialStart + delta)
                 );
-                timelineIntentSequenceClipUpdate({
+                timelineIntentSequenceClipTrim({
                     sequenceId: clipDrag.sequenceId,
                     trackId: clipDrag.trackId,
                     clipId: clipDrag.clipId,
-                    patch: {
-                        start: nextStart,
-                    },
+                    start: nextStart,
                 });
                 return;
             }
@@ -292,13 +289,11 @@ export function MediaTimelinePanel({ mode }) {
                 clipDrag.initialStart,
                 Math.min(duration, clipDrag.initialEnd + delta)
             );
-            timelineIntentSequenceClipUpdate({
+            timelineIntentSequenceClipTrim({
                 sequenceId: clipDrag.sequenceId,
                 trackId: clipDrag.trackId,
                 clipId: clipDrag.clipId,
-                patch: {
-                    end: nextEnd,
-                },
+                end: nextEnd,
             });
         }
 

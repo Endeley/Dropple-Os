@@ -155,6 +155,14 @@ export const EventTypes = Object.freeze({
     SEQUENCE_CLIP_CREATE: 'sequence/clip/create',
     SEQUENCE_CLIP_UPDATE: 'sequence/clip/update',
     SEQUENCE_CLIP_DELETE: 'sequence/clip/delete',
+    SEQUENCE_CLIP_MOVE: 'sequence/clip/move',
+    SEQUENCE_CLIP_TRIM: 'sequence/clip/trim',
+    SEQUENCE_CLIP_SPLIT: 'sequence/clip/split',
+    MEDIA_ASSET_REGISTER: 'media/asset/register',
+    MEDIA_ASSET_UPDATE: 'media/asset/update',
+    MEDIA_ASSET_DELETE: 'media/asset/delete',
+    EXPORT_TARGET_UPSERT: 'export/target/upsert',
+    EXPORT_TARGET_DELETE: 'export/target/delete',
 
     // ─────────────────────────────
     // Animation

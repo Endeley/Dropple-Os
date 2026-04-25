@@ -1,4 +1,5 @@
 import { canProjectToCanonicalNode } from '@/validation/canProjectToCanonicalNode';
+import { normalizeExportSettings } from '@/core/export/exportTargetContract.js';
 
 /**
  * Dev-only validator for DroppleSpec.
@@ -10,6 +11,7 @@ export function validateDroppleSpec(spec) {
     assertRequired(spec, ['version', 'world', 'nodes', 'edges', 'modes', 'metadata']);
     assertNoForbiddenFields(spec);
     assertNodesProjectable(spec.nodes);
+    assertMediaProjectable(spec.media);
 }
 
 function assertRequired(obj, keys) {
@@ -44,4 +46,9 @@ function assertNodesProjectable(nodes) {
             console.warn('[DroppleSpec] Node cannot project to canonical contract', n);
         }
     }
+}
+
+function assertMediaProjectable(media) {
+    if (!media) return;
+    normalizeExportSettings(media.exports ?? { targets: [] });
 }

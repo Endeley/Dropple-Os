@@ -13,6 +13,8 @@ import { motionReducers } from "./motionReducers.js";
 import { rigReducers } from "./rigReducers.js";
 import { graphReducers } from "./graphReducers.js";
 import { sequenceReducers } from "./sequenceReducers.js";
+import { assetReducers } from "./assetReducers.js";
+import { exportReducers } from "./exportReducers.js";
 import { sceneShotReducers } from "./sceneShotReducers.js";
 import { behaviorReducers } from "./behaviorReducers.js";
 import { stateMachineReducers } from "./stateMachineReducers.js";
@@ -70,6 +72,14 @@ export function rootReducer(state, event) {
   });
   next = applyOwnedReducer(next, event, sequenceReducers, 'sequenceReducers', {
     allowedDocumentSlices: ['sequences'],
+    allowedRuntimeSlices: [],
+  });
+  next = applyOwnedReducer(next, event, assetReducers, 'assetReducers', {
+    allowedDocumentSlices: ['assets'],
+    allowedRuntimeSlices: [],
+  });
+  next = applyOwnedReducer(next, event, exportReducers, 'exportReducers', {
+    allowedDocumentSlices: ['exports'],
     allowedRuntimeSlices: [],
   });
   next = applyOwnedReducer(next, event, sceneShotReducers, 'sceneShotReducers', {

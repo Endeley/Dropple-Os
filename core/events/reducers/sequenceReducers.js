@@ -1,4 +1,10 @@
 import { EventTypes } from '../eventTypes.js';
+import {
+    assertCanonicalSequenceClips,
+    normalizeSequenceClip,
+    normalizeSequenceTrack,
+    sortSequenceClips,
+} from '@/core/sequencer/sequenceClipContract.js';
 
 function ensureSequenceState(state) {
     if (state?.document?.sequences) return state;
@@ -37,9 +43,30 @@ function cloneSequence(sequence) {
 }
 
 function cloneTrack(track) {
-    return {
+    return normalizeSequenceTrack({
         ...track,
         clips: { ...(track?.clips || {}) },
+    });
+}
+
+function toOrderedClipEntries(track) {
+    return sortSequenceClips(Object.values(track?.clips || {}).map((clip) => normalizeSequenceClip(clip)));
+}
+
+function toClipMap(track, clips) {
+    const ordered = assertCanonicalSequenceClips(clips, track);
+    return Object.fromEntries(ordered.map((clip) => [clip.id, clip]));
+}
+
+function patchTrackClips(track, updater) {
+    const normalizedTrack = cloneTrack(track);
+    const currentClips = toOrderedClipEntries(normalizedTrack);
+    const nextClips = updater(currentClips, normalizedTrack);
+    if (!Array.isArray(nextClips)) return normalizedTrack;
+
+    return {
+        ...normalizedTrack,
+        clips: toClipMap(normalizedTrack, nextClips),
     };
 }
 
@@ -182,13 +209,7 @@ export function sequenceReducers(state, event) {
                         ...sequences[sequenceId],
                         tracks: {
                             ...(sequences[sequenceId].tracks || {}),
-                            [trackId]: {
-                                ...track,
-                                clips: {
-                                    ...(track.clips || {}),
-                                    [clip.id]: { ...clip },
-                                },
-                            },
+                            [trackId]: patchTrackClips(track, (clips) => [...clips, normalizeSequenceClip(clip)]),
                         },
                     },
                 },
@@ -210,16 +231,19 @@ export function sequenceReducers(state, event) {
                         ...sequences[sequenceId],
                         tracks: {
                             ...(sequences[sequenceId].tracks || {}),
-                            [trackId]: {
-                                ...sequences[sequenceId].tracks[trackId],
-                                clips: {
-                                    ...(sequences[sequenceId].tracks[trackId].clips || {}),
-                                    [clipId]: {
-                                        ...clip,
-                                        ...patch,
-                                    },
-                                },
-                            },
+                            [trackId]: patchTrackClips(
+                                sequences[sequenceId].tracks[trackId],
+                                (clips) =>
+                                    clips.map((entry) =>
+                                        entry?.id === clipId
+                                            ? normalizeSequenceClip({
+                                                  ...entry,
+                                                  ...patch,
+                                                  id: clipId,
+                                              })
+                                            : entry
+                                    ),
+                            ),
                         },
                     },
                 },
@@ -245,8 +269,149 @@ export function sequenceReducers(state, event) {
                             ...(sequences[sequenceId].tracks || {}),
                             [trackId]: {
                                 ...track,
-                                clips: nextClips,
+                                clips: toClipMap(track, Object.values(nextClips)),
                             },
+                        },
+                    },
+                },
+            });
+        }
+
+        case EventTypes.SEQUENCE_CLIP_MOVE: {
+            const sequenceId = payload?.sequenceId;
+            const trackId = payload?.trackId;
+            const toTrackId = payload?.toTrackId ?? trackId;
+            const clipId = payload?.clipId;
+            const track = sequences[sequenceId]?.tracks?.[trackId];
+            const clip = track?.clips?.[clipId];
+            const targetTrack = sequences[sequenceId]?.tracks?.[toTrackId];
+            if (!sequenceId || !trackId || !clipId || !track || !clip || !targetTrack) return state;
+
+            const start = Number.isFinite(payload?.start) ? Number(payload.start) : Number(clip.start ?? 0);
+            const end = Number.isFinite(payload?.end) ? Number(payload.end) : Number(clip.end ?? start);
+            const movedClip = normalizeSequenceClip({
+                ...clip,
+                start,
+                end,
+            });
+
+            if (toTrackId === trackId) {
+                return updateSequenceDocument(ensured, {
+                    sequences: {
+                        ...sequences,
+                        [sequenceId]: {
+                            ...sequences[sequenceId],
+                            tracks: {
+                                ...(sequences[sequenceId].tracks || {}),
+                                [trackId]: patchTrackClips(track, (clips) =>
+                                    clips.map((entry) => (entry?.id === clipId ? movedClip : entry)),
+                                ),
+                            },
+                        },
+                    },
+                });
+            }
+
+            return updateSequenceDocument(ensured, {
+                sequences: {
+                    ...sequences,
+                    [sequenceId]: {
+                        ...sequences[sequenceId],
+                        tracks: {
+                            ...(sequences[sequenceId].tracks || {}),
+                            [trackId]: patchTrackClips(track, (clips) =>
+                                clips.filter((entry) => entry?.id !== clipId),
+                            ),
+                            [toTrackId]: patchTrackClips(targetTrack, (clips) => [...clips, movedClip]),
+                        },
+                    },
+                },
+            });
+        }
+
+        case EventTypes.SEQUENCE_CLIP_TRIM: {
+            const sequenceId = payload?.sequenceId;
+            const trackId = payload?.trackId;
+            const clipId = payload?.clipId;
+            const track = sequences[sequenceId]?.tracks?.[trackId];
+            const clip = track?.clips?.[clipId];
+            if (!sequenceId || !trackId || !clipId || !track || !clip) return state;
+
+            const start = Number.isFinite(payload?.start) ? Number(payload.start) : Number(clip.start ?? 0);
+            const end = Number.isFinite(payload?.end) ? Number(payload.end) : Number(clip.end ?? start);
+
+            return updateSequenceDocument(ensured, {
+                sequences: {
+                    ...sequences,
+                    [sequenceId]: {
+                        ...sequences[sequenceId],
+                        tracks: {
+                            ...(sequences[sequenceId].tracks || {}),
+                            [trackId]: patchTrackClips(track, (clips) =>
+                                clips.map((entry) =>
+                                    entry?.id === clipId
+                                        ? normalizeSequenceClip({
+                                              ...entry,
+                                              start,
+                                              end,
+                                          })
+                                        : entry,
+                                ),
+                            ),
+                        },
+                    },
+                },
+            });
+        }
+
+        case EventTypes.SEQUENCE_CLIP_SPLIT: {
+            const sequenceId = payload?.sequenceId;
+            const trackId = payload?.trackId;
+            const clipId = payload?.clipId;
+            const splitAt = payload?.splitAt;
+            const rightClipId = payload?.rightClipId;
+            const track = sequences[sequenceId]?.tracks?.[trackId];
+            const clip = track?.clips?.[clipId];
+            if (
+                !sequenceId ||
+                !trackId ||
+                !clipId ||
+                !track ||
+                !clip ||
+                !Number.isFinite(splitAt) ||
+                splitAt <= Number(clip.start) ||
+                splitAt >= Number(clip.end) ||
+                !rightClipId
+            ) {
+                return state;
+            }
+
+            const splitTime = Number(splitAt);
+            const right = normalizeSequenceClip({
+                ...clip,
+                id: rightClipId,
+                start: splitTime,
+                end: Number(clip.end),
+            });
+
+            return updateSequenceDocument(ensured, {
+                sequences: {
+                    ...sequences,
+                    [sequenceId]: {
+                        ...sequences[sequenceId],
+                        tracks: {
+                            ...(sequences[sequenceId].tracks || {}),
+                            [trackId]: patchTrackClips(track, (clips) => [
+                                ...clips.map((entry) =>
+                                    entry?.id === clipId
+                                        ? normalizeSequenceClip({
+                                              ...entry,
+                                              end: splitTime,
+                                          })
+                                        : entry
+                                ),
+                                right,
+                            ]),
                         },
                     },
                 },

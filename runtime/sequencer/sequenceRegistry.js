@@ -1,3 +1,5 @@
+import { normalizeSequenceClip, normalizeSequenceTrack } from '@/core/sequencer/sequenceClipContract.js';
+
 const EMPTY_COLLECTION = Object.freeze({});
 
 export function createSequence({
@@ -25,17 +27,19 @@ export function createSequenceTrack({
     type = 'generic',
     label = '',
     order = 0,
+    allowOverlap = false,
     clips = EMPTY_COLLECTION,
 } = {}) {
     if (!id) return null;
 
-    return {
+    return normalizeSequenceTrack({
         id,
         type,
         label,
         order,
+        allowOverlap,
         clips: { ...clips },
-    };
+    });
 }
 
 export function createSequenceClip({
@@ -43,6 +47,17 @@ export function createSequenceClip({
     label = '',
     start = 0,
     end = 0,
+    assetId = null,
+    assetType = null,
+    mediaType = null,
+    trimStartMs = 0,
+    trimEndMs = 0,
+    playbackRate = 1,
+    gainDb = 0,
+    muted = false,
+    opacity = 1,
+    fadeInMs = 0,
+    fadeOutMs = 0,
     cameraNodeRef = null,
     cameraRef = null,
     animationRef = null,
@@ -54,11 +69,22 @@ export function createSequenceClip({
 } = {}) {
     if (!id) return null;
 
-    return {
+    return normalizeSequenceClip({
         id,
         label,
         start,
         end,
+        assetId,
+        assetType,
+        mediaType,
+        trimStartMs,
+        trimEndMs,
+        playbackRate,
+        gainDb,
+        muted,
+        opacity,
+        fadeInMs,
+        fadeOutMs,
         cameraNodeRef,
         cameraRef,
         animationRef,
@@ -67,5 +93,5 @@ export function createSequenceClip({
         sceneRef,
         sequenceRef,
         meta: meta && typeof meta === 'object' ? { ...meta } : {},
-    };
+    });
 }

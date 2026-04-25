@@ -85,4 +85,12 @@ export const INTENT_CAPS = {
   [EventTypes.SEQUENCE_CLIP_CREATE]: ['sequencer:author'],
   [EventTypes.SEQUENCE_CLIP_UPDATE]: ['sequencer:author'],
   [EventTypes.SEQUENCE_CLIP_DELETE]: ['sequencer:author'],
+  [EventTypes.SEQUENCE_CLIP_MOVE]: ['sequencer:author'],
+  [EventTypes.SEQUENCE_CLIP_TRIM]: ['sequencer:author'],
+  [EventTypes.SEQUENCE_CLIP_SPLIT]: ['sequencer:author'],
+  [EventTypes.MEDIA_ASSET_REGISTER]: ['sequencer:author'],
+  [EventTypes.MEDIA_ASSET_UPDATE]: ['sequencer:author'],
+  [EventTypes.MEDIA_ASSET_DELETE]: ['sequencer:author'],
+  [EventTypes.EXPORT_TARGET_UPSERT]: ['export:run'],
+  [EventTypes.EXPORT_TARGET_DELETE]: ['export:run'],
 };

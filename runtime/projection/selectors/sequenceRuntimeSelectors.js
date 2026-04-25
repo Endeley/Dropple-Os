@@ -18,6 +18,8 @@ export function selectActiveSequenceView(state) {
         frame: Number(temporalContext.frame ?? 0),
         timeMs: Number(temporalContext.timeMs ?? 0),
         activeClips: Array.isArray(temporalContext.activeClips) ? temporalContext.activeClips : [],
+        activeAudioClips: Array.isArray(temporalContext.activeAudioClips) ? temporalContext.activeAudioClips : [],
+        activeVideoClips: Array.isArray(temporalContext.activeVideoClips) ? temporalContext.activeVideoClips : [],
         activeCamera: temporalContext.activeCamera ?? null,
         activeShot: temporalContext.activeShot ?? null,
     };

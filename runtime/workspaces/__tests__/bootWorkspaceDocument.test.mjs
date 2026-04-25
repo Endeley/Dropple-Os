@@ -17,6 +17,8 @@ test('bootWorkspaceDocument injects required slices for media animation mode', (
     assert.deepEqual(next.graphs, {});
     assert.deepEqual(next.motion, { clips: {} });
     assert.deepEqual(next.sequences, { sequences: {}, activeSequenceId: null });
+    assert.deepEqual(next.assets, { images: {}, videos: {}, audio: {} });
+    assert.deepEqual(next.exports, { targets: [] });
     assert.deepEqual(next.rigs, { rigs: {}, activeRigId: null });
     assert.deepEqual(next.stateMachines, { machines: {}, activeMachineId: null });
     assert.equal(input.graphs, undefined);
@@ -39,6 +41,8 @@ test('bootWorkspaceDocument preserves existing slices without overwriting them',
     assert.equal(next.motion, motion);
     assert.equal(next.graphs, graphs);
     assert.deepEqual(next.sequences, { sequences: {}, activeSequenceId: null });
+    assert.deepEqual(next.assets, { images: {}, videos: {}, audio: {} });
+    assert.deepEqual(next.exports, { targets: [] });
 });
 
 test('bootWorkspaceDocument returns the original document when nothing is missing', () => {
@@ -46,6 +50,8 @@ test('bootWorkspaceDocument returns the original document when nothing is missin
         graphs: {},
         motion: { clips: {} },
         sequences: { sequences: {}, activeSequenceId: null },
+        assets: { images: {}, videos: {}, audio: {} },
+        exports: { targets: [] },
     };
 
     const next = bootWorkspaceDocument({

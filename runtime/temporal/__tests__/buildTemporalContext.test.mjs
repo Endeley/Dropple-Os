@@ -8,6 +8,7 @@ function createDocument({
     activeSequenceId = null,
     activeSceneId = 'scene-1',
     shots = [],
+    assets = null,
 } = {}) {
     return {
         sceneGraph: {
@@ -22,6 +23,11 @@ function createDocument({
         sequences: {
             sequences: sequences ?? {},
             activeSequenceId,
+        },
+        assets: assets ?? {
+            images: {},
+            videos: {},
+            audio: {},
         },
     };
 }
@@ -246,6 +252,84 @@ test('buildTemporalContext returns empty sequence context when no sequence exist
     assert.deepEqual(result.activeClips, []);
     assert.equal(result.activeShot, null);
     assert.equal(result.activeCamera, null);
+});
+
+test('buildTemporalContext carries active audio and video clip truth from the canonical sequence evaluation', () => {
+    const document = createDocument({
+        sequences: {
+            seqA: {
+                id: 'seqA',
+                frameRate: 24,
+                tracks: {
+                    video: {
+                        id: 'video',
+                        type: 'video',
+                        order: 0,
+                        clips: {
+                            clipVideo: {
+                                id: 'clipVideo',
+                                start: 0,
+                                end: 24,
+                                assetId: 'video-a',
+                                assetType: 'video',
+                            },
+                        },
+                    },
+                    audio: {
+                        id: 'audio',
+                        type: 'audio',
+                        order: 1,
+                        clips: {
+                            clipAudio: {
+                                id: 'clipAudio',
+                                start: 0,
+                                end: 24,
+                                assetId: 'audio-a',
+                                assetType: 'audio',
+                                gainDb: -6,
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        activeSequenceId: 'seqA',
+        assets: {
+            images: {},
+            videos: {
+                'video-a': {
+                    id: 'video-a',
+                    type: 'video',
+                    url: '/video-a.mp4',
+                },
+            },
+            audio: {
+                'audio-a': {
+                    id: 'audio-a',
+                    type: 'audio',
+                    url: '/audio-a.wav',
+                },
+            },
+        },
+        shots: [{ id: 'shot-a', start: 0, duration: 1000 }],
+    });
+    const runtime = {
+        playback: {
+            frame: 12,
+            timeMs: 500,
+        },
+        scene: {
+            activeSceneId: 'scene-1',
+        },
+    };
+
+    const result = buildTemporalContext({ document, runtime });
+
+    assert.equal(result.activeVideoClips.length, 1);
+    assert.equal(result.activeAudioClips.length, 1);
+    assert.equal(result.activeVideoClips[0].asset.url, '/video-a.mp4');
+    assert.equal(result.activeAudioClips[0].asset.url, '/audio-a.wav');
+    assert.equal(result.activeAudioClips[0].clip.gainDb, -6);
 });
 
 test('buildTemporalContext does not fall back to document activeSceneId when runtime scene differs', () => {

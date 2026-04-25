@@ -38,6 +38,18 @@ export function createDefaultSlice(slice) {
                 activeSequenceId: null,
             };
 
+        case 'assets':
+            return {
+                images: {},
+                videos: {},
+                audio: {},
+            };
+
+        case 'exports':
+            return {
+                targets: [],
+            };
+
         case 'rigs':
             return {
                 rigs: {},

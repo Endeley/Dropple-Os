@@ -258,16 +258,66 @@ export type AssetSystem = {
 export type ImageAsset = {
     id: AssetId;
     url: string;
+    type?: 'image';
+    durationMs?: number;
+    trimStartMs?: number;
+    trimEndMs?: number;
+    mimeType?: string | null;
+    width?: number | null;
+    height?: number | null;
+    proxyId?: AssetId | null;
+    proxy?: AssetProxy | null;
+    waveform?: AssetWaveform | null;
+    meta?: Record<string, unknown>;
 };
 
 export type VideoAsset = {
     id: AssetId;
     url: string;
+    type?: 'video';
+    durationMs?: number;
+    trimStartMs?: number;
+    trimEndMs?: number;
+    mimeType?: string | null;
+    width?: number | null;
+    height?: number | null;
+    frameRate?: number | null;
+    proxyId?: AssetId | null;
+    proxy?: AssetProxy | null;
+    waveform?: AssetWaveform | null;
+    meta?: Record<string, unknown>;
 };
 
 export type AudioAsset = {
     id: AssetId;
     url: string;
+    type?: 'audio';
+    durationMs?: number;
+    trimStartMs?: number;
+    trimEndMs?: number;
+    mimeType?: string | null;
+    channels?: number | null;
+    sampleRate?: number | null;
+    proxyId?: AssetId | null;
+    proxy?: AssetProxy | null;
+    waveform?: AssetWaveform | null;
+    meta?: Record<string, unknown>;
+};
+
+export type AssetProxy = {
+    id?: AssetId | null;
+    url?: string | null;
+    mimeType?: string | null;
+    width?: number | null;
+    height?: number | null;
+    bitRateKbps?: number | null;
+};
+
+export type AssetWaveform = {
+    peaks: number[];
+    bucketMs?: number | null;
+    sampleCount?: number | null;
+    durationMs?: number | null;
 };
 
 export type ExportSettings = {
@@ -275,6 +325,23 @@ export type ExportSettings = {
 };
 
 export type ExportTarget = {
+    id: string;
     type: string;
+    format?: string;
+    presetId?: string | null;
+    label?: string | null;
+    delivery?: string | null;
+    width?: number | null;
+    height?: number | null;
+    frameRate?: number | null;
+    bitRateKbps?: number | null;
+    sampleRate?: number | null;
+    channels?: number | null;
+    videoCodec?: string | null;
+    audioCodec?: string | null;
+    includeVideo?: boolean;
+    includeAudio?: boolean;
+    includeAlpha?: boolean;
+    proxy?: AssetProxy | null;
     options?: Record<string, any>;
 };

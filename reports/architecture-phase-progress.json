@@ -1,195 +1,195 @@
 {
-  "generatedAt": "2026-04-25T11:36:37.402Z",
+  "generatedAt": "2026-04-25T14:53:04.357Z",
   "phases": {
     "phase1": {
-      "score": 80,
-      "status": "INTEGRATED",
+      "score": 100,
+      "status": "VERIFIED",
       "systemCount": 18,
       "statusCounts": {
         "MISSING": 0,
         "SCAFFOLDED": 0,
         "PARTIAL": 0,
-        "INTEGRATED": 18,
-        "VERIFIED": 0
+        "INTEGRATED": 0,
+        "VERIFIED": 18
       },
       "stages": {
         "core-platform-architecture": {
-          "score": 80,
-          "status": "INTEGRATED",
+          "score": 100,
+          "status": "VERIFIED",
           "systemCount": 5,
           "statusCounts": {
             "MISSING": 0,
             "SCAFFOLDED": 0,
             "PARTIAL": 0,
-            "INTEGRATED": 5,
-            "VERIFIED": 0
+            "INTEGRATED": 0,
+            "VERIFIED": 5
           },
           "systems": [
             {
               "system": "determinismGate",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": true,
               "group": "foundation"
             },
             {
               "system": "dispatcher",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": true,
               "group": "foundation"
             },
             {
               "system": "documentModel",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": true,
               "group": "foundation"
             },
             {
               "system": "reducers",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": true,
               "group": "foundation"
             },
             {
               "system": "replay",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": true,
               "group": "foundation"
             }
           ]
         },
         "scene-runtime-foundation": {
-          "score": 80,
-          "status": "INTEGRATED",
+          "score": 100,
+          "status": "VERIFIED",
           "systemCount": 9,
           "statusCounts": {
             "MISSING": 0,
             "SCAFFOLDED": 0,
             "PARTIAL": 0,
-            "INTEGRATED": 9,
-            "VERIFIED": 0
+            "INTEGRATED": 0,
+            "VERIFIED": 9
           },
           "systems": [
             {
               "system": "constraints",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": false,
               "group": "sceneRuntime"
             },
             {
               "system": "guides",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": false,
               "group": "sceneRuntime"
             },
             {
               "system": "hitTesting",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": true,
               "group": "sceneRuntime"
             },
             {
               "system": "interactionRuntime",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": true,
               "group": "sceneRuntime"
             },
             {
               "system": "previewRuntime",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": true,
               "group": "sceneRuntime"
             },
             {
               "system": "sceneEvaluation",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": true,
               "group": "sceneRuntime"
             },
             {
               "system": "selection",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": true,
               "group": "sceneRuntime"
             },
             {
               "system": "snapping",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": false,
               "group": "sceneRuntime"
             },
             {
               "system": "spatialIndex",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": true,
               "group": "sceneRuntime"
             }
           ]
         },
         "authoring-runtime-foundation": {
-          "score": 80,
-          "status": "INTEGRATED",
+          "score": 100,
+          "status": "VERIFIED",
           "systemCount": 3,
           "statusCounts": {
             "MISSING": 0,
             "SCAFFOLDED": 0,
             "PARTIAL": 0,
-            "INTEGRATED": 3,
-            "VERIFIED": 0
+            "INTEGRATED": 0,
+            "VERIFIED": 3
           },
           "systems": [
             {
               "system": "appRuntime",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": false,
               "group": "authoringRuntime"
             },
             {
               "system": "componentRuntime",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": false,
               "group": "authoringRuntime"
             },
             {
               "system": "dataRuntime",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": false,
               "group": "authoringRuntime"
             }
           ]
         },
         "compiler-foundation": {
-          "score": 80,
-          "status": "INTEGRATED",
+          "score": 100,
+          "status": "VERIFIED",
           "systemCount": 1,
           "statusCounts": {
             "MISSING": 0,
             "SCAFFOLDED": 0,
             "PARTIAL": 0,
-            "INTEGRATED": 1,
-            "VERIFIED": 0
+            "INTEGRATED": 0,
+            "VERIFIED": 1
           },
           "systems": [
             {
               "system": "compilerIR",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": true,
               "group": "platform"
             }
@@ -198,215 +198,215 @@
       }
     },
     "phase2": {
-      "score": 80,
-      "status": "INTEGRATED",
+      "score": 100,
+      "status": "VERIFIED",
       "systemCount": 13,
       "statusCounts": {
         "MISSING": 0,
         "SCAFFOLDED": 0,
         "PARTIAL": 0,
-        "INTEGRATED": 13,
-        "VERIFIED": 0
+        "INTEGRATED": 0,
+        "VERIFIED": 13
       },
       "stages": {
         "application-runtime-depth": {
-          "score": 80,
-          "status": "INTEGRATED",
+          "score": 100,
+          "status": "VERIFIED",
           "systemCount": 3,
           "statusCounts": {
             "MISSING": 0,
             "SCAFFOLDED": 0,
             "PARTIAL": 0,
-            "INTEGRATED": 3,
-            "VERIFIED": 0
+            "INTEGRATED": 0,
+            "VERIFIED": 3
           },
           "systems": [
             {
               "system": "aiRuntime",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": false,
               "group": "platform"
             },
             {
               "system": "navigationRuntime",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": false,
               "group": "authoringRuntime"
             },
             {
               "system": "stateMachineRuntime",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": false,
               "group": "authoringRuntime"
             }
           ]
         },
         "compiler-depth": {
-          "score": 80,
-          "status": "INTEGRATED",
+          "score": 100,
+          "status": "VERIFIED",
           "systemCount": 4,
           "statusCounts": {
             "MISSING": 0,
             "SCAFFOLDED": 0,
             "PARTIAL": 0,
-            "INTEGRATED": 4,
-            "VERIFIED": 0
+            "INTEGRATED": 0,
+            "VERIFIED": 4
           },
           "systems": [
             {
               "system": "applicationCompiler",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": true,
               "group": "platform"
             },
             {
               "system": "compilerPipeline",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": true,
               "group": "platform"
             },
             {
               "system": "deployment",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": false,
               "group": "platform"
             },
             {
               "system": "reactCompiler",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": false,
               "group": "platform"
             }
           ]
         },
         "layout-and-styling-system": {
-          "score": 80,
-          "status": "INTEGRATED",
+          "score": 100,
+          "status": "VERIFIED",
           "systemCount": 1,
           "statusCounts": {
             "MISSING": 0,
             "SCAFFOLDED": 0,
             "PARTIAL": 0,
-            "INTEGRATED": 1,
-            "VERIFIED": 0
+            "INTEGRATED": 0,
+            "VERIFIED": 1
           },
           "systems": [
             {
               "system": "layoutSystem",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": false,
               "group": "platform"
             }
           ]
         },
         "design-system-generator": {
-          "score": 80,
-          "status": "INTEGRATED",
+          "score": 100,
+          "status": "VERIFIED",
           "systemCount": 1,
           "statusCounts": {
             "MISSING": 0,
             "SCAFFOLDED": 0,
             "PARTIAL": 0,
-            "INTEGRATED": 1,
-            "VERIFIED": 0
+            "INTEGRATED": 0,
+            "VERIFIED": 1
           },
           "systems": [
             {
               "system": "designSystemCompiler",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": false,
               "group": "platform"
             }
           ]
         },
         "plugin-platform": {
-          "score": 80,
-          "status": "INTEGRATED",
+          "score": 100,
+          "status": "VERIFIED",
           "systemCount": 1,
           "statusCounts": {
             "MISSING": 0,
             "SCAFFOLDED": 0,
             "PARTIAL": 0,
-            "INTEGRATED": 1,
-            "VERIFIED": 0
+            "INTEGRATED": 0,
+            "VERIFIED": 1
           },
           "systems": [
             {
               "system": "pluginPlatform",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": false,
               "group": "platform"
             }
           ]
         },
         "workspace-layer": {
-          "score": 80,
-          "status": "INTEGRATED",
+          "score": 100,
+          "status": "VERIFIED",
           "systemCount": 1,
           "statusCounts": {
             "MISSING": 0,
             "SCAFFOLDED": 0,
             "PARTIAL": 0,
-            "INTEGRATED": 1,
-            "VERIFIED": 0
+            "INTEGRATED": 0,
+            "VERIFIED": 1
           },
           "systems": [
             {
               "system": "capabilityEngine",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": false,
               "group": "platform"
             }
           ]
         },
         "collaboration-runtime": {
-          "score": 80,
-          "status": "INTEGRATED",
+          "score": 100,
+          "status": "VERIFIED",
           "systemCount": 1,
           "statusCounts": {
             "MISSING": 0,
             "SCAFFOLDED": 0,
             "PARTIAL": 0,
-            "INTEGRATED": 1,
-            "VERIFIED": 0
+            "INTEGRATED": 0,
+            "VERIFIED": 1
           },
           "systems": [
             {
               "system": "collaboration",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": true,
               "group": "platform"
             }
           ]
         },
         "asset-vector-icon-system": {
-          "score": 80,
-          "status": "INTEGRATED",
+          "score": 100,
+          "status": "VERIFIED",
           "systemCount": 1,
           "statusCounts": {
             "MISSING": 0,
             "SCAFFOLDED": 0,
             "PARTIAL": 0,
-            "INTEGRATED": 1,
-            "VERIFIED": 0
+            "INTEGRATED": 0,
+            "VERIFIED": 1
           },
           "systems": [
             {
               "system": "vectorEngine",
-              "status": "INTEGRATED",
-              "score": 80,
+              "status": "VERIFIED",
+              "score": 100,
               "critical": true,
               "group": "platform"
             }

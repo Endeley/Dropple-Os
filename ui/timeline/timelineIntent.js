@@ -217,3 +217,24 @@ export function timelineIntentSequenceClipDelete(payload) {
     if (!payload?.sequenceId || !payload?.trackId || !payload?.clipId) return;
     canvasBus.emit('intent.sequence.clip.delete', payload);
 }
+
+export function timelineIntentSequenceClipMove(payload) {
+    if (!payload?.sequenceId || !payload?.trackId || !payload?.clipId) return;
+    if (!Number.isFinite(payload?.start) || !Number.isFinite(payload?.end)) return;
+    canvasBus.emit('intent.sequence.clip.move', payload);
+}
+
+export function timelineIntentSequenceClipTrim(payload) {
+    if (!payload?.sequenceId || !payload?.trackId || !payload?.clipId) return;
+    if (!Number.isFinite(payload?.start) && !Number.isFinite(payload?.end)) return;
+    canvasBus.emit('intent.sequence.clip.trim', payload);
+}
+
+export function timelineIntentSequenceClipSplit(payload) {
+    if (!payload?.sequenceId || !payload?.trackId || !payload?.clipId) return;
+    if (!Number.isFinite(payload?.splitAt)) return;
+    canvasBus.emit('intent.sequence.clip.split', {
+        ...payload,
+        rightClipId: payload?.rightClipId ?? crypto.randomUUID(),
+    });
+}

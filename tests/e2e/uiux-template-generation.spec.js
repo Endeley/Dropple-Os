@@ -78,6 +78,14 @@ test('uiux authoring roundtrip publishes from the toolbar flow and installs into
         cursorIndex: -1,
     };
 
+    await page.evaluate(() => {
+        for (const key of Object.keys(window.localStorage)) {
+            if (key.startsWith('dropple.')) {
+                window.localStorage.removeItem(key);
+            }
+        }
+    });
+
     await gotoWorkspace(page, '/workspace/new');
 
     // Correct invariant: fresh workspace is empty before hydration.

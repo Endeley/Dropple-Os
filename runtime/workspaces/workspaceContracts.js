@@ -3,7 +3,7 @@ export const WORKSPACE_CONTRACTS = Object.freeze({
         required: Object.freeze(['graphs']),
     }),
     media: Object.freeze({
-        required: Object.freeze(['graphs', 'motion', 'sequences']),
+        required: Object.freeze(['graphs', 'motion', 'sequences', 'assets', 'exports']),
     }),
     build: Object.freeze({
         required: Object.freeze(['graphs']),

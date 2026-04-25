@@ -37,5 +37,5 @@ if (criticalAttention.length > 0) {
   console.log('');
   console.log('Build warning only. Gate remains green.');
 } else {
-  console.log('All critical systems are integrated.');
+  console.log('All critical systems are integrated or verified.');
 }

@@ -4,6 +4,10 @@ function getSequenceMap(document) {
     return document?.sequences?.sequences ?? {};
 }
 
+function getAssets(document) {
+    return document?.assets ?? null;
+}
+
 function resolveSequenceId(document, sequenceId) {
     if (sequenceId) return sequenceId;
 
@@ -20,6 +24,7 @@ export function evaluateSequenceAtTime({ document, sequenceId = null, timeMs = n
 
     return evaluateSequence({
         sequence,
+        assets: getAssets(document),
         frame,
         timeMs,
     });

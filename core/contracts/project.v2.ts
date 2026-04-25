@@ -22,6 +22,16 @@ export type ProjectV2 = {
     assets: Record<string, Asset>;
 
     /**
+     * Canonical media sequencing truth.
+     */
+    sequences?: Record<string, Sequence>;
+
+    /**
+     * Export presets and output targets.
+     */
+    exports?: Record<string, unknown>;
+
+    /**
      * SceneGraph narrative layer.
      */
     sceneGraph: SceneGraphV1;
@@ -37,3 +47,4 @@ export type Composition = Record<string, unknown>;
  * Asset registry entry. Concrete shape defined elsewhere (C1).
  */
 export type Asset = Record<string, unknown>;
+export type Sequence = Record<string, unknown>;
