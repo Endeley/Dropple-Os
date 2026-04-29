@@ -1,55 +1,66 @@
-'use client';
-
-import { useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { WorkspaceRoot } from '@/ui/workspace/root/WorkspaceRoot.jsx';
-import { mockTemplates } from '@/marketplace/mockTemplates';
 import { mockLessons } from '@/marketplace/mockLessons';
 import { forkLessonToWorkspace } from '@/education/forkLessonToWorkspace';
+import { loadCertifiedTemplates } from '@/engine/templates/templateLoader.js';
+import { buildRuntimeSnapshotFromCertifiedTemplate } from '@/domain/templates/installCertifiedTemplate.js';
 import {
-  createWorkspaceFromTemplate,
   getWorkspaceDefinition,
   resolveWorkspaceContext,
 } from '@/platform/workspaces/index.js';
 
-function createEmptyWorkspace() {
+function createEmptyWorkspace(mode = 'design') {
   return {
     id: crypto.randomUUID(),
-    mode: 'design',
+    mode,
     snapshot: null,
     events: [],
     forkedFrom: null,
   };
 }
 
-export default function WorkspaceNewPage() {
-  const searchParams = useSearchParams();
-  const fromTemplate = searchParams.get('fromTemplate');
-  const fromLesson = searchParams.get('fromLesson');
+function getSearchParam(searchParams, key) {
+  const value = searchParams?.[key];
+  return Array.isArray(value) ? value[0] ?? null : value ?? null;
+}
 
-  const workspace = useMemo(() => {
-    const template = mockTemplates.find((t) => t.id === fromTemplate);
-    if (template) return createWorkspaceFromTemplate(template);
+function resolveSeededWorkspace(fromTemplate, fromLesson) {
+  if (fromTemplate) {
+    const certifiedTemplate = loadCertifiedTemplates().find((template) => template.id === fromTemplate);
+    if (certifiedTemplate) {
+      return {
+        workspace: createEmptyWorkspace(certifiedTemplate.mode ?? 'design'),
+        initialRuntimeSnapshot: buildRuntimeSnapshotFromCertifiedTemplate(certifiedTemplate),
+      };
+    }
+  }
 
-    const lesson = mockLessons.find((l) => l.id === fromLesson);
-    if (lesson) return forkLessonToWorkspace(lesson);
+  if (fromLesson) {
+    const lesson = mockLessons.find((entry) => entry.id === fromLesson);
+    if (lesson) {
+      return {
+        workspace: forkLessonToWorkspace(lesson),
+        initialRuntimeSnapshot: null,
+      };
+    }
+  }
 
-    return createEmptyWorkspace();
-  }, [fromTemplate, fromLesson]);
+  return {
+    workspace: createEmptyWorkspace(),
+    initialRuntimeSnapshot: null,
+  };
+}
 
-  const initialCursorIndex = workspace.events.length
-    ? workspace.events.length - 1
-    : -1;
-  const workspaceContext = useMemo(
-    () =>
-      resolveWorkspaceContext({
-        workspace: workspace.mode,
-      }),
-    [workspace.mode]
-  );
-  const workspaceDefinition = useMemo(
-    () => getWorkspaceDefinition(workspaceContext.definitionId ?? workspace.mode),
-    [workspace.mode, workspaceContext]
+export default function WorkspaceNewPage({ searchParams = {} }) {
+  const fromTemplate = getSearchParam(searchParams, 'fromTemplate');
+  const fromLesson = getSearchParam(searchParams, 'fromLesson');
+  const { workspace, initialRuntimeSnapshot } = resolveSeededWorkspace(fromTemplate, fromLesson);
+
+  const initialCursorIndex = workspace.events.length ? workspace.events.length - 1 : -1;
+  const workspaceContext = resolveWorkspaceContext({
+    workspace: workspace.mode,
+  });
+  const workspaceDefinition = getWorkspaceDefinition(
+    workspaceContext.definitionId ?? workspace.mode
   );
 
   return (
@@ -60,6 +71,7 @@ export default function WorkspaceNewPage() {
       workspace={workspaceDefinition}
       workspaceContext={workspaceContext}
       shellProps={{
+        initialRuntimeSnapshot,
         initialEvents: workspace.events,
         initialCursorIndex,
         disableSeed: workspace.events.length > 0,

@@ -10,6 +10,11 @@ export function hydrateRuntimeSnapshot({
     workspace,
     mode,
 } = {}) {
+    const explicitRuntimeSnapshot =
+        snapshot?.runtimeSnapshot &&
+        typeof snapshot.runtimeSnapshot === 'object'
+            ? snapshot.runtimeSnapshot
+            : null;
     const events = Array.isArray(snapshot?.events) ? snapshot.events : [];
     const maxIndex = events.length - 1;
     const cursorIndex = Math.max(
@@ -22,11 +27,16 @@ export function hydrateRuntimeSnapshot({
         cursorIndex,
     });
 
-    const replayedRuntimeSnapshot = getDesignStateAtCursor({
-        events,
-        uptoIndex: cursorIndex,
-    });
-    const runtimeSnapshot = replayedRuntimeSnapshot ?? initialRuntimeState;
+    const replayedRuntimeSnapshot = explicitRuntimeSnapshot
+        ? null
+        : getDesignStateAtCursor({
+              events,
+              uptoIndex: cursorIndex,
+          });
+    const runtimeSnapshot =
+        explicitRuntimeSnapshot ??
+        replayedRuntimeSnapshot ??
+        initialRuntimeState;
 
     const nextDocument =
         runtimeSnapshot?.document && typeof runtimeSnapshot.document === 'object'

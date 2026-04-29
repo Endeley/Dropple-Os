@@ -1,7 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { mockTemplates } from '@/marketplace/mockTemplates';
 import TemplateCard from '@/marketplace/TemplateCard';
 import { useMarketplaceFilters } from '@/marketplace/useMarketplaceFilters';
 import MarketplaceFilterBar from '@/marketplace/MarketplaceFilterBar';
@@ -11,7 +11,47 @@ import { collections } from '@/marketplace/collections';
 export default function MarketplacePage() {
   const router = useRouter();
   const filters = useMarketplaceFilters();
-  const visibleTemplates = filterTemplates(mockTemplates, filters);
+  const [templates, setTemplates] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadTemplates() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch('/api/templates/marketplace');
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(payload?.error ?? 'Failed to load templates.');
+        }
+
+        if (!cancelled) {
+          setTemplates(Array.isArray(payload?.templates) ? payload.templates : []);
+        }
+      } catch (nextError) {
+        if (!cancelled) {
+          setError(nextError);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadTemplates();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const visibleTemplates = filterTemplates(templates, filters);
 
   function openTemplate(template) {
     router.push(`/marketplace/template/${template.id}`);
@@ -59,7 +99,13 @@ export default function MarketplacePage() {
           marginTop: 'var(--space-4)',
         }}
       >
-        {visibleTemplates.length ? (
+        {loading ? (
+          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Loading templates...</div>
+        ) : error ? (
+          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+            Failed to load templates.
+          </div>
+        ) : visibleTemplates.length ? (
           visibleTemplates.map((tpl) => (
             <TemplateCard key={tpl.id} template={tpl} onOpen={openTemplate} />
           ))

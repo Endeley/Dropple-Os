@@ -58,11 +58,23 @@ export const uiuxWorkspace = {
         autoLayoutParents: ['container'],
     },
 
-    allowedEventTypes: [EventTypes.VECTOR_CREATE, EventTypes.VECTOR_UPDATE, EventTypes.VECTOR_DELETE],
+    allowedEventTypes: [
+        EventTypes.VECTOR_CREATE,
+        EventTypes.VECTOR_UPDATE,
+        EventTypes.VECTOR_DELETE,
+        EventTypes.CLOCK_SEEK,
+        EventTypes.CLOCK_PLAY,
+        EventTypes.CLOCK_PAUSE,
+        EventTypes.ANIMATION_KEYFRAME_CREATE,
+        EventTypes.ANIMATION_KEYFRAME_UPDATE,
+        EventTypes.ANIMATION_KEYFRAME_DELETE,
+        EventTypes.MOTION_KEYFRAME_UPDATE,
+        EventTypes.MOTION_KEYFRAME_DELETE,
+    ],
 
     timeline: createTimelineCapability({
-        readOnly: true,
-        allowedProperties: ['x', 'y', 'opacity'],
+        readOnly: false,
+        allowedProperties: ['opacity', 'translateY'],
     }),
 
     export: {

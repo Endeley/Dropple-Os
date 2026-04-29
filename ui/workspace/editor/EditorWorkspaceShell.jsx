@@ -36,6 +36,7 @@ export function EditorWorkspaceShell({
     educationRole = 'teacher',
     educationInitialLocked = true,
     educationReadOnly = false,
+    initialRuntimeSnapshot = null,
     initialEvents = [],
     initialCursorIndex = -1,
     initialDocumentId = null,
@@ -197,6 +198,7 @@ export function EditorWorkspaceShell({
             <PersistenceBridge
                 enabled={persistenceEnabled}
                 initialDocumentId={initialDocumentId}
+                initialRuntimeSnapshot={initialRuntimeSnapshot}
                 initialEvents={initialEvents}
                 initialCursorIndex={initialCursorIndex}
                 documentId={documentId}

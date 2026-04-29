@@ -111,14 +111,13 @@ export function buildRuntimeSnapshotFromCertifiedTemplate(template) {
 }
 
 export function installCertifiedTemplate({ dispatcher, template } = {}) {
-    const resolved = dispatcher ?? globalThis.__droppleDispatcher ?? null;
-    if (!resolved?.hydrateRuntimeState) {
+    if (!dispatcher?.hydrateRuntimeState) {
         throw new Error('Missing dispatcher.');
     }
 
     const snapshot = buildRuntimeSnapshotFromCertifiedTemplate(template);
 
-    resolved.hydrateRuntimeState(snapshot, { animate: false });
+    dispatcher.hydrateRuntimeState(snapshot, { animate: false });
 
     return {
         installed: true,

@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { installCertifiedTemplate } from '@/domain/templates/installCertifiedTemplate.js';
+import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
 
 export function useCertifiedTemplates({ mode = null, loadCertifiedTemplates }) {
+    const dispatcher = useDispatcher();
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -47,8 +49,8 @@ export function useCertifiedTemplates({ mode = null, loadCertifiedTemplates }) {
     }, [loader, mode]);
 
     const install = useCallback(
-        (template) => installCertifiedTemplate({ template }),
-        [],
+        (template) => installCertifiedTemplate({ dispatcher, template }),
+        [dispatcher],
     );
 
     return { templates, install, loading, error };

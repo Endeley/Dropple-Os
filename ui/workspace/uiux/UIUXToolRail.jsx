@@ -32,12 +32,7 @@ function ToolButton({ tool, active, onSelect }) {
     const icon = TOOL_ICONS[tool.id];
 
     return (
-        <button
-            type='button'
-            data-tool-id={tool.id}
-            className={`tool-button ${active ? 'is-active' : ''}`}
-            aria-pressed={active}
-            onClick={onSelect}>
+        <button type='button' data-tool-id={tool.id} className={`tool-button ${active ? 'is-active' : ''}`} aria-pressed={active} onClick={onSelect}>
             <svg viewBox='0 0 24 24' className='tool-icon'>
                 {icon || <circle cx='12' cy='12' r='6' />}
             </svg>
@@ -48,17 +43,14 @@ function ToolButton({ tool, active, onSelect }) {
 }
 
 export function UIUXToolRail() {
-    const workspaceId =
-        useWorkspaceViewState((s) => s.definitionId ?? s.modeId ?? s.id) || 'uiux';
+    const workspaceId = useWorkspaceViewState((s) => s.definitionId ?? s.modeId ?? s.id) || 'uiux';
 
     const activeTool = useToolStore((s) => s.activeTool);
     const runtimeTools = useToolStore((s) => s.visibleTools);
 
     const tools = useMemo(() => {
         if (runtimeTools?.length) {
-            return runtimeTools
-                .map((toolId) => TOOL_DEFINITION_BY_ID[toolId])
-                .filter(Boolean);
+            return runtimeTools.map((toolId) => TOOL_DEFINITION_BY_ID[toolId]).filter(Boolean);
         }
         return getVisibleToolsForWorkspace({ workspaceId });
     }, [runtimeTools, workspaceId]);
@@ -80,25 +72,39 @@ export function UIUXToolRail() {
 
     return (
         <aside className='uiux-toolrail'>
+            <div className='toolrail-section-title'>Tools</div>
+
             {grouped.map(([groupId, groupTools]) => (
                 <div className='tool-group' key={groupId}>
                     <div className='tool-group-label'>{groupId}</div>
 
-                    {groupTools.map((tool) => (
-                        <ToolButton
-                            key={tool.id}
-                            tool={tool}
-                            active={activeTool === tool.id}
-                            onSelect={() =>
-                                canvasBus.emit(INTENTS.TOOL_SET_ACTIVE, {
-                                    toolId: tool.id,
-                                    workspaceId,
-                                })
-                            }
-                        />
-                    ))}
+                    <div className='tool-group-stack'>
+                        {groupTools.map((tool) => (
+                            <ToolButton
+                                key={tool.id}
+                                tool={tool}
+                                active={activeTool === tool.id}
+                                onSelect={() =>
+                                    canvasBus.emit(INTENTS.TOOL_SET_ACTIVE, {
+                                        toolId: tool.id,
+                                        workspaceId,
+                                    })
+                                }
+                            />
+                        ))}
+                    </div>
                 </div>
             ))}
+
+            <div className='toolrail-footer'>
+                <button type='button' className='tool-button utility-tool'>
+                    <svg viewBox='0 0 24 24' className='tool-icon'>
+                        <circle cx='12' cy='12' r='2' />
+                        <path d='M12 4v3M12 17v3M4 12h3M17 12h3' />
+                    </svg>
+                    <span className='tool-tooltip'>Utilities</span>
+                </button>
+            </div>
         </aside>
     );
 }

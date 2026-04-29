@@ -1,18 +1,58 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { mockTemplates } from '@/marketplace/mockTemplates';
 import { useOwnership } from '@/marketplace/useOwnershipStore';
 
 export default function TemplateDetailPage({ params }) {
   const router = useRouter();
-  const template = mockTemplates.find((t) => t.id === params.id);
+  const [template, setTemplate] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const ownership = useOwnership();
   const user = { id: 'user-local' };
   const [license, setLicense] = useState('personal');
 
-  if (!template) return <div>Not found</div>;
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadTemplate() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`/api/templates/marketplace?id=${encodeURIComponent(params.id)}`);
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(payload?.error ?? 'Failed to load template.');
+        }
+
+        if (!cancelled) {
+          setTemplate(payload?.template ?? null);
+        }
+      } catch (nextError) {
+        if (!cancelled) {
+          setError(nextError);
+          setTemplate(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadTemplate();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [params.id]);
+
+  if (loading) return <div style={{ padding: 'var(--space-6)' }}>Loading template...</div>;
+  if (error) return <div style={{ padding: 'var(--space-6)' }}>Failed to load template.</div>;
+  if (!template) return <div style={{ padding: 'var(--space-6)' }}>Not found</div>;
 
   const creator = template.metadata.creator || {};
   const pricing = template.metadata.pricing || { free: true };

@@ -160,6 +160,30 @@ test('uiux template roundtrip preserves structure and motion across publish -> r
         assert.equal(installResult.installed, true);
 
         const runtimeState = dispatcher.getState();
+        assert.deepEqual(
+            Object.keys(runtimeState.document.motion?.clips ?? {}).sort(),
+            ['clip:headline:opacity', 'clip:headline:translateY'],
+        );
+        assert.equal(
+            runtimeState.document.motion.clips['clip:headline:opacity'].keyframes[1].easing,
+            'easeInOut',
+        );
+        assert.equal(
+            runtimeState.document.motion.clips['clip:headline:translateY'].keyframes[0].v,
+            16,
+        );
+        assert.deepEqual(
+            runtimeState.timeline?.timelines?.default?.channels?.map((channel) => ({
+                id: channel.id,
+                property: channel.property,
+                target: channel.target,
+            })),
+            [
+                { id: 'opacity', property: 'opacity', target: 'headline' },
+                { id: 'transform.y', property: 'translateY', target: 'headline' },
+            ],
+        );
+
         const roundtripped = workspaceToCCMTemplate({
             document: runtimeState.document,
             metadata: published.artifact.metadata,

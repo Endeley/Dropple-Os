@@ -21,6 +21,7 @@ import {
 export function PersistenceBridge({
     enabled = true,
     initialDocumentId = null,
+    initialRuntimeSnapshot = null,
     initialEvents = [],
     initialCursorIndex = -1,
     documentId = null,
@@ -46,11 +47,13 @@ export function PersistenceBridge({
     useEffect(() => {
         if (!dispatcher?.hydrateRuntimeState || seededInitialSnapshotRef.current) return;
 
+        const hasInitialRuntimeSnapshot =
+            initialRuntimeSnapshot && typeof initialRuntimeSnapshot === 'object';
         const hasInitialSnapshot =
             Array.isArray(initialEvents) && initialEvents.length > 0;
         const hasExplicitCursor = typeof initialCursorIndex === 'number' && initialCursorIndex >= 0;
 
-        if (!hasInitialSnapshot && !hasExplicitCursor) {
+        if (!hasInitialRuntimeSnapshot && !hasInitialSnapshot && !hasExplicitCursor) {
             seededInitialSnapshotRef.current = true;
             return;
         }
@@ -58,6 +61,7 @@ export function PersistenceBridge({
         hydratePersistenceSnapshot({
             dispatcher,
             snapshot: {
+                runtimeSnapshot: hasInitialRuntimeSnapshot ? initialRuntimeSnapshot : null,
                 events: initialEvents,
                 cursorIndex: initialCursorIndex,
             },
@@ -66,10 +70,22 @@ export function PersistenceBridge({
             mode,
         });
         seededInitialSnapshotRef.current = true;
-    }, [dispatcher, initialEvents, initialCursorIndex]);
+    }, [dispatcher, initialEvents, initialCursorIndex, initialRuntimeSnapshot, mode, workspace]);
 
     useEffect(() => {
         if (!dispatcher?.hydrateRuntimeState || restoredPersistenceRef.current) return;
+
+        const hasInitialRuntimeSnapshot =
+            initialRuntimeSnapshot && typeof initialRuntimeSnapshot === 'object';
+        const hasInitialSnapshot =
+            Array.isArray(initialEvents) && initialEvents.length > 0;
+        const hasExplicitCursor = typeof initialCursorIndex === 'number' && initialCursorIndex >= 0;
+
+        if (hasInitialRuntimeSnapshot || hasInitialSnapshot || hasExplicitCursor) {
+            restoredPersistenceRef.current = true;
+            onHydratedChange?.(true);
+            return;
+        }
 
         if (!enabled) {
             restoredPersistenceRef.current = true;
@@ -114,6 +130,9 @@ export function PersistenceBridge({
         dispatcher,
         enabled,
         initialDocumentId,
+        initialEvents,
+        initialCursorIndex,
+        initialRuntimeSnapshot,
         onDocumentIdChange,
         onDocumentNameChange,
         onHydratedChange,

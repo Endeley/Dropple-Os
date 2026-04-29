@@ -105,7 +105,6 @@ Primary files:
 - `ui/workspace/ux/UIUXToolRail.jsx`
 - `ui/workspace/ux/UIUXTopBar.jsx`
 - `ui/workspace/ux/panels/`
-- `templates/TemplateGeneratorOverlay.jsx`
 - `templates/workspaceToCCMTemplate.js`
 
 Required next closure:

@@ -1,15 +1,51 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { mockTemplates } from '@/marketplace/mockTemplates';
 import TemplateCard from '@/marketplace/TemplateCard';
 
 export default function CreatorPage({ params }) {
   const router = useRouter();
   const name = decodeURIComponent(params.name || '');
-  const templates = mockTemplates.filter(
-    (t) => t.metadata.creator?.name === name
-  );
+  const [templates, setTemplates] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadTemplates() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`/api/templates/marketplace?creator=${encodeURIComponent(name)}`);
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(payload?.error ?? 'Failed to load creator templates.');
+        }
+
+        if (!cancelled) {
+          setTemplates(Array.isArray(payload?.templates) ? payload.templates : []);
+        }
+      } catch (nextError) {
+        if (!cancelled) {
+          setError(nextError);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadTemplates();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [name]);
 
   function openTemplate(template) {
     router.push(`/marketplace/template/${template.id}`);
@@ -27,7 +63,15 @@ export default function CreatorPage({ params }) {
           marginTop: 'var(--space-4)',
         }}
       >
-        {templates.length ? (
+        {loading ? (
+          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+            Loading templates...
+          </div>
+        ) : error ? (
+          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+            Failed to load templates.
+          </div>
+        ) : templates.length ? (
           templates.map((tpl) => (
             <TemplateCard key={tpl.id} template={tpl} onOpen={openTemplate} />
           ))

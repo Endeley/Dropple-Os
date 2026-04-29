@@ -59,8 +59,12 @@ export const INTENT_CAPS = {
   [EventTypes.ANIMATION_TRACK_CREATE]: ['timeline:edit'],
   [EventTypes.ANIMATION_TRACK_DELETE]: ['timeline:edit'],
   [EventTypes.ANIMATION_KEYFRAME_ADD]: ['keyframe:create'],
+  [EventTypes.ANIMATION_KEYFRAME_CREATE]: ['keyframe:create'],
   [EventTypes.ANIMATION_KEYFRAME_UPDATE]: ['keyframe:mutate'],
   [EventTypes.ANIMATION_KEYFRAME_DELETE]: ['keyframe:mutate'],
+  [EventTypes.MOTION_KEYFRAME_ADD]: ['keyframe:create'],
+  [EventTypes.MOTION_KEYFRAME_UPDATE]: ['keyframe:mutate'],
+  [EventTypes.MOTION_KEYFRAME_DELETE]: ['keyframe:mutate'],
 
   // rigging
   [EventTypes.RIG_CREATE]: ['rig:author'],

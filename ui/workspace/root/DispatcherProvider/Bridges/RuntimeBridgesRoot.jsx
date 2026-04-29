@@ -12,6 +12,7 @@ import { registerAlignmentBridge } from '@/ui/bridges/alignmentBridge.js';
 import { registerHistoryBridge } from '@/ui/bridges/historyBridge.js';
 import { registerEditEventBridge } from '@/ui/bridges/editEventBridge.js';
 import { registerAnimationKeyframeBridge } from '@/ui/bridges/animationKeyframeBridge.js';
+import { registerMotionBridge } from '@/ui/bridges/motionBridge.js';
 import { registerLayoutConvertBridge } from '@/ui/bridges/layoutConvertBridge.js';
 import { registerTimelineBridge } from '@/ui/bridges/timelineBridge.js';
 import { registerExportIntentBridge } from '@/ui/bridges/exportIntentBridge.js';
@@ -45,6 +46,7 @@ export function RuntimeBridgesRoot() {
       registerHistoryBridge(dispatcher),
       registerEditEventBridge(dispatcher),
       registerAnimationKeyframeBridge(dispatcher),
+      registerMotionBridge(dispatcher),
       registerLayoutConvertBridge(dispatcher),
       registerTimelineBridge(dispatcher),
       registerExportIntentBridge(dispatcher),

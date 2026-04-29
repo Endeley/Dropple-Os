@@ -12,7 +12,6 @@ export {
 } from './canonicalRegistry.js';
 export { LEGACY_WORKSPACE_MAP } from './legacyMapping.js';
 export { resolveWorkspaceContext } from './resolveWorkspaceContext.js';
-export { createWorkspaceFromTemplate } from './createWorkspaceFromTemplate.js';
 
 export {
     getResolvedWorkspaceDefinition,

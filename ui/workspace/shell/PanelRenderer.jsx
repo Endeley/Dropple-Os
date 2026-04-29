@@ -3,6 +3,18 @@
 import { PanelRegistry } from '@/ui/panels/PanelRegistry';
 import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
 
+function PanelSection({ title, children }) {
+    return (
+        <section className='inspector-section'>
+            <div className='inspector-section-header'>
+                <span>{title}</span>
+            </div>
+
+            <div className='inspector-section-body'>{children}</div>
+        </section>
+    );
+}
+
 export function PanelRenderer({ workspaceId, node, emit, extraPanels = [] }) {
     const activation = getWorkspaceActivation(workspaceId);
 
@@ -18,37 +30,57 @@ export function PanelRenderer({ workspaceId, node, emit, extraPanels = [] }) {
     const extras = Array.isArray(extraPanels) ? extraPanels : [];
 
     return (
-        <aside className='workspace-panel-stack'>
-            <div className='panel-content'>
-                {/* Canonical panels from workspace activation truth */}
-                {panels.map((panelId) => {
-                    const entry = PanelRegistry[panelId];
+        <aside className='uiux-rightpanel'>
+            <div className='inspector-shell'>
+                <div className='inspector-header'>
+                    <div className='inspector-title'>Inspector</div>
 
-                    if (!entry?.component) {
-                        if (process.env.NODE_ENV !== 'production') {
-                            console.warn(`[PanelRenderer] Unknown panel "${panelId}" in workspace activation`);
-                        }
-                        return null;
-                    }
+                    <div className='inspector-subtitle'>{node?.name || node?.type || 'No Selection'}</div>
+                </div>
 
-                    const PanelComponent = entry.component;
+                <div className='panel-content'>
+                    <PanelSection title='Properties'>
+                        {panels.map((panelId) => {
+                            const entry = PanelRegistry[panelId];
 
-                    return <PanelComponent key={panelId} node={node} emit={emit} />;
-                })}
+                            if (!entry?.component) {
+                                if (process.env.NODE_ENV !== 'production') {
+                                    console.warn(`[PanelRenderer] Unknown panel "${panelId}" in workspace activation`);
+                                }
+                                return null;
+                            }
 
-                {/* Optional additive overlay panels (templates, etc.) */}
-                {extras.map((panel) => {
-                    if (!panel?.component) {
-                        if (process.env.NODE_ENV !== 'production') {
-                            console.warn('[PanelRenderer] Invalid extra panel configuration', panel);
-                        }
-                        return null;
-                    }
+                            const PanelComponent = entry.component;
 
-                    const ExtraPanel = panel.component;
+                            return (
+                                <div className='inspector-panel-card' key={panelId}>
+                                    <PanelComponent node={node} emit={emit} />
+                                </div>
+                            );
+                        })}
+                    </PanelSection>
 
-                    return <ExtraPanel key={panel.key || panel.id} {...(panel.props || {})} />;
-                })}
+                    {extras.length > 0 && (
+                        <PanelSection title='Workspace'>
+                            {extras.map((panel) => {
+                                if (!panel?.component) {
+                                    if (process.env.NODE_ENV !== 'production') {
+                                        console.warn('[PanelRenderer] Invalid extra panel configuration', panel);
+                                    }
+                                    return null;
+                                }
+
+                                const ExtraPanel = panel.component;
+
+                                return (
+                                    <div className='inspector-panel-card' key={panel.key || panel.id}>
+                                        <ExtraPanel {...(panel.props || {})} />
+                                    </div>
+                                );
+                            })}
+                        </PanelSection>
+                    )}
+                </div>
             </div>
         </aside>
     );

@@ -51,8 +51,6 @@ Primary files:
 
 Template ownership shared with Design:
 - `templates/`
-- `templates/TemplateGeneratorOverlay.jsx`
-- `templates/useTemplateGenerator.js`
 - `templates/workspaceToCCMTemplate.js`
 
 Certified template consumption:

@@ -22,7 +22,7 @@ import { UXWorkspaceShell } from '@/ui/workspace/ux/UXWorkspaceShell';
  * uiux mode         -> UIUXAuthoringShell
  * all other modes   -> EditorWorkspaceShell
  */
-export function WorkspaceShell({ workspace, modeId = null, workspaceContext = null }) {
+export function WorkspaceShell({ workspace, modeId = null, workspaceContext = null, ...shellProps }) {
     const activeMode = workspaceContext?.mode || modeId;
     const isUXValidation = workspace.profile === 'ux-validation';
     const isUIUX = activeMode === 'uiux';
@@ -31,14 +31,14 @@ export function WorkspaceShell({ workspace, modeId = null, workspaceContext = nu
      * Media workspaces own their own shell authority.
      */
     if (isMediaWorkspaceId(workspace.id)) {
-        return <MediaWorkspaceShell workspace={workspace} modeId={activeMode} workspaceContext={workspaceContext} />;
+        return <MediaWorkspaceShell workspace={workspace} modeId={activeMode} workspaceContext={workspaceContext} {...shellProps} />;
     }
 
     /**
      * UX validation is a distinct read-only shell.
      */
     if (isUXValidation) {
-        return <UXWorkspaceShell workspace={workspace} modeId={activeMode} workspaceContext={workspaceContext} profile={workspace.profile} />;
+        return <UXWorkspaceShell workspace={workspace} modeId={activeMode} workspaceContext={workspaceContext} profile={workspace.profile} {...shellProps} />;
     }
 
     /**
@@ -46,12 +46,12 @@ export function WorkspaceShell({ workspace, modeId = null, workspaceContext = nu
      * Do not route uiux through generic editor shell.
      */
     if (isUIUX) {
-        return <UIUXAuthoringShell workspace={workspace} modeId={activeMode} workspaceContext={workspaceContext} />;
+        return <UIUXAuthoringShell workspace={workspace} modeId={activeMode} workspaceContext={workspaceContext} {...shellProps} />;
     }
 
     /**
      * Generic fallback for remaining non-media,
      * non-uiux authoring modes.
      */
-    return <EditorWorkspaceShell workspace={workspace} modeId={activeMode} workspaceContext={workspaceContext} />;
+    return <EditorWorkspaceShell workspace={workspace} modeId={activeMode} workspaceContext={workspaceContext} {...shellProps} />;
 }

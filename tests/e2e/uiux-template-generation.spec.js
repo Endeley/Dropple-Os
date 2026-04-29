@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { buildRuntimeSnapshotFromCertifiedTemplate } from '../../domain/templates/installCertifiedTemplate.js';
 
 async function gotoWorkspace(page, path = '/workspace/new') {
     await page.goto(path, { waitUntil: 'networkidle' });
@@ -24,6 +23,68 @@ async function dragOnCanvas(page, from, to) {
 async function createFrame(page, from, to) {
     await page.locator('[data-tool-id="frame"]').click();
     await dragOnCanvas(page, from, to);
+}
+
+async function publishMotionTemplate(request, {
+    title = `Motion Template ${Date.now()}`,
+    description = 'Motion-preserving certified template fixture',
+} = {}) {
+    const response = await request.post('/api/templates/publish', {
+        data: {
+            document: {
+                sceneGraph: {
+                    rootIds: ['root'],
+                    nodes: {
+                        root: {
+                            id: 'root',
+                            type: 'frame',
+                            children: ['headline'],
+                        },
+                        headline: {
+                            id: 'headline',
+                            type: 'text',
+                            children: [],
+                        },
+                    },
+                },
+                motion: {
+                    clips: {
+                        'clip-headline-opacity': {
+                            id: 'clip-headline-opacity',
+                            target: 'headline',
+                            property: 'opacity',
+                            keyframes: [
+                                { id: 'kf-0', t: 0, v: 0 },
+                                { id: 'kf-300', t: 300, v: 1, easing: 'ease-in-out' },
+                            ],
+                        },
+                        'clip-headline-translateY': {
+                            id: 'clip-headline-translateY',
+                            target: 'headline',
+                            property: 'translateY',
+                            keyframes: [
+                                { id: 'kf-y-0', t: 0, v: 18 },
+                                { id: 'kf-y-300', t: 300, v: 0, easing: 'ease-in-out' },
+                            ],
+                        },
+                    },
+                },
+            },
+            metadata: {
+                title,
+                description,
+                author: 'UIUX Motion QA',
+            },
+            mode: {
+                id: 'uiux',
+                workspaceId: 'design',
+            },
+        },
+    });
+
+    expect(response.ok(), 'motion template publish should respond successfully').toBeTruthy();
+    const payload = await response.json();
+    return payload?.result?.seed ?? null;
 }
 
 test('uiux authoring roundtrip publishes from the toolbar flow and installs into a fresh workspace', async ({ page, request }) => {
@@ -53,9 +114,10 @@ test('uiux authoring roundtrip publishes from the toolbar flow and installs into
 
     const publishPayload = await publishResponse.json();
 
-    expect(publishPayload?.result?.seed?.id).toBeTruthy();
+    const publishedTemplateId = publishPayload?.result?.seed?.id ?? null;
+    const publishedMode = publishPayload?.result?.seed?.mode ?? 'design';
 
-    const publishedMode = publishPayload?.result?.seed?.mode ?? 'uiux';
+    expect(publishedTemplateId).toBeTruthy();
 
     await expect(page.locator('body')).not.toContainText('Create Template');
 
@@ -69,14 +131,25 @@ test('uiux authoring roundtrip publishes from the toolbar flow and installs into
 
     expect(template, 'published template should be visible in the certified registry').toBeTruthy();
 
-    const snapshot = buildRuntimeSnapshotFromCertifiedTemplate(template);
+    await page.evaluate(() => {
+        for (const key of Object.keys(window.localStorage)) {
+            if (key.startsWith('dropple.')) {
+                window.localStorage.removeItem(key);
+            }
+        }
+    });
 
-    const snapshotPayload = {
-        document: snapshot.document,
-        timeline: snapshot.timeline,
-        events: [],
-        cursorIndex: -1,
-    };
+    await gotoWorkspace(page, `/workspace/new?fromTemplate=${encodeURIComponent(publishedTemplateId)}`);
+    await expect(page.locator('[data-node-id]')).toHaveCount(1);
+    await expect(page.locator('body')).not.toContainText('Application error');
+});
+
+test('certified uiux template install preserves motion runtime truth', async ({ page, request }) => {
+    const publishedTemplate = await publishMotionTemplate(request);
+
+    expect(publishedTemplate?.id).toBeTruthy();
+
+    await gotoWorkspace(page, '/workspace/new');
 
     await page.evaluate(() => {
         for (const key of Object.keys(window.localStorage)) {
@@ -86,14 +159,121 @@ test('uiux authoring roundtrip publishes from the toolbar flow and installs into
         }
     });
 
+    await gotoWorkspace(page, `/workspace/new?fromTemplate=${encodeURIComponent(publishedTemplate.id)}`);
+    await expect(page.locator('[data-node-id]')).toHaveCount(2);
+    await expect(page.getByTestId('uiux-motion-inspector')).toBeVisible();
+    await expect(page.getByTestId('uiux-motion-inspector-selected-node')).toHaveText('None');
+    await expect(page.getByTestId('uiux-motion-inspector-total-clips')).toHaveText('2');
+    await expect(page.getByTestId('uiux-motion-inspector-channel-count')).toHaveText('2');
+    await expect(page.getByTestId('uiux-motion-inspector-active-clips')).toHaveText('2');
+
+    const motionSummary = await page.evaluate(() => {
+        const runtimeState = globalThis.__droppleDispatcher?.getState?.() ?? null;
+        const clips = runtimeState?.document?.motion?.clips ?? {};
+        const timelineChannels = runtimeState?.timeline?.timelines?.default?.channels ?? [];
+
+        return {
+            clipIds: Object.keys(clips).sort(),
+            opacityEasing: clips['clip:headline:opacity']?.keyframes?.[1]?.easing ?? null,
+            translateYValue: clips['clip:headline:translateY']?.keyframes?.[0]?.v ?? null,
+            timelineChannels: timelineChannels.map((channel) => ({
+                id: channel.id,
+                property: channel.property,
+                target: channel.target,
+            })),
+        };
+    });
+
+    expect(motionSummary).toEqual({
+        clipIds: ['clip:headline:opacity', 'clip:headline:translateY'],
+        opacityEasing: 'easeInOut',
+        translateYValue: 18,
+        timelineChannels: [
+            { id: 'opacity', property: 'opacity', target: 'headline' },
+            { id: 'transform.y', property: 'translateY', target: 'headline' },
+        ],
+    });
+});
+
+test('uiux transition timeline can author a motion keyframe through lawful intents', async ({ page }) => {
     await gotoWorkspace(page, '/workspace/new');
 
-    // Correct invariant: fresh workspace is empty before hydration.
-    await expect(page.locator('[data-node-id]')).toHaveCount(0);
-
-    await page.evaluate((nextSnapshot) => {
-        globalThis.__droppleDispatcher?.hydrateRuntimeState?.(nextSnapshot, { animate: false });
-    }, snapshotPayload);
-
+    await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
     await expect(page.locator('[data-node-id]')).toHaveCount(1);
+    const createdNodeId = await page.locator('[data-node-id]').first().getAttribute('data-node-id');
+
+    await expect(page.getByTestId('uiux-transition-timeline')).toBeVisible();
+    await expect(page.getByTestId('uiux-transition-clip-count')).toHaveText('0 selected clips');
+    await expect(page.getByTestId('uiux-transition-add-keyframe')).toBeEnabled();
+
+    await page.getByLabel('Property').selectOption('opacity');
+    await page.getByLabel('Value').fill('0.35');
+    await page.getByLabel('Easing').selectOption('ease-in-out');
+    await page.getByTestId('uiux-transition-add-keyframe').click();
+
+    await expect(page.getByTestId('uiux-transition-clip-count')).toHaveText('1 selected clips');
+
+    const runtimeMotion = await page.evaluate(() => {
+        const runtimeState = globalThis.__droppleDispatcher?.getState?.() ?? null;
+        return runtimeState?.document?.motion?.clips ?? {};
+    });
+
+    const createdClip = Object.values(runtimeMotion)[0];
+
+    expect(createdClip).toMatchObject({
+        target: createdNodeId,
+        property: 'opacity',
+    });
+    expect(createdClip.keyframes).toHaveLength(1);
+    expect(createdClip.keyframes[0]).toMatchObject({
+        t: 0,
+        v: 0.35,
+        easing: 'ease-in-out',
+    });
+
+    await page.getByLabel('Value').fill('0.8');
+    await page.getByLabel('Easing').selectOption('linear');
+    await page.getByTestId('uiux-transition-update-keyframe').click();
+    await page.waitForFunction(() => {
+        const runtimeState = globalThis.__droppleDispatcher?.getState?.() ?? null;
+        const clip = Object.values(runtimeState?.document?.motion?.clips ?? {})[0];
+        const keyframe = clip?.keyframes?.[0];
+        return keyframe?.v === 0.8 && keyframe?.easing === 'linear';
+    });
+
+    await page.getByTestId('uiux-transition-time-input').fill('180');
+    await page.getByTestId('uiux-transition-move-keyframe').click();
+    await page.waitForFunction(() => {
+        const runtimeState = globalThis.__droppleDispatcher?.getState?.() ?? null;
+        const clip = Object.values(runtimeState?.document?.motion?.clips ?? {})[0];
+        const keyframe = clip?.keyframes?.[0];
+        return keyframe?.t === 180;
+    });
+
+    const updatedMotion = await page.evaluate(() => {
+        const runtimeState = globalThis.__droppleDispatcher?.getState?.() ?? null;
+        return runtimeState?.document?.motion?.clips ?? {};
+    });
+
+    const updatedClip = Object.values(updatedMotion)[0];
+    expect(updatedClip.keyframes[0]).toMatchObject({
+        t: 180,
+        v: 0.8,
+        easing: 'linear',
+    });
+
+    await page.getByTestId('uiux-transition-delete-keyframe').click();
+    await page.waitForFunction(() => {
+        const runtimeState = globalThis.__droppleDispatcher?.getState?.() ?? null;
+        const clip = Object.values(runtimeState?.document?.motion?.clips ?? {})[0];
+        return Array.isArray(clip?.keyframes) && clip.keyframes.length === 0;
+    });
+
+    const deletedMotion = await page.evaluate(() => {
+        const runtimeState = globalThis.__droppleDispatcher?.getState?.() ?? null;
+        return runtimeState?.document?.motion?.clips ?? {};
+    });
+
+    const deletedClip = Object.values(deletedMotion)[0];
+    expect(deletedClip.keyframes).toHaveLength(0);
 });
