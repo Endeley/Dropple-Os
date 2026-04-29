@@ -16,7 +16,7 @@ test('motion events write truth into document.motion through the dispatcher', as
                 id: 'graphic',
                 policy: {
                     mutation: 'allow',
-                    capabilities: ['node:create'],
+                    capabilities: ['node:create', 'keyframe:create'],
                 },
             },
         },
