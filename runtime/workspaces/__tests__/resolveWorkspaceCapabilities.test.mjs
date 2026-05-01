@@ -20,6 +20,22 @@ test('resolveWorkspaceCapabilities preserves base capability order for non-overl
         }),
         ['graph', 'timeline'],
     );
+
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'media',
+            mode: 'audio',
+        }),
+        ['graph', 'timeline'],
+    );
+
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'media',
+            mode: 'podcast',
+        }),
+        ['graph', 'timeline'],
+    );
 });
 
 test('resolveWorkspaceCapabilities returns an empty list for unknown workspaces', () => {
@@ -44,9 +60,18 @@ test('resolveWorkspaceCapabilities exposes system authoring overlays per mode de
     assert.deepEqual(
         resolveWorkspaceCapabilities({
             workspace: 'system',
-            mode: 'themes',
+            mode: 'tokens',
+            overlayId: 'themes',
         }),
-        ['theme-authoring'],
+        ['token-authoring', 'theme-authoring'],
+    );
+
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'system',
+            mode: 'governance',
+        }),
+        ['token-versioning', 'token-review'],
     );
 
     assert.deepEqual(
@@ -55,5 +80,87 @@ test('resolveWorkspaceCapabilities exposes system authoring overlays per mode de
             mode: 'versioning',
         }),
         ['token-versioning', 'token-review'],
+    );
+
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'system',
+            mode: 'themes',
+        }),
+        [],
+    );
+});
+
+test('resolveWorkspaceCapabilities keeps low-risk overlay specializations inert unless explicitly requested', () => {
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'system',
+            mode: 'components',
+        }),
+        [],
+    );
+
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'system',
+            mode: 'components',
+            overlayId: 'variants',
+        }),
+        [],
+    );
+
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'collaborate',
+            mode: 'review',
+        }),
+        [],
+    );
+
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'collaborate',
+            mode: 'review',
+            overlayId: 'comments',
+        }),
+        [],
+    );
+});
+
+test('resolveWorkspaceCapabilities exposes assistive AI overlay capabilities only when requested explicitly', () => {
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'build',
+            mode: 'automation',
+        }),
+        [],
+    );
+
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'build',
+            mode: 'automation',
+            overlayId: 'ai-systems',
+        }),
+        ['ai-assist', 'ai-explain', 'ai-generate'],
+    );
+});
+
+test('resolveWorkspaceCapabilities exposes guided learning capabilities only when requested explicitly', () => {
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'collaborate',
+            mode: 'knowledge',
+        }),
+        [],
+    );
+
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'collaborate',
+            mode: 'knowledge',
+            overlayId: 'learning',
+        }),
+        ['guided-navigation', 'step-through', 'guided-explain'],
     );
 });

@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { hashEngineVersion, verifyTemplateCertification } from '../../domain/templates/TemplateCertification.js';
+import { loadRegistryEntries } from '../../domain/templates/TemplateRegistry.js';
 
 function getRegistryPath() {
     return path.join(process.cwd(), '.registry', 'certifiedTemplates.json');
@@ -9,11 +10,7 @@ function getRegistryPath() {
 export function loadCertifiedTemplates({ mode = null, engineVersion = null, publicKey = null } = {}) {
     const registryPath = getRegistryPath();
     if (!fs.existsSync(registryPath)) return [];
-
-    const raw = fs.readFileSync(registryPath, 'utf-8');
-    const templates = JSON.parse(raw);
-
-    if (!Array.isArray(templates)) return [];
+    const templates = loadRegistryEntries();
 
     let filtered = templates;
     if (mode) {

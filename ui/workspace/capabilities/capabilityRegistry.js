@@ -174,6 +174,60 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
         }),
         lifecycle: Object.freeze({}),
     }),
+
+    'ai-assist': Object.freeze({
+        id: 'ai-assist',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([]),
+        }),
+        lifecycle: Object.freeze({}),
+    }),
+
+    'ai-explain': Object.freeze({
+        id: 'ai-explain',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([]),
+        }),
+        lifecycle: Object.freeze({}),
+    }),
+
+    'ai-generate': Object.freeze({
+        id: 'ai-generate',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([]),
+        }),
+        lifecycle: Object.freeze({}),
+    }),
+
+    'guided-navigation': Object.freeze({
+        id: 'guided-navigation',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([]),
+        }),
+        lifecycle: Object.freeze({}),
+    }),
+
+    'step-through': Object.freeze({
+        id: 'step-through',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([]),
+        }),
+        lifecycle: Object.freeze({}),
+    }),
+
+    'guided-explain': Object.freeze({
+        id: 'guided-explain',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([]),
+        }),
+        lifecycle: Object.freeze({}),
+    }),
 });
 
 export const CAPABILITY_REGISTRY = CAPABILITY_COMPONENTS;

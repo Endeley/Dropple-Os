@@ -19,6 +19,7 @@ import { TokenCssBridge } from '@/ui/bridges/tokenCssBridge.js';
 import { SessionGroupingBridge } from '@/ui/interactions/sessionGrouping.js';
 import { getWorkspaceAdapter } from '@/ui/bridges/workspaceActivationFacade.js';
 import { resolveWorkspaceContext } from '@/platform/workspaces/resolveWorkspaceContext.js';
+import { resolveCanonicalWorkspaceOverlayContext } from '@/platform/workspaces/modeResolution.js';
 import { useWorkspaceCapabilities } from '@/ui/workspace/useWorkspaceCapabilities.js';
 import { useCapabilityLifecycle } from '@/ui/workspace/useCapabilityLifecycle.js';
 import { useWorkspaceNavigation } from '@/ui/workspace/shared/useWorkspaceNavigation.js';
@@ -51,8 +52,20 @@ export function EditorWorkspaceShell({
      * Workspace + mode resolution
      */
     const workspaceContext = useMemo(() => providedWorkspaceContext ?? resolveWorkspaceContext({ workspace: modeId }), [modeId, providedWorkspaceContext]);
+    const overlayContext = useMemo(
+        () =>
+            resolveCanonicalWorkspaceOverlayContext({
+                workspace: workspaceContext.workspaceId,
+                mode: modeId ?? workspaceContext.modeId,
+            }),
+        [modeId, workspaceContext.modeId, workspaceContext.workspaceId],
+    );
+    const isLearningOverlay = overlayContext.overlayId === 'learning';
 
-    const adapter = useMemo(() => getWorkspaceAdapter(modeId), [modeId]);
+    const adapter = useMemo(
+        () => getWorkspaceAdapter(providedWorkspaceContext ?? { workspaceId: workspaceContext.workspaceId, modeId: workspaceContext.modeId }),
+        [providedWorkspaceContext, workspaceContext.modeId, workspaceContext.workspaceId],
+    );
 
     const { goToMode, goToWorkspace } = useWorkspaceNavigation();
 
@@ -61,7 +74,8 @@ export function EditorWorkspaceShell({
      */
     const { capabilities, surfacePanels } = useWorkspaceCapabilities({
         workspace: workspaceContext.workspaceId,
-        mode: workspaceContext.modeId,
+        mode: overlayContext.canonicalModeId ?? workspaceContext.modeId,
+        overlayId: overlayContext.overlayId,
     });
 
     /**
@@ -112,7 +126,11 @@ export function EditorWorkspaceShell({
     /**
      * Persistence flags
      */
-    const persistenceEnabled = !effectiveReadOnly && adapter?.ui?.editing !== false && adapter?.id !== 'review' && !(adapter?.id === 'education' && educationReadOnly);
+    const persistenceEnabled =
+        !effectiveReadOnly &&
+        adapter?.ui?.editing !== false &&
+        adapter?.id !== 'review' &&
+        !(isLearningOverlay && educationReadOnly);
 
     /**
      * Capability lifecycle
@@ -121,7 +139,8 @@ export function EditorWorkspaceShell({
         capabilities,
         emit,
         workspace: workspaceContext.workspaceId,
-        mode: workspaceContext.modeId,
+        mode: overlayContext.canonicalModeId ?? workspaceContext.modeId,
+        overlayId: overlayContext.overlayId,
     });
 
     /**
@@ -177,6 +196,9 @@ export function EditorWorkspaceShell({
                 })
             }
             educationReadOnly={educationReadOnly}
+            isLearningOverlay={isLearningOverlay}
+            toolModeId={overlayContext.canonicalModeId ?? workspaceContext.modeId}
+            overlayId={overlayContext.overlayId}
             readOnly={effectiveReadOnly}
             documentRole={documentRole}
             documentId={documentId}
@@ -215,7 +237,7 @@ export function EditorWorkspaceShell({
 
             <GridProvider>
                 <ClipboardProvider>
-                    {modeId === 'education' ? (
+                    {isLearningOverlay ? (
                         <EducationCursorProvider role={educationRole} initialLocked={educationInitialLocked}>
                             {workspace}
                         </EducationCursorProvider>

@@ -52,7 +52,7 @@ export function UIUXToolRail() {
         if (runtimeTools?.length) {
             return runtimeTools.map((toolId) => TOOL_DEFINITION_BY_ID[toolId]).filter(Boolean);
         }
-        return getVisibleToolsForWorkspace({ workspaceId });
+        return getVisibleToolsForWorkspace({ workspaceId, modeId: workspaceId });
     }, [runtimeTools, workspaceId]);
 
     const grouped = useMemo(() => {

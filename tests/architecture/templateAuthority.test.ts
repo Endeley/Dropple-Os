@@ -81,15 +81,22 @@ test('template authority law A: workspace publication flows through one canonica
 });
 
 test('template authority law B: certified template registry has one file-backed authority', () => {
-    const allowlist = new Set([
+    const runtimeAuthorityAllowlist = new Set([
         'domain/templates/TemplateRegistry.js',
         'engine/templates/templateLoader.js',
         'scripts/templateVerifyAll.mjs',
     ]);
+    const administrativeExceptionAllowlist = new Set([
+        'scripts/migrateCertifiedTemplatesToLineage.mjs',
+    ]);
 
     const violations = readAllSourceFiles()
         .filter(({ relPath }) => !isTestFile(relPath))
-        .filter(({ relPath }) => !allowlist.has(relPath))
+        .filter(
+            ({ relPath }) =>
+                !runtimeAuthorityAllowlist.has(relPath) &&
+                !administrativeExceptionAllowlist.has(relPath),
+        )
         .flatMap(({ fullPath, relPath }) => {
             const lines = fs.readFileSync(fullPath, 'utf8').split('\n');
             return lines

@@ -3,6 +3,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { verifyTemplateCertification } from '../domain/templates/TemplateCertification.js';
 import { computeRegistryFingerprint } from '../domain/templates/TemplateRegistryIntegrity.js';
+import { loadRegistry, loadRegistryEntries } from '../domain/templates/TemplateRegistry.js';
 
 dotenv.config({
     path: path.join(process.cwd(), '.env.local'),
@@ -19,13 +20,8 @@ if (!fs.existsSync(REGISTRY_PATH)) {
     process.exit(0);
 }
 
-const raw = fs.readFileSync(REGISTRY_PATH, 'utf-8');
-const templates = JSON.parse(raw);
-
-if (!Array.isArray(templates)) {
-    console.error('[TemplateVerifyAll] Registry corrupted.');
-    process.exit(1);
-}
+const registry = loadRegistry();
+const templates = loadRegistryEntries();
 
 const engineVersion = process.env.ENGINE_VERSION;
 
@@ -56,7 +52,7 @@ for (const template of templates) {
     }
 }
 
-const fingerprint = computeRegistryFingerprint(templates);
+const fingerprint = computeRegistryFingerprint(registry);
 
 if (failures > 0) {
     console.error(`[TemplateVerifyAll] FAIL — ${failures} invalid templates.`);

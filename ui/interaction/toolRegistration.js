@@ -11,11 +11,13 @@ const TOOL_REGISTRARS = Object.freeze({
   'tool.create.default': registerDefaultCreateTool,
 });
 
-export function registerWorkspaceTools({ workspaceId, capabilitySet }) {
+export function registerWorkspaceTools({ workspaceId, modeId = null, overlayId = null, capabilitySet }) {
   const resolvedWorkspaceId = workspaceId || 'graphic';
 
   const tools = getVisibleToolsForWorkspace({
     workspaceId: resolvedWorkspaceId,
+    modeId,
+    overlayId,
     capabilitySet,
   });
 

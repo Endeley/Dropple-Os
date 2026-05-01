@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { isPodcastOverlayMode } from '../mediaModes.js';
 import {
     projectAnimationTrackSummary,
     projectMediaActiveKeyframe,
@@ -191,6 +192,7 @@ export function MediaInspectorPanel({ mode }) {
     const jumpFrame = keyframeTargetFrame(activeKeyframe, activeTrack, currentFrame);
     const canDeleteKeyframe = Boolean(activeTrack?.clipId && activeKeyframe?.id);
     const canDuplicateKeyframe = Boolean(activeTrack?.nodeId && activeTrack?.property && activeKeyframe?.id);
+    const podcastOverlayMode = isPodcastOverlayMode(mode);
     function handleJumpToFrame() {
         timelineIntentClockPause();
         timelineIntentClockSeek({ time: jumpFrame });
@@ -349,6 +351,7 @@ export function MediaInspectorPanel({ mode }) {
                         sequenceView={sequenceView}
                         track={activeTrack?.kind === 'sequence-track' ? activeTrack : null}
                         modeId={mode.id}
+                        overlayId={mode.overlayId ?? null}
                         currentFrame={currentFrame}
                         selection={selection}
                         inspector={sequenceInspector}
@@ -387,7 +390,7 @@ export function MediaInspectorPanel({ mode }) {
                 {mode.id === 'video' ? (
                     <VideoClipInspector track={activeTrack} duration={playback.duration} />
                 ) : null}
-                {mode.id === 'podcast' ? (
+                {podcastOverlayMode ? (
                     <PodcastCueInspector track={activeTrack} keyframe={activeKeyframe} currentFrame={currentFrame} />
                 ) : null}
             </div>

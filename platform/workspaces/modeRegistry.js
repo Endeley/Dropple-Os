@@ -1,20 +1,43 @@
 import {
     CANONICAL_MODES,
-    hasCanonicalMode,
     resolveCanonicalWorkspaceForMode,
 } from './canonicalRegistry.js';
+import { resolveOverlayByLegacyMode } from './overlayRegistry.js';
+
+function freezeExposure(exposure) {
+    return Object.freeze({
+        tools: exposure.tools,
+        panels: exposure.panels,
+        canvas: exposure.canvas,
+        inspector: exposure.inspector,
+        timeline: exposure.timeline,
+        export: exposure.export,
+        review: exposure.review,
+        readOnly: exposure.readOnly,
+    });
+}
+
+function freezeModeDefinition({ id, label, workspaceId, definitionId, exposure }) {
+    return Object.freeze({
+        id,
+        label,
+        workspaceId,
+        definitionId,
+        exposure: freezeExposure(exposure),
+    });
+}
 
 /* =========================
-   MODE REGISTRY (MODE TRUTH)
+   MODE REGISTRY (CANONICAL SOVEREIGNTY)
    ========================= */
 
 export const MODE_REGISTRY = Object.freeze({
-    uiux: Object.freeze({
+    uiux: freezeModeDefinition({
         id: 'uiux',
         label: 'UI / UX',
         workspaceId: 'design',
         definitionId: 'uiux',
-        exposure: Object.freeze({
+        exposure: {
             tools: true,
             panels: true,
             canvas: true,
@@ -23,15 +46,15 @@ export const MODE_REGISTRY = Object.freeze({
             export: true,
             review: false,
             readOnly: false,
-        }),
+        },
     }),
 
-    graphic: Object.freeze({
+    graphic: freezeModeDefinition({
         id: 'graphic',
         label: 'Graphic',
         workspaceId: 'design',
         definitionId: 'graphic',
-        exposure: Object.freeze({
+        exposure: {
             tools: true,
             panels: true,
             canvas: true,
@@ -40,49 +63,15 @@ export const MODE_REGISTRY = Object.freeze({
             export: true,
             review: false,
             readOnly: false,
-        }),
+        },
     }),
 
-    branding: Object.freeze({
-        id: 'branding',
-        label: 'Branding',
-        workspaceId: 'design',
-        definitionId: 'branding',
-        exposure: Object.freeze({
-            tools: true,
-            panels: true,
-            canvas: true,
-            inspector: true,
-            timeline: false,
-            export: true,
-            review: false,
-            readOnly: false,
-        }),
-    }),
-
-    icons: Object.freeze({
-        id: 'icons',
-        label: 'Icons',
-        workspaceId: 'design',
-        definitionId: 'icons',
-        exposure: Object.freeze({
-            tools: true,
-            panels: true,
-            canvas: true,
-            inspector: true,
-            timeline: false,
-            export: true,
-            review: false,
-            readOnly: false,
-        }),
-    }),
-
-    document: Object.freeze({
+    document: freezeModeDefinition({
         id: 'document',
         label: 'Document',
         workspaceId: 'design',
         definitionId: 'document',
-        exposure: Object.freeze({
+        exposure: {
             tools: true,
             panels: true,
             canvas: true,
@@ -91,15 +80,15 @@ export const MODE_REGISTRY = Object.freeze({
             export: true,
             review: false,
             readOnly: false,
-        }),
+        },
     }),
 
-    animation: Object.freeze({
+    animation: freezeModeDefinition({
         id: 'animation',
         label: 'Animation',
         workspaceId: 'media',
         definitionId: 'animation',
-        exposure: Object.freeze({
+        exposure: {
             tools: true,
             panels: true,
             canvas: true,
@@ -108,15 +97,15 @@ export const MODE_REGISTRY = Object.freeze({
             export: true,
             review: false,
             readOnly: false,
-        }),
+        },
     }),
 
-    video: Object.freeze({
+    video: freezeModeDefinition({
         id: 'video',
         label: 'Video',
         workspaceId: 'media',
         definitionId: 'video',
-        exposure: Object.freeze({
+        exposure: {
             tools: true,
             panels: true,
             canvas: true,
@@ -125,15 +114,15 @@ export const MODE_REGISTRY = Object.freeze({
             export: true,
             review: false,
             readOnly: false,
-        }),
+        },
     }),
 
-    podcast: Object.freeze({
-        id: 'podcast',
-        label: 'Podcast',
+    audio: freezeModeDefinition({
+        id: 'audio',
+        label: 'Audio',
         workspaceId: 'media',
         definitionId: 'podcast',
-        exposure: Object.freeze({
+        exposure: {
             tools: true,
             panels: true,
             canvas: false,
@@ -142,32 +131,15 @@ export const MODE_REGISTRY = Object.freeze({
             export: true,
             review: false,
             readOnly: false,
-        }),
+        },
     }),
 
-    'motion-design': Object.freeze({
-        id: 'motion-design',
-        label: 'Motion Design',
-        workspaceId: 'media',
-        definitionId: 'animation',
-        exposure: Object.freeze({
-            tools: true,
-            panels: true,
-            canvas: true,
-            inspector: true,
-            timeline: true,
-            export: true,
-            review: false,
-            readOnly: false,
-        }),
-    }),
-
-    application: Object.freeze({
+    application: freezeModeDefinition({
         id: 'application',
         label: 'Application',
         workspaceId: 'build',
         definitionId: 'dev',
-        exposure: Object.freeze({
+        exposure: {
             tools: true,
             panels: true,
             canvas: true,
@@ -176,15 +148,15 @@ export const MODE_REGISTRY = Object.freeze({
             export: true,
             review: false,
             readOnly: false,
-        }),
+        },
     }),
 
-    logic: Object.freeze({
+    logic: freezeModeDefinition({
         id: 'logic',
-        label: 'Data & Logic',
+        label: 'Logic',
         workspaceId: 'build',
         definitionId: 'dev',
-        exposure: Object.freeze({
+        exposure: {
             tools: true,
             panels: true,
             canvas: false,
@@ -193,49 +165,15 @@ export const MODE_REGISTRY = Object.freeze({
             export: false,
             review: false,
             readOnly: false,
-        }),
+        },
     }),
 
-    'state-machine': Object.freeze({
-        id: 'state-machine',
-        label: 'State Machines',
-        workspaceId: 'build',
-        definitionId: 'dev',
-        exposure: Object.freeze({
-            tools: true,
-            panels: true,
-            canvas: false,
-            inspector: true,
-            timeline: false,
-            export: false,
-            review: false,
-            readOnly: false,
-        }),
-    }),
-
-    api: Object.freeze({
-        id: 'api',
-        label: 'API / Integration',
-        workspaceId: 'build',
-        definitionId: 'dev',
-        exposure: Object.freeze({
-            tools: true,
-            panels: true,
-            canvas: false,
-            inspector: true,
-            timeline: false,
-            export: false,
-            review: false,
-            readOnly: false,
-        }),
-    }),
-
-    conversion: Object.freeze({
-        id: 'conversion',
-        label: 'Conversion',
+    automation: freezeModeDefinition({
+        id: 'automation',
+        label: 'Automation',
         workspaceId: 'build',
         definitionId: 'conversion',
-        exposure: Object.freeze({
+        exposure: {
             tools: true,
             panels: true,
             canvas: false,
@@ -244,32 +182,15 @@ export const MODE_REGISTRY = Object.freeze({
             export: true,
             review: false,
             readOnly: false,
-        }),
+        },
     }),
 
-    'ai-build': Object.freeze({
-        id: 'ai-build',
-        label: 'AI Build',
-        workspaceId: 'build',
-        definitionId: 'ai',
-        exposure: Object.freeze({
-            tools: true,
-            panels: true,
-            canvas: false,
-            inspector: true,
-            timeline: false,
-            export: false,
-            review: false,
-            readOnly: false,
-        }),
-    }),
-
-    tokens: Object.freeze({
+    tokens: freezeModeDefinition({
         id: 'tokens',
         label: 'Design Tokens',
         workspaceId: 'system',
         definitionId: 'material',
-        exposure: Object.freeze({
+        exposure: {
             tools: true,
             panels: true,
             canvas: false,
@@ -278,15 +199,15 @@ export const MODE_REGISTRY = Object.freeze({
             export: true,
             review: false,
             readOnly: false,
-        }),
+        },
     }),
 
-    components: Object.freeze({
+    components: freezeModeDefinition({
         id: 'components',
         label: 'Component Libraries',
         workspaceId: 'system',
         definitionId: 'material',
-        exposure: Object.freeze({
+        exposure: {
             tools: true,
             panels: true,
             canvas: true,
@@ -295,49 +216,15 @@ export const MODE_REGISTRY = Object.freeze({
             export: true,
             review: false,
             readOnly: false,
-        }),
+        },
     }),
 
-    variants: Object.freeze({
-        id: 'variants',
-        label: 'Variants',
+    governance: freezeModeDefinition({
+        id: 'governance',
+        label: 'Governance',
         workspaceId: 'system',
         definitionId: 'material',
-        exposure: Object.freeze({
-            tools: true,
-            panels: true,
-            canvas: true,
-            inspector: true,
-            timeline: false,
-            export: true,
-            review: false,
-            readOnly: false,
-        }),
-    }),
-
-    themes: Object.freeze({
-        id: 'themes',
-        label: 'Themes',
-        workspaceId: 'system',
-        definitionId: 'material',
-        exposure: Object.freeze({
-            tools: true,
-            panels: true,
-            canvas: false,
-            inspector: true,
-            timeline: false,
-            export: true,
-            review: false,
-            readOnly: false,
-        }),
-    }),
-
-    versioning: Object.freeze({
-        id: 'versioning',
-        label: 'Versioning',
-        workspaceId: 'system',
-        definitionId: 'material',
-        exposure: Object.freeze({
+        exposure: {
             tools: true,
             panels: true,
             canvas: false,
@@ -346,15 +233,15 @@ export const MODE_REGISTRY = Object.freeze({
             export: false,
             review: false,
             readOnly: false,
-        }),
+        },
     }),
 
-    review: Object.freeze({
+    review: freezeModeDefinition({
         id: 'review',
         label: 'Review',
         workspaceId: 'collaborate',
         definitionId: 'review',
-        exposure: Object.freeze({
+        exposure: {
             tools: false,
             panels: true,
             canvas: true,
@@ -363,32 +250,15 @@ export const MODE_REGISTRY = Object.freeze({
             export: false,
             review: true,
             readOnly: true,
-        }),
+        },
     }),
 
-    comments: Object.freeze({
-        id: 'comments',
-        label: 'Comments',
-        workspaceId: 'collaborate',
-        definitionId: 'review',
-        exposure: Object.freeze({
-            tools: false,
-            panels: true,
-            canvas: true,
-            inspector: true,
-            timeline: true,
-            export: false,
-            review: true,
-            readOnly: true,
-        }),
-    }),
-
-    production: Object.freeze({
+    production: freezeModeDefinition({
         id: 'production',
         label: 'Production',
         workspaceId: 'collaborate',
         definitionId: 'review',
-        exposure: Object.freeze({
+        exposure: {
             tools: true,
             panels: true,
             canvas: true,
@@ -397,15 +267,15 @@ export const MODE_REGISTRY = Object.freeze({
             export: false,
             review: true,
             readOnly: false,
-        }),
+        },
     }),
 
-    knowledge: Object.freeze({
+    knowledge: freezeModeDefinition({
         id: 'knowledge',
         label: 'Knowledge',
         workspaceId: 'collaborate',
         definitionId: 'education',
-        exposure: Object.freeze({
+        exposure: {
             tools: false,
             panels: true,
             canvas: false,
@@ -413,16 +283,226 @@ export const MODE_REGISTRY = Object.freeze({
             timeline: false,
             export: false,
             review: false,
-            readOnly: true,
-        }),
+            readOnly: false,
+        },
+    }),
+});
+
+/* =========================
+   LEGACY COMPATIBILITY DEFINITIONS
+   ========================= */
+
+const LEGACY_MODE_DEFINITIONS = Object.freeze({
+    branding: freezeModeDefinition({
+        id: 'branding',
+        label: 'Branding',
+        workspaceId: 'design',
+        definitionId: 'branding',
+        exposure: {
+            tools: true,
+            panels: true,
+            canvas: true,
+            inspector: true,
+            timeline: false,
+            export: true,
+            review: false,
+            readOnly: false,
+        },
     }),
 
-    education: Object.freeze({
+    icons: freezeModeDefinition({
+        id: 'icons',
+        label: 'Icons',
+        workspaceId: 'design',
+        definitionId: 'icons',
+        exposure: {
+            tools: true,
+            panels: true,
+            canvas: true,
+            inspector: true,
+            timeline: false,
+            export: true,
+            review: false,
+            readOnly: false,
+        },
+    }),
+
+    podcast: freezeModeDefinition({
+        id: 'podcast',
+        label: 'Podcast',
+        workspaceId: 'media',
+        definitionId: 'podcast',
+        exposure: {
+            tools: true,
+            panels: true,
+            canvas: false,
+            inspector: true,
+            timeline: true,
+            export: true,
+            review: false,
+            readOnly: false,
+        },
+    }),
+
+    'motion-design': freezeModeDefinition({
+        id: 'motion-design',
+        label: 'Motion Design',
+        workspaceId: 'media',
+        definitionId: 'animation',
+        exposure: {
+            tools: true,
+            panels: true,
+            canvas: true,
+            inspector: true,
+            timeline: true,
+            export: true,
+            review: false,
+            readOnly: false,
+        },
+    }),
+
+    'state-machine': freezeModeDefinition({
+        id: 'state-machine',
+        label: 'State Machines',
+        workspaceId: 'build',
+        definitionId: 'dev',
+        exposure: {
+            tools: true,
+            panels: true,
+            canvas: false,
+            inspector: true,
+            timeline: false,
+            export: false,
+            review: false,
+            readOnly: false,
+        },
+    }),
+
+    api: freezeModeDefinition({
+        id: 'api',
+        label: 'API / Integration',
+        workspaceId: 'build',
+        definitionId: 'dev',
+        exposure: {
+            tools: true,
+            panels: true,
+            canvas: false,
+            inspector: true,
+            timeline: false,
+            export: false,
+            review: false,
+            readOnly: false,
+        },
+    }),
+
+    conversion: freezeModeDefinition({
+        id: 'conversion',
+        label: 'Conversion',
+        workspaceId: 'build',
+        definitionId: 'conversion',
+        exposure: {
+            tools: true,
+            panels: true,
+            canvas: false,
+            inspector: true,
+            timeline: false,
+            export: true,
+            review: false,
+            readOnly: false,
+        },
+    }),
+
+    'ai-build': freezeModeDefinition({
+        id: 'ai-build',
+        label: 'AI Build',
+        workspaceId: 'build',
+        definitionId: 'ai',
+        exposure: {
+            tools: true,
+            panels: true,
+            canvas: false,
+            inspector: true,
+            timeline: false,
+            export: false,
+            review: false,
+            readOnly: false,
+        },
+    }),
+
+    variants: freezeModeDefinition({
+        id: 'variants',
+        label: 'Variants',
+        workspaceId: 'system',
+        definitionId: 'material',
+        exposure: {
+            tools: true,
+            panels: true,
+            canvas: true,
+            inspector: true,
+            timeline: false,
+            export: true,
+            review: false,
+            readOnly: false,
+        },
+    }),
+
+    themes: freezeModeDefinition({
+        id: 'themes',
+        label: 'Themes',
+        workspaceId: 'system',
+        definitionId: 'material',
+        exposure: {
+            tools: true,
+            panels: true,
+            canvas: false,
+            inspector: true,
+            timeline: false,
+            export: true,
+            review: false,
+            readOnly: false,
+        },
+    }),
+
+    versioning: freezeModeDefinition({
+        id: 'versioning',
+        label: 'Versioning',
+        workspaceId: 'system',
+        definitionId: 'material',
+        exposure: {
+            tools: true,
+            panels: true,
+            canvas: false,
+            inspector: true,
+            timeline: false,
+            export: false,
+            review: false,
+            readOnly: false,
+        },
+    }),
+
+    comments: freezeModeDefinition({
+        id: 'comments',
+        label: 'Comments',
+        workspaceId: 'collaborate',
+        definitionId: 'review',
+        exposure: {
+            tools: false,
+            panels: true,
+            canvas: true,
+            inspector: true,
+            timeline: true,
+            export: false,
+            review: true,
+            readOnly: true,
+        },
+    }),
+
+    education: freezeModeDefinition({
         id: 'education',
         label: 'Education',
         workspaceId: 'collaborate',
         definitionId: 'education',
-        exposure: Object.freeze({
+        exposure: {
             tools: false,
             panels: true,
             canvas: true,
@@ -431,7 +511,7 @@ export const MODE_REGISTRY = Object.freeze({
             export: false,
             review: false,
             readOnly: true,
-        }),
+        },
     }),
 });
 
@@ -462,25 +542,11 @@ export const MODE_REGISTRY = Object.freeze({
     }
 
     for (const modeId of modeIds) {
-        if (!CANONICAL_MODES[modeId]) {
-            throw new Error(
-                `[Dropple Constitution] Unknown mode "${modeId}" not in CANONICAL_MODES`
-            );
-        }
-    }
-
-    for (const modeId of modeIds) {
         const mode = MODE_REGISTRY[modeId];
 
         if (mode.id !== modeId) {
             throw new Error(
                 `[Dropple Constitution] Mode id mismatch: key=${modeId}, value=${mode.id}`
-            );
-        }
-
-        if (!hasCanonicalMode(modeId)) {
-            throw new Error(
-                `[Dropple Constitution] Non-canonical mode "${modeId}"`
             );
         }
 
@@ -528,6 +594,22 @@ export const MODE_REGISTRY = Object.freeze({
             );
         }
     }
+
+    for (const [modeId, mode] of Object.entries(LEGACY_MODE_DEFINITIONS)) {
+        const overlay = resolveOverlayByLegacyMode(modeId);
+
+        if (!overlay) {
+            throw new Error(
+                `[Dropple Constitution] Legacy compatibility mode "${modeId}" must resolve through OVERLAY_REGISTRY`
+            );
+        }
+
+        if (mode.workspaceId !== overlay.ownerWorkspaceId) {
+            throw new Error(
+                `[Dropple Constitution] Legacy mode "${modeId}" assigned to "${mode.workspaceId}" but overlay owner is "${overlay.ownerWorkspaceId}"`
+            );
+        }
+    }
 })();
 
 /* =========================
@@ -539,11 +621,11 @@ export function listModeRegistryIds() {
 }
 
 export function getModeDefinition(modeId) {
-    return MODE_REGISTRY[modeId] ?? null;
+    return MODE_REGISTRY[modeId] ?? LEGACY_MODE_DEFINITIONS[modeId] ?? null;
 }
 
 export function hasModeDefinition(modeId) {
-    return Boolean(modeId && MODE_REGISTRY[modeId]);
+    return Boolean(modeId && getModeDefinition(modeId));
 }
 
 export function resolveModeDefinitionId(modeId) {

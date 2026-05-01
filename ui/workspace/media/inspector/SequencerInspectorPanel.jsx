@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { isPodcastOverlayMode } from '../mediaModes.js';
 import {
     createSequence,
     createSequenceClip,
@@ -29,19 +30,19 @@ function infoRow(label, value) {
     );
 }
 
-function inferTrackType(modeId) {
+function inferTrackType(modeId, overlayId = null) {
     if (modeId === 'video') return 'camera';
-    if (modeId === 'podcast') return 'audio';
+    if (modeId === 'audio' || isPodcastOverlayMode(modeId, overlayId)) return 'audio';
     return 'shot';
 }
 
-function inferTrackLabel(modeId) {
+function inferTrackLabel(modeId, overlayId = null) {
     if (modeId === 'video') return 'Camera Track';
-    if (modeId === 'podcast') return 'Audio Track';
+    if (modeId === 'audio' || isPodcastOverlayMode(modeId, overlayId)) return 'Audio Track';
     return 'Shot Track';
 }
 
-function buildDefaultExportTarget(modeId, sequence) {
+function buildDefaultExportTarget(modeId, sequence, overlayId = null) {
     if (modeId === 'video') {
         return {
             id: 'mp4:master',
@@ -58,7 +59,7 @@ function buildDefaultExportTarget(modeId, sequence) {
         };
     }
 
-    if (modeId === 'podcast') {
+    if (modeId === 'audio' || isPodcastOverlayMode(modeId, overlayId)) {
         return {
             id: 'wav:podcast',
             type: 'wav',
@@ -89,6 +90,7 @@ export function SequencerInspectorPanel({
     sequenceView,
     track,
     modeId,
+    overlayId = null,
     currentFrame,
     selection,
     inspector = null,
@@ -130,7 +132,13 @@ export function SequencerInspectorPanel({
     function handleCreateSequence() {
         const nextSequence = createSequence({
             id: crypto.randomUUID(),
-            label: `${modeId === 'video' ? 'Video' : modeId === 'podcast' ? 'Podcast' : 'Animation'} Sequence`,
+            label: `${
+                modeId === 'video'
+                    ? 'Video'
+                    : modeId === 'audio' || isPodcastOverlayMode(modeId, overlayId)
+                      ? 'Audio'
+                      : 'Animation'
+            } Sequence`,
             duration: 240,
             frameRate: 24,
         });
@@ -143,8 +151,8 @@ export function SequencerInspectorPanel({
         if (!sequence?.id) return;
         const nextTrack = createSequenceTrack({
             id: crypto.randomUUID(),
-            type: inferTrackType(modeId),
-            label: inferTrackLabel(modeId),
+            type: inferTrackType(modeId, overlayId),
+            label: inferTrackLabel(modeId, overlayId),
             order: Object.keys(sequence?.tracks || {}).length,
         });
         if (!nextTrack) return;
@@ -270,7 +278,7 @@ export function SequencerInspectorPanel({
 
     function handleSaveDefaultExportTarget() {
         exportIntentTargetUpsert({
-            target: buildDefaultExportTarget(modeId, sequence),
+            target: buildDefaultExportTarget(modeId, sequence, overlayId),
         });
     }
 

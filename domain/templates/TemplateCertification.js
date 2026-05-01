@@ -222,11 +222,23 @@ export function verifyTemplateCertification({
         if (actual.snapshotHash !== expectedCertification.snapshotHash) {
             return { valid: false, reason: 'Snapshot hash mismatch.' };
         }
+        if (actual.contentHash !== expectedCertification.contentHash) {
+            return { valid: false, reason: 'Content hash mismatch.' };
+        }
+        if (actual.lineageRootId !== expectedCertification.lineageRootId) {
+            return { valid: false, reason: 'Lineage root mismatch.' };
+        }
+        if (actual.lineageNodeId !== expectedCertification.lineageNodeId) {
+            return { valid: false, reason: 'Lineage node mismatch.' };
+        }
         if (actual.fingerprint !== expectedCertification.fingerprint) {
             return { valid: false, reason: 'Replay fingerprint mismatch.' };
         }
         if (actual.capabilityHash !== expectedCertification.capabilityHash) {
             return { valid: false, reason: 'Capability hash mismatch.' };
+        }
+        if (actual.certificationHash !== expectedCertification.certificationHash) {
+            return { valid: false, reason: 'Certification hash mismatch.' };
         }
         if (actual.certified !== true || expectedCertification.certified !== true) {
             return { valid: false, reason: 'Template certification failed.' };

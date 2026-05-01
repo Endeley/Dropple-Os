@@ -1,5 +1,6 @@
 import { TOOL_CAPABILITIES as BASE_TOOL_CAPABILITIES } from '@/ui/capabilities/toolCapabilities';
 import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
+import { resolveModeWithOverlay } from '@/platform/workspaces/modeResolution.js';
 
 /**
  * TOOL BUS TOPICS
@@ -77,29 +78,44 @@ export const TOOL_CAPABILITIES = BASE_TOOL_CAPABILITIES;
 /**
  * FALLBACKS (pure classification — no merging logic)
  */
-const FALLBACK_WORKSPACE_TOOLS = Object.freeze({
+const FALLBACK_MODE_TOOLS = Object.freeze({
     uiux: ['select', 'pan', 'zoom', 'fit', 'frame', 'text', 'shape', 'image'],
     graphic: ['select', 'pan', 'zoom', 'fit', 'shape'],
     animation: ['select', 'pan', 'zoom', 'fit', 'layer'],
-    icons: ['select', 'pan', 'zoom', 'fit', 'stroke', 'path'],
     document: ['text', 'section', 'page'],
     dev: ['inspect', 'translate'],
-    branding: ['edit', 'apply'],
+});
+
+const FALLBACK_OVERLAY_TOOLS = Object.freeze({
+    'brand-systems': ['shape', 'path', 'edit', 'apply'],
+    'icon-systems': ['select', 'pan', 'zoom', 'fit', 'stroke', 'path'],
 });
 
 /**
  * WORKSPACE TOOL RESOLUTION (STRICT — no merging)
  */
-function resolveWorkspaceTools(workspaceId) {
-    if (!workspaceId) return [];
+function resolveWorkspaceTools({ workspaceId, modeId, overlayId }) {
+    const rawModeId = modeId || workspaceId;
+    const overlayResolution = resolveModeWithOverlay(rawModeId);
+    const resolvedWorkspaceId = overlayResolution.workspaceId || workspaceId || null;
+    const resolvedModeId = overlayResolution.canonicalModeId || modeId || workspaceId || null;
+    const resolvedOverlayId = overlayId || overlayResolution.overlayId || null;
 
-    const activation = getWorkspaceActivation(workspaceId);
+    if (resolvedOverlayId && Array.isArray(FALLBACK_OVERLAY_TOOLS[resolvedOverlayId])) {
+        return FALLBACK_OVERLAY_TOOLS[resolvedOverlayId];
+    }
+
+    const activationInput =
+        resolvedWorkspaceId && resolvedModeId
+            ? { workspaceId: resolvedWorkspaceId, modeId: resolvedModeId }
+            : workspaceId;
+    const activation = getWorkspaceActivation(activationInput);
 
     if (Array.isArray(activation?.tools) && activation.tools.length > 0) {
         return activation.tools;
     }
 
-    return FALLBACK_WORKSPACE_TOOLS[workspaceId] || [];
+    return FALLBACK_MODE_TOOLS[resolvedModeId] || [];
 }
 
 /**
@@ -125,8 +141,8 @@ function isToolVisible(toolId, capabilitySet) {
 /**
  * FINAL API
  */
-export function getVisibleToolsForWorkspace({ workspaceId, capabilitySet }) {
-    const allowed = new Set(resolveWorkspaceTools(workspaceId));
+export function getVisibleToolsForWorkspace({ workspaceId, modeId = null, overlayId = null, capabilitySet }) {
+    const allowed = new Set(resolveWorkspaceTools({ workspaceId, modeId, overlayId }));
 
     const filtered = TOOL_DEFINITIONS.filter((tool) => {
         if (!allowed.has(tool.id)) return false;

@@ -1,5 +1,9 @@
+import { resolveTemplateSeedIdentity } from './templateSeed.js';
+
 const seedsById = new Map();
 const seedsByHash = new Map();
+const seedsByVersionId = new Map();
+const seedsByLineageRootId = new Map();
 const orderedSeeds = [];
 
 function parseSemver(version) {
@@ -38,39 +42,109 @@ function assertSeed(seed) {
     }
 }
 
-export function registerTemplate(seed) {
+function freezeRegisteredSeed(seed) {
+    return Object.freeze({
+        ...seed,
+        parentVersionIds: Object.freeze([...(seed.parentVersionIds ?? [])]),
+    });
+}
+
+function normalizeRegisteredSeed(seed) {
     assertSeed(seed);
 
-    const existingByHash = seedsByHash.get(seed.snapshotHash);
-    if (existingByHash && existingByHash.id !== seed.id) {
-        throw new Error(
-            `Template snapshotHash already registered under different id: ${existingByHash.id}`
-        );
+    const identity = resolveTemplateSeedIdentity(seed);
+    return freezeRegisteredSeed({
+        ...seed,
+        contentHash: identity.contentHash,
+        contentHashInputs: identity.contentHashInputs,
+        lineage: identity.lineage,
+        lineageRootId: identity.lineage.rootId,
+        versionId: identity.lineage.nodeId,
+        parentVersionIds: identity.lineage.parentIds,
+    });
+}
+
+function ensureParentLinkage(seed) {
+    const parentVersionIds = seed.parentVersionIds ?? [];
+
+    if (parentVersionIds.length === 0) {
+        if (seed.lineageRootId !== seed.versionId) {
+            throw new Error('Root template seeds must use their own versionId as lineageRootId');
+        }
+        return;
     }
 
+    for (const parentVersionId of parentVersionIds) {
+        const parentSeed = seedsByVersionId.get(parentVersionId);
+        if (!parentSeed) {
+            throw new Error(`Unknown template lineage parent: ${parentVersionId}`);
+        }
+        if (parentSeed.lineageRootId !== seed.lineageRootId) {
+            throw new Error(
+                `Template lineage root mismatch for parent ${parentVersionId}: expected ${parentSeed.lineageRootId}, received ${seed.lineageRootId}`,
+            );
+        }
+    }
+}
+
+function ensureVersionProgression(seed) {
     const existingList = seedsById.get(seed.id) || [];
-    const existingVersion = existingList.find((item) => item.version === seed.version);
+    if (!existingList.length) return;
+
+    const latest = existingList[existingList.length - 1];
+    const compare = compareSemver(seed.version, latest.version);
+    if (compare != null && compare <= 0) {
+        throw new Error('Template version must increment');
+    }
+    if (compare == null) {
+        throw new Error('Template version must be a valid semver string');
+    }
+}
+
+function appendIndex(map, key, value) {
+    const existing = map.get(key) ?? [];
+    existing.push(value);
+    map.set(key, existing);
+}
+
+export function registerTemplate(seed) {
+    const normalizedSeed = normalizeRegisteredSeed(seed);
+
+    const existingByVersionId = seedsByVersionId.get(normalizedSeed.versionId);
+    if (existingByVersionId) {
+        if (
+            existingByVersionId.id !== normalizedSeed.id ||
+            existingByVersionId.version !== normalizedSeed.version
+        ) {
+            throw new Error(
+                `Template lineage versionId already registered under different identity: ${existingByVersionId.id}@${existingByVersionId.version}`,
+            );
+        }
+        return existingByVersionId;
+    }
+
+    const existingList = seedsById.get(normalizedSeed.id) || [];
+    const existingVersion = existingList.find((item) => item.version === normalizedSeed.version);
     if (existingVersion) {
+        if (existingVersion.versionId !== normalizedSeed.versionId) {
+            throw new Error(
+                `Template ${normalizedSeed.id}@${normalizedSeed.version} already registered with a different lineage versionId`,
+            );
+        }
         return existingVersion;
     }
 
-    if (existingList.length) {
-        const latest = existingList[existingList.length - 1];
-        const compare = compareSemver(seed.version, latest.version);
-        if (compare != null && compare <= 0) {
-            throw new Error('Template version must increment');
-        }
-        if (compare == null) {
-            throw new Error('Template version must be a valid semver string');
-        }
-    }
+    ensureParentLinkage(normalizedSeed);
+    ensureVersionProgression(normalizedSeed);
 
-    existingList.push(seed);
-    seedsById.set(seed.id, existingList);
-    seedsByHash.set(seed.snapshotHash, seed);
-    orderedSeeds.push(seed);
+    existingList.push(normalizedSeed);
+    seedsById.set(normalizedSeed.id, existingList);
+    seedsByVersionId.set(normalizedSeed.versionId, normalizedSeed);
+    appendIndex(seedsByHash, normalizedSeed.snapshotHash, normalizedSeed);
+    appendIndex(seedsByLineageRootId, normalizedSeed.lineageRootId, normalizedSeed);
+    orderedSeeds.push(normalizedSeed);
 
-    return seed;
+    return normalizedSeed;
 }
 
 export function listTemplates({ filter } = {}) {
@@ -81,8 +155,18 @@ export function listTemplates({ filter } = {}) {
     return list;
 }
 
+export function getTemplateByVersionId(versionId) {
+    return seedsByVersionId.get(versionId) ?? null;
+}
+
+export function listTemplateLineage(lineageRootId) {
+    return [...(seedsByLineageRootId.get(lineageRootId) ?? [])];
+}
+
 export function resetTemplateRegistry() {
     seedsById.clear();
     seedsByHash.clear();
+    seedsByVersionId.clear();
+    seedsByLineageRootId.clear();
     orderedSeeds.length = 0;
 }

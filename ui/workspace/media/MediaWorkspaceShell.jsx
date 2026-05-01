@@ -3,6 +3,7 @@
 import { EditorWorkspaceShell } from '@/ui/workspace/editor/EditorWorkspaceShell.jsx';
 import {
     MEDIA_WORKSPACE_ID,
+    resolveCanonicalWorkspaceOverlayContext,
     resolveMediaWorkspaceMode,
 } from '@/platform/workspaces';
 import { getMediaModeConfig } from './mediaModes.js';
@@ -18,10 +19,18 @@ import { useWorkspaceCapabilities } from '@/ui/workspace/useWorkspaceCapabilitie
 
 export function MediaWorkspaceShell(props) {
     const requestedMode = props.modeId ?? props.workspace?.id ?? MEDIA_WORKSPACE_ID;
-    const activeMode = resolveMediaWorkspaceMode(requestedMode);
-    const modeConfig = getMediaModeConfig(activeMode);
     const workspaceContext = props.workspaceContext ?? null;
     const activeWorkspace = workspaceContext?.workspace ?? MEDIA_WORKSPACE_ID;
+    const overlayContext = resolveCanonicalWorkspaceOverlayContext({
+        workspace: activeWorkspace,
+        mode: requestedMode,
+    });
+    const activeMode = resolveMediaWorkspaceMode(
+        overlayContext.canonicalModeId ?? requestedMode,
+    );
+    const modeConfig = getMediaModeConfig(activeMode, {
+        overlayId: overlayContext.overlayId,
+    });
     const { goToMode, goToWorkspace } = useWorkspaceNavigation();
     const { surfacePanels, overlays } = useWorkspaceCapabilities({
         workspace: activeWorkspace,

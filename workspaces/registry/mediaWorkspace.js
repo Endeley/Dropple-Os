@@ -82,7 +82,7 @@ export const mediaWorkspace = {
 
     media: {
         defaultMode: 'animation',
-        modes: ['animation', 'video', 'podcast'],
+        modes: ['animation', 'video', 'audio'],
         sharedPanels: [
             'MediaBrowserPanel',
             'MediaTimelinePanel',

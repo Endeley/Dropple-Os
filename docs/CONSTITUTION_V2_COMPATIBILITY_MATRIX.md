@@ -43,7 +43,7 @@ These areas already align well:
 These require deliberate amendment:
 
 1. layer axis wording
-2. `25 -> 14` canonical mode collapse
+2. `25 -> 15` canonical mode collapse
 3. recursive tool synthesis boundaries
 4. overlay preservation / payload rehoming law
 
@@ -57,7 +57,7 @@ These require deliberate amendment:
 | `LAW.md` Canonical Projection Path | V2 Law 3 Projection Sovereignty | Strong | `runtime/projection/zustandBridge.js`, `runtime/projection/`, `ui/workspace/` | No |
 | `LAW.md` Workspace Authority | V2 Law 5 Three-Layer Workspace Law | Strong | `workspaces/registry/`, `platform/workspaces/`, `runtime/workspaces/` | No |
 | Active canonical registry | V2 Law 6 Fixed Constitutional Workspaces | Strong | `platform/workspaces/canonicalRegistry.js` | No |
-| Active canonical mode registry (25) | V2 Law 7 Fourteen Canonical Modes | Conflict | `platform/workspaces/canonicalRegistry.js`, `platform/workspaces/modeRegistry.js`, `platform/workspaces/modeResolution.js` | Yes. Explicit constitutional mode-collapse amendment required. |
+| Active canonical mode registry (25) | V2 Law 7 Fifteen Canonical Modes | Conflict | `platform/workspaces/canonicalRegistry.js`, `platform/workspaces/modeRegistry.js`, `platform/workspaces/modeResolution.js` | Yes. Explicit constitutional mode-collapse amendment required. |
 | No explicit active overlay law | V2 Law 8 Overlay Preservation Law | Partial | `platform/workspaces/modeResolution.js`, `platform/workspaces/legacyMapping.js`, `workspaces/registry/index.js`, `docs/MODE_COLLAPSE_OVERLAY_MIGRATION_MAP.md` | Yes. Overlay registry and payload rehoming must be introduced. |
 | Certified template pipeline | V2 Law 9 Certified Seed Authority | Strong | `engine/templates/templateCompilerV1.js`, `engine/templates/templateSeed.js`, `engine/templates/certifyTemplateSeed.js`, `domain/templates/TemplateRegistry.js` | No |
 | No explicit seed lineage law yet | V2 Law 10 Lineage Law | Partial | template seed and registry system | Yes. Seed lineage graph and legality checks required. |
@@ -110,7 +110,7 @@ Current active registry:
 
 Proposed V2:
 
-- 14 canonical modes
+- 15 canonical modes
 
 ### Resolution
 
@@ -184,7 +184,7 @@ Before V2 can become active law:
 1. constitutional navigator added
 2. compatibility matrix completed
 3. layer-axis contradiction resolved
-4. `25 -> 14` mode amendment prepared
+4. `25 -> 15` mode amendment prepared
 5. overlay preservation law operationalized
 6. no dual-sovereignty conflict remains with `docs/LAW.md`
 

@@ -1,139 +1,211 @@
-import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
-import { certifyTemplate } from '../TemplateCertification.js';
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { compileTemplateV1 } from '../../../engine/templates/templateCompilerV1.js';
+import { createTemplateSeed } from '../../../engine/templates/templateSeed.js';
+import { certifyTemplateSeed } from '../../../engine/templates/certifyTemplateSeed.js';
 
-function buildTemplate({ id, version }) {
-  return {
-    id,
-    version,
-    mode: 'animation',
-    graph: {
-      baseStateId: 'state:base',
-      states: [
-        { id: 'state:base', label: 'Base', propertyOverrides: {}, domainMeta: {} },
-      ],
-      transitions: [],
-      triggers: [],
+const templateFixture = Object.freeze({
+  metadata: {
+    id: 'tpl.domain.registry',
+    version: '1.0.0',
+    name: 'Domain Registry Fixture',
+    engine: 'dropple-motion@1.x',
+    author: 'Dropple',
+    license: 'dropple-marketplace-standard',
+    createdAt: '2026-05-01',
+    description: 'Certified registry fixture',
+  },
+  structure: {
+    root: 'scene',
+    nodes: [
+      { id: 'scene', type: 'Scene' },
+      { id: 'title', type: 'Text' },
+    ],
+    tree: {
+      scene: ['title'],
     },
-    metadata: {
-      name: 'Behavior Template',
-      description: 'Fixture',
-      author: 'Dropple',
-      createdAt: '2026-02-01',
-      compatibleEngineVersion: 'dropple-motion@1.x',
-      tags: ['test'],
+  },
+  motion: {
+    timelines: {
+      intro: {
+        duration: 1000,
+        tracks: [
+          {
+            target: 'title',
+            property: 'opacity',
+            keyframes: [
+              { t: 0, v: 0 },
+              { t: 600, v: 1 },
+            ],
+          },
+        ],
+      },
     },
-  };
-}
-
-const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
-  modulusLength: 2048,
+    triggers: { onLoad: 'intro' },
+  },
+  params: {
+    content: {
+      'title.text': { type: 'string', default: 'Hello' },
+    },
+  },
+  runtime: {
+    viewport: ['desktop'],
+    autoplay: true,
+  },
 });
 
-const engineVersion = 'dropple-motion@1.x';
-
-const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dropple-registry-'));
-const originalCwd = process.cwd();
-
-process.chdir(tempDir);
-
-const { registerTemplate } = await import('../TemplateRegistry.js');
-
-try {
-  const templateA = buildTemplate({ id: 'tpl-a', version: '1.0.0' });
-  const certifiedA = certifyTemplate({ template: templateA, engineVersion, privateKey });
-
-  const result = registerTemplate({ template: certifiedA, engineVersion, publicKey });
-  if (!result.registered) {
-    throw new Error('Expected successful registration');
-  }
-
-  let duplicateOk = false;
-  try {
-    registerTemplate({ template: certifiedA, engineVersion, publicKey });
-    duplicateOk = true;
-  } catch (err) {
-    // expected
-  }
-  if (duplicateOk) {
-    throw new Error('Expected duplicate id+version rejection');
-  }
-
-  const templateB = buildTemplate({ id: 'tpl-a', version: '1.1.0' });
-  const certifiedB = certifyTemplate({ template: templateB, engineVersion, privateKey });
-  registerTemplate({ template: certifiedB, engineVersion, publicKey });
-
-  const templateC = buildTemplate({ id: 'tpl-a', version: '1.0.0' });
-  const certifiedC = certifyTemplate({ template: templateC, engineVersion, privateKey });
-  let downgradeOk = false;
-  try {
-    registerTemplate({ template: certifiedC, engineVersion, publicKey });
-    downgradeOk = true;
-  } catch (err) {
-    // expected
-  }
-  if (downgradeOk) {
-    throw new Error('Expected version downgrade rejection');
-  }
-
-  const tamperedSignature = {
-    ...certifiedB,
-    certification: {
-      ...certifiedB.certification,
-      signature: (() => {
-        const original = certifiedB.certification.signature;
-        const last = original.slice(-1);
-        const flipped = last === '0' ? '1' : '0';
-        return original.slice(0, -1) + flipped;
-      })(),
-    },
-  };
-  let tamperOk = false;
-  try {
-    registerTemplate({ template: tamperedSignature, engineVersion, publicKey });
-    tamperOk = true;
-  } catch (err) {
-    // expected
-  }
-  if (tamperOk) {
-    throw new Error('Expected tampered signature rejection');
-  }
-
-  let driftOk = false;
-  try {
-    registerTemplate({ template: certifiedB, engineVersion: 'dropple-motion@2.x', publicKey });
-    driftOk = true;
-  } catch (err) {
-    // expected
-  }
-  if (driftOk) {
-    throw new Error('Expected engine drift rejection');
-  }
-
-  const mutated = {
-    ...certifiedB,
-    graph: {
-      ...certifiedB.graph,
-      states: [
-        ...certifiedB.graph.states,
-        { id: 'state:mut', label: 'Mut', propertyOverrides: {}, domainMeta: {} },
-      ],
-    },
-  };
-  let mutationOk = false;
-  try {
-    registerTemplate({ template: mutated, engineVersion, publicKey });
-    mutationOk = true;
-  } catch (err) {
-    // expected
-  }
-  if (mutationOk) {
-    throw new Error('Expected structural mutation rejection');
-  }
-
-  console.log('TEMPLATE REGISTRY TESTS: OK');
-} finally {
-  process.chdir(originalCwd);
+function clone(value) {
+  if (typeof structuredClone === 'function') return structuredClone(value);
+  return JSON.parse(JSON.stringify(value));
 }
+
+function buildCertifiedSeed(version) {
+  const template = clone(templateFixture);
+  template.metadata.version = version;
+  return compileTemplateV1(template).seed;
+}
+
+function buildCertifiedDerivedSeed(baseSeed, version, lineage) {
+  return certifyTemplateSeed(
+    createTemplateSeed({
+      id: baseSeed.id,
+      version,
+      snapshotHash: baseSeed.snapshotHash,
+      baseSceneGraph: baseSeed.baseSceneGraph,
+      states: baseSeed.states,
+      defaultState: baseSeed.defaultState,
+      capabilityProfile: baseSeed.capabilityProfile,
+      metadata: baseSeed.metadata,
+      params: baseSeed.params,
+      contentHashInputs: baseSeed.contentHashInputs,
+      lineage,
+    }),
+  );
+}
+
+test('domain template registry stores certified lineage entries append-only with deterministic lineage listing', async () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dropple-domain-registry-'));
+  const originalCwd = process.cwd();
+  process.chdir(tempDir);
+
+  try {
+    const { registerTemplate, loadRegistry, getByVersionId, getLineageRoot, listLineageVersions } =
+      await import('../TemplateRegistry.js');
+
+    const root = buildCertifiedSeed('1.0.0');
+    const child = buildCertifiedDerivedSeed(root, '1.1.0', {
+      type: 'version',
+      rootId: root.lineage.rootId,
+      parentIds: [root.lineage.nodeId],
+    });
+
+    const registeredRoot = registerTemplate({
+      template: root,
+      engineVersion: root.certification.engineVersion,
+    });
+    const registeredChild = registerTemplate({
+      template: child,
+      engineVersion: child.certification.engineVersion,
+    });
+
+    assert.equal(registeredRoot.registered, true);
+    assert.equal(registeredChild.registered, true);
+
+    const registry = loadRegistry();
+    assert.equal(registry.format, 'dropple-certified-template-registry@2');
+    assert.equal(registry.entries.length, 2);
+    assert.deepEqual(registry.lineageRoots[root.lineage.rootId], [
+      root.lineage.nodeId,
+      child.lineage.nodeId,
+    ]);
+    assert.equal(getByVersionId(child.lineage.nodeId)?.version, '1.1.0');
+    assert.deepEqual(getLineageRoot(root.lineage.rootId)?.versionIds, [
+      root.lineage.nodeId,
+      child.lineage.nodeId,
+    ]);
+    assert.deepEqual(
+      listLineageVersions(root.lineage.rootId).map((entry) => entry.version),
+      ['1.0.0', '1.1.0'],
+    );
+  } finally {
+    process.chdir(originalCwd);
+  }
+});
+
+test('domain template registry rejects uncertified, orphaned, and cross-root lineage entries', async () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dropple-domain-registry-'));
+  const originalCwd = process.cwd();
+  process.chdir(tempDir);
+
+  try {
+    const { registerTemplate } = await import('../TemplateRegistry.js');
+
+    const root = buildCertifiedSeed('1.0.0');
+    registerTemplate({
+      template: root,
+      engineVersion: root.certification.engineVersion,
+    });
+
+    const uncertified = createTemplateSeed({
+      id: root.id,
+      version: '1.1.0',
+      snapshotHash: root.snapshotHash,
+      baseSceneGraph: root.baseSceneGraph,
+      states: root.states,
+      defaultState: root.defaultState,
+      capabilityProfile: root.capabilityProfile,
+      metadata: root.metadata,
+      params: root.params,
+      contentHashInputs: root.contentHashInputs,
+      lineage: {
+        type: 'version',
+        rootId: root.lineage.rootId,
+        parentIds: [root.lineage.nodeId],
+      },
+    });
+
+    assert.throws(
+      () =>
+        registerTemplate({
+          template: uncertified,
+          engineVersion: root.certification.engineVersion,
+        }),
+      /Certified template registry entries require certification|Certification invalid/,
+    );
+
+    const orphan = buildCertifiedDerivedSeed(root, '1.1.0', {
+      type: 'version',
+      rootId: root.lineage.rootId,
+      parentIds: ['missing-parent-version'],
+    });
+    assert.throws(
+      () =>
+        registerTemplate({
+          template: orphan,
+          engineVersion: orphan.certification.engineVersion,
+        }),
+      /Certified template lineage parent missing from registry/,
+    );
+
+    const foreignRoot = buildCertifiedDerivedSeed(root, '1.1.0', {
+      type: 'version',
+      rootId: 'foreign-root-id',
+      parentIds: [root.lineage.nodeId],
+    });
+    assert.throws(
+      () =>
+        registerTemplate({
+          template: foreignRoot,
+          engineVersion: foreignRoot.certification.engineVersion,
+        }),
+      /Certified template lineage root mismatch/,
+    );
+  } finally {
+    process.chdir(originalCwd);
+  }
+});
+
+console.log('TEMPLATE REGISTRY TESTS: OK');

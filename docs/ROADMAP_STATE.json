@@ -105,23 +105,23 @@
     }
   },
   "overlay_taxonomy_migration": {
-    "status": "not-started",
+    "status": "complete",
     "frozen": false,
     "requires": [
       "overlay_registry",
       "alias_migration",
-      "canonical_25_to_14_collapse",
+      "canonical_25_to_15_collapse",
       "payload_rehoming",
       "capability_reclassification",
+      "capability_rehomed_to_overlays",
+      "ui_overlay_resolution",
+      "no_legacy_mode_dependency",
       "migration_tests"
     ],
     "depends_on": [
       "constitution_reconciliation"
     ],
-    "risks": [
-      "payload_orphan_risk",
-      "25_to_14_aliases_unverified"
-    ],
+    "risks": [],
     "proofs": {
       "overlay_registry": [
         "platform/workspaces/overlayRegistry.js"
@@ -130,7 +130,7 @@
         "platform/workspaces/modeResolution.js",
         "platform/workspaces/legacyMapping.js"
       ],
-      "canonical_25_to_14_collapse": [
+      "canonical_25_to_15_collapse": [
         "platform/workspaces/canonicalRegistry.js",
         "platform/workspaces/modeRegistry.js"
       ],
@@ -142,20 +142,41 @@
         "runtime/workspaces/workspaceCapabilities.js",
         "ui/workspace/capabilities/capabilityRegistry.js"
       ],
+      "capability_rehomed_to_overlays": [
+        "runtime/workspaces/workspaceCapabilities.js",
+        "tests/architecture/systemCapabilityExposure.test.ts",
+        "runtime/workspaces/__tests__/resolveWorkspaceCapabilities.test.mjs"
+      ],
+      "ui_overlay_resolution": [
+        "ui/workspace/editor/EditorWorkspaceLayout.jsx",
+        "ui/workspace/capabilities/capabilityRegistry.js"
+      ],
+      "no_legacy_mode_dependency": [
+        "scripts/scanLegacyModeDependencies.mjs",
+        "platform/workspaces/overlayRegistry.js",
+        "platform/workspaces/modeResolution.js",
+        "platform/workspaces/legacyMapping.js",
+        "platform/workspaces/modeRegistry.js"
+      ],
       "migration_tests": [
         "platform/__tests__/workspaceContext.test.mjs",
         "platform/__tests__/capabilityEngine.test.mjs",
+        "runtime/workspaces/__tests__/resolveWorkspaceCapabilities.test.mjs",
         "tests/e2e/"
       ]
     }
   },
   "seed_lineage": {
-    "status": "not-started",
+    "status": "complete",
     "frozen": false,
     "requires": [
       "template_lineage_graph",
       "lineage_cert_hash",
       "ancestry_legality",
+      "legacy_registry_migration",
+      "fork_publication",
+      "merge_publication",
+      "lineage_reconstruction_key",
       "lineage_tests"
     ],
     "depends_on": [
@@ -164,24 +185,47 @@
     "risks": [],
     "proofs": {
       "template_lineage_graph": [
-        "domain/templates/TemplateSeedLineageGraph.js"
+        "domain/templates/TemplateSeedLineageGraph.js",
+        "domain/templates/__tests__/TemplateSeedLineageGraph.test.mjs"
       ],
       "lineage_cert_hash": [
+        "engine/templates/templateSeed.js",
         "engine/templates/certifyTemplateSeed.js",
         "domain/templates/TemplateCertification.js"
       ],
       "ancestry_legality": [
-        "domain/templates/TemplateRegistry.js"
+        "engine/templates/templateRegistry.js",
+        "engine/templates/__tests__/templateRegistryLineage.test.mjs",
+        "domain/templates/TemplateRegistry.js",
+        "domain/templates/__tests__/TemplateRegistry.test.mjs"
+      ],
+      "legacy_registry_migration": [
+        "scripts/migrateCertifiedTemplatesToLineage.mjs",
+        "scripts/__tests__/migrateCertifiedTemplatesToLineage.test.mjs"
+      ],
+      "fork_publication": [
+        "templates/publishTemplateFork.js",
+        "templates/publishTemplateFork.test.mjs"
+      ],
+      "merge_publication": [
+        "templates/publishTemplateMerge.js",
+        "templates/publishTemplateMerge.test.mjs"
+      ],
+      "lineage_reconstruction_key": [
+        "domain/templates/TemplateRegistry.js",
+        "domain/templates/__tests__/TemplateEnvironmentResolution.test.mjs"
       ],
       "lineage_tests": [
-        "tests/"
+        "domain/templates/__tests__/TemplateSeedLineageGraph.test.mjs",
+        "engine/templates/__tests__/templateSeedCertification.test.mjs"
       ]
     }
   },
   "derived_environments": {
-    "status": "not-started",
+    "status": "active",
     "frozen": false,
     "requires": [
+      "lineage_reconstruction_key",
       "seed_environment_descriptors",
       "bounded_activation_overlays"
     ],
@@ -190,12 +234,19 @@
     ],
     "risks": [],
     "proofs": {
+      "lineage_reconstruction_key": [
+        "domain/templates/TemplateRegistry.js",
+        "domain/templates/__tests__/TemplateEnvironmentResolution.test.mjs"
+      ],
       "seed_environment_descriptors": [
-        "engine/templates/templateSeed.js"
+        "domain/templates/DerivedEnvironmentDescriptor.js",
+        "domain/templates/TemplateEnvironmentDescriptor.js",
+        "domain/templates/resolveTemplateEnvironment.js",
+        "domain/templates/__tests__/TemplateEnvironmentDescriptor.test.mjs"
       ],
       "bounded_activation_overlays": [
-        "platform/capabilities/workspaceActivation.js",
-        "platform/capabilities/capabilityRuntime.js"
+        "runtime/templates/activateTemplateEnvironment.js",
+        "runtime/templates/__tests__/activateTemplateEnvironment.test.mjs"
       ]
     }
   },

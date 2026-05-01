@@ -14,6 +14,15 @@ const ROUTES = [
     expectedToolId: 'select',
   },
   {
+    path: '/workspace/branding',
+    expected: 'Branding',
+    expectedButton: 'Export',
+  },
+  {
+    path: '/workspace/icons',
+    expectedToolId: 'select',
+  },
+  {
     path: '/workspace/media',
     expected: 'Media Workspace',
   },
@@ -28,6 +37,28 @@ const ROUTES = [
   {
     path: '/workspace/podcast',
     expected: 'Media Workspace',
+  },
+  {
+    path: '/workspace/audio',
+    expected: 'Media Workspace',
+  },
+  {
+    path: '/workspace/automation',
+    expected: 'Automation',
+    expectedButton: 'Export',
+  },
+  {
+    path: '/workspace/conversion',
+    expected: 'Conversion',
+    expectedButton: 'Export',
+  },
+  {
+    path: '/workspace/ai',
+    expected: 'AI Build',
+  },
+  {
+    path: '/workspace/education',
+    expected: 'Education Mode',
   },
   {
     path: '/workspace/new',
@@ -60,8 +91,11 @@ for (const route of ROUTES) {
     expect(response?.ok(), `route ${route.path} should respond successfully`).toBeTruthy();
     if (route.expectedToolId) {
       await expect(page.locator(`[data-tool-id="${route.expectedToolId}"]`).first()).toBeVisible();
-    } else {
+    } else if (route.expected) {
       await expect(page.locator('body')).toContainText(route.expected);
+    }
+    if (route.expectedButton) {
+      await expect(page.getByRole('button', { name: route.expectedButton })).toBeVisible();
     }
     await expect(page.locator('body')).not.toContainText('Module not found');
     await expect(page.locator('body')).not.toContainText('Application error');

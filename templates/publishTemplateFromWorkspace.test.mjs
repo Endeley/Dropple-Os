@@ -87,9 +87,14 @@ test('publishTemplateFromWorkspace closes publish -> compile -> certify -> regis
             fs.readFileSync(path.join(tempDir, '.registry', 'certifiedTemplates.json'), 'utf8'),
         );
 
-        assert.equal(registry.length, 1);
-        assert.equal(registry[0].id, result.seed.id);
-        assert.equal(registry[0].snapshotHash, result.seed.snapshotHash);
+        assert.equal(registry.format, 'dropple-certified-template-registry@2');
+        assert.equal(registry.entries.length, 1);
+        assert.equal(registry.entries[0].id, result.seed.id);
+        assert.equal(registry.entries[0].snapshotHash, result.seed.snapshotHash);
+        assert.equal(
+            registry.lineageRoots[result.seed.lineage.rootId][0],
+            result.seed.lineage.nodeId,
+        );
     } finally {
         process.chdir(originalCwd);
     }

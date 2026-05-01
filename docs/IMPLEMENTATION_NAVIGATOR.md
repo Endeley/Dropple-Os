@@ -220,7 +220,7 @@ Dependency violations:
 - none
 
 Constitutional risks:
-- 25_to_14_aliases_unverified
+- 25_to_15_aliases_unverified
 ```
 
 ## What the Navigator Must Not Track

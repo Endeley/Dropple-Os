@@ -16,9 +16,18 @@ test('system workspace modes expose canonical authoring capabilities through mod
     assert.deepEqual(
         resolveWorkspaceCapabilities({
             workspace: 'system',
-            mode: 'themes',
+            mode: 'tokens',
+            overlayId: 'themes',
         }),
-        ['theme-authoring'],
+        ['token-authoring', 'theme-authoring'],
+    );
+
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'system',
+            mode: 'governance',
+        }),
+        ['token-versioning', 'token-review'],
     );
 
     assert.deepEqual(
@@ -27,6 +36,14 @@ test('system workspace modes expose canonical authoring capabilities through mod
             mode: 'versioning',
         }),
         ['token-versioning', 'token-review'],
+    );
+
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'system',
+            mode: 'themes',
+        }),
+        [],
     );
 });
 

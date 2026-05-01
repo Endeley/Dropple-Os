@@ -49,13 +49,14 @@ export default function ReadOnlyNodeRenderer({
   modeId,
   educationRole = 'teacher',
   educationReadOnly = false,
+  isLearningOverlay = false,
   readOnly = false,
 }) {
   const { selectedIds, selectSingle, toggle, setSelection } = useSelection();
   const { grid } = useGrid();
   const mods = useInteractionModifiers();
   const isEducationReadOnly =
-    modeId === 'education' && (educationReadOnly || educationRole !== 'teacher');
+    isLearningOverlay && (educationReadOnly || educationRole !== 'teacher');
   const isReadOnly = readOnly || modeId === 'review' || isEducationReadOnly;
   const zoomTier = getZoomTier(viewport?.scale ?? 1);
   const primary = useToken('color.primary');

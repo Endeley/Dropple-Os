@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines the exact migration map for the constitutional collapse from 25 sovereign modes to 14 canonical modes.
+This document defines the exact migration map for the constitutional collapse from 25 sovereign modes to 15 canonical modes.
 
 Its job is to prevent silent payload loss during taxonomy collapse.
 
@@ -71,7 +71,7 @@ Class B overlays:
 - `education`
 - `versioning`
 
-## Final Canonical 14
+## Final Canonical 15
 
 ### Design
 - `uiux`
@@ -91,6 +91,7 @@ Class B overlays:
 ### System
 - `tokens`
 - `components`
+- `governance`
 - `governance`
 
 ### Collaborate
@@ -315,7 +316,7 @@ Migration should happen in two steps:
 
 ## Final Verdict
 
-The 25 -> 14 collapse is structurally safe.
+The 25 -> 15 collapse is structurally safe.
 
 Runtime capability orphaning risk:
 - low

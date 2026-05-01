@@ -4,6 +4,7 @@ import { replayTimeline } from '../replay/replayTimeline.js';
 import { buildEvaluationFingerprint } from '../replay/buildEvaluationFingerprint.js';
 import { computeCapabilityIndex } from '../observability/capabilityIndex.js';
 import { runExportStabilityGate } from '../export/exportStabilityGate.js';
+import { resolveTemplateSeedIdentity } from './templateSeed.js';
 
 function stableSerialize(value) {
     if (Array.isArray(value)) {
@@ -26,7 +27,8 @@ function hashObject(value) {
 }
 
 export function certifyTemplateSeed(seed) {
-    const certifiedAt = `derived:${seed.snapshotHash.slice(0, 12)}`;
+    const identity = resolveTemplateSeedIdentity(seed);
+    const certifiedAt = `derived:${identity.lineage.rootId.slice(0, 12)}:${seed.snapshotHash.slice(0, 12)}`;
     const engineVersion = seed?.metadata?.engine ?? 'dropple-motion@1.x';
 
     let certified = false;
@@ -72,11 +74,26 @@ export function certifyTemplateSeed(seed) {
         certified = false;
     }
 
+    const certificationHash = hashObject({
+        snapshotHash: seed.snapshotHash,
+        contentHash: identity.contentHash,
+        lineageRootId: identity.lineage.rootId,
+        lineageNodeId: identity.lineage.nodeId,
+        capabilityHash,
+        engineVersion,
+        fingerprint,
+        certified,
+    });
+
     const certification = {
         certified,
         fingerprint,
         snapshotHash: seed.snapshotHash,
+        contentHash: identity.contentHash,
+        lineageRootId: identity.lineage.rootId,
+        lineageNodeId: identity.lineage.nodeId,
         capabilityHash,
+        certificationHash,
         engineVersion,
         certifiedAt,
     };

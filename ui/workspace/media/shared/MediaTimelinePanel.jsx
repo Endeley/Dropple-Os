@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { isPodcastOverlayMode } from '../mediaModes.js';
 import {
     projectAnimationTrackGroups,
     projectMediaPlaybackState,
@@ -33,7 +34,8 @@ function cardStyle() {
     };
 }
 
-function laneTone(modeId) {
+function laneTone(mode) {
+    const modeId = mode?.id ?? null;
     if (modeId === 'video') {
         return {
             active: 'rgba(249, 115, 22, 0.18)',
@@ -43,7 +45,7 @@ function laneTone(modeId) {
         };
     }
 
-    if (modeId === 'podcast') {
+    if (modeId === 'audio' || isPodcastOverlayMode(mode)) {
         return {
             active: 'rgba(20, 184, 166, 0.18)',
             border: 'rgba(20, 184, 166, 0.35)',
@@ -202,7 +204,8 @@ export function MediaTimelinePanel({ mode }) {
     const [isScrubbing, setIsScrubbing] = useState(false);
     const [clipDrag, setClipDrag] = useState(null);
     const railRef = useRef(null);
-    const tone = laneTone(mode.id);
+    const tone = laneTone(mode);
+    const podcastOverlayMode = isPodcastOverlayMode(mode);
 
     function seekTo(frame) {
         const nextFrame = Math.max(0, Math.min(duration, Math.round(frame)));
@@ -382,7 +385,7 @@ export function MediaTimelinePanel({ mode }) {
                             Clip spans and edit blocks are emphasized on each lane.
                         </span>
                     ) : null}
-                    {mode.id === 'podcast' ? (
+                    {podcastOverlayMode ? (
                         <span style={{ fontSize: 12, color: '#64748b' }}>
                             Cue density and waveform-style pulses are emphasized on each lane.
                         </span>

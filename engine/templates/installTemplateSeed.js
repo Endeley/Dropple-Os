@@ -1,6 +1,7 @@
 import { hashTimeline, normalizeTimeline } from '../../domain/timeline/TimelineContract.js';
 import { applyTimelineMutation } from '../timeline/timelineHistory.js';
 import { buildSceneTree } from '../../domain/scene/buildSceneTree.js';
+import { resolveTemplateSeedIdentity } from './templateSeed.js';
 
 function deepClone(value) {
     if (value == null) return value;
@@ -45,6 +46,8 @@ export function installTemplateSeed(seed) {
     if (!seed || typeof seed !== 'object') {
         throw new Error('installTemplateSeed requires a seed object');
     }
+
+    const identity = resolveTemplateSeedIdentity(seed);
 
     const states = deepClone(seed.states || {});
     const stateNames = Object.keys(states).sort();
@@ -93,6 +96,8 @@ export function installTemplateSeed(seed) {
         id: seed.id,
         version: seed.version,
         snapshotHash: seed.snapshotHash,
+        contentHash: identity.contentHash,
+        lineage: deepClone(identity.lineage),
         defaultState,
         availableStates: stateNames,
         metadata: deepClone(seed.metadata ?? {}),

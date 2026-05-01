@@ -5,13 +5,14 @@ import { CAPABILITY_REGISTRY } from './capabilities/capabilityRegistry.js';
 import { createCapabilityContext } from '@/runtime/workspaces/index.js';
 import { cleanupCapabilityLifecycle, reconcileCapabilityLifecycle } from './capabilities/reconcileCapabilityLifecycle.js';
 
-export function useCapabilityLifecycle({ capabilities, emit, workspace, mode }) {
+export function useCapabilityLifecycle({ capabilities, emit, workspace, mode, overlayId }) {
     const mountedRef = useRef(new Set());
     const contextRef = useRef(
         createCapabilityContext({
             emit,
             workspace,
             mode,
+            overlayId,
         }),
     );
 
@@ -20,6 +21,7 @@ export function useCapabilityLifecycle({ capabilities, emit, workspace, mode }) 
             emit,
             workspace,
             mode,
+            overlayId,
         });
 
         contextRef.current = context;
@@ -29,7 +31,7 @@ export function useCapabilityLifecycle({ capabilities, emit, workspace, mode }) 
             registry: CAPABILITY_REGISTRY,
             context,
         });
-    }, [capabilities, emit, workspace, mode]);
+    }, [capabilities, emit, workspace, mode, overlayId]);
 
     useEffect(() => {
         return () => {

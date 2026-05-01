@@ -120,7 +120,7 @@ Purpose:
 
 Constitution:
 - 5 fixed workspaces
-- 14 canonical modes after collapse
+- 15 canonical modes after collapse
 - overlays for specialization
 
 Rules:

@@ -66,6 +66,15 @@ console.log(
 );
 console.log(
     'CERTIFICATION DETERMINISTIC:',
-    certified.certification?.certifiedAt === `derived:${seed.snapshotHash.slice(0, 12)}`
+    certified.certification?.certifiedAt ===
+        `derived:${seed.lineage.rootId.slice(0, 12)}:${seed.snapshotHash.slice(0, 12)}`
+);
+console.log(
+    'LINEAGE ROOT CARRIED:',
+    certified.certification?.lineageRootId === seed.lineage.rootId
+);
+console.log(
+    'CONTENT HASH CARRIED:',
+    certified.certification?.contentHash === seed.contentHash
 );
 console.log('CERTIFICATION DOES NOT MUTATE SEED:', before === after);

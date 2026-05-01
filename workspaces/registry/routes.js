@@ -6,6 +6,7 @@ export function workspaceRoutes() {
     animation: { label: "Animation", href: "/workspace/animation" },
     video: { label: "Video", href: "/workspace/video" },
     podcast: { label: "Podcast", href: "/workspace/podcast" },
+    automation: { label: "Automation", href: "/workspace/automation" },
     material: { label: "Material", href: "/workspace/material" },
     icons: { label: "Icons", href: "/workspace/icons" },
     dev: { label: "Dev", href: "/workspace/dev" },

@@ -128,6 +128,11 @@ console.log('DSL IMMUTABLE:', before === after);
 
 const compiledB = compileTemplateV1(clone(original));
 console.log('SNAPSHOT HASH DETERMINISTIC:', compiledA.seed.snapshotHash === compiledB.seed.snapshotHash);
+console.log('CONTENT HASH DETERMINISTIC:', compiledA.seed.contentHash === compiledB.seed.contentHash);
+console.log(
+    'LINEAGE ROOT DETERMINISTIC:',
+    compiledA.seed.lineage.rootId === compiledB.seed.lineage.rootId
+);
 console.log(
     'CAPABILITY PROFILE DETERMINISTIC:',
     JSON.stringify(compiledA.capabilityProfile) === JSON.stringify(compiledB.capabilityProfile)
@@ -151,6 +156,10 @@ const compiledMetadataChanged = compileTemplateV1(metadataChanged);
 console.log(
     'METADATA DOES NOT CHANGE HASH:',
     compiledA.seed.snapshotHash === compiledMetadataChanged.seed.snapshotHash
+);
+console.log(
+    'METADATA DOES NOT CHANGE CONTENT HASH:',
+    compiledA.seed.contentHash === compiledMetadataChanged.seed.contentHash
 );
 
 const controller = createTimelineController(

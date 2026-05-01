@@ -27,13 +27,14 @@ const MEDIA_MODE_CONFIG = Object.freeze({
         trackTypes: ['clips', 'overlays', 'transitions', 'audio'],
         exportFormats: ['mp4'],
     },
-    podcast: {
-        id: 'podcast',
-        label: 'Podcast',
-        summary: 'Audio-first sequencing with cues, markers, and export flows.',
+    audio: {
+        id: 'audio',
+        label: 'Audio',
+        summary: 'Audio-first sequencing with cues, markers, chapters, and export flows.',
         serves: [
             'podcasters',
             'voice creators',
+            'audio editors',
             'education teams',
             'dialogue-driven storytellers',
         ],
@@ -43,6 +44,26 @@ const MEDIA_MODE_CONFIG = Object.freeze({
     },
 });
 
-export function getMediaModeConfig(modeId) {
+const PODCAST_OVERLAY_MODE_CONFIG = Object.freeze({
+    ...MEDIA_MODE_CONFIG.audio,
+    overlayId: 'podcast',
+    overlayLabel: 'Podcast',
+});
+
+export function isPodcastOverlayMode(modeOrModeId, overlayId = null) {
+    if (modeOrModeId && typeof modeOrModeId === 'object') {
+        return modeOrModeId.overlayId === 'podcast';
+    }
+
+    return overlayId === 'podcast';
+}
+
+export function getMediaModeConfig(modeId, options = {}) {
+    const overlayId = typeof options === 'string' ? options : options?.overlayId ?? null;
+
+    if (modeId === 'audio' && isPodcastOverlayMode(modeId, overlayId)) {
+        return PODCAST_OVERLAY_MODE_CONFIG;
+    }
+
     return MEDIA_MODE_CONFIG[modeId] ?? MEDIA_MODE_CONFIG.animation;
 }

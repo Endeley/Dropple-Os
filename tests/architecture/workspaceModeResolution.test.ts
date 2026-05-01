@@ -74,7 +74,7 @@ test('resolves legacy workspace aliases into canonical workspace and mode', () =
             workspaceId: 'design',
             modeId: 'graphic',
             definitionId: 'graphic',
-            source: 'legacy-alias',
+            source: 'mode-direct',
         }),
     );
 });

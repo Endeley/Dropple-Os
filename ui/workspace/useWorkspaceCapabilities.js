@@ -11,9 +11,9 @@ const EMPTY_COMPONENTS = Object.freeze({
     overlays: Object.freeze([]),
 });
 
-export function useWorkspaceCapabilities({ workspace, mode } = {}) {
+export function useWorkspaceCapabilities({ workspace, mode, overlayId } = {}) {
     return useMemo(() => {
-        const capabilities = resolveWorkspaceCapabilities({ workspace, mode });
+        const capabilities = resolveWorkspaceCapabilities({ workspace, mode, overlayId });
         if (capabilities.length === 0) {
             return EMPTY_COMPONENTS;
         }
@@ -27,5 +27,5 @@ export function useWorkspaceCapabilities({ workspace, mode } = {}) {
             surfacePanels,
             overlays,
         };
-    }, [mode, workspace]);
+    }, [mode, overlayId, workspace]);
 }

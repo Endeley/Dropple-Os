@@ -97,9 +97,9 @@ Five workspaces are constitutional:
 
 No generated system may create a sovereign sixth workspace.
 
-### Law 7 — Fourteen Canonical Modes
+### Law 7 — Fifteen Canonical Modes
 
-The proposed canonical 14 are:
+The proposed canonical 15 are:
 
 ### Design
 - `uiux`
@@ -119,6 +119,7 @@ The proposed canonical 14 are:
 ### System
 - `tokens`
 - `components`
+- `governance`
 
 ### Collaborate
 - `review`
@@ -128,7 +129,7 @@ The proposed canonical 14 are:
 Derived surfaces may exist.  
 Canonical modes remain finite.
 
-This law is not active until the `25 -> 14` mode amendment is completed.
+This law is not active until the `25 -> 15` mode amendment is completed.
 
 ### Law 8 — Overlay Preservation Law
 

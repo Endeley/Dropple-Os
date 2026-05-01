@@ -65,6 +65,9 @@ function EditorWorkspaceLayoutInner({
     onOpenTemplateGenerator,
 
     educationReadOnly = false,
+    isLearningOverlay = false,
+    toolModeId = null,
+    overlayId = null,
     readOnly = false,
 
     documentRole = null,
@@ -99,7 +102,7 @@ function EditorWorkspaceLayoutInner({
     const showToolRail = adapter?.ui?.canvas !== false && adapter?.ui?.editing !== false;
     const showSystemVersioningPanels =
         workspaceContext?.workspaceId === 'system' &&
-        workspaceContext?.modeId === 'versioning' &&
+        (toolModeId === 'governance' || overlayId === 'governance') &&
         Array.isArray(capabilitySurfacePanels) &&
         capabilitySurfacePanels.length > 0;
 
@@ -171,9 +174,11 @@ function EditorWorkspaceLayoutInner({
     useEffect(() => {
         const unregister = registerWorkspaceTools({
             workspaceId,
+            modeId: toolModeId,
+            overlayId,
         });
         return () => unregister?.();
-    }, [workspaceId]);
+    }, [workspaceId, toolModeId, overlayId]);
 
     return (
         <div className='workspace-root'>
@@ -207,7 +212,7 @@ function EditorWorkspaceLayoutInner({
             <TopBar workspaceLabel={workspaceContext?.workspaceId} modeLabel={adapter.label} documentName={documentName} onSave={onSave} readOnly={readOnly} />
 
             {/* Toolbar */}
-            {adapter?.id === 'education' ? (
+            {isLearningOverlay ? (
                 <EducationToolbar emit={emit} cursor={cursor} events={events} readOnly={educationReadOnly} />
             ) : adapter?.id === 'review' ? (
                 <ReviewToolbar submission={reviewSubmission} onDecision={onReviewDecision} reviewerId={reviewerId} cursor={cursor} />

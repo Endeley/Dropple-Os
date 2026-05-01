@@ -36,6 +36,7 @@ export default function CanvasStage({
   cursor,
   emit,
   educationReadOnly = false,
+  isLearningOverlay = false,
   readOnly = false,
   documentId = null,
   canEmitCursor = false,
@@ -75,7 +76,7 @@ export default function CanvasStage({
   const isReadOnly =
     readOnly ||
     isReview ||
-    (adapter?.id === 'education' && (educationReadOnly || educationRole !== 'teacher'));
+    (isLearningOverlay && (educationReadOnly || educationRole !== 'teacher'));
   const showAutoLayoutOverlay = shouldShowAutoLayoutOverlay({
     selectedIds,
     nodes,
@@ -302,7 +303,7 @@ export default function CanvasStage({
               <GridOverlay node={overlayNode} />
             </>
           )}
-          {adapter?.id === 'education' && educationState.annotations?.length ? (
+          {isLearningOverlay && educationState.annotations?.length ? (
             <AnnotationOverlay annotations={educationState.annotations} />
           ) : null}
           {reorderParent && reorderPreview.toIndex != null && (

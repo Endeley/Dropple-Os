@@ -13,6 +13,7 @@ import {
     resolveModeId,
     resolveWorkspaceId,
 } from '@/ui/bridges/workspaceActivationFacade.js';
+import { getVisibleToolsForWorkspace } from '@/ui/tools/toolDefinitions.js';
 
 const ROOT = process.cwd();
 
@@ -157,6 +158,84 @@ test('workspace activation facade is deterministic and returns canonical identit
         assert.equal(adapterA?.modeId, modeId);
         assert.equal(contractA?.id, workspaceId);
     }
+});
+
+test('automation canonical mode and conversion compatibility mode resolve to the same conversion payload', () => {
+    const automationActivation = getWorkspaceActivation({ workspaceId: 'build', modeId: 'automation' });
+    const conversionActivation = getWorkspaceActivation({ workspaceId: 'build', modeId: 'conversion' });
+    const automationAdapter = getWorkspaceAdapter({ workspaceId: 'build', modeId: 'automation' });
+    const conversionAdapter = getWorkspaceAdapter({ workspaceId: 'build', modeId: 'conversion' });
+    const automationContract = getWorkspaceContractDefinition({ workspaceId: 'build', modeId: 'automation' });
+    const conversionContract = getWorkspaceContractDefinition({ workspaceId: 'build', modeId: 'conversion' });
+
+    assert.equal(automationActivation?.workspaceId, 'build');
+    assert.equal(conversionActivation?.workspaceId, 'build');
+    assert.equal(automationActivation?.definitionId, 'conversion');
+    assert.equal(conversionActivation?.definitionId, 'conversion');
+
+    assert.equal(automationAdapter?.modeId, 'automation');
+    assert.equal(conversionAdapter?.modeId, 'conversion');
+    assert.equal(automationAdapter?.definitionId, 'conversion');
+    assert.equal(conversionAdapter?.definitionId, 'conversion');
+    assert.equal(automationAdapter?.capabilities?.export, true);
+    assert.equal(conversionAdapter?.capabilities?.export, true);
+    assert.deepEqual(automationAdapter?.panels, ['NodeHeaderPanel']);
+    assert.deepEqual(conversionAdapter?.panels, ['NodeHeaderPanel']);
+
+    assert.deepEqual(automationActivation?.export?.formats, ['css', 'lottie', 'react']);
+    assert.deepEqual(conversionActivation?.export?.formats, ['css', 'lottie', 'react']);
+    assert.deepEqual(automationActivation?.render?.targets, ['vector:lottie']);
+    assert.deepEqual(conversionActivation?.render?.targets, ['vector:lottie']);
+
+    assert.deepEqual(automationContract?.export?.formats, ['css', 'lottie', 'react']);
+    assert.deepEqual(conversionContract?.export?.formats, ['css', 'lottie', 'react']);
+    assert.deepEqual(automationContract?.render?.targets, ['vector:lottie']);
+    assert.deepEqual(conversionContract?.render?.targets, ['vector:lottie']);
+    assert.equal(automationContract?.legacy?.legacy?.capabilities?.codegen, true);
+    assert.equal(conversionContract?.legacy?.legacy?.capabilities?.codegen, true);
+});
+
+test('knowledge remains distinct from the guided learning compatibility surface', () => {
+    const knowledgeAdapter = getWorkspaceAdapter({ workspaceId: 'collaborate', modeId: 'knowledge' });
+    const educationAdapter = getWorkspaceAdapter({ workspaceId: 'collaborate', modeId: 'education' });
+
+    assert.equal(knowledgeAdapter?.modeId, 'knowledge');
+    assert.equal(educationAdapter?.modeId, 'education');
+    assert.equal(knowledgeAdapter?.definitionId, 'education');
+    assert.equal(educationAdapter?.definitionId, 'education');
+    assert.equal(knowledgeAdapter?.ui?.readOnly, false);
+    assert.equal(educationAdapter?.ui?.readOnly, true);
+    assert.equal(knowledgeAdapter?.ui?.timeline, false);
+    assert.equal(educationAdapter?.ui?.timeline, true);
+});
+
+test('graphic style overlays preserve branding and icon tool specialization without changing canonical graphic tools', () => {
+    assert.deepEqual(
+        getVisibleToolsForWorkspace({ workspaceId: 'graphic', modeId: 'graphic' }).map((tool) => tool.id),
+        ['select', 'text', 'shape', 'image', 'move', 'resize'],
+    );
+
+    assert.deepEqual(
+        getVisibleToolsForWorkspace({ workspaceId: 'branding', modeId: 'branding' }).map((tool) => tool.id),
+        ['shape', 'path', 'edit', 'apply'],
+    );
+
+    assert.deepEqual(
+        getVisibleToolsForWorkspace({ workspaceId: 'icons', modeId: 'icons' }).map((tool) => tool.id),
+        ['select', 'pan', 'zoom', 'fit', 'path', 'stroke'],
+    );
+});
+
+test('branding and icons remain compatibility surfaces over graphic-owned design payloads', () => {
+    const brandingAdapter = getWorkspaceAdapter({ workspaceId: 'design', modeId: 'branding' });
+    const iconsAdapter = getWorkspaceAdapter({ workspaceId: 'design', modeId: 'icons' });
+    const brandingContract = getWorkspaceContractDefinition({ workspaceId: 'design', modeId: 'branding' });
+    const iconsContract = getWorkspaceContractDefinition({ workspaceId: 'design', modeId: 'icons' });
+
+    assert.deepEqual(brandingContract?.export?.formats, ['brand-kit', 'tokens', 'pdf']);
+    assert.deepEqual(iconsContract?.export?.formats, ['svg', 'icon-font']);
+    assert.equal(brandingAdapter?.capabilities?.canvas, true);
+    assert.equal(iconsAdapter?.capabilities?.canvas, true);
 });
 
 test('workspace activation facade outputs plain data, not executable policy', () => {

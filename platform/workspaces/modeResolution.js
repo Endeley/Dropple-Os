@@ -83,6 +83,28 @@ function resolveOverlayModeEntry(entryId) {
     });
 }
 
+function resolveModeOwnershipMapping(modeId) {
+    const canonicalMode = getCanonicalMode(modeId);
+    if (canonicalMode) {
+        return Object.freeze({
+            workspaceId: canonicalMode.workspaceId,
+            canonical: true,
+            overlay: null,
+        });
+    }
+
+    const overlay = resolveOverlayByLegacyMode(modeId);
+    if (overlay) {
+        return Object.freeze({
+            workspaceId: overlay.ownerWorkspaceId,
+            canonical: false,
+            overlay,
+        });
+    }
+
+    return null;
+}
+
 /* =========================
    LEGACY ALIASES
    ========================= */
@@ -134,13 +156,15 @@ export const WORKSPACE_ALIASES = Object.freeze({
             );
         }
 
-        if (!hasCanonicalMode(mapping.modeId)) {
+        const ownership = resolveModeOwnershipMapping(mapping.modeId);
+
+        if (!ownership) {
             throw new Error(
-                `[Dropple Constitution] Alias "${alias}" references unknown mode "${mapping.modeId}"`
+                `[Dropple Constitution] Alias "${alias}" references unknown mode or overlay "${mapping.modeId}"`
             );
         }
 
-        if (getCanonicalMode(mapping.modeId)?.workspaceId !== mapping.workspaceId) {
+        if (ownership.workspaceId !== mapping.workspaceId) {
             throw new Error(
                 `[Dropple Constitution] Alias "${alias}" resolves to mode "${mapping.modeId}" not owned by "${mapping.workspaceId}"`
             );
@@ -285,7 +309,39 @@ export function resolveCanonicalWorkspaceContext(input = {}) {
         });
     }
 
-    // 3. Canonical mode only
+    // 3. Canonical workspace + legacy mode compatibility
+    if (hasCanonicalWorkspace(rawWorkspace) && rawMode) {
+        const explicitOwnership = resolveModeOwnershipMapping(rawMode);
+
+        if (explicitOwnership && explicitOwnership.workspaceId === rawWorkspace) {
+            return Object.freeze({
+                workspaceId: rawWorkspace,
+                modeId: rawMode,
+                definitionId: assertDefinitionId(rawMode),
+                source: explicitOwnership.canonical ? 'canonical' : 'legacy-mode-compat',
+            });
+        }
+    }
+
+    if (hasCanonicalWorkspace(rawWorkspace) && hasWorkspaceAlias(rawMode)) {
+        const alias = getWorkspaceAlias(rawMode);
+        const ownership = resolveModeOwnershipMapping(alias.modeId);
+
+        if (!ownership || ownership.workspaceId !== rawWorkspace) {
+            throw new Error(
+                `[Dropple Constitution] Mode "${rawMode}" does not belong to workspace "${rawWorkspace}"`
+            );
+        }
+
+        return Object.freeze({
+            workspaceId: rawWorkspace,
+            modeId: alias.modeId,
+            definitionId: assertDefinitionId(alias.modeId),
+            source: 'legacy-mode-compat',
+        });
+    }
+
+    // 4. Canonical mode only
     if (!rawWorkspace && hasCanonicalMode(rawMode)) {
         const workspaceId = resolveModeOwner(rawMode);
 
@@ -297,11 +353,24 @@ export function resolveCanonicalWorkspaceContext(input = {}) {
         });
     }
 
-    // 4. Legacy alias (workspace)
+    // 5. Canonical mode via direct workspace route segment
+    if (hasCanonicalMode(rawWorkspace) && !rawMode) {
+        const workspaceId = resolveModeOwner(rawWorkspace);
+
+        return Object.freeze({
+            workspaceId,
+            modeId: rawWorkspace,
+            definitionId: assertDefinitionId(rawWorkspace),
+            source: 'mode-direct',
+        });
+    }
+
+    // 6. Legacy alias (workspace)
     if (hasWorkspaceAlias(rawWorkspace)) {
         const alias = getWorkspaceAlias(rawWorkspace);
+        const ownership = resolveModeOwnershipMapping(alias.modeId);
 
-        if (getCanonicalMode(alias.modeId)?.workspaceId !== alias.workspaceId) {
+        if (!ownership || ownership.workspaceId !== alias.workspaceId) {
             throw new Error(
                 `[Dropple Constitution] Alias "${rawWorkspace}" resolved inconsistently`
             );
@@ -315,11 +384,12 @@ export function resolveCanonicalWorkspaceContext(input = {}) {
         });
     }
 
-    // 5. Legacy alias (mode)
+    // 7. Legacy alias (mode)
     if (hasWorkspaceAlias(rawMode)) {
         const alias = getWorkspaceAlias(rawMode);
+        const ownership = resolveModeOwnershipMapping(alias.modeId);
 
-        if (getCanonicalMode(alias.modeId)?.workspaceId !== alias.workspaceId) {
+        if (!ownership || ownership.workspaceId !== alias.workspaceId) {
             throw new Error(
                 `[Dropple Constitution] Alias "${rawMode}" resolved inconsistently`
             );
@@ -333,7 +403,7 @@ export function resolveCanonicalWorkspaceContext(input = {}) {
         });
     }
 
-    // 6. Fallback (constitutional default)
+    // 8. Fallback (constitutional default)
     const fallbackWorkspaceId = 'design';
     const fallbackModeId = resolveWorkspaceDefaultMode(fallbackWorkspaceId);
 

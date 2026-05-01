@@ -29,33 +29,23 @@ export const CANONICAL_WORKSPACES = Object.freeze({
 export const CANONICAL_MODES = Object.freeze({
     uiux: Object.freeze({ id: 'uiux', label: 'UI / UX', workspaceId: 'design' }),
     graphic: Object.freeze({ id: 'graphic', label: 'Graphic', workspaceId: 'design' }),
-    branding: Object.freeze({ id: 'branding', label: 'Branding', workspaceId: 'design' }),
-    icons: Object.freeze({ id: 'icons', label: 'Icons', workspaceId: 'design' }),
     document: Object.freeze({ id: 'document', label: 'Document', workspaceId: 'design' }),
 
     animation: Object.freeze({ id: 'animation', label: 'Animation', workspaceId: 'media' }),
     video: Object.freeze({ id: 'video', label: 'Video', workspaceId: 'media' }),
-    podcast: Object.freeze({ id: 'podcast', label: 'Podcast', workspaceId: 'media' }),
-    'motion-design': Object.freeze({ id: 'motion-design', label: 'Motion Design', workspaceId: 'media' }),
+    audio: Object.freeze({ id: 'audio', label: 'Audio', workspaceId: 'media' }),
 
     application: Object.freeze({ id: 'application', label: 'Application', workspaceId: 'build' }),
-    logic: Object.freeze({ id: 'logic', label: 'Data & Logic', workspaceId: 'build' }),
-    'state-machine': Object.freeze({ id: 'state-machine', label: 'State Machines', workspaceId: 'build' }),
-    api: Object.freeze({ id: 'api', label: 'API / Integration', workspaceId: 'build' }),
-    conversion: Object.freeze({ id: 'conversion', label: 'Conversion', workspaceId: 'build' }),
-    'ai-build': Object.freeze({ id: 'ai-build', label: 'AI Build', workspaceId: 'build' }),
+    logic: Object.freeze({ id: 'logic', label: 'Logic', workspaceId: 'build' }),
+    automation: Object.freeze({ id: 'automation', label: 'Automation', workspaceId: 'build' }),
 
     tokens: Object.freeze({ id: 'tokens', label: 'Design Tokens', workspaceId: 'system' }),
     components: Object.freeze({ id: 'components', label: 'Component Libraries', workspaceId: 'system' }),
-    variants: Object.freeze({ id: 'variants', label: 'Variants', workspaceId: 'system' }),
-    themes: Object.freeze({ id: 'themes', label: 'Themes', workspaceId: 'system' }),
-    versioning: Object.freeze({ id: 'versioning', label: 'Versioning', workspaceId: 'system' }),
+    governance: Object.freeze({ id: 'governance', label: 'Governance', workspaceId: 'system' }),
 
     review: Object.freeze({ id: 'review', label: 'Review', workspaceId: 'collaborate' }),
-    comments: Object.freeze({ id: 'comments', label: 'Comments', workspaceId: 'collaborate' }),
     production: Object.freeze({ id: 'production', label: 'Production', workspaceId: 'collaborate' }),
     knowledge: Object.freeze({ id: 'knowledge', label: 'Knowledge', workspaceId: 'collaborate' }),
-    education: Object.freeze({ id: 'education', label: 'Education', workspaceId: 'collaborate' }),
 });
 
 /* =========================
@@ -68,6 +58,12 @@ export const CANONICAL_MODES = Object.freeze({
     if (workspaceIds.length !== 5) {
         throw new Error(
             `[Dropple Constitution] Expected exactly 5 workspaces, got ${workspaceIds.length}`
+        );
+    }
+
+    if (Object.keys(CANONICAL_MODES).length !== 15) {
+        throw new Error(
+            `[Dropple Constitution] Expected exactly 15 canonical modes, got ${Object.keys(CANONICAL_MODES).length}`
         );
     }
 

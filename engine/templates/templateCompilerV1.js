@@ -3,7 +3,7 @@ import { normalizeTimeline, hashTimeline } from '../../domain/timeline/TimelineC
 import { createTimelineController } from '../timeline/timelineController.js';
 import { runExportStabilityGate } from '../export/exportStabilityGate.js';
 import { computeCapabilityIndex } from '../observability/capabilityIndex.js';
-import { createTemplateSeed } from './templateSeed.js';
+import { buildTemplateSeedContentHashInputs, createTemplateSeed } from './templateSeed.js';
 import { certifyTemplateSeed } from './certifyTemplateSeed.js';
 import { buildSceneTree } from '../../domain/scene/buildSceneTree.js';
 
@@ -241,6 +241,18 @@ export function compileTemplateV1(templateDefinition) {
     const capabilityProfile = computeCapabilityIndex(controller);
 
     const params = cloneParams(templateDefinition.params);
+    const engineVersion = templateDefinition.metadata.engine ?? 'dropple-motion@1.x';
+    const contentHashInputs = buildTemplateSeedContentHashInputs({
+        id: templateDefinition.metadata.id,
+        version: templateDefinition.metadata.version,
+        metadata: {
+            engine: engineVersion,
+        },
+        baseSceneGraph,
+        states,
+        defaultState,
+        params,
+    });
 
     const seed = createTemplateSeed({
             id: templateDefinition.metadata.id,
@@ -256,8 +268,10 @@ export function compileTemplateV1(templateDefinition) {
                 author: templateDefinition.metadata.author ?? '',
                 license: templateDefinition.metadata.license ?? '',
                 createdAt: templateDefinition.metadata.createdAt ?? '',
+                engine: engineVersion,
             },
             params,
+            contentHashInputs,
         });
 
     const certifiedSeed = certifyTemplateSeed(seed);

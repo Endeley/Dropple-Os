@@ -26,6 +26,7 @@ export {
     resolveOverlayByLegacyMode,
 } from './overlayRegistry.js';
 export { resolveWorkspaceContext } from './resolveWorkspaceContext.js';
+export { resolveCanonicalWorkspaceOverlayContext } from './modeResolution.js';
 
 export {
     getResolvedWorkspaceDefinition,
