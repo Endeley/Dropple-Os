@@ -4,6 +4,10 @@ import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { createLocalDocumentSnapshot } from '@/infrastructure/persistence/localDocumentSchema.js';
 import { generateThumbnail } from '@/gallery/generateThumbnail';
+import {
+  createEnvironmentArtifact,
+  createSnapshotArtifact,
+} from '@/gallery/artifacts/types.js';
 
 function dataUrlToBlob(dataUrl) {
   if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:')) {
@@ -44,7 +48,10 @@ async function uploadThumbnail(uploadUrl, dataUrl) {
   return payload.storageId ?? null;
 }
 
-export function usePublishToServer() {
+export function usePublishToServer({
+  descriptor = null,
+  resolvedEnvironment = null,
+} = {}) {
   const generateUploadUrl = useMutation(api.gallery.generateGalleryUploadUrl);
   const publishGalleryItem = useMutation(api.gallery.publishGalleryItem);
 
@@ -62,6 +69,16 @@ export function usePublishToServer() {
       cursorIndex,
       metadata: { mode },
     });
+    const artifact =
+      descriptor != null || resolvedEnvironment != null
+        ? createEnvironmentArtifact({
+            snapshot,
+            descriptor,
+            resolvedEnvironment,
+          })
+        : createSnapshotArtifact({
+            snapshot,
+          });
 
     let thumbnailStorageId = null;
     const thumbnail = await generateThumbnail({ nodes });
@@ -71,7 +88,7 @@ export function usePublishToServer() {
     }
 
     return await publishGalleryItem({
-      snapshot,
+      artifact,
       title,
       description,
       tags,

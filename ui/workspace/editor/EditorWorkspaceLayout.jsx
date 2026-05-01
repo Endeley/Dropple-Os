@@ -61,6 +61,8 @@ function EditorWorkspaceLayoutInner({
     canPersist = true,
 
     canImport = true,
+    publicationDescriptor = null,
+    publicationResolvedTemplateEnvironment = null,
 
     onOpenTemplateGenerator,
 
@@ -96,7 +98,10 @@ function EditorWorkspaceLayoutInner({
     });
 
     const galleryIdentity = useGalleryIdentity();
-    const publishToServer = usePublishToServer();
+    const publishToServer = usePublishToServer({
+        descriptor: publicationDescriptor,
+        resolvedEnvironment: publicationResolvedTemplateEnvironment,
+    });
 
     const workspaceId = adapter?.workspaceId || adapter?.id || 'graphic';
     const showToolRail = adapter?.ui?.canvas !== false && adapter?.ui?.editing !== false;

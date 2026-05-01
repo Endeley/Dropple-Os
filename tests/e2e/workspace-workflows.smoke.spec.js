@@ -78,6 +78,21 @@ function assertNoFatalErrors({ errors, consoleErrors }, label) {
   ).toEqual([]);
 }
 
+function resolveTemplateLineageIdentity(template) {
+  return {
+    lineageRootId:
+      template?.lineageRootId ??
+      template?.certification?.lineageRootId ??
+      template?.lineage?.rootId ??
+      null,
+    versionId:
+      template?.versionId ??
+      template?.certification?.lineageNodeId ??
+      template?.lineage?.nodeId ??
+      null,
+  };
+}
+
 test('marketplace template workflow opens certified template details and enters workspace', async ({ page, request }) => {
   const template = await publishMarketplaceFixture(request, {
     title: `Marketplace Flow ${Date.now()}`,
@@ -91,14 +106,21 @@ test('marketplace template workflow opens certified template details and enters 
 
   expect(response?.ok(), 'marketplace route should respond successfully').toBeTruthy();
   await expect(page.locator('body')).toContainText('Templates');
+  await expect(page.locator('[data-artifact-kind="environment"]').first()).toContainText('Reproducible');
   await page.getByText(template.metadata.name).click();
 
   await expect(page).toHaveURL(new RegExp(`/marketplace/template/${template.id}$`));
   await expect(page.locator('body')).toContainText(template.metadata.name);
+  await expect(page.locator('[data-artifact-kind="environment"]').first()).toContainText('Reproducible');
   await expect(page.getByRole('button', { name: 'Use Template' })).toBeEnabled();
 
   await page.getByRole('button', { name: 'Use Template' }).click();
-  await expect(page).toHaveURL(new RegExp(`/workspace/new\\?fromTemplate=${template.id}$`));
+  await expect(page).toHaveURL(/\/workspace\/new\?/);
+  const workspaceUrl = new URL(page.url());
+  const lineage = resolveTemplateLineageIdentity(template);
+  expect(workspaceUrl.pathname).toBe('/workspace/new');
+  expect(workspaceUrl.searchParams.get('lineageRootId')).toBe(lineage.lineageRootId);
+  expect(workspaceUrl.searchParams.get('versionId')).toBe(lineage.versionId);
   await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();
   await expect(page.locator('[data-node-id]')).toHaveCount(2);
 

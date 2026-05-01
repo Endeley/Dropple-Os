@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from 'convex/react';
 import { WorkspaceCanvasRoot } from '@/ui/workspace/WorkspaceCanvasRoot.jsx';
+import { WorkspaceRoot } from '@/ui/workspace/root/WorkspaceRoot.jsx';
 import { GridProvider } from '@/ui/workspace/shared/GridContext';
 import { ModeProvider } from '@/ui/workspace/shared/ModeContext';
 import { hydrateLocalDocumentSnapshot } from '@/infrastructure/persistence/localDocumentSchema.js';
@@ -13,8 +14,10 @@ import { ViewerToolbar } from '@/viewer/ViewerToolbar';
 import { ViewerStage } from '@/viewer/ViewerStage';
 import { parseViewerParams } from '@/viewer/parseViewerParams';
 import { useGalleryIdentity } from '@/gallery/useGalleryIdentity';
+import { isEnvironmentArtifact } from '@/gallery/artifacts/types.js';
 import { openServerDocument } from '@/editor/openServerDocument';
 import { api } from '@/convex/_generated/api';
+import ViewerEnvironmentBridge from './ViewerEnvironmentBridge.jsx';
 
 const DEFAULT_VIEWER_PARAMS = {
   zoom: 1,
@@ -23,7 +26,28 @@ const DEFAULT_VIEWER_PARAMS = {
   controls: true,
 };
 
-export default function ViewerClient({ snapshot, meta }) {
+function EnvironmentViewerCanvas({ workspaceId, resolvedEnvironment }) {
+  return (
+    <WorkspaceRoot
+      workspaceId={workspaceId}
+      branchId='viewer'
+      profile='design'
+      modeId='review'
+    >
+      <ViewerEnvironmentBridge resolvedEnvironment={resolvedEnvironment} />
+      <WorkspaceCanvasRoot
+        workspaceId={workspaceId}
+        readOnly
+        runtimeReadOnly
+      />
+    </WorkspaceRoot>
+  );
+}
+
+export default function ViewerClient({
+  artifact,
+  meta,
+}) {
   const [cursorIndex, setCursorIndex] = useState(-1);
   const [paramsConfig, setParamsConfig] = useState(DEFAULT_VIEWER_PARAMS);
   const controls = useViewerControls(paramsConfig);
@@ -38,6 +62,11 @@ export default function ViewerClient({ snapshot, meta }) {
   );
   const didTrackRef = useRef(false);
   const sessionIdRef = useRef(null);
+  const hasResolvedEnvironment = isEnvironmentArtifact(artifact);
+  const snapshot = artifact?.snapshot ?? null;
+  const resolvedEnvironment = hasResolvedEnvironment
+    ? artifact.resolvedEnvironment
+    : null;
 
   function getAnalyticsSessionId() {
     if (typeof window === 'undefined') return null;
@@ -60,9 +89,10 @@ export default function ViewerClient({ snapshot, meta }) {
   }
 
   const hydrated = useMemo(() => {
+    if (hasResolvedEnvironment) return null;
     if (!snapshot) return null;
     return hydrateLocalDocumentSnapshot(snapshot);
-  }, [snapshot]);
+  }, [hasResolvedEnvironment, snapshot]);
 
   useEffect(() => {
     const nextEvents = hydrated?.events || [];
@@ -74,6 +104,20 @@ export default function ViewerClient({ snapshot, meta }) {
   useEffect(() => {
     setParamsConfig(parseViewerParams());
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    window.__DROPPLE_VIEWER_MODE__ = hasResolvedEnvironment
+      ? 'environment'
+      : 'snapshot';
+    window.__DROPPLE_VIEWER_ARTIFACT_KIND__ = artifact?.kind ?? null;
+
+    return () => {
+      delete window.__DROPPLE_VIEWER_MODE__;
+      delete window.__DROPPLE_VIEWER_ARTIFACT_KIND__;
+    };
+  }, [artifact?.kind, hasResolvedEnvironment]);
 
   const events = hydrated?.events || [];
   const maxCursorIndex = events.length - 1;
@@ -162,15 +206,22 @@ export default function ViewerClient({ snapshot, meta }) {
                 </div>
               )}
               <ViewerStage zoom={controls.zoom} bg={controls.bg}>
-                <WorkspaceCanvasRoot
-                  workspaceId={adapter.id}
-                  events={events}
-                  cursor={cursor}
-                  readOnly
-                />
+                {hasResolvedEnvironment ? (
+                  <EnvironmentViewerCanvas
+                    workspaceId={adapter.id}
+                    resolvedEnvironment={resolvedEnvironment}
+                  />
+                ) : (
+                  <WorkspaceCanvasRoot
+                    workspaceId={adapter.id}
+                    events={events}
+                    cursor={cursor}
+                    readOnly
+                  />
+                )}
               </ViewerStage>
             </div>
-            {paramsConfig.timeline && (
+            {paramsConfig.timeline && !hasResolvedEnvironment && (
               <ViewerTimelineBar
                 events={events}
                 cursorIndex={cursor.index}

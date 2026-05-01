@@ -23,6 +23,8 @@ import { UIUXTransitionTimelinePanel } from './UIUXTransitionTimelinePanel.jsx';
 export function UIUXAuthoringShell({
     profile = 'uiux-authoring',
     modeId = 'uiux',
+    initialEnvironmentDescriptor = null,
+    initialResolvedTemplateEnvironment = null,
     initialRuntimeSnapshot = null,
     initialEvents = [],
     initialCursorIndex = -1,
@@ -58,6 +60,8 @@ export function UIUXAuthoringShell({
             <PersistenceBridge
                 enabled={true}
                 initialDocumentId={initialDocumentId}
+                initialEnvironmentDescriptor={initialEnvironmentDescriptor}
+                initialResolvedTemplateEnvironment={initialResolvedTemplateEnvironment}
                 initialRuntimeSnapshot={initialRuntimeSnapshot}
                 initialEvents={initialEvents}
                 initialCursorIndex={initialCursorIndex}

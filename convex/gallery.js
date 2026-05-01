@@ -1,5 +1,60 @@
 import { mutation, query } from './_generated/server';
 import { v } from 'convex/values';
+import { normalizeArtifact } from '@/gallery/artifacts/normalizeArtifact.js';
+
+const snapshotArtifactValidator = v.object({
+  kind: v.literal('snapshot'),
+  snapshot: v.any(),
+});
+
+const environmentArtifactValidator = v.object({
+  kind: v.literal('environment'),
+  snapshot: v.any(),
+  descriptor: v.any(),
+  resolvedEnvironment: v.any(),
+});
+
+async function insertGalleryDocumentAndItem(ctx, {
+  ownerId,
+  artifact,
+  title,
+  description,
+  tags,
+  mode,
+  thumbnailStorageId,
+  source = 'editor',
+}) {
+  const now = Date.now();
+  const documentId = await ctx.db.insert('galleryDocuments', {
+    ownerId,
+    artifact,
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  const galleryId = await ctx.db.insert('galleryItems', {
+    ownerId,
+    documentId,
+    title,
+    description: description ?? '',
+    thumbnailStorageId: thumbnailStorageId ?? undefined,
+    tags: tags ?? [],
+    mode: mode ?? null,
+    createdAt: now,
+  });
+
+  await ctx.db.insert('analyticsEvents', {
+    type: 'publish',
+    galleryItemId: galleryId,
+    documentId,
+    ownerId,
+    actorId: ownerId,
+    source,
+    createdAt: now,
+  });
+
+  return { galleryId, documentId };
+}
 
 export const getGalleryIdentity = query({
   args: {},
@@ -28,7 +83,7 @@ export const generateGalleryUploadUrl = mutation({
 
 export const publishGalleryItem = mutation({
   args: {
-    snapshot: v.any(),
+    artifact: v.union(snapshotArtifactValidator, environmentArtifactValidator),
     title: v.string(),
     description: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
@@ -41,38 +96,23 @@ export const publishGalleryItem = mutation({
       throw new Error('Unauthorized');
     }
 
-    const now = Date.now();
-    const documentId = await ctx.db.insert('galleryDocuments', {
-      ownerId: identity.subject,
-      snapshot: args.snapshot,
-      createdAt: now,
-      updatedAt: now,
+    const artifact = normalizeArtifact(args.artifact, {
+      source: 'gallery publish',
     });
 
-    const galleryId = await ctx.db.insert('galleryItems', {
+    return await insertGalleryDocumentAndItem(ctx, {
       ownerId: identity.subject,
-      documentId,
+      artifact,
       title: args.title,
       description: args.description ?? '',
-      thumbnailStorageId: args.thumbnailStorageId ?? undefined,
       tags: args.tags ?? [],
       mode: args.mode ?? null,
-      createdAt: now,
-    });
-
-    await ctx.db.insert('analyticsEvents', {
-      type: 'publish',
-      galleryItemId: galleryId,
-      documentId,
-      ownerId: identity.subject,
-      actorId: identity.subject,
+      thumbnailStorageId: args.thumbnailStorageId ?? undefined,
       source: 'editor',
-      createdAt: now,
     });
-
-    return { galleryId, documentId };
   },
 });
+
 
 export const listGalleryItems = query({
   args: {},
@@ -132,7 +172,9 @@ export const getGalleryItemById = query({
       createdAt: item.createdAt,
       ownerId: item.ownerId,
       thumbnailUrl,
-      snapshot: document.snapshot,
+      artifact: normalizeArtifact(document.artifact ?? document, {
+        source: 'gallery document',
+      }),
     };
   },
 });

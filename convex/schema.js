@@ -3,6 +3,18 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
 
+const snapshotArtifactValidator = v.object({
+    kind: v.literal('snapshot'),
+    snapshot: v.any(),
+});
+
+const environmentArtifactValidator = v.object({
+    kind: v.literal('environment'),
+    snapshot: v.any(),
+    descriptor: v.any(),
+    resolvedEnvironment: v.any(),
+});
+
 /**
  * Convex Persistence Schema
  *
@@ -188,7 +200,7 @@ export default defineSchema({
 
     galleryDocuments: defineTable({
         ownerId: v.string(),
-        snapshot: v.any(),
+        artifact: v.union(snapshotArtifactValidator, environmentArtifactValidator),
         createdAt: v.number(),
         updatedAt: v.number(),
     }).index('by_owner', ['ownerId']),

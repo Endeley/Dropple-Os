@@ -128,8 +128,15 @@ test('installCertifiedTemplate hydrates seed-backed templates into canonical run
         });
 
         assert.equal(result.installed, true);
+        assert.equal(result.environmentId, result.descriptor.environmentId);
+        assert.equal(result.descriptor.lineage.lineageRootId, published.seed.lineage.rootId);
+        assert.equal(result.descriptor.lineage.versionId, published.seed.lineage.nodeId);
+        assert.equal(result.descriptor.environment.modeContext.workspaceId, 'design');
+        assert.equal(result.descriptor.environment.modeContext.modeId, 'uiux');
         assert.ok(hydrated);
         assert.deepEqual(hydrated.document.sceneGraph.rootIds, ['root']);
+        assert.equal(hydrated.workspace.id, 'design');
+        assert.equal(hydrated.workspace.modeId, 'uiux');
         assert.deepEqual(
             hydrated.timeline.timelines.default.channels.map((channel) => ({
                 id: channel.id,

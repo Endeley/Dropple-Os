@@ -7,6 +7,8 @@ export default function MarketplaceFilterBar({
   setLevel,
   tag,
   setTag,
+  artifactKind,
+  setArtifactKind,
 }) {
   const inputStyle = {
     height: 32,
@@ -53,6 +55,16 @@ export default function MarketplaceFilterBar({
         <option value="all">All tags</option>
         <option value="ui">UI</option>
         <option value="landing">Landing</option>
+      </select>
+
+      <select
+        value={artifactKind}
+        onChange={(e) => setArtifactKind(e.target.value)}
+        style={inputStyle}
+      >
+        <option value="all">All artifact types</option>
+        <option value="environment">Reproducible</option>
+        <option value="snapshot">Final</option>
       </select>
     </div>
   );

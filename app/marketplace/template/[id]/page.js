@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useOwnership } from '@/marketplace/useOwnershipStore';
+import { Badge } from '@/ui/controls/ui/badge.jsx';
+import { getArtifactPresentation } from '@/marketplace/artifactPresentation.js';
+import { resolveCanonicalWorkspaceOverlayContext } from '@/platform/workspaces/index.js';
 
 export default function TemplateDetailPage({ params }) {
   const router = useRouter();
@@ -56,13 +59,43 @@ export default function TemplateDetailPage({ params }) {
 
   const creator = template.metadata.creator || {};
   const pricing = template.metadata.pricing || { free: true };
+  const presentation = getArtifactPresentation(template.artifact);
   const owned = pricing.free
     ? true
     : ownership?.hasOwnership(user.id, template.id);
+  const canUseTemplate = owned && presentation.capabilities.canInstall;
+  const lineageRootId =
+    template?.lineageRootId ??
+    template?.certification?.lineageRootId ??
+    null;
+  const versionId =
+    template?.versionId ??
+    template?.certification?.lineageNodeId ??
+    null;
 
   function useTemplate() {
-    if (!owned) return;
-    router.push(`/workspace/new?fromTemplate=${template.id}`);
+    if (!canUseTemplate) return;
+    const overlayContext = resolveCanonicalWorkspaceOverlayContext({
+      workspaceId: template?.workspaceId ?? null,
+      modeId: template?.modeId ?? template?.mode ?? null,
+    });
+
+    if (!lineageRootId || !versionId) {
+      throw new Error('Template is missing lineage identity.');
+    }
+
+    const params = new URLSearchParams({
+      lineageRootId,
+      versionId,
+      workspaceId: overlayContext.workspaceId,
+      modeId: overlayContext.canonicalModeId ?? overlayContext.modeId,
+    });
+
+    if (overlayContext.overlayId) {
+      params.set('overlayId', overlayContext.overlayId);
+    }
+
+    router.push(`/workspace/new?${params.toString()}`);
   }
 
   function buySelectedLicense() {
@@ -78,6 +111,17 @@ export default function TemplateDetailPage({ params }) {
 
   return (
     <div style={{ padding: 'var(--space-6)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', marginBottom: 'var(--space-sm)' }}>
+        <Badge
+          data-artifact-kind={template?.artifact?.kind ?? 'unknown'}
+          style={presentation.badgeStyle}
+        >
+          {presentation.label}
+        </Badge>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+          {presentation.description}
+        </div>
+      </div>
       <h2>{template.metadata.title}</h2>
       <p style={{ color: 'var(--text-muted)' }}>{template.metadata.description}</p>
 
@@ -85,6 +129,14 @@ export default function TemplateDetailPage({ params }) {
         By {creator.name || 'Unknown'}
         {creator.region ? ` · ${creator.region}` : ''}
       </div>
+
+      {presentation.capabilities.canInspectLineage ? (
+        <div style={{ marginTop: 'var(--space-sm)', fontSize: 12, color: 'var(--text-muted)' }}>
+          Lineage root: {lineageRootId || 'Unavailable'}
+          <br />
+          Version: {versionId || 'Unavailable'}
+        </div>
+      ) : null}
 
       <div style={{ marginTop: 'var(--space-lg)' }}>
         <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Licenses</div>
@@ -121,7 +173,9 @@ export default function TemplateDetailPage({ params }) {
       </div>
 
       <div style={{ marginTop: 'var(--space-lg)', fontSize: 12, color: 'var(--text-muted)' }}>
-        ✔ Fork & edit · ✔ Use in projects · ✖ Resell template
+        {presentation.capabilities.canRemix
+          ? '✔ Fork & edit · ✔ Use in projects · ✖ Resell template'
+          : '✔ Preview final output · ✖ Remix or install into workspace'}
       </div>
 
       {!pricing.free && !owned ? (
@@ -143,23 +197,29 @@ export default function TemplateDetailPage({ params }) {
         </button>
       ) : null}
 
-      <button
-        style={{
-          marginTop: 'var(--space-lg)',
-          minWidth: 32,
-          height: 32,
-          padding: '0 var(--space-sm)',
-          border: '1px solid var(--border-default)',
-          borderRadius: 'var(--radius-sm)',
-          background: 'var(--surface-1)',
-          color: 'var(--text-primary)',
-          fontSize: 12,
-        }}
-        onClick={useTemplate}
-        disabled={!owned}
-      >
-        Use Template
-      </button>
+      {presentation.capabilities.canInstall ? (
+        <button
+          style={{
+            marginTop: 'var(--space-lg)',
+            minWidth: 32,
+            height: 32,
+            padding: '0 var(--space-sm)',
+            border: '1px solid var(--border-default)',
+            borderRadius: 'var(--radius-sm)',
+            background: 'var(--surface-1)',
+            color: 'var(--text-primary)',
+            fontSize: 12,
+          }}
+          onClick={useTemplate}
+          disabled={!owned}
+        >
+          Use Template
+        </button>
+      ) : (
+        <div style={{ marginTop: 'var(--space-lg)', fontSize: 12, color: 'var(--text-muted)' }}>
+          Final artifacts can be viewed, but not installed into a workspace.
+        </div>
+      )}
     </div>
   );
 }

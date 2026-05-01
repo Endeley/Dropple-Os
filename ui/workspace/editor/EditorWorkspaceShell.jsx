@@ -37,6 +37,8 @@ export function EditorWorkspaceShell({
     educationRole = 'teacher',
     educationInitialLocked = true,
     educationReadOnly = false,
+    initialEnvironmentDescriptor = null,
+    initialResolvedTemplateEnvironment = null,
     initialRuntimeSnapshot = null,
     initialEvents = [],
     initialCursorIndex = -1,
@@ -187,6 +189,8 @@ export function EditorWorkspaceShell({
             documentName={documentName}
             canPersist={persistenceEnabled}
             canImport={persistenceEnabled}
+            publicationDescriptor={initialEnvironmentDescriptor}
+            publicationResolvedTemplateEnvironment={initialResolvedTemplateEnvironment}
             onOpenTemplateGenerator={() =>
                 openTemplatePublishDialog({
                     mode: {
@@ -220,6 +224,8 @@ export function EditorWorkspaceShell({
             <PersistenceBridge
                 enabled={persistenceEnabled}
                 initialDocumentId={initialDocumentId}
+                initialEnvironmentDescriptor={initialEnvironmentDescriptor}
+                initialResolvedTemplateEnvironment={initialResolvedTemplateEnvironment}
                 initialRuntimeSnapshot={initialRuntimeSnapshot}
                 initialEvents={initialEvents}
                 initialCursorIndex={initialCursorIndex}

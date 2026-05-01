@@ -87,6 +87,28 @@ async function publishMotionTemplate(request, {
     return payload?.result?.seed ?? null;
 }
 
+function buildEnvironmentWorkspacePath(template) {
+    const lineageRootId =
+        template?.lineageRootId ??
+        template?.certification?.lineageRootId ??
+        template?.lineage?.rootId ??
+        null;
+    const versionId =
+        template?.versionId ??
+        template?.certification?.lineageNodeId ??
+        template?.lineage?.nodeId ??
+        null;
+    const modeId = template?.mode ?? template?.modeId ?? 'uiux';
+    const params = new URLSearchParams({
+        lineageRootId,
+        versionId,
+        workspaceId: 'design',
+        modeId,
+    });
+
+    return `/workspace/new?${params.toString()}`;
+}
+
 test('uiux authoring roundtrip publishes from the toolbar flow and installs into a fresh workspace', async ({ page, request }) => {
     const templateName = `Phase 2 Roundtrip ${Date.now()}`;
 
@@ -139,7 +161,7 @@ test('uiux authoring roundtrip publishes from the toolbar flow and installs into
         }
     });
 
-    await gotoWorkspace(page, `/workspace/new?fromTemplate=${encodeURIComponent(publishedTemplateId)}`);
+    await gotoWorkspace(page, buildEnvironmentWorkspacePath(template));
     await expect(page.locator('[data-node-id]')).toHaveCount(1);
     await expect(page.locator('body')).not.toContainText('Application error');
 });
@@ -159,7 +181,7 @@ test('certified uiux template install preserves motion runtime truth', async ({ 
         }
     });
 
-    await gotoWorkspace(page, `/workspace/new?fromTemplate=${encodeURIComponent(publishedTemplate.id)}`);
+    await gotoWorkspace(page, buildEnvironmentWorkspacePath(publishedTemplate));
     await expect(page.locator('[data-node-id]')).toHaveCount(2);
     await expect(page.getByTestId('uiux-motion-inspector')).toBeVisible();
     await expect(page.getByTestId('uiux-motion-inspector-selected-node')).toHaveText('None');

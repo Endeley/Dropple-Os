@@ -1,11 +1,15 @@
 import { fetchQuery } from 'convex/nextjs';
 import { api } from '@/convex/_generated/api';
+import { normalizeArtifact } from '@/gallery/artifacts/normalizeArtifact.js';
+import { isTestGalleryFixtureId, loadTestGalleryFixture } from '@/gallery/testGalleryFixtureStore.js';
 import ViewerClient from './ViewerClient';
 
 export default async function GalleryViewerPage({ params }) {
-  const galleryItem = await fetchQuery(api.gallery.getGalleryItemById, {
-    galleryItemId: params.galleryId,
-  });
+  const galleryItem = isTestGalleryFixtureId(params.galleryId)
+    ? loadTestGalleryFixture(params.galleryId)
+    : await fetchQuery(api.gallery.getGalleryItemById, {
+        galleryItemId: params.galleryId,
+      });
 
   if (!galleryItem) {
     return (
@@ -16,9 +20,13 @@ export default async function GalleryViewerPage({ params }) {
     );
   }
 
+  const artifact = normalizeArtifact(galleryItem.artifact ?? galleryItem, {
+    source: 'viewer page artifact',
+  });
+
   return (
     <ViewerClient
-      snapshot={galleryItem.snapshot}
+      artifact={artifact}
       meta={{
         id: galleryItem.id,
         title: galleryItem.title,

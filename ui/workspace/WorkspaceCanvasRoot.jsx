@@ -9,6 +9,8 @@ import { CanvasSurface } from '@/ui/canvas/surface/CanvasSurface.jsx';
 import { WorldOriginMarker } from '@/ui/canvas/WorldOriginMarker.jsx';
 import { getZoomTier } from '@/runtime/canvas/zoomTiers.js';
 import { useReplayState } from '@/runtime/replay/useReplayState.js';
+import { useWorkspaceViewState } from '@/runtime/projection';
+import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
 import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
 import { workspaceIntentSetActive } from '@/ui/workspace/workspaceIntent.js';
 
@@ -74,11 +76,51 @@ function ReadOnlyReplayCanvasAdapter({
     );
 }
 
+function ReadOnlyRuntimeCanvasAdapter() {
+    const viewState = useWorkspaceViewState((state) => state) ?? {};
+    const viewport = viewState.viewport ?? { x: 0, y: 0, scale: 1 };
+    const canvasSurface = viewState.canvasSurface ?? { type: 'smooth', snap: false };
+    const cameraTransform = useAnimatedRuntimeStore((state) => state.cameraTransform ?? null);
+    const zoomTier = useMemo(() => getZoomTier(viewport?.scale ?? 1), [viewport?.scale]);
+    const contextValue = useMemo(
+        () => ({
+            zoomTier,
+            readOnly: true,
+            viewStateOverride: null,
+            visualStateOverride: null,
+            animatedStateOverride: null,
+            setCanvasSurface: null,
+            onResizeHandlePointerDown: null,
+            onResizeHandlePointerMove: null,
+            onResizeHandlePointerUp: null,
+            onRotateHandlePointerDown: null,
+        }),
+        [zoomTier],
+    );
+
+    return (
+        <CanvasProvider value={contextValue}>
+            <CanvasHost
+                viewport={viewport}
+                worldOffset={{ x: 0, y: 0 }}
+                cameraTransform={cameraTransform}
+            >
+                <div style={{ position: 'absolute', inset: 0 }}>
+                    <CanvasSurface surface={canvasSurface} viewport={viewport} />
+                    <WorldOriginMarker viewport={viewport} />
+                    <NodeLayer />
+                </div>
+            </CanvasHost>
+        </CanvasProvider>
+    );
+}
+
 export function WorkspaceCanvasRoot({
     workspaceId = null,
     events = null,
     cursor = null,
     readOnly = false,
+    runtimeReadOnly = false,
 }) {
     useEffect(() => {
         if (!workspaceId) return;
@@ -107,6 +149,10 @@ export function WorkspaceCanvasRoot({
         }),
         [],
     );
+
+    if (readOnly && runtimeReadOnly) {
+        return <ReadOnlyRuntimeCanvasAdapter />;
+    }
 
     if (!hasReplaySource) {
         return <CanvasRoot workspaceId={workspaceId} />;

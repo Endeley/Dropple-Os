@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { loadCertifiedTemplates } from '@/engine/templates/templateLoader.js';
+import { ArtifactKind } from '@/gallery/artifacts/types.js';
 
 function normalizeMarketplaceTemplate(template) {
     const metadata = template?.metadata ?? {};
@@ -16,6 +17,9 @@ function normalizeMarketplaceTemplate(template) {
 
     return {
         ...template,
+        artifact: {
+            kind: ArtifactKind.ENVIRONMENT,
+        },
         metadata: {
             ...metadata,
             title,

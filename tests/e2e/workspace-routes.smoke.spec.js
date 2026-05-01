@@ -139,3 +139,51 @@ test('viewer smoke mounts canonical canvas without runtime errors', async ({ pag
   await expect(page.locator('body')).not.toContainText('Module not found');
   await expect(page.locator('body')).not.toContainText('Application error');
 });
+
+async function createViewerFixture(request, path) {
+  const response = await request.post(path);
+  expect(response.ok(), `${path} should create a viewer fixture successfully`).toBeTruthy();
+  const payload = await response.json();
+  expect(payload?.galleryId, `${path} should return a galleryId`).toBeTruthy();
+  return payload.galleryId;
+}
+
+test('viewer uses environment path for environment-backed artifacts', async ({ page, request }) => {
+  const galleryId = await createViewerFixture(
+    request,
+    '/api/test/create-environment-gallery-item',
+  );
+
+  const response = await page.goto(`/viewer/${galleryId}`, {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'environment-backed viewer route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('canvas-host')).toBeVisible();
+  await expect
+    .poll(() => page.evaluate(() => window.__DROPPLE_VIEWER_MODE__ ?? null))
+    .toBe('environment');
+  await expect
+    .poll(() => page.evaluate(() => window.__DROPPLE_VIEWER_ARTIFACT_KIND__ ?? null))
+    .toBe('environment');
+});
+
+test('viewer falls back to snapshot path for snapshot-backed artifacts', async ({ page, request }) => {
+  const galleryId = await createViewerFixture(
+    request,
+    '/api/test/create-snapshot-gallery-item',
+  );
+
+  const response = await page.goto(`/viewer/${galleryId}`, {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'snapshot-backed viewer route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('canvas-host')).toBeVisible();
+  await expect
+    .poll(() => page.evaluate(() => window.__DROPPLE_VIEWER_MODE__ ?? null))
+    .toBe('snapshot');
+  await expect
+    .poll(() => page.evaluate(() => window.__DROPPLE_VIEWER_ARTIFACT_KIND__ ?? null))
+    .toBe('snapshot');
+});

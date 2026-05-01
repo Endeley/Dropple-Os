@@ -4,6 +4,7 @@ export function useMarketplaceFilters() {
   const [query, setQuery] = useState('');
   const [level, setLevel] = useState('all');
   const [tag, setTag] = useState('all');
+  const [artifactKind, setArtifactKind] = useState('all');
 
   return {
     query,
@@ -12,5 +13,7 @@ export function useMarketplaceFilters() {
     setLevel,
     tag,
     setTag,
+    artifactKind,
+    setArtifactKind,
   };
 }

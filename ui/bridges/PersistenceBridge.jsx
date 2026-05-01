@@ -17,10 +17,14 @@ import {
     hydratePersistenceSnapshot,
     usePersistenceBridgeState,
 } from '@/ui/bridges/persistenceRuntimeFacade.js';
+import { activateResolvedTemplateEnvironment } from '@/runtime/templates/activateResolvedTemplateEnvironment.js';
+import { assertExclusiveInitialBootSources } from '@/ui/bridges/persistenceBootSources.js';
 
 export function PersistenceBridge({
     enabled = true,
     initialDocumentId = null,
+    initialEnvironmentDescriptor = null,
+    initialResolvedTemplateEnvironment = null,
     initialRuntimeSnapshot = null,
     initialEvents = [],
     initialCursorIndex = -1,
@@ -47,13 +51,30 @@ export function PersistenceBridge({
     useEffect(() => {
         if (!dispatcher?.hydrateRuntimeState || seededInitialSnapshotRef.current) return;
 
-        const hasInitialRuntimeSnapshot =
-            initialRuntimeSnapshot && typeof initialRuntimeSnapshot === 'object';
-        const hasInitialSnapshot =
-            Array.isArray(initialEvents) && initialEvents.length > 0;
-        const hasExplicitCursor = typeof initialCursorIndex === 'number' && initialCursorIndex >= 0;
+        const {
+            hasInitialEnvironmentDescriptor,
+            hasInitialRuntimeSnapshot,
+            hasInitialEvents,
+            hasExplicitCursor,
+        } = assertExclusiveInitialBootSources({
+            initialEnvironmentDescriptor:
+                initialResolvedTemplateEnvironment ?? initialEnvironmentDescriptor,
+            initialRuntimeSnapshot,
+            initialEvents,
+            initialCursorIndex,
+        });
 
-        if (!hasInitialRuntimeSnapshot && !hasInitialSnapshot && !hasExplicitCursor) {
+        if (!hasInitialEnvironmentDescriptor && !hasInitialRuntimeSnapshot && !hasInitialEvents && !hasExplicitCursor) {
+            seededInitialSnapshotRef.current = true;
+            return;
+        }
+
+        if (hasInitialEnvironmentDescriptor) {
+            activateResolvedTemplateEnvironment({
+                resolved: initialResolvedTemplateEnvironment,
+                dispatcher,
+                animate: false,
+            });
             seededInitialSnapshotRef.current = true;
             return;
         }
@@ -70,18 +91,25 @@ export function PersistenceBridge({
             mode,
         });
         seededInitialSnapshotRef.current = true;
-    }, [dispatcher, initialEvents, initialCursorIndex, initialRuntimeSnapshot, mode, workspace]);
+    }, [dispatcher, initialEnvironmentDescriptor, initialResolvedTemplateEnvironment, initialEvents, initialCursorIndex, initialRuntimeSnapshot, mode, workspace]);
 
     useEffect(() => {
         if (!dispatcher?.hydrateRuntimeState || restoredPersistenceRef.current) return;
 
-        const hasInitialRuntimeSnapshot =
-            initialRuntimeSnapshot && typeof initialRuntimeSnapshot === 'object';
-        const hasInitialSnapshot =
-            Array.isArray(initialEvents) && initialEvents.length > 0;
-        const hasExplicitCursor = typeof initialCursorIndex === 'number' && initialCursorIndex >= 0;
+        const {
+            hasInitialEnvironmentDescriptor,
+            hasInitialRuntimeSnapshot,
+            hasInitialEvents,
+            hasExplicitCursor,
+        } = assertExclusiveInitialBootSources({
+            initialEnvironmentDescriptor:
+                initialResolvedTemplateEnvironment ?? initialEnvironmentDescriptor,
+            initialRuntimeSnapshot,
+            initialEvents,
+            initialCursorIndex,
+        });
 
-        if (hasInitialRuntimeSnapshot || hasInitialSnapshot || hasExplicitCursor) {
+        if (hasInitialEnvironmentDescriptor || hasInitialRuntimeSnapshot || hasInitialEvents || hasExplicitCursor) {
             restoredPersistenceRef.current = true;
             onHydratedChange?.(true);
             return;
@@ -130,6 +158,8 @@ export function PersistenceBridge({
         dispatcher,
         enabled,
         initialDocumentId,
+        initialEnvironmentDescriptor,
+        initialResolvedTemplateEnvironment,
         initialEvents,
         initialCursorIndex,
         initialRuntimeSnapshot,

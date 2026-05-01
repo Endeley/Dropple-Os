@@ -18,6 +18,10 @@ export function filterTemplates(templates, filters) {
       return false;
     }
 
+    if (filters.artifactKind !== 'all' && tpl?.artifact?.kind !== filters.artifactKind) {
+      return false;
+    }
+
     return true;
   });
 }
