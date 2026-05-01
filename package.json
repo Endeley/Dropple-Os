@@ -25,6 +25,7 @@
         "architecture:guard": "node scripts/architectureGuard.mjs",
         "architecture:ci": "node scripts/architectureCi.mjs && node scripts/architectureGuard.mjs",
         "architecture:drift": "node scripts/architectureDrift.mjs",
+        "implementation:navigator": "node scripts/implementationNavigator.mjs",
         "engine:test": "node engine/evaluation/evaluateScene.fixture.test.mjs",
         "engine:shot:test": "node engine/evaluation/evaluateShotAt.fixture.test.mjs && node --import ./bench/register-alias-loader.mjs --test engine/evaluation/evaluateShotAt.temporalComposition.test.mjs runtime/transition/__tests__/evaluateTransitionFrame.test.mjs",
         "engine:track:test": "node engine/__tests__/trackContract.test.mjs",

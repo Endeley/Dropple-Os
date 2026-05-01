@@ -1,26 +1,51 @@
-export const LEGACY_WORKSPACE_MAP = Object.freeze({
-    graphic: Object.freeze({ workspace: 'design', mode: 'graphic', definitionId: 'graphic' }),
-    uiux: Object.freeze({ workspace: 'design', mode: 'uiux', definitionId: 'uiux' }),
-    branding: Object.freeze({ workspace: 'design', mode: 'branding', definitionId: 'branding' }),
-    icons: Object.freeze({ workspace: 'design', mode: 'icons', definitionId: 'icons' }),
-    document: Object.freeze({ workspace: 'design', mode: 'document', definitionId: 'document' }),
+import { resolveModeWithOverlay, WORKSPACE_ALIASES } from './modeResolution.js';
 
-    media: Object.freeze({ workspace: 'media', mode: 'animation', definitionId: 'animation' }),
-    animation: Object.freeze({ workspace: 'media', mode: 'animation', definitionId: 'animation' }),
-    video: Object.freeze({ workspace: 'media', mode: 'video', definitionId: 'video' }),
-    podcast: Object.freeze({ workspace: 'media', mode: 'podcast', definitionId: 'podcast' }),
+function freezeLegacyEntry(entryId, workspaceId, modeId, definitionId) {
+    const overlayResolution = resolveModeWithOverlay(entryId);
 
-    dev: Object.freeze({ workspace: 'build', mode: 'application', definitionId: 'dev' }),
-    conversion: Object.freeze({ workspace: 'build', mode: 'conversion', definitionId: 'conversion' }),
-    translate: Object.freeze({ workspace: 'build', mode: 'conversion', definitionId: 'translate' }),
-    ai: Object.freeze({ workspace: 'build', mode: 'ai-build', definitionId: 'ai' }),
+    return Object.freeze({
+        workspace: workspaceId,
+        mode: modeId,
+        definitionId,
+        originalModeId: entryId,
+        canonicalModeId: overlayResolution.canonicalModeId ?? modeId,
+        overlayId: overlayResolution.overlayId ?? null,
+        overlayClass: overlayResolution.overlayClass ?? null,
+    });
+}
 
-    material: Object.freeze({ workspace: 'system', mode: 'tokens', definitionId: 'material' }),
+function createLegacyWorkspaceMap() {
+    const entries = {};
 
-    review: Object.freeze({ workspace: 'collaborate', mode: 'review', definitionId: 'review' }),
-    education: Object.freeze({
-        workspace: 'collaborate',
-        mode: 'education',
-        definitionId: 'education',
-    }),
-});
+    for (const [entryId, alias] of Object.entries(WORKSPACE_ALIASES)) {
+        entries[entryId] = freezeLegacyEntry(
+            entryId,
+            alias.workspaceId,
+            alias.modeId,
+            alias.modeId,
+        );
+    }
+
+    entries.dev = freezeLegacyEntry('dev', 'build', 'application', 'dev');
+    entries.translate = freezeLegacyEntry('translate', 'build', 'conversion', 'translate');
+    entries.ai = freezeLegacyEntry('ai', 'build', 'ai-build', 'ai');
+    entries.material = freezeLegacyEntry('material', 'system', 'tokens', 'material');
+
+    return Object.freeze(entries);
+}
+
+export const LEGACY_WORKSPACE_MAP = createLegacyWorkspaceMap();
+
+export function hasLegacyWorkspaceEntry(entryId) {
+    return Boolean(entryId && LEGACY_WORKSPACE_MAP[entryId]);
+}
+
+export function getLegacyWorkspaceEntry(entryId) {
+    return hasLegacyWorkspaceEntry(entryId)
+        ? LEGACY_WORKSPACE_MAP[entryId]
+        : null;
+}
+
+export function listLegacyWorkspaceEntryIds() {
+    return Object.keys(LEGACY_WORKSPACE_MAP).sort();
+}

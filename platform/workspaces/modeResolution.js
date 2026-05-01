@@ -13,6 +13,7 @@ import {
     hasModeDefinition,
     resolveModeDefinitionId,
 } from './modeRegistry.js';
+import { resolveOverlayByLegacyMode } from './overlayRegistry.js';
 
 /* =========================
    🔒 INTERNAL HELPERS
@@ -34,6 +35,52 @@ function assertDefinitionId(modeId) {
     }
 
     return definitionId;
+}
+
+function freezeModeResolution(result) {
+    return Object.freeze(result);
+}
+
+function resolveAliasEntry(entryId) {
+    if (!entryId) return null;
+
+    if (hasWorkspaceAlias(entryId)) {
+        return getWorkspaceAlias(entryId);
+    }
+
+    return null;
+}
+
+function resolveOverlayModeEntry(entryId) {
+    const normalizedId = normalizeId(entryId);
+    if (!normalizedId) return null;
+
+    const overlay = resolveOverlayByLegacyMode(normalizedId);
+    if (overlay) {
+        return Object.freeze({
+            originalModeId: normalizedId,
+            canonicalModeId: overlay.ownerModeId,
+            workspaceId: overlay.ownerWorkspaceId,
+            overlayId: overlay.overlayId,
+            overlayClass: overlay.class,
+            source: 'overlay',
+        });
+    }
+
+    const alias = resolveAliasEntry(normalizedId);
+    if (!alias) return null;
+
+    const aliasOverlay = resolveOverlayByLegacyMode(alias.modeId);
+    if (!aliasOverlay) return null;
+
+    return Object.freeze({
+        originalModeId: normalizedId,
+        canonicalModeId: aliasOverlay.ownerModeId,
+        workspaceId: aliasOverlay.ownerWorkspaceId,
+        overlayId: aliasOverlay.overlayId,
+        overlayClass: aliasOverlay.class,
+        source: 'overlay-alias',
+    });
 }
 
 /* =========================
@@ -117,6 +164,82 @@ export function getWorkspaceAlias(entryId) {
 
 export function resolveModeOwner(modeId) {
     return getCanonicalMode(modeId)?.workspaceId ?? null;
+}
+
+export function resolveModeWithOverlay(modeId) {
+    const normalizedId = normalizeId(modeId);
+
+    if (!normalizedId) {
+        return freezeModeResolution({
+            originalModeId: null,
+            canonicalModeId: null,
+            workspaceId: null,
+            overlayId: null,
+            overlayClass: null,
+            source: 'unknown',
+        });
+    }
+
+    const overlayEntry = resolveOverlayModeEntry(normalizedId);
+    if (overlayEntry) {
+        return overlayEntry;
+    }
+
+    if (hasCanonicalMode(normalizedId)) {
+        return freezeModeResolution({
+            originalModeId: normalizedId,
+            canonicalModeId: normalizedId,
+            workspaceId: resolveModeOwner(normalizedId),
+            overlayId: null,
+            overlayClass: null,
+            source: 'canonical-mode',
+        });
+    }
+
+    const alias = resolveAliasEntry(normalizedId);
+    if (alias) {
+        return freezeModeResolution({
+            originalModeId: normalizedId,
+            canonicalModeId: alias.modeId,
+            workspaceId: alias.workspaceId,
+            overlayId: null,
+            overlayClass: null,
+            source: 'legacy-alias',
+        });
+    }
+
+    return freezeModeResolution({
+        originalModeId: normalizedId,
+        canonicalModeId: null,
+        workspaceId: null,
+        overlayId: null,
+        overlayClass: null,
+        source: 'unknown',
+    });
+}
+
+export function resolveCanonicalWorkspaceOverlayContext(input = {}) {
+    const rawWorkspace = typeof input === 'string'
+        ? normalizeId(input)
+        : normalizeId(input.workspaceId ?? input.workspace);
+
+    const rawMode = typeof input === 'object' && input
+        ? normalizeId(input.modeId ?? input.mode)
+        : null;
+
+    const base = resolveCanonicalWorkspaceContext(input);
+    const overlayResolution = resolveModeWithOverlay(rawMode ?? rawWorkspace);
+
+    return freezeModeResolution({
+        workspaceId: base.workspaceId,
+        modeId: base.modeId,
+        definitionId: base.definitionId,
+        source: base.source,
+        originalModeId: overlayResolution.originalModeId,
+        canonicalModeId: overlayResolution.canonicalModeId,
+        overlayId: overlayResolution.overlayId,
+        overlayClass: overlayResolution.overlayClass,
+    });
 }
 
 /* =========================

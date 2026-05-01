@@ -10,7 +10,21 @@ export {
     listCanonicalModesForWorkspace,
     listCanonicalWorkspaceIds,
 } from './canonicalRegistry.js';
-export { LEGACY_WORKSPACE_MAP } from './legacyMapping.js';
+export {
+    LEGACY_WORKSPACE_MAP,
+    getLegacyWorkspaceEntry,
+    hasLegacyWorkspaceEntry,
+    listLegacyWorkspaceEntryIds,
+} from './legacyMapping.js';
+export {
+    OVERLAY_REGISTRY,
+    getOverlayEntry,
+    getOverlaysForMode,
+    hasOverlayEntry,
+    listOverlayEntryIds,
+    listOverlayIds,
+    resolveOverlayByLegacyMode,
+} from './overlayRegistry.js';
 export { resolveWorkspaceContext } from './resolveWorkspaceContext.js';
 
 export {

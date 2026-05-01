@@ -1,0 +1,271 @@
+{
+  "foundation_freeze": {
+    "status": "complete",
+    "frozen": true,
+    "requires": [
+      "dispatcher_replay_projection_law",
+      "certified_template_convergence",
+      "uiux_motion_roundtrip",
+      "capability_gating_substrate",
+      "animation_graph_evaluator_substrate",
+      "token_governance_substrate"
+    ],
+    "depends_on": [],
+    "risks": [],
+    "proofs": {
+      "dispatcher_replay_projection_law": [
+        "docs/LAW.md",
+        "runtime/dispatcher/dispatch.js",
+        "runtime/projection/zustandBridge.js"
+      ],
+      "certified_template_convergence": [
+        "templates/publishTemplateFromWorkspace.js",
+        "domain/templates/installCertifiedTemplate.js",
+        "app/api/templates/marketplace/route.js",
+        "app/workspace/new/page.js"
+      ],
+      "uiux_motion_roundtrip": [
+        "tests/e2e/uiux-template-generation.spec.js",
+        "templates/uiuxTemplateRoundtrip.test.mjs"
+      ],
+      "capability_gating_substrate": [
+        "core/contracts/capabilityGate.js",
+        "core/contracts/intentCapabilities.v1.js"
+      ],
+      "animation_graph_evaluator_substrate": [
+        "runtime/animation/graph/graphNodes.js",
+        "runtime/scene/evaluateSceneIncremental.js"
+      ],
+      "token_governance_substrate": [
+        "runtime/tokens/",
+        "ui/workspace/system/"
+      ]
+    }
+  },
+  "constitutional_navigator": {
+    "status": "active",
+    "frozen": false,
+    "requires": [
+      "constitution_v2_draft",
+      "compatibility_matrix",
+      "navigator_doc",
+      "roadmap_state",
+      "navigator_script",
+      "system_map"
+    ],
+    "depends_on": [
+      "foundation_freeze"
+    ],
+    "risks": [],
+    "proofs": {
+      "constitution_v2_draft": [
+        "docs/CONSTITUTION_V2.md"
+      ],
+      "compatibility_matrix": [
+        "docs/CONSTITUTION_V2_COMPATIBILITY_MATRIX.md"
+      ],
+      "navigator_doc": [
+        "docs/IMPLEMENTATION_NAVIGATOR.md"
+      ],
+      "roadmap_state": [
+        "docs/ROADMAP_STATE.json"
+      ],
+      "navigator_script": [
+        "scripts/implementationNavigator.mjs"
+      ],
+      "system_map": [
+        "docs/SYSTEM_MAP.md"
+      ]
+    }
+  },
+  "constitution_reconciliation": {
+    "status": "complete",
+    "frozen": false,
+    "requires": [
+      "v2_law_alignment",
+      "mode_collapse_plan",
+      "overlay_preservation_defined"
+    ],
+    "depends_on": [
+      "foundation_freeze"
+    ],
+    "risks": [],
+    "proofs": {
+      "v2_law_alignment": [
+        "docs/CONSTITUTION_V2.md",
+        "docs/CONSTITUTION_V2_COMPATIBILITY_MATRIX.md"
+      ],
+      "mode_collapse_plan": [
+        "docs/MODE_COLLAPSE_OVERLAY_MIGRATION_MAP.md"
+      ],
+      "overlay_preservation_defined": [
+        "docs/MODE_COLLAPSE_OVERLAY_MIGRATION_MAP.md",
+        "platform/workspaces/overlayRegistry.js"
+      ]
+    }
+  },
+  "overlay_taxonomy_migration": {
+    "status": "not-started",
+    "frozen": false,
+    "requires": [
+      "overlay_registry",
+      "alias_migration",
+      "canonical_25_to_14_collapse",
+      "payload_rehoming",
+      "capability_reclassification",
+      "migration_tests"
+    ],
+    "depends_on": [
+      "constitution_reconciliation"
+    ],
+    "risks": [
+      "payload_orphan_risk",
+      "25_to_14_aliases_unverified"
+    ],
+    "proofs": {
+      "overlay_registry": [
+        "platform/workspaces/overlayRegistry.js"
+      ],
+      "alias_migration": [
+        "platform/workspaces/modeResolution.js",
+        "platform/workspaces/legacyMapping.js"
+      ],
+      "canonical_25_to_14_collapse": [
+        "platform/workspaces/canonicalRegistry.js",
+        "platform/workspaces/modeRegistry.js"
+      ],
+      "payload_rehoming": [
+        "docs/MODE_COLLAPSE_OVERLAY_MIGRATION_MAP.md",
+        "workspaces/registry/index.js"
+      ],
+      "capability_reclassification": [
+        "runtime/workspaces/workspaceCapabilities.js",
+        "ui/workspace/capabilities/capabilityRegistry.js"
+      ],
+      "migration_tests": [
+        "platform/__tests__/workspaceContext.test.mjs",
+        "platform/__tests__/capabilityEngine.test.mjs",
+        "tests/e2e/"
+      ]
+    }
+  },
+  "seed_lineage": {
+    "status": "not-started",
+    "frozen": false,
+    "requires": [
+      "template_lineage_graph",
+      "lineage_cert_hash",
+      "ancestry_legality",
+      "lineage_tests"
+    ],
+    "depends_on": [
+      "overlay_taxonomy_migration"
+    ],
+    "risks": [],
+    "proofs": {
+      "template_lineage_graph": [
+        "domain/templates/TemplateSeedLineageGraph.js"
+      ],
+      "lineage_cert_hash": [
+        "engine/templates/certifyTemplateSeed.js",
+        "domain/templates/TemplateCertification.js"
+      ],
+      "ancestry_legality": [
+        "domain/templates/TemplateRegistry.js"
+      ],
+      "lineage_tests": [
+        "tests/"
+      ]
+    }
+  },
+  "derived_environments": {
+    "status": "not-started",
+    "frozen": false,
+    "requires": [
+      "seed_environment_descriptors",
+      "bounded_activation_overlays"
+    ],
+    "depends_on": [
+      "seed_lineage"
+    ],
+    "risks": [],
+    "proofs": {
+      "seed_environment_descriptors": [
+        "engine/templates/templateSeed.js"
+      ],
+      "bounded_activation_overlays": [
+        "platform/capabilities/workspaceActivation.js",
+        "platform/capabilities/capabilityRuntime.js"
+      ]
+    }
+  },
+  "tool_synthesis": {
+    "status": "not-started",
+    "frozen": false,
+    "requires": [
+      "interpreted_tool_specs",
+      "approved_handler_family_bounds"
+    ],
+    "depends_on": [
+      "seed_lineage",
+      "derived_environments"
+    ],
+    "risks": [
+      "recursive_tool_sovereignty_risk"
+    ],
+    "proofs": {
+      "interpreted_tool_specs": [
+        "runtime/tools/interpretToolSpec.js"
+      ],
+      "approved_handler_family_bounds": [
+        "runtime/tools/toolRuntime.js",
+        "runtime/input/inputEngine.js"
+      ]
+    }
+  },
+  "creative_physics": {
+    "status": "not-started",
+    "frozen": false,
+    "requires": [
+      "physics_evaluator_law",
+      "no_durable_truth_mutation"
+    ],
+    "depends_on": [
+      "tool_synthesis"
+    ],
+    "risks": [],
+    "proofs": {
+      "physics_evaluator_law": [
+        "runtime/frame/runFramePipeline.js",
+        "runtime/scene/evaluateSceneIncremental.js"
+      ],
+      "no_durable_truth_mutation": [
+        "docs/LAW.md"
+      ]
+    }
+  },
+  "os_surface": {
+    "status": "not-started",
+    "frozen": false,
+    "requires": [
+      "generated_environment_surface",
+      "generated_tool_surface",
+      "lawful_self_extension_surface"
+    ],
+    "depends_on": [
+      "creative_physics"
+    ],
+    "risks": [],
+    "proofs": {
+      "generated_environment_surface": [
+        "ui/"
+      ],
+      "generated_tool_surface": [
+        "ui/"
+      ],
+      "lawful_self_extension_surface": [
+        "docs/CONSTITUTION_V2.md"
+      ]
+    }
+  }
+}
