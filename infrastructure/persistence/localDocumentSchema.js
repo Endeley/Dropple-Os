@@ -1,4 +1,4 @@
-export const LOCAL_DOCUMENT_VERSION = 1;
+import { LOCAL_DOCUMENT_VERSION } from '@/core/persistence/localDocumentVersion.js';
 
 export function createLocalDocumentSnapshot({ events = [], cursorIndex = -1, metadata = {} } = {}) {
     return {
@@ -9,6 +9,8 @@ export function createLocalDocumentSnapshot({ events = [], cursorIndex = -1, met
         metadata,
     };
 }
+
+export { LOCAL_DOCUMENT_VERSION };
 
 export function hydrateLocalDocumentSnapshot(snapshot) {
     if (!snapshot || snapshot.version !== LOCAL_DOCUMENT_VERSION) return null;

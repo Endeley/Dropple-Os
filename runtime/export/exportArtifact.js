@@ -1,6 +1,11 @@
 import { getDesignStateAtCursor } from '@/core/persistence/index.js';
+<<<<<<< HEAD
 import { ArtifactKind } from '@/gallery/artifacts/types.js';
 import { LOCAL_DOCUMENT_VERSION } from '@/infrastructure/persistence/localDocumentSchema.js';
+=======
+import { ArtifactKind } from '@/core/artifacts/ArtifactKind.js';
+import { LOCAL_DOCUMENT_VERSION } from '@/core/persistence/localDocumentVersion.js';
+>>>>>>> d728875 (fix(export): align runtime export boundaries with Dropple architecture laws)
 import { initialRuntimeState } from '@/runtime/state/runtimeState.internal.js';
 import { buildRuntimeSnapshotFromTemplateEnvironment } from '@/runtime/templates/activateResolvedTemplateEnvironment.js';
 import { exportPNG } from './png/exportPNG.js';

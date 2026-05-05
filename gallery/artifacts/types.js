@@ -1,6 +1,8 @@
-function isPlainObject(value) {
-  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-}
+import {
+  ArtifactKind,
+  isEnvironmentArtifact,
+  isSnapshotArtifact,
+} from '@/core/artifacts/ArtifactKind.js';
 
 function deepFreeze(value) {
   if (!value || typeof value !== 'object' || Object.isFrozen(value)) {
@@ -18,13 +20,8 @@ function deepFreeze(value) {
   return value;
 }
 
-export const ArtifactKind = Object.freeze({
-  SNAPSHOT: 'snapshot',
-  ENVIRONMENT: 'environment',
-});
-
 export function createSnapshotArtifact({ snapshot } = {}) {
-  if (!isPlainObject(snapshot)) {
+  if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) {
     throw new Error('SnapshotArtifact requires snapshot');
   }
 
@@ -39,7 +36,11 @@ export function createEnvironmentArtifact({
   descriptor,
   resolvedEnvironment,
 } = {}) {
-  if (!isPlainObject(snapshot) || !isPlainObject(descriptor) || !isPlainObject(resolvedEnvironment)) {
+  if (
+    !snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot) ||
+    !descriptor || typeof descriptor !== 'object' || Array.isArray(descriptor) ||
+    !resolvedEnvironment || typeof resolvedEnvironment !== 'object' || Array.isArray(resolvedEnvironment)
+  ) {
     throw new Error('EnvironmentArtifact requires snapshot + descriptor + resolvedEnvironment');
   }
 
@@ -50,12 +51,4 @@ export function createEnvironmentArtifact({
     resolvedEnvironment,
   });
 }
-
-export function isEnvironmentArtifact(artifact) {
-  return artifact?.kind === ArtifactKind.ENVIRONMENT;
-}
-
-export function isSnapshotArtifact(artifact) {
-  return artifact?.kind === ArtifactKind.SNAPSHOT;
-}
-
+export { ArtifactKind, isEnvironmentArtifact, isSnapshotArtifact };
