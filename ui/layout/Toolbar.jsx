@@ -3,15 +3,33 @@
 import { useGrid } from '@/ui/workspace/shared/GridContext';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext';
 import { CapabilityActions } from '@/ui/capabilities/capabilityActions';
-import { exportJSON } from '@/runtime/export/exportJSON';
-import { exportSVG } from '@/runtime/export/svg/exportSVG';
-import { exportPNG } from '@/runtime/export/png/exportPNG';
 import { runExportGate } from '@/ui/export/exportGateClient.js';
 import { createShareLink } from '@/share/createShareLink';
 import { createEmbedCode } from '@/share/createEmbedCode';
 import { runCommandIntent } from '@/ui/bridges/runtimeCommandFacade.js';
+import {
+    ArtifactExportKinds,
+    exportArtifact as exportArtifactFacade,
+} from '@/runtime/export/exportArtifact.js';
+import { getExportCapabilities } from '@/runtime/export/getExportCapabilities.js';
 
-export default function Toolbar({ mode, onOpenTemplateGenerator, emit, getState, events, cursor, documentName, onSave, onSaveAs, recentDocs = [], onOpenDocument, canPersist = true, onImportJSONReplace, onImportJSONMerge, onImportSVGReplace, onImportSVGMerge, canImport = true }) {
+const TOOLBAR_EXPORT_ACTIONS = Object.freeze({
+    json: {
+        label: 'JSON',
+        format: ArtifactExportKinds.JSON,
+    },
+    svg: {
+        label: 'SVG',
+        format: ArtifactExportKinds.SVG,
+    },
+    png: {
+        label: 'PNG',
+        format: ArtifactExportKinds.PNG,
+        options: Object.freeze({ scale: 2 }),
+    },
+});
+
+export default function Toolbar({ mode, onOpenTemplateGenerator, emit, getState, events, cursor, exportArtifact = null, documentName, onSave, onSaveAs, recentDocs = [], onOpenDocument, canPersist = true, onImportJSONReplace, onImportJSONMerge, onImportSVGReplace, onImportSVGMerge, canImport = true }) {
     const { grid, toggleGrid } = useGrid();
     const { selectedIds } = useSelection();
 
@@ -22,6 +40,11 @@ export default function Toolbar({ mode, onOpenTemplateGenerator, emit, getState,
     const multi = selected.length > 1;
     const single = selected.length === 1;
     const hasNodes = Object.keys(nodes).length > 0;
+    const exportCapabilities = exportArtifact ? getExportCapabilities(exportArtifact) : null;
+    const toolbarExportFormats = exportCapabilities
+        ? exportCapabilities.formats.filter((format) => TOOLBAR_EXPORT_ACTIONS[format])
+        : [];
+    const canExport = hasNodes && exportArtifact != null && toolbarExportFormats.length > 0;
 
     return (
         <div className='toolbar-root'>
@@ -117,17 +140,34 @@ export default function Toolbar({ mode, onOpenTemplateGenerator, emit, getState,
 
             {/* EXPORT */}
             <div className='toolbar-group'>
-                <button className='toolbar-btn' disabled={!hasNodes} onClick={() => runExportGate({ onProceed: () => exportJSON({ nodes, events, cursor }) })}>
-                    JSON
-                </button>
+                {toolbarExportFormats.map((format) => {
+                    const action = TOOLBAR_EXPORT_ACTIONS[format];
+                    return (
+                        <button
+                            key={format}
+                            className='toolbar-btn'
+                            title={exportCapabilities?.description ?? undefined}
+                            disabled={!canExport}
+                            onClick={() =>
+                                runExportGate({
+                                    onProceed: () =>
+                                        exportArtifactFacade({
+                                            artifact: exportArtifact,
+                                            format: action.format,
+                                            options: action.options,
+                                        }),
+                                })
+                            }>
+                            {action.label}
+                        </button>
+                    );
+                })}
 
-                <button className='toolbar-btn' disabled={!hasNodes} onClick={() => runExportGate({ onProceed: () => exportSVG({ nodes }) })}>
-                    SVG
-                </button>
-
-                <button className='toolbar-btn' disabled={!hasNodes} onClick={() => runExportGate({ onProceed: () => exportPNG({ nodes, scale: 2 }) })}>
-                    PNG
-                </button>
+                {exportCapabilities && (
+                    <span className='toolbar-mode' title={exportCapabilities.description}>
+                        {exportCapabilities.label}
+                    </span>
+                )}
 
                 <button
                     className='toolbar-btn'

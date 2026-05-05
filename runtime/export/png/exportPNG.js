@@ -1,5 +1,6 @@
-import { downloadBlob } from '../utils/download';
-import { renderNodeToSVG } from '../svg/renderNodeToSVG';
+import { downloadBlob } from '../utils/download.js';
+import { renderNodeToSVG } from '../svg/renderNodeToSVG.js';
+import { getNodes } from '@/runtime/document/documentAdapter.js';
 
 function computeBounds(nodes) {
     if (!nodes.length) return null;
@@ -22,18 +23,31 @@ function computeBounds(nodes) {
     };
 }
 
-export function exportPNG({ nodes = {}, scale = 1 } = {}) {
-    const list = Object.values(nodes);
+export function buildPNGSourceSVG(snapshot) {
+    const list = Object.values(getNodes(snapshot));
     if (!list.length) return;
 
     const bounds = computeBounds(list);
     if (!bounds) return;
 
     const body = list.map(renderNodeToSVG).join('\n');
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${bounds.width}" height="${bounds.height}" viewBox="${bounds.minX} ${bounds.minY} ${bounds.width} ${bounds.height}">
+    return {
+        bounds,
+        svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${bounds.width}" height="${bounds.height}" viewBox="${bounds.minX} ${bounds.minY} ${bounds.width} ${bounds.height}">
 ${body}
-</svg>`;
+</svg>`,
+    };
+}
 
+export function exportPNG({ snapshot, scale = 1, filename = 'dropple-export.png' } = {}) {
+    if (!snapshot || typeof snapshot !== 'object') {
+        throw new Error('exportPNG requires snapshot.');
+    }
+
+    const source = buildPNGSourceSVG(snapshot);
+    if (!source) return Promise.resolve(null);
+
+    const { bounds, svg } = source;
     const img = new Image();
     const canvas = document.createElement('canvas');
     canvas.width = bounds.width * scale;
@@ -46,18 +60,26 @@ ${body}
     const blob = new Blob([svg], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
 
-    img.onload = () => {
-        ctx.drawImage(img, 0, 0);
-        URL.revokeObjectURL(url);
-        canvas.toBlob((png) => {
-            if (!png) return;
-            downloadBlob(png, 'dropple-export.png');
-        });
-    };
+    return new Promise((resolve, reject) => {
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0);
+            URL.revokeObjectURL(url);
+            canvas.toBlob((png) => {
+                if (!png) {
+                    resolve(null);
+                    return;
+                }
 
-    img.onerror = () => {
-        URL.revokeObjectURL(url);
-    };
+                downloadBlob(png, filename);
+                resolve(png);
+            });
+        };
 
-    img.src = url;
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+            reject(new Error('exportPNG failed to rasterize SVG source.'));
+        };
+
+        img.src = url;
+    });
 }

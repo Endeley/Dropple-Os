@@ -18,9 +18,6 @@ import { ContextMenu } from '@/ui/context/ContextMenu';
 import { useContextMenu } from '@/ui/context/useContextMenu';
 import { CapabilityActions } from '@/ui/capabilities/capabilityActions';
 import { runCommandIntent } from '@/ui/bridges/runtimeCommandFacade.js';
-import { exportJSON } from '@/runtime/export/exportJSON';
-import { exportSVG } from '@/runtime/export/svg/exportSVG';
-import { exportPNG } from '@/runtime/export/png/exportPNG';
 import { runExportGate } from '@/ui/export/exportGateClient.js';
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
@@ -29,12 +26,37 @@ import CursorsLayer from '@/collab/CursorsLayer';
 import CanvasIntentGhosts from '@/collab/CanvasIntentGhosts';
 import { NodeView } from '@/ui/NodeView.jsx';
 import { getNodes } from '@/runtime/document/documentAdapter.js';
+import {
+  ArtifactExportKinds,
+  exportArtifact as exportArtifactFacade,
+} from '@/runtime/export/exportArtifact.js';
+import { getExportCapabilities } from '@/runtime/export/getExportCapabilities.js';
+
+const CANVAS_EXPORT_ACTIONS = Object.freeze({
+  json: {
+    key: 'export-json',
+    label: 'Export JSON',
+    format: ArtifactExportKinds.JSON,
+  },
+  svg: {
+    key: 'export-svg',
+    label: 'Export SVG',
+    format: ArtifactExportKinds.SVG,
+  },
+  png: {
+    key: 'export-png',
+    label: 'Export PNG',
+    format: ArtifactExportKinds.PNG,
+    options: Object.freeze({ scale: 2 }),
+  },
+});
 
 export default function CanvasStage({
   adapter,
   events,
   cursor,
   emit,
+  exportArtifact = null,
   educationReadOnly = false,
   isLearningOverlay = false,
   readOnly = false,
@@ -69,6 +91,7 @@ export default function CanvasStage({
   const educationCursor = useEducationCursor();
   const educationRole = educationCursor?.role || 'teacher';
   const educationState = getEducationAtCursor(state, cursor);
+  const exportCapabilities = exportArtifact ? getExportCapabilities(exportArtifact) : null;
   const isPreview =
     adapter?.id === 'preview' || adapter?.id === 'prototype' || adapter?.isPreview;
   const canvasBackground = useToken('color.bg');
@@ -200,6 +223,27 @@ export default function CanvasStage({
     const singleSelected = selected.length === 1;
     const hasNodes = Object.keys(nodes || {}).length > 0;
     const canShowImport = canImport;
+    const exportItems = exportCapabilities
+      ? exportCapabilities.formats
+          .filter((format) => CANVAS_EXPORT_ACTIONS[format])
+          .map((format) => {
+            const action = CANVAS_EXPORT_ACTIONS[format];
+            return {
+              key: action.key,
+              label: action.label,
+              disabled: !hasNodes || !exportArtifact,
+              onClick: () =>
+                runExportGate({
+                  onProceed: () =>
+                    exportArtifactFacade({
+                      artifact: exportArtifact,
+                      format: action.format,
+                      options: action.options,
+                    }),
+                }),
+            };
+          })
+      : [];
 
     openMenu({
       x: e.clientX,
@@ -228,10 +272,9 @@ export default function CanvasStage({
           disabled: !singleSelected,
           onClick: () => runCommandIntent('ungroup'),
         },
-        { type: 'separator' },
-        { key: 'export-json', label: 'Export JSON', disabled: !hasNodes, onClick: () => runExportGate({ onProceed: () => exportJSON({ nodes, events, cursor }) }) },
-        { key: 'export-svg', label: 'Export SVG', disabled: !hasNodes, onClick: () => runExportGate({ onProceed: () => exportSVG({ nodes }) }) },
-        { key: 'export-png', label: 'Export PNG', disabled: !hasNodes, onClick: () => runExportGate({ onProceed: () => exportPNG({ nodes, scale: 2 }) }) },
+        ...(exportItems.length > 0
+          ? [{ type: 'separator' }, ...exportItems]
+          : []),
         ...(canShowImport
           ? [
               { type: 'separator' },

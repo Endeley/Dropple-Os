@@ -110,7 +110,7 @@ test('verifyMediaSequenceOutput matches canonical exported media sequencing agai
         nodes: [],
     };
 
-    const spec = exportDroppleSpec(workspace);
+    const spec = exportDroppleSpec({ snapshot: workspace });
     const result = verifyMediaSequenceOutput({
         mediaExport: spec.media,
         sampleTimes: [0, 500, 999],

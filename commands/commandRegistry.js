@@ -1,11 +1,41 @@
-import { exportJSON } from '@/runtime/export/exportJSON';
-import { exportSVG } from '@/runtime/export/svg/exportSVG';
-import { exportPNG } from '@/runtime/export/png/exportPNG';
 import { createShareLink } from '@/share/createShareLink';
 import { createEmbedCodeFromPreset } from '@/share/createEmbedCode';
 import { CapabilityActions } from '@/ui/capabilities/capabilityActions';
 import { publishCurrentDocument } from '@/gallery/publishToGallery';
 import { runCommandIntent } from '@/ui/bridges/runtimeCommandFacade.js';
+import {
+  ArtifactExportKinds,
+  exportArtifact as exportArtifactFacade,
+} from '@/runtime/export/exportArtifact.js';
+import { getExportCapabilities } from '@/runtime/export/getExportCapabilities.js';
+
+const COMMAND_EXPORT_ACTIONS = Object.freeze({
+  json: {
+    id: 'export-json',
+    title: 'Export JSON',
+    category: 'File',
+    keywords: ['export', 'json', 'file'],
+    modes: ['graphic', 'ui', 'animation'],
+    format: ArtifactExportKinds.JSON,
+  },
+  svg: {
+    id: 'export-svg',
+    title: 'Export SVG',
+    category: 'Export',
+    keywords: ['export', 'svg', 'vector'],
+    modes: ['graphic', 'ui', 'animation'],
+    format: ArtifactExportKinds.SVG,
+  },
+  png: {
+    id: 'export-png',
+    title: 'Export PNG',
+    category: 'Export',
+    keywords: ['export', 'png', 'image'],
+    modes: ['graphic', 'animation'],
+    format: ArtifactExportKinds.PNG,
+    options: Object.freeze({ scale: 2 }),
+  },
+});
 
 async function copyToClipboard(text) {
   if (navigator?.clipboard?.writeText) {
@@ -29,7 +59,29 @@ export function buildCommands({
   mode,
   workspaceId = 'graphic',
   publishToServer,
+  exportArtifact = null,
 }) {
+  const exportCapabilities = exportArtifact ? getExportCapabilities(exportArtifact) : null;
+  const exportCommands = exportCapabilities
+    ? exportCapabilities.formats
+        .filter((format) => COMMAND_EXPORT_ACTIONS[format])
+        .map((format) => {
+          const action = COMMAND_EXPORT_ACTIONS[format];
+          return {
+            id: action.id,
+            title: action.title,
+            category: action.category,
+            modes: action.modes,
+            keywords: action.keywords,
+            run: () => exportArtifactFacade({
+              artifact: exportArtifact,
+              format: action.format,
+              options: action.options,
+            }),
+          };
+        })
+    : [];
+
   return [
     {
       id: 'groupSelection',
@@ -53,30 +105,7 @@ export function buildCommands({
         return runCommandIntent('ungroup');
       },
     },
-    {
-      id: 'export-json',
-      title: 'Export JSON',
-      category: 'File',
-      modes: ['graphic', 'ui', 'animation'],
-      keywords: ['export', 'json', 'file'],
-      run: () => exportJSON({ nodes, events, cursor: { index: cursorIndex } }),
-    },
-    {
-      id: 'export-svg',
-      title: 'Export SVG',
-      category: 'Export',
-      modes: ['graphic', 'ui', 'animation'],
-      keywords: ['export', 'svg', 'vector'],
-      run: () => exportSVG({ nodes }),
-    },
-    {
-      id: 'export-png',
-      title: 'Export PNG',
-      category: 'Export',
-      modes: ['graphic', 'animation'],
-      keywords: ['export', 'png', 'image'],
-      run: () => exportPNG({ nodes, scale: 2 }),
-    },
+    ...exportCommands,
     {
       id: 'share-link',
       title: 'Create shareable link',

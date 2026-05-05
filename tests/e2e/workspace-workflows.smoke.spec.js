@@ -106,12 +106,12 @@ test('marketplace template workflow opens certified template details and enters 
 
   expect(response?.ok(), 'marketplace route should respond successfully').toBeTruthy();
   await expect(page.locator('body')).toContainText('Templates');
-  await expect(page.locator('[data-artifact-kind="environment"]').first()).toContainText('Reproducible');
+  await expect(page.locator('[data-capability="Reproducible"]').first()).toContainText('Reproducible');
   await page.getByText(template.metadata.name).click();
 
   await expect(page).toHaveURL(new RegExp(`/marketplace/template/${template.id}$`));
   await expect(page.locator('body')).toContainText(template.metadata.name);
-  await expect(page.locator('[data-artifact-kind="environment"]').first()).toContainText('Reproducible');
+  await expect(page.locator('[data-capability="Reproducible"]').first()).toContainText('Reproducible');
   await expect(page.getByRole('button', { name: 'Use Template' })).toBeEnabled();
 
   await page.getByRole('button', { name: 'Use Template' }).click();

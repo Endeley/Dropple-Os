@@ -24,6 +24,11 @@ import { useWorkspaceCapabilities } from '@/ui/workspace/useWorkspaceCapabilitie
 import { useCapabilityLifecycle } from '@/ui/workspace/useCapabilityLifecycle.js';
 import { useWorkspaceNavigation } from '@/ui/workspace/shared/useWorkspaceNavigation.js';
 import { openTemplatePublishDialog } from '@/ui/bridges/templatePublishRuntimeFacade.js';
+import {
+    createArtifactPersistenceSnapshot,
+    createEnvironmentArtifact,
+    createSnapshotArtifact,
+} from '@/runtime/export/exportArtifact.js';
 
 /**
  * Stable event types (no reallocation)
@@ -172,6 +177,44 @@ export function EditorWorkspaceShell({
      * Cursor state
      */
     const cursor = { index: cursorIndex };
+    const hasPublicationDescriptor = initialEnvironmentDescriptor != null;
+    const hasResolvedPublicationEnvironment = initialResolvedTemplateEnvironment != null;
+
+    if (hasPublicationDescriptor !== hasResolvedPublicationEnvironment) {
+        throw new Error(
+            'Invalid publication state: descriptor and resolvedEnvironment must both exist or both be absent.',
+        );
+    }
+
+    const exportArtifact = useMemo(
+        () => {
+            if (hasPublicationDescriptor) {
+                return createEnvironmentArtifact({
+                    descriptor: initialEnvironmentDescriptor,
+                    resolvedEnvironment: initialResolvedTemplateEnvironment,
+                });
+            }
+
+            return createSnapshotArtifact({
+                snapshot: createArtifactPersistenceSnapshot({
+                    events,
+                    cursorIndex,
+                    metadata: {
+                        mode: overlayContext.canonicalModeId ?? workspaceContext.modeId,
+                    },
+                }),
+            });
+        },
+        [
+            cursorIndex,
+            events,
+            hasPublicationDescriptor,
+            initialEnvironmentDescriptor,
+            initialResolvedTemplateEnvironment,
+            overlayContext.canonicalModeId,
+            workspaceContext.modeId,
+        ],
+    );
 
     /**
      * Workspace UI
@@ -186,6 +229,7 @@ export function EditorWorkspaceShell({
             events={events}
             cursor={cursor}
             emit={emit}
+            exportArtifact={exportArtifact}
             documentName={documentName}
             canPersist={persistenceEnabled}
             canImport={persistenceEnabled}

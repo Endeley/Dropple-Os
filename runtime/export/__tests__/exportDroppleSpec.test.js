@@ -34,7 +34,7 @@ test('exportDroppleSpec blocks export when strict scene scope is invalid', () =>
     };
 
     assert.throws(
-        () => exportDroppleSpec(workspace),
+        () => exportDroppleSpec({ snapshot: workspace }),
         /extractActiveSceneTree: no valid composition root \(sceneA\)/,
     );
 });
@@ -106,7 +106,7 @@ test('export transition evaluation matches runtime transition composition at the
 
     assert.deepEqual(exportLike.evaluatedScene, previewLike.evaluatedScene);
     assert.equal(exportLike.transitionWindow.transition.type, 'crossfade');
-    assert.doesNotThrow(() => exportDroppleSpec(workspace));
+    assert.doesNotThrow(() => exportDroppleSpec({ snapshot: workspace }));
 });
 
 test('exportDroppleSpec includes canonical media assets and sequences without inventing parallel truth', () => {
@@ -198,7 +198,7 @@ test('exportDroppleSpec includes canonical media assets and sequences without in
         nodes: [],
     };
 
-    const spec = exportDroppleSpec(workspace);
+    const spec = exportDroppleSpec({ snapshot: workspace });
 
     assert.equal(spec.media.assets.videos['video-a'].url, '/video-a.mp4');
     assert.equal(spec.media.assets.audio['audio-a'].url, '/audio-a.wav');

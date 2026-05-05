@@ -11,7 +11,7 @@ export function runTranslatePipeline(runtime) {
         throw new Error('runTranslatePipeline is dev-only');
     }
 
-    const droppleSpec = exportDroppleSpec(runtime);
+    const droppleSpec = exportDroppleSpec({ snapshot: runtime });
     const pseudoCode = designToPseudoCode(droppleSpec);
     const reactSource = pseudoCodeToReact(pseudoCode);
 

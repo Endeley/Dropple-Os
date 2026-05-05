@@ -1,5 +1,6 @@
-import { downloadText } from '../utils/download';
-import { renderNodeToSVG } from './renderNodeToSVG';
+import { downloadText } from '../utils/download.js';
+import { renderNodeToSVG } from './renderNodeToSVG.js';
+import { getNodes } from '@/runtime/document/documentAdapter.js';
 
 function computeBounds(nodes) {
     if (!nodes.length) return null;
@@ -22,8 +23,8 @@ function computeBounds(nodes) {
     };
 }
 
-export function exportSVG({ nodes = {} } = {}) {
-    const list = Object.values(nodes);
+export function buildSVGDocument(snapshot) {
+    const list = Object.values(getNodes(snapshot));
     if (!list.length) return;
 
     const bounds = computeBounds(list);
@@ -31,9 +32,19 @@ export function exportSVG({ nodes = {} } = {}) {
 
     const body = list.map(renderNodeToSVG).join('\n');
 
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${bounds.width}" height="${bounds.height}" viewBox="${bounds.minX} ${bounds.minY} ${bounds.width} ${bounds.height}">
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${bounds.width}" height="${bounds.height}" viewBox="${bounds.minX} ${bounds.minY} ${bounds.width} ${bounds.height}">
 ${body}
 </svg>`;
+}
 
-    downloadText(svg, 'dropple-export.svg', 'image/svg+xml');
+export function exportSVG({ snapshot, filename = 'dropple-export.svg' } = {}) {
+    if (!snapshot || typeof snapshot !== 'object') {
+        throw new Error('exportSVG requires snapshot.');
+    }
+
+    const svg = buildSVGDocument(snapshot);
+    if (!svg) return null;
+
+    downloadText(svg, filename, 'image/svg+xml');
+    return svg;
 }

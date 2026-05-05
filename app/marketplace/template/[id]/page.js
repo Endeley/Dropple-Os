@@ -6,6 +6,7 @@ import { useOwnership } from '@/marketplace/useOwnershipStore';
 import { Badge } from '@/ui/controls/ui/badge.jsx';
 import { getArtifactPresentation } from '@/marketplace/artifactPresentation.js';
 import { resolveCanonicalWorkspaceOverlayContext } from '@/platform/workspaces/index.js';
+import { getExportCapabilities } from '@/runtime/export/getExportCapabilities.js';
 
 export default function TemplateDetailPage({ params }) {
   const router = useRouter();
@@ -60,6 +61,7 @@ export default function TemplateDetailPage({ params }) {
   const creator = template.metadata.creator || {};
   const pricing = template.metadata.pricing || { free: true };
   const presentation = getArtifactPresentation(template.artifact);
+  const exportCapabilities = getExportCapabilities(template.artifact);
   const owned = pricing.free
     ? true
     : ownership?.hasOwnership(user.id, template.id);
@@ -113,13 +115,13 @@ export default function TemplateDetailPage({ params }) {
     <div style={{ padding: 'var(--space-6)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', marginBottom: 'var(--space-sm)' }}>
         <Badge
-          data-artifact-kind={template?.artifact?.kind ?? 'unknown'}
+          data-capability={exportCapabilities.label}
           style={presentation.badgeStyle}
         >
-          {presentation.label}
+          {exportCapabilities.label}
         </Badge>
         <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-          {presentation.description}
+          {exportCapabilities.description}
         </div>
       </div>
       <h2>{template.metadata.title}</h2>
@@ -137,6 +139,26 @@ export default function TemplateDetailPage({ params }) {
           Version: {versionId || 'Unavailable'}
         </div>
       ) : null}
+
+      <div style={{ marginTop: 'var(--space-lg)' }}>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Artifact capability</div>
+        <div style={{ marginTop: 'var(--space-xs)', fontSize: 13, fontWeight: 600 }}>
+          {exportCapabilities.label}
+        </div>
+        <div style={{ marginTop: 'var(--space-xs)', fontSize: 12, color: 'var(--text-muted)' }}>
+          {exportCapabilities.description}
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-xs)', marginTop: 'var(--space-sm)' }}>
+          {exportCapabilities.formats.map((format) => (
+            <Badge key={format} variant='secondary'>
+              {format.toUpperCase()}
+            </Badge>
+          ))}
+        </div>
+        <div style={{ marginTop: 'var(--space-sm)', fontSize: 12, color: 'var(--text-muted)' }}>
+          {exportCapabilities.reproducible ? 'Deterministic output' : 'Non-deterministic output'}
+        </div>
+      </div>
 
       <div style={{ marginTop: 'var(--space-lg)' }}>
         <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Licenses</div>

@@ -11,7 +11,7 @@ export function runExportPipeline(runtime, target) {
         throw new Error('runExportPipeline is dev-only');
     }
 
-    const spec = exportDroppleSpec(runtime);
+    const spec = exportDroppleSpec({ snapshot: runtime });
 
     switch (target) {
         case 'static-html':

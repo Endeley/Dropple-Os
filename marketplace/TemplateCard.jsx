@@ -2,6 +2,7 @@
 
 import { Badge } from '@/ui/controls/ui/badge.jsx';
 import { getArtifactPresentation } from '@/marketplace/artifactPresentation.js';
+import { getExportCapabilities } from '@/runtime/export/getExportCapabilities.js';
 
 export default function TemplateCard({ template, onOpen }) {
   const { metadata } = template;
@@ -9,6 +10,7 @@ export default function TemplateCard({ template, onOpen }) {
   const pricing = metadata.pricing || { free: true };
   const priceLabel = pricing.free ? 'Free' : `$${pricing.personal}`;
   const presentation = getArtifactPresentation(template.artifact);
+  const exportCapabilities = getExportCapabilities(template.artifact);
 
   return (
     <div
@@ -33,10 +35,10 @@ export default function TemplateCard({ template, onOpen }) {
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-sm)' }}>
         <Badge
-          data-artifact-kind={template?.artifact?.kind ?? 'unknown'}
+          data-capability={exportCapabilities.label}
           style={presentation.badgeStyle}
         >
-          {presentation.label}
+          {exportCapabilities.label}
         </Badge>
         <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{priceLabel}</div>
       </div>
@@ -45,7 +47,17 @@ export default function TemplateCard({ template, onOpen }) {
         {metadata.description}
       </div>
       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-        {presentation.description}
+        {exportCapabilities.description}
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-xs)', marginTop: 'var(--space-xs)' }}>
+        {exportCapabilities.formats.map((format) => (
+          <Badge key={format} variant='secondary'>
+            {format.toUpperCase()}
+          </Badge>
+        ))}
+      </div>
+      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+        {exportCapabilities.reproducible ? 'Deterministic' : 'Non-deterministic'}
       </div>
       <div style={{ marginTop: 'var(--space-xs)', fontSize: 11, color: 'var(--text-muted)' }}>
         By {creator.name || 'Unknown'}

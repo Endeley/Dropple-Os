@@ -51,6 +51,7 @@ function EditorWorkspaceLayoutInner({
     events,
     cursor,
     emit,
+    exportArtifact,
 
     documentName,
     onSave,
@@ -123,7 +124,6 @@ function EditorWorkspaceLayoutInner({
     }, [getState]);
 
     const replayNodes = useMemo(() => getNodes(replayState), [replayState]);
-
     const selected = useMemo(() => {
         if (!selectedIds || selectedIds.size === 0) return [];
 
@@ -144,8 +144,9 @@ function EditorWorkspaceLayoutInner({
                 mode: hintMode || mode,
                 workspaceId,
                 publishToServer,
+                exportArtifact,
             }),
-        [emit, events, cursor.index, replayNodes, selectedIds, selected, hintMode, mode, publishToServer, workspaceId],
+        [emit, events, cursor.index, replayNodes, selectedIds, selected, hintMode, mode, publishToServer, workspaceId, exportArtifact],
     );
 
     useKeyboardShortcuts({
@@ -222,7 +223,7 @@ function EditorWorkspaceLayoutInner({
             ) : adapter?.id === 'review' ? (
                 <ReviewToolbar submission={reviewSubmission} onDecision={onReviewDecision} reviewerId={reviewerId} cursor={cursor} />
             ) : readOnly ? null : (
-                <Toolbar mode={adapter} emit={emit} getState={getState} events={events} cursor={cursor} documentName={documentName} onSave={onSave} onSaveAs={onSaveAs} recentDocs={recentDocs} onOpenDocument={onOpenDocument} canPersist={canPersist} onOpenTemplateGenerator={onOpenTemplateGenerator} />
+                <Toolbar mode={adapter} emit={emit} getState={getState} events={events} cursor={cursor} exportArtifact={exportArtifact} documentName={documentName} onSave={onSave} onSaveAs={onSaveAs} recentDocs={recentDocs} onOpenDocument={onOpenDocument} canPersist={canPersist} onOpenTemplateGenerator={onOpenTemplateGenerator} />
             )}
 
             {/* Main workspace */}

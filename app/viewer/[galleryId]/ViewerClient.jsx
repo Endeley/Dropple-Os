@@ -17,6 +17,7 @@ import { useGalleryIdentity } from '@/gallery/useGalleryIdentity';
 import { isEnvironmentArtifact } from '@/gallery/artifacts/types.js';
 import { openServerDocument } from '@/editor/openServerDocument';
 import { api } from '@/convex/_generated/api';
+import { getExportCapabilities } from '@/runtime/export/getExportCapabilities.js';
 import ViewerEnvironmentBridge from './ViewerEnvironmentBridge.jsx';
 
 const DEFAULT_VIEWER_PARAMS = {
@@ -63,6 +64,10 @@ export default function ViewerClient({
   const didTrackRef = useRef(false);
   const sessionIdRef = useRef(null);
   const hasResolvedEnvironment = isEnvironmentArtifact(artifact);
+  const exportCapabilities = useMemo(
+    () => getExportCapabilities(artifact),
+    [artifact]
+  );
   const snapshot = artifact?.snapshot ?? null;
   const resolvedEnvironment = hasResolvedEnvironment
     ? artifact.resolvedEnvironment
@@ -173,6 +178,78 @@ export default function ViewerClient({
           <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
             <div style={{ position: 'relative', flex: 1 }}>
               {paramsConfig.controls && <ViewerToolbar {...controls} />}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 52,
+                  left: 8,
+                  zIndex: 10,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 6,
+                  maxWidth: 280,
+                  padding: '10px 12px',
+                  borderRadius: 10,
+                  border: '1px solid rgba(148, 163, 184, 0.24)',
+                  background: 'rgba(255, 255, 255, 0.92)',
+                  boxShadow: '0 8px 24px rgba(15, 23, 42, 0.08)',
+                  backdropFilter: 'blur(8px)',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                    color: '#0f172a',
+                  }}
+                >
+                  {exportCapabilities.label}
+                </div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    lineHeight: 1.4,
+                    color: '#475569',
+                  }}
+                >
+                  {exportCapabilities.description}
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 6,
+                  }}
+                >
+                  {exportCapabilities.formats.map((format) => (
+                    <span
+                      key={format}
+                      style={{
+                        padding: '2px 8px',
+                        borderRadius: 999,
+                        border: '1px solid rgba(148, 163, 184, 0.28)',
+                        background: 'rgba(248, 250, 252, 0.95)',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: '#334155',
+                      }}
+                    >
+                      {format.toUpperCase()}
+                    </span>
+                  ))}
+                </div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: exportCapabilities.reproducible ? '#0f766e' : '#b45309',
+                  }}
+                >
+                  {exportCapabilities.reproducible ? 'Reproducible' : 'Non-reproducible'}
+                </div>
+              </div>
               {isOwner && (
                 <div
                   style={{
