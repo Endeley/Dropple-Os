@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { ArtifactKind } from '@/gallery/artifacts/types.js';
-=======
 import { ArtifactKind } from '@/core/artifacts/ArtifactKind.js';
->>>>>>> d728875 (fix(export): align runtime export boundaries with Dropple architecture laws)
 
 const EXPORT_FORMATS = Object.freeze([
     'json',

@@ -5,12 +5,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { createDerivedEnvironmentDescriptor } from '@/domain/templates/DerivedEnvironmentDescriptor.js';
 import { resolveTemplateEnvironment } from '@/domain/templates/resolveTemplateEnvironment.js';
-<<<<<<< HEAD
-import { publishTemplateFromWorkspace } from '@/templates/publishTemplateFromWorkspace.js';
-=======
 import { registerTemplate } from '@/domain/templates/TemplateRegistry.js';
 import { compileTemplateV1 } from '@/engine/templates/templateCompilerV1.js';
->>>>>>> d728875 (fix(export): align runtime export boundaries with Dropple architecture laws)
 import {
     ArtifactExportKinds,
     buildRuntimeSnapshotFromArtifact,
@@ -81,8 +77,6 @@ function createDocument() {
     };
 }
 
-<<<<<<< HEAD
-=======
 function createTemplateArtifact(version = '1.0.0') {
     const document = createDocument();
 
@@ -145,7 +139,6 @@ function registerPublishedSeed(version = '1.0.0') {
 
     return seed;
 }
->>>>>>> d728875 (fix(export): align runtime export boundaries with Dropple architecture laws)
 function createDescriptor(rootSeed, versionId) {
     return createDerivedEnvironmentDescriptor({
         lineage: {
@@ -168,20 +161,8 @@ function createDescriptor(rootSeed, versionId) {
 
 test('environment artifact export deterministically rebuilds canonical output', async () =>
     withTempRegistry(async () => {
-<<<<<<< HEAD
-        const published = publishTemplateFromWorkspace({
-            document: createDocument(),
-            metadata: {
-                title: 'Export Artifact Root',
-                version: '1.0.0',
-            },
-            workspaceMode: 'design',
-        });
-        const descriptor = createDescriptor(published.seed, published.seed.lineage.nodeId);
-=======
         const seed = registerPublishedSeed('1.0.0');
         const descriptor = createDescriptor(seed, seed.lineage.nodeId);
->>>>>>> d728875 (fix(export): align runtime export boundaries with Dropple architecture laws)
         const resolvedEnvironment = resolveTemplateEnvironment(descriptor);
         const artifact = createEnvironmentArtifact({
             descriptor,
@@ -259,20 +240,8 @@ test('snapshot artifact export deterministically resolves canonical output', asy
 
 test('environment rebuild and equivalent snapshot runtime resolve to the same canonical spec', async () =>
     withTempRegistry(async () => {
-<<<<<<< HEAD
-        const published = publishTemplateFromWorkspace({
-            document: createDocument(),
-            metadata: {
-                title: 'Export Artifact Equivalence',
-                version: '1.0.0',
-            },
-            workspaceMode: 'design',
-        });
-        const descriptor = createDescriptor(published.seed, published.seed.lineage.nodeId);
-=======
         const seed = registerPublishedSeed('1.0.0');
         const descriptor = createDescriptor(seed, seed.lineage.nodeId);
->>>>>>> d728875 (fix(export): align runtime export boundaries with Dropple architecture laws)
         const resolvedEnvironment = resolveTemplateEnvironment(descriptor);
         const environmentArtifact = createEnvironmentArtifact({
             descriptor,
