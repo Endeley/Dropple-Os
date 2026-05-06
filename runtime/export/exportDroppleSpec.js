@@ -1,8 +1,8 @@
 import { executeExport } from '../../engine/export/exportController.js';
-import { evaluateTransitionFrame } from '../transition/evaluateTransitionFrame.js';
 import { buildEvaluationInputs } from '../animation/buildEvaluationInputs.js';
 import { buildDroppleSpec } from './buildDroppleSpec.js';
 import { validateDroppleSpec } from './validateDroppleSpec.js';
+import { buildRenderSchedule, evaluateRenderFrame } from '@/runtime/render/renderOrchestration.js';
 
 /**
  * The ONLY semantic export entry point.
@@ -14,27 +14,35 @@ export function exportDroppleSpec({ snapshot, options: _options = {} } = {}) {
 
     const timeline = snapshot?.timeline?.timelines?.default ?? null;
     const inputs = buildEvaluationInputs(snapshot, { timeMs: 0, strictSceneScope: true });
-    if (!inputs.sceneGraphTree) {
+    if (!inputs.renderInput?.sceneGraph) {
         throw new Error('Export blocked: no valid scene scope');
     }
     const shot = {
         shotTimeline: inputs.shotTimeline,
-        sceneGraph: inputs.sceneGraphTree,
+        sceneGraph: inputs.renderInput.sceneGraphTree,
         activeSceneId: inputs.activeSceneId,
         activeShotId: inputs.activeShotId,
         presentHash: snapshot?.timeline?.presentHash ?? null,
     };
+    const renderSchedule = buildRenderSchedule({
+        renderInput: inputs.renderInput,
+        fromMs: 0,
+        sampleCount: 4,
+        includeTransitionBoundaries: true,
+    });
 
     const result = executeExport(shot, timeline, {
+        frames: renderSchedule.sampleTimes,
         evaluateShotAtFn: (_shotTimeline, _sceneGraph, timeMs, options = {}) =>
-            evaluateTransitionFrame({
-                shotTimeline: inputs.shotTimeline,
-                sceneGraph: snapshot?.document?.sceneGraph ?? null,
-                activeSceneId: inputs.activeSceneId,
-                activeShotId: options?.shotId ?? inputs.activeShotId ?? null,
+            evaluateRenderFrame({
+                renderInput: {
+                    ...inputs.renderInput,
+                    activeShotId: options?.shotId ?? inputs.renderInput.activeShotId ?? null,
+                    timeMs,
+                },
                 timeMs,
-                cameraTransform: inputs.cameraTransform ?? null,
-                strictSceneScope: true,
+                reason: 'export-preflight',
+                commit: false,
             }),
         performExport: () => {
             const spec = buildDroppleSpec(snapshot);

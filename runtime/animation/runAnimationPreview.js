@@ -1,7 +1,7 @@
 import { evaluateMotion } from '@/engine/animation/evaluateMotion.js';
+import { buildEvaluationInputs } from './buildEvaluationInputs.js';
 import { useAnimatedRuntimeStore } from '../stores/useAnimatedRuntimeStore.js';
 import { getRuntimeState } from '../state/runtimeState.js';
-import { getCameraTransformAtTime } from '@/core/scene/cameraPlayback.v1.js';
 import { getNodes } from '../document/documentAdapter.js';
 
 export function runAnimationPreview({
@@ -37,10 +37,16 @@ export function runAnimationPreview({
             };
         });
 
-        const camera = getRuntimeState()?.scene?.camera ?? null;
-        const cameraTransform = camera?.track
-            ? getCameraTransformAtTime(camera.track, time)
-            : camera?.transform ?? null;
+        let cameraTransform = null;
+        try {
+            const renderInputs = buildEvaluationInputs(getRuntimeState(), {
+                timeMs: time,
+                strictSceneScope: false,
+            });
+            cameraTransform = renderInputs?.camera?.transform ?? null;
+        } catch {
+            cameraTransform = null;
+        }
 
         useAnimatedRuntimeStore.setState(
             {

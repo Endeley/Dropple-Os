@@ -86,22 +86,18 @@ test('export transition evaluation matches runtime transition composition at the
 
     const inputs = buildEvaluationInputs(workspace, { timeMs: 900, strictSceneScope: true });
     const previewLike = evaluateTransitionFrame({
-        shotTimeline: inputs.shotTimeline,
-        sceneGraph: workspace.document.sceneGraph,
-        activeSceneId: inputs.activeSceneId,
-        activeShotId: inputs.activeShotId,
+        renderInput: {
+            ...inputs.renderInput,
+            timeMs: 900,
+        },
         timeMs: 900,
-        cameraTransform: inputs.cameraTransform,
-        strictSceneScope: true,
     });
     const exportLike = evaluateTransitionFrame({
-        shotTimeline: inputs.shotTimeline,
-        sceneGraph: workspace.document.sceneGraph,
-        activeSceneId: inputs.activeSceneId,
-        activeShotId: inputs.activeShotId,
+        renderInput: {
+            ...inputs.renderInput,
+            timeMs: 900,
+        },
         timeMs: 900,
-        cameraTransform: inputs.cameraTransform,
-        strictSceneScope: true,
     });
 
     assert.deepEqual(exportLike.evaluatedScene, previewLike.evaluatedScene);

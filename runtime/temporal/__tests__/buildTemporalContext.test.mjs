@@ -171,8 +171,12 @@ test('buildTemporalContext resolves shot camera before sequence camera', () => {
 
     const result = buildTemporalContext({ document, runtime });
 
+    assert.equal(result.activeCamera.nodeRef, 'camera-node');
     assert.equal(result.camera.source, 'shot');
+    assert.equal(result.camera.resolvedFrom, 'shot-track');
     assert.equal(result.camera.shotId, 'shot-a');
+    assert.equal(result.camera.timeMs, 500);
+    assert.equal(result.camera.nodeRef, null);
     assert.equal(result.camera.transform.x, 20);
     assert.equal(result.camera.transform.y, 30);
     assert.equal(result.camera.transform.zoom, 1.5);
@@ -230,12 +234,324 @@ test('buildTemporalContext falls back to sequence camera when shot camera is abs
 
     const result = buildTemporalContext({ document, runtime });
 
+    assert.equal(result.activeCamera.nodeRef, 'camera-node');
+    assert.equal(result.activeCamera.sourceType, 'camera-track');
+    assert.equal(result.activeCamera.startTime, 0);
+    assert.equal(result.activeCamera.endTime, 24);
+    assert.equal(result.activeCamera.priority, 0);
     assert.equal(result.camera.source, 'sequence');
+    assert.equal(result.camera.resolvedFrom, 'camera-track');
+    assert.equal(result.camera.sequenceId, 'seqA');
+    assert.equal(result.camera.trackId, 'cam');
+    assert.equal(result.camera.clipId, 'clip1');
+    assert.equal(result.camera.timeMs, 500);
     assert.equal(result.camera.nodeRef, 'camera-node');
     assert.equal(result.camera.transform.x, 320);
     assert.equal(result.camera.transform.y, 180);
     assert.equal(result.camera.transform.zoom, 1.25);
     assert.equal(result.camera.transform.rotation, 12);
+});
+
+test('buildTemporalContext blends shot cameras only inside explicit crossfade windows', () => {
+    const document = createDocument({
+        sequences: {
+            seqA: {
+                id: 'seqA',
+                frameRate: 24,
+                tracks: {},
+            },
+        },
+        activeSequenceId: 'seqA',
+        shots: [
+            {
+                id: 'shot-a',
+                start: 0,
+                duration: 1000,
+                transitionOut: { type: 'crossfade', durationMs: 200 },
+                camera: {
+                    keyframes: [{ time: 0, x: 0, y: 0, zoom: 1, rotation: 0 }],
+                },
+            },
+            {
+                id: 'shot-b',
+                start: 1000,
+                duration: 1000,
+                camera: {
+                    keyframes: [{ time: 0, x: 100, y: 50, zoom: 2, rotation: 20 }],
+                },
+            },
+        ],
+    });
+
+    const beforeWindow = buildTemporalContext({
+        document,
+        runtime: {
+            playback: { timeMs: 750 },
+            scene: { activeSceneId: 'scene-1' },
+        },
+    });
+    assert.equal(beforeWindow.camera.resolvedFrom, 'shot-track');
+    assert.equal(beforeWindow.camera.transition, undefined);
+    assert.equal(beforeWindow.camera.transform.x, 0);
+
+    const duringWindow = buildTemporalContext({
+        document,
+        runtime: {
+            playback: { timeMs: 900 },
+            scene: { activeSceneId: 'scene-1' },
+        },
+    });
+    assert.equal(duringWindow.camera.resolvedFrom, 'transition-crossfade');
+    assert.equal(duringWindow.camera.transition?.active, true);
+    assert.equal(duringWindow.camera.transition?.fromShotId, 'shot-a');
+    assert.equal(duringWindow.camera.transition?.toShotId, 'shot-b');
+    assert.equal(duringWindow.camera.transition?.progress, 0.5);
+    assert.equal(duringWindow.camera.transform.x, 50);
+    assert.equal(duringWindow.camera.transform.y, 25);
+    assert.equal(duringWindow.camera.transform.zoom, 1.5);
+    assert.equal(duringWindow.camera.transform.rotation, 10);
+});
+
+test('buildTemporalContext is boundary-deterministic at explicit crossfade start and end', () => {
+    const document = createDocument({
+        sequences: {
+            seqA: {
+                id: 'seqA',
+                frameRate: 24,
+                tracks: {},
+            },
+        },
+        activeSequenceId: 'seqA',
+        shots: [
+            {
+                id: 'shot-a',
+                start: 0,
+                duration: 1000,
+                transitionOut: { type: 'crossfade', durationMs: 200 },
+                camera: {
+                    keyframes: [{ time: 0, x: 0, y: 0, zoom: 1, rotation: 0 }],
+                },
+            },
+            {
+                id: 'shot-b',
+                start: 1000,
+                duration: 1000,
+                camera: {
+                    keyframes: [{ time: 0, x: 100, y: 50, zoom: 2, rotation: 20 }],
+                },
+            },
+        ],
+    });
+
+    const atWindowStart = buildTemporalContext({
+        document,
+        runtime: {
+            playback: { timeMs: 800 },
+            scene: { activeSceneId: 'scene-1' },
+        },
+    });
+    const atWindowEnd = buildTemporalContext({
+        document,
+        runtime: {
+            playback: { timeMs: 1000 },
+            scene: { activeSceneId: 'scene-1' },
+        },
+    });
+    const afterWindow = buildTemporalContext({
+        document,
+        runtime: {
+            playback: { timeMs: 1001 },
+            scene: { activeSceneId: 'scene-1' },
+        },
+    });
+
+    assert.equal(atWindowStart.camera.resolvedFrom, 'transition-crossfade');
+    assert.equal(atWindowStart.camera.transition?.progress, 0);
+    assert.equal(atWindowStart.camera.transform.x, 0);
+    assert.equal(atWindowStart.camera.transform.y, 0);
+
+    assert.equal(atWindowEnd.camera.resolvedFrom, 'transition-crossfade');
+    assert.equal(atWindowEnd.camera.transition?.progress, 1);
+    assert.equal(atWindowEnd.camera.transform.x, 100);
+    assert.equal(atWindowEnd.camera.transform.y, 50);
+
+    assert.equal(afterWindow.camera.resolvedFrom, 'shot-track');
+    assert.equal(afterWindow.camera.shotId, 'shot-b');
+    assert.equal(afterWindow.camera.transform.x, 100);
+    assert.equal(afterWindow.camera.transform.y, 50);
+});
+
+test('buildTemporalContext blends shot camera into sequence fallback when next shot has no camera', () => {
+    const document = createDocument({
+        sequences: {
+            seqA: {
+                id: 'seqA',
+                frameRate: 24,
+                tracks: {
+                    cam: {
+                        id: 'cam',
+                        type: 'camera',
+                        order: 0,
+                        clips: {
+                            clip1: {
+                                id: 'clip1',
+                                start: 0,
+                                end: 48,
+                                cameraNodeRef: 'camera-node',
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        activeSequenceId: 'seqA',
+        shots: [
+            {
+                id: 'shot-a',
+                start: 0,
+                duration: 1000,
+                transitionOut: { type: 'crossfade', durationMs: 200 },
+                camera: {
+                    keyframes: [{ time: 0, x: 0, y: 0, zoom: 1, rotation: 0 }],
+                },
+            },
+            {
+                id: 'shot-b',
+                start: 1000,
+                duration: 1000,
+            },
+        ],
+    });
+    document.sceneGraph.nodes = {
+        'camera-node': {
+            id: 'camera-node',
+            props: {
+                transform: {
+                    x: 320,
+                    y: 180,
+                    scale: 1.25,
+                    rotation: 12,
+                },
+            },
+        },
+    };
+
+    const result = buildTemporalContext({
+        document,
+        runtime: {
+            playback: { timeMs: 900 },
+            scene: { activeSceneId: 'scene-1' },
+        },
+    });
+
+    assert.equal(result.camera.resolvedFrom, 'transition-crossfade');
+    assert.equal(result.camera.transition?.progress, 0.5);
+    assert.equal(result.camera.transform.x, 160);
+    assert.equal(result.camera.transform.y, 90);
+    assert.equal(result.camera.transform.zoom, 1.125);
+    assert.equal(result.camera.transform.rotation, 6);
+});
+
+test('buildTemporalContext does not invent camera blending when neither shot owns camera', () => {
+    const document = createDocument({
+        sequences: {
+            seqA: {
+                id: 'seqA',
+                frameRate: 24,
+                tracks: {
+                    cam: {
+                        id: 'cam',
+                        type: 'camera',
+                        order: 0,
+                        clips: {
+                            clip1: {
+                                id: 'clip1',
+                                start: 0,
+                                end: 48,
+                                cameraNodeRef: 'camera-node',
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        activeSequenceId: 'seqA',
+        shots: [
+            {
+                id: 'shot-a',
+                start: 0,
+                duration: 1000,
+                transitionOut: { type: 'crossfade', durationMs: 200 },
+            },
+            {
+                id: 'shot-b',
+                start: 1000,
+                duration: 1000,
+            },
+        ],
+    });
+    document.sceneGraph.nodes = {
+        'camera-node': {
+            id: 'camera-node',
+            props: {
+                transform: {
+                    x: 320,
+                    y: 180,
+                    scale: 1.25,
+                    rotation: 12,
+                },
+            },
+        },
+    };
+
+    const result = buildTemporalContext({
+        document,
+        runtime: {
+            playback: { timeMs: 900 },
+            scene: { activeSceneId: 'scene-1' },
+        },
+    });
+
+    assert.equal(result.camera.source, 'sequence');
+    assert.equal(result.camera.resolvedFrom, 'camera-track');
+    assert.equal(result.camera.transition, null);
+    assert.equal(result.camera.transform.x, 320);
+    assert.equal(result.camera.transform.y, 180);
+});
+
+test('buildTemporalContext rejects ambiguous one-sided camera authority during a crossfade', () => {
+    const document = createDocument({
+        sequences: {},
+        activeSequenceId: null,
+        shots: [
+            {
+                id: 'shot-a',
+                start: 0,
+                duration: 1000,
+                transitionOut: { type: 'crossfade', durationMs: 200 },
+                camera: {
+                    keyframes: [{ time: 0, x: 0, y: 0, zoom: 1, rotation: 0 }],
+                },
+            },
+            {
+                id: 'shot-b',
+                start: 1000,
+                duration: 1000,
+            },
+        ],
+    });
+
+    assert.throws(
+        () =>
+            buildTemporalContext({
+                document,
+                runtime: {
+                    playback: { timeMs: 900 },
+                    scene: { activeSceneId: 'scene-1' },
+                },
+            }),
+        /camera transition governance: ambiguous authority across transition shot-a -> shot-b/,
+    );
 });
 
 test('buildTemporalContext returns empty sequence context when no sequence exists', () => {

@@ -50,8 +50,13 @@ test('evaluateSequence resolves active clips and active camera deterministically
 
     assert.equal(result.sequenceId, 'fight-sequence');
     assert.equal(result.activeClips.length, 2);
+    assert.equal(result.activeCamera.nodeRef, 'camera-a');
     assert.equal(result.activeCamera.cameraNodeRef, 'camera-a');
     assert.equal(result.activeCamera.trackId, 'camera');
+    assert.equal(result.activeCamera.sourceType, 'camera-track');
+    assert.equal(result.activeCamera.startTime, 0);
+    assert.equal(result.activeCamera.endTime, 120);
+    assert.equal(result.activeCamera.priority, 0);
 });
 
 test('evaluateSequence resolves active media assets and active audio clips deterministically', () => {

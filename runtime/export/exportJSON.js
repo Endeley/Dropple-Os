@@ -14,7 +14,7 @@ export function buildJSONExportDocument(snapshot) {
     };
 }
 
-export function exportJSON({ snapshot, filename = 'dropple-export.json' } = {}) {
+export function exportJSON({ snapshot, filename = 'dropple-export.json', download = true } = {}) {
     if (!snapshot || typeof snapshot !== 'object') {
         throw new Error('exportJSON requires snapshot.');
     }
@@ -23,6 +23,8 @@ export function exportJSON({ snapshot, filename = 'dropple-export.json' } = {}) 
         ...buildJSONExportDocument(snapshot),
     };
 
-    downloadText(JSON.stringify(doc, null, 2), filename, 'application/json');
+    if (download !== false) {
+        downloadText(JSON.stringify(doc, null, 2), filename, 'application/json');
+    }
     return doc;
 }

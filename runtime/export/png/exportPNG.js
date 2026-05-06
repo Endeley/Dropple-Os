@@ -39,7 +39,7 @@ ${body}
     };
 }
 
-export function exportPNG({ snapshot, scale = 1, filename = 'dropple-export.png' } = {}) {
+export function exportPNG({ snapshot, scale = 1, filename = 'dropple-export.png', download = true } = {}) {
     if (!snapshot || typeof snapshot !== 'object') {
         throw new Error('exportPNG requires snapshot.');
     }
@@ -70,7 +70,9 @@ export function exportPNG({ snapshot, scale = 1, filename = 'dropple-export.png'
                     return;
                 }
 
-                downloadBlob(png, filename);
+                if (download !== false) {
+                    downloadBlob(png, filename);
+                }
                 resolve(png);
             });
         };

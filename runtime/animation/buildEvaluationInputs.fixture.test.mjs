@@ -60,6 +60,10 @@ assert(before === after, 'runtimeState mutated');
 
 assert(result.sceneGraphTree && typeof result.sceneGraphTree === 'object', 'sceneGraphTree should be singular root object');
 assert(!Array.isArray(result.sceneGraphTree), 'sceneGraphTree must not be array-wrapped');
+assert(result.renderInput && typeof result.renderInput === 'object', 'renderInput missing');
+assert(result.renderInput.sceneGraph?.rootIds?.[0] === runtimeState.document.sceneGraph.rootIds[0], 'renderInput sceneGraph mismatch');
+assert(result.renderInput.sceneGraphTree === result.sceneGraphTree, 'renderInput sceneGraphTree mismatch');
+assert(result.renderInput.temporalContext && typeof result.renderInput.temporalContext === 'object', 'renderInput temporalContext missing');
 assert(result.sceneGraphTree.id === 'root', 'root id mismatch');
 assert(result.sceneGraphTree.children[0].id === 'childA', 'child order mismatch: childA');
 assert(result.sceneGraphTree.children[1].id === 'childB', 'child order mismatch: childB');
@@ -80,6 +84,9 @@ assert(camera.y.keyframes[0].t === 0 && camera.y.keyframes[0].v === 0, 'camera y
 assert(camera.y.keyframes[1].t === 1000 && camera.y.keyframes[1].v === 20, 'camera y keyframe[1] mismatch');
 
 assert(result.activeShotId === 'shotA', 'activeShotId precedence mismatch');
+assert(result.renderInput.activeShotId === result.activeShotId, 'renderInput activeShotId mismatch');
+assert(result.renderInput.activeSceneId === result.activeSceneId, 'renderInput activeSceneId mismatch');
+assert(result.renderInput.shotTimeline === result.shotTimeline, 'renderInput shotTimeline mismatch');
 
 const conflictingRuntimeState = {
     ...runtimeState,

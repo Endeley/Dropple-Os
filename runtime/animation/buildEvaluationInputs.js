@@ -1,11 +1,11 @@
-import { evaluateSequenceAtTime } from '../sequencer/evaluation/evaluateSequenceAtTime.js';
-import { getNode, getSceneGraph } from '../document/documentAdapter.js';
+import { getSceneGraph } from '../document/documentAdapter.js';
 import { extractActiveSceneTree } from '../scene/extractActiveSceneTree.js';
 import { getCanonicalShotTrack } from '@/core/scene/shotTracks.js';
 import {
     assertSceneGraphInvariants,
     resolveCanonicalSceneSelection,
 } from '@/core/scene/sceneGraphInvariants.js';
+import { buildTemporalContext } from '@/runtime/temporal/buildTemporalContext.js';
 
 function buildShotTimeline(sceneGraph, activeSceneId) {
     if (!sceneGraph || !Array.isArray(sceneGraph.scenes)) {
@@ -55,25 +55,22 @@ function buildShotTimeline(sceneGraph, activeSceneId) {
     return { shots };
 }
 
-function buildSequenceCameraTransform(runtimeState, timeMs) {
-    const sequenceView = evaluateSequenceAtTime({
-        document: runtimeState?.document,
-        timeMs,
-    });
-    const cameraNodeRef = sequenceView?.activeCamera?.cameraNodeRef ?? null;
-    if (!cameraNodeRef) return null;
-
-    const node = getNode(runtimeState, cameraNodeRef);
-    const transform = node?.props?.transform ?? {};
+function buildRuntimeCameraTransform(camera) {
+    if (!camera?.transform) return null;
 
     return {
-        x: Number(transform.x ?? 0),
-        y: Number(transform.y ?? 0),
-        zoom: Number(transform.scale ?? transform.zoom ?? 1),
-        rotation: Number(transform.rotation ?? 0),
-        nodeRef: cameraNodeRef,
-        clipId: sequenceView?.activeCamera?.clipId ?? null,
-        sequenceId: sequenceView?.sequenceId ?? null,
+        x: Number(camera.transform.x ?? 0),
+        y: Number(camera.transform.y ?? 0),
+        zoom: Number(camera.transform.zoom ?? 1),
+        rotation: Number(camera.transform.rotation ?? 0),
+        nodeRef: camera.nodeRef ?? null,
+        clipId: camera.clipId ?? null,
+        trackId: camera.trackId ?? null,
+        sequenceId: camera.sequenceId ?? null,
+        shotId: camera.shotId ?? null,
+        timeMs: camera.timeMs ?? null,
+        resolvedFrom: camera.resolvedFrom ?? null,
+        source: camera.source ?? null,
     };
 }
 
@@ -99,13 +96,46 @@ export function buildEvaluationInputs(runtimeState, { timeMs = 0, strictSceneSco
         strict: strictSceneScope,
     });
     const shotTimeline = buildShotTimeline(sceneGraph, activeSceneId);
-    const cameraTransform = buildSequenceCameraTransform(runtimeState, timeMs);
-
-    return {
+    const temporalContext = buildTemporalContext({
+        document: runtimeState?.document ?? null,
+        runtime: {
+            ...runtimeState,
+            playback: {
+                ...(runtimeState?.playback ?? {}),
+                frame: null,
+                time: null,
+                timeMs,
+            },
+        },
+        cursorIndex: null,
+    });
+    const camera = temporalContext?.camera ?? null;
+    const cameraTransform = buildRuntimeCameraTransform(temporalContext?.camera ?? null);
+    const renderInput = {
+        sceneGraph,
         sceneGraphTree,
         activeSceneId,
         shotTimeline,
         activeShotId,
+        temporalContext,
+        camera,
+        frameRate: Number(temporalContext?.frameRate ?? 24),
+        timeMs,
+        strictSceneScope,
+    };
+
+    return {
+        renderInput,
+        sceneGraph,
+        sceneGraphTree,
+        activeSceneId,
+        shotTimeline,
+        activeShotId,
+        temporalContext,
+        camera,
+        frameRate: Number(temporalContext?.frameRate ?? 24),
         cameraTransform,
+        timeMs,
+        strictSceneScope,
     };
 }

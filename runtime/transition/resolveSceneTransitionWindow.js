@@ -1,4 +1,9 @@
 import { assertCanonicalShotSequence } from '@/core/scene/sceneGraphInvariants.js';
+import {
+    assertActiveCameraTransitionTopology,
+    assertCameraTransitionProgress,
+    assertCameraTransitionWindows,
+} from './assertCameraTransitionGovernance.js';
 
 function safeNumber(value, fallback = 0) {
     return Number.isFinite(value) ? Number(value) : fallback;
@@ -57,6 +62,7 @@ export function resolveSceneTransitionWindow({
 } = {}) {
     const orderedShots = getOrderedShots({ shots });
     assertCanonicalShotSequence(orderedShots, { sceneId: 'transition-window' });
+    assertCameraTransitionWindows(orderedShots);
     const now = safeNumber(timeMs);
     const fromShot = resolveCurrentShot(orderedShots, activeShotId, now);
 
@@ -66,33 +72,36 @@ export function resolveSceneTransitionWindow({
     if (!transition) return null;
 
     const fromIndex = orderedShots.findIndex((shot) => shot?.id === fromShot?.id);
-    if (fromIndex < 0 || fromIndex >= orderedShots.length - 1) return null;
-
-    const toShot = orderedShots[fromIndex + 1] ?? null;
-    if (!toShot) return null;
-
     const fromEndMs = safeNumber(fromShot?.endMs);
     const durationMs = safeNumber(transition.durationMs);
+    const transitionStart = durationMs === 0 ? fromEndMs : fromEndMs - durationMs;
+    const transitionEnd = fromEndMs;
+    const isTransitionActive =
+        durationMs === 0 ? now >= fromEndMs : now >= transitionStart && now <= transitionEnd;
+
+    if (!isTransitionActive) return null;
+
+    assertActiveCameraTransitionTopology({
+        orderedShots,
+        fromIndex,
+        transition,
+    });
+
+    const toShot = orderedShots[fromIndex + 1] ?? null;
 
     if (durationMs === 0) {
-        return now >= fromEndMs
-            ? {
-                  fromShotId: fromShot.id,
-                  toShotId: toShot.id,
-                  transition,
-                  t: 1,
-                  fromShot,
-                  toShot,
-              }
-            : null;
+        return {
+            fromShotId: fromShot.id,
+            toShotId: toShot.id,
+            transition,
+            t: 1,
+            fromShot,
+            toShot,
+        };
     }
 
-    const transitionStart = fromEndMs - durationMs;
-    const transitionEnd = fromEndMs;
-
-    if (now < transitionStart || now > transitionEnd) return null;
-
     const t = clamp01((now - transitionStart) / durationMs);
+    assertCameraTransitionProgress({ t });
 
     return {
         fromShotId: fromShot.id,

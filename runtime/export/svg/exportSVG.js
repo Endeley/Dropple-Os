@@ -37,7 +37,7 @@ ${body}
 </svg>`;
 }
 
-export function exportSVG({ snapshot, filename = 'dropple-export.svg' } = {}) {
+export function exportSVG({ snapshot, filename = 'dropple-export.svg', download = true } = {}) {
     if (!snapshot || typeof snapshot !== 'object') {
         throw new Error('exportSVG requires snapshot.');
     }
@@ -45,6 +45,8 @@ export function exportSVG({ snapshot, filename = 'dropple-export.svg' } = {}) {
     const svg = buildSVGDocument(snapshot);
     if (!svg) return null;
 
-    downloadText(svg, filename, 'image/svg+xml');
+    if (download !== false) {
+        downloadText(svg, filename, 'image/svg+xml');
+    }
     return svg;
 }

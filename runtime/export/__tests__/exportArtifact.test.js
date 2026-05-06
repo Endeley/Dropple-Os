@@ -55,17 +55,27 @@ async function withDownloadStubs(run) {
     }
 }
 
-function createDocument() {
+function createDocument(includeHeadline = false) {
+    const nodes = {
+        root: {
+            id: 'root',
+            type: 'frame',
+            children: includeHeadline ? ['headline'] : [],
+        },
+    };
+
+    if (includeHeadline) {
+        nodes.headline = {
+            id: 'headline',
+            type: 'text',
+            children: [],
+        };
+    }
+
     return {
         sceneGraph: {
             rootIds: ['root'],
-            nodes: {
-                root: {
-                    id: 'root',
-                    type: 'frame',
-                    children: [],
-                },
-            },
+            nodes,
             activeSceneId: 'sceneA',
             scenes: [
                 {
@@ -77,8 +87,8 @@ function createDocument() {
     };
 }
 
-function createTemplateArtifact(version = '1.0.0') {
-    const document = createDocument();
+function createTemplateArtifact(version = '1.0.0', includeHeadline = false) {
+    const document = createDocument(includeHeadline);
 
     return {
         metadata: {
@@ -129,8 +139,8 @@ function createTemplateArtifact(version = '1.0.0') {
     };
 }
 
-function registerPublishedSeed(version = '1.0.0') {
-    const seed = compileTemplateV1(createTemplateArtifact(version)).seed;
+function registerPublishedSeed(version = '1.0.0', includeHeadline = false) {
+    const seed = compileTemplateV1(createTemplateArtifact(version, includeHeadline)).seed;
 
     registerTemplate({
         template: seed,
@@ -183,6 +193,9 @@ test('environment artifact export deterministically rebuilds canonical output', 
         );
 
         assert.deepEqual(first.output, second.output);
+        assert.equal(first.exportHash, second.exportHash);
+        assert.equal(first.algorithm, second.algorithm);
+        assert.equal(first.canonicalVersion, second.canonicalVersion);
     }));
 
 test('snapshot artifact export deterministically resolves canonical output', async () => {
@@ -236,6 +249,7 @@ test('snapshot artifact export deterministically resolves canonical output', asy
     );
 
     assert.deepEqual(first.output, second.output);
+    assert.equal(first.exportHash, second.exportHash);
 });
 
 test('environment rebuild and equivalent snapshot runtime resolve to the same canonical spec', async () =>
@@ -266,6 +280,57 @@ test('environment rebuild and equivalent snapshot runtime resolve to the same ca
         );
 
         assert.deepEqual(environmentExport.output, snapshotExport.output);
+        assert.equal(environmentExport.exportHash, snapshotExport.exportHash);
+    }));
+
+test('structural change produces a different export hash', async () =>
+    withTempRegistry(async () => {
+        const firstSeed = registerPublishedSeed('1.0.0', false);
+        const firstDescriptor = createDescriptor(firstSeed, firstSeed.lineage.nodeId);
+        const firstArtifact = createEnvironmentArtifact({
+            descriptor: firstDescriptor,
+            resolvedEnvironment: resolveTemplateEnvironment(firstDescriptor),
+        });
+
+        const secondSeed = registerPublishedSeed('2.0.0', true);
+        const secondDescriptor = createDerivedEnvironmentDescriptor({
+            lineage: {
+                lineageRootId: secondSeed.lineage.rootId,
+                versionId: secondSeed.lineage.nodeId,
+            },
+            environment: {
+                overrides: {},
+                runtimeConfig: {},
+                modeContext: {
+                    workspaceId: 'design',
+                    modeId: 'graphic',
+                },
+            },
+            metadata: {
+                source: 'export-artifact-test-structural-change',
+            },
+        });
+        const secondArtifact = createEnvironmentArtifact({
+            descriptor: secondDescriptor,
+            resolvedEnvironment: resolveTemplateEnvironment(secondDescriptor),
+        });
+
+        const firstExport = await withDownloadStubs(() =>
+            exportArtifact({
+                artifact: firstArtifact,
+                format: ArtifactExportKinds.JSON,
+                options: { download: false },
+            }),
+        );
+        const secondExport = await withDownloadStubs(() =>
+            exportArtifact({
+                artifact: secondArtifact,
+                format: ArtifactExportKinds.JSON,
+                options: { download: false },
+            }),
+        );
+
+        assert.notEqual(firstExport.exportHash, secondExport.exportHash);
     }));
 
 test('createEnvironmentArtifact rejects partial publication context', () => {

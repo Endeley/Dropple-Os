@@ -7,12 +7,18 @@ import { Badge } from '@/ui/controls/ui/badge.jsx';
 import { getArtifactPresentation } from '@/marketplace/artifactPresentation.js';
 import { resolveCanonicalWorkspaceOverlayContext } from '@/platform/workspaces/index.js';
 import { getExportCapabilities } from '@/runtime/export/getExportCapabilities.js';
+import {
+  ArtifactExportKinds,
+  exportArtifact as exportArtifactFacade,
+} from '@/runtime/export/exportArtifact.js';
+import { verifyExportArtifact } from '@/runtime/export/verify/verifyExportArtifact.js';
 
 export default function TemplateDetailPage({ params }) {
   const router = useRouter();
   const [template, setTemplate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [verificationState, setVerificationState] = useState(null);
   const ownership = useOwnership();
   const user = { id: 'user-local' };
   const [license, setLicense] = useState('personal');
@@ -53,6 +59,56 @@ export default function TemplateDetailPage({ params }) {
       cancelled = true;
     };
   }, [params.id]);
+
+  useEffect(() => {
+    if (!template?.artifact) {
+      setVerificationState(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function verifyTemplateArtifact() {
+      try {
+        const exported = await exportArtifactFacade({
+          artifact: template.artifact,
+          format: ArtifactExportKinds.DROPPLE_SPEC,
+          options: {
+            download: false,
+          },
+        });
+        const verification = await verifyExportArtifact({
+          artifact: template.artifact,
+          format: exported.format,
+          output: exported.output,
+          exportHash: exported.exportHash,
+          canonicalVersion: exported.canonicalVersion,
+          algorithm: exported.algorithm,
+          options: {
+            download: false,
+          },
+        });
+
+        if (!cancelled) {
+          setVerificationState(verification);
+        }
+      } catch (nextError) {
+        if (!cancelled) {
+          setVerificationState({
+            valid: false,
+            error: nextError?.message ?? 'Verification failed.',
+          });
+        }
+      }
+    }
+
+    setVerificationState(null);
+    verifyTemplateArtifact();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [template]);
 
   if (loading) return <div style={{ padding: 'var(--space-6)' }}>Loading template...</div>;
   if (error) return <div style={{ padding: 'var(--space-6)' }}>Failed to load template.</div>;
@@ -158,6 +214,32 @@ export default function TemplateDetailPage({ params }) {
         <div style={{ marginTop: 'var(--space-sm)', fontSize: 12, color: 'var(--text-muted)' }}>
           {exportCapabilities.reproducible ? 'Deterministic output' : 'Non-deterministic output'}
         </div>
+      </div>
+
+      <div style={{ marginTop: 'var(--space-lg)' }}>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Verification</div>
+        <div style={{ marginTop: 'var(--space-xs)', fontSize: 13, fontWeight: 600 }}>
+          {verificationState == null
+            ? 'Verifying deterministic artifact...'
+            : verificationState.valid
+              ? 'Verified deterministic artifact'
+              : 'Verification unavailable'}
+        </div>
+        {verificationState?.exportHash ? (
+          <>
+            <div style={{ marginTop: 'var(--space-xs)', fontSize: 12, color: 'var(--text-muted)' }}>
+              Fingerprint: {verificationState.exportHash}
+            </div>
+            <div style={{ marginTop: 'var(--space-xs)', fontSize: 12, color: 'var(--text-muted)' }}>
+              {verificationState.canonicalVersion} · {verificationState.algorithm}
+            </div>
+          </>
+        ) : null}
+        {verificationState?.error ? (
+          <div style={{ marginTop: 'var(--space-xs)', fontSize: 12, color: 'var(--text-muted)' }}>
+            {verificationState.error}
+          </div>
+        ) : null}
       </div>
 
       <div style={{ marginTop: 'var(--space-lg)' }}>

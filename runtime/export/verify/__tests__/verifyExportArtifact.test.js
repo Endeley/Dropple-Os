@@ -1,0 +1,215 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { createDerivedEnvironmentDescriptor } from '@/domain/templates/DerivedEnvironmentDescriptor.js';
+import { resolveTemplateEnvironment } from '@/domain/templates/resolveTemplateEnvironment.js';
+import { registerTemplate } from '@/domain/templates/TemplateRegistry.js';
+import { compileTemplateV1 } from '@/engine/templates/templateCompilerV1.js';
+import {
+    ArtifactExportKinds,
+    createEnvironmentArtifact,
+    createSnapshotArtifact,
+    buildRuntimeSnapshotFromArtifact,
+    exportArtifact,
+} from '../../exportArtifact.js';
+import { verifyExportArtifact } from '../verifyExportArtifact.js';
+
+function withTempRegistry(run) {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dropple-verify-export-artifact-'));
+    const originalCwd = process.cwd();
+    process.chdir(tempDir);
+    try {
+        return run();
+    } finally {
+        process.chdir(originalCwd);
+    }
+}
+
+function createDocument() {
+    return {
+        sceneGraph: {
+            rootIds: ['root'],
+            nodes: {
+                root: {
+                    id: 'root',
+                    type: 'frame',
+                    children: [],
+                },
+            },
+            activeSceneId: 'sceneA',
+            scenes: [
+                {
+                    id: 'sceneA',
+                    shots: [{ id: 'shotA', start: 0, duration: 1000, compositionId: 'root' }],
+                },
+            ],
+        },
+    };
+}
+
+function createTemplateArtifact(version = '1.0.0') {
+    return {
+        metadata: {
+            id: 'tpl.runtime.verify-export-artifact',
+            version,
+            name: 'Verify Export Artifact Fixture',
+            engine: 'dropple-motion@1.x',
+            author: 'Dropple',
+            license: 'dropple-marketplace-standard',
+            createdAt: '2026-05-06',
+            description: 'Runtime export verification fixture',
+        },
+        structure: {
+            root: 'root',
+            nodes: [{ id: 'root', type: 'Scene' }],
+            tree: {
+                root: [],
+            },
+        },
+        motion: {
+            timelines: {
+                intro: {
+                    duration: 1000,
+                    tracks: [
+                        {
+                            target: 'root',
+                            property: 'opacity',
+                            keyframes: [
+                                { t: 0, v: 0.25 },
+                                { t: 1000, v: 1 },
+                            ],
+                        },
+                    ],
+                },
+            },
+            triggers: {
+                onLoad: 'intro',
+            },
+        },
+        params: {},
+        runtime: {
+            viewport: ['desktop'],
+            autoplay: true,
+        },
+    };
+}
+
+function registerPublishedSeed(version = '1.0.0') {
+    const seed = compileTemplateV1(createTemplateArtifact(version)).seed;
+    registerTemplate({
+        template: seed,
+        engineVersion: seed.certification.engineVersion,
+    });
+    return seed;
+}
+
+function createDescriptor(seed) {
+    return createDerivedEnvironmentDescriptor({
+        lineage: {
+            lineageRootId: seed.lineage.rootId,
+            versionId: seed.lineage.nodeId,
+        },
+        environment: {
+            overrides: {},
+            runtimeConfig: {},
+            modeContext: {
+                workspaceId: 'design',
+                modeId: 'graphic',
+            },
+        },
+        metadata: {
+            source: 'verify-export-artifact-test',
+        },
+    });
+}
+
+test('verifyExportArtifact validates an environment export fingerprint', async () =>
+    withTempRegistry(async () => {
+        const seed = registerPublishedSeed('1.0.0');
+        const descriptor = createDescriptor(seed);
+        const artifact = createEnvironmentArtifact({
+            descriptor,
+            resolvedEnvironment: resolveTemplateEnvironment(descriptor),
+        });
+        const exported = await exportArtifact({
+            artifact,
+            format: ArtifactExportKinds.JSON,
+            options: { download: false },
+        });
+
+        const verification = await verifyExportArtifact({
+            artifact,
+            format: exported.format,
+            output: exported.output,
+            exportHash: exported.exportHash,
+            canonicalVersion: exported.canonicalVersion,
+            algorithm: exported.algorithm,
+            options: { download: false },
+        });
+
+        assert.equal(verification.valid, true);
+        assert.equal(verification.hashMatches, true);
+        assert.equal(verification.capabilityMatches, true);
+        assert.equal(verification.reproductionMatches, true);
+    }));
+
+test('verifyExportArtifact validates equivalent snapshot export identity', async () =>
+    withTempRegistry(async () => {
+        const seed = registerPublishedSeed('1.0.0');
+        const descriptor = createDescriptor(seed);
+        const environmentArtifact = createEnvironmentArtifact({
+            descriptor,
+            resolvedEnvironment: resolveTemplateEnvironment(descriptor),
+        });
+        const snapshotArtifact = createSnapshotArtifact({
+            snapshot: buildRuntimeSnapshotFromArtifact(environmentArtifact),
+        });
+        const exported = await exportArtifact({
+            artifact: environmentArtifact,
+            format: ArtifactExportKinds.JSON,
+            options: { download: false },
+        });
+
+        const verification = await verifyExportArtifact({
+            artifact: snapshotArtifact,
+            format: exported.format,
+            output: exported.output,
+            exportHash: exported.exportHash,
+            canonicalVersion: exported.canonicalVersion,
+            algorithm: exported.algorithm,
+            options: { download: false },
+        });
+
+        assert.equal(verification.valid, true);
+        assert.equal(verification.exportHash, exported.exportHash);
+    }));
+
+test('verifyExportArtifact rejects mismatched export hashes', async () =>
+    withTempRegistry(async () => {
+        const seed = registerPublishedSeed('1.0.0');
+        const descriptor = createDescriptor(seed);
+        const artifact = createEnvironmentArtifact({
+            descriptor,
+            resolvedEnvironment: resolveTemplateEnvironment(descriptor),
+        });
+        const exported = await exportArtifact({
+            artifact,
+            format: ArtifactExportKinds.JSON,
+            options: { download: false },
+        });
+
+        const verification = await verifyExportArtifact({
+            artifact,
+            format: exported.format,
+            output: exported.output,
+            exportHash: `${exported.exportHash.slice(0, -1)}0`,
+            canonicalVersion: exported.canonicalVersion,
+            algorithm: exported.algorithm,
+            options: { download: false },
+        });
+
+        assert.equal(verification.valid, false);
+        assert.equal(verification.hashMatches, false);
+    }));

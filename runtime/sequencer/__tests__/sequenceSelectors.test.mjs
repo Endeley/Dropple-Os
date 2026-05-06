@@ -74,7 +74,9 @@ test('projectActiveSequenceView resolves active camera from document.sequences',
     const view = projectActiveSequenceView(document, { frame: 32 });
 
     assert.equal(view.sequenceId, 'fight-sequence');
+    assert.equal(view.activeCamera.nodeRef, 'camera-a');
     assert.equal(view.activeCamera.cameraNodeRef, 'camera-a');
+    assert.equal(view.activeCamera.sourceType, 'camera-track');
 });
 
 test('selectActiveSequenceView reads canonical runtime temporal context', () => {
@@ -129,9 +131,14 @@ test('selectActiveSequenceView reads canonical runtime temporal context', () => 
                     localTime: 333,
                 },
                 activeCamera: {
+                    nodeRef: 'camera-runtime',
                     cameraNodeRef: 'camera-runtime',
                     clipId: 'clip-runtime',
                     trackId: 'track-runtime',
+                    sourceType: 'camera-track',
+                    startTime: 0,
+                    endTime: 48,
+                    priority: 0,
                 },
             },
         },
@@ -145,6 +152,7 @@ test('selectActiveSequenceView reads canonical runtime temporal context', () => 
     assert.equal(view.sequenceId, 'fight-sequence');
     assert.equal(view.frame, 32);
     assert.equal(view.timeMs, 1333);
+    assert.equal(view.activeCamera.nodeRef, 'camera-runtime');
     assert.equal(view.activeCamera.cameraNodeRef, 'camera-runtime');
     assert.equal(view.activeShot.shotId, 'shot-a');
     assert.equal(view.activeAudioClips[0].asset.url, '/audio-a.wav');

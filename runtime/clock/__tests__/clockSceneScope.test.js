@@ -162,3 +162,84 @@ test('seek composes crossfade transitions deterministically', () => {
     assert.deepEqual(left, right);
     assert.equal(useRuntimeStore.getState().shotId, 'shotA');
 });
+
+test('seek remains deterministic across transition boundaries and reverse seeks', () => {
+    installRuntime({
+        document: {
+            sceneGraph: {
+                rootIds: ['fallback-root'],
+                nodes: {
+                    'fallback-root': { id: 'fallback-root', type: 'frame', children: [] },
+                    compA: { id: 'compA', type: 'frame', x: 0, opacity: 1, children: [] },
+                    compB: { id: 'compB', type: 'frame', x: 100, opacity: 0.2, children: [] },
+                },
+                activeSceneId: 'sceneA',
+                activeShotId: 'shotA',
+                scenes: [
+                    {
+                        id: 'sceneA',
+                        shots: [
+                            {
+                                id: 'shotA',
+                                start: 0,
+                                duration: 1000,
+                                compositionId: 'compA',
+                                transitionOut: { type: 'crossfade', durationMs: 200 },
+                            },
+                            {
+                                id: 'shotB',
+                                start: 1000,
+                                duration: 1000,
+                                compositionId: 'compB',
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+        scene: {
+            activeSceneId: 'sceneA',
+            activeShotId: 'shotA',
+        },
+    });
+
+    const sampleTimes = [799, 800, 900, 1000, 1001];
+    const forwardSnapshots = sampleTimes.map((timeMs) => {
+        seek(timeMs);
+        const state = useRuntimeStore.getState();
+        return {
+            timeMs,
+            shotId: state.shotId,
+            shotTimeMs: state.shotTimeMs,
+            evalStatus: state.evalStatus,
+            evaluatedScene: structuredClone(state.evaluatedScene),
+        };
+    });
+
+    const replayedSnapshots = sampleTimes.map((timeMs) => {
+        seek(timeMs);
+        const state = useRuntimeStore.getState();
+        return {
+            timeMs,
+            shotId: state.shotId,
+            shotTimeMs: state.shotTimeMs,
+            evalStatus: state.evalStatus,
+            evaluatedScene: structuredClone(state.evaluatedScene),
+        };
+    });
+
+    const reverseTime = 900;
+    seek(1001);
+    seek(reverseTime);
+    const reverseState = useRuntimeStore.getState();
+
+    assert.deepEqual(forwardSnapshots, replayedSnapshots);
+    assert.equal(forwardSnapshots[1].shotId, 'shotA');
+    assert.equal(forwardSnapshots[2].shotId, 'shotA');
+    assert.equal(forwardSnapshots[3].shotId, 'shotA');
+    assert.equal(forwardSnapshots[4].evalStatus, 'OK');
+    assert.deepEqual(reverseState.evaluatedScene, forwardSnapshots[2].evaluatedScene);
+    assert.equal(reverseState.shotId, forwardSnapshots[2].shotId);
+    assert.equal(reverseState.shotTimeMs, forwardSnapshots[2].shotTimeMs);
+    assert.equal(reverseState.evalStatus, forwardSnapshots[2].evalStatus);
+});

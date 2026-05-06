@@ -18,6 +18,12 @@ import { isEnvironmentArtifact } from '@/gallery/artifacts/types.js';
 import { openServerDocument } from '@/editor/openServerDocument';
 import { api } from '@/convex/_generated/api';
 import { getExportCapabilities } from '@/runtime/export/getExportCapabilities.js';
+import {
+  ArtifactExportKinds,
+  exportArtifact as exportArtifactFacade,
+} from '@/runtime/export/exportArtifact.js';
+import { verifyExportArtifact } from '@/runtime/export/verify/verifyExportArtifact.js';
+import { resolveViewerRuntimeCamera } from '@/viewer/runtimeCameraDiagnostics.js';
 import ViewerEnvironmentBridge from './ViewerEnvironmentBridge.jsx';
 
 const DEFAULT_VIEWER_PARAMS = {
@@ -51,6 +57,7 @@ export default function ViewerClient({
 }) {
   const [cursorIndex, setCursorIndex] = useState(-1);
   const [paramsConfig, setParamsConfig] = useState(DEFAULT_VIEWER_PARAMS);
+  const [verificationState, setVerificationState] = useState(null);
   const controls = useViewerControls(paramsConfig);
   const router = useRouter();
   const identity = useGalleryIdentity();
@@ -72,6 +79,13 @@ export default function ViewerClient({
   const resolvedEnvironment = hasResolvedEnvironment
     ? artifact.resolvedEnvironment
     : null;
+  const runtimeCamera = useMemo(() => {
+    try {
+      return resolveViewerRuntimeCamera(artifact);
+    } catch {
+      return null;
+    }
+  }, [artifact]);
 
   function getAnalyticsSessionId() {
     if (typeof window === 'undefined') return null;
@@ -111,18 +125,67 @@ export default function ViewerClient({
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+
+    async function verifyArtifact() {
+      try {
+        const exported = await exportArtifactFacade({
+          artifact,
+          format: ArtifactExportKinds.DROPPLE_SPEC,
+          options: {
+            download: false,
+          },
+        });
+        const verification = await verifyExportArtifact({
+          artifact,
+          format: exported.format,
+          output: exported.output,
+          exportHash: exported.exportHash,
+          canonicalVersion: exported.canonicalVersion,
+          algorithm: exported.algorithm,
+          options: {
+            download: false,
+          },
+        });
+
+        if (!cancelled) {
+          setVerificationState(verification);
+        }
+      } catch (nextError) {
+        if (!cancelled) {
+          setVerificationState({
+            valid: false,
+            error: nextError?.message ?? 'Verification failed.',
+          });
+        }
+      }
+    }
+
+    setVerificationState(null);
+    verifyArtifact();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [artifact]);
+
+  useEffect(() => {
     if (typeof window === 'undefined') return undefined;
 
     window.__DROPPLE_VIEWER_MODE__ = hasResolvedEnvironment
       ? 'environment'
       : 'snapshot';
     window.__DROPPLE_VIEWER_ARTIFACT_KIND__ = artifact?.kind ?? null;
+    window.__DROPPLE_VIEWER_CAMERA__ = runtimeCamera ?? null;
+    window.__DROPPLE_VIEWER_CAMERA_TRANSITION__ = runtimeCamera?.transition ?? null;
 
     return () => {
       delete window.__DROPPLE_VIEWER_MODE__;
       delete window.__DROPPLE_VIEWER_ARTIFACT_KIND__;
+      delete window.__DROPPLE_VIEWER_CAMERA__;
+      delete window.__DROPPLE_VIEWER_CAMERA_TRANSITION__;
     };
-  }, [artifact?.kind, hasResolvedEnvironment]);
+  }, [artifact?.kind, hasResolvedEnvironment, runtimeCamera]);
 
   const events = hydrated?.events || [];
   const maxCursorIndex = events.length - 1;
@@ -248,6 +311,91 @@ export default function ViewerClient({
                   }}
                 >
                   {exportCapabilities.reproducible ? 'Reproducible' : 'Non-reproducible'}
+                </div>
+                <div
+                  style={{
+                    marginTop: 4,
+                    paddingTop: 8,
+                    borderTop: '1px solid rgba(148, 163, 184, 0.18)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 4,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: verificationState?.valid ? '#0f766e' : '#475569',
+                    }}
+                  >
+                    {verificationState == null
+                      ? 'Verifying deterministic artifact...'
+                      : verificationState.valid
+                        ? 'Verified deterministic artifact'
+                        : 'Verification unavailable'}
+                  </div>
+                  {verificationState?.exportHash ? (
+                    <>
+                      <div style={{ fontSize: 11, color: '#475569' }}>
+                        Fingerprint: {verificationState.exportHash.slice(0, 16)}...
+                      </div>
+                      <div style={{ fontSize: 11, color: '#64748b' }}>
+                        {verificationState.canonicalVersion} · {verificationState.algorithm}
+                      </div>
+                    </>
+                  ) : null}
+                  {verificationState?.error ? (
+                    <div style={{ fontSize: 11, color: '#b45309' }}>
+                      {verificationState.error}
+                    </div>
+                  ) : null}
+                </div>
+                <div
+                  style={{
+                    marginTop: 4,
+                    paddingTop: 8,
+                    borderTop: '1px solid rgba(148, 163, 184, 0.18)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 4,
+                  }}
+                  data-testid="viewer-camera-diagnostics"
+                >
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: '#0f172a',
+                    }}
+                  >
+                    Runtime Camera
+                  </div>
+                  {runtimeCamera ? (
+                    <>
+                      <div style={{ fontSize: 11, color: '#475569' }}>
+                        {runtimeCamera.source} · {runtimeCamera.resolvedFrom}
+                      </div>
+                      {runtimeCamera.transition?.active ? (
+                        <div style={{ fontSize: 11, color: '#475569' }}>
+                          Transition {Math.round((runtimeCamera.transition.progress ?? 0) * 100)}% ·{' '}
+                          {runtimeCamera.transition.fromShotId} → {runtimeCamera.transition.toShotId}
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: 11, color: '#475569' }}>
+                          Single-owner authority
+                        </div>
+                      )}
+                      <div style={{ fontSize: 11, color: '#64748b' }}>
+                        x {runtimeCamera.transform?.x ?? 0} · y {runtimeCamera.transform?.y ?? 0} · zoom{' '}
+                        {runtimeCamera.transform?.zoom ?? 1} · rot {runtimeCamera.transform?.rotation ?? 0}
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{ fontSize: 11, color: '#64748b' }}>
+                      Runtime camera unavailable
+                    </div>
+                  )}
                 </div>
               </div>
               {isOwner && (

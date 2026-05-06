@@ -73,3 +73,119 @@ test('rejects overlapping shot windows before transition resolution', () => {
         /sceneGraph: shots must not overlap \(transition-window:b\)/,
     );
 });
+
+test('rejects camera transition windows that extend outside the owning shot', () => {
+    assert.throws(
+        () =>
+            resolveSceneTransitionWindow({
+                shots: [
+                    {
+                        id: 'a',
+                        startMs: 100,
+                        endMs: 200,
+                        transitionOut: { type: 'crossfade', durationMs: 150 },
+                    },
+                    {
+                        id: 'b',
+                        startMs: 200,
+                        endMs: 400,
+                    },
+                ],
+                timeMs: 180,
+            }),
+        /camera transition governance: transition window must remain within owning shot \(a\)/,
+    );
+});
+
+test('rejects unsupported camera transition types', () => {
+    assert.throws(
+        () =>
+            resolveSceneTransitionWindow({
+                shots: [
+                    {
+                        id: 'a',
+                        startMs: 0,
+                        endMs: 1000,
+                        transitionOut: { type: 'wipe', durationMs: 100 },
+                    },
+                    {
+                        id: 'b',
+                        startMs: 1000,
+                        endMs: 2000,
+                    },
+                ],
+                timeMs: 950,
+            }),
+        /camera transition governance: unsupported transition type wipe/,
+    );
+});
+
+test('rejects last-shot outgoing camera transition ownership', () => {
+    assert.throws(
+        () =>
+            resolveSceneTransitionWindow({
+                shots: [
+                    {
+                        id: 'a',
+                        startMs: 0,
+                        endMs: 1000,
+                        transitionOut: { type: 'crossfade', durationMs: 100 },
+                    },
+                ],
+                timeMs: 950,
+            }),
+        /camera transition governance: last shot cannot own an outgoing transition \(a\)/,
+    );
+});
+
+test('rejects non-contiguous adjacent transition targets', () => {
+    assert.throws(
+        () =>
+            resolveSceneTransitionWindow({
+                shots: [
+                    {
+                        id: 'a',
+                        startMs: 0,
+                        endMs: 1000,
+                        transitionOut: { type: 'crossfade', durationMs: 100 },
+                    },
+                    {
+                        id: 'b',
+                        startMs: 1100,
+                        endMs: 2000,
+                    },
+                ],
+                timeMs: 950,
+            }),
+        /camera transition governance: transition target must be adjacent and contiguous \(a -> b\)/,
+    );
+});
+
+test('rejects adjacent transition chaining with no stable ownership span', () => {
+    assert.throws(
+        () =>
+            resolveSceneTransitionWindow({
+                shots: [
+                    {
+                        id: 'a',
+                        startMs: 0,
+                        endMs: 1000,
+                        transitionOut: { type: 'crossfade', durationMs: 200 },
+                    },
+                    {
+                        id: 'b',
+                        startMs: 1000,
+                        endMs: 1100,
+                        transitionOut: { type: 'crossfade', durationMs: 100 },
+                    },
+                    {
+                        id: 'c',
+                        startMs: 1100,
+                        endMs: 2000,
+                    },
+                ],
+                timeMs: 950,
+            }),
+        /camera transition governance: adjacent transition chaining is not allowed \(a -> b\)/,
+    );
+});

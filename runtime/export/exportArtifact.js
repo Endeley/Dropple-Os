@@ -8,6 +8,11 @@ import { exportSVG } from './svg/exportSVG.js';
 import { exportDroppleSpec } from './exportDroppleSpec.js';
 import { exportJSON } from './exportJSON.js';
 import { getExportCapabilities } from './getExportCapabilities.js';
+import {
+    createExportFingerprint,
+    EXPORT_CANONICAL_VERSION,
+    EXPORT_HASH_ALGORITHM,
+} from './exportFingerprint.js';
 
 export const ArtifactExportModes = Object.freeze({
     REBUILD: 'rebuild',
@@ -20,6 +25,11 @@ export const ArtifactExportKinds = Object.freeze({
     SVG: 'svg',
     PNG: 'png',
 });
+
+export {
+    EXPORT_CANONICAL_VERSION,
+    EXPORT_HASH_ALGORITHM,
+};
 
 function isPlainObject(value) {
     return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -259,11 +269,17 @@ export async function exportArtifact({
         format,
         options,
     });
+    const { exportHash, algorithm, canonicalVersion } = await createExportFingerprint({
+        output,
+    });
 
     return Object.freeze({
         artifactKind: artifact.kind,
         exportMode: mode,
         format,
+        exportHash,
+        algorithm,
+        canonicalVersion,
         output,
     });
 }
