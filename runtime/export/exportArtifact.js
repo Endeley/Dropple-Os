@@ -3,10 +3,6 @@ import { ArtifactKind } from '@/core/artifacts/ArtifactKind.js';
 import { LOCAL_DOCUMENT_VERSION } from '@/core/persistence/localDocumentVersion.js';
 import { initialRuntimeState } from '@/runtime/state/runtimeState.internal.js';
 import { buildRuntimeSnapshotFromTemplateEnvironment } from '@/runtime/templates/activateResolvedTemplateEnvironment.js';
-import { exportPNG } from './png/exportPNG.js';
-import { exportSVG } from './svg/exportSVG.js';
-import { exportDroppleSpec } from './exportDroppleSpec.js';
-import { exportJSON } from './exportJSON.js';
 import { getExportCapabilities } from './getExportCapabilities.js';
 import {
     createExportFingerprint,
@@ -216,7 +212,7 @@ export function buildRuntimeSnapshotFromArtifact(artifact) {
     }
 }
 
-export function exportFromRuntimeSnapshot({
+export async function exportFromRuntimeSnapshot({
     snapshot,
     format = ArtifactExportKinds.DROPPLE_SPEC,
     options = {},
@@ -227,22 +223,22 @@ export function exportFromRuntimeSnapshot({
 
     switch (format) {
         case ArtifactExportKinds.DROPPLE_SPEC:
-            return exportDroppleSpec({
+            return (await import('./exportDroppleSpec.js')).exportDroppleSpec({
                 snapshot,
                 options,
             });
         case ArtifactExportKinds.JSON:
-            return exportJSON({
+            return (await import('./exportJSON.js')).exportJSON({
                 snapshot,
                 ...options,
             });
         case ArtifactExportKinds.SVG:
-            return exportSVG({
+            return (await import('./svg/exportSVG.js')).exportSVG({
                 snapshot,
                 ...options,
             });
         case ArtifactExportKinds.PNG:
-            return exportPNG({
+            return (await import('./png/exportPNG.js')).exportPNG({
                 snapshot,
                 ...options,
             });

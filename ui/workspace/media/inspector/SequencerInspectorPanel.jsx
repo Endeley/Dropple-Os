@@ -18,6 +18,9 @@ import {
     timelineIntentSequenceSetActive,
     timelineIntentSequenceTrackCreate,
 } from '@/ui/timeline/timelineIntent.js';
+import { runExportGate } from '@/ui/export/exportGateClient.js';
+import { performServiceExport } from '@/ui/export/exportExecutionClient.js';
+import { useExportExecution } from '@/ui/export/useExportExecution.js';
 import { exportIntentTargetDelete, exportIntentTargetUpsert } from '@/ui/export/exportIntent.js';
 import { actionButtonStyle, actionRowStyle, sectionStyle, sectionTitleStyle } from './inspectorStyles.js';
 
@@ -95,6 +98,7 @@ export function SequencerInspectorPanel({
     selection,
     inspector = null,
     exportTargets = [],
+    exportRuntimeSnapshot = null,
 }) {
     const activeCamera = sequenceView?.activeCamera ?? null;
     const selectedTrack = inspector?.selectedTrack ?? null;
@@ -123,6 +127,8 @@ export function SequencerInspectorPanel({
             : null;
     const [labelDraft, setLabelDraft] = useState('');
     const [bindingDraft, setBindingDraft] = useState('');
+    const [exportStatus, setExportStatus] = useState('');
+    const { runWorkflow, performWorkflow, serviceState } = useExportExecution();
 
     useEffect(() => {
         setLabelDraft(selectedClip?.label ?? '');
@@ -285,6 +291,31 @@ export function SequencerInspectorPanel({
     function handleDeleteExportTarget(targetId) {
         exportIntentTargetDelete({ targetId });
     }
+
+    function handleRunExportTarget(target) {
+        if (!exportRuntimeSnapshot) return;
+
+        runExportGate({
+            onProceed: async () => {
+                try {
+                    const result = await performServiceExport({
+                        snapshot: exportRuntimeSnapshot,
+                        exportTarget: target,
+                        runWorkflow,
+                        performWorkflow,
+                    });
+                    setExportStatus(result.message);
+                } catch (error) {
+                    const reason = error instanceof Error ? error.message : 'unknown export error';
+                    console.warn('[SequencerInspectorPanel] Export blocked:', reason);
+                    setExportStatus(`Export blocked: ${reason}`);
+                }
+            },
+        });
+    }
+
+    const workflowStatus = serviceState.workflow?.queueEntry?.status ?? null;
+    const workflowProgress = serviceState.workflow?.progress ?? null;
 
     return (
         <div style={sectionStyle()}>
@@ -513,6 +544,12 @@ export function SequencerInspectorPanel({
                                 <div style={actionRowStyle()}>
                                     <button
                                         type='button'
+                                        onClick={() => handleRunExportTarget(target)}
+                                        style={actionButtonStyle()}>
+                                        Run Export
+                                    </button>
+                                    <button
+                                        type='button'
                                         onClick={() => handleDeleteExportTarget(target.id)}
                                         style={actionButtonStyle({ danger: true })}>
                                         Delete Target
@@ -529,6 +566,15 @@ export function SequencerInspectorPanel({
                         Save Default Export
                     </button>
                 </div>
+                {workflowStatus ? (
+                    <div style={{ fontSize: 12, color: '#334155', marginTop: 10 }}>
+                        Workflow: <strong>{workflowStatus}</strong>
+                        {workflowProgress ? ` · ${workflowProgress.completedFrameCount}/${workflowProgress.totalFrames} frames` : ''}
+                    </div>
+                ) : null}
+                {exportStatus ? (
+                    <div style={{ fontSize: 12, color: '#64748b', marginTop: 6 }}>{exportStatus}</div>
+                ) : null}
             </div>
         </div>
     );

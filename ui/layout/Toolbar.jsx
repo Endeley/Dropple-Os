@@ -1,12 +1,16 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useGrid } from '@/ui/workspace/shared/GridContext';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext';
 import { CapabilityActions } from '@/ui/capabilities/capabilityActions';
 import { runExportGate } from '@/ui/export/exportGateClient.js';
+import { performServiceExport } from '@/ui/export/exportExecutionClient.js';
 import { createShareLink } from '@/share/createShareLink';
 import { createEmbedCode } from '@/share/createEmbedCode';
 import { runCommandIntent } from '@/ui/bridges/runtimeCommandFacade.js';
+import { useWorkspaceProjectionState } from '@/runtime/projection';
+import { useExportExecution } from '@/ui/export/useExportExecution.js';
 import {
     ArtifactExportKinds,
     exportArtifact as exportArtifactFacade,
@@ -41,10 +45,51 @@ export default function Toolbar({ mode, onOpenTemplateGenerator, emit, getState,
     const single = selected.length === 1;
     const hasNodes = Object.keys(nodes).length > 0;
     const exportCapabilities = exportArtifact ? getExportCapabilities(exportArtifact) : null;
+    const runtimeDocument = useWorkspaceProjectionState((runtimeState) => runtimeState?.document ?? null);
+    const runtimeScene = useWorkspaceProjectionState((runtimeState) => runtimeState?.scene ?? null);
+    const runtimeTimeline = useWorkspaceProjectionState((runtimeState) => runtimeState?.timeline ?? null);
+    const runtimePlayback = useWorkspaceProjectionState((runtimeState) => runtimeState?.playback ?? null);
+    const runtimeEvents = useWorkspaceProjectionState((runtimeState) => runtimeState?.events ?? []);
+    const runtimeCursorIndex = useWorkspaceProjectionState((runtimeState) => runtimeState?.cursorIndex ?? -1);
+    const exportRuntimeSnapshot = useMemo(
+        () => ({
+            document: runtimeDocument,
+            scene: runtimeScene,
+            timeline: runtimeTimeline,
+            playback: runtimePlayback,
+            events: runtimeEvents,
+            cursorIndex: runtimeCursorIndex,
+        }),
+        [runtimeDocument, runtimeScene, runtimeTimeline, runtimePlayback, runtimeEvents, runtimeCursorIndex],
+    );
+    const savedExportTargets = useWorkspaceProjectionState(
+        (runtimeState) => (Array.isArray(runtimeState?.document?.exports?.targets) ? runtimeState.document.exports.targets : []),
+    );
+    const { runWorkflow, performWorkflow, serviceState } = useExportExecution();
     const toolbarExportFormats = exportCapabilities
         ? exportCapabilities.formats.filter((format) => TOOLBAR_EXPORT_ACTIONS[format])
         : [];
     const canExport = hasNodes && exportArtifact != null && toolbarExportFormats.length > 0;
+    const canRunSavedExport = hasNodes && savedExportTargets.length > 0;
+    const savedWorkflowStatus = serviceState.workflow?.queueEntry?.status ?? null;
+
+    function handleRunSavedExport(target) {
+        runExportGate({
+            onProceed: async () => {
+                try {
+                    await performServiceExport({
+                        snapshot: exportRuntimeSnapshot,
+                        exportTarget: target,
+                        runWorkflow,
+                        performWorkflow,
+                    });
+                } catch (error) {
+                    const reason = error instanceof Error ? error.message : 'unknown export error';
+                    console.warn('[Toolbar] Export blocked:', reason);
+                }
+            },
+        });
+    }
 
     return (
         <div className='toolbar-root'>
@@ -163,9 +208,25 @@ export default function Toolbar({ mode, onOpenTemplateGenerator, emit, getState,
                     );
                 })}
 
+                {savedExportTargets.map((target) => (
+                    <button
+                        key={`saved-${target.id}`}
+                        className='toolbar-btn'
+                        disabled={!canRunSavedExport}
+                        title='Runs the canonical render/export workflow'
+                        onClick={() => handleRunSavedExport(target)}>
+                        {target.label ?? target.id}
+                    </button>
+                ))}
+
                 {exportCapabilities && (
                     <span className='toolbar-mode' title={exportCapabilities.description}>
                         {exportCapabilities.label}
+                    </span>
+                )}
+                {savedWorkflowStatus && (
+                    <span className='toolbar-mode' title='Canonical export workflow status'>
+                        {savedWorkflowStatus}
                     </span>
                 )}
 

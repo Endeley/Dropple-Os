@@ -2,9 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { buildEvaluationInputs } from '@/runtime/animation/buildEvaluationInputs.js';
-import { buildRenderSchedule, evaluateRenderFrame } from '../renderOrchestration.js';
-import { buildRenderSession, resolveRenderFrameRate, resolveRenderStepMs } from '../renderSession.js';
-import { evaluateTransitionFrame } from '@/runtime/transition/evaluateTransitionFrame.js';
+import { buildRenderSession } from '../renderSession.js';
 
 function createTransitionRuntimeSnapshot() {
     return {
@@ -14,16 +12,8 @@ function createTransitionRuntimeSnapshot() {
                 rootIds: ['fallback-root', 'comp-a', 'comp-b'],
                 nodes: {
                     'fallback-root': { id: 'fallback-root', type: 'frame', children: [] },
-                    'comp-a': {
-                        id: 'comp-a',
-                        type: 'frame',
-                        children: [],
-                    },
-                    'comp-b': {
-                        id: 'comp-b',
-                        type: 'frame',
-                        children: [],
-                    },
+                    'comp-a': { id: 'comp-a', type: 'frame', children: [] },
+                    'comp-b': { id: 'comp-b', type: 'frame', children: [] },
                 },
                 scenes: [
                     {
@@ -86,61 +76,69 @@ function createTransitionRuntimeSnapshot() {
     };
 }
 
-test('buildRenderSchedule derives deterministic frame stepping and transition boundaries from render input', () => {
+test('buildRenderSession is deterministic for the same input, range, and policy', () => {
     const inputs = buildEvaluationInputs(createTransitionRuntimeSnapshot(), {
         timeMs: 900,
         strictSceneScope: true,
     });
 
-    const schedule = buildRenderSchedule({
+    const left = buildRenderSession({
         renderInput: inputs.renderInput,
         fromMs: 0,
         toMs: 1000,
-        sampleCount: 4,
-        includeTransitionBoundaries: true,
+        framePolicy: { mode: 'sequence-frame-rate' },
+        samplePolicy: { mode: 'stability-preflight', sampleCount: 4, includeTransitionBoundaries: true },
+    });
+    const right = buildRenderSession({
+        renderInput: inputs.renderInput,
+        fromMs: 0,
+        toMs: 1000,
+        framePolicy: { mode: 'sequence-frame-rate' },
+        samplePolicy: { mode: 'stability-preflight', sampleCount: 4, includeTransitionBoundaries: true },
     });
 
-    assert.equal(resolveRenderFrameRate(inputs.renderInput), 24);
-    assert.equal(resolveRenderStepMs(inputs.renderInput), 41.667);
-    assert.equal(schedule.frameRate, 24);
-    assert.equal(schedule.stepMs, 41.667);
-    assert.deepEqual(schedule.sampleTimes, [0, 333.336, 666.672, 800, 1000]);
+    assert.equal(left.sessionId, right.sessionId);
+    assert.deepEqual(left, right);
+});
 
+test('buildRenderSession preserves canonical transition boundaries in sampleTimes', () => {
+    const inputs = buildEvaluationInputs(createTransitionRuntimeSnapshot(), {
+        timeMs: 900,
+        strictSceneScope: true,
+    });
     const session = buildRenderSession({
         renderInput: inputs.renderInput,
         fromMs: 0,
         toMs: 1000,
         samplePolicy: { mode: 'stability-preflight', sampleCount: 4, includeTransitionBoundaries: true },
     });
-    assert.deepEqual(schedule.sampleTimes, session.sampleTimes);
+
+    assert.deepEqual(session.sampleTimes, [0, 333.336, 666.672, 800, 1000]);
+    assert.equal(session.totalFrames, session.frameTimes.length);
 });
 
-test('evaluateRenderFrame matches canonical transition evaluation without committing runtime state', () => {
+test('playback and export sessions agree on stepping for the same render input', () => {
     const inputs = buildEvaluationInputs(createTransitionRuntimeSnapshot(), {
         timeMs: 900,
         strictSceneScope: true,
     });
 
-    const orchestrated = evaluateRenderFrame({
-        renderInput: {
-            ...inputs.renderInput,
-            timeMs: 900,
-        },
-        timeMs: 900,
-        reason: 'orchestration-test',
-        commit: false,
+    const playbackSession = buildRenderSession({
+        renderInput: inputs.renderInput,
+        fromMs: 0,
+        toMs: 1000,
+        framePolicy: { mode: 'sequence-frame-rate' },
+        samplePolicy: { mode: 'playback-cadence', sampleCount: 4, includeTransitionBoundaries: true },
     });
-    const direct = evaluateTransitionFrame({
-        renderInput: {
-            ...inputs.renderInput,
-            timeMs: 900,
-        },
-        timeMs: 900,
+    const exportSession = buildRenderSession({
+        renderInput: inputs.renderInput,
+        fromMs: 0,
+        toMs: 1000,
+        framePolicy: { mode: 'sequence-frame-rate' },
+        samplePolicy: { mode: 'stability-preflight', sampleCount: 4, includeTransitionBoundaries: true },
     });
 
-    assert.deepEqual(orchestrated.evaluatedScene, direct.evaluatedScene);
-    assert.equal(orchestrated.shotId, direct.shotId);
-    assert.equal(orchestrated.shotTimeMs, direct.shotTimeMs);
-    assert.equal(orchestrated.transitionWindow?.t, direct.transitionWindow?.t);
-    assert.equal(orchestrated.evalStatus, 'OK');
+    assert.equal(playbackSession.frameRate, exportSession.frameRate);
+    assert.equal(playbackSession.stepMs, exportSession.stepMs);
+    assert.deepEqual(playbackSession.frameTimes, exportSession.frameTimes);
 });

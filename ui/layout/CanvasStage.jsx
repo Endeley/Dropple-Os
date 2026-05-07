@@ -19,6 +19,7 @@ import { useContextMenu } from '@/ui/context/useContextMenu';
 import { CapabilityActions } from '@/ui/capabilities/capabilityActions';
 import { runCommandIntent } from '@/ui/bridges/runtimeCommandFacade.js';
 import { runExportGate } from '@/ui/export/exportGateClient.js';
+import { performServiceExport } from '@/ui/export/exportExecutionClient.js';
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { throttle } from '@/collab/throttle';
@@ -31,6 +32,8 @@ import {
   exportArtifact as exportArtifactFacade,
 } from '@/runtime/export/exportArtifact.js';
 import { getExportCapabilities } from '@/runtime/export/getExportCapabilities.js';
+import { useWorkspaceProjectionState } from '@/runtime/projection';
+import { useExportExecution } from '@/ui/export/useExportExecution.js';
 
 const CANVAS_EXPORT_ACTIONS = Object.freeze({
   json: {
@@ -92,6 +95,24 @@ export default function CanvasStage({
   const educationRole = educationCursor?.role || 'teacher';
   const educationState = getEducationAtCursor(state, cursor);
   const exportCapabilities = exportArtifact ? getExportCapabilities(exportArtifact) : null;
+  const runtimeDocument = useWorkspaceProjectionState((runtimeState) => runtimeState?.document ?? null);
+  const runtimeScene = useWorkspaceProjectionState((runtimeState) => runtimeState?.scene ?? null);
+  const runtimeTimeline = useWorkspaceProjectionState((runtimeState) => runtimeState?.timeline ?? null);
+  const runtimePlayback = useWorkspaceProjectionState((runtimeState) => runtimeState?.playback ?? null);
+  const runtimeEvents = useWorkspaceProjectionState((runtimeState) => runtimeState?.events ?? []);
+  const runtimeCursorIndex = useWorkspaceProjectionState((runtimeState) => runtimeState?.cursorIndex ?? -1);
+  const exportRuntimeSnapshot = useMemo(() => ({
+    document: runtimeDocument,
+    scene: runtimeScene,
+    timeline: runtimeTimeline,
+    playback: runtimePlayback,
+    events: runtimeEvents,
+    cursorIndex: runtimeCursorIndex,
+  }), [runtimeDocument, runtimeScene, runtimeTimeline, runtimePlayback, runtimeEvents, runtimeCursorIndex]);
+  const savedExportTargets = useWorkspaceProjectionState((runtimeState) =>
+    Array.isArray(runtimeState?.document?.exports?.targets) ? runtimeState.document.exports.targets : []
+  );
+  const { runWorkflow, performWorkflow } = useExportExecution();
   const isPreview =
     adapter?.id === 'preview' || adapter?.id === 'prototype' || adapter?.isPreview;
   const canvasBackground = useToken('color.bg');
@@ -244,6 +265,27 @@ export default function CanvasStage({
             };
           })
       : [];
+    const savedExportItems = savedExportTargets.map((target) => ({
+      key: `saved-export-${target.id}`,
+      label: `Run ${target.label ?? target.id}`,
+      disabled: !hasNodes,
+      onClick: () =>
+        runExportGate({
+          onProceed: async () => {
+            try {
+              await performServiceExport({
+                snapshot: exportRuntimeSnapshot,
+                exportTarget: target,
+                runWorkflow,
+                performWorkflow,
+              });
+            } catch (error) {
+              const reason = error instanceof Error ? error.message : 'unknown export error';
+              console.warn('[CanvasStage] Export blocked:', reason);
+            }
+          },
+        }),
+    }));
 
     openMenu({
       x: e.clientX,
@@ -274,6 +316,9 @@ export default function CanvasStage({
         },
         ...(exportItems.length > 0
           ? [{ type: 'separator' }, ...exportItems]
+          : []),
+        ...(savedExportItems.length > 0
+          ? [{ type: 'separator' }, ...savedExportItems]
           : []),
         ...(canShowImport
           ? [

@@ -2,51 +2,12 @@ import { evaluateFrameAt } from '@/engine/evaluation/evaluateFrameAt.js';
 import { hashEvaluatedScene } from '@/engine/evaluation/hashFrame.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { evaluateTransitionFrame } from '@/runtime/transition/evaluateTransitionFrame.js';
-
-function safeNumber(value, fallback = 0) {
-    return Number.isFinite(value) ? Number(value) : fallback;
-}
-
-function roundTime(value) {
-    return Number(Number(value).toFixed(3));
-}
-
-function uniqueSortedTimes(values) {
-    return [...new Set(values.map((value) => roundTime(value)).filter(Number.isFinite))].sort((a, b) => a - b);
-}
-
-export function resolveRenderFrameRate(renderInput) {
-    const frameRate = Number(renderInput?.frameRate ?? renderInput?.temporalContext?.frameRate ?? 24);
-    return Number.isFinite(frameRate) && frameRate > 0 ? frameRate : 24;
-}
-
-export function resolveRenderStepMs(renderInput) {
-    return roundTime(1000 / resolveRenderFrameRate(renderInput));
-}
-
-export function resolveRenderDurationMs(renderInput) {
-    const shots = Array.isArray(renderInput?.shotTimeline?.shots) ? renderInput.shotTimeline.shots : [];
-    if (shots.length === 0) return 0;
-    return shots.reduce((max, shot) => Math.max(max, safeNumber(shot?.endMs)), 0);
-}
-
-function collectTransitionBoundaryTimes(renderInput, fromMs, toMs) {
-    const shots = Array.isArray(renderInput?.shotTimeline?.shots) ? renderInput.shotTimeline.shots : [];
-    const values = [];
-
-    for (const shot of shots) {
-        const transition = shot?.transitionOut ?? null;
-        const durationMs = safeNumber(transition?.durationMs, -1);
-        if (!transition || durationMs < 0) continue;
-
-        const endMs = safeNumber(shot?.endMs);
-        const startMs = durationMs === 0 ? endMs : endMs - durationMs;
-        if (startMs >= fromMs && startMs <= toMs) values.push(startMs);
-        if (endMs >= fromMs && endMs <= toMs) values.push(endMs);
-    }
-
-    return values;
-}
+import {
+    buildRenderSession,
+    resolveRenderDurationMs,
+    resolveRenderFrameRate,
+    resolveRenderStepMs,
+} from './renderSession.js';
 
 export function buildRenderSchedule({
     renderInput,
@@ -55,39 +16,24 @@ export function buildRenderSchedule({
     sampleCount = 4,
     includeTransitionBoundaries = true,
 } = {}) {
-    const frameRate = resolveRenderFrameRate(renderInput);
-    const stepMs = resolveRenderStepMs(renderInput);
-    const durationMs = Math.max(0, resolveRenderDurationMs(renderInput));
-    const resolvedFromMs = Math.max(0, safeNumber(fromMs));
-    const resolvedToMs = Math.max(
-        resolvedFromMs,
-        Number.isFinite(toMs) ? Number(toMs) : durationMs,
-    );
-    const normalizedSampleCount = Math.max(2, Number(sampleCount ?? 4));
-    const sampleTimes = [];
-
-    if (resolvedFromMs === resolvedToMs) {
-        sampleTimes.push(resolvedFromMs);
-    } else {
-        for (let index = 0; index < normalizedSampleCount; index += 1) {
-            const progress = normalizedSampleCount === 1 ? 0 : index / (normalizedSampleCount - 1);
-            const timeMs = resolvedFromMs + (resolvedToMs - resolvedFromMs) * progress;
-            const snapped = Math.round(timeMs / stepMs) * stepMs;
-            sampleTimes.push(Math.max(resolvedFromMs, Math.min(resolvedToMs, snapped)));
-        }
-    }
-
-    if (includeTransitionBoundaries) {
-        sampleTimes.push(...collectTransitionBoundaryTimes(renderInput, resolvedFromMs, resolvedToMs));
-    }
+    const session = buildRenderSession({
+        renderInput,
+        fromMs,
+        toMs,
+        samplePolicy: {
+            mode: 'stability-preflight',
+            sampleCount,
+            includeTransitionBoundaries,
+        },
+    });
 
     return Object.freeze({
-        frameRate,
-        stepMs,
-        fromMs: resolvedFromMs,
-        toMs: resolvedToMs,
-        durationMs,
-        sampleTimes: uniqueSortedTimes(sampleTimes),
+        frameRate: session.frameRate,
+        stepMs: session.stepMs,
+        fromMs: session.fromMs,
+        toMs: session.toMs,
+        durationMs: session.durationMs,
+        sampleTimes: session.sampleTimes,
     });
 }
 
@@ -103,7 +49,7 @@ export function evaluateRenderFrame({
         throw new Error('evaluateRenderFrame requires renderInput.');
     }
 
-    const resolvedTimeMs = Number.isFinite(timeMs) ? Number(timeMs) : safeNumber(renderInput?.timeMs);
+    const resolvedTimeMs = Number.isFinite(timeMs) ? Number(timeMs) : Number(renderInput?.timeMs ?? 0);
     const transitionResult = evaluateTransitionFrame({
         renderInput: {
             ...renderInput,

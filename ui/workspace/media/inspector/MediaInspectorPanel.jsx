@@ -95,6 +95,7 @@ export function MediaInspectorPanel({ mode }) {
     const runtimeScene = useRuntimeStore((state) => state.scene);
     const document = useRuntimeStore((state) => state.document);
     const timeline = useRuntimeStore(selectMediaTimeline);
+    const events = useRuntimeStore((state) => state.events);
     const playbackState = useRuntimeStore(selectMediaPlayback);
     const cursorIndex = useRuntimeStore(selectMediaCursorIndex);
     const mediaAssets = useRuntimeStore(selectMediaAssets);
@@ -187,6 +188,17 @@ export function MediaInspectorPanel({ mode }) {
                 ? projectMediaTweenSpan(activeTrack, selectedKeyframeId)
                 : null,
         [mode.id, activeTrack, selectedKeyframeId, selectedKeyframeIds.length]
+    );
+    const exportRuntimeSnapshot = useMemo(
+        () => ({
+            document,
+            scene: runtimeScene,
+            timeline,
+            playback: playbackState,
+            events,
+            cursorIndex,
+        }),
+        [document, runtimeScene, timeline, playbackState, events, cursorIndex]
     );
     const currentFrame = Math.max(0, Number(playback.time ?? 0));
     const jumpFrame = keyframeTargetFrame(activeKeyframe, activeTrack, currentFrame);
@@ -356,6 +368,7 @@ export function MediaInspectorPanel({ mode }) {
                         selection={selection}
                         inspector={sequenceInspector}
                         exportTargets={exportTargets}
+                        exportRuntimeSnapshot={exportRuntimeSnapshot}
                     />
                 ) : null}
                 {mode.id === 'animation' ? (
