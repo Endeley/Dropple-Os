@@ -10,6 +10,25 @@ function read(pathname) {
     return fs.readFileSync(path.join(ROOT, pathname), 'utf8');
 }
 
+function walk(dir, relBase = '') {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    const files = [];
+
+    for (const entry of entries) {
+        const relPath = relBase ? path.join(relBase, entry.name) : entry.name;
+        const fullPath = path.join(dir, entry.name);
+
+        if (entry.isDirectory()) {
+            files.push(...walk(fullPath, relPath));
+            continue;
+        }
+
+        files.push(relPath);
+    }
+
+    return files;
+}
+
 test('architecture laws document exists and defines the single interaction pipeline', () => {
     const content = read('docs/ARCHITECTURE_LAWS.md');
 
@@ -47,6 +66,64 @@ test('constitutional law defines deterministic execution provenance and coordina
     assert.match(architecture, /Execution Provenance/);
     assert.match(architecture, /Resumed execution and uninterrupted execution must preserve canonical execution identity/);
     assert.match(architecture, /Coordination systems may not mutate manifest truth, session truth, or authored runtime truth/);
+});
+
+test('constitutional law defines interpreted tool non-sovereignty', () => {
+    const content = read('docs/LAW.md');
+    const architecture = read('docs/ARCHITECTURE_LAWS.md');
+
+    assert.match(content, /Interpreted Tool Non-Sovereignty Law/);
+    assert.match(content, /Interpreted tools may express intent/);
+    assert.match(content, /Interpreted tools may not own authority/);
+    assert.match(content, /tool-registration mutation paths/);
+    assert.match(content, /recursively synthesize tool-owned authority/);
+    assert.match(content, /Tool synthesis must remain capability-bounded, dispatcher-owned, and replay-safe/);
+
+    assert.match(architecture, /Interpreted Tool Non-Sovereignty/);
+    assert.match(architecture, /Interpreted tools may express intent but may not own authority/);
+    assert.match(architecture, /recursive tool-owned authority synthesis/);
+});
+
+test('future interpreted tool modules may not import authority internals directly', () => {
+    const runtimeToolsRoot = path.join(ROOT, 'runtime', 'tools');
+    const files = walk(runtimeToolsRoot, 'runtime/tools').filter((file) => {
+        if (file.includes('__tests__')) return false;
+        return /(interpret.*tool|tool.*spec|synth.*tool|generated.*tool)/i.test(path.basename(file));
+    });
+
+    const forbiddenImports = [
+        '@/runtime/dispatcher/dispatch.js',
+        '@/runtime/state/runtimeState.internal.js',
+        '@/runtime/actions/toolActions.js',
+        '@/core/events/reducers/',
+        '@/core/mutationContext.js',
+    ];
+    const forbiddenTokens = [
+        '__setRuntimeStateInternal',
+        'hydrateRuntimeState(',
+        'registerTools(',
+        'unregisterTools(',
+    ];
+
+    const violations = [];
+
+    for (const relativePath of files) {
+        const content = read(relativePath);
+
+        for (const target of forbiddenImports) {
+            if (content.includes(target)) {
+                violations.push(`${relativePath}: forbidden import ${target}`);
+            }
+        }
+
+        for (const token of forbiddenTokens) {
+            if (content.includes(token)) {
+                violations.push(`${relativePath}: forbidden authority token ${token}`);
+            }
+        }
+    }
+
+    assert.deepEqual(violations, []);
 });
 
 test('tool handlers dispatch events instead of mutating runtime truth directly', () => {

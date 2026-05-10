@@ -84,3 +84,16 @@ Execution identity may not depend on:
 Resumed execution and uninterrupted execution must preserve canonical execution identity.
 
 Coordination systems may not mutate manifest truth, session truth, or authored runtime truth.
+
+## 10. Interpreted Tool Non-Sovereignty
+Interpreted tools may express intent but may not own authority.
+
+Forbidden:
+- direct dispatcher internals
+- reducer internals
+- runtime state setters
+- tool-registration mutation paths
+- direct runtime truth mutation
+- recursive tool-owned authority synthesis
+
+Tool synthesis must remain capability-bounded, dispatcher-owned, and replay-safe.

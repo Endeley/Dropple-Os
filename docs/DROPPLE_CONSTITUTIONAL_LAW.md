@@ -187,7 +187,35 @@ This law protects deterministic execution identity without prescribing queue top
 
 ---
 
-## 11. Amendment Procedure
+## 11. Interpreted Tool Non-Sovereignty Law
+
+Interpreted tools may express intent.
+
+Interpreted tools may not own authority.
+
+Interpreted tool systems may not directly import:
+
+- dispatcher internals
+- reducer internals
+- runtime state setters
+- tool-registration mutation paths
+
+Interpreted tools may not:
+
+- register tools directly
+- mutate runtime truth directly
+- elevate capability authority
+- bypass workspace policy
+- bypass dispatcher
+- recursively synthesize tool-owned authority
+
+Tool synthesis must remain capability-bounded, dispatcher-owned, and replay-safe.
+
+If interpreted tool synthesis cannot obey these boundaries, the synthesis feature waits.
+
+---
+
+## 12. Amendment Procedure
 
 Changes to:
 

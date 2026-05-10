@@ -185,12 +185,42 @@ This law protects deterministic execution identity without prescribing queue top
 
 ---
 
+## 11. Interpreted Tool Non-Sovereignty Law
+
+Interpreted tools may express intent.
+
+Interpreted tools may not own authority.
+
+Interpreted tool systems may not directly import:
+
+- dispatcher internals
+- reducer internals
+- runtime state setters
+- tool-registration mutation paths
+
+Interpreted tools may not:
+
+- register tools directly
+- mutate runtime truth directly
+- elevate capability authority
+- bypass workspace policy
+- bypass dispatcher
+- recursively synthesize tool-owned authority
+
+Tool synthesis must remain capability-bounded, dispatcher-owned, and replay-safe.
+
+Recursive tool synthesis may not create a self-modifying authority graph.
+
+If interpreted tool synthesis cannot obey these boundaries, the synthesis feature waits.
+
+---
+
 Blend semantics are versioned separately.
 See `docs/BLEND_V1.md` for deterministic blend contract.
 
 ---
 
-## 11. Deterministic Replay Law (v1)
+## 12. Deterministic Replay Law (v1)
 
 Given the same seed and identical event sequence, Dropple must produce
 the exact same evaluation fingerprint across:
@@ -210,7 +240,7 @@ Snapshot DAG must not alter evaluation output.
 
 ---
 
-## 12. Amendment Procedure
+## 13. Amendment Procedure
 
 Changes to:
 
@@ -226,7 +256,7 @@ No casual modifications allowed.
 
 ---
 
-## 13. SceneGraph Invariants (v1)
+## 14. SceneGraph Invariants (v1)
 
 SceneGraph is canonical narrative structure.
 
