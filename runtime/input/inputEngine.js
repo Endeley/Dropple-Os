@@ -1,8 +1,9 @@
 import { getRuntimeDispatcher } from '@/runtime/dispatcher/dispatcherHandle.js';
 import { selectActiveTool } from '@/runtime/selectors/toolSelectors.js';
 import { shouldHandleInput } from './inputPolicy.js';
-import { getToolHandler } from '@/runtime/tools/toolController.js';
+import { getToolHandler, getToolHandlerFamily } from '@/runtime/tools/toolController.js';
 import { getCoreToolHandler } from './coreToolHandlers.js';
+import { isApprovedToolHandlerFamily } from '@/runtime/tools/interpretToolSpec.js';
 
 export function isHandledResult(result) {
     return Boolean(result && typeof result === 'object' && result.handled === true);
@@ -23,12 +24,16 @@ export function handleInputEvent(input, options = {}) {
         ...(options.context ?? {}),
     };
 
-    const handler =
-        (typeof options.resolveToolHandler === 'function'
+    const resolvedHandler =
+        typeof options.resolveToolHandler === 'function'
             ? options.resolveToolHandler(tool)
-            : null) ??
-        getToolHandler(tool) ??
-        getCoreToolHandler(tool);
+            : null;
+    const registeredHandler = getToolHandler(tool);
+    const registeredFamily = getToolHandlerFamily(tool);
+    const boundedRegisteredHandler = isApprovedToolHandlerFamily(registeredFamily)
+        ? registeredHandler
+        : null;
+    const handler = resolvedHandler ?? boundedRegisteredHandler ?? getCoreToolHandler(tool);
 
     let result = null;
 

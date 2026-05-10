@@ -148,3 +148,32 @@ test('keyboard engine normalizes key metadata before routing', () => {
     setRuntimeDispatcher(null);
     __resetToolHandlers();
 });
+
+test('input engine does not execute handlers registered outside approved families', () => {
+    __resetToolHandlers();
+    const calls = [];
+    const dispatcher = {
+        getState() {
+            return {
+                tools: {
+                    activeTool: 'synth-brush',
+                    registeredTools: {},
+                },
+            };
+        },
+    };
+
+    setRuntimeDispatcher(dispatcher);
+    registerToolHandler('synth-brush', () => {
+        calls.push('called');
+        return { handled: true };
+    });
+
+    const result = handleInputEvent({ type: 'pointerdown' });
+
+    assert.equal(result, null);
+    assert.deepEqual(calls, []);
+
+    setRuntimeDispatcher(null);
+    __resetToolHandlers();
+});

@@ -682,9 +682,14 @@ function getCoreToolHandler(tool) {
 }
 
 function registerDefaultGraphToolHandlers() {
-    CORE_TOOL_HANDLERS.forEach((handler, tool) => {
-        registerToolHandler(tool, handler);
-    });
+    registerToolHandler('select', CORE_TOOL_HANDLERS.get('select'), { family: 'utility' });
+    registerToolHandler('move', CORE_TOOL_HANDLERS.get('move'), { family: 'session' });
+    registerToolHandler('resize', CORE_TOOL_HANDLERS.get('resize'), { family: 'session' });
+    registerToolHandler('rotate', CORE_TOOL_HANDLERS.get('rotate'), { family: 'session' });
+    registerToolHandler('frame', CORE_TOOL_HANDLERS.get('frame'), { family: 'createNode' });
+    registerToolHandler('shape', CORE_TOOL_HANDLERS.get('shape'), { family: 'createNode' });
+    registerToolHandler('text', CORE_TOOL_HANDLERS.get('text'), { family: 'createNode' });
+    registerToolHandler('image', CORE_TOOL_HANDLERS.get('image'), { family: 'createNode' });
 }
 
 function unregisterDefaultGraphToolHandlers() {
