@@ -1,11 +1,69 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 import {
+    buildRuntimeSnapshotFromArtifact,
+    createEnvironmentArtifact,
     createSnapshotArtifact,
 } from '@/runtime/export/exportArtifact.js';
 import { buildEvaluationInputs } from '@/runtime/animation/buildEvaluationInputs.js';
 import { resolveViewerRuntimeCamera } from '@/viewer/runtimeCameraDiagnostics.js';
+import { publishTemplateFromWorkspace } from '@/templates/publishTemplateFromWorkspace.js';
+import { activateTemplateEnvironment } from '@/runtime/templates/activateTemplateEnvironment.js';
+import { createEventDispatcher } from '@/runtime/dispatcher/dispatch.js';
+import {
+    buildInitialEnvironmentDescriptorFromQuery,
+    resolveSeededWorkspace,
+} from '@/app/workspace/new/workspaceEnvironmentBoot.js';
+import { hashRuntimeState } from '@/core/persistence/hashDocument.js';
+import { createDerivedEnvironmentDescriptor } from '@/domain/templates/DerivedEnvironmentDescriptor.js';
+
+function withTempRegistry(run) {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dropple-viewer-environment-parity-'));
+    const originalCwd = process.cwd();
+    process.chdir(tempDir);
+    try {
+        return run();
+    } finally {
+        process.chdir(originalCwd);
+    }
+}
+
+function createEnvironmentSeedDocument() {
+    return {
+        sceneGraph: {
+            rootIds: ['root'],
+            nodes: {
+                root: {
+                    id: 'root',
+                    type: 'frame',
+                    children: ['headline'],
+                },
+                headline: {
+                    id: 'headline',
+                    type: 'text',
+                    children: [],
+                },
+            },
+        },
+        motion: {
+            clips: {
+                'clip-headline-opacity': {
+                    id: 'clip-headline-opacity',
+                    target: 'headline',
+                    property: 'opacity',
+                    keyframes: [
+                        { id: 'kf-0', t: 0, v: 0 },
+                        { id: 'kf-500', t: 500, v: 0.7, easing: 'ease-in' },
+                    ],
+                },
+            },
+        },
+    };
+}
 
 function createTransitionRuntimeSnapshot() {
     return {
@@ -135,3 +193,76 @@ test('resolveViewerRuntimeCamera matches export evaluation camera truth during t
         source: diagnostics.source,
     });
 });
+
+test('environment-backed viewer artifacts preserve canonical environment identity and playback truth from workspace boot', () =>
+    withTempRegistry(() => {
+        const publication = publishTemplateFromWorkspace({
+            document: createEnvironmentSeedDocument(),
+            metadata: {
+                title: 'Viewer Environment Parity',
+                version: '1.0.0',
+            },
+            workspaceMode: 'design',
+        });
+
+        const descriptor = buildInitialEnvironmentDescriptorFromQuery({
+            lineageRootId: publication.seed.lineage.rootId,
+            versionId: publication.seed.lineage.nodeId,
+            workspaceId: 'design',
+            modeId: 'graphic',
+            overlayId: 'brand-systems',
+        });
+        const descriptorWithPlayback = createDerivedEnvironmentDescriptor({
+            lineage: descriptor.lineage,
+            environment: {
+                ...descriptor.environment,
+                runtimeConfig: {
+                    playback: {
+                        time: 240,
+                        paused: true,
+                    },
+                },
+            },
+            metadata: descriptor.metadata,
+        });
+        const seeded = resolveSeededWorkspace({
+            initialEnvironmentDescriptor: descriptorWithPlayback,
+        });
+        const artifact = createEnvironmentArtifact({
+            descriptor: seeded.initialEnvironmentDescriptor,
+            resolvedEnvironment: seeded.initialResolvedTemplateEnvironment,
+        });
+        const reconstructed = buildRuntimeSnapshotFromArtifact(artifact);
+        const dispatcher = createEventDispatcher({ headless: true });
+        const activated = activateTemplateEnvironment({
+            descriptor: seeded.initialEnvironmentDescriptor,
+            dispatcher,
+        });
+        const diagnostics = resolveViewerRuntimeCamera(artifact);
+
+        assert.equal(
+            seeded.initialEnvironmentDescriptor.environmentId,
+            seeded.initialResolvedTemplateEnvironment.environmentId,
+        );
+        assert.equal(
+            reconstructed.document?.meta?.id,
+            seeded.initialEnvironmentDescriptor.environmentId,
+        );
+        assert.equal(
+            activated.runtimeSnapshot.document?.meta?.id,
+            seeded.initialEnvironmentDescriptor.environmentId,
+        );
+        assert.equal(reconstructed.playback?.time, 240);
+        assert.equal(reconstructed.playback?.timeMs, 240);
+        assert.equal(reconstructed.playback?.frame, 240);
+        assert.equal(reconstructed.playback?.isPlaying, false);
+        assert.equal(activated.runtimeSnapshot.playback?.time, 240);
+        assert.equal(activated.runtimeSnapshot.playback?.timeMs, 240);
+        assert.equal(activated.runtimeSnapshot.playback?.frame, 240);
+        assert.equal(activated.runtimeSnapshot.playback?.isPlaying, false);
+        assert.equal(
+            hashRuntimeState(reconstructed),
+            hashRuntimeState(activated.runtimeSnapshot),
+        );
+        assert.equal(diagnostics, null);
+    }));

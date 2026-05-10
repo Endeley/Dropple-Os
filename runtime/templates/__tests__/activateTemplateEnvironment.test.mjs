@@ -14,6 +14,8 @@ import {
 } from '@/runtime/templates/activateTemplateEnvironment.js';
 import { resolveTemplateEnvironment } from '@/domain/templates/resolveTemplateEnvironment.js';
 import { loadRegistry } from '@/domain/templates/TemplateRegistry.js';
+import { getVisibleTools } from '@/runtime/tools/toolRuntime.js';
+import { resolveWorkspaceActivationContract } from '@/platform/capabilities/workspaceActivation.js';
 
 function clone(value) {
     if (typeof structuredClone === 'function') return structuredClone(value);
@@ -232,4 +234,40 @@ test('buildRuntimeSnapshotFromTemplateEnvironment reuses pure resolution output 
         assert.equal(runtimeSnapshot.workspace.overlayId, 'brand-systems');
         assert.equal(runtimeSnapshot.playback.time, 240);
         assert.ok(runtimeSnapshot.document);
+    }));
+
+test('activateTemplateEnvironment hydrates workspace identity without synthesizing tool or capability authority', () =>
+    withTempRegistry(() => {
+        const root = publishTemplateFromWorkspace({
+            document: createDocument(),
+            metadata: {
+                title: 'Activation Root',
+                version: '1.0.0',
+            },
+            workspaceMode: 'design',
+        });
+        const descriptor = createDescriptor(root.seed, root.seed.lineage.nodeId);
+        const dispatcher = createEventDispatcher({ headless: true });
+        const activated = activateTemplateEnvironment({
+            descriptor,
+            dispatcher,
+        });
+        const workspaceContract = resolveWorkspaceActivationContract('design');
+
+        assert.deepEqual(activated.hydratedState.workspace.tools, []);
+        assert.equal(activated.hydratedState.workspace.policy, null);
+        assert.equal(activated.hydratedState.workspace.ui, null);
+        assert.equal(activated.hydratedState.workspace.timeline, null);
+        assert.equal(activated.hydratedState.workspace.allowedEventTypes.size, 0);
+        assert.equal(activated.hydratedState.workspace.enabledTriggerTypes.size, 0);
+        assert.deepEqual(activated.hydratedState.tools.registeredTools, {});
+        assert.deepEqual(getVisibleTools(activated.hydratedState.tools), []);
+        assert.equal(activated.hydratedState.tools.activeTool, 'select');
+
+        assert.ok(workspaceContract?.tools instanceof Set);
+        assert.ok(workspaceContract.tools.size > 0);
+        assert.notDeepEqual(
+            activated.hydratedState.workspace.tools,
+            [...workspaceContract.tools],
+        );
     }));
