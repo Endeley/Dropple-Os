@@ -1,9 +1,21 @@
-import { exportMotionBridge } from '@/ui/bridges/exportMotionBridge.js';
+import { loadMotionExportCommands } from '@/ui/bridges/motionExportRuntimeBridge.js';
 
 /**
- * Exports motion intent from the canonical motion document into Web Animations configs.
- * Pure function: returns array of { target, keyframes, options }.
+ * Exports canonical motion intent through the runtime-owned motion export command boundary.
  */
-export function exportMotion({ motion }) {
-    return exportMotionBridge({ motion });
+export async function exportMotion({
+    motion,
+    format = 'web-animation',
+} = {}) {
+    const { performMotionExportCommand } = await loadMotionExportCommands();
+    const result = performMotionExportCommand({
+        state: {
+            document: {
+                motion,
+            },
+        },
+        format,
+    });
+
+    return result.output;
 }

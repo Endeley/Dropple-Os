@@ -1,10 +1,8 @@
-// export/exportMotion.js
-
-import { exportCSS } from './css/exportCSS';
-import { exportWAAPI } from './waapi/exportWAAPI';
+import { exportCSS } from './css/exportCSS.js';
+import { exportWAAPI } from './waapi/exportWAAPI.js';
 
 /**
- * Canonical motion export entry point.
+ * Stable runtime motion export adapter over canonical motion export authority.
  *
  * 🔒 Stable API
  */
