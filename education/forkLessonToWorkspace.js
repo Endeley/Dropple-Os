@@ -1,4 +1,4 @@
-import { normalizeEvents, snapshotToEvents } from './lessonEvents';
+import { normalizeEvents, snapshotToEvents } from './lessonEvents.js';
 
 export function forkLessonToWorkspace(lesson) {
   const snapshotEvents = lesson.baseSnapshot
