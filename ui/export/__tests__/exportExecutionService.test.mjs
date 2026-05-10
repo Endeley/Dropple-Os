@@ -102,6 +102,12 @@ test('export execution service exposes stable app-facing workflow lifecycle', as
     assert.equal(run.queueEntry?.status, 'completed');
     assert.equal(performed.output.media.exports.targets[0].type, 'mp4');
     assert.equal(service.getState().workflow?.manifest.manifestId, run.manifest.manifestId);
+    assert.equal(service.getState().provenance.manifestId, run.manifest.manifestId);
+    assert.equal(service.getState().provenance.sessionId, run.manifest.sessionId);
+    assert.equal(service.getState().provenance.assignmentId, run.assignment.assignmentId);
+    assert.equal(service.getState().provenance.checkpointId, run.checkpoint.checkpointId);
+    assert.equal(service.getState().activeRecord?.manifestId, run.manifest.manifestId);
+    assert.ok((service.getState().recentRecords.length ?? 0) >= 1);
 });
 
 test('export execution service persists and restores command-backed state', async () => {
@@ -117,4 +123,8 @@ test('export execution service persists and restores command-backed state', asyn
     assert.equal(persisted.metadata.source, 'service-test');
     assert.equal(restored.registryState.records.length, 1);
     assert.equal(restored.registryState.records[0].status, 'completed');
+    assert.equal(restored.activeRecord?.manifestId, restored.provenance.manifestId);
+    assert.equal(restored.activeRecord?.sessionId, restored.provenance.sessionId);
+    assert.equal(restored.activeRecord?.checkpointId, restored.provenance.checkpointId);
+    assert.equal(restored.provenance.historyCount, restored.activeRecord?.historyCount ?? 0);
 });

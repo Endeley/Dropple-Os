@@ -314,8 +314,15 @@ export function SequencerInspectorPanel({
         });
     }
 
-    const workflowStatus = serviceState.workflow?.queueEntry?.status ?? null;
-    const workflowProgress = serviceState.workflow?.progress ?? null;
+    const provenance = serviceState.provenance ?? null;
+    const workflowStatus = provenance?.status ?? null;
+    const workflowProgress = provenance?.progress ?? null;
+
+    function shortId(value) {
+        if (!value) return '—';
+        if (value.length <= 16) return value;
+        return `${value.slice(0, 16)}…`;
+    }
 
     return (
         <div style={sectionStyle()}>
@@ -570,6 +577,11 @@ export function SequencerInspectorPanel({
                     <div style={{ fontSize: 12, color: '#334155', marginTop: 10 }}>
                         Workflow: <strong>{workflowStatus}</strong>
                         {workflowProgress ? ` · ${workflowProgress.completedFrameCount}/${workflowProgress.totalFrames} frames` : ''}
+                    </div>
+                ) : null}
+                {provenance?.manifestId ? (
+                    <div style={{ fontSize: 12, color: '#64748b', marginTop: 6 }}>
+                        Manifest {shortId(provenance.manifestId)} · Session {shortId(provenance.sessionId)} · Checkpoint {shortId(provenance.checkpointId)}
                     </div>
                 ) : null}
                 {exportStatus ? (
