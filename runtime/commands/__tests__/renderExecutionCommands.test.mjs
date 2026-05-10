@@ -145,6 +145,11 @@ test('stepExportExecutionCommand resumes deterministically from command state', 
     assert.equal(resumed.result.executionRecord?.terminal, true);
     assert.equal(fresh.result.executionRecord?.terminal, true);
     assert.deepEqual(resumed.result.executionRecord?.progress, fresh.result.executionRecord?.progress);
+    assert.equal(resumed.result.manifest.manifestId, fresh.result.manifest.manifestId);
+    assert.equal(resumed.result.manifest.sessionId, fresh.result.manifest.sessionId);
+    assert.equal(resumed.result.assignment.assignmentId, fresh.result.assignment.assignmentId);
+    assert.equal(resumed.result.executionRecord?.assignmentId, fresh.result.executionRecord?.assignmentId);
+    assert.equal(resumed.result.executionRecord?.checkpointId, fresh.result.executionRecord?.checkpointId);
     assert.ok((resumed.result.executionRecord?.history.length ?? 0) >= (fresh.result.executionRecord?.history.length ?? 0));
 });
 
@@ -162,4 +167,12 @@ test('render execution command state can be persisted and restored', () => {
     assert.equal(persisted.metadata.source, 'command-test');
     assert.equal(restored.registryState.records.length, 1);
     assert.equal(restored.registryState.records[0].status, 'completed');
+    assert.equal(restored.registryState.records[0].recordId, run.result.executionRecord?.recordId);
+    assert.equal(restored.registryState.records[0].manifestId, run.result.manifest.manifestId);
+    assert.equal(restored.registryState.records[0].sessionId, run.result.manifest.sessionId);
+    assert.equal(restored.registryState.records[0].assignmentId, run.result.assignment.assignmentId);
+    assert.equal(restored.registryState.records[0].checkpointId, run.result.checkpoint.checkpointId);
+    assert.deepEqual(restored.registryState.records[0].progress, run.result.executionRecord?.progress);
+    assert.equal(run.result.manifest.manifestId, run.state.workflow.manifest.manifestId);
+    assert.equal(run.result.checkpoint.checkpointId, run.state.workflow.checkpoint.checkpointId);
 });

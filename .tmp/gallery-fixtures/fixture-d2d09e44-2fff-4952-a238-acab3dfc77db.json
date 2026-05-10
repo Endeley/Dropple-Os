@@ -1,0 +1,26 @@
+{
+  "id": "fixture-d2d09e44-2fff-4952-a238-acab3dfc77db",
+  "title": "Snapshot Fixture",
+  "description": "Deterministic snapshot-backed gallery fixture",
+  "tags": [
+    "fixture",
+    "snapshot"
+  ],
+  "mode": "graphic",
+  "createdAt": 1778427375381,
+  "ownerId": "test-fixture",
+  "thumbnailUrl": null,
+  "artifact": {
+    "kind": "snapshot",
+    "snapshot": {
+      "version": 1,
+      "savedAt": 1778427375381,
+      "events": [],
+      "cursorIndex": -1,
+      "metadata": {
+        "mode": "graphic",
+        "source": "snapshot-fixture"
+      }
+    }
+  }
+}

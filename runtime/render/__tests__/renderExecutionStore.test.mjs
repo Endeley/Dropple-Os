@@ -144,6 +144,53 @@ test('render execution store persists and restores durable registry state', () =
 
     assert.deepEqual(loadedSnapshot, persisted);
     assert.equal(record?.manifestId, workflow.manifest.manifestId);
+    assert.equal(record?.sessionId, workflow.manifest.sessionId);
+    assert.equal(record?.assignmentId, workflow.assignment.assignmentId);
+    assert.equal(record?.checkpointId, workflow.checkpoint.checkpointId);
+    assert.equal(record?.recordId, getRenderExecutionRecord(workflow.registryState, workflow.manifest.manifestId)?.recordId);
     assert.equal(record?.terminal, true);
     assert.equal(record?.history.at(-1)?.status, 'completed');
+});
+
+test('persisted and restored registry preserves canonical execution identity across resumed and uninterrupted runs', () => {
+    let partial = createExportExecution({
+        snapshot: createWorkspace(),
+    });
+    const midpoint = Math.floor(partial.manifest.totalFrames / 2);
+
+    for (let index = 0; index < midpoint; index += 1) {
+        partial = stepExportExecution({
+            snapshot: createWorkspace(),
+            queueState: partial.queueState,
+            checkpoint: partial.checkpoint,
+            registryState: partial.registryState,
+        });
+    }
+
+    const resumed = runExportExecution({
+        snapshot: createWorkspace(),
+        queueState: partial.queueState,
+        checkpoint: partial.checkpoint,
+        registryState: partial.registryState,
+    });
+    const uninterrupted = runExportExecution({
+        snapshot: createWorkspace(),
+    });
+
+    persistRenderExecutionRegistry(resumed.registryState, {
+        source: 'render-store-provenance',
+    });
+    const restored = restoreRenderExecutionRegistry();
+    const restoredRecord = getRenderExecutionRecord(restored, resumed.manifest.manifestId);
+    const uninterruptedRecord = getRenderExecutionRecord(
+        uninterrupted.registryState,
+        uninterrupted.manifest.manifestId,
+    );
+
+    assert.equal(restoredRecord?.recordId, uninterruptedRecord?.recordId);
+    assert.equal(restoredRecord?.manifestId, uninterruptedRecord?.manifestId);
+    assert.equal(restoredRecord?.sessionId, uninterruptedRecord?.sessionId);
+    assert.equal(restoredRecord?.assignmentId, uninterruptedRecord?.assignmentId);
+    assert.equal(restoredRecord?.checkpointId, uninterruptedRecord?.checkpointId);
+    assert.deepEqual(restoredRecord?.progress, uninterruptedRecord?.progress);
 });
