@@ -25,3 +25,39 @@ export function assertExclusiveInitialBootSources({
         hasExplicitCursor,
     };
 }
+
+export function resolveInitialEnvironmentBoot({
+    initialEnvironmentDescriptor = null,
+    initialResolvedTemplateEnvironment = null,
+} = {}) {
+    const hasDescriptor =
+        initialEnvironmentDescriptor &&
+        typeof initialEnvironmentDescriptor === 'object';
+    const hasResolvedEnvironment =
+        initialResolvedTemplateEnvironment &&
+        typeof initialResolvedTemplateEnvironment === 'object';
+
+    if (!hasDescriptor && !hasResolvedEnvironment) {
+        return null;
+    }
+
+    if (!hasDescriptor) {
+        return initialResolvedTemplateEnvironment;
+    }
+
+    if (!hasResolvedEnvironment) {
+        throw new Error(
+            'PersistenceBridge: descriptor-based environment boot requires an initialResolvedTemplateEnvironment.',
+        );
+    }
+
+    const resolved = initialResolvedTemplateEnvironment;
+
+    if (resolved?.environmentId !== initialEnvironmentDescriptor.environmentId) {
+        throw new Error(
+            'PersistenceBridge: resolved template environment does not match the initial environment descriptor.',
+        );
+    }
+
+    return resolved;
+}

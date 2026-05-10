@@ -18,7 +18,10 @@ import {
     usePersistenceBridgeState,
 } from '@/ui/bridges/persistenceRuntimeFacade.js';
 import { activateResolvedTemplateEnvironment } from '@/runtime/templates/activateResolvedTemplateEnvironment.js';
-import { assertExclusiveInitialBootSources } from '@/ui/bridges/persistenceBootSources.js';
+import {
+    assertExclusiveInitialBootSources,
+    resolveInitialEnvironmentBoot,
+} from '@/ui/bridges/persistenceBootSources.js';
 
 export function PersistenceBridge({
     enabled = true,
@@ -43,6 +46,10 @@ export function PersistenceBridge({
     const autosaveTimerRef = useRef(null);
     const seededInitialSnapshotRef = useRef(false);
     const restoredPersistenceRef = useRef(false);
+    const initialResolvedEnvironment = resolveInitialEnvironmentBoot({
+        initialEnvironmentDescriptor,
+        initialResolvedTemplateEnvironment,
+    });
 
     useEffect(() => {
         onRecentDocsChange?.(loadRegistry());
@@ -58,7 +65,7 @@ export function PersistenceBridge({
             hasExplicitCursor,
         } = assertExclusiveInitialBootSources({
             initialEnvironmentDescriptor:
-                initialResolvedTemplateEnvironment ?? initialEnvironmentDescriptor,
+                initialResolvedEnvironment,
             initialRuntimeSnapshot,
             initialEvents,
             initialCursorIndex,
@@ -71,7 +78,7 @@ export function PersistenceBridge({
 
         if (hasInitialEnvironmentDescriptor) {
             activateResolvedTemplateEnvironment({
-                resolved: initialResolvedTemplateEnvironment,
+                resolved: initialResolvedEnvironment,
                 dispatcher,
                 animate: false,
             });
@@ -91,7 +98,7 @@ export function PersistenceBridge({
             mode,
         });
         seededInitialSnapshotRef.current = true;
-    }, [dispatcher, initialEnvironmentDescriptor, initialResolvedTemplateEnvironment, initialEvents, initialCursorIndex, initialRuntimeSnapshot, mode, workspace]);
+    }, [dispatcher, initialEvents, initialCursorIndex, initialResolvedEnvironment, initialRuntimeSnapshot, mode, workspace]);
 
     useEffect(() => {
         if (!dispatcher?.hydrateRuntimeState || restoredPersistenceRef.current) return;
@@ -103,7 +110,7 @@ export function PersistenceBridge({
             hasExplicitCursor,
         } = assertExclusiveInitialBootSources({
             initialEnvironmentDescriptor:
-                initialResolvedTemplateEnvironment ?? initialEnvironmentDescriptor,
+                initialResolvedEnvironment,
             initialRuntimeSnapshot,
             initialEvents,
             initialCursorIndex,
@@ -158,10 +165,9 @@ export function PersistenceBridge({
         dispatcher,
         enabled,
         initialDocumentId,
-        initialEnvironmentDescriptor,
-        initialResolvedTemplateEnvironment,
         initialEvents,
         initialCursorIndex,
+        initialResolvedEnvironment,
         initialRuntimeSnapshot,
         onDocumentIdChange,
         onDocumentNameChange,
