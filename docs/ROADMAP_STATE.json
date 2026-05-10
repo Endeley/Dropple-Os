@@ -222,7 +222,7 @@
     }
   },
   "derived_environments": {
-    "status": "active",
+    "status": "complete",
     "frozen": false,
     "requires": [
       "lineage_reconstruction_key",
@@ -245,8 +245,13 @@
         "domain/templates/__tests__/TemplateEnvironmentDescriptor.test.mjs"
       ],
       "bounded_activation_overlays": [
+        "app/workspace/new/workspaceEnvironmentBoot.js",
+        "app/workspace/new/__tests__/workspaceEnvironmentBoot.test.mjs",
         "runtime/templates/activateTemplateEnvironment.js",
-        "runtime/templates/__tests__/activateTemplateEnvironment.test.mjs"
+        "runtime/templates/__tests__/activateTemplateEnvironment.test.mjs",
+        "ui/bridges/PersistenceBridge.jsx",
+        "ui/bridges/__tests__/PersistenceBridge.test.mjs",
+        "viewer/__tests__/runtimeCameraDiagnostics.test.mjs"
       ]
     }
   },
