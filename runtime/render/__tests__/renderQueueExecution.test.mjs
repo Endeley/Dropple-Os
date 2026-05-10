@@ -200,3 +200,45 @@ test('cancelRenderQueueExecution remains coordination-only', () => {
     assert.equal(entry?.error?.message, 'user-cancelled');
     assert.equal(Object.isFrozen(manifest), true);
 });
+
+test('queue coordination preserves manifest and session truth across create step run and cancel', () => {
+    const { renderInput, manifest } = createBundle();
+    const manifestSnapshot = JSON.stringify(manifest);
+
+    const created = createRenderQueueExecution({
+        queueState: createRenderQueueState(),
+        manifest,
+        renderInput,
+        priority: 1,
+    });
+    const stepped = stepRenderQueueExecution({
+        queueState: created.queueState,
+        manifest,
+        renderInput,
+        checkpoint: created.checkpoint,
+    });
+    const resumed = runRenderQueueExecution({
+        queueState: stepped.queueState,
+        manifest,
+        renderInput,
+        checkpoint: stepped.checkpoint,
+    });
+    const cancelled = cancelRenderQueueExecution({
+        queueState: created.queueState,
+        manifest,
+        reason: 'user-cancelled',
+    });
+
+    assert.equal(created.manifest.manifestId, manifest.manifestId);
+    assert.equal(stepped.manifest.manifestId, manifest.manifestId);
+    assert.equal(resumed.manifest.manifestId, manifest.manifestId);
+    assert.equal(created.session.sessionId, manifest.sessionId);
+    assert.equal(stepped.session.sessionId, manifest.sessionId);
+    assert.equal(resumed.session.sessionId, manifest.sessionId);
+    assert.equal(JSON.stringify(manifest), manifestSnapshot);
+    assert.equal(Object.isFrozen(manifest), true);
+    assert.equal(
+        cancelled.entries.find((entry) => entry.manifestId === manifest.manifestId)?.status,
+        'cancelled',
+    );
+});

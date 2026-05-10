@@ -106,6 +106,36 @@ test('stepExportExecution resumes from checkpoint deterministically', () => {
     assert.deepEqual(resumed.checkpoint, fullRun.checkpoint);
 });
 
+test('resumed and uninterrupted export workflows preserve canonical execution identity', () => {
+    let workflow = createExportExecution({
+        snapshot: createWorkspace(),
+    });
+    const midpoint = Math.floor(workflow.manifest.totalFrames / 2);
+
+    for (let index = 0; index < midpoint; index += 1) {
+        workflow = stepExportExecution({
+            snapshot: createWorkspace(),
+            queueState: workflow.queueState,
+            checkpoint: workflow.checkpoint,
+        });
+    }
+
+    const resumed = runExportExecution({
+        snapshot: createWorkspace(),
+        queueState: workflow.queueState,
+        checkpoint: workflow.checkpoint,
+    });
+    const uninterrupted = runExportExecution({
+        snapshot: createWorkspace(),
+    });
+
+    assert.equal(resumed.manifest.manifestId, uninterrupted.manifest.manifestId);
+    assert.equal(resumed.renderSession.sessionId, uninterrupted.renderSession.sessionId);
+    assert.equal(resumed.executionState.executionId, uninterrupted.executionState.executionId);
+    assert.equal(resumed.assignment.manifestId, uninterrupted.assignment.manifestId);
+    assert.equal(resumed.queueEntry?.executionId, uninterrupted.queueEntry?.executionId);
+});
+
 test('performExportExecution preserves canonical export semantics', () => {
     const workflow = runExportExecution({
         snapshot: createWorkspace(),

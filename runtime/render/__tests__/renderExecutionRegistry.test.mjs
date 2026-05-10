@@ -105,3 +105,42 @@ test('export workflow records lineage across create, step, and run states', () =
     assert.equal(record?.history[0].status, 'running');
     assert.equal(record?.history.at(-1)?.status, 'completed');
 });
+
+test('registry reconstructs one canonical execution identity across resumed and uninterrupted runs', () => {
+    let workflow = createExportExecution({
+        snapshot: createWorkspace(),
+    });
+    const midpoint = Math.floor(workflow.manifest.totalFrames / 2);
+
+    for (let index = 0; index < midpoint; index += 1) {
+        workflow = stepExportExecution({
+            snapshot: createWorkspace(),
+            queueState: workflow.queueState,
+            checkpoint: workflow.checkpoint,
+            registryState: workflow.registryState,
+        });
+    }
+
+    const resumed = runExportExecution({
+        snapshot: createWorkspace(),
+        queueState: workflow.queueState,
+        checkpoint: workflow.checkpoint,
+        registryState: workflow.registryState,
+    });
+    const uninterrupted = runExportExecution({
+        snapshot: createWorkspace(),
+    });
+
+    const resumedRecord = getRenderExecutionRecord(resumed.registryState, resumed.manifest.manifestId);
+    const uninterruptedRecord = getRenderExecutionRecord(
+        uninterrupted.registryState,
+        uninterrupted.manifest.manifestId,
+    );
+
+    assert.equal(resumedRecord?.recordId, uninterruptedRecord?.recordId);
+    assert.equal(resumedRecord?.manifestId, uninterruptedRecord?.manifestId);
+    assert.equal(resumedRecord?.sessionId, uninterruptedRecord?.sessionId);
+    assert.equal(resumedRecord?.assignmentId, uninterruptedRecord?.assignmentId);
+    assert.equal(resumedRecord?.checkpointId, uninterruptedRecord?.checkpointId);
+    assert.deepEqual(resumedRecord?.progress, uninterruptedRecord?.progress);
+});

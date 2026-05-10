@@ -1,38 +1,31 @@
-import { exportCSSKeyframes } from './css/exportCSSKeyframes.js';
-import { exportWAAPI } from './waapi/exportWAAPI.js';
 import { normalizeAnimationExport } from './normalizeAnimationExport.js';
+import { performMotionExportCommand } from '../motion/motionExportCommands.js';
 
 /**
- * Canonical animation export.
+ * Canonical semantic animation export through motion export authority.
  *
  * @param {Object} params
  * @param {Object} params.state - full design/runtime state
  * @param {'css'|'waapi'} params.format
  *
- * @returns {{ output: any, normalized: any }}
+ * @returns {{ manifest: any, output: any, normalized: any }}
  */
 export function exportAnimation({ state, format }) {
-  const motion = state?.document?.motion;
+  const motion = state?.document?.motion ?? null;
   if (!motion) {
-    return { output: null, normalized: null };
+    return { manifest: null, output: null, normalized: null };
   }
 
-  let output;
+  const result = performMotionExportCommand({
+    state,
+    format,
+  });
 
-  switch (format) {
-    case 'css':
-      output = exportCSSKeyframes({ motion });
-      break;
+  const normalized = normalizeAnimationExport(result.output);
 
-    case 'waapi':
-      output = exportWAAPI({ motion });
-      break;
-
-    default:
-      throw new Error(`Unsupported animation export format: ${format}`);
-  }
-
-  const normalized = normalizeAnimationExport(output);
-
-  return { output, normalized };
+  return {
+    manifest: result.manifest,
+    output: result.output,
+    normalized,
+  };
 }
