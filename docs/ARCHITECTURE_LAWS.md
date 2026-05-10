@@ -56,3 +56,31 @@ All interaction effects must resolve to events:
 All interaction flows through:
 
 `Input -> Tool -> Drag -> Resolve -> Magnetic -> Reducer -> Projection -> UI`
+
+## 8. No Temporary Authority
+Every implementation, optimization, and upgrade must use the final lawful authority model.
+
+Forbidden:
+- temporary authority paths
+- compatibility orchestration inside canonical runtime systems
+- dual authority systems
+- shadow execution semantics
+- UI-side emergency orchestration
+
+If the lawful ownership, deterministic execution, and canonical orchestration model are not ready yet, the feature waits.
+
+## 9. Execution Provenance
+Execution provenance must be deterministic, immutable, reconstructible, and replay-safe.
+
+Execution identity may not depend on:
+- machine order
+- worker timing
+- queue timing
+- retry timing
+- thread scheduling
+- transport order
+- execution locality
+
+Resumed execution and uninterrupted execution must preserve canonical execution identity.
+
+Coordination systems may not mutate manifest truth, session truth, or authored runtime truth.

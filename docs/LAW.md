@@ -121,12 +121,76 @@ All architectural constraints are enforced by:
 
 ---
 
+## 9. No Temporary Authority Paths
+
+Dropple does not implement temporary authority paths.
+
+If a system is introduced:
+
+- its ownership model must already be lawful
+- its execution semantics must already be deterministic
+- its orchestration boundaries must already be canonical
+- its layering must already obey constitutional hierarchy
+
+Otherwise:
+
+- the feature waits
+
+Forbidden:
+
+- temporary authority paths
+- compatibility orchestration inside canonical runtime systems
+- "we will clean it later" execution branches
+- dual authority systems
+- shadow execution semantics
+- fallback mutation paths
+- UI-side emergency orchestration
+
+This law applies every time Dropple implements, optimizes, or upgrades a system.
+
+Authority may converge by family, but never by temporary patch.
+
+---
+
+## 10. Execution Provenance Law
+
+Execution provenance must be:
+
+- deterministic
+- immutable
+- reconstructible
+- replay-safe
+
+Execution identity must not depend on:
+
+- machine order
+- worker timing
+- queue timing
+- retry timing
+- thread scheduling
+- transport order
+- execution locality
+
+Resumed execution and uninterrupted execution must preserve canonical execution identity.
+
+Execution coordination systems may not mutate:
+
+- manifest truth
+- session truth
+- authored runtime truth
+
+Queues, executors, checkpoints, workflow records, and future distributed coordinators are coordination systems, not hidden authority layers.
+
+This law protects deterministic execution identity without prescribing queue topology, transport design, or worker mechanics.
+
+---
+
 Blend semantics are versioned separately.
 See `docs/BLEND_V1.md` for deterministic blend contract.
 
 ---
 
-## 9. Deterministic Replay Law (v1)
+## 11. Deterministic Replay Law (v1)
 
 Given the same seed and identical event sequence, Dropple must produce
 the exact same evaluation fingerprint across:
@@ -146,7 +210,7 @@ Snapshot DAG must not alter evaluation output.
 
 ---
 
-## 10. Amendment Procedure
+## 12. Amendment Procedure
 
 Changes to:
 
@@ -162,7 +226,7 @@ No casual modifications allowed.
 
 ---
 
-## 11. SceneGraph Invariants (v1)
+## 13. SceneGraph Invariants (v1)
 
 SceneGraph is canonical narrative structure.
 

@@ -15,6 +15,38 @@ test('architecture laws document exists and defines the single interaction pipel
 
     assert.match(content, /# Dropple Architecture Laws/);
     assert.match(content, /Input -> Tool -> Drag -> Resolve -> Magnetic -> Reducer -> Projection -> UI/);
+    assert.match(content, /No Temporary Authority/);
+    assert.match(content, /Every implementation, optimization, and upgrade must use the final lawful authority model/);
+});
+
+test('constitutional law forbids temporary authority paths across implementation work', () => {
+    const content = read('docs/LAW.md');
+
+    assert.match(content, /No Temporary Authority Paths/);
+    assert.match(content, /Dropple does not implement temporary authority paths/);
+    assert.match(content, /This law applies every time Dropple implements, optimizes, or upgrades a system/);
+    assert.match(content, /the feature waits/);
+});
+
+test('constitutional law defines deterministic execution provenance and coordination non-authority', () => {
+    const content = read('docs/LAW.md');
+    const architecture = read('docs/ARCHITECTURE_LAWS.md');
+
+    assert.match(content, /Execution Provenance Law/);
+    assert.match(content, /Execution provenance must be:/);
+    assert.match(content, /deterministic/);
+    assert.match(content, /immutable/);
+    assert.match(content, /reconstructible/);
+    assert.match(content, /replay-safe/);
+    assert.match(content, /Resumed execution and uninterrupted execution must preserve canonical execution identity/);
+    assert.match(content, /Execution coordination systems may not mutate:/);
+    assert.match(content, /manifest truth/);
+    assert.match(content, /session truth/);
+    assert.match(content, /authored runtime truth/);
+
+    assert.match(architecture, /Execution Provenance/);
+    assert.match(architecture, /Resumed execution and uninterrupted execution must preserve canonical execution identity/);
+    assert.match(architecture, /Coordination systems may not mutate manifest truth, session truth, or authored runtime truth/);
 });
 
 test('tool handlers dispatch events instead of mutating runtime truth directly', () => {
