@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
     getVisibleTools,
+    getVisibleToolOwnership,
     initialToolRuntimeState,
     registerToolSource,
     resolveCanonicalActiveTool,
@@ -21,6 +22,26 @@ test('registerToolSource stores tools by source and visible tools merge determin
 
     assert.deepEqual(next.registeredTools.graph, ['select', 'pan', 'shape']);
     assert.deepEqual(getVisibleTools(next), ['select', 'pan', 'shape', 'cut']);
+});
+
+test('overlapping synthesized tool ids collapse into one visible tool with deterministic source ownership', () => {
+    const state = registerToolSource(
+        registerToolSource(initialToolRuntimeState, {
+            source: 'capability.alpha',
+            tools: ['move', 'shape'],
+        }),
+        {
+            source: 'capability.beta',
+            tools: ['frame', 'move'],
+        },
+    );
+
+    assert.deepEqual(getVisibleTools(state), ['move', 'shape', 'frame']);
+    assert.deepEqual(getVisibleToolOwnership(state), {
+        move: ['capability.alpha', 'capability.beta'],
+        shape: ['capability.alpha'],
+        frame: ['capability.beta'],
+    });
 });
 
 test('setRuntimeActiveTool rejects tools that are not registered', () => {
@@ -65,6 +86,31 @@ test('unregisterToolSource removes only the targeted source and preserves other 
         'synth.viewport': ['pan'],
     });
     assert.deepEqual(getVisibleTools(next), ['pan']);
+});
+
+test('unregisterToolSource preserves shared overlapping tools owned by surviving sources', () => {
+    const state = {
+        ...registerToolSource(
+            registerToolSource(initialToolRuntimeState, {
+                source: 'capability.alpha',
+                tools: ['move', 'shape'],
+            }),
+            {
+                source: 'capability.beta',
+                tools: ['frame', 'move'],
+            },
+        ),
+        activeTool: 'move',
+    };
+
+    const next = unregisterToolSource(state, { source: 'capability.alpha' });
+
+    assert.equal(next.activeTool, 'move');
+    assert.deepEqual(getVisibleTools(next), ['frame', 'move']);
+    assert.deepEqual(getVisibleToolOwnership(next), {
+        frame: ['capability.beta'],
+        move: ['capability.beta'],
+    });
 });
 
 test('unregisterToolSource repairs active synthesized tool to canonical fallback order', () => {

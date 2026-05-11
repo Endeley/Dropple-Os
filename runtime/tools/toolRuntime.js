@@ -3,6 +3,10 @@ export const initialToolRuntimeState = Object.freeze({
     registeredTools: {},
 });
 
+function normalizeSourceIds(registeredTools) {
+    return Object.keys(registeredTools ?? {}).sort((left, right) => left.localeCompare(right));
+}
+
 function normalizeTools(tools) {
     if (!Array.isArray(tools)) return [];
 
@@ -16,17 +20,31 @@ function normalizeTools(tools) {
     );
 }
 
-export function getVisibleTools(toolState) {
+export function getVisibleToolOwnership(toolState) {
     const registeredTools = toolState?.registeredTools ?? {};
-    const merged = new Set();
+    const ownership = new Map();
 
-    for (const source of Object.keys(registeredTools).sort()) {
+    for (const source of normalizeSourceIds(registeredTools)) {
         for (const tool of normalizeTools(registeredTools[source])) {
-            merged.add(tool);
+            if (!ownership.has(tool)) {
+                ownership.set(tool, []);
+            }
+            ownership.get(tool).push(source);
         }
     }
 
-    return Array.from(merged);
+    return Object.freeze(
+        Object.fromEntries(
+            Array.from(ownership.entries()).map(([toolId, sources]) => [
+                toolId,
+                Object.freeze([...sources]),
+            ]),
+        ),
+    );
+}
+
+export function getVisibleTools(toolState) {
+    return Object.keys(getVisibleToolOwnership(toolState));
 }
 
 export function resolveCanonicalActiveTool(currentActiveTool, visibleTools) {

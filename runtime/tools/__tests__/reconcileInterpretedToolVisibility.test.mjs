@@ -133,3 +133,45 @@ test('reconciled visibility plans apply cleanly to source-scoped runtime state a
     assert.deepEqual(getVisibleTools(nextState), ['select']);
     assert.equal(nextState.activeTool, 'select');
 });
+
+test('overlapping synthesized visibility remains deterministic when one provider withdraws', () => {
+    const overlappingSpecs = [
+        { id: 'move', label: 'Move', sessionType: 'move' },
+        { id: 'frame', label: 'Frame', createsNode: true, nodeType: 'frame' },
+    ];
+    const survivingSpecs = [
+        { id: 'move', label: 'Move', sessionType: 'move' },
+        { id: 'shape', label: 'Shape', createsNode: true, nodeType: 'shape' },
+    ];
+
+    const firstPlan = reconcileInterpretedToolVisibility({
+        source: 'capability.alpha',
+        capabilitySet: new Set(['layout.write', 'node.create']),
+        allowedToolIds: ['move', 'frame'],
+        specs: overlappingSpecs,
+        currentTools: [],
+    });
+    const secondPlan = reconcileInterpretedToolVisibility({
+        source: 'capability.beta',
+        capabilitySet: new Set(['layout.write', 'node.create']),
+        allowedToolIds: ['move', 'shape'],
+        specs: survivingSpecs,
+        currentTools: [],
+    });
+
+    let state = registerToolSource(initialToolRuntimeState, firstPlan.event.payload);
+    state = registerToolSource(state, secondPlan.event.payload);
+    assert.deepEqual(getVisibleTools(state), ['frame', 'move', 'shape']);
+
+    const withdrawFirstPlan = reconcileInterpretedToolVisibility({
+        source: 'capability.alpha',
+        capabilitySet: new Set(['layout.write', 'node.create']),
+        allowedToolIds: [],
+        specs: overlappingSpecs,
+        currentTools: state.registeredTools['capability.alpha'],
+    });
+    const nextState = unregisterToolSource(state, { source: withdrawFirstPlan.source });
+
+    assert.deepEqual(getVisibleTools(nextState), ['move', 'shape']);
+    assert.equal(nextState.activeTool, 'move');
+});
