@@ -1,0 +1,157 @@
+{
+  "id": "fixture-66b9e4ca-c6ea-4b9c-9219-f3e2f87b7eb5",
+  "title": "Environment Fixture",
+  "description": "Deterministic environment-backed gallery fixture",
+  "tags": [
+    "fixture",
+    "environment"
+  ],
+  "mode": "uiux",
+  "createdAt": 1778442410467,
+  "ownerId": "test-fixture",
+  "thumbnailUrl": null,
+  "artifact": {
+    "kind": "environment",
+    "snapshot": {
+      "version": 1,
+      "savedAt": 1778442410467,
+      "events": [],
+      "cursorIndex": -1,
+      "metadata": {
+        "mode": "uiux",
+        "source": "environment-fixture"
+      }
+    },
+    "descriptor": {
+      "environmentId": "18be6b34b701a9bed48d75bcb8cd68a188ac3fc57c54daada88947db8800aa89",
+      "lineage": {
+        "lineageRootId": "b00f96569d5710b1dcfb4d60539e673387fc7d72a09dd1ee746d75c99db49049",
+        "versionId": "b00f96569d5710b1dcfb4d60539e673387fc7d72a09dd1ee746d75c99db49049"
+      },
+      "environment": {
+        "modeContext": {
+          "modeId": "uiux",
+          "workspaceId": "design"
+        },
+        "overrides": {},
+        "runtimeConfig": {}
+      },
+      "metadata": {
+        "source": "certified-template",
+        "templateId": "dropple-uiux-starter"
+      }
+    },
+    "resolvedEnvironment": {
+      "environmentId": "18be6b34b701a9bed48d75bcb8cd68a188ac3fc57c54daada88947db8800aa89",
+      "lineage": {
+        "lineageRootId": "b00f96569d5710b1dcfb4d60539e673387fc7d72a09dd1ee746d75c99db49049",
+        "versionId": "b00f96569d5710b1dcfb4d60539e673387fc7d72a09dd1ee746d75c99db49049"
+      },
+      "descriptor": {
+        "environmentId": "18be6b34b701a9bed48d75bcb8cd68a188ac3fc57c54daada88947db8800aa89",
+        "lineage": {
+          "lineageRootId": "b00f96569d5710b1dcfb4d60539e673387fc7d72a09dd1ee746d75c99db49049",
+          "versionId": "b00f96569d5710b1dcfb4d60539e673387fc7d72a09dd1ee746d75c99db49049"
+        },
+        "environment": {
+          "modeContext": {
+            "modeId": "uiux",
+            "workspaceId": "design"
+          },
+          "overrides": {},
+          "runtimeConfig": {}
+        },
+        "metadata": {
+          "source": "certified-template",
+          "templateId": "dropple-uiux-starter"
+        }
+      },
+      "template": {
+        "id": "dropple-uiux-starter",
+        "version": "1.0.0",
+        "mode": "uiux",
+        "graph": {
+          "rootId": "root",
+          "nodes": [
+            {
+              "id": "root",
+              "type": "frame"
+            },
+            {
+              "id": "header",
+              "type": "frame"
+            },
+            {
+              "id": "hero",
+              "type": "frame"
+            },
+            {
+              "id": "footer",
+              "type": "frame"
+            },
+            {
+              "id": "heroTitle",
+              "type": "text"
+            },
+            {
+              "id": "ctaButton",
+              "type": "frame"
+            }
+          ],
+          "tree": {
+            "root": [
+              "header",
+              "hero",
+              "footer"
+            ],
+            "header": [],
+            "hero": [
+              "heroTitle",
+              "ctaButton"
+            ],
+            "footer": [],
+            "heroTitle": [],
+            "ctaButton": []
+          }
+        },
+        "metadata": {
+          "name": "UIUX Starter",
+          "description": "Official Dropple UIUX structural starter template.",
+          "author": "Dropple",
+          "createdAt": "2026-02-28",
+          "compatibleEngineVersion": "1.0.0",
+          "tags": [
+            "official",
+            "starter",
+            "uiux"
+          ]
+        },
+        "certification": {
+          "structuralHash": "0648ab903734e798603c4b90e312690061aeb636552cf57f11723b2a949e765e",
+          "engineHash": "92521fc3cbd964bdc9f584a991b89fddaa5754ed1cc96d6d42445338669c1305",
+          "signature": "8dfaf39b1b54440976e5f314ea208743f1e868cdb1e05eaad8ab5ac892b391af7f64695750259945e1ec6946c002541830a0e995ae8786009e0b335d0fedbb9aa85da5b984473db5c64c386e52b17b8917b17b1a8fdd78f551def282b8124d1a3ce7d6941dc83adfd8f523093fe01a0f5f49444eac0ceb9e180060d68ce128a8d39fa1bb9cf6883e6949de7bb9f5d7623006a19e1a3012cec8da12bfa771526fec548332bda815148aae16547aa9d6f0d334eedc5e0e3acde1d53d7dd02ac7350845ad8c12b35324365d1210d5c25a28b0880ab04562e4d5dc5d4e7f7ac248a585b61b5fb228b00a298184f9362dff07d01a58fb8f50bfd67a713d4610966eab",
+          "certifiedAt": "2026-03-01T09:33:35.831Z",
+          "lineageRootId": "b00f96569d5710b1dcfb4d60539e673387fc7d72a09dd1ee746d75c99db49049",
+          "lineageNodeId": "b00f96569d5710b1dcfb4d60539e673387fc7d72a09dd1ee746d75c99db49049",
+          "certificationHash": "2adf5624361e93c8539e171ba4b1aa8f05e6b0b04fbcf2c39eab8fb814fd57a3",
+          "engineVersion": "1.0.0"
+        },
+        "versionId": "b00f96569d5710b1dcfb4d60539e673387fc7d72a09dd1ee746d75c99db49049",
+        "lineageRootId": "b00f96569d5710b1dcfb4d60539e673387fc7d72a09dd1ee746d75c99db49049",
+        "parentVersionIds": []
+      },
+      "resolvedEnvironment": {
+        "modeContext": {
+          "modeId": "uiux",
+          "workspaceId": "design"
+        },
+        "overrides": {},
+        "runtimeConfig": {}
+      },
+      "metadata": {
+        "source": "certified-template",
+        "templateId": "dropple-uiux-starter"
+      }
+    }
+  }
+}
