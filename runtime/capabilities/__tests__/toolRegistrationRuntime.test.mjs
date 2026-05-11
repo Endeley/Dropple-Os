@@ -98,3 +98,37 @@ test('ignores malformed capability tool intents', () => {
 
     assert.deepEqual(dispatched, []);
 });
+
+test('source-scoped unregister remains deterministic and idempotent at the runtime boundary', () => {
+    const dispatched = [];
+    const dispatcher = {
+        dispatch(action) {
+            dispatched.push(action);
+        },
+    };
+
+    const event = {
+        type: 'capability.tools.unregister.requested',
+        payload: {
+            source: 'synth.graph',
+        },
+    };
+
+    handleCapabilityIntent(event, { dispatcher });
+    handleCapabilityIntent(event, { dispatcher });
+
+    assert.deepEqual(dispatched, [
+        {
+            type: EventTypes.TOOLS_UNREGISTER,
+            payload: {
+                source: 'synth.graph',
+            },
+        },
+        {
+            type: EventTypes.TOOLS_UNREGISTER,
+            payload: {
+                source: 'synth.graph',
+            },
+        },
+    ]);
+});

@@ -40,6 +40,10 @@ function buildRegistrationIdentity(source, interpretedTool) {
     return `${source}:${interpretedTool.id}:${interpretedTool.handlerFamily}`;
 }
 
+function buildUnregistrationIdentity(source) {
+    return `${source}:unregister`;
+}
+
 export function createInterpretedToolRegistration({ spec, source, capabilitySet } = {}) {
     const interpretedTool = interpretToolSpec(spec);
     const normalizedSource = normalizeSource(source);
@@ -58,6 +62,21 @@ export function createInterpretedToolRegistration({ spec, source, capabilitySet 
             payload: Object.freeze({
                 source: normalizedSource,
                 tools: Object.freeze([interpretedTool.id]),
+            }),
+        }),
+    });
+}
+
+export function createInterpretedToolUnregistration({ source } = {}) {
+    const normalizedSource = normalizeSource(source);
+
+    return Object.freeze({
+        registrationId: buildUnregistrationIdentity(normalizedSource),
+        source: normalizedSource,
+        event: Object.freeze({
+            type: 'capability.tools.unregister.requested',
+            payload: Object.freeze({
+                source: normalizedSource,
             }),
         }),
     });

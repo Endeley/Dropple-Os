@@ -29,6 +29,16 @@ export function getVisibleTools(toolState) {
     return Array.from(merged);
 }
 
+export function resolveCanonicalActiveTool(currentActiveTool, visibleTools) {
+    if (Array.isArray(visibleTools) && visibleTools.includes(currentActiveTool)) {
+        return currentActiveTool;
+    }
+
+    return Array.isArray(visibleTools) && visibleTools.length > 0
+        ? visibleTools[0]
+        : null;
+}
+
 export function registerToolSource(toolState, { source, tools } = {}) {
     if (!source) return toolState ?? initialToolRuntimeState;
 
@@ -42,9 +52,7 @@ export function registerToolSource(toolState, { source, tools } = {}) {
         ...currentState,
         registeredTools: nextRegisteredTools,
     });
-    const nextActiveTool = nextVisibleTools.includes(currentState.activeTool)
-        ? currentState.activeTool
-        : nextVisibleTools[0] ?? null;
+    const nextActiveTool = resolveCanonicalActiveTool(currentState.activeTool, nextVisibleTools);
 
     return {
         ...currentState,
@@ -68,9 +76,7 @@ export function unregisterToolSource(toolState, { source } = {}) {
         ...currentState,
         registeredTools: nextRegisteredTools,
     });
-    const nextActiveTool = nextVisibleTools.includes(currentState.activeTool)
-        ? currentState.activeTool
-        : nextVisibleTools[0] ?? null;
+    const nextActiveTool = resolveCanonicalActiveTool(currentState.activeTool, nextVisibleTools);
 
     return {
         ...currentState,

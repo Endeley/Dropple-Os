@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createInterpretedToolRegistration } from '@/runtime/tools/createInterpretedToolRegistration.js';
+import {
+    createInterpretedToolRegistration,
+    createInterpretedToolUnregistration,
+} from '@/runtime/tools/createInterpretedToolRegistration.js';
 import { handleCapabilityIntent } from '@/runtime/capabilities/toolRegistrationRuntime.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 
@@ -91,4 +94,47 @@ test('same interpreted spec produces the same canonical registration identity', 
     });
 
     assert.equal(registration.registrationId, 'synth.select:select:utility');
+});
+
+test('interpreted tool unregistration creates a deterministic source-scoped request', () => {
+    const a = createInterpretedToolUnregistration({
+        source: 'synth.graph',
+    });
+    const b = createInterpretedToolUnregistration({
+        source: ' synth.graph ',
+    });
+
+    assert.deepEqual(a, b);
+    assert.equal(a.registrationId, 'synth.graph:unregister');
+    assert.deepEqual(a.event, {
+        type: 'capability.tools.unregister.requested',
+        payload: {
+            source: 'synth.graph',
+        },
+    });
+});
+
+test('interpreted tool unregistration stays authority-free and routes through canonical runtime', () => {
+    const dispatched = [];
+    const dispatcher = {
+        dispatch(action) {
+            dispatched.push(action);
+        },
+    };
+
+    const unregistration = createInterpretedToolUnregistration({
+        source: 'synth.graph',
+    });
+
+    assert.equal(Object.prototype.hasOwnProperty.call(unregistration, 'dispatch'), false);
+    handleCapabilityIntent(unregistration.event, { dispatcher });
+
+    assert.deepEqual(dispatched, [
+        {
+            type: EventTypes.TOOLS_UNREGISTER,
+            payload: {
+                source: 'synth.graph',
+            },
+        },
+    ]);
 });
