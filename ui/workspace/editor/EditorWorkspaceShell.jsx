@@ -22,6 +22,7 @@ import { resolveWorkspaceContext } from '@/platform/workspaces/resolveWorkspaceC
 import { resolveCanonicalWorkspaceOverlayContext } from '@/platform/workspaces/modeResolution.js';
 import { useWorkspaceCapabilities } from '@/ui/workspace/useWorkspaceCapabilities.js';
 import { useCapabilityLifecycle } from '@/ui/workspace/useCapabilityLifecycle.js';
+import { useInterpretedToolProviderLifecycle } from '@/ui/workspace/useInterpretedToolProviderLifecycle.js';
 import { useWorkspaceNavigation } from '@/ui/workspace/shared/useWorkspaceNavigation.js';
 import { openTemplatePublishDialog } from '@/ui/bridges/templatePublishRuntimeFacade.js';
 import {
@@ -143,6 +144,14 @@ export function EditorWorkspaceShell({
      * Capability lifecycle
      */
     useCapabilityLifecycle({
+        capabilities,
+        emit,
+        workspace: workspaceContext.workspaceId,
+        mode: overlayContext.canonicalModeId ?? workspaceContext.modeId,
+        overlayId: overlayContext.overlayId,
+    });
+
+    useInterpretedToolProviderLifecycle({
         capabilities,
         emit,
         workspace: workspaceContext.workspaceId,

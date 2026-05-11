@@ -58,6 +58,15 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
     graph: Object.freeze({
         id: 'graph',
         tools: Object.freeze(['select', 'move', 'resize', 'rotate', 'pan', 'frame', 'shape']),
+        interpretedTools: Object.freeze([
+            Object.freeze({ id: 'select', label: 'Select' }),
+            Object.freeze({ id: 'move', label: 'Move' }),
+            Object.freeze({ id: 'resize', label: 'Resize' }),
+            Object.freeze({ id: 'rotate', label: 'Rotate' }),
+            Object.freeze({ id: 'pan', label: 'Pan' }),
+            Object.freeze({ id: 'frame', label: 'Frame', createsNode: true, nodeType: 'frame' }),
+            Object.freeze({ id: 'shape', label: 'Shape', createsNode: true, nodeType: 'shape' }),
+        ]),
         ui: Object.freeze({
             surfacePanels: Object.freeze([
                 Object.freeze({
@@ -66,14 +75,7 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
                 }),
             ]),
         }),
-        lifecycle: Object.freeze({
-            onMount(context) {
-                emitToolRegistration(context, 'graph', ['select', 'move', 'resize', 'rotate', 'pan', 'frame', 'shape']);
-            },
-            onUnmount(context) {
-                emitToolUnregistration(context, 'graph');
-            },
-        }),
+        lifecycle: Object.freeze({}),
     }),
 
     timeline: Object.freeze({

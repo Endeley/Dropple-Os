@@ -146,3 +146,31 @@ test('workspace mode flow can move between graphic and media routes without fata
 
   assertNoFatalErrors(tracked, 'workspace mode flow');
 });
+
+test('mounted graph synthesis appears on graphic, withdraws on automation, and reappears on return', async ({ page }) => {
+  const tracked = attachErrorTracking(page);
+
+  let response = await page.goto('/workspace/graphic', {
+    waitUntil: 'networkidle',
+  });
+  expect(response?.ok(), 'graphic workspace should respond successfully').toBeTruthy();
+  await expect(page.locator('[data-tool-id="move"]').first()).toBeVisible();
+  await expect(page.locator('[data-tool-id="frame"]').first()).toBeVisible();
+
+  response = await page.goto('/workspace/automation', {
+    waitUntil: 'networkidle',
+  });
+  expect(response?.ok(), 'automation workspace should respond successfully').toBeTruthy();
+  await expect(page.locator('body')).toContainText('Automation');
+  await expect(page.locator('[data-tool-id="move"]')).toHaveCount(0);
+  await expect(page.locator('[data-tool-id="frame"]')).toHaveCount(0);
+
+  response = await page.goto('/workspace/graphic', {
+    waitUntil: 'networkidle',
+  });
+  expect(response?.ok(), 'graphic workspace should respond successfully on return').toBeTruthy();
+  await expect(page.locator('[data-tool-id="move"]').first()).toBeVisible();
+  await expect(page.locator('[data-tool-id="frame"]').first()).toBeVisible();
+
+  assertNoFatalErrors(tracked, 'mounted graph synthesis workspace flow');
+});
