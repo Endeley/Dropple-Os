@@ -213,3 +213,33 @@ test('mounted interpreted providers coexist in animation and withdraw only the r
 
   assertNoFatalErrors(tracked, 'mounted interpreted provider coexistence flow');
 });
+
+test('mounted semantic winner label for shared synthesized tool stays stable across route transitions', async ({ page }) => {
+  const tracked = attachErrorTracking(page);
+
+  let response = await page.goto('/workspace/animation', {
+    waitUntil: 'networkidle',
+  });
+  expect(response?.ok(), 'animation workspace should respond successfully').toBeTruthy();
+  await expect(page.locator('[data-tool-id="move"]').first()).toHaveAttribute('data-tool-label', 'Move');
+
+  response = await page.goto('/workspace/graphic', {
+    waitUntil: 'networkidle',
+  });
+  expect(response?.ok(), 'graphic workspace should respond successfully from animation').toBeTruthy();
+  await expect(page.locator('[data-tool-id="move"]').first()).toHaveAttribute('data-tool-label', 'Move');
+
+  response = await page.goto('/workspace/automation', {
+    waitUntil: 'networkidle',
+  });
+  expect(response?.ok(), 'automation workspace should respond successfully after graphic').toBeTruthy();
+  await expect(page.locator('[data-tool-id="move"]')).toHaveCount(0);
+
+  response = await page.goto('/workspace/animation', {
+    waitUntil: 'networkidle',
+  });
+  expect(response?.ok(), 'animation workspace should respond successfully on return').toBeTruthy();
+  await expect(page.locator('[data-tool-id="move"]').first()).toHaveAttribute('data-tool-label', 'Move');
+
+  assertNoFatalErrors(tracked, 'mounted semantic winner continuity flow');
+});

@@ -32,7 +32,7 @@ function ToolButton({ tool, active, onSelect }) {
     const icon = TOOL_ICONS[tool.id];
 
     return (
-        <button type='button' data-tool-id={tool.id} className={`tool-button ${active ? 'is-active' : ''}`} aria-pressed={active} onClick={onSelect}>
+        <button type='button' data-tool-id={tool.id} data-tool-label={tool.label} aria-label={tool.label} title={tool.label} className={`tool-button ${active ? 'is-active' : ''}`} aria-pressed={active} onClick={onSelect}>
             <svg viewBox='0 0 24 24' className='tool-icon'>
                 {icon || <circle cx='12' cy='12' r='6' />}
             </svg>

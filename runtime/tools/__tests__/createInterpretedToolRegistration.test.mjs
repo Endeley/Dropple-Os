@@ -79,6 +79,8 @@ test('interpreted tool registration stays authority-free and routes through cano
             payload: {
                 source: 'synth.viewport',
                 tools: ['pan'],
+                descriptors: [],
+                priority: 0,
             },
         },
     ]);

@@ -33,6 +33,10 @@ function normalizeOptionalString(value) {
     return trimmed.length > 0 ? trimmed : null;
 }
 
+function normalizeBoolean(value) {
+    return value === true;
+}
+
 function normalizeStringArray(values) {
     if (!Array.isArray(values)) return Object.freeze([]);
 
@@ -118,6 +122,7 @@ export function interpretToolSpec(spec) {
         id,
         label,
         group,
+        defaultActive: normalizeBoolean(spec.defaultActive),
         handlerFamily,
         intentTopics: normalizeStringArray(spec.intentTopics),
         capabilityTags: normalizeStringArray(spec.capabilityTags),

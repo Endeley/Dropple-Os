@@ -29,6 +29,8 @@ test('register intent dispatches registerTools action', () => {
         payload: {
             source: 'graph',
             tools: ['select', 'shape'],
+            descriptors: [],
+            priority: 0,
         },
     });
 });

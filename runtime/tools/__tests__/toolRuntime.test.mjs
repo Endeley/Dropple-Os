@@ -22,7 +22,7 @@ test('registerToolSource stores tools by source and visible tools merge determin
     });
 
     assert.deepEqual(next.registeredTools.graph, ['select', 'pan', 'shape']);
-    assert.deepEqual(getVisibleTools(next), ['select', 'pan', 'shape', 'cut']);
+    assert.deepEqual(getVisibleTools(next), ['cut', 'pan', 'select', 'shape']);
 });
 
 test('overlapping synthesized tool ids collapse into one visible tool with deterministic source ownership', () => {
@@ -37,7 +37,7 @@ test('overlapping synthesized tool ids collapse into one visible tool with deter
         },
     );
 
-    assert.deepEqual(getVisibleTools(state), ['move', 'shape', 'frame']);
+    assert.deepEqual(getVisibleTools(state), ['frame', 'move', 'shape']);
     assert.deepEqual(getVisibleToolOwnership(state), {
         move: ['capability.alpha', 'capability.beta'],
         shape: ['capability.alpha'],
@@ -65,8 +65,32 @@ test('overlapping synthesized tool ids choose semantic winner by priority then s
         id: 'move',
         owners: ['capability.alpha', 'capability.beta'],
         winnerSource: 'capability.alpha',
+        winnerPriority: 100,
         descriptor: { id: 'move', label: 'Alpha Move', group: 'edit' },
     });
+});
+
+test('semantic handler-family conflicts are not projected as visible tools', () => {
+    const state = registerToolSource(
+        registerToolSource(initialToolRuntimeState, {
+            source: 'capability.graph',
+            tools: ['move'],
+            priority: 100,
+            descriptors: [{ id: 'move', label: 'Move', handlerFamily: 'session' }],
+        }),
+        {
+            source: 'capability.cinematic',
+            tools: ['move'],
+            priority: 50,
+            descriptors: [{ id: 'move', label: 'Translate', handlerFamily: 'utility' }],
+        },
+    );
+
+    assert.deepEqual(getVisibleToolOwnership(state), {
+        move: ['capability.cinematic', 'capability.graph'],
+    });
+    assert.deepEqual(getVisibleTools(state), []);
+    assert.deepEqual(getVisibleToolDefinitions(state), {});
 });
 
 test('setRuntimeActiveTool rejects tools that are not registered', () => {
@@ -175,4 +199,28 @@ test('resolveCanonicalActiveTool preserves current tool or falls back determinis
     assert.equal(resolveCanonicalActiveTool('select', ['select', 'pan']), 'select');
     assert.equal(resolveCanonicalActiveTool('shape', ['pan', 'zoom']), 'pan');
     assert.equal(resolveCanonicalActiveTool('shape', []), null);
+});
+
+test('resolveCanonicalActiveTool prefers semantic defaultActive tool when current tool is no longer visible', () => {
+    assert.equal(
+        resolveCanonicalActiveTool(
+            'shape',
+            ['move', 'pan'],
+            {
+                move: {
+                    id: 'move',
+                    winnerSource: 'capability.alpha',
+                    winnerPriority: 100,
+                    descriptor: { id: 'move', defaultActive: false },
+                },
+                pan: {
+                    id: 'pan',
+                    winnerSource: 'capability.viewport',
+                    winnerPriority: 50,
+                    descriptor: { id: 'pan', defaultActive: true },
+                },
+            },
+        ),
+        'pan',
+    );
 });

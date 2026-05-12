@@ -40,9 +40,11 @@ test('interpretToolSpec normalizes session tools into the approved session famil
         id: 'move',
         label: 'Move',
         group: 'edit',
+        defaultActive: true,
     });
 
     assert.equal(interpreted.handlerFamily, 'session');
+    assert.equal(interpreted.defaultActive, true);
     assert.deepEqual(interpreted.handlerPayload, { sessionType: 'move' });
 });
 
