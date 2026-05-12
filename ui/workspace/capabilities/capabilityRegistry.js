@@ -97,6 +97,11 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
     rig: Object.freeze({
         id: 'rig',
         tools: Object.freeze(['rig-select', 'rig-move']),
+        interpretedTools: Object.freeze([
+            Object.freeze({ id: 'move', label: 'Move', sessionType: 'move' }),
+            Object.freeze({ id: 'rig-select', label: 'Rig Select', handlerFamily: 'utility' }),
+            Object.freeze({ id: 'rig-move', label: 'Rig Move', sessionType: 'move' }),
+        ]),
         ui: Object.freeze({
             overlays: Object.freeze([
                 Object.freeze({
@@ -105,14 +110,7 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
                 }),
             ]),
         }),
-        lifecycle: Object.freeze({
-            onMount(context) {
-                emitToolRegistration(context, 'rig', ['rig-select', 'rig-move']);
-            },
-            onUnmount(context) {
-                emitToolUnregistration(context, 'rig');
-            },
-        }),
+        lifecycle: Object.freeze({}),
     }),
 
     stateMachine: Object.freeze({

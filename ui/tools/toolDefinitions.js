@@ -41,6 +41,8 @@ export const TOOL_DEFINITIONS = Object.freeze([
 
     { id: 'move', label: 'Move', group: 'edit' },
     { id: 'resize', label: 'Resize', group: 'edit' },
+    { id: 'rig-select', label: 'Rig Select', group: 'navigate' },
+    { id: 'rig-move', label: 'Rig Move', group: 'edit' },
 
     { id: 'path', label: 'Path', group: 'vector' },
     { id: 'stroke', label: 'Stroke', group: 'vector' },

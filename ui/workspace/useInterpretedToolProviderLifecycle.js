@@ -5,6 +5,19 @@ import { createInterpretedToolProviderRuntimeBridge } from '@/ui/bridges/interpr
 import { getVisibleToolsForWorkspace } from '@/ui/tools/toolDefinitions.js';
 import { CAPABILITY_REGISTRY } from '@/ui/workspace/capabilities/capabilityRegistry.js';
 
+function normalizeToolIds(values) {
+    if (!Array.isArray(values)) return [];
+
+    return Array.from(
+        new Set(
+            values
+                .filter((value) => typeof value === 'string')
+                .map((value) => value.trim())
+                .filter(Boolean),
+        ),
+    ).sort((left, right) => left.localeCompare(right));
+}
+
 function resolveInterpretedProviders(capabilities, registry) {
     if (!Array.isArray(capabilities)) return [];
 
@@ -19,6 +32,20 @@ function resolveInterpretedProviders(capabilities, registry) {
             };
         })
         .filter(Boolean);
+}
+
+function resolveAllowedToolIds({ capabilities, workspace, mode, overlayId, registry }) {
+    const workspaceToolIds = getVisibleToolsForWorkspace({
+        workspaceId: workspace,
+        modeId: mode,
+        overlayId,
+    }).map((tool) => tool.id);
+
+    const capabilityToolIds = Array.isArray(capabilities)
+        ? capabilities.flatMap((capability) => registry?.[capability]?.tools ?? [])
+        : [];
+
+    return normalizeToolIds([...workspaceToolIds, ...capabilityToolIds]);
 }
 
 export function useInterpretedToolProviderLifecycle({
@@ -40,12 +67,14 @@ export function useInterpretedToolProviderLifecycle({
     );
     const allowedToolIds = useMemo(
         () =>
-            getVisibleToolsForWorkspace({
-                workspaceId: workspace,
-                modeId: mode,
+            resolveAllowedToolIds({
+                capabilities,
+                workspace,
+                mode,
                 overlayId,
-            }).map((tool) => tool.id),
-        [mode, overlayId, workspace],
+                registry: CAPABILITY_REGISTRY,
+            }),
+        [capabilities, mode, overlayId, workspace],
     );
 
     useEffect(() => {

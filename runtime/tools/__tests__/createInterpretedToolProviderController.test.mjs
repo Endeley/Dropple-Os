@@ -12,6 +12,15 @@ const GRAPH_PROVIDER = Object.freeze({
     ]),
 });
 
+const RIG_PROVIDER = Object.freeze({
+    source: 'capability.rig',
+    specs: Object.freeze([
+        Object.freeze({ id: 'move', label: 'Move', sessionType: 'move' }),
+        Object.freeze({ id: 'rig-select', label: 'Rig Select', handlerFamily: 'utility' }),
+        Object.freeze({ id: 'rig-move', label: 'Rig Move', sessionType: 'move' }),
+    ]),
+});
+
 test('interpreted tool provider controller registers visible tools on first sync', () => {
     const emitted = [];
     const controller = createInterpretedToolProviderController({
@@ -69,6 +78,43 @@ test('interpreted tool provider controller updates visibility deterministically 
             payload: {
                 source: 'capability.graph',
                 tools: ['shape'],
+            },
+        },
+    });
+});
+
+test('interpreted tool provider controller preserves surviving provider visibility when one source is removed', () => {
+    const emitted = [];
+    const controller = createInterpretedToolProviderController({
+        emit(type, payload) {
+            emitted.push({ type, payload });
+        },
+    });
+
+    const initial = controller.sync({
+        providers: [RIG_PROVIDER, GRAPH_PROVIDER],
+        capabilitySet: new Set(['layout.write', 'node.create']),
+        allowedToolIds: ['frame', 'move', 'shape', 'rig-select', 'rig-move'],
+    });
+    const next = controller.sync({
+        providers: [GRAPH_PROVIDER],
+        capabilitySet: new Set(['layout.write', 'node.create']),
+        allowedToolIds: ['frame', 'move', 'shape'],
+    });
+
+    assert.deepEqual(initial.toolsBySource, {
+        'capability.graph': ['frame', 'move', 'shape'],
+        'capability.rig': ['move', 'rig-move', 'rig-select'],
+    });
+    assert.deepEqual(next.toolsBySource, {
+        'capability.graph': ['frame', 'move', 'shape'],
+    });
+    assert.deepEqual(emitted.at(-1), {
+        type: 'capability.tools.unregister.requested',
+        payload: {
+            type: 'capability.tools.unregister.requested',
+            payload: {
+                source: 'capability.rig',
             },
         },
     });

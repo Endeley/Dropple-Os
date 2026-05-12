@@ -216,6 +216,66 @@ test('runtime-local tool selection accepts canonical toolId payloads from the UI
     assert.equal(next?.tools?.activeTool, 'frame');
 });
 
+test('shared synthesized tool ownership preserves active tool across workspace transition and partial source withdrawal', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: createWorkspaceDef({
+                id: 'media',
+                tools: ['select', 'move', 'frame'],
+            }),
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.TOOLS_REGISTER,
+        payload: {
+            source: 'capability.graph',
+            tools: ['move', 'frame'],
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.TOOLS_REGISTER,
+        payload: {
+            source: 'capability.rig',
+            tools: ['move', 'rig-select', 'rig-move'],
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.TOOL_SET_ACTIVE,
+        payload: {
+            toolId: 'move',
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: createWorkspaceDef({
+                id: 'design',
+                tools: ['select', 'move', 'shape'],
+            }),
+        },
+    });
+
+    const afterWorkspaceTransition = dispatcher.getState();
+    assert.equal(afterWorkspaceTransition?.tools?.activeTool, 'move');
+
+    await dispatcher.dispatch({
+        type: EventTypes.TOOLS_UNREGISTER,
+        payload: {
+            source: 'capability.rig',
+        },
+    });
+
+    const afterPartialWithdrawal = dispatcher.getState();
+    assert.equal(afterPartialWithdrawal?.tools?.activeTool, 'move');
+});
+
 test('canonical design activation inherits node authoring events from its default mode policy', async () => {
     const dispatcher = createEventDispatcher({ headless: true });
 
