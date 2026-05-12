@@ -1,5 +1,6 @@
 import {
     compareToolSemanticPrecedence,
+    normalizeMergedStringArray,
     normalizeToolOwnerIds,
     resolveToolSemanticConflict,
 } from '@/runtime/tools/toolSemanticPolicy.js';
@@ -22,14 +23,34 @@ function buildSemanticEntries({ owners, descriptorsBySource, sourcePriority }) {
         );
 }
 
+function mergeDescriptorTopics(entries, field) {
+    return normalizeMergedStringArray(
+        (Array.isArray(entries) ? entries : []).flatMap((entry) =>
+            Array.isArray(entry?.descriptor?.[field]) ? entry.descriptor[field] : [],
+        ),
+    );
+}
+
+function resolveProjectedDescriptor(winner, entries) {
+    if (!winner || typeof winner !== 'object') return null;
+
+    return Object.freeze({
+        ...winner,
+        intentTopics: mergeDescriptorTopics(entries, 'intentTopics'),
+        capabilityTags: mergeDescriptorTopics(entries, 'capabilityTags'),
+    });
+}
+
 export function resolveToolSemanticWinner({ owners, descriptorsBySource, sourcePriority } = {}) {
     const entries = buildSemanticEntries({ owners, descriptorsBySource, sourcePriority });
     const winnerEntry = entries[0] ?? null;
 
     return Object.freeze({
         source: winnerEntry?.source ?? null,
-        descriptor:
+        descriptor: resolveProjectedDescriptor(
             entries.find((entry) => entry?.descriptor && typeof entry.descriptor === 'object')?.descriptor ?? null,
+            entries,
+        ),
         entries: Object.freeze(entries),
     });
 }

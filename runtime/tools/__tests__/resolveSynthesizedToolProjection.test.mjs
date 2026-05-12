@@ -25,6 +25,8 @@ test('resolveToolSemanticWinner deterministically selects the semantic winner by
         id: 'move',
         label: 'Alpha Move',
         handlerFamily: 'session',
+        intentTopics: [],
+        capabilityTags: [],
     });
 });
 
@@ -47,6 +49,45 @@ test('resolveSynthesizedToolProjection inherits default activation semantics onl
     assert.equal(projection.descriptor.defaultActive, false);
 });
 
+test('resolveSynthesizedToolProjection unions mergeable semantic arrays while preserving winner-owned descriptor fields', () => {
+    const projection = resolveSynthesizedToolProjection({
+        toolId: 'move',
+        owners: ['capability.beta', 'capability.alpha'],
+        descriptorsBySource: {
+            'capability.alpha': {
+                id: 'move',
+                label: 'Move',
+                group: 'edit',
+                handlerFamily: 'session',
+                capabilityTags: ['graph.transform'],
+                intentTopics: ['layout/move'],
+            },
+            'capability.beta': {
+                id: 'move',
+                label: 'Rig Move Shared',
+                group: 'edit',
+                handlerFamily: 'session',
+                capabilityTags: ['rig.transform'],
+                intentTopics: ['rig/move'],
+            },
+        },
+        sourcePriority: {
+            'capability.alpha': 100,
+            'capability.beta': 50,
+        },
+    });
+
+    assert.equal(projection.winnerSource, 'capability.alpha');
+    assert.deepEqual(projection.descriptor, {
+        id: 'move',
+        label: 'Move',
+        group: 'edit',
+        handlerFamily: 'session',
+        capabilityTags: ['graph.transform', 'rig.transform'],
+        intentTopics: ['layout/move', 'rig/move'],
+    });
+});
+
 test('resolveSynthesizedToolProjection rejects overlapping semantic identities with incompatible handler families', () => {
     const projection = resolveSynthesizedToolProjection({
         toolId: 'move',
@@ -63,6 +104,36 @@ test('resolveSynthesizedToolProjection rejects overlapping semantic identities w
 
     assert.equal(projection.status, 'invalid');
     assert.equal(projection.invalidCode, 'handler-family-conflict');
+    assert.equal(projection.winnerSource, null);
+    assert.equal(projection.descriptor, null);
+});
+
+test('resolveSynthesizedToolProjection rejects overlapping semantic identities with incompatible handler payloads', () => {
+    const projection = resolveSynthesizedToolProjection({
+        toolId: 'move',
+        owners: ['capability.graph', 'capability.cinematic'],
+        descriptorsBySource: {
+            'capability.graph': {
+                id: 'move',
+                label: 'Move',
+                handlerFamily: 'session',
+                handlerPayload: { sessionType: 'move' },
+            },
+            'capability.cinematic': {
+                id: 'move',
+                label: 'Translate',
+                handlerFamily: 'session',
+                handlerPayload: { sessionType: 'cameraMove' },
+            },
+        },
+        sourcePriority: {
+            'capability.graph': 100,
+            'capability.cinematic': 50,
+        },
+    });
+
+    assert.equal(projection.status, 'invalid');
+    assert.equal(projection.invalidCode, 'handler-payload-conflict');
     assert.equal(projection.winnerSource, null);
     assert.equal(projection.descriptor, null);
 });

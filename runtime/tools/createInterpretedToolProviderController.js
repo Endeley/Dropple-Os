@@ -32,12 +32,16 @@ function normalizeProviders(providers) {
 export function createInterpretedToolProviderController({ emit } = {}) {
     let toolsBySource = Object.create(null);
 
-    function sync({ providers, capabilitySet, allowedToolIds } = {}) {
+    function sync({ providers, capabilitySet, allowedToolIds, currentToolsBySource } = {}) {
         const nextProviders = normalizeProviders(providers);
         const nextSources = new Set(nextProviders.map((provider) => provider.source));
+        const runtimeToolsBySource =
+            currentToolsBySource && typeof currentToolsBySource === 'object'
+                ? currentToolsBySource
+                : null;
 
         for (const provider of nextProviders) {
-            const currentTools = toolsBySource[provider.source] ?? [];
+            const currentTools = runtimeToolsBySource?.[provider.source] ?? toolsBySource[provider.source] ?? [];
             const plan = reconcileInterpretedToolVisibility({
                 source: provider.source,
                 specs: provider.specs,
@@ -58,7 +62,12 @@ export function createInterpretedToolProviderController({ emit } = {}) {
             }
         }
 
-        for (const source of Object.keys(toolsBySource)) {
+        const knownSources = new Set([
+            ...Object.keys(toolsBySource),
+            ...Object.keys(runtimeToolsBySource ?? {}),
+        ]);
+
+        for (const source of knownSources) {
             if (nextSources.has(source)) continue;
 
             const plan = reconcileInterpretedToolVisibility({
@@ -66,7 +75,7 @@ export function createInterpretedToolProviderController({ emit } = {}) {
                 specs: [],
                 capabilitySet,
                 allowedToolIds,
-                currentTools: toolsBySource[source],
+                currentTools: runtimeToolsBySource?.[source] ?? toolsBySource[source],
             });
             if (plan.event) {
                 emitEvent(emit, plan.event);

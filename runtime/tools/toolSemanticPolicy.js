@@ -2,6 +2,21 @@ function normalizeNumber(value) {
     return Number.isFinite(value) ? value : 0;
 }
 
+function stableStringify(value) {
+    if (Array.isArray(value)) {
+        return `[${value.map((entry) => stableStringify(entry)).join(',')}]`;
+    }
+
+    if (value && typeof value === 'object') {
+        return `{${Object.keys(value)
+            .sort((left, right) => left.localeCompare(right))
+            .map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`)
+            .join(',')}}`;
+    }
+
+    return JSON.stringify(value);
+}
+
 export function normalizeToolSemanticPriority(value) {
     return normalizeNumber(value);
 }
@@ -44,6 +59,33 @@ export function getDistinctHandlerFamilies(entries) {
     );
 }
 
+export function getDistinctHandlerPayloads(entries) {
+    return Object.freeze(
+        Array.from(
+            new Set(
+                (Array.isArray(entries) ? entries : [])
+                    .map((entry) => entry?.descriptor?.handlerPayload ?? null)
+                    .map((handlerPayload) => stableStringify(handlerPayload)),
+            ),
+        ).sort((left, right) => left.localeCompare(right)),
+    );
+}
+
+export function normalizeMergedStringArray(values) {
+    if (!Array.isArray(values)) return Object.freeze([]);
+
+    return Object.freeze(
+        Array.from(
+            new Set(
+                values
+                    .filter((value) => typeof value === 'string')
+                    .map((value) => value.trim())
+                    .filter(Boolean),
+            ),
+        ).sort((left, right) => left.localeCompare(right)),
+    );
+}
+
 export function resolveToolSemanticConflict(entries) {
     const handlerFamilies = getDistinctHandlerFamilies(entries);
 
@@ -52,6 +94,15 @@ export function resolveToolSemanticConflict(entries) {
             code: 'handler-family-conflict',
             message: `Projected tool identity has incompatible handler families: ${handlerFamilies.join(', ')}`,
             handlerFamilies,
+        });
+    }
+
+    const handlerPayloads = getDistinctHandlerPayloads(entries);
+    if (handlerPayloads.length > 1) {
+        return Object.freeze({
+            code: 'handler-payload-conflict',
+            message: 'Projected tool identity has incompatible handler payload semantics',
+            handlerPayloads,
         });
     }
 

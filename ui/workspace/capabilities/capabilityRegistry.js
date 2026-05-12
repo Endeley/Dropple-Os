@@ -61,7 +61,13 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
         interpretedToolPriority: 100,
         interpretedTools: Object.freeze([
             Object.freeze({ id: 'select', label: 'Select' }),
-            Object.freeze({ id: 'move', label: 'Move', group: 'edit' }),
+            Object.freeze({
+                id: 'move',
+                label: 'Move',
+                group: 'edit',
+                capabilityTags: ['graph.transform'],
+                intentTopics: ['layout/move'],
+            }),
             Object.freeze({ id: 'resize', label: 'Resize' }),
             Object.freeze({ id: 'rotate', label: 'Rotate' }),
             Object.freeze({ id: 'pan', label: 'Pan' }),
@@ -100,7 +106,14 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
         tools: Object.freeze(['rig-select', 'rig-move']),
         interpretedToolPriority: 50,
         interpretedTools: Object.freeze([
-            Object.freeze({ id: 'move', label: 'Rig Move Shared', group: 'edit', sessionType: 'move' }),
+            Object.freeze({
+                id: 'move',
+                label: 'Rig Move Shared',
+                group: 'edit',
+                sessionType: 'move',
+                capabilityTags: ['rig.transform'],
+                intentTopics: ['rig/move'],
+            }),
             Object.freeze({ id: 'rig-select', label: 'Rig Select', handlerFamily: 'utility' }),
             Object.freeze({ id: 'rig-move', label: 'Rig Move', sessionType: 'move' }),
         ]),

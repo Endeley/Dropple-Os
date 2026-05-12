@@ -243,3 +243,30 @@ test('mounted semantic winner label for shared synthesized tool stays stable acr
 
   assertNoFatalErrors(tracked, 'mounted semantic winner continuity flow');
 });
+
+test('mounted shared synthesized tool projects merged semantic tags deterministically across owner transitions', async ({ page }) => {
+  const tracked = attachErrorTracking(page);
+
+  let response = await page.goto('/workspace/animation', {
+    waitUntil: 'networkidle',
+  });
+  expect(response?.ok(), 'animation workspace should respond successfully').toBeTruthy();
+  await expect(page.locator('[data-tool-id="move"]').first()).toHaveAttribute('data-tool-capability-tags', 'graph.transform,rig.transform');
+  await expect(page.locator('[data-tool-id="move"]').first()).toHaveAttribute('data-tool-intent-topics', 'layout/move,rig/move');
+
+  response = await page.goto('/workspace/graphic', {
+    waitUntil: 'networkidle',
+  });
+  expect(response?.ok(), 'graphic workspace should respond successfully from animation').toBeTruthy();
+  await expect(page.locator('[data-tool-id="move"]').first()).toHaveAttribute('data-tool-capability-tags', 'graph.transform');
+  await expect(page.locator('[data-tool-id="move"]').first()).toHaveAttribute('data-tool-intent-topics', 'layout/move');
+
+  response = await page.goto('/workspace/animation', {
+    waitUntil: 'networkidle',
+  });
+  expect(response?.ok(), 'animation workspace should respond successfully on return').toBeTruthy();
+  await expect(page.locator('[data-tool-id="move"]').first()).toHaveAttribute('data-tool-capability-tags', 'graph.transform,rig.transform');
+  await expect(page.locator('[data-tool-id="move"]').first()).toHaveAttribute('data-tool-intent-topics', 'layout/move,rig/move');
+
+  assertNoFatalErrors(tracked, 'mounted shared semantic tag continuity flow');
+});

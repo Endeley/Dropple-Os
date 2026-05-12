@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
 
 import { registerWorkspaceBridge } from '@/ui/bridges/workspaceBridge.js';
@@ -31,7 +31,7 @@ import {
 export function RuntimeBridgesRoot() {
   const dispatcher = useDispatcher();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!dispatcher?.dispatch) return;
 
     registerDefaultGraphToolHandlers();

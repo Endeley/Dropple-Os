@@ -30,9 +30,11 @@ const TOOL_ICONS = {
 
 function ToolButton({ tool, active, onSelect }) {
     const icon = TOOL_ICONS[tool.id];
+    const capabilityTags = Array.isArray(tool.capabilityTags) ? tool.capabilityTags.join(',') : '';
+    const intentTopics = Array.isArray(tool.intentTopics) ? tool.intentTopics.join(',') : '';
 
     return (
-        <button type='button' data-tool-id={tool.id} data-tool-label={tool.label} aria-label={tool.label} title={tool.label} className={`tool-button ${active ? 'is-active' : ''}`} aria-pressed={active} onClick={onSelect}>
+        <button type='button' data-tool-id={tool.id} data-tool-label={tool.label} data-tool-capability-tags={capabilityTags} data-tool-intent-topics={intentTopics} aria-label={tool.label} title={tool.label} className={`tool-button ${active ? 'is-active' : ''}`} aria-pressed={active} onClick={onSelect}>
             <svg viewBox='0 0 24 24' className='tool-icon'>
                 {icon || <circle cx='12' cy='12' r='6' />}
             </svg>

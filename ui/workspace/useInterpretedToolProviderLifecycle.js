@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { createInterpretedToolProviderRuntimeBridge } from '@/ui/bridges/interpretedToolProviderRuntimeBridge.js';
 import { getVisibleToolsForWorkspace } from '@/ui/tools/toolDefinitions.js';
 import { CAPABILITY_REGISTRY } from '@/ui/workspace/capabilities/capabilityRegistry.js';
+import { useToolStore } from '@/ui/state/useToolStore.js';
 
 function normalizeToolIds(values) {
     if (!Array.isArray(values)) return [];
@@ -59,6 +60,7 @@ export function useInterpretedToolProviderLifecycle({
     overlayId,
 } = {}) {
     const controllerRef = useRef(null);
+    const registeredTools = useToolStore((state) => state.registeredTools ?? {});
 
     if (!controllerRef.current) {
         controllerRef.current = createInterpretedToolProviderRuntimeBridge({ emit });
@@ -81,11 +83,19 @@ export function useInterpretedToolProviderLifecycle({
     );
 
     useEffect(() => {
-        controllerRef.current?.sync({
+        const syncInput = {
             providers,
             allowedToolIds,
-        });
-    }, [allowedToolIds, providers]);
+            currentToolsBySource: registeredTools,
+        };
+
+        controllerRef.current?.sync(syncInput);
+        const timeoutId = setTimeout(() => {
+            controllerRef.current?.sync(syncInput);
+        }, 0);
+
+        return () => clearTimeout(timeoutId);
+    }, [allowedToolIds, providers, registeredTools]);
 
     useEffect(() => {
         return () => {

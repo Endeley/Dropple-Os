@@ -51,13 +51,25 @@ test('overlapping synthesized tool ids choose semantic winner by priority then s
             source: 'capability.beta',
             tools: ['move'],
             priority: 50,
-            descriptors: [{ id: 'move', label: 'Beta Move', group: 'edit' }],
+            descriptors: [{
+                id: 'move',
+                label: 'Beta Move',
+                group: 'edit',
+                capabilityTags: ['rig.transform'],
+                intentTopics: ['rig/move'],
+            }],
         }),
         {
             source: 'capability.alpha',
             tools: ['move'],
             priority: 100,
-            descriptors: [{ id: 'move', label: 'Alpha Move', group: 'edit' }],
+            descriptors: [{
+                id: 'move',
+                label: 'Alpha Move',
+                group: 'edit',
+                capabilityTags: ['graph.transform'],
+                intentTopics: ['layout/move'],
+            }],
         },
     );
 
@@ -66,7 +78,13 @@ test('overlapping synthesized tool ids choose semantic winner by priority then s
         owners: ['capability.alpha', 'capability.beta'],
         winnerSource: 'capability.alpha',
         winnerPriority: 100,
-        descriptor: { id: 'move', label: 'Alpha Move', group: 'edit' },
+        descriptor: {
+            id: 'move',
+            label: 'Alpha Move',
+            group: 'edit',
+            capabilityTags: ['graph.transform', 'rig.transform'],
+            intentTopics: ['layout/move', 'rig/move'],
+        },
     });
 });
 
