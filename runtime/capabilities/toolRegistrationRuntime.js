@@ -22,6 +22,12 @@ function handleRegisterRequested(event, dispatcher) {
     const tools = Array.isArray(event?.payload?.tools)
         ? event.payload.tools
         : [];
+    const descriptors = Array.isArray(event?.payload?.descriptors)
+        ? event.payload.descriptors
+        : [];
+    const priority = Number.isFinite(event?.payload?.priority)
+        ? event.payload.priority
+        : 0;
 
     if (!source) return null;
 
@@ -30,6 +36,8 @@ function handleRegisterRequested(event, dispatcher) {
         registerTools({
             source,
             tools,
+            descriptors,
+            priority,
         }),
         'registerTools',
     );

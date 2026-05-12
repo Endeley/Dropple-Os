@@ -46,6 +46,29 @@ test('interpreted tool provider controller registers visible tools on first sync
                 payload: {
                     source: 'capability.graph',
                     tools: ['frame', 'shape'],
+                    descriptors: [
+                        {
+                            id: 'frame',
+                            label: 'Frame',
+                            group: null,
+                            handlerFamily: 'createNode',
+                            intentTopics: [],
+                            capabilityTags: [],
+                            metadata: { createsNode: true },
+                            handlerPayload: { nodeType: 'frame' },
+                        },
+                        {
+                            id: 'shape',
+                            label: 'Shape',
+                            group: null,
+                            handlerFamily: 'createNode',
+                            intentTopics: [],
+                            capabilityTags: [],
+                            metadata: { createsNode: true },
+                            handlerPayload: { nodeType: 'shape' },
+                        },
+                    ],
+                    priority: 0,
                 },
             },
         },
@@ -78,6 +101,19 @@ test('interpreted tool provider controller updates visibility deterministically 
             payload: {
                 source: 'capability.graph',
                 tools: ['shape'],
+                descriptors: [
+                    {
+                        id: 'shape',
+                        label: 'Shape',
+                        group: null,
+                        handlerFamily: 'createNode',
+                        intentTopics: [],
+                        capabilityTags: [],
+                        metadata: { createsNode: true },
+                        handlerPayload: { nodeType: 'shape' },
+                    },
+                ],
+                priority: 0,
             },
         },
     });

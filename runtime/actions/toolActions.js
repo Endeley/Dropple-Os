@@ -4,12 +4,14 @@ export const REGISTER_TOOLS = EventTypes.TOOLS_REGISTER;
 export const UNREGISTER_TOOLS = EventTypes.TOOLS_UNREGISTER;
 export const SET_ACTIVE_TOOL = EventTypes.TOOL_SET_ACTIVE;
 
-export function registerTools({ source, tools }) {
+export function registerTools({ source, tools, descriptors, priority }) {
     return {
         type: REGISTER_TOOLS,
         payload: {
             source,
             tools,
+            descriptors,
+            priority,
         },
     };
 }

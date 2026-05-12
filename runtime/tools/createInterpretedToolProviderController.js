@@ -19,8 +19,14 @@ function normalizeProviders(providers) {
         .map((provider) => ({
             source: provider.source.trim(),
             specs: Array.isArray(provider.specs) ? provider.specs : [],
+            priority: Number.isFinite(provider.priority) ? provider.priority : 0,
         }))
-        .sort((left, right) => left.source.localeCompare(right.source));
+        .sort((left, right) => {
+            if (left.priority !== right.priority) {
+                return right.priority - left.priority;
+            }
+            return left.source.localeCompare(right.source);
+        });
 }
 
 export function createInterpretedToolProviderController({ emit } = {}) {
@@ -38,6 +44,7 @@ export function createInterpretedToolProviderController({ emit } = {}) {
                 capabilitySet,
                 allowedToolIds,
                 currentTools,
+                priority: provider.priority,
             });
 
             if (plan.event) {

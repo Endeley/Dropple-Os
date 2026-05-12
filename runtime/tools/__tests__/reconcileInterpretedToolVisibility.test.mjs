@@ -28,6 +28,29 @@ test('reconcileInterpretedToolVisibility deterministically registers capability-
         payload: {
             source: 'synth.graph',
             tools: ['shape', 'text'],
+            descriptors: [
+                {
+                    id: 'shape',
+                    label: 'Shape',
+                    group: null,
+                    handlerFamily: 'createNode',
+                    intentTopics: [],
+                    capabilityTags: [],
+                    metadata: { createsNode: true },
+                    handlerPayload: { nodeType: 'shape' },
+                },
+                {
+                    id: 'text',
+                    label: 'Text',
+                    group: null,
+                    handlerFamily: 'createNode',
+                    intentTopics: [],
+                    capabilityTags: [],
+                    metadata: { createsNode: true },
+                    handlerPayload: { nodeType: 'text' },
+                },
+            ],
+            priority: 0,
         },
     });
 });
@@ -103,6 +126,19 @@ test('reconcileInterpretedToolVisibility preserves source isolation across multi
             payload: {
                 source: 'synth.viewport',
                 tools: ['pan'],
+                descriptors: [
+                    {
+                        id: 'pan',
+                        label: 'Pan',
+                        group: null,
+                        handlerFamily: 'session',
+                        intentTopics: [],
+                        capabilityTags: [],
+                        metadata: { createsNode: false },
+                        handlerPayload: { sessionType: 'pan' },
+                    },
+                ],
+                priority: 0,
             },
         },
     ]);
@@ -174,4 +210,36 @@ test('overlapping synthesized visibility remains deterministic when one provider
 
     assert.deepEqual(getVisibleTools(nextState), ['move', 'shape']);
     assert.equal(nextState.activeTool, 'move');
+});
+
+test('reconcileInterpretedToolVisibility carries semantic descriptors and priority for arbitration', () => {
+    const plan = reconcileInterpretedToolVisibility({
+        source: 'capability.graph',
+        priority: 100,
+        capabilitySet: new Set(['layout.write']),
+        allowedToolIds: ['move'],
+        specs: [{ id: 'move', label: 'Graph Move', group: 'edit', sessionType: 'move' }],
+        currentTools: [],
+    });
+
+    assert.deepEqual(plan.event, {
+        type: 'capability.tools.register.requested',
+        payload: {
+            source: 'capability.graph',
+            tools: ['move'],
+            descriptors: [
+                {
+                    id: 'move',
+                    label: 'Graph Move',
+                    group: 'edit',
+                    handlerFamily: 'session',
+                    intentTopics: [],
+                    capabilityTags: [],
+                    metadata: { createsNode: false },
+                    handlerPayload: { sessionType: 'move' },
+                },
+            ],
+            priority: 100,
+        },
+    });
 });

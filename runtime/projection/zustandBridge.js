@@ -10,7 +10,11 @@ import { selectionBoundsProjection } from '@/runtime/selectionBounds/selectionBo
 import { transformAnchorProjection } from '@/runtime/transforms/transformAnchorProjection.js';
 import { guideProjection } from '@/runtime/guides/guideProjection.js';
 import { projectGroupTransform } from '@/runtime/projection/groupTransformProjection.js';
-import { selectActiveTool, selectVisibleTools } from '@/runtime/selectors/toolSelectors.js';
+import {
+    selectActiveTool,
+    selectVisibleToolDefinitions,
+    selectVisibleTools,
+} from '@/runtime/selectors/toolSelectors.js';
 import { projectGraphInteraction } from '@/runtime/graph/index.js';
 import { getNodes, getRootIds, getSceneGraph } from '@/runtime/document/documentAdapter.js';
 import { projectActiveTokens } from '@/runtime/tokens/projectActiveTokens.js';
@@ -210,6 +214,7 @@ export function syncRuntimeToZustand(nextState, options = {}) {
         tools: {
             activeTool: selectActiveTool(nextState),
             registeredTools: nextState.tools?.registeredTools ?? {},
+            visibleToolDefinitions: selectVisibleToolDefinitions(nextState),
             visibleTools: selectVisibleTools(nextState),
         },
 

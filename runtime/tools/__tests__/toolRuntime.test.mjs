@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
     getVisibleTools,
+    getVisibleToolDefinitions,
     getVisibleToolOwnership,
     initialToolRuntimeState,
     registerToolSource,
@@ -41,6 +42,30 @@ test('overlapping synthesized tool ids collapse into one visible tool with deter
         move: ['capability.alpha', 'capability.beta'],
         shape: ['capability.alpha'],
         frame: ['capability.beta'],
+    });
+});
+
+test('overlapping synthesized tool ids choose semantic winner by priority then source id', () => {
+    const state = registerToolSource(
+        registerToolSource(initialToolRuntimeState, {
+            source: 'capability.beta',
+            tools: ['move'],
+            priority: 50,
+            descriptors: [{ id: 'move', label: 'Beta Move', group: 'edit' }],
+        }),
+        {
+            source: 'capability.alpha',
+            tools: ['move'],
+            priority: 100,
+            descriptors: [{ id: 'move', label: 'Alpha Move', group: 'edit' }],
+        },
+    );
+
+    assert.deepEqual(getVisibleToolDefinitions(state).move, {
+        id: 'move',
+        owners: ['capability.alpha', 'capability.beta'],
+        winnerSource: 'capability.alpha',
+        descriptor: { id: 'move', label: 'Alpha Move', group: 'edit' },
     });
 });
 

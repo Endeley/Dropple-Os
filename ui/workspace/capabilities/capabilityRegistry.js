@@ -58,9 +58,10 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
     graph: Object.freeze({
         id: 'graph',
         tools: Object.freeze(['select', 'move', 'resize', 'rotate', 'pan', 'frame', 'shape']),
+        interpretedToolPriority: 100,
         interpretedTools: Object.freeze([
             Object.freeze({ id: 'select', label: 'Select' }),
-            Object.freeze({ id: 'move', label: 'Move' }),
+            Object.freeze({ id: 'move', label: 'Move', group: 'edit' }),
             Object.freeze({ id: 'resize', label: 'Resize' }),
             Object.freeze({ id: 'rotate', label: 'Rotate' }),
             Object.freeze({ id: 'pan', label: 'Pan' }),
@@ -97,8 +98,9 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
     rig: Object.freeze({
         id: 'rig',
         tools: Object.freeze(['rig-select', 'rig-move']),
+        interpretedToolPriority: 50,
         interpretedTools: Object.freeze([
-            Object.freeze({ id: 'move', label: 'Move', sessionType: 'move' }),
+            Object.freeze({ id: 'move', label: 'Rig Move Shared', group: 'edit', sessionType: 'move' }),
             Object.freeze({ id: 'rig-select', label: 'Rig Select', handlerFamily: 'utility' }),
             Object.freeze({ id: 'rig-move', label: 'Rig Move', sessionType: 'move' }),
         ]),

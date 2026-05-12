@@ -2,7 +2,11 @@ import { useWorkspaceProjectionState as useRuntimeStore } from '@/runtime/projec
 
 export function useToolStore(selector) {
     return useRuntimeStore((state) => {
-        const tools = state.tools ?? { activeTool: 'select', visibleTools: [] };
+        const tools = state.tools ?? {
+            activeTool: 'select',
+            visibleTools: [],
+            visibleToolDefinitions: {},
+        };
         return typeof selector === 'function' ? selector(tools) : tools;
     });
 }

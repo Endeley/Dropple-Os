@@ -29,6 +29,9 @@ function resolveInterpretedProviders(capabilities, registry) {
             return {
                 source: `capability.${capability}`,
                 specs: interpretedTools,
+                priority: Number.isFinite(registry?.[capability]?.interpretedToolPriority)
+                    ? registry[capability].interpretedToolPriority
+                    : 0,
             };
         })
         .filter(Boolean);

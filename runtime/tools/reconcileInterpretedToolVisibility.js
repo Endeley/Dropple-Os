@@ -29,6 +29,10 @@ function arraysEqual(a, b) {
     return true;
 }
 
+function normalizeNumber(value) {
+    return Number.isFinite(value) ? value : 0;
+}
+
 function resolveNextVisibleTools({ source, specs, capabilitySet, allowedToolIds }) {
     const allowed = resolveAllowedToolIds(allowedToolIds);
     const visibleTools = [];
@@ -49,12 +53,26 @@ function resolveNextVisibleTools({ source, specs, capabilitySet, allowedToolIds 
     return normalizeToolIdList(visibleTools);
 }
 
+function resolveVisibleDescriptors(nextTools, specs, source, capabilitySet) {
+    return nextTools
+        .map((toolId) =>
+            (Array.isArray(specs) ? specs : []).find((spec) => {
+                const specId = typeof spec?.id === 'string' ? spec.id.trim() : null;
+                return specId === toolId;
+            }),
+        )
+        .filter(Boolean)
+        .map((spec) => createInterpretedToolRegistration({ source, spec, capabilitySet })?.interpretedTool ?? null)
+        .filter(Boolean);
+}
+
 export function reconcileInterpretedToolVisibility({
     source,
     specs,
     capabilitySet,
     allowedToolIds,
     currentTools,
+    priority,
 } = {}) {
     const nextTools = resolveNextVisibleTools({
         source,
@@ -102,6 +120,10 @@ export function reconcileInterpretedToolVisibility({
             payload: Object.freeze({
                 source: seedRegistration.source,
                 tools: Object.freeze(nextTools),
+                descriptors: Object.freeze(
+                    resolveVisibleDescriptors(nextTools, specs, source, capabilitySet),
+                ),
+                priority: normalizeNumber(priority),
             }),
         }),
     });

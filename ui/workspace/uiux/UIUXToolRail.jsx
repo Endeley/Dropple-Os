@@ -47,13 +47,21 @@ export function UIUXToolRail() {
 
     const activeTool = useToolStore((s) => s.activeTool);
     const runtimeTools = useToolStore((s) => s.visibleTools);
+    const runtimeToolDefinitions = useToolStore((s) => s.visibleToolDefinitions ?? {});
 
     const tools = useMemo(() => {
         if (runtimeTools?.length) {
-            return runtimeTools.map((toolId) => TOOL_DEFINITION_BY_ID[toolId]).filter(Boolean);
+            return runtimeTools
+                .map((toolId) => {
+                    const runtimeDefinition = runtimeToolDefinitions?.[toolId]?.descriptor ?? null;
+                    return runtimeDefinition
+                        ? { ...TOOL_DEFINITION_BY_ID[toolId], ...runtimeDefinition }
+                        : TOOL_DEFINITION_BY_ID[toolId];
+                })
+                .filter(Boolean);
         }
         return getVisibleToolsForWorkspace({ workspaceId, modeId: workspaceId });
-    }, [runtimeTools, workspaceId]);
+    }, [runtimeToolDefinitions, runtimeTools, workspaceId]);
 
     const grouped = useMemo(() => {
         const groups = new Map();
