@@ -111,6 +111,96 @@ test('semantic handler-family conflicts are not projected as visible tools', () 
     assert.deepEqual(getVisibleToolDefinitions(state), {});
 });
 
+test('visible tool projection defaults policy time deterministically when omitted', () => {
+    const state = registerToolSource(
+        registerToolSource(initialToolRuntimeState, {
+            source: 'capability.alpha',
+            tools: ['exec-version-major-migrated-shared'],
+            priority: 100,
+            descriptors: [{
+                id: 'exec-version-major-migrated-shared',
+                label: 'Exec Version Major Migrated Shared',
+                handlerFamily: 'utility',
+                executionSignature: {
+                    schemaVersion: '1.0',
+                    executionMode: 'utility',
+                    intentKind: 'utility',
+                    nodeType: '',
+                    sessionType: '',
+                },
+            }],
+        }),
+        {
+            source: 'capability.beta',
+            tools: ['exec-version-major-migrated-shared'],
+            priority: 50,
+            descriptors: [{
+                id: 'exec-version-major-migrated-shared',
+                label: 'Exec Version Major Migrated Shared',
+                handlerFamily: 'utility',
+                executionSignature: {
+                    schemaVersion: '2.0',
+                    executionMode: 'utility',
+                    intentKind: 'utility',
+                    nodeType: '',
+                    sessionType: '',
+                },
+            }],
+        },
+    );
+
+    assert.deepEqual(getVisibleTools(state), ['exec-version-major-migrated-shared']);
+});
+
+test('visible tool projection honors explicit policy time', () => {
+    const state = registerToolSource(
+        registerToolSource(initialToolRuntimeState, {
+            source: 'capability.alpha',
+            tools: ['exec-version-major-migrated-shared'],
+            priority: 100,
+            descriptors: [{
+                id: 'exec-version-major-migrated-shared',
+                label: 'Exec Version Major Migrated Shared',
+                handlerFamily: 'utility',
+                executionSignature: {
+                    schemaVersion: '1.0',
+                    executionMode: 'utility',
+                    intentKind: 'utility',
+                    nodeType: '',
+                    sessionType: '',
+                },
+            }],
+        }),
+        {
+            source: 'capability.beta',
+            tools: ['exec-version-major-migrated-shared'],
+            priority: 50,
+            descriptors: [{
+                id: 'exec-version-major-migrated-shared',
+                label: 'Exec Version Major Migrated Shared',
+                handlerFamily: 'utility',
+                executionSignature: {
+                    schemaVersion: '2.0',
+                    executionMode: 'utility',
+                    intentKind: 'utility',
+                    nodeType: '',
+                    sessionType: '',
+                },
+            }],
+        },
+        {
+            currentTimeMs: Date.parse('2026-09-01T00:00:00.000Z'),
+        },
+    );
+
+    assert.deepEqual(getVisibleTools(state, {
+        currentTimeMs: Date.parse('2026-09-01T00:00:00.000Z'),
+    }), []);
+    assert.deepEqual(getVisibleToolDefinitions(state, {
+        currentTimeMs: Date.parse('2026-09-01T00:00:00.000Z'),
+    }), {});
+});
+
 test('setRuntimeActiveTool rejects tools that are not registered', () => {
     const state = registerToolSource(initialToolRuntimeState, {
         source: 'graph',

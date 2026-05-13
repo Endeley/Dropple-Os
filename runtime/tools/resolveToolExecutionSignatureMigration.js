@@ -9,7 +9,62 @@ function normalizeTimestamp(value) {
     return Number.isFinite(parsed) ? parsed : null;
 }
 
-const EXECUTION_SIGNATURE_MIGRATION_WINDOWS = Object.freeze({
+function isNonNegativeInteger(value) {
+    return Number.isInteger(value) && value >= 0;
+}
+
+export function validateExecutionSignatureMigrationWindows(rawWindows) {
+    if (!rawWindows || typeof rawWindows !== 'object') {
+        throw new Error('execution-signature migration windows must be an object map');
+    }
+
+    const entries = Object.entries(rawWindows);
+    if (entries.length === 0) {
+        throw new Error('execution-signature migration windows must define at least one window');
+    }
+
+    for (const [toolId, window] of entries) {
+        if (typeof toolId !== 'string' || toolId.trim().length === 0) {
+            throw new Error('execution-signature migration window keys must be non-empty tool ids');
+        }
+
+        if (!window || typeof window !== 'object') {
+            throw new Error(`execution-signature migration window for "${toolId}" must be an object`);
+        }
+
+        if (!isNonNegativeInteger(window.fromMajor) || !isNonNegativeInteger(window.toMajor)) {
+            throw new Error(`execution-signature migration window for "${toolId}" must define non-negative integer fromMajor/toMajor`);
+        }
+
+        if (window.fromMajor >= window.toMajor) {
+            throw new Error(`execution-signature migration window for "${toolId}" must define fromMajor < toMajor`);
+        }
+
+        if (typeof window.sunsetAt !== 'string' || window.sunsetAt.trim().length === 0 || !Number.isFinite(normalizeTimestamp(window.sunsetAt))) {
+            throw new Error(`execution-signature migration window for "${toolId}" must define a valid ISO sunsetAt timestamp`);
+        }
+
+        if (typeof window.ticket !== 'string' || window.ticket.trim().length === 0) {
+            throw new Error(`execution-signature migration window for "${toolId}" must define a non-empty ticket`);
+        }
+    }
+
+    return Object.freeze(
+        Object.fromEntries(
+            entries.map(([toolId, window]) => [
+                toolId.trim(),
+                Object.freeze({
+                    fromMajor: window.fromMajor,
+                    toMajor: window.toMajor,
+                    sunsetAt: window.sunsetAt.trim(),
+                    ticket: window.ticket.trim(),
+                }),
+            ]),
+        ),
+    );
+}
+
+const EXECUTION_SIGNATURE_MIGRATION_WINDOWS = validateExecutionSignatureMigrationWindows({
     'exec-version-major-migrated-shared': Object.freeze({
         fromMajor: 1,
         toMajor: 2,

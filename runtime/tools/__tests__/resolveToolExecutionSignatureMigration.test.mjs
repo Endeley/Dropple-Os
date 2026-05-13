@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
     getExecutionSignatureMigrationWindow,
     allowsExecutionSignatureMajorMigration,
+    validateExecutionSignatureMigrationWindows,
 } from '@/runtime/tools/resolveToolExecutionSignatureMigration.js';
 
 test('getExecutionSignatureMigrationWindow resolves explicit tool-id migration windows', () => {
@@ -106,5 +107,65 @@ test('allowsExecutionSignatureMajorMigration fails closed for missing or malform
             currentTimeMs: Number.NaN,
         }),
         false,
+    );
+});
+
+test('validateExecutionSignatureMigrationWindows enforces constitutional migration metadata', () => {
+    assert.deepEqual(
+        validateExecutionSignatureMigrationWindows({
+            'exec-version-major-migrated-shared': {
+                fromMajor: 1,
+                toMajor: 2,
+                sunsetAt: '2026-09-01T00:00:00.000Z',
+                ticket: 'ARCH-421',
+            },
+        }),
+        {
+            'exec-version-major-migrated-shared': {
+                fromMajor: 1,
+                toMajor: 2,
+                sunsetAt: '2026-09-01T00:00:00.000Z',
+                ticket: 'ARCH-421',
+            },
+        },
+    );
+
+    assert.throws(
+        () =>
+            validateExecutionSignatureMigrationWindows({
+                broken: {
+                    fromMajor: 2,
+                    toMajor: 1,
+                    sunsetAt: '2026-09-01T00:00:00.000Z',
+                    ticket: 'ARCH-999',
+                },
+            }),
+        /fromMajor < toMajor/,
+    );
+
+    assert.throws(
+        () =>
+            validateExecutionSignatureMigrationWindows({
+                broken: {
+                    fromMajor: 1,
+                    toMajor: 2,
+                    sunsetAt: '',
+                    ticket: 'ARCH-999',
+                },
+            }),
+        /valid ISO sunsetAt/,
+    );
+
+    assert.throws(
+        () =>
+            validateExecutionSignatureMigrationWindows({
+                broken: {
+                    fromMajor: 1,
+                    toMajor: 2,
+                    sunsetAt: '2026-09-01T00:00:00.000Z',
+                    ticket: '',
+                },
+            }),
+        /non-empty ticket/,
     );
 });

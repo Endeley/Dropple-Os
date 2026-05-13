@@ -8,6 +8,10 @@ export const initialToolRuntimeState = Object.freeze({
     sourcePriority: {},
 });
 
+function resolvePolicyTimeMs(currentTimeMs) {
+    return Number.isFinite(currentTimeMs) ? Number(currentTimeMs) : 0;
+}
+
 function normalizeSourceIds(registeredTools) {
     return Object.keys(registeredTools ?? {}).sort((left, right) => left.localeCompare(right));
 }
@@ -76,11 +80,12 @@ export function getVisibleToolOwnership(toolState) {
     );
 }
 
-export function getVisibleToolDefinitions(toolState) {
+export function getVisibleToolDefinitions(toolState, { currentTimeMs } = {}) {
     const projections = resolveSynthesizedToolProjectionMap({
         ownership: getVisibleToolOwnership(toolState),
         registeredToolDescriptors: toolState?.registeredToolDescriptors ?? {},
         sourcePriority: toolState?.sourcePriority ?? {},
+        currentTimeMs: resolvePolicyTimeMs(currentTimeMs),
     });
 
     return Object.freeze(
@@ -101,8 +106,8 @@ export function getVisibleToolDefinitions(toolState) {
     );
 }
 
-export function getVisibleTools(toolState) {
-    return Object.keys(getVisibleToolDefinitions(toolState));
+export function getVisibleTools(toolState, { currentTimeMs } = {}) {
+    return Object.keys(getVisibleToolDefinitions(toolState, { currentTimeMs }));
 }
 
 export function resolveCanonicalActiveTool(currentActiveTool, visibleTools, visibleToolDefinitions = null) {
@@ -120,7 +125,7 @@ export function resolveCanonicalActiveTool(currentActiveTool, visibleTools, visi
         : null;
 }
 
-export function registerToolSource(toolState, { source, tools, descriptors, priority } = {}) {
+export function registerToolSource(toolState, { source, tools, descriptors, priority } = {}, { currentTimeMs } = {}) {
     if (!source) return toolState ?? initialToolRuntimeState;
 
     const nextTools = normalizeTools(tools);
@@ -144,13 +149,13 @@ export function registerToolSource(toolState, { source, tools, descriptors, prio
         registeredTools: nextRegisteredTools,
         registeredToolDescriptors: nextRegisteredToolDescriptors,
         sourcePriority: nextSourcePriority,
-    });
+    }, { currentTimeMs });
     const nextVisibleToolDefinitions = getVisibleToolDefinitions({
         ...currentState,
         registeredTools: nextRegisteredTools,
         registeredToolDescriptors: nextRegisteredToolDescriptors,
         sourcePriority: nextSourcePriority,
-    });
+    }, { currentTimeMs });
     const nextActiveTool = resolveCanonicalActiveTool(
         currentState.activeTool,
         nextVisibleTools,
@@ -166,7 +171,7 @@ export function registerToolSource(toolState, { source, tools, descriptors, prio
     };
 }
 
-export function unregisterToolSource(toolState, { source } = {}) {
+export function unregisterToolSource(toolState, { source } = {}, { currentTimeMs } = {}) {
     if (!source) return toolState ?? initialToolRuntimeState;
 
     const currentState = toolState ?? initialToolRuntimeState;
@@ -186,13 +191,13 @@ export function unregisterToolSource(toolState, { source } = {}) {
         registeredTools: nextRegisteredTools,
         registeredToolDescriptors: nextRegisteredToolDescriptors,
         sourcePriority: nextSourcePriority,
-    });
+    }, { currentTimeMs });
     const nextVisibleToolDefinitions = getVisibleToolDefinitions({
         ...currentState,
         registeredTools: nextRegisteredTools,
         registeredToolDescriptors: nextRegisteredToolDescriptors,
         sourcePriority: nextSourcePriority,
-    });
+    }, { currentTimeMs });
     const nextActiveTool = resolveCanonicalActiveTool(
         currentState.activeTool,
         nextVisibleTools,

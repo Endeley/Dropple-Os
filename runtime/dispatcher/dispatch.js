@@ -177,6 +177,17 @@ function resolveActiveToolPayload(payload) {
     return null;
 }
 
+function resolveToolPolicyTimeMsFromEvent(event) {
+    const candidates = [
+        event?.payload?.currentTimeMs,
+        event?.currentTimeMs,
+        event?.createdAt,
+        event?.timestamp,
+    ];
+    const resolved = candidates.find((candidate) => Number.isFinite(candidate));
+    return Number.isFinite(resolved) ? Number(resolved) : 0;
+}
+
 function createDefaultInteractionState() {
     return {
         activeInteraction: null,
@@ -314,6 +325,7 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
                         const workspace = applyWorkspaceActivation(prev?.workspace, workspaceDef);
                         const source = `workspace:${workspace.id}`;
                         const tools = Array.isArray(workspace?.tools) ? workspace.tools : [];
+                        const currentTimeMs = resolveToolPolicyTimeMsFromEvent(rawEvent);
 
                         next = {
                             ...prev,
@@ -321,7 +333,7 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
                             tools: registerToolSource(prev?.tools ?? initialToolRuntimeState, {
                                 source,
                                 tools,
-                            }),
+                            }, { currentTimeMs }),
                         };
                         break;
                     }
@@ -341,16 +353,23 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
                         break;
 
                     case EventTypes.TOOLS_REGISTER:
-                        next = {
-                            ...prev,
-                            tools: registerToolSource(prev?.tools ?? initialToolRuntimeState, rawEvent?.payload),
-                        };
+                        {
+                            const currentTimeMs = resolveToolPolicyTimeMsFromEvent(rawEvent);
+                            next = {
+                                ...prev,
+                                tools: registerToolSource(prev?.tools ?? initialToolRuntimeState, rawEvent?.payload, { currentTimeMs }),
+                            };
+                        }
                         break;
 
                     case EventTypes.TOOLS_UNREGISTER:
                         next = {
                             ...prev,
-                            tools: unregisterToolSource(prev?.tools ?? initialToolRuntimeState, rawEvent?.payload),
+                            tools: unregisterToolSource(
+                                prev?.tools ?? initialToolRuntimeState,
+                                rawEvent?.payload,
+                                { currentTimeMs: resolveToolPolicyTimeMsFromEvent(rawEvent) },
+                            ),
                         };
                         break;
 

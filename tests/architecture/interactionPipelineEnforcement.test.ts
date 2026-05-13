@@ -151,6 +151,9 @@ test('execution-signature migration windows must define deterministic expiry and
         assert.ok(Number.isFinite(Date.parse(window.sunsetAt)));
         assert.equal(typeof window?.ticket, 'string');
         assert.ok(window.ticket.trim().length > 0);
+        assert.ok(Number.isInteger(window.fromMajor) && window.fromMajor >= 0);
+        assert.ok(Number.isInteger(window.toMajor) && window.toMajor >= 0);
+        assert.ok(window.fromMajor < window.toMajor);
     }
 });
 
