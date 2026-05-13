@@ -10,7 +10,7 @@ function normalizeToolId(toolId) {
 }
 
 function resolveCurrentTimeMs(currentTimeMs) {
-    return Number.isFinite(currentTimeMs) ? currentTimeMs : Date.now();
+    return Number.isFinite(currentTimeMs) ? currentTimeMs : 0;
 }
 
 function buildSemanticEntries({ owners, descriptorsBySource, sourcePriority }) {
