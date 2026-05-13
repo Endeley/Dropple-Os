@@ -235,7 +235,7 @@ test('synthesized tool registration ingress is fail-closed before runtime tool a
 
     assert.match(recursion, /tool-registration-recursive-sovereignty-blocked/);
     assert.match(recursion, /capability\.tools\.register\.requested/);
-    assert.match(recursion, /tools\/register/);
+    assert.match(recursion, /EventTypes\.TOOLS_REGISTER/);
 
     assert.match(capabilityRuntime, /validateNoRecursiveToolRegistration/);
 });
