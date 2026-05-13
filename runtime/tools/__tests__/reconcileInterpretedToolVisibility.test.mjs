@@ -40,6 +40,7 @@ test('reconcileInterpretedToolVisibility deterministically registers capability-
                     metadata: { createsNode: true },
                     handlerPayload: { nodeType: 'shape' },
                     executionSignature: {
+                        schemaVersion: '1.0',
                         executionMode: 'createNode',
                         intentKind: 'create-node',
                         nodeType: 'shape',
@@ -57,6 +58,7 @@ test('reconcileInterpretedToolVisibility deterministically registers capability-
                     metadata: { createsNode: true },
                     handlerPayload: { nodeType: 'text' },
                     executionSignature: {
+                        schemaVersion: '1.0',
                         executionMode: 'createNode',
                         intentKind: 'create-node',
                         nodeType: 'text',
@@ -152,6 +154,7 @@ test('reconcileInterpretedToolVisibility preserves source isolation across multi
                         metadata: { createsNode: false },
                         handlerPayload: { sessionType: 'pan' },
                         executionSignature: {
+                            schemaVersion: '1.0',
                             executionMode: 'session',
                             intentKind: 'session',
                             nodeType: '',
@@ -260,6 +263,7 @@ test('reconcileInterpretedToolVisibility carries semantic descriptors and priori
                     metadata: { createsNode: false },
                     handlerPayload: { sessionType: 'move' },
                     executionSignature: {
+                        schemaVersion: '1.0',
                         executionMode: 'session',
                         intentKind: 'session',
                         nodeType: '',

@@ -58,6 +58,7 @@ test('interpreted tool provider controller registers visible tools on first sync
                             metadata: { createsNode: true },
                             handlerPayload: { nodeType: 'frame' },
                             executionSignature: {
+                                schemaVersion: '1.0',
                                 executionMode: 'createNode',
                                 intentKind: 'create-node',
                                 nodeType: 'frame',
@@ -75,6 +76,7 @@ test('interpreted tool provider controller registers visible tools on first sync
                             metadata: { createsNode: true },
                             handlerPayload: { nodeType: 'shape' },
                             executionSignature: {
+                                schemaVersion: '1.0',
                                 executionMode: 'createNode',
                                 intentKind: 'create-node',
                                 nodeType: 'shape',
@@ -127,6 +129,7 @@ test('interpreted tool provider controller updates visibility deterministically 
                         metadata: { createsNode: true },
                         handlerPayload: { nodeType: 'shape' },
                         executionSignature: {
+                            schemaVersion: '1.0',
                             executionMode: 'createNode',
                             intentKind: 'create-node',
                             nodeType: 'shape',
