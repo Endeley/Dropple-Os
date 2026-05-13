@@ -1,4 +1,5 @@
 import { registerTools, unregisterTools } from '@/runtime/actions/toolActions.js';
+import { validateNoRecursiveToolRegistration } from '@/runtime/tools/toolRegistrationRecursionGuard.js';
 
 function safeDispatch(dispatcher, action, type) {
     try {
@@ -30,6 +31,8 @@ function handleRegisterRequested(event, dispatcher) {
         : 0;
 
     if (!source) return null;
+    const recursiveCheck = validateNoRecursiveToolRegistration(event?.payload);
+    if (!recursiveCheck.ok) return null;
 
     return safeDispatch(
         dispatcher,

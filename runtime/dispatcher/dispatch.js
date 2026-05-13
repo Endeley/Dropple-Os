@@ -63,6 +63,7 @@ import { INTENT_CAPS } from '@/core/contracts/intentCapabilities.v1.js';
 import { applyWorkspaceActivation, applyViewportUpdate, applyCanvasSurfaceUpdate } from '../state/workspaceRuntime.js';
 import { initialToolRuntimeState, registerToolSource, setRuntimeActiveTool, unregisterToolSource } from '@/runtime/tools/toolRuntime.js';
 import { validateToolRegistrationIngress } from '@/runtime/tools/validateToolRegistrationIngress.js';
+import { validateNoRecursiveToolRegistration } from '@/runtime/tools/toolRegistrationRecursionGuard.js';
 import { endDrag, initialDragState, startDrag, updateDrag } from '@/runtime/interaction/dragRuntime.js';
 import { isShotTransitionValidationError } from '@/core/project/normalizeShotTransitionOut.js';
 
@@ -357,6 +358,10 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
                         {
                             const ingress = validateToolRegistrationIngress(rawEvent?.payload);
                             if (!ingress.ok) {
+                                return prev;
+                            }
+                            const recursiveGuard = validateNoRecursiveToolRegistration(rawEvent?.payload);
+                            if (!recursiveGuard.ok) {
                                 return prev;
                             }
                             const currentTimeMs = resolveToolPolicyTimeMsFromEvent(rawEvent);

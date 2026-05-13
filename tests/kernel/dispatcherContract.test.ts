@@ -190,6 +190,52 @@ test('dispatcher rejects synthesized tool registration payloads that carry autho
     assert.deepEqual(next?.tools?.registeredTools?.['capability.graph'] ?? null, null);
 });
 
+test('dispatcher rejects recursive synthesized tool registration payloads and preserves prior tool state', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });
+
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: {
+                id: 'graphic',
+                tools: ['select'],
+                policy: {
+                    mutation: 'allow',
+                    capabilities: ['node:create'],
+                },
+            },
+        },
+    });
+
+    const before = dispatcher.getState();
+    await dispatcher.dispatch({
+        type: EventTypes.TOOLS_REGISTER,
+        payload: {
+            source: 'capability.graph',
+            tools: ['move'],
+            descriptors: [{
+                id: 'move',
+                label: 'Move',
+                handlerFamily: 'session',
+                metadata: {
+                    nested: {
+                        type: 'capability.tools.register.requested',
+                        payload: {
+                            source: 'capability.inner',
+                            tools: ['shape'],
+                        },
+                    },
+                },
+            }],
+        },
+    });
+
+    const after = dispatcher.getState();
+    assert.deepEqual(after?.tools, before?.tools);
+    assert.equal(getVisibleTools(after?.tools ?? initialRuntimeState.tools).includes('move'), false);
+});
+
 test('dispatcher undo and redo replay canonical persisted truth while preserving runtime workspace', async () => {
     const dispatcher = createEventDispatcher({ headless: true });
     dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });

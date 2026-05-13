@@ -134,3 +134,36 @@ test('source-scoped unregister remains deterministic and idempotent at the runti
         },
     ]);
 });
+
+test('capability register intent rejects recursive tool registration payloads', () => {
+    const dispatched = [];
+    const dispatcher = {
+        dispatch(action) {
+            dispatched.push(action);
+        },
+    };
+
+    handleCapabilityIntent(
+        {
+            type: 'capability.tools.register.requested',
+            payload: {
+                source: 'capability.graph',
+                tools: ['move'],
+                descriptors: [{
+                    id: 'move',
+                    label: 'Move',
+                    handlerFamily: 'session',
+                    metadata: {
+                        nested: {
+                            type: EventTypes.TOOLS_REGISTER,
+                            payload: { source: 'capability.inner', tools: ['shape'] },
+                        },
+                    },
+                }],
+            },
+        },
+        { dispatcher },
+    );
+
+    assert.deepEqual(dispatched, []);
+});
