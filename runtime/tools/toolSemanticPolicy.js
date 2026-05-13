@@ -2,6 +2,37 @@ function normalizeNumber(value) {
     return Number.isFinite(value) ? value : 0;
 }
 
+export const TOOL_SEMANTIC_FIELD_GOVERNANCE = Object.freeze({
+    label: 'winner-owned',
+    defaultActive: 'winner-owned',
+    intentTopics: 'mergeable',
+    capabilityTags: 'mergeable',
+    handlerFamily: 'constitutionally-invalid-on-conflict',
+    handlerPayload: 'constitutionally-invalid-on-conflict',
+    group: 'constitutionally-invalid-on-conflict',
+});
+
+export const WINNER_OWNED_TOOL_DESCRIPTOR_FIELDS = Object.freeze(
+    Object.entries(TOOL_SEMANTIC_FIELD_GOVERNANCE)
+        .filter(([, governance]) => governance === 'winner-owned')
+        .map(([field]) => field)
+        .sort((left, right) => left.localeCompare(right)),
+);
+
+export const MERGEABLE_TOOL_DESCRIPTOR_FIELDS = Object.freeze(
+    Object.entries(TOOL_SEMANTIC_FIELD_GOVERNANCE)
+        .filter(([, governance]) => governance === 'mergeable')
+        .map(([field]) => field)
+        .sort((left, right) => left.localeCompare(right)),
+);
+
+export const INVALIDATING_TOOL_DESCRIPTOR_FIELDS = Object.freeze(
+    Object.entries(TOOL_SEMANTIC_FIELD_GOVERNANCE)
+        .filter(([, governance]) => governance === 'constitutionally-invalid-on-conflict')
+        .map(([field]) => field)
+        .sort((left, right) => left.localeCompare(right)),
+);
+
 function stableStringify(value) {
     if (Array.isArray(value)) {
         return `[${value.map((entry) => stableStringify(entry)).join(',')}]`;
@@ -19,6 +50,10 @@ function stableStringify(value) {
 
 export function normalizeToolSemanticPriority(value) {
     return normalizeNumber(value);
+}
+
+export function resolveToolSemanticFieldGovernance(field) {
+    return TOOL_SEMANTIC_FIELD_GOVERNANCE[field] ?? null;
 }
 
 export function compareToolSemanticPrecedence(leftSource, rightSource, sourcePriority) {
@@ -71,6 +106,18 @@ export function getDistinctHandlerPayloads(entries) {
     );
 }
 
+export function getDistinctDescriptorValues(entries, field) {
+    return Object.freeze(
+        Array.from(
+            new Set(
+                (Array.isArray(entries) ? entries : [])
+                    .map((entry) => entry?.descriptor?.[field] ?? null)
+                    .filter((value) => value !== null && value !== undefined),
+            ),
+        ).sort((left, right) => String(left).localeCompare(String(right))),
+    );
+}
+
 export function normalizeMergedStringArray(values) {
     if (!Array.isArray(values)) return Object.freeze([]);
 
@@ -103,6 +150,15 @@ export function resolveToolSemanticConflict(entries) {
             code: 'handler-payload-conflict',
             message: 'Projected tool identity has incompatible handler payload semantics',
             handlerPayloads,
+        });
+    }
+
+    const groups = getDistinctDescriptorValues(entries, 'group');
+    if (groups.length > 1) {
+        return Object.freeze({
+            code: 'group-conflict',
+            message: `Projected tool identity has incompatible structural group semantics: ${groups.join(', ')}`,
+            groups,
         });
     }
 

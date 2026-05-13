@@ -3,6 +3,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { runArchitectureGuard } from '@/scripts/architectureGuard.mjs';
+import {
+    INVALIDATING_TOOL_DESCRIPTOR_FIELDS,
+    MERGEABLE_TOOL_DESCRIPTOR_FIELDS,
+    resolveToolSemanticFieldGovernance,
+    TOOL_SEMANTIC_FIELD_GOVERNANCE,
+    WINNER_OWNED_TOOL_DESCRIPTOR_FIELDS,
+} from '@/runtime/tools/toolSemanticPolicy.js';
 
 const ROOT = process.cwd();
 
@@ -82,6 +89,47 @@ test('constitutional law defines interpreted tool non-sovereignty', () => {
     assert.match(architecture, /Interpreted Tool Non-Sovereignty/);
     assert.match(architecture, /Interpreted tools may express intent but may not own authority/);
     assert.match(architecture, /recursive tool-owned authority synthesis/);
+});
+
+test('constitutional law defines synthesized semantic projection governance', () => {
+    const content = read('docs/LAW.md');
+    const architecture = read('docs/ARCHITECTURE_LAWS.md');
+
+    assert.match(content, /Semantic Projection Governance Law/);
+    assert.match(content, /one canonical projected meaning/);
+    assert.match(content, /Equivalent ownership topologies must produce equivalent semantic projection/);
+    assert.match(content, /winner-owned/);
+    assert.match(content, /mergeable/);
+    assert.match(content, /constitutionally invalid/);
+    assert.match(content, /handlerFamily/);
+    assert.match(content, /handlerPayload/);
+    assert.match(content, /group/);
+
+    assert.match(architecture, /Semantic Projection Governance/);
+    assert.match(architecture, /one canonical projected meaning/);
+    assert.match(architecture, /winner-owned fields/);
+    assert.match(architecture, /mergeable fields/);
+    assert.match(architecture, /invalid conflict fields/);
+});
+
+test('tool semantic policy formalizes field governance classes explicitly', () => {
+    assert.deepEqual(WINNER_OWNED_TOOL_DESCRIPTOR_FIELDS, ['defaultActive', 'label']);
+    assert.deepEqual(MERGEABLE_TOOL_DESCRIPTOR_FIELDS, ['capabilityTags', 'intentTopics']);
+    assert.deepEqual(INVALIDATING_TOOL_DESCRIPTOR_FIELDS, ['group', 'handlerFamily', 'handlerPayload']);
+
+    assert.equal(resolveToolSemanticFieldGovernance('label'), 'winner-owned');
+    assert.equal(resolveToolSemanticFieldGovernance('defaultActive'), 'winner-owned');
+    assert.equal(resolveToolSemanticFieldGovernance('intentTopics'), 'mergeable');
+    assert.equal(resolveToolSemanticFieldGovernance('capabilityTags'), 'mergeable');
+    assert.equal(resolveToolSemanticFieldGovernance('handlerFamily'), 'constitutionally-invalid-on-conflict');
+    assert.equal(resolveToolSemanticFieldGovernance('handlerPayload'), 'constitutionally-invalid-on-conflict');
+    assert.equal(resolveToolSemanticFieldGovernance('group'), 'constitutionally-invalid-on-conflict');
+    assert.equal(resolveToolSemanticFieldGovernance('unknownField'), null);
+
+    assert.deepEqual(
+        Object.keys(TOOL_SEMANTIC_FIELD_GOVERNANCE).sort((left, right) => left.localeCompare(right)),
+        ['capabilityTags', 'defaultActive', 'group', 'handlerFamily', 'handlerPayload', 'intentTopics', 'label'],
+    );
 });
 
 test('future interpreted tool modules may not import authority internals directly', () => {

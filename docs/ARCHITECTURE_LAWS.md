@@ -97,3 +97,25 @@ Forbidden:
 - recursive tool-owned authority synthesis
 
 Tool synthesis must remain capability-bounded, dispatcher-owned, and replay-safe.
+
+## 11. Semantic Projection Governance
+Many synthesized owners may converge on one visible tool id.
+
+That visible id may expose only one canonical projected meaning at a time.
+
+Equivalent ownership topologies must produce equivalent semantic projection.
+
+winner-owned fields:
+- `label`
+- `defaultActive`
+
+mergeable fields:
+- `intentTopics`
+- `capabilityTags`
+
+invalid conflict fields:
+- `handlerFamily`
+- `handlerPayload`
+- `group`
+
+Invalid shared identities must not project into runtime-visible tool state.

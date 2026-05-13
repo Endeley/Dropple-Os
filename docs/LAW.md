@@ -215,12 +215,50 @@ If interpreted tool synthesis cannot obey these boundaries, the synthesis featur
 
 ---
 
+## 12. Semantic Projection Governance Law
+
+Synthesized tool ownership is not the same as synthesized tool meaning.
+
+Many sources may own one visible tool identity.
+
+That visible identity may project only one canonical projected meaning at a time.
+
+Equivalent ownership topologies must produce equivalent semantic projection regardless of mount order, reconciliation order, or route transition sequence.
+
+Synthesized descriptor fields are governed explicitly:
+
+- `winner-owned`
+- `mergeable`
+- `constitutionally invalid`
+
+Winner-owned fields inherit only from the canonical semantic winner:
+
+- `label`
+- `defaultActive`
+
+Mergeable fields union deterministically across lawful owners:
+
+- `intentTopics`
+- `capabilityTags`
+
+Invalid conflict fields may not disagree across one projected tool identity:
+
+- `handlerFamily`
+- `handlerPayload`
+- `group`
+
+If one visible tool identity has conflicting invalid fields, that projected identity is constitutionally invalid and may not project into runtime-visible tool state.
+
+This law preserves deterministic tool meaning without allowing overlapping providers to redefine projected semantics by timing, insertion order, or lifecycle coincidence.
+
+---
+
 Blend semantics are versioned separately.
 See `docs/BLEND_V1.md` for deterministic blend contract.
 
 ---
 
-## 12. Deterministic Replay Law (v1)
+## 13. Deterministic Replay Law (v1)
 
 Given the same seed and identical event sequence, Dropple must produce
 the exact same evaluation fingerprint across:
@@ -240,7 +278,7 @@ Snapshot DAG must not alter evaluation output.
 
 ---
 
-## 13. Amendment Procedure
+## 14. Amendment Procedure
 
 Changes to:
 
@@ -256,7 +294,7 @@ No casual modifications allowed.
 
 ---
 
-## 14. SceneGraph Invariants (v1)
+## 15. SceneGraph Invariants (v1)
 
 SceneGraph is canonical narrative structure.
 
