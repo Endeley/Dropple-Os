@@ -10,6 +10,7 @@ import {
     TOOL_SEMANTIC_FIELD_GOVERNANCE,
     WINNER_OWNED_TOOL_DESCRIPTOR_FIELDS,
 } from '@/runtime/tools/toolSemanticPolicy.js';
+import { EXECUTION_SIGNATURE_MIGRATION_WINDOWS } from '@/runtime/tools/resolveToolExecutionSignatureMigration.js';
 
 const ROOT = process.cwd();
 
@@ -136,6 +137,21 @@ test('tool semantic policy formalizes field governance classes explicitly', () =
         Object.keys(TOOL_SEMANTIC_FIELD_GOVERNANCE).sort((left, right) => left.localeCompare(right)),
         ['capabilityTags', 'defaultActive', 'executionSignature', 'group', 'handlerFamily', 'handlerPayload', 'intentTopics', 'label'],
     );
+});
+
+test('execution-signature migration windows must define deterministic expiry and lineage metadata', () => {
+    const windows = Object.entries(EXECUTION_SIGNATURE_MIGRATION_WINDOWS);
+    assert.ok(windows.length > 0);
+
+    for (const [toolId, window] of windows) {
+        assert.equal(typeof toolId, 'string');
+        assert.ok(toolId.trim().length > 0);
+        assert.equal(typeof window?.sunsetAt, 'string');
+        assert.ok(window.sunsetAt.trim().length > 0);
+        assert.ok(Number.isFinite(Date.parse(window.sunsetAt)));
+        assert.equal(typeof window?.ticket, 'string');
+        assert.ok(window.ticket.trim().length > 0);
+    }
 });
 
 test('future interpreted tool modules may not import authority internals directly', () => {

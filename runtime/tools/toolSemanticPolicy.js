@@ -155,7 +155,7 @@ export function getDistinctExecutionSignatures(entries) {
     );
 }
 
-export function resolveExecutionSignatureCompatibility(entries, { toolId } = {}) {
+export function resolveExecutionSignatureCompatibility(entries, { toolId, currentTimeMs } = {}) {
     const signatures = (Array.isArray(entries) ? entries : [])
         .map((entry) => normalizeExecutionSignature(entry?.descriptor?.executionSignature))
         .sort((left, right) => {
@@ -174,6 +174,7 @@ export function resolveExecutionSignatureCompatibility(entries, { toolId } = {})
                 toolId,
                 majorVersions,
                 coreKeyCount: coreKeys.length,
+                currentTimeMs,
             })
         ) {
             return Object.freeze({
@@ -234,7 +235,7 @@ export function normalizeMergedStringArray(values) {
     );
 }
 
-export function resolveToolSemanticConflict(entries, { toolId } = {}) {
+export function resolveToolSemanticConflict(entries, { toolId, currentTimeMs } = {}) {
     const handlerFamilies = getDistinctHandlerFamilies(entries);
 
     if (handlerFamilies.length > 1) {
@@ -256,7 +257,7 @@ export function resolveToolSemanticConflict(entries, { toolId } = {}) {
 
     const executionSignatures = getDistinctExecutionSignatures(entries);
     if (executionSignatures.length > 1) {
-        const compatibility = resolveExecutionSignatureCompatibility(entries, { toolId });
+        const compatibility = resolveExecutionSignatureCompatibility(entries, { toolId, currentTimeMs });
         if (!compatibility.compatible) {
             return Object.freeze({
                 code: compatibility.code,

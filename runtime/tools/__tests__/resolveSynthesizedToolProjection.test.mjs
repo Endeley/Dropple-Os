@@ -290,6 +290,7 @@ test('resolveSynthesizedToolProjection rejects incompatible execution-signature 
 test('resolveSynthesizedToolProjection allows incompatible major versions only through an explicit migration window', () => {
     const projection = resolveSynthesizedToolProjection({
         toolId: 'exec-version-major-migrated-shared',
+        currentTimeMs: Date.parse('2026-08-01T00:00:00.000Z'),
         owners: ['capability.alpha', 'capability.beta'],
         descriptorsBySource: {
             'capability.alpha': {
@@ -332,6 +333,7 @@ test('resolveSynthesizedToolProjection allows incompatible major versions only t
 test('resolveSynthesizedToolProjection allows migration-window major evolution for utility-family signatures', () => {
     const projection = resolveSynthesizedToolProjection({
         toolId: 'exec-version-major-migrated-shared',
+        currentTimeMs: Date.parse('2026-08-01T00:00:00.000Z'),
         owners: ['capability.alpha', 'capability.beta'],
         descriptorsBySource: {
             'capability.alpha': {
@@ -367,6 +369,47 @@ test('resolveSynthesizedToolProjection allows migration-window major evolution f
 
     assert.equal(projection.status, 'valid');
     assert.equal(projection.invalidCode, null);
+});
+
+test('resolveSynthesizedToolProjection rejects migration-window major evolution at sunset boundary', () => {
+    const projection = resolveSynthesizedToolProjection({
+        toolId: 'exec-version-major-migrated-shared',
+        currentTimeMs: Date.parse('2026-09-01T00:00:00.000Z'),
+        owners: ['capability.alpha', 'capability.beta'],
+        descriptorsBySource: {
+            'capability.alpha': {
+                id: 'exec-version-major-migrated-shared',
+                label: 'Exec Version Major Migrated Shared',
+                handlerFamily: 'utility',
+                executionSignature: {
+                    schemaVersion: '1.0',
+                    executionMode: 'utility',
+                    intentKind: 'utility',
+                    nodeType: '',
+                    sessionType: '',
+                },
+            },
+            'capability.beta': {
+                id: 'exec-version-major-migrated-shared',
+                label: 'Exec Version Major Migrated Shared',
+                handlerFamily: 'utility',
+                executionSignature: {
+                    schemaVersion: '2.0',
+                    executionMode: 'utility',
+                    intentKind: 'utility',
+                    nodeType: '',
+                    sessionType: '',
+                },
+            },
+        },
+        sourcePriority: {
+            'capability.alpha': 100,
+            'capability.beta': 50,
+        },
+    });
+
+    assert.equal(projection.status, 'invalid');
+    assert.equal(projection.invalidCode, 'execution-signature-version-conflict');
 });
 
 test('equivalent ownership topologies produce equivalent semantic projection regardless of owner order', () => {

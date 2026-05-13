@@ -3,10 +3,18 @@ function normalizeMajor(value) {
     return Number.isFinite(number) && number >= 0 ? number : null;
 }
 
+function normalizeTimestamp(value) {
+    if (typeof value !== 'string' || value.trim().length === 0) return null;
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
 const EXECUTION_SIGNATURE_MIGRATION_WINDOWS = Object.freeze({
     'exec-version-major-migrated-shared': Object.freeze({
         fromMajor: 1,
         toMajor: 2,
+        sunsetAt: '2026-09-01T00:00:00.000Z',
+        ticket: 'ARCH-421',
     }),
 });
 
@@ -15,11 +23,16 @@ export function getExecutionSignatureMigrationWindow(toolId) {
     return EXECUTION_SIGNATURE_MIGRATION_WINDOWS[toolId.trim()] ?? null;
 }
 
-export function allowsExecutionSignatureMajorMigration({ toolId, majorVersions, coreKeyCount } = {}) {
+export function allowsExecutionSignatureMajorMigration({ toolId, majorVersions, coreKeyCount, currentTimeMs } = {}) {
     const window = getExecutionSignatureMigrationWindow(toolId);
     if (!window) return false;
     if (!Array.isArray(majorVersions) || majorVersions.length !== 2) return false;
     if (coreKeyCount !== 1) return false;
+    if (!Number.isFinite(currentTimeMs)) return false;
+
+    const sunsetMs = normalizeTimestamp(window.sunsetAt);
+    if (!Number.isFinite(sunsetMs)) return false;
+    if (currentTimeMs >= sunsetMs) return false;
 
     const normalized = majorVersions.map(normalizeMajor).filter((value) => value !== null).sort((a, b) => a - b);
     if (normalized.length !== 2) return false;

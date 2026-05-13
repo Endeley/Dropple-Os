@@ -9,6 +9,10 @@ function normalizeToolId(toolId) {
     return typeof toolId === 'string' ? toolId.trim() : '';
 }
 
+function resolveCurrentTimeMs(currentTimeMs) {
+    return Number.isFinite(currentTimeMs) ? currentTimeMs : Date.now();
+}
+
 function buildSemanticEntries({ owners, descriptorsBySource, sourcePriority }) {
     return normalizeToolOwnerIds(owners)
         .map((source) =>
@@ -60,6 +64,7 @@ export function resolveSynthesizedToolProjection({
     owners,
     descriptorsBySource,
     sourcePriority,
+    currentTimeMs,
 } = {}) {
     const normalizedToolId = normalizeToolId(toolId);
     if (!normalizedToolId) {
@@ -67,7 +72,10 @@ export function resolveSynthesizedToolProjection({
     }
 
     const winner = resolveToolSemanticWinner({ owners, descriptorsBySource, sourcePriority });
-    const conflict = resolveToolSemanticConflict(winner.entries, { toolId: normalizedToolId });
+    const conflict = resolveToolSemanticConflict(winner.entries, {
+        toolId: normalizedToolId,
+        currentTimeMs: resolveCurrentTimeMs(currentTimeMs),
+    });
 
     if (conflict) {
         return Object.freeze({
@@ -98,6 +106,7 @@ export function resolveSynthesizedToolProjectionMap({
     ownership,
     registeredToolDescriptors,
     sourcePriority,
+    currentTimeMs,
 } = {}) {
     const projections = Object.entries(ownership ?? {})
         .sort(([leftId], [rightId]) => leftId.localeCompare(rightId))
@@ -115,6 +124,7 @@ export function resolveSynthesizedToolProjectionMap({
                     ),
                 ),
                 sourcePriority,
+                currentTimeMs,
             }),
         ]);
 

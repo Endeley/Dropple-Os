@@ -27,6 +27,7 @@ const TOOL_ICONS = {
         </>
     ),
 };
+const EMPTY_TOOL_DEFINITIONS = Object.freeze({});
 
 function ToolButton({ tool, active, onSelect }) {
     const icon = TOOL_ICONS[tool.id];
@@ -49,7 +50,7 @@ export function UIUXToolRail() {
 
     const activeTool = useToolStore((s) => s.activeTool);
     const runtimeTools = useToolStore((s) => s.visibleTools);
-    const runtimeToolDefinitions = useToolStore((s) => s.visibleToolDefinitions ?? {});
+    const runtimeToolDefinitions = useToolStore((s) => s.visibleToolDefinitions ?? EMPTY_TOOL_DEFINITIONS);
 
     const tools = useMemo(() => {
         if (runtimeTools?.length) {

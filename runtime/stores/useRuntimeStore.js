@@ -42,7 +42,7 @@ export const useRuntimeStore = create((set) => ({
         connection: { active: false, fromNodeId: null, pointerX: 0, pointerY: 0 },
         dragPreviewPositions: {},
     },
-    tools: { activeTool: 'select', registeredTools: {}, visibleTools: [] },
+    tools: { activeTool: 'select', registeredTools: {}, visibleTools: [], visibleToolDefinitions: {} },
     interaction: null,
     selectionBounds: { bounds: null, center: null },
     transformAnchors: { pivot: null, resizeAnchors: null, rotateAnchor: null },
