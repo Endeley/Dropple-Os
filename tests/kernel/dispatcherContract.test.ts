@@ -152,6 +152,43 @@ test('selection events update runtime state without entering persisted event mir
     assert.deepEqual(useRuntimeStore.getState().events, []);
 });
 
+test('dispatcher rejects synthesized tool registration payloads that carry authority-like descriptors', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });
+
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: {
+                id: 'graphic',
+                tools: ['select'],
+                policy: {
+                    mutation: 'allow',
+                    capabilities: ['node:create'],
+                },
+            },
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.TOOLS_REGISTER,
+        payload: {
+            source: 'capability.graph',
+            tools: ['move'],
+            descriptors: [{
+                id: 'move',
+                label: 'Move',
+                handlerFamily: 'dispatcher',
+                dispatch: 'intent.node.move',
+            }],
+        },
+    });
+
+    const next = dispatcher.getState();
+    assert.equal(next?.tools?.visibleTools.includes('move'), false);
+    assert.deepEqual(next?.tools?.registeredTools?.['capability.graph'] ?? null, null);
+});
+
 test('dispatcher undo and redo replay canonical persisted truth while preserving runtime workspace', async () => {
     const dispatcher = createEventDispatcher({ headless: true });
     dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });

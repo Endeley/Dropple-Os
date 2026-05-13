@@ -217,6 +217,19 @@ test('tool handlers dispatch events instead of mutating runtime truth directly',
     assert.deepEqual(violations, []);
 });
 
+test('synthesized tool registration ingress is fail-closed before runtime tool authority mutation', () => {
+    const dispatcher = read('runtime/dispatcher/dispatch.js');
+    const ingress = read('runtime/tools/validateToolRegistrationIngress.js');
+
+    assert.match(dispatcher, /validateToolRegistrationIngress/);
+    assert.match(dispatcher, /if \(!ingress\.ok\)\s*\{\s*return prev;/);
+
+    assert.match(ingress, /tool-registration-descriptor-authority-leak/);
+    assert.match(ingress, /tool-registration-handler-family-invalid/);
+    assert.match(ingress, /capability\./);
+    assert.match(ingress, /synth\./);
+});
+
 test('interaction engines stay pure and do not depend on ui react dom or time randomness', () => {
     const content = read('scripts/architectureGuard.mjs');
 
