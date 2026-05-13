@@ -329,6 +329,46 @@ test('resolveSynthesizedToolProjection allows incompatible major versions only t
     assert.equal(projection.invalidCode, null);
 });
 
+test('resolveSynthesizedToolProjection allows migration-window major evolution for utility-family signatures', () => {
+    const projection = resolveSynthesizedToolProjection({
+        toolId: 'exec-version-major-migrated-shared',
+        owners: ['capability.alpha', 'capability.beta'],
+        descriptorsBySource: {
+            'capability.alpha': {
+                id: 'exec-version-major-migrated-shared',
+                label: 'Exec Version Major Migrated Shared',
+                handlerFamily: 'utility',
+                executionSignature: {
+                    schemaVersion: '1.0',
+                    executionMode: 'utility',
+                    intentKind: 'utility',
+                    nodeType: '',
+                    sessionType: '',
+                },
+            },
+            'capability.beta': {
+                id: 'exec-version-major-migrated-shared',
+                label: 'Exec Version Major Migrated Shared',
+                handlerFamily: 'utility',
+                executionSignature: {
+                    schemaVersion: '2.0',
+                    executionMode: 'utility',
+                    intentKind: 'utility',
+                    nodeType: '',
+                    sessionType: '',
+                },
+            },
+        },
+        sourcePriority: {
+            'capability.alpha': 100,
+            'capability.beta': 50,
+        },
+    });
+
+    assert.equal(projection.status, 'valid');
+    assert.equal(projection.invalidCode, null);
+});
+
 test('equivalent ownership topologies produce equivalent semantic projection regardless of owner order', () => {
     const a = resolveSynthesizedToolProjectionMap({
         ownership: {
