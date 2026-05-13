@@ -9,7 +9,11 @@ import {
 import { createTestGalleryFixture } from '@/gallery/testGalleryFixtureStore.js';
 
 function assertTestFixtureAccess() {
-  if (process.env.NEXT_DIST_DIR === '.next-e2e' || process.env.NODE_ENV !== 'production') {
+  if (
+    process.env.DROPPLE_E2E === '1' ||
+    process.env.NEXT_DIST_DIR === '.next-e2e' ||
+    process.env.NODE_ENV !== 'production'
+  ) {
     return;
   }
 

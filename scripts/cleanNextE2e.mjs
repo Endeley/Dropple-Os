@@ -1,4 +1,5 @@
 import { readdir, rm } from 'node:fs/promises';
+import { pathToFileURL } from 'node:url';
 
 const RETRYABLE_CODES = new Set(['EBUSY', 'ENOTEMPTY', 'EPERM']);
 const MAX_RETRIES = 6;
@@ -25,12 +26,18 @@ async function removeWithRetry(path) {
   }
 }
 
-const entries = await readdir(process.cwd(), { withFileTypes: true });
-const e2eDirs = entries
-  .filter((entry) => entry.isDirectory() && entry.name.startsWith('.next-e2e'))
-  .map((entry) => entry.name)
-  .sort();
+export default async function cleanNextE2e() {
+  const entries = await readdir(process.cwd(), { withFileTypes: true });
+  const e2eDirs = entries
+    .filter((entry) => entry.isDirectory() && entry.name.startsWith('.next-e2e'))
+    .map((entry) => entry.name)
+    .sort();
 
-for (const dir of e2eDirs) {
-  await removeWithRetry(dir);
+  for (const dir of e2eDirs) {
+    await removeWithRetry(dir);
+  }
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  await cleanNextE2e();
 }
