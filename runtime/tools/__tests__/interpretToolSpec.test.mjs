@@ -31,6 +31,7 @@ test('interpretToolSpec deterministically normalizes create-node tool specs', ()
     assert.deepEqual(a.capabilityTags, ['author', 'layout']);
     assert.deepEqual(a.handlerPayload, { nodeType: 'frame' });
     assert.deepEqual(a.executionSignature, {
+        schemaVersion: '1.0',
         executionMode: 'createNode',
         intentKind: 'create-node',
         nodeType: 'frame',
@@ -53,6 +54,7 @@ test('interpretToolSpec normalizes session tools into the approved session famil
     assert.equal(interpreted.defaultActive, true);
     assert.deepEqual(interpreted.handlerPayload, { sessionType: 'move' });
     assert.deepEqual(interpreted.executionSignature, {
+        schemaVersion: '1.0',
         executionMode: 'session',
         intentKind: 'session',
         nodeType: '',
@@ -76,6 +78,7 @@ test('interpretToolSpec keeps utility tools intent-only and authority-free', () 
     assert.equal(interpreted.handlerFamily, 'utility');
     assert.deepEqual(interpreted.handlerPayload, {});
     assert.deepEqual(interpreted.executionSignature, {
+        schemaVersion: '1.0',
         executionMode: 'utility',
         intentKind: 'utility',
         nodeType: '',
@@ -110,4 +113,21 @@ test('interpretToolSpec rejects create-node specs without nodeType', () => {
 
 test('approved interpreted tool handler families stay constitutionally bounded', () => {
     assert.deepEqual(APPROVED_TOOL_HANDLER_FAMILIES, ['createNode', 'session', 'utility']);
+});
+
+test('interpretToolSpec preserves explicit execution signature schema version', () => {
+    const interpreted = interpretToolSpec({
+        id: 'move',
+        label: 'Move',
+        sessionType: 'move',
+        executionSignatureVersion: '2.0',
+    });
+
+    assert.deepEqual(interpreted.executionSignature, {
+        schemaVersion: '2.0',
+        executionMode: 'session',
+        intentKind: 'session',
+        nodeType: '',
+        sessionType: 'move',
+    });
 });

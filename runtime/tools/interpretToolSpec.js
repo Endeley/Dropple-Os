@@ -134,7 +134,10 @@ export function interpretToolSpec(spec) {
         handlerPayload: buildHandlerPayload(spec, handlerFamily, id),
     };
 
-    interpreted.executionSignature = resolveToolExecutionSignature(interpreted);
+    interpreted.executionSignature = resolveToolExecutionSignature({
+        ...interpreted,
+        executionSignatureVersion: normalizeOptionalString(spec.executionSignatureVersion),
+    });
 
     return Object.freeze(interpreted);
 }
