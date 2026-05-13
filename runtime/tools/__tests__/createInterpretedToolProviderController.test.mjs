@@ -57,6 +57,12 @@ test('interpreted tool provider controller registers visible tools on first sync
                             capabilityTags: [],
                             metadata: { createsNode: true },
                             handlerPayload: { nodeType: 'frame' },
+                            executionSignature: {
+                                executionMode: 'createNode',
+                                intentKind: 'create-node',
+                                nodeType: 'frame',
+                                sessionType: '',
+                            },
                         },
                         {
                             id: 'shape',
@@ -68,6 +74,12 @@ test('interpreted tool provider controller registers visible tools on first sync
                             capabilityTags: [],
                             metadata: { createsNode: true },
                             handlerPayload: { nodeType: 'shape' },
+                            executionSignature: {
+                                executionMode: 'createNode',
+                                intentKind: 'create-node',
+                                nodeType: 'shape',
+                                sessionType: '',
+                            },
                         },
                     ],
                     priority: 0,
@@ -114,6 +126,12 @@ test('interpreted tool provider controller updates visibility deterministically 
                         capabilityTags: [],
                         metadata: { createsNode: true },
                         handlerPayload: { nodeType: 'shape' },
+                        executionSignature: {
+                            executionMode: 'createNode',
+                            intentKind: 'create-node',
+                            nodeType: 'shape',
+                            sessionType: '',
+                        },
                     },
                 ],
                 priority: 0,
