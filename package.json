@@ -11,7 +11,7 @@
         "build:smoke": "NEXT_DIST_DIR=.next-prod next build",
         "build:e2e": "node scripts/buildE2e.mjs",
         "start": "NEXT_DIST_DIR=.next-prod next start",
-        "start:e2e": "DROPPLE_E2E=1 NEXT_PUBLIC_CONVEX_URL= NEXT_DIST_DIR=/private/tmp/dropple-next-e2e next start",
+        "start:e2e": "DROPPLE_E2E=1 NEXT_PUBLIC_CONVEX_URL= NEXT_DIST_DIR=$(node -e \"const os=require('os');const path=require('path');process.stdout.write(path.join(os.tmpdir(),'dropple-next-e2e'))\") next start",
         "lint": "eslint",
         "enforce:laws": "node enforceDroppleLaws.cjs",
         "lint:export": "node scripts/dropple-export-gate.mjs --world ./fixtures/worlds/allow.json --width 1440 --height 900",
