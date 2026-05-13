@@ -42,6 +42,9 @@ export const TOOL_DEFINITIONS = Object.freeze([
     { id: 'move', label: 'Move', group: 'edit' },
     { id: 'resize', label: 'Resize', group: 'edit' },
     { id: 'exec-contract-shared', label: 'Exec Contract Shared', group: 'edit' },
+    { id: 'exec-version-minor-shared', label: 'Exec Version Minor Shared', group: 'edit' },
+    { id: 'exec-version-major-shared', label: 'Exec Version Major Shared', group: 'edit' },
+    { id: 'exec-version-major-migrated-shared', label: 'Exec Version Major Migrated Shared', group: 'edit' },
     { id: 'rig-select', label: 'Rig Select', group: 'navigate' },
     { id: 'rig-move', label: 'Rig Move', group: 'edit' },
 

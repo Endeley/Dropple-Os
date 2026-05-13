@@ -60,6 +60,7 @@ test('resolveSynthesizedToolProjection unions mergeable semantic arrays while pr
                 group: 'edit',
                 handlerFamily: 'session',
                 executionSignature: {
+                    schemaVersion: '1.0',
                     executionMode: 'session',
                     intentKind: 'session',
                     nodeType: '',
@@ -74,6 +75,7 @@ test('resolveSynthesizedToolProjection unions mergeable semantic arrays while pr
                 group: 'edit',
                 handlerFamily: 'session',
                 executionSignature: {
+                    schemaVersion: '1.0',
                     executionMode: 'session',
                     intentKind: 'session',
                     nodeType: '',
@@ -96,6 +98,7 @@ test('resolveSynthesizedToolProjection unions mergeable semantic arrays while pr
         group: 'edit',
         handlerFamily: 'session',
         executionSignature: {
+            schemaVersion: '1.0',
             executionMode: 'session',
             intentKind: 'session',
             nodeType: '',
@@ -167,6 +170,7 @@ test('resolveSynthesizedToolProjection rejects overlapping semantic identities w
                 handlerFamily: 'session',
                 handlerPayload: { sessionType: 'move' },
                 executionSignature: {
+                    schemaVersion: '1.0',
                     executionMode: 'session',
                     intentKind: 'session',
                     nodeType: '',
@@ -179,6 +183,7 @@ test('resolveSynthesizedToolProjection rejects overlapping semantic identities w
                 handlerFamily: 'session',
                 handlerPayload: { sessionType: 'move' },
                 executionSignature: {
+                    schemaVersion: '1.0',
                     executionMode: 'session',
                     intentKind: 'session',
                     nodeType: '',
@@ -196,6 +201,132 @@ test('resolveSynthesizedToolProjection rejects overlapping semantic identities w
     assert.equal(projection.invalidCode, 'execution-signature-conflict');
     assert.equal(projection.winnerSource, null);
     assert.equal(projection.descriptor, null);
+});
+
+test('resolveSynthesizedToolProjection allows compatible execution-signature minor version evolution', () => {
+    const projection = resolveSynthesizedToolProjection({
+        toolId: 'move',
+        owners: ['capability.alpha', 'capability.beta'],
+        descriptorsBySource: {
+            'capability.alpha': {
+                id: 'move',
+                label: 'Move',
+                handlerFamily: 'session',
+                handlerPayload: { sessionType: 'move' },
+                executionSignature: {
+                    schemaVersion: '1.0',
+                    executionMode: 'session',
+                    intentKind: 'session',
+                    nodeType: '',
+                    sessionType: 'move',
+                },
+            },
+            'capability.beta': {
+                id: 'move',
+                label: 'Move',
+                handlerFamily: 'session',
+                handlerPayload: { sessionType: 'move' },
+                executionSignature: {
+                    schemaVersion: '1.1',
+                    executionMode: 'session',
+                    intentKind: 'session',
+                    nodeType: '',
+                    sessionType: 'move',
+                },
+            },
+        },
+        sourcePriority: {
+            'capability.alpha': 100,
+            'capability.beta': 50,
+        },
+    });
+
+    assert.equal(projection.status, 'valid');
+    assert.equal(projection.invalidCode, null);
+});
+
+test('resolveSynthesizedToolProjection rejects incompatible execution-signature major versions', () => {
+    const projection = resolveSynthesizedToolProjection({
+        toolId: 'move',
+        owners: ['capability.alpha', 'capability.beta'],
+        descriptorsBySource: {
+            'capability.alpha': {
+                id: 'move',
+                label: 'Move',
+                handlerFamily: 'session',
+                handlerPayload: { sessionType: 'move' },
+                executionSignature: {
+                    schemaVersion: '1.0',
+                    executionMode: 'session',
+                    intentKind: 'session',
+                    nodeType: '',
+                    sessionType: 'move',
+                },
+            },
+            'capability.beta': {
+                id: 'move',
+                label: 'Move',
+                handlerFamily: 'session',
+                handlerPayload: { sessionType: 'move' },
+                executionSignature: {
+                    schemaVersion: '2.0',
+                    executionMode: 'session',
+                    intentKind: 'session',
+                    nodeType: '',
+                    sessionType: 'move',
+                },
+            },
+        },
+        sourcePriority: {
+            'capability.alpha': 100,
+            'capability.beta': 50,
+        },
+    });
+
+    assert.equal(projection.status, 'invalid');
+    assert.equal(projection.invalidCode, 'execution-signature-version-conflict');
+});
+
+test('resolveSynthesizedToolProjection allows incompatible major versions only through an explicit migration window', () => {
+    const projection = resolveSynthesizedToolProjection({
+        toolId: 'exec-version-major-migrated-shared',
+        owners: ['capability.alpha', 'capability.beta'],
+        descriptorsBySource: {
+            'capability.alpha': {
+                id: 'exec-version-major-migrated-shared',
+                label: 'Exec Version Major Migrated Shared',
+                handlerFamily: 'session',
+                handlerPayload: { sessionType: 'move' },
+                executionSignature: {
+                    schemaVersion: '1.0',
+                    executionMode: 'session',
+                    intentKind: 'session',
+                    nodeType: '',
+                    sessionType: 'move',
+                },
+            },
+            'capability.beta': {
+                id: 'exec-version-major-migrated-shared',
+                label: 'Exec Version Major Migrated Shared',
+                handlerFamily: 'session',
+                handlerPayload: { sessionType: 'move' },
+                executionSignature: {
+                    schemaVersion: '2.0',
+                    executionMode: 'session',
+                    intentKind: 'session',
+                    nodeType: '',
+                    sessionType: 'move',
+                },
+            },
+        },
+        sourcePriority: {
+            'capability.alpha': 100,
+            'capability.beta': 50,
+        },
+    });
+
+    assert.equal(projection.status, 'valid');
+    assert.equal(projection.invalidCode, null);
 });
 
 test('equivalent ownership topologies produce equivalent semantic projection regardless of owner order', () => {

@@ -106,12 +106,15 @@ test('constitutional law defines synthesized semantic projection governance', ()
     assert.match(content, /executionSignature/);
     assert.match(content, /group/);
     assert.match(content, /one canonical execution contract/);
+    assert.match(content, /tool-id-scoped migration windows/);
+    assert.match(content, /deterministic, bounded, and non-authoritative/);
 
     assert.match(architecture, /Semantic Projection Governance/);
     assert.match(architecture, /one canonical projected meaning/);
     assert.match(architecture, /winner-owned fields/);
     assert.match(architecture, /mergeable fields/);
     assert.match(architecture, /invalid conflict fields/);
+    assert.match(architecture, /tool-id migration windows/);
 });
 
 test('tool semantic policy formalizes field governance classes explicitly', () => {

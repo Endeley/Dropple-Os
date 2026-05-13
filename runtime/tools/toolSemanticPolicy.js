@@ -1,3 +1,5 @@
+import { allowsExecutionSignatureMajorMigration } from '@/runtime/tools/resolveToolExecutionSignatureMigration.js';
+
 function normalizeNumber(value) {
     return Number.isFinite(value) ? value : 0;
 }
@@ -47,6 +49,40 @@ function stableStringify(value) {
     }
 
     return JSON.stringify(value);
+}
+
+function parseSchemaVersion(value) {
+    if (typeof value !== 'string') return { major: 1, minor: 0 };
+    const [majorRaw, minorRaw] = value.trim().split('.');
+    const major = Number.parseInt(majorRaw, 10);
+    const minor = Number.parseInt(minorRaw ?? '0', 10);
+    return {
+        major: Number.isFinite(major) && major >= 0 ? major : 1,
+        minor: Number.isFinite(minor) && minor >= 0 ? minor : 0,
+    };
+}
+
+function normalizeExecutionSignature(signature) {
+    const normalized = signature && typeof signature === 'object' ? signature : {};
+    const version = parseSchemaVersion(normalized.schemaVersion);
+    return Object.freeze({
+        schemaVersion: `${version.major}.${version.minor}`,
+        major: version.major,
+        minor: version.minor,
+        executionMode: typeof normalized.executionMode === 'string' ? normalized.executionMode : '',
+        intentKind: typeof normalized.intentKind === 'string' ? normalized.intentKind : '',
+        nodeType: typeof normalized.nodeType === 'string' ? normalized.nodeType : '',
+        sessionType: typeof normalized.sessionType === 'string' ? normalized.sessionType : '',
+    });
+}
+
+function signatureCoreKey(signature) {
+    return stableStringify({
+        executionMode: signature.executionMode,
+        intentKind: signature.intentKind,
+        nodeType: signature.nodeType,
+        sessionType: signature.sessionType,
+    });
 }
 
 export function normalizeToolSemanticPriority(value) {
@@ -119,6 +155,58 @@ export function getDistinctExecutionSignatures(entries) {
     );
 }
 
+export function resolveExecutionSignatureCompatibility(entries, { toolId } = {}) {
+    const signatures = (Array.isArray(entries) ? entries : [])
+        .map((entry) => normalizeExecutionSignature(entry?.descriptor?.executionSignature))
+        .sort((left, right) => {
+            if (left.major !== right.major) return left.major - right.major;
+            if (left.minor !== right.minor) return left.minor - right.minor;
+            return signatureCoreKey(left).localeCompare(signatureCoreKey(right));
+        });
+
+    if (!signatures.length) return Object.freeze({ compatible: true });
+
+    const majorVersions = Array.from(new Set(signatures.map((s) => s.major))).sort((a, b) => a - b);
+    if (majorVersions.length > 1) {
+        const coreKeys = Array.from(new Set(signatures.map((s) => signatureCoreKey(s)))).sort((a, b) => a.localeCompare(b));
+        if (
+            allowsExecutionSignatureMajorMigration({
+                toolId,
+                majorVersions,
+                coreKeyCount: coreKeys.length,
+            })
+        ) {
+            return Object.freeze({
+                compatible: true,
+                migration: Object.freeze({
+                    kind: 'major-window',
+                    toolId,
+                    majorVersions: Object.freeze(majorVersions),
+                }),
+            });
+        }
+
+        return Object.freeze({
+            compatible: false,
+            code: 'execution-signature-version-conflict',
+            message: `Projected tool identity has incompatible execution signature major versions: ${majorVersions.join(', ')}`,
+            majorVersions: Object.freeze(majorVersions),
+        });
+    }
+
+    const coreKeys = Array.from(new Set(signatures.map((s) => signatureCoreKey(s)))).sort((a, b) => a.localeCompare(b));
+    if (coreKeys.length > 1) {
+        return Object.freeze({
+            compatible: false,
+            code: 'execution-signature-conflict',
+            message: 'Projected tool identity has incompatible execution contract semantics',
+            executionSignatures: Object.freeze(signatures.map((signature) => stableStringify(signature))),
+        });
+    }
+
+    return Object.freeze({ compatible: true });
+}
+
 export function getDistinctDescriptorValues(entries, field) {
     return Object.freeze(
         Array.from(
@@ -146,7 +234,7 @@ export function normalizeMergedStringArray(values) {
     );
 }
 
-export function resolveToolSemanticConflict(entries) {
+export function resolveToolSemanticConflict(entries, { toolId } = {}) {
     const handlerFamilies = getDistinctHandlerFamilies(entries);
 
     if (handlerFamilies.length > 1) {
@@ -168,11 +256,16 @@ export function resolveToolSemanticConflict(entries) {
 
     const executionSignatures = getDistinctExecutionSignatures(entries);
     if (executionSignatures.length > 1) {
-        return Object.freeze({
-            code: 'execution-signature-conflict',
-            message: 'Projected tool identity has incompatible execution contract semantics',
-            executionSignatures,
-        });
+        const compatibility = resolveExecutionSignatureCompatibility(entries, { toolId });
+        if (!compatibility.compatible) {
+            return Object.freeze({
+                code: compatibility.code,
+                message: compatibility.message,
+                executionSignatures:
+                    compatibility.executionSignatures ?? executionSignatures,
+                majorVersions: compatibility.majorVersions ?? undefined,
+            });
+        }
     }
 
     const groups = getDistinctDescriptorValues(entries, 'group');

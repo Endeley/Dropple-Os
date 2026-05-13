@@ -249,6 +249,16 @@ Invalid conflict fields may not disagree across one projected tool identity:
 - `executionSignature`
 - `group`
 
+Execution signatures are versioned contracts.
+
+Minor-version differences are allowed only when core execution semantics are identical.
+
+Major-version differences are constitutionally incompatible for one projected tool identity.
+
+Major-version compatibility may exist only through explicit, tool-id-scoped migration windows.
+
+Migration windows must be deterministic, bounded, and non-authoritative.
+
 If one visible tool identity has conflicting invalid fields, that projected identity is constitutionally invalid and may not project into runtime-visible tool state.
 
 This law preserves deterministic tool meaning without allowing overlapping providers to redefine projected semantics by timing, insertion order, or lifecycle coincidence.

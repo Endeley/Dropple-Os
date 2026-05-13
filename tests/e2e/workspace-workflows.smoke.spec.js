@@ -282,3 +282,28 @@ test('mounted shared tool with conflicting execution contracts is rejected from 
 
   assertNoFatalErrors(tracked, 'mounted execution contract conflict rejection flow');
 });
+
+test('mounted shared tool projects minor-version-compatible execution signatures and rejects major-version-mixed signatures', async ({ page }) => {
+  const tracked = attachErrorTracking(page);
+
+  const response = await page.goto('/workspace/animation', {
+    waitUntil: 'networkidle',
+  });
+  expect(response?.ok(), 'animation workspace should respond successfully').toBeTruthy();
+  await expect(page.locator('[data-tool-id="exec-version-minor-shared"]').first()).toBeVisible();
+  await expect(page.locator('[data-tool-id="exec-version-major-shared"]')).toHaveCount(0);
+
+  assertNoFatalErrors(tracked, 'mounted execution signature version governance flow');
+});
+
+test('mounted shared tool projects when major-version migration window is explicitly allowed', async ({ page }) => {
+  const tracked = attachErrorTracking(page);
+
+  const response = await page.goto('/workspace/animation', {
+    waitUntil: 'networkidle',
+  });
+  expect(response?.ok(), 'animation workspace should respond successfully').toBeTruthy();
+  await expect(page.locator('[data-tool-id="exec-version-major-migrated-shared"]').first()).toBeVisible();
+
+  assertNoFatalErrors(tracked, 'mounted execution signature migration window flow');
+});

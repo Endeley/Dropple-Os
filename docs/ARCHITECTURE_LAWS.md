@@ -120,4 +120,10 @@ invalid conflict fields:
 - `executionSignature`
 - `group`
 
+Execution signatures are versioned.
+Minor-version differences are allowed only when core execution semantics are identical.
+Major-version differences are invalid for one projected identity.
+Major-version compatibility is lawful only via explicit tool-id migration windows.
+Migration windows must stay deterministic, bounded, and non-authoritative.
+
 Invalid shared identities must not project into runtime-visible tool state.

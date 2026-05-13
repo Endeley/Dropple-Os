@@ -103,7 +103,7 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
 
     rig: Object.freeze({
         id: 'rig',
-        tools: Object.freeze(['rig-select', 'rig-move', 'exec-contract-shared']),
+        tools: Object.freeze(['rig-select', 'rig-move', 'exec-contract-shared', 'exec-version-minor-shared', 'exec-version-major-shared', 'exec-version-major-migrated-shared']),
         interpretedToolPriority: 50,
         interpretedTools: Object.freeze([
             Object.freeze({
@@ -122,6 +122,33 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
                 capabilityTags: ['rig.exec'],
                 intentTopics: ['rig/execute'],
             }),
+            Object.freeze({
+                id: 'exec-version-minor-shared',
+                label: 'Exec Version Minor Shared',
+                group: 'edit',
+                sessionType: 'move',
+                executionSignatureVersion: '1.0',
+                capabilityTags: ['rig.exec.version'],
+                intentTopics: ['rig/execute/versioned'],
+            }),
+            Object.freeze({
+                id: 'exec-version-major-shared',
+                label: 'Exec Version Major Shared',
+                group: 'edit',
+                sessionType: 'move',
+                executionSignatureVersion: '1.0',
+                capabilityTags: ['rig.exec.version'],
+                intentTopics: ['rig/execute/versioned'],
+            }),
+            Object.freeze({
+                id: 'exec-version-major-migrated-shared',
+                label: 'Exec Version Major Migrated Shared',
+                group: 'edit',
+                sessionType: 'move',
+                executionSignatureVersion: '1.0',
+                capabilityTags: ['rig.exec.version'],
+                intentTopics: ['rig/execute/versioned'],
+            }),
             Object.freeze({ id: 'rig-select', label: 'Rig Select', handlerFamily: 'utility' }),
             Object.freeze({ id: 'rig-move', label: 'Rig Move', sessionType: 'move' }),
         ]),
@@ -138,7 +165,7 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
 
     stateMachine: Object.freeze({
         id: 'stateMachine',
-        tools: Object.freeze(['exec-contract-shared']),
+        tools: Object.freeze(['exec-contract-shared', 'exec-version-minor-shared', 'exec-version-major-shared', 'exec-version-major-migrated-shared']),
         interpretedToolPriority: 60,
         interpretedTools: Object.freeze([
             Object.freeze({
@@ -148,6 +175,33 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
                 sessionType: 'cameraMove',
                 capabilityTags: ['state.exec'],
                 intentTopics: ['state/execute'],
+            }),
+            Object.freeze({
+                id: 'exec-version-minor-shared',
+                label: 'Exec Version Minor Shared',
+                group: 'edit',
+                sessionType: 'move',
+                executionSignatureVersion: '1.1',
+                capabilityTags: ['state.exec.version'],
+                intentTopics: ['state/execute/versioned'],
+            }),
+            Object.freeze({
+                id: 'exec-version-major-shared',
+                label: 'Exec Version Major Shared',
+                group: 'edit',
+                sessionType: 'move',
+                executionSignatureVersion: '2.0',
+                capabilityTags: ['state.exec.version'],
+                intentTopics: ['state/execute/versioned'],
+            }),
+            Object.freeze({
+                id: 'exec-version-major-migrated-shared',
+                label: 'Exec Version Major Migrated Shared',
+                group: 'edit',
+                sessionType: 'move',
+                executionSignatureVersion: '2.0',
+                capabilityTags: ['state.exec.version'],
+                intentTopics: ['state/execute/versioned'],
             }),
         ]),
         ui: Object.freeze({

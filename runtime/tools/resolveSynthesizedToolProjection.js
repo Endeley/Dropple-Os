@@ -67,7 +67,7 @@ export function resolveSynthesizedToolProjection({
     }
 
     const winner = resolveToolSemanticWinner({ owners, descriptorsBySource, sourcePriority });
-    const conflict = resolveToolSemanticConflict(winner.entries);
+    const conflict = resolveToolSemanticConflict(winner.entries, { toolId: normalizedToolId });
 
     if (conflict) {
         return Object.freeze({
