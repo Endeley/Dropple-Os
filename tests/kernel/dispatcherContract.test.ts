@@ -9,6 +9,7 @@ import {
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
+import { getVisibleTools } from '@/runtime/tools/toolRuntime.js';
 
 function resetStores() {
     __resetRuntimeStateInternal();
@@ -185,7 +186,7 @@ test('dispatcher rejects synthesized tool registration payloads that carry autho
     });
 
     const next = dispatcher.getState();
-    assert.equal(next?.tools?.visibleTools.includes('move'), false);
+    assert.equal(getVisibleTools(next?.tools ?? initialRuntimeState.tools).includes('move'), false);
     assert.deepEqual(next?.tools?.registeredTools?.['capability.graph'] ?? null, null);
 });
 
