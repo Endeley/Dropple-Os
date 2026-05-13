@@ -59,6 +59,12 @@ test('resolveSynthesizedToolProjection unions mergeable semantic arrays while pr
                 label: 'Move',
                 group: 'edit',
                 handlerFamily: 'session',
+                executionSignature: {
+                    executionMode: 'session',
+                    intentKind: 'session',
+                    nodeType: '',
+                    sessionType: 'move',
+                },
                 capabilityTags: ['graph.transform'],
                 intentTopics: ['layout/move'],
             },
@@ -67,6 +73,12 @@ test('resolveSynthesizedToolProjection unions mergeable semantic arrays while pr
                 label: 'Rig Move Shared',
                 group: 'edit',
                 handlerFamily: 'session',
+                executionSignature: {
+                    executionMode: 'session',
+                    intentKind: 'session',
+                    nodeType: '',
+                    sessionType: 'move',
+                },
                 capabilityTags: ['rig.transform'],
                 intentTopics: ['rig/move'],
             },
@@ -83,6 +95,12 @@ test('resolveSynthesizedToolProjection unions mergeable semantic arrays while pr
         label: 'Move',
         group: 'edit',
         handlerFamily: 'session',
+        executionSignature: {
+            executionMode: 'session',
+            intentKind: 'session',
+            nodeType: '',
+            sessionType: 'move',
+        },
         capabilityTags: ['graph.transform', 'rig.transform'],
         intentTopics: ['layout/move', 'rig/move'],
     });
@@ -134,6 +152,48 @@ test('resolveSynthesizedToolProjection rejects overlapping semantic identities w
 
     assert.equal(projection.status, 'invalid');
     assert.equal(projection.invalidCode, 'handler-payload-conflict');
+    assert.equal(projection.winnerSource, null);
+    assert.equal(projection.descriptor, null);
+});
+
+test('resolveSynthesizedToolProjection rejects overlapping semantic identities with incompatible execution signatures', () => {
+    const projection = resolveSynthesizedToolProjection({
+        toolId: 'move',
+        owners: ['capability.graph', 'capability.cinematic'],
+        descriptorsBySource: {
+            'capability.graph': {
+                id: 'move',
+                label: 'Move',
+                handlerFamily: 'session',
+                handlerPayload: { sessionType: 'move' },
+                executionSignature: {
+                    executionMode: 'session',
+                    intentKind: 'session',
+                    nodeType: '',
+                    sessionType: 'move',
+                },
+            },
+            'capability.cinematic': {
+                id: 'move',
+                label: 'Move',
+                handlerFamily: 'session',
+                handlerPayload: { sessionType: 'move' },
+                executionSignature: {
+                    executionMode: 'session',
+                    intentKind: 'session',
+                    nodeType: '',
+                    sessionType: 'cameraMove',
+                },
+            },
+        },
+        sourcePriority: {
+            'capability.graph': 100,
+            'capability.cinematic': 50,
+        },
+    });
+
+    assert.equal(projection.status, 'invalid');
+    assert.equal(projection.invalidCode, 'execution-signature-conflict');
     assert.equal(projection.winnerSource, null);
     assert.equal(projection.descriptor, null);
 });

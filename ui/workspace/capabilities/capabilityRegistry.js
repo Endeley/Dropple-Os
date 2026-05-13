@@ -103,7 +103,7 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
 
     rig: Object.freeze({
         id: 'rig',
-        tools: Object.freeze(['rig-select', 'rig-move']),
+        tools: Object.freeze(['rig-select', 'rig-move', 'exec-contract-shared']),
         interpretedToolPriority: 50,
         interpretedTools: Object.freeze([
             Object.freeze({
@@ -113,6 +113,14 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
                 sessionType: 'move',
                 capabilityTags: ['rig.transform'],
                 intentTopics: ['rig/move'],
+            }),
+            Object.freeze({
+                id: 'exec-contract-shared',
+                label: 'Exec Contract Shared',
+                group: 'edit',
+                sessionType: 'move',
+                capabilityTags: ['rig.exec'],
+                intentTopics: ['rig/execute'],
             }),
             Object.freeze({ id: 'rig-select', label: 'Rig Select', handlerFamily: 'utility' }),
             Object.freeze({ id: 'rig-move', label: 'Rig Move', sessionType: 'move' }),
@@ -130,7 +138,18 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
 
     stateMachine: Object.freeze({
         id: 'stateMachine',
-        tools: Object.freeze([]),
+        tools: Object.freeze(['exec-contract-shared']),
+        interpretedToolPriority: 60,
+        interpretedTools: Object.freeze([
+            Object.freeze({
+                id: 'exec-contract-shared',
+                label: 'Exec Contract Shared',
+                group: 'edit',
+                sessionType: 'cameraMove',
+                capabilityTags: ['state.exec'],
+                intentTopics: ['state/execute'],
+            }),
+        ]),
         ui: Object.freeze({
             surfacePanels: Object.freeze([]),
         }),

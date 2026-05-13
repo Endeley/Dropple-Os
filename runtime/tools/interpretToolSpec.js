@@ -1,3 +1,5 @@
+import { resolveToolExecutionSignature } from '@/runtime/tools/resolveToolExecutionSignature.js';
+
 const APPROVED_TOOL_HANDLER_FAMILIES = Object.freeze(['createNode', 'session', 'utility']);
 
 const KNOWN_TOOL_HANDLER_FAMILIES = Object.freeze({
@@ -131,6 +133,8 @@ export function interpretToolSpec(spec) {
         }),
         handlerPayload: buildHandlerPayload(spec, handlerFamily, id),
     };
+
+    interpreted.executionSignature = resolveToolExecutionSignature(interpreted);
 
     return Object.freeze(interpreted);
 }

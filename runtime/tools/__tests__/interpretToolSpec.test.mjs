@@ -30,6 +30,12 @@ test('interpretToolSpec deterministically normalizes create-node tool specs', ()
     assert.deepEqual(a.intentTopics, ['canvas/focus', 'node/create']);
     assert.deepEqual(a.capabilityTags, ['author', 'layout']);
     assert.deepEqual(a.handlerPayload, { nodeType: 'frame' });
+    assert.deepEqual(a.executionSignature, {
+        executionMode: 'createNode',
+        intentKind: 'create-node',
+        nodeType: 'frame',
+        sessionType: '',
+    });
     assert.equal(Object.isFrozen(a), true);
     assert.equal(Object.isFrozen(a.intentTopics), true);
     assert.equal(Object.isFrozen(a.handlerPayload), true);
@@ -46,6 +52,12 @@ test('interpretToolSpec normalizes session tools into the approved session famil
     assert.equal(interpreted.handlerFamily, 'session');
     assert.equal(interpreted.defaultActive, true);
     assert.deepEqual(interpreted.handlerPayload, { sessionType: 'move' });
+    assert.deepEqual(interpreted.executionSignature, {
+        executionMode: 'session',
+        intentKind: 'session',
+        nodeType: '',
+        sessionType: 'move',
+    });
 });
 
 test('interpretToolSpec keeps utility tools intent-only and authority-free', () => {
@@ -63,6 +75,12 @@ test('interpretToolSpec keeps utility tools intent-only and authority-free', () 
 
     assert.equal(interpreted.handlerFamily, 'utility');
     assert.deepEqual(interpreted.handlerPayload, {});
+    assert.deepEqual(interpreted.executionSignature, {
+        executionMode: 'utility',
+        intentKind: 'utility',
+        nodeType: '',
+        sessionType: '',
+    });
     assert.equal(Object.prototype.hasOwnProperty.call(interpreted, 'authorityFn'), false);
 });
 

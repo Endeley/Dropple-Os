@@ -103,7 +103,9 @@ test('constitutional law defines synthesized semantic projection governance', ()
     assert.match(content, /constitutionally invalid/);
     assert.match(content, /handlerFamily/);
     assert.match(content, /handlerPayload/);
+    assert.match(content, /executionSignature/);
     assert.match(content, /group/);
+    assert.match(content, /one canonical execution contract/);
 
     assert.match(architecture, /Semantic Projection Governance/);
     assert.match(architecture, /one canonical projected meaning/);
@@ -115,7 +117,7 @@ test('constitutional law defines synthesized semantic projection governance', ()
 test('tool semantic policy formalizes field governance classes explicitly', () => {
     assert.deepEqual(WINNER_OWNED_TOOL_DESCRIPTOR_FIELDS, ['defaultActive', 'label']);
     assert.deepEqual(MERGEABLE_TOOL_DESCRIPTOR_FIELDS, ['capabilityTags', 'intentTopics']);
-    assert.deepEqual(INVALIDATING_TOOL_DESCRIPTOR_FIELDS, ['group', 'handlerFamily', 'handlerPayload']);
+    assert.deepEqual(INVALIDATING_TOOL_DESCRIPTOR_FIELDS, ['executionSignature', 'group', 'handlerFamily', 'handlerPayload']);
 
     assert.equal(resolveToolSemanticFieldGovernance('label'), 'winner-owned');
     assert.equal(resolveToolSemanticFieldGovernance('defaultActive'), 'winner-owned');
@@ -123,12 +125,13 @@ test('tool semantic policy formalizes field governance classes explicitly', () =
     assert.equal(resolveToolSemanticFieldGovernance('capabilityTags'), 'mergeable');
     assert.equal(resolveToolSemanticFieldGovernance('handlerFamily'), 'constitutionally-invalid-on-conflict');
     assert.equal(resolveToolSemanticFieldGovernance('handlerPayload'), 'constitutionally-invalid-on-conflict');
+    assert.equal(resolveToolSemanticFieldGovernance('executionSignature'), 'constitutionally-invalid-on-conflict');
     assert.equal(resolveToolSemanticFieldGovernance('group'), 'constitutionally-invalid-on-conflict');
     assert.equal(resolveToolSemanticFieldGovernance('unknownField'), null);
 
     assert.deepEqual(
         Object.keys(TOOL_SEMANTIC_FIELD_GOVERNANCE).sort((left, right) => left.localeCompare(right)),
-        ['capabilityTags', 'defaultActive', 'group', 'handlerFamily', 'handlerPayload', 'intentTopics', 'label'],
+        ['capabilityTags', 'defaultActive', 'executionSignature', 'group', 'handlerFamily', 'handlerPayload', 'intentTopics', 'label'],
     );
 });
 

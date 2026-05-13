@@ -270,3 +270,15 @@ test('mounted shared synthesized tool projects merged semantic tags deterministi
 
   assertNoFatalErrors(tracked, 'mounted shared semantic tag continuity flow');
 });
+
+test('mounted shared tool with conflicting execution contracts is rejected from projection', async ({ page }) => {
+  const tracked = attachErrorTracking(page);
+
+  const response = await page.goto('/workspace/animation', {
+    waitUntil: 'networkidle',
+  });
+  expect(response?.ok(), 'animation workspace should respond successfully').toBeTruthy();
+  await expect(page.locator('[data-tool-id="exec-contract-shared"]')).toHaveCount(0);
+
+  assertNoFatalErrors(tracked, 'mounted execution contract conflict rejection flow');
+});

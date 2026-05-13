@@ -102,6 +102,7 @@ Tool synthesis must remain capability-bounded, dispatcher-owned, and replay-safe
 Many synthesized owners may converge on one visible tool id.
 
 That visible id may expose only one canonical projected meaning at a time.
+That projected meaning may map to only one canonical execution contract at a time.
 
 Equivalent ownership topologies must produce equivalent semantic projection.
 
@@ -116,6 +117,7 @@ mergeable fields:
 invalid conflict fields:
 - `handlerFamily`
 - `handlerPayload`
+- `executionSignature`
 - `group`
 
 Invalid shared identities must not project into runtime-visible tool state.

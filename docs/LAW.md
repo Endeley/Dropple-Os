@@ -222,6 +222,7 @@ Synthesized tool ownership is not the same as synthesized tool meaning.
 Many sources may own one visible tool identity.
 
 That visible identity may project only one canonical projected meaning at a time.
+That projected meaning may map to only one canonical execution contract at a time.
 
 Equivalent ownership topologies must produce equivalent semantic projection regardless of mount order, reconciliation order, or route transition sequence.
 
@@ -245,6 +246,7 @@ Invalid conflict fields may not disagree across one projected tool identity:
 
 - `handlerFamily`
 - `handlerPayload`
+- `executionSignature`
 - `group`
 
 If one visible tool identity has conflicting invalid fields, that projected identity is constitutionally invalid and may not project into runtime-visible tool state.

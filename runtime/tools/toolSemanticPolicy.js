@@ -9,6 +9,7 @@ export const TOOL_SEMANTIC_FIELD_GOVERNANCE = Object.freeze({
     capabilityTags: 'mergeable',
     handlerFamily: 'constitutionally-invalid-on-conflict',
     handlerPayload: 'constitutionally-invalid-on-conflict',
+    executionSignature: 'constitutionally-invalid-on-conflict',
     group: 'constitutionally-invalid-on-conflict',
 });
 
@@ -106,6 +107,18 @@ export function getDistinctHandlerPayloads(entries) {
     );
 }
 
+export function getDistinctExecutionSignatures(entries) {
+    return Object.freeze(
+        Array.from(
+            new Set(
+                (Array.isArray(entries) ? entries : [])
+                    .map((entry) => entry?.descriptor?.executionSignature ?? null)
+                    .map((executionSignature) => stableStringify(executionSignature)),
+            ),
+        ).sort((left, right) => left.localeCompare(right)),
+    );
+}
+
 export function getDistinctDescriptorValues(entries, field) {
     return Object.freeze(
         Array.from(
@@ -150,6 +163,15 @@ export function resolveToolSemanticConflict(entries) {
             code: 'handler-payload-conflict',
             message: 'Projected tool identity has incompatible handler payload semantics',
             handlerPayloads,
+        });
+    }
+
+    const executionSignatures = getDistinctExecutionSignatures(entries);
+    if (executionSignatures.length > 1) {
+        return Object.freeze({
+            code: 'execution-signature-conflict',
+            message: 'Projected tool identity has incompatible execution contract semantics',
+            executionSignatures,
         });
     }
 
