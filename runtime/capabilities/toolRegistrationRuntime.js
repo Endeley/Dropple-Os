@@ -1,5 +1,6 @@
 import { registerTools, unregisterTools } from '@/runtime/actions/toolActions.js';
 import { validateNoRecursiveToolRegistration } from '@/runtime/tools/toolRegistrationRecursionGuard.js';
+import { createToolGovernanceRejectTelemetry } from '@/runtime/tools/toolGovernanceTelemetry.js';
 
 function safeDispatch(dispatcher, action, type) {
     try {
@@ -18,7 +19,7 @@ function safeDispatch(dispatcher, action, type) {
     }
 }
 
-function handleRegisterRequested(event, dispatcher) {
+function handleRegisterRequested(event, dispatcher, onGovernanceReject) {
     const source = event?.payload?.source ?? null;
     const tools = Array.isArray(event?.payload?.tools)
         ? event.payload.tools
@@ -32,7 +33,17 @@ function handleRegisterRequested(event, dispatcher) {
 
     if (!source) return null;
     const recursiveCheck = validateNoRecursiveToolRegistration(event?.payload);
-    if (!recursiveCheck.ok) return null;
+    if (!recursiveCheck.ok) {
+        onGovernanceReject?.(createToolGovernanceRejectTelemetry({
+            code: recursiveCheck?.code,
+            source,
+            toolIds: tools,
+            atEventType: event?.type,
+            reason: recursiveCheck?.message,
+            currentTimeMs: event?.payload?.currentTimeMs,
+        }));
+        return null;
+    }
 
     return safeDispatch(
         dispatcher,
@@ -60,12 +71,12 @@ function handleUnregisterRequested(event, dispatcher) {
     );
 }
 
-export function handleCapabilityIntent(event, { dispatcher } = {}) {
+export function handleCapabilityIntent(event, { dispatcher, onGovernanceReject } = {}) {
     if (!event || typeof event.type !== 'string') return null;
 
     switch (event.type) {
         case 'capability.tools.register.requested':
-            return handleRegisterRequested(event, dispatcher);
+            return handleRegisterRequested(event, dispatcher, onGovernanceReject);
         case 'capability.tools.unregister.requested':
             return handleUnregisterRequested(event, dispatcher);
         default:

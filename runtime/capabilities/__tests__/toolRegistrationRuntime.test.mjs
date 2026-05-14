@@ -137,6 +137,7 @@ test('source-scoped unregister remains deterministic and idempotent at the runti
 
 test('capability register intent rejects recursive tool registration payloads', () => {
     const dispatched = [];
+    const emitted = [];
     const dispatcher = {
         dispatch(action) {
             dispatched.push(action);
@@ -149,6 +150,7 @@ test('capability register intent rejects recursive tool registration payloads', 
             payload: {
                 source: 'capability.graph',
                 tools: ['move'],
+                currentTimeMs: 42,
                 descriptors: [{
                     id: 'move',
                     label: 'Move',
@@ -162,8 +164,18 @@ test('capability register intent rejects recursive tool registration payloads', 
                 }],
             },
         },
-        { dispatcher },
+        { dispatcher, onGovernanceReject: (entry) => emitted.push(entry) },
     );
 
     assert.deepEqual(dispatched, []);
+    assert.equal(emitted.length, 1);
+    assert.equal(emitted[0]?.type, 'runtime.tools.governance.reject');
+    assert.deepEqual(emitted[0]?.payload, {
+        code: 'tool-registration-recursive-sovereignty-blocked',
+        source: 'capability.graph',
+        toolIds: ['move'],
+        atEventType: 'capability.tools.register.requested',
+        reason: 'Synthesized tool registration payload contains nested tool-registration intents/actions',
+    });
+    assert.equal(emitted[0]?.timestamp, 42);
 });

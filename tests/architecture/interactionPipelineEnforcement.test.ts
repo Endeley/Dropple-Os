@@ -222,11 +222,14 @@ test('synthesized tool registration ingress is fail-closed before runtime tool a
     const ingress = read('runtime/tools/validateToolRegistrationIngress.js');
     const recursion = read('runtime/tools/toolRegistrationRecursionGuard.js');
     const capabilityRuntime = read('runtime/capabilities/toolRegistrationRuntime.js');
+    const telemetry = read('runtime/tools/toolGovernanceTelemetry.js');
 
     assert.match(dispatcher, /validateToolRegistrationIngress/);
     assert.match(dispatcher, /validateNoRecursiveToolRegistration/);
-    assert.match(dispatcher, /if \(!ingress\.ok\)\s*\{\s*return prev;/);
-    assert.match(dispatcher, /if \(!recursiveGuard\.ok\)\s*\{\s*return prev;/);
+    assert.match(dispatcher, /if \(!ingress\.ok\)\s*\{[\s\S]*?return prev;/);
+    assert.match(dispatcher, /if \(!recursiveGuard\.ok\)\s*\{[\s\S]*?return prev;/);
+    assert.match(dispatcher, /createToolGovernanceRejectTelemetry/);
+    assert.match(dispatcher, /uxAuditLog\.append/);
 
     assert.match(ingress, /tool-registration-descriptor-authority-leak/);
     assert.match(ingress, /tool-registration-handler-family-invalid/);
@@ -238,6 +241,17 @@ test('synthesized tool registration ingress is fail-closed before runtime tool a
     assert.match(recursion, /EventTypes\.TOOLS_REGISTER/);
 
     assert.match(capabilityRuntime, /validateNoRecursiveToolRegistration/);
+    assert.match(capabilityRuntime, /createToolGovernanceRejectTelemetry/);
+    assert.match(capabilityRuntime, /onGovernanceReject/);
+
+    assert.match(telemetry, /runtime\.tools\.governance\.reject/);
+    assert.match(telemetry, /payload/);
+    assert.match(telemetry, /code/);
+    assert.match(telemetry, /source/);
+    assert.match(telemetry, /toolIds/);
+    assert.match(telemetry, /atEventType/);
+    assert.match(telemetry, /reason/);
+    assert.doesNotMatch(telemetry, /applyEvent|registerToolSource|unregisterToolSource|setRuntimeActiveTool|dispatch\(/);
 });
 
 test('interaction engines stay pure and do not depend on ui react dom or time randomness', () => {

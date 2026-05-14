@@ -64,6 +64,7 @@ import { applyWorkspaceActivation, applyViewportUpdate, applyCanvasSurfaceUpdate
 import { initialToolRuntimeState, registerToolSource, setRuntimeActiveTool, unregisterToolSource } from '@/runtime/tools/toolRuntime.js';
 import { validateToolRegistrationIngress } from '@/runtime/tools/validateToolRegistrationIngress.js';
 import { validateNoRecursiveToolRegistration } from '@/runtime/tools/toolRegistrationRecursionGuard.js';
+import { createToolGovernanceRejectTelemetry } from '@/runtime/tools/toolGovernanceTelemetry.js';
 import { endDrag, initialDragState, startDrag, updateDrag } from '@/runtime/interaction/dragRuntime.js';
 import { isShotTransitionValidationError } from '@/core/project/normalizeShotTransitionOut.js';
 
@@ -261,9 +262,15 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
     async function dispatch(rawEvent) {
         return withMutationOrigin('dispatcher', async () => {
             // 🔥 CRITICAL FIX — CAPABILITY INTENT BRIDGE
+            const auditCountBeforeCapabilityIntent = uxAuditLog.snapshot().length;
             handleCapabilityIntent(rawEvent, {
                 dispatcher: { dispatch },
+                onGovernanceReject: (entry) => uxAuditLog.append(entry),
             });
+            if (uxAuditLog.snapshot().length !== auditCountBeforeCapabilityIntent) {
+                const runtimeState = __getRuntimeStateInternal() ?? initialRuntimeState;
+                syncRuntimeToZustand(runtimeState, { uxAudit: uxAuditLog.snapshot() });
+            }
 
             if (rawEvent && Object.prototype.hasOwnProperty.call(rawEvent, 'id')) {
                 throw new Error('Illegal event: event IDs may only be assigned by dispatcher');
@@ -358,10 +365,28 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
                         {
                             const ingress = validateToolRegistrationIngress(rawEvent?.payload);
                             if (!ingress.ok) {
+                                uxAuditLog.append(createToolGovernanceRejectTelemetry({
+                                    code: ingress?.code,
+                                    source: rawEvent?.payload?.source,
+                                    toolIds: rawEvent?.payload?.tools,
+                                    atEventType: rawEvent?.type,
+                                    reason: ingress?.message,
+                                    currentTimeMs: resolveToolPolicyTimeMsFromEvent(rawEvent),
+                                }));
+                                syncRuntimeToZustand(prev, { uxAudit: uxAuditLog.snapshot() });
                                 return prev;
                             }
                             const recursiveGuard = validateNoRecursiveToolRegistration(rawEvent?.payload);
                             if (!recursiveGuard.ok) {
+                                uxAuditLog.append(createToolGovernanceRejectTelemetry({
+                                    code: recursiveGuard?.code,
+                                    source: rawEvent?.payload?.source,
+                                    toolIds: rawEvent?.payload?.tools,
+                                    atEventType: rawEvent?.type,
+                                    reason: recursiveGuard?.message,
+                                    currentTimeMs: resolveToolPolicyTimeMsFromEvent(rawEvent),
+                                }));
+                                syncRuntimeToZustand(prev, { uxAudit: uxAuditLog.snapshot() });
                                 return prev;
                             }
                             const currentTimeMs = resolveToolPolicyTimeMsFromEvent(rawEvent);

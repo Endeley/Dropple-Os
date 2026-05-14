@@ -10,6 +10,7 @@ import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { getVisibleTools } from '@/runtime/tools/toolRuntime.js';
+import { getUXAuditLog } from '@/runtime/dispatcher/ux/uxAuditLog.js';
 
 function resetStores() {
     __resetRuntimeStateInternal();
@@ -32,6 +33,7 @@ function resetStores() {
         evalStatus: 'NO_SHOT',
         events: [],
         cursorIndex: -1,
+        uxAudit: [],
     });
     useAnimatedRuntimeStore.setState({ previewNodes: {}, cameraTransform: null }, false);
 }
@@ -234,6 +236,120 @@ test('dispatcher rejects recursive synthesized tool registration payloads and pr
     const after = dispatcher.getState();
     assert.deepEqual(after?.tools, before?.tools);
     assert.equal(getVisibleTools(after?.tools ?? initialRuntimeState.tools).includes('move'), false);
+});
+
+test('tool registration governance reject emits one telemetry entry per reject attempt with stable payload and no truth mutation', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });
+
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: {
+                id: 'graphic',
+                tools: ['select'],
+                policy: {
+                    mutation: 'allow',
+                    capabilities: ['node:create'],
+                },
+            },
+        },
+    });
+
+    const before = dispatcher.getState();
+    const recursiveRejectEvent = {
+        type: EventTypes.TOOLS_REGISTER,
+        payload: {
+            source: 'capability.graph',
+            tools: ['move'],
+            currentTimeMs: 1000,
+            descriptors: [{
+                id: 'move',
+                label: 'Move',
+                handlerFamily: 'session',
+                metadata: {
+                    nested: {
+                        type: 'capability.tools.register.requested',
+                        payload: {
+                            source: 'capability.inner',
+                            tools: ['shape'],
+                        },
+                    },
+                },
+            }],
+        },
+    };
+
+    await dispatcher.dispatch(recursiveRejectEvent);
+    await dispatcher.dispatch(recursiveRejectEvent);
+
+    const after = dispatcher.getState();
+    assert.deepEqual(after?.tools, before?.tools);
+
+    const rejects = (getUXAuditLog() ?? [])
+        .filter((entry) => entry?.type === 'runtime.tools.governance.reject');
+    assert.equal(rejects.length, 2);
+    assert.deepEqual(rejects[0]?.payload, rejects[1]?.payload);
+    assert.deepEqual(rejects[0]?.payload, {
+        code: 'tool-registration-recursive-sovereignty-blocked',
+        source: 'capability.graph',
+        toolIds: ['move'],
+        atEventType: EventTypes.TOOLS_REGISTER,
+        reason: 'Synthesized tool registration payload contains nested tool-registration intents/actions',
+    });
+});
+
+test('capability boundary tool registration reject telemetry is emitted once and preserves runtime truth', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });
+
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: {
+                id: 'graphic',
+                tools: ['select'],
+                policy: {
+                    mutation: 'allow',
+                    capabilities: ['node:create'],
+                },
+            },
+        },
+    });
+
+    const before = dispatcher.getState();
+    await dispatcher.dispatch({
+        type: 'capability.tools.register.requested',
+        payload: {
+            source: 'capability.graph',
+            tools: ['move'],
+            currentTimeMs: 999,
+            descriptors: [{
+                id: 'move',
+                label: 'Move',
+                handlerFamily: 'session',
+                metadata: {
+                    nested: {
+                        type: EventTypes.TOOLS_REGISTER,
+                        payload: { source: 'capability.inner', tools: ['shape'] },
+                    },
+                },
+            }],
+        },
+    });
+
+    const after = dispatcher.getState();
+    assert.deepEqual(after?.tools, before?.tools);
+    const rejects = (getUXAuditLog() ?? [])
+        .filter((entry) => entry?.type === 'runtime.tools.governance.reject');
+    assert.equal(rejects.length, 1);
+    assert.deepEqual(rejects[0]?.payload, {
+        code: 'tool-registration-recursive-sovereignty-blocked',
+        source: 'capability.graph',
+        toolIds: ['move'],
+        atEventType: 'capability.tools.register.requested',
+        reason: 'Synthesized tool registration payload contains nested tool-registration intents/actions',
+    });
 });
 
 test('dispatcher undo and redo replay canonical persisted truth while preserving runtime workspace', async () => {
