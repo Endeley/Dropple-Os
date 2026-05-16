@@ -1,4 +1,4 @@
-import { evaluateRenderFrame } from './renderOrchestration.js';
+import { evaluateRuntimeFrame } from './renderOrchestration.js';
 
 function safeInteger(value, fallback = 0) {
     return Number.isInteger(value) ? value : fallback;
@@ -132,7 +132,7 @@ export function stepRenderSessionExecution(executionState) {
 
     const timeMs = Number(session.frameTimes[state.frameCursor] ?? 0);
     const previousFrame = Array.isArray(state.completedFrames) ? state.completedFrames.at(-1) ?? null : null;
-    const frameResult = evaluateRenderFrame({
+    const frameResult = evaluateRuntimeFrame({
         renderInput: {
             ...renderInput,
             timeMs,

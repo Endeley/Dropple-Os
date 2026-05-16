@@ -3,7 +3,7 @@ import { normalizeExportTarget } from '@/core/export/exportTargetContract.js';
 import { buildEvaluationInputs } from '@/runtime/animation/buildEvaluationInputs.js';
 import { buildDroppleSpec } from '@/runtime/export/buildDroppleSpec.js';
 import { validateDroppleSpec } from '@/runtime/export/validateDroppleSpec.js';
-import { evaluateRenderFrame } from './renderOrchestration.js';
+import { evaluateRuntimeFrame } from './renderOrchestration.js';
 import { createLocalRenderExecutor, executeRenderAssignment } from './renderExecutor.js';
 import { createRenderExecutionRegistryState, recordRenderExecutionWorkflow } from './renderExecutionRegistry.js';
 import { buildExportManifest } from './exportManifest.js';
@@ -238,7 +238,7 @@ export function performExportExecution(workflow) {
     const result = executeExport(workflow.shot, workflow.timeline, {
         frames: workflow.manifest.sampleTimes,
         evaluateShotAtFn: (_shotTimeline, _sceneGraph, timeMs, options = {}) =>
-            evaluateRenderFrame({
+            evaluateRuntimeFrame({
                 renderInput: {
                     ...workflow.renderInput,
                     activeShotId: options?.shotId ?? workflow.renderInput.activeShotId ?? null,

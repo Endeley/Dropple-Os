@@ -1,14 +1,14 @@
 import { clock } from './clock.js';
 import { getRuntimeState } from '../state/runtimeState.js';
 import { buildEvaluationInputs } from '../animation/buildEvaluationInputs.js';
-import { evaluateRenderFrame } from '../render/renderOrchestration.js';
+import { evaluateRuntimeFrame } from '../render/renderOrchestration.js';
 
 let rafId = null;
 
 function evaluateClockFrame(timeMs, reason) {
     const runtime = getRuntimeState();
     const inputs = buildEvaluationInputs(runtime, { timeMs, strictSceneScope: true });
-    return evaluateRenderFrame({
+    return evaluateRuntimeFrame({
         renderInput: {
             ...inputs.renderInput,
             timeMs,

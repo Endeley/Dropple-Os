@@ -45,8 +45,26 @@ export function evaluateRenderFrame({
     cache = null,
     commit = true,
 } = {}) {
+    return evaluateRuntimeFrame({
+        renderInput,
+        timeMs,
+        reason,
+        previousEvaluatedScene,
+        cache,
+        commit,
+    });
+}
+
+export function evaluateRuntimeFrame({
+    renderInput,
+    timeMs = null,
+    reason = 'render',
+    previousEvaluatedScene = null,
+    cache = null,
+    commit = true,
+} = {}) {
     if (!renderInput || typeof renderInput !== 'object') {
-        throw new Error('evaluateRenderFrame requires renderInput.');
+        throw new Error('evaluateRuntimeFrame requires renderInput.');
     }
 
     const resolvedTimeMs = Number.isFinite(timeMs) ? Number(timeMs) : Number(renderInput?.timeMs ?? 0);

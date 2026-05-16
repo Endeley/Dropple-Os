@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { buildEvaluationInputs } from '@/runtime/animation/buildEvaluationInputs.js';
-import { buildRenderSchedule, evaluateRenderFrame } from '../renderOrchestration.js';
+import { buildRenderSchedule, evaluateRenderFrame, evaluateRuntimeFrame } from '../renderOrchestration.js';
 import { buildRenderSession, resolveRenderFrameRate, resolveRenderStepMs } from '../renderSession.js';
 import { evaluateTransitionFrame } from '@/runtime/transition/evaluateTransitionFrame.js';
 
@@ -143,4 +143,98 @@ test('evaluateRenderFrame matches canonical transition evaluation without commit
     assert.equal(orchestrated.shotTimeMs, direct.shotTimeMs);
     assert.equal(orchestrated.transitionWindow?.t, direct.transitionWindow?.t);
     assert.equal(orchestrated.evalStatus, 'OK');
+});
+
+test('evaluateRuntimeFrame is deterministic for identical input/time', () => {
+    const inputs = buildEvaluationInputs(createTransitionRuntimeSnapshot(), {
+        timeMs: 900,
+        strictSceneScope: true,
+    });
+    const payload = {
+        renderInput: {
+            ...inputs.renderInput,
+            timeMs: 900,
+        },
+        timeMs: 900,
+        reason: 'determinism',
+        commit: false,
+    };
+
+    const left = evaluateRuntimeFrame(payload);
+    const right = evaluateRuntimeFrame(payload);
+
+    assert.deepEqual(
+        {
+            evalStatus: left.evalStatus,
+            shotId: left.shotId,
+            shotTimeMs: left.shotTimeMs,
+            frameHash: left.frameHash,
+            transitionWindow: left.transitionWindow,
+            evaluatedScene: left.evaluatedScene,
+        },
+        {
+            evalStatus: right.evalStatus,
+            shotId: right.shotId,
+            shotTimeMs: right.shotTimeMs,
+            frameHash: right.frameHash,
+            transitionWindow: right.transitionWindow,
+            evaluatedScene: right.evaluatedScene,
+        },
+    );
+});
+
+test('evaluateRuntimeFrame yields an identical output sequence for the same replay trace', () => {
+    const inputs = buildEvaluationInputs(createTransitionRuntimeSnapshot(), {
+        timeMs: 900,
+        strictSceneScope: true,
+    });
+    const schedule = buildRenderSchedule({
+        renderInput: inputs.renderInput,
+        fromMs: 0,
+        toMs: 1000,
+        sampleCount: 6,
+        includeTransitionBoundaries: true,
+    });
+
+    const runTrace = () =>
+        schedule.sampleTimes.map((timeMs) => {
+            const result = evaluateRuntimeFrame({
+                renderInput: {
+                    ...inputs.renderInput,
+                    timeMs,
+                },
+                timeMs,
+                reason: 'replay-trace',
+                commit: false,
+            });
+            return {
+                timeMs,
+                evalStatus: result.evalStatus,
+                shotId: result.shotId,
+                shotTimeMs: result.shotTimeMs,
+                frameHash: result.frameHash,
+                transitionWindow: result.transitionWindow,
+                evaluatedScene: result.evaluatedScene,
+            };
+        });
+
+    assert.deepEqual(runTrace(), runTrace());
+});
+
+test('evaluateRuntimeFrame does not mutate render input state when commit is disabled', () => {
+    const snapshot = createTransitionRuntimeSnapshot();
+    const inputs = buildEvaluationInputs(snapshot, {
+        timeMs: 900,
+        strictSceneScope: true,
+    });
+    const baseline = structuredClone(inputs.renderInput);
+
+    evaluateRuntimeFrame({
+        renderInput: inputs.renderInput,
+        timeMs: 900,
+        reason: 'immutability',
+        commit: false,
+    });
+
+    assert.deepEqual(inputs.renderInput, baseline);
 });

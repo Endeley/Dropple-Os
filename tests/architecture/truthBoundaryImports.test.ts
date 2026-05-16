@@ -405,3 +405,33 @@ test('non-runtime modules do not import deep interaction internals directly', ()
 
     assert.deepEqual(violations, []);
 });
+
+test('runtime evaluation authority routes transition and frame evaluators through render orchestration only', () => {
+    const runtimeRoot = path.join(ROOT, 'runtime');
+    if (!fs.existsSync(runtimeRoot)) {
+        assert.ok(true);
+        return;
+    }
+
+    const violations = [];
+    const files = walk(runtimeRoot, 'runtime');
+
+    for (const file of files) {
+        const normalized = file.relPath.replaceAll('\\', '/');
+        if (normalized.includes('/__tests__/')) continue;
+        if (normalized === 'runtime/render/renderOrchestration.js') continue;
+
+        const content = fs.readFileSync(file.fullPath, 'utf8');
+        const lines = content.split('\n');
+        lines.forEach((line, index) => {
+            if (!line.includes('import') && !line.includes('import(')) return;
+            const importsTransitionEvaluator = /runtime\/transition\/evaluateTransitionFrame\.js/.test(line);
+            const importsFrameEvaluator = /engine\/evaluation\/evaluateFrameAt\.js/.test(line);
+            if (importsTransitionEvaluator || importsFrameEvaluator) {
+                violations.push(`${file.relPath}:${index + 1}: ${line.trim()}`);
+            }
+        });
+    }
+
+    assert.deepEqual(violations, []);
+});
