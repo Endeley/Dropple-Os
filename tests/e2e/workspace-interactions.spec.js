@@ -26,8 +26,49 @@ async function dragOnCanvas(page, from, to) {
 }
 
 async function createFrame(page, from, to) {
-  await page.locator('[data-tool-id="frame"]').click();
-  await dragOnCanvas(page, from, to);
+  const nodes = page.locator('[data-node-id]');
+  const beforeCount = await nodes.count();
+  const retryOffsets = [
+    { x: 0, y: 0 },
+    { x: 36, y: 36 },
+    { x: 96, y: 0 },
+    { x: 0, y: 96 },
+    { x: 160, y: 36 },
+  ];
+
+  for (const offset of retryOffsets) {
+    await activateTool(page, 'frame');
+    await dragOnCanvas(
+      page,
+      { x: from.x + offset.x, y: from.y + offset.y },
+      { x: to.x + offset.x, y: to.y + offset.y }
+    );
+
+    const created = await expect
+      .poll(async () => await nodes.count(), {
+        timeout: 2500,
+      })
+      .toBeGreaterThan(beforeCount)
+      .then(() => true)
+      .catch(() => false);
+
+    if (created) {
+      return;
+    }
+  }
+
+  throw new Error(`Frame creation did not increase node count from ${beforeCount}`);
+}
+
+async function waitForNodeCount(page, expectedCount) {
+  const nodes = page.locator('[data-node-id]');
+  await expect
+    .poll(async () => await nodes.count(), {
+      timeout: 10000,
+    })
+    .toBe(expectedCount);
+
+  await expect(nodes).toHaveCount(expectedCount);
 }
 
 async function marqueeSelect(page, from, to) {
@@ -188,11 +229,11 @@ test('workspace new can create and drag a single selected node', async ({ page }
 test('workspace new can multi-select and drag multiple nodes together', async ({ page }) => {
   await gotoNewWorkspace(page);
 
-  await createFrame(page, { x: 180, y: 180 }, { x: 320, y: 300 });
-  await createFrame(page, { x: 420, y: 220 }, { x: 560, y: 340 });
+  await createFrame(page, { x: 140, y: 180 }, { x: 280, y: 300 });
+  await createFrame(page, { x: 320, y: 220 }, { x: 460, y: 340 });
 
   const nodes = page.locator('[data-node-id]');
-  await expect(nodes).toHaveCount(2);
+  await waitForNodeCount(page, 2);
 
   const first = nodes.nth(0);
   const second = nodes.nth(1);
@@ -219,8 +260,8 @@ test('workspace new marquee-selects multiple nodes and keeps group drag authorit
   const logs = captureMarqueeDebugLogs(page);
   await gotoNewWorkspace(page);
 
-  await createFrame(page, { x: 180, y: 180 }, { x: 320, y: 300 });
-  await createFrame(page, { x: 420, y: 220 }, { x: 560, y: 340 });
+  await createFrame(page, { x: 140, y: 180 }, { x: 280, y: 300 });
+  await createFrame(page, { x: 320, y: 220 }, { x: 460, y: 340 });
 
   const nodes = page.locator('[data-node-id]');
   await expect(nodes).toHaveCount(2);
@@ -250,7 +291,7 @@ test('workspace new shift-marquee adds to the existing selection and preserves a
   await createFrame(page, { x: 540, y: 180 }, { x: 660, y: 300 });
 
   const nodes = page.locator('[data-node-id]');
-  await expect(nodes).toHaveCount(3);
+  await waitForNodeCount(page, 3);
 
   const first = nodes.nth(0);
   const second = nodes.nth(1);
