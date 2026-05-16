@@ -333,6 +333,7 @@ Schedule identity is constitutional runtime infrastructure.
 Partition identity, partition ordering, schedule signatures, checkpoint validity, resumability legality, and budget semantics must be deterministic and canonical.
 
 Canonical schedule identity helpers must be centralized in one runtime authority module.
+Execution subsystems must consume canonical scheduler execution envelopes derived from that authority.
 
 Execution systems may not define ad-hoc schedule hashing or checkpoint legality rules per subsystem.
 

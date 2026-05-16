@@ -27,9 +27,9 @@ import { hashSimulationState } from '@/runtime/simulation/simulationStateHash.js
 import { buildSimulationInputs } from '@/runtime/simulation/buildSimulationInputs.js';
 import { recordSimulationTrace } from '@/runtime/simulation/simulationTrace.js';
 import {
-    buildSimulationPartitionSchedule,
     createSimulationPartitionCheckpoint,
 } from '@/runtime/simulation/simulationPartitionSchedule.js';
+import { createSchedulerExecutionEnvelope } from '@/runtime/scheduler/executionEnvelope.js';
 
 function isStructuralEvent(eventType) {
     return (
@@ -258,7 +258,7 @@ export function evaluateSceneIncremental({ event, document, runtime = {} }) {
         time: simulationTime,
         deltaTime: simulationDeltaTime,
     });
-    const simulationPartitionSchedule = buildSimulationPartitionSchedule({
+    const simulationExecutionEnvelope = createSchedulerExecutionEnvelope({
         partitionIds: activePartitionIdsForSimulation,
         tickTime: simulationTime,
         deltaTime: simulationDeltaTime,
@@ -270,13 +270,13 @@ export function evaluateSceneIncremental({ event, document, runtime = {} }) {
         previousSimulationState: runtime?.simulation?.state ?? null,
         time: simulationTime,
         deltaTime: simulationDeltaTime,
-        simulationPartitionSchedule,
+        simulationPartitionSchedule: simulationExecutionEnvelope,
     });
     const simulationPartitionCheckpoint = createSimulationPartitionCheckpoint({
-        ...simulationPartitionSchedule,
+        ...simulationExecutionEnvelope,
         partitionCursor:
             simulationState?.partitionExecution?.completedPartitionIds?.length ??
-            simulationPartitionSchedule.orderedPartitionIds.length,
+            simulationExecutionEnvelope.orderedPartitionIds.length,
     });
     const simulationHash = hashSimulationState(simulationState);
     const simulationTrace = recordSimulationTrace({
@@ -284,7 +284,7 @@ export function evaluateSceneIncremental({ event, document, runtime = {} }) {
         simulationState,
         simulationHash,
         simulationInputs,
-        simulationPartitionSchedule,
+        simulationPartitionSchedule: simulationExecutionEnvelope,
         simulationPartitionCheckpoint,
     });
     runtime.simulation = Object.freeze({

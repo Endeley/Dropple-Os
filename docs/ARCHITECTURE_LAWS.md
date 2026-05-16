@@ -137,5 +137,6 @@ Schedule identity is canonical runtime authority:
 - deterministic resume/budget semantics
 
 All schedule hashing + checkpoint legality checks must route through one runtime scheduler identity module.
+Runtime execution systems must consume scheduler envelopes derived from that identity instead of ad-hoc schedule/checkpoint shapes.
 
 If resume legality cannot be proven, execution must fail closed.

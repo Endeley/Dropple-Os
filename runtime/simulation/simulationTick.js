@@ -1,11 +1,7 @@
+import { normalizeSchedulePartitionIds } from '@/runtime/scheduler/scheduleIdentity.js';
+
 function toFiniteNumber(value, fallback = 0) {
     return Number.isFinite(value) ? Number(value) : fallback;
-}
-
-function normalizePartitionIds(partitionIds = []) {
-    return [...new Set(partitionIds.map((partitionId) => String(partitionId)).filter(Boolean))].sort((left, right) =>
-        left.localeCompare(right),
-    );
 }
 
 function normalizeBlendMode(value) {
@@ -262,8 +258,10 @@ export function simulationTick({
           });
     const chainForceMap = chainEvaluation.forceMap;
     const currentPrimitiveTrace = [...(chainEvaluation.trace ?? [])];
-    const allPartitionIds = normalizePartitionIds(Object.values(inputs?.entityPartitionIds ?? { '__global__': '__global__' }));
-    const orderedPartitionIds = normalizePartitionIds(
+    const allPartitionIds = normalizeSchedulePartitionIds(
+        Object.values(inputs?.entityPartitionIds ?? { '__global__': '__global__' }),
+    );
+    const orderedPartitionIds = normalizeSchedulePartitionIds(
         simulationPartitionSchedule?.orderedPartitionIds?.length
             ? simulationPartitionSchedule.orderedPartitionIds
             : allPartitionIds,
