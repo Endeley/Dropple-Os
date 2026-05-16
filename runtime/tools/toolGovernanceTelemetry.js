@@ -2,7 +2,7 @@ function normalizeSource(source) {
     return typeof source === 'string' ? source.trim() : '';
 }
 
-const GOVERNANCE_REJECT_CODES = Object.freeze([
+export const GOVERNANCE_REJECT_CODES = Object.freeze([
     'tool-registration-source-invalid',
     'tool-registration-descriptor-invalid',
     'tool-registration-descriptor-authority-leak',
@@ -10,11 +10,11 @@ const GOVERNANCE_REJECT_CODES = Object.freeze([
     'tool-registration-recursive-sovereignty-blocked',
 ]);
 
-const GOVERNANCE_ACCEPT_CODES = Object.freeze([
+export const GOVERNANCE_ACCEPT_CODES = Object.freeze([
     'tool-registration-approved',
 ]);
 
-const GOVERNANCE_REJECT_REASONS = Object.freeze([
+export const GOVERNANCE_REJECT_REASONS = Object.freeze([
     'tool-registration-source-invalid',
     'tool-registration-descriptor-invalid',
     'tool-registration-descriptor-authority-leak',
@@ -22,7 +22,7 @@ const GOVERNANCE_REJECT_REASONS = Object.freeze([
     'tool-registration-recursive-sovereignty-blocked',
 ]);
 
-const GOVERNANCE_ACCEPT_REASONS = Object.freeze([
+export const GOVERNANCE_ACCEPT_REASONS = Object.freeze([
     'capability-boundary-governance-approved',
     'dispatcher-ingress-governance-approved',
     'tool-registration-governance-approved',
@@ -38,7 +38,7 @@ function normalizeGovernanceReason(reason, allowedReasons, fallbackReason) {
     return allowedReasons.includes(normalized) ? normalized : fallbackReason;
 }
 
-function normalizeToolIds(toolIds) {
+export function normalizeToolGovernanceIds(toolIds) {
     if (!Array.isArray(toolIds)) return Object.freeze([]);
     return Object.freeze(
         Array.from(
@@ -61,7 +61,7 @@ export function createToolGovernanceRejectTelemetry({
     currentTimeMs,
 } = {}) {
     const normalizedSource = normalizeSource(source);
-    const normalizedToolIds = normalizeToolIds(toolIds);
+    const normalizedToolIds = normalizeToolGovernanceIds(toolIds);
     const normalizedCode = normalizeGovernanceCode(
         code,
         GOVERNANCE_REJECT_CODES,
@@ -99,7 +99,7 @@ export function createToolGovernanceAcceptTelemetry({
     currentTimeMs,
 } = {}) {
     const normalizedSource = normalizeSource(source);
-    const normalizedToolIds = normalizeToolIds(toolIds);
+    const normalizedToolIds = normalizeToolGovernanceIds(toolIds);
     const normalizedCode = normalizeGovernanceCode(
         code,
         GOVERNANCE_ACCEPT_CODES,

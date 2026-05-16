@@ -295,6 +295,19 @@ test('tool governance accept and reject telemetry stay payload-schema equivalent
     assert.deepEqual(reject.payload.toolIds, ['a-tool', 'b-tool']);
 });
 
+test('tool governance replay attestation is coordination-only and reducer-free', () => {
+    const attestation = read('runtime/tools/attestToolGovernanceAudit.js');
+
+    assert.match(attestation, /attestToolGovernanceAudit/);
+    assert.match(attestation, /GOVERNANCE_ACCEPT_CODES/);
+    assert.match(attestation, /GOVERNANCE_REJECT_CODES/);
+    assert.match(attestation, /normalizeToolGovernanceIds/);
+    assert.doesNotMatch(
+        attestation,
+        /applyEvent|registerToolSource|unregisterToolSource|setRuntimeActiveTool|__setRuntimeStateInternal|dispatch\(/,
+    );
+});
+
 test('interaction engines stay pure and do not depend on ui react dom or time randomness', () => {
     const content = read('scripts/architectureGuard.mjs');
 

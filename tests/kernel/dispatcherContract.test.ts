@@ -11,6 +11,7 @@ import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStor
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { getVisibleTools } from '@/runtime/tools/toolRuntime.js';
 import { getUXAuditLog } from '@/runtime/dispatcher/ux/uxAuditLog.js';
+import { attestToolGovernanceAudit } from '@/runtime/tools/attestToolGovernanceAudit.js';
 
 function resetStores() {
     __resetRuntimeStateInternal();
@@ -449,6 +450,45 @@ test('capability boundary tool registration accept telemetry is emitted once per
         atEventType: 'capability.tools.register.requested',
         reason: 'capability-boundary-governance-approved',
     });
+});
+
+test('tampered governance audit entries fail replay attestation', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });
+
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: {
+                id: 'graphic',
+                tools: ['select'],
+                policy: { mutation: 'allow', capabilities: ['node:create'] },
+            },
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.TOOLS_REGISTER,
+        payload: {
+            source: 'capability.graph',
+            tools: ['move'],
+            descriptors: [{ id: 'move', label: 'Move', handlerFamily: 'session' }],
+        },
+    });
+
+    const audit = getUXAuditLog().filter((entry) => entry?.type?.startsWith('runtime.tools.governance.'));
+    const baseline = attestToolGovernanceAudit(audit);
+    assert.equal(baseline.ok, true);
+
+    const tampered = audit.map((entry) => ({
+        ...entry,
+        payload: { ...entry.payload },
+    }));
+    tampered[0].payload.reason = 'freeform-mutated-reason';
+
+    const attestation = attestToolGovernanceAudit(tampered);
+    assert.equal(attestation.ok, false);
+    assert.equal(attestation.violations.some((entry) => entry.code.includes('reason-invalid')), true);
 });
 
 test('dispatcher undo and redo replay canonical persisted truth while preserving runtime workspace', async () => {
