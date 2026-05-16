@@ -333,6 +333,97 @@ test('structural change produces a different export hash', async () =>
         assert.notEqual(firstExport.exportHash, secondExport.exportHash);
     }));
 
+test('canonical export entrypoint enforces strict simulation trace attestation when verification is enabled', async () => {
+    const snapshotArtifact = createSnapshotArtifact({
+        snapshot: {
+            document: createDocument(),
+            runtime: {
+                simulation: {
+                    trace: {
+                        entries: [
+                            {
+                                tickTime: 16,
+                                deltaTime: 16,
+                                simulationHash: 'sim-a',
+                                entityCount: 1,
+                                constraintLayerSignature: 'layer-a',
+                                primitiveTrace: [
+                                    {
+                                        type: 'entity.spring-step',
+                                        entityId: 'root',
+                                        spring: 24,
+                                        damping: 9,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                },
+            },
+            timeline: {
+                timelines: {
+                    default: { tracks: [], duration: 0, events: [] },
+                },
+            },
+            scene: {
+                activeSceneId: 'sceneA',
+                activeShotId: 'shotA',
+            },
+            nodes: {},
+            rootIds: ['root'],
+        },
+    });
+
+    await assert.doesNotReject(() =>
+        withDownloadStubs(() =>
+                exportArtifact({
+                    artifact: snapshotArtifact,
+                    format: ArtifactExportKinds.JSON,
+                    options: {
+                        download: false,
+                        verification: { enabled: true },
+                    },
+                }),
+        ),
+    );
+
+    const tampered = createSnapshotArtifact({
+        snapshot: {
+            ...snapshotArtifact.snapshot,
+            runtime: {
+                simulation: {
+                    trace: {
+                        entries: [
+                            {
+                                tickTime: 16,
+                                deltaTime: 16,
+                                simulationHash: 'sim-a',
+                                entityCount: 1,
+                                constraintLayerSignature: 'layer-a',
+                            },
+                        ],
+                    },
+                },
+            },
+        },
+    });
+
+    await assert.rejects(
+        () =>
+            withDownloadStubs(() =>
+                exportArtifact({
+                    artifact: tampered,
+                    format: ArtifactExportKinds.JSON,
+                    options: {
+                        download: false,
+                        verification: { enabled: true },
+                    },
+                }),
+            ),
+        /Export attestation failed/,
+    );
+});
+
 test('createEnvironmentArtifact rejects partial publication context', () => {
     assert.throws(
         () =>

@@ -5,6 +5,7 @@ import { initialRuntimeState } from '@/runtime/state/runtimeState.internal.js';
 import { buildRuntimeSnapshotFromTemplateEnvironment } from '@/runtime/templates/activateResolvedTemplateEnvironment.js';
 import { getExportCapabilities } from './getExportCapabilities.js';
 import { hashSimulationTrace } from '@/runtime/simulation/simulationTrace.js';
+import { resolveExportVerificationPolicy } from './verify/exportVerificationPolicy.js';
 import {
     createExportFingerprint,
     EXPORT_CANONICAL_VERSION,
@@ -270,6 +271,33 @@ export async function exportArtifact({
         output,
     });
     const simulationTraceFingerprint = hashSimulationTrace(snapshot?.runtime?.simulation?.trace ?? null);
+    const verificationPolicy = resolveExportVerificationPolicy({
+        artifact,
+        format,
+        options,
+    });
+
+    if (verificationPolicy.enabled) {
+        const { verifyExportArtifact } = await import('./verify/verifyExportArtifact.js');
+        const verification = await verifyExportArtifact({
+            artifact,
+            format,
+            output,
+            exportHash,
+            simulationTraceFingerprint,
+            canonicalVersion,
+            algorithm,
+            options: {
+                ...options,
+                download: false,
+                ...verificationPolicy.verificationOptions,
+            },
+        });
+
+        if (!verification.valid) {
+            throw new Error('Export attestation failed: canonical verification gate rejected the artifact output.');
+        }
+    }
 
     return Object.freeze({
         artifactKind: artifact.kind,

@@ -316,6 +316,60 @@ test('verifyExportArtifact rejects missing simulation trace fingerprint when req
     assert.equal(verification.traceFingerprintProvided, false);
 });
 
+test('verifyExportArtifact succeeds with strict trace + primitive lineage requirements', async () => {
+    const runtimeSnapshot = {
+        document: createDocument(),
+        runtime: {
+            simulation: {
+                trace: {
+                    entries: [
+                        {
+                            tickTime: 16,
+                            deltaTime: 16,
+                            simulationHash: 'sim-a',
+                            entityCount: 1,
+                            constraintLayerSignature: 'layer-a',
+                            primitiveTrace: [
+                                {
+                                    type: 'entity.spring-step',
+                                    entityId: 'root',
+                                    spring: 24,
+                                    damping: 9,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            },
+        },
+    };
+    const artifact = createSnapshotArtifact({ snapshot: runtimeSnapshot });
+    const exported = await exportArtifact({
+        artifact,
+        format: ArtifactExportKinds.JSON,
+        options: { download: false },
+    });
+
+    const verification = await verifyExportArtifact({
+        artifact,
+        format: exported.format,
+        output: exported.output,
+        exportHash: exported.exportHash,
+        simulationTraceFingerprint: exported.simulationTraceFingerprint,
+        canonicalVersion: exported.canonicalVersion,
+        algorithm: exported.algorithm,
+        options: {
+            download: false,
+            requireSimulationTraceFingerprint: true,
+            requireSimulationPrimitiveTraceLineage: true,
+        },
+    });
+
+    assert.equal(verification.valid, true);
+    assert.equal(verification.traceFingerprintMatches, true);
+    assert.equal(verification.primitiveTraceLineageProvided, true);
+});
+
 test('verifyExportArtifact rejects missing primitive simulation trace lineage when required', async () => {
     const runtimeSnapshot = {
         document: createDocument(),

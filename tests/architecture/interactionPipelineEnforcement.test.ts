@@ -326,6 +326,35 @@ test('simulation trace recording is coordination-only and reducer-free', () => {
     );
 });
 
+test('export verification policy and gate remain coordination-only and mutation-free', () => {
+    const policy = read('runtime/export/verify/exportVerificationPolicy.js');
+    const gate = read('runtime/export/verify/verifyExportArtifact.js');
+
+    assert.match(policy, /resolveExportVerificationPolicy/);
+    assert.match(policy, /requireSimulationTraceFingerprint/);
+    assert.match(policy, /requireSimulationPrimitiveTraceLineage/);
+    assert.doesNotMatch(
+        policy,
+        /applyEvent|registerToolSource|unregisterToolSource|setRuntimeActiveTool|__setRuntimeStateInternal|dispatch\(/,
+    );
+    assert.doesNotMatch(
+        policy,
+        /document\.[A-Za-z0-9_.[\]]+\s*=|runtime\.[A-Za-z0-9_.[\]]+\s*=/,
+    );
+
+    assert.match(gate, /verifyExportArtifact/);
+    assert.match(gate, /requireSimulationTraceFingerprint/);
+    assert.match(gate, /requireSimulationPrimitiveTraceLineage/);
+    assert.doesNotMatch(
+        gate,
+        /applyEvent|registerToolSource|unregisterToolSource|setRuntimeActiveTool|__setRuntimeStateInternal|dispatch\(/,
+    );
+    assert.doesNotMatch(
+        gate,
+        /document\.[A-Za-z0-9_.[\]]+\s*=|runtime\.[A-Za-z0-9_.[\]]+\s*=/,
+    );
+});
+
 test('interaction engines stay pure and do not depend on ui react dom or time randomness', () => {
     const content = read('scripts/architectureGuard.mjs');
 

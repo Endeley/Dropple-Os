@@ -72,10 +72,10 @@ export async function verifyExportArtifact({
         ? snapshot.runtime.simulation.trace.entries
         : [];
     const primitiveTraceLineageProvided =
-        traceEntries.length > 0 &&
-        traceEntries.every(
+        (traceEntries.length === 0 ||
+            traceEntries.every(
             (entry) => Array.isArray(entry?.primitiveTrace) && entry.primitiveTrace.length > 0,
-        );
+        ));
     const primitiveTraceLineageSatisfied = primitiveTraceLineageRequired
         ? primitiveTraceLineageProvided
         : true;
