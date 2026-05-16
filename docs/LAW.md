@@ -326,6 +326,28 @@ No runtime enforcement yet.
 
 ---
 
+## 16. Scheduler Identity Freeze Law
+
+Schedule identity is constitutional runtime infrastructure.
+
+Partition identity, partition ordering, schedule signatures, checkpoint validity, resumability legality, and budget semantics must be deterministic and canonical.
+
+Canonical schedule identity helpers must be centralized in one runtime authority module.
+
+Execution systems may not define ad-hoc schedule hashing or checkpoint legality rules per subsystem.
+
+Checkpoint resume is lawful only when:
+
+- schedule signature matches
+- partition cursor is within canonical bounds
+- budget semantics are deterministic and bounded
+
+Equivalent schedule inputs must produce equivalent schedule signatures regardless of insertion order.
+
+If schedule legality cannot be proven deterministically, execution must fail closed.
+
+---
+
 Dropple has:
 
 One truth.

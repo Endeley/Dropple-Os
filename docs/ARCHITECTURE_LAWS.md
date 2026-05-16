@@ -127,3 +127,15 @@ Major-version compatibility is lawful only via explicit tool-id migration window
 Migration windows must stay deterministic, bounded, and non-authoritative.
 
 Invalid shared identities must not project into runtime-visible tool state.
+
+## 12. Scheduler Identity
+Schedule identity is canonical runtime authority:
+- deterministic partition identity
+- deterministic ordering
+- canonical schedule signatures
+- deterministic checkpoint legality
+- deterministic resume/budget semantics
+
+All schedule hashing + checkpoint legality checks must route through one runtime scheduler identity module.
+
+If resume legality cannot be proven, execution must fail closed.
