@@ -256,7 +256,7 @@
     }
   },
   "tool_synthesis": {
-    "status": "active",
+    "status": "complete",
     "frozen": false,
     "requires": [
       "interpreted_tool_specs",
@@ -266,9 +266,7 @@
       "seed_lineage",
       "derived_environments"
     ],
-    "risks": [
-      "recursive_tool_sovereignty_risk"
-    ],
+    "risks": [],
     "proofs": {
       "interpreted_tool_specs": [
         "runtime/tools/interpretToolSpec.js",
@@ -278,7 +276,15 @@
       "approved_handler_family_bounds": [
         "runtime/tools/toolRuntime.js",
         "runtime/tools/toolController.js",
-        "runtime/input/inputEngine.js"
+        "runtime/input/inputEngine.js",
+        "runtime/tools/validateToolRegistrationIngress.js",
+        "runtime/tools/toolRegistrationRecursionGuard.js",
+        "runtime/tools/toolGovernanceTelemetry.js",
+        "runtime/tools/attestToolGovernanceAudit.js",
+        "runtime/tools/__tests__/toolGovernanceTelemetry.test.mjs",
+        "runtime/capabilities/__tests__/toolRegistrationRuntime.test.mjs",
+        "tests/kernel/dispatcherContract.test.ts",
+        "tests/architecture/interactionPipelineEnforcement.test.ts"
       ]
     }
   },
