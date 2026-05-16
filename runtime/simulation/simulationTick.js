@@ -2,6 +2,10 @@ function toFiniteNumber(value, fallback = 0) {
     return Number.isFinite(value) ? Number(value) : fallback;
 }
 
+function normalizeBlendMode(value) {
+    return value === 'add' || value === 'replace' ? value : 'replace';
+}
+
 function normalizeSimulationEntity(previousEntity, inputEntity) {
     const id = String(inputEntity.id);
     const x = toFiniteNumber(previousEntity?.x, toFiniteNumber(inputEntity.targetX, 0));
@@ -74,6 +78,51 @@ function buildChainForceMap({ chains, entities, targetsById }) {
     return forceMap;
 }
 
+function blendForceMaps(baseMap, nextMap, blendMode = 'replace') {
+    const mode = normalizeBlendMode(blendMode);
+    const result = { ...baseMap };
+    const entries = Object.entries(nextMap).sort(([left], [right]) => left.localeCompare(right));
+
+    for (const [entityId, force] of entries) {
+        if (mode === 'add') {
+            const previous = result[entityId] ?? { ax: 0, ay: 0 };
+            result[entityId] = {
+                ax: toFiniteNumber(previous.ax, 0) + toFiniteNumber(force?.ax, 0),
+                ay: toFiniteNumber(previous.ay, 0) + toFiniteNumber(force?.ay, 0),
+            };
+            continue;
+        }
+
+        result[entityId] = {
+            ax: toFiniteNumber(force?.ax, 0),
+            ay: toFiniteNumber(force?.ay, 0),
+        };
+    }
+
+    return result;
+}
+
+function buildGroupedChainForceMap({ chainsById, groups, entities, targetsById }) {
+    let forceMap = {};
+
+    for (const group of groups) {
+        let groupForce = {};
+        for (const chainId of group.chainIds ?? []) {
+            const chain = chainsById[chainId];
+            if (!chain) continue;
+            const chainForce = buildChainForceMap({
+                chains: [chain],
+                entities,
+                targetsById,
+            });
+            groupForce = blendForceMaps(groupForce, chainForce, chain.blendMode);
+        }
+        forceMap = blendForceMaps(forceMap, groupForce, group.blendMode);
+    }
+
+    return forceMap;
+}
+
 export function simulationTick({
     simulationInputs,
     previousSimulationState = null,
@@ -88,6 +137,10 @@ export function simulationTick({
     const springChains = [...(inputs?.springChains ?? [])].sort((left, right) =>
         String(left?.id).localeCompare(String(right?.id))
     );
+    const springChainGroups = [...(inputs?.springChainGroups ?? [])].sort((left, right) => {
+        const byPriority = toFiniteNumber(left?.priority, 0) - toFiniteNumber(right?.priority, 0);
+        return byPriority !== 0 ? byPriority : String(left?.id).localeCompare(String(right?.id));
+    });
     const orderedInputEntities = [...(inputs.entities ?? [])]
         .filter((entity) => entity && typeof entity.id !== 'undefined')
         .sort((left, right) => String(left.id).localeCompare(String(right.id)));
@@ -105,11 +158,20 @@ export function simulationTick({
         };
     }
 
-    const chainForceMap = buildChainForceMap({
-        chains: springChains,
-        entities: normalizedEntities,
-        targetsById,
-    });
+    const chainsById = Object.fromEntries(springChains.map((chain) => [chain.id, chain]));
+    const hasGroups = springChainGroups.length > 0;
+    const chainForceMap = hasGroups
+        ? buildGroupedChainForceMap({
+              chainsById,
+              groups: springChainGroups,
+              entities: normalizedEntities,
+              targetsById,
+          })
+        : buildChainForceMap({
+              chains: springChains,
+              entities: normalizedEntities,
+              targetsById,
+          });
 
     const nextEntities = {};
     for (const inputEntity of orderedInputEntities) {

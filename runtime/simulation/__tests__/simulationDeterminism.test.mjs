@@ -38,6 +38,15 @@ function createSnapshot(nodeOrder = ['node-b', 'node-a']) {
                         members: ['node-a', 'node-b'],
                         stiffness: 1.1,
                         damping: 0.4,
+                        blendMode: 'add',
+                    },
+                ],
+                springChainGroups: [
+                    {
+                        id: 'group-base',
+                        chainIds: ['chain-main'],
+                        blendMode: 'add',
+                        priority: 0,
                     },
                 ],
             },
@@ -69,6 +78,7 @@ test('buildSimulationInputs canonicalizes entity ordering deterministically', ()
     assert.deepEqual(Object.keys(inputs.dampingProfiles), ['smooth', 'snappy']);
     assert.deepEqual(inputs.entityProfiles, { 'node-a': 'smooth', 'node-b': 'snappy' });
     assert.deepEqual(inputs.springChains.map((chain) => chain.id), ['chain-main']);
+    assert.deepEqual(inputs.springChainGroups.map((group) => group.id), ['group-base']);
 });
 
 test('evaluateSimulationFrame is deterministic for identical input + previous state', () => {
@@ -179,4 +189,99 @@ test('damping profiles and spring chains remain deterministic across repeated ti
     };
 
     assert.deepEqual(runTrace(), runTrace());
+});
+
+test('reordered chain/group declarations produce identical layered simulation result', () => {
+    const left = createSnapshot(['node-b', 'node-a']);
+    left.document.simulation.springChains = [
+        {
+            id: 'chain-z',
+            members: ['node-a', 'node-b'],
+            stiffness: 1.3,
+            damping: 0.2,
+            blendMode: 'replace',
+        },
+        {
+            id: 'chain-a',
+            members: ['node-a', 'node-b'],
+            stiffness: 0.7,
+            damping: 0.1,
+            blendMode: 'add',
+        },
+    ];
+    left.document.simulation.springChainGroups = [
+        { id: 'g1', chainIds: ['chain-z'], blendMode: 'replace', priority: 2 },
+        { id: 'g0', chainIds: ['chain-a'], blendMode: 'add', priority: 1 },
+    ];
+
+    const right = createSnapshot(['node-a', 'node-b']);
+    right.document.simulation.springChains = [
+        {
+            id: 'chain-a',
+            members: ['node-a', 'node-b'],
+            stiffness: 0.7,
+            damping: 0.1,
+            blendMode: 'add',
+        },
+        {
+            id: 'chain-z',
+            members: ['node-a', 'node-b'],
+            stiffness: 1.3,
+            damping: 0.2,
+            blendMode: 'replace',
+        },
+    ];
+    right.document.simulation.springChainGroups = [
+        { id: 'g0', chainIds: ['chain-a'], blendMode: 'add', priority: 1 },
+        { id: 'g1', chainIds: ['chain-z'], blendMode: 'replace', priority: 2 },
+    ];
+
+    const leftResult = evaluateSimulationFrame({
+        document: left.document,
+        runtime: left.runtime,
+        previousSimulationState: null,
+        time: 16,
+        deltaTime: 16,
+    });
+    const rightResult = evaluateSimulationFrame({
+        document: right.document,
+        runtime: right.runtime,
+        previousSimulationState: null,
+        time: 16,
+        deltaTime: 16,
+    });
+
+    assert.deepEqual(leftResult, rightResult);
+    assert.equal(hashSimulationState(leftResult), hashSimulationState(rightResult));
+});
+
+test('invalid chain and group blend modes coerce deterministically to replace', () => {
+    const snapshot = createSnapshot();
+    snapshot.document.simulation.springChains = [
+        {
+            id: 'invalid-blend-chain',
+            members: ['node-a', 'node-b'],
+            stiffness: 1,
+            damping: 0,
+            blendMode: 'nonsense-mode',
+        },
+    ];
+    snapshot.document.simulation.springChainGroups = [
+        {
+            id: 'invalid-group',
+            chainIds: ['invalid-blend-chain'],
+            blendMode: 'bad-group-mode',
+            priority: 0,
+        },
+    ];
+
+    const inputs = buildSimulationInputs({
+        document: snapshot.document,
+        runtime: snapshot.runtime,
+        time: 16,
+        deltaTime: 16,
+    });
+
+    assert.equal(inputs.springChains[0].blendMode, 'replace');
+    assert.equal(inputs.springChainGroups[0].blendMode, 'replace');
 });

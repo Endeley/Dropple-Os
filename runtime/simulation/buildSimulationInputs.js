@@ -2,6 +2,10 @@ function toFiniteNumber(value, fallback = 0) {
     return Number.isFinite(value) ? Number(value) : fallback;
 }
 
+function normalizeBlendMode(value) {
+    return value === 'add' || value === 'replace' ? value : 'replace';
+}
+
 function normalizeNodeTarget(nodeId, node, computedEntry) {
     const computedX = toFiniteNumber(computedEntry?.x, null);
     const computedY = toFiniteNumber(computedEntry?.y, null);
@@ -44,9 +48,35 @@ function normalizeSpringChains(chains = [], entitiesById = {}) {
                 members: Object.freeze(members),
                 stiffness: Math.max(0, toFiniteNumber(chain.stiffness, 1)),
                 damping: Math.max(0, toFiniteNumber(chain.damping, 1)),
+                blendMode: normalizeBlendMode(chain.blendMode),
             });
         })
         .sort((left, right) => left.id.localeCompare(right.id));
+
+    return Object.freeze(normalized);
+}
+
+function normalizeSpringChainGroups(groups = [], springChains = []) {
+    const knownChainIds = new Set(springChains.map((chain) => chain.id));
+    const normalized = [...(Array.isArray(groups) ? groups : [])]
+        .filter((group) => group && typeof group === 'object')
+        .map((group, index) => {
+            const chainIds = [...(Array.isArray(group.chainIds) ? group.chainIds : [])]
+                .map((chainId) => String(chainId))
+                .filter((chainId) => knownChainIds.has(chainId))
+                .sort((left, right) => left.localeCompare(right));
+
+            return Object.freeze({
+                id: String(group.id ?? `group-${index}`),
+                chainIds: Object.freeze(chainIds),
+                blendMode: normalizeBlendMode(group.blendMode),
+                priority: toFiniteNumber(group.priority, 0),
+            });
+        })
+        .sort((left, right) => {
+            const byPriority = left.priority - right.priority;
+            return byPriority !== 0 ? byPriority : left.id.localeCompare(right.id);
+        });
 
     return Object.freeze(normalized);
 }
@@ -65,6 +95,11 @@ export function buildSimulationInputs({
     );
     const entitiesById = Object.fromEntries(entities.map((entity) => [entity.id, entity]));
     const simulationConfig = document?.simulation ?? runtime?.simulation?.config ?? {};
+    const springChains = normalizeSpringChains(simulationConfig?.springChains ?? [], entitiesById);
+    const springChainGroups = normalizeSpringChainGroups(
+        simulationConfig?.springChainGroups ?? [],
+        springChains
+    );
     const entityProfilesRaw = simulationConfig?.entityProfiles ?? {};
     const entityProfiles = Object.freeze(
         Object.fromEntries(
@@ -81,6 +116,7 @@ export function buildSimulationInputs({
         entities: Object.freeze(entities),
         dampingProfiles: normalizeDampingProfiles(simulationConfig?.dampingProfiles ?? {}),
         entityProfiles,
-        springChains: normalizeSpringChains(simulationConfig?.springChains ?? [], entitiesById),
+        springChains,
+        springChainGroups,
     });
 }
