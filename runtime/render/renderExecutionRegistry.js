@@ -71,12 +71,29 @@ function normalizeProgress(progress) {
     });
 }
 
+function normalizeSchedulerAttestation(attestation) {
+    const checkpoint = attestation?.checkpoint ?? null;
+    if (!checkpoint || typeof checkpoint !== 'object') return null;
+
+    return Object.freeze({
+        scheduleSignature: String(checkpoint.scheduleSignature ?? ''),
+        partitionCursor: Number(checkpoint.partitionCursor ?? 0),
+        completedPartitionIds: Object.freeze(
+            [...(checkpoint.completedPartitionIds ?? [])].map((partitionId) => String(partitionId)),
+        ),
+        remainingPartitionIds: Object.freeze(
+            [...(checkpoint.remainingPartitionIds ?? [])].map((partitionId) => String(partitionId)),
+        ),
+    });
+}
+
 function buildHistoryEntry({ workflow, revision }) {
     const manifestId = workflow.manifest.manifestId;
     const assignmentId = workflow.assignment?.assignmentId ?? null;
     const checkpointId = workflow.checkpoint?.checkpointId ?? null;
     const status = workflow.queueEntry?.status ?? 'unknown';
     const progress = normalizeProgress(workflow.progress);
+    const schedulerAttestation = normalizeSchedulerAttestation(workflow.schedulerAttestation ?? workflow.checkpoint?.scheduler);
 
     return Object.freeze({
         eventId: `render-history:${hashString64(
@@ -95,11 +112,13 @@ function buildHistoryEntry({ workflow, revision }) {
         checkpointId,
         status,
         progress,
+        schedulerAttestation,
     });
 }
 
 function buildRecordFromWorkflow({ workflow, revision, history = [] }) {
     const progress = normalizeProgress(workflow.progress);
+    const schedulerAttestation = normalizeSchedulerAttestation(workflow.schedulerAttestation ?? workflow.checkpoint?.scheduler);
     const terminalStatuses = new Set(['completed', 'failed', 'cancelled']);
     const status = workflow.queueEntry?.status ?? 'unknown';
 
@@ -111,6 +130,7 @@ function buildRecordFromWorkflow({ workflow, revision, history = [] }) {
         executorId: workflow.executor?.executorId ?? null,
         workerId: workflow.executor?.workerId ?? null,
         checkpointId: workflow.checkpoint?.checkpointId ?? null,
+        schedulerAttestation,
         status,
         progress,
         attempt: Number(workflow.queueEntry?.attempt ?? 0),

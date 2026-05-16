@@ -99,6 +99,8 @@ test('createExportExecution builds canonical export workflow descriptors', () =>
     assert.equal(workflow.assignment.mode, 'create');
     assert.equal(workflow.queueEntry?.status, 'running');
     assert.equal(workflow.progress?.completedFrameCount, 0);
+    assert.equal(typeof workflow.schedulerAttestation?.checkpoint?.scheduleSignature, 'string');
+    assert.ok((workflow.schedulerAttestation?.checkpoint?.scheduleSignature ?? '').length > 0);
     assert.equal(typeof workflow.manifest.simulationTraceFingerprint, 'string');
     assert.ok(workflow.manifest.simulationTraceFingerprint.length > 0);
 });
@@ -159,6 +161,7 @@ test('resumed and uninterrupted export workflows preserve canonical execution id
     assert.equal(resumed.assignment.manifestId, uninterrupted.assignment.manifestId);
     assert.equal(resumed.queueEntry?.executionId, uninterrupted.queueEntry?.executionId);
     assert.equal(resumed.manifest.simulationTraceFingerprint, uninterrupted.manifest.simulationTraceFingerprint);
+    assert.deepEqual(resumed.schedulerAttestation, uninterrupted.schedulerAttestation);
 });
 
 test('trace fingerprint is replay-order invariant for equivalent trace entries', () => {

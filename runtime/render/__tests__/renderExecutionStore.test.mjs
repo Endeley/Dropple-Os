@@ -147,6 +147,7 @@ test('render execution store persists and restores durable registry state', () =
     assert.equal(record?.sessionId, workflow.manifest.sessionId);
     assert.equal(record?.assignmentId, workflow.assignment.assignmentId);
     assert.equal(record?.checkpointId, workflow.checkpoint.checkpointId);
+    assert.deepEqual(record?.schedulerAttestation, getRenderExecutionRecord(workflow.registryState, workflow.manifest.manifestId)?.schedulerAttestation);
     assert.equal(record?.recordId, getRenderExecutionRecord(workflow.registryState, workflow.manifest.manifestId)?.recordId);
     assert.equal(record?.terminal, true);
     assert.equal(record?.history.at(-1)?.status, 'completed');
@@ -193,4 +194,5 @@ test('persisted and restored registry preserves canonical execution identity acr
     assert.equal(restoredRecord?.assignmentId, uninterruptedRecord?.assignmentId);
     assert.equal(restoredRecord?.checkpointId, uninterruptedRecord?.checkpointId);
     assert.deepEqual(restoredRecord?.progress, uninterruptedRecord?.progress);
+    assert.deepEqual(restoredRecord?.schedulerAttestation, uninterruptedRecord?.schedulerAttestation);
 });

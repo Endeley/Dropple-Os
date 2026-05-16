@@ -23,6 +23,22 @@ function normalizeHistoryEntry(entry) {
         checkpointId: typeof entry.checkpointId === 'string' ? entry.checkpointId : null,
         status: entry.status ?? 'unknown',
         progress: normalizeProgress(entry.progress),
+        schedulerAttestation:
+            entry.schedulerAttestation && typeof entry.schedulerAttestation === 'object'
+                ? {
+                      scheduleSignature:
+                          typeof entry.schedulerAttestation.scheduleSignature === 'string'
+                              ? entry.schedulerAttestation.scheduleSignature
+                              : '',
+                      partitionCursor: Number(entry.schedulerAttestation.partitionCursor ?? 0),
+                      completedPartitionIds: Array.isArray(entry.schedulerAttestation.completedPartitionIds)
+                          ? entry.schedulerAttestation.completedPartitionIds.map((id) => String(id))
+                          : [],
+                      remainingPartitionIds: Array.isArray(entry.schedulerAttestation.remainingPartitionIds)
+                          ? entry.schedulerAttestation.remainingPartitionIds.map((id) => String(id))
+                          : [],
+                  }
+                : null,
     };
 }
 
@@ -37,6 +53,22 @@ function normalizeRecord(record) {
         executorId: typeof record.executorId === 'string' ? record.executorId : null,
         workerId: typeof record.workerId === 'string' ? record.workerId : null,
         checkpointId: typeof record.checkpointId === 'string' ? record.checkpointId : null,
+        schedulerAttestation:
+            record.schedulerAttestation && typeof record.schedulerAttestation === 'object'
+                ? {
+                      scheduleSignature:
+                          typeof record.schedulerAttestation.scheduleSignature === 'string'
+                              ? record.schedulerAttestation.scheduleSignature
+                              : '',
+                      partitionCursor: Number(record.schedulerAttestation.partitionCursor ?? 0),
+                      completedPartitionIds: Array.isArray(record.schedulerAttestation.completedPartitionIds)
+                          ? record.schedulerAttestation.completedPartitionIds.map((id) => String(id))
+                          : [],
+                      remainingPartitionIds: Array.isArray(record.schedulerAttestation.remainingPartitionIds)
+                          ? record.schedulerAttestation.remainingPartitionIds.map((id) => String(id))
+                          : [],
+                  }
+                : null,
         status: record.status ?? 'unknown',
         progress: normalizeProgress(record.progress),
         attempt: Number(record.attempt ?? 0),

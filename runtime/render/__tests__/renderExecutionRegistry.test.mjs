@@ -104,6 +104,9 @@ test('export workflow records lineage across create, step, and run states', () =
     assert.equal(record?.history.length, 3);
     assert.equal(record?.history[0].status, 'running');
     assert.equal(record?.history.at(-1)?.status, 'completed');
+    assert.equal(typeof record?.schedulerAttestation?.scheduleSignature, 'string');
+    assert.ok((record?.schedulerAttestation?.scheduleSignature ?? '').length > 0);
+    assert.equal(record?.history.at(-1)?.schedulerAttestation?.scheduleSignature, record?.schedulerAttestation?.scheduleSignature);
 });
 
 test('registry reconstructs one canonical execution identity across resumed and uninterrupted runs', () => {
@@ -143,4 +146,5 @@ test('registry reconstructs one canonical execution identity across resumed and 
     assert.equal(resumedRecord?.assignmentId, uninterruptedRecord?.assignmentId);
     assert.equal(resumedRecord?.checkpointId, uninterruptedRecord?.checkpointId);
     assert.deepEqual(resumedRecord?.progress, uninterruptedRecord?.progress);
+    assert.deepEqual(resumedRecord?.schedulerAttestation, uninterruptedRecord?.schedulerAttestation);
 });

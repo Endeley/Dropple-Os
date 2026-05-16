@@ -42,6 +42,8 @@ function buildExportWorkflowResult({
     exportTarget,
     registryState,
 } = {}) {
+    const schedulerAttestation = assignmentResult?.checkpoint?.scheduler ?? null;
+
     return Object.freeze({
         snapshot,
         renderInput: inputs.renderInput,
@@ -56,6 +58,7 @@ function buildExportWorkflowResult({
         executionState: assignmentResult.executionState,
         queueEntry: assignmentResult.queueEntry,
         checkpoint: assignmentResult.checkpoint,
+        schedulerAttestation,
         progress: assignmentResult.queueEntry?.progress ?? null,
         registryState,
         simulationTraceFingerprint: manifest?.simulationTraceFingerprint ?? null,
@@ -178,6 +181,7 @@ export function stepExportExecution({
         executionState: assignmentResult.executionState,
         queueEntry: assignmentResult.queueEntry,
         checkpoint: assignmentResult.checkpoint,
+        schedulerAttestation: assignmentResult?.checkpoint?.scheduler ?? null,
         progress: assignmentResult.queueEntry?.progress ?? null,
         registryState: nextRegistryState,
     });
@@ -228,6 +232,7 @@ export function runExportExecution({
         executionState: assignmentResult.executionState,
         queueEntry: assignmentResult.queueEntry,
         checkpoint: assignmentResult.checkpoint,
+        schedulerAttestation: assignmentResult?.checkpoint?.scheduler ?? null,
         progress: assignmentResult.queueEntry?.progress ?? null,
         registryState: nextRegistryState,
     });
