@@ -203,6 +203,20 @@ function createDefaultInteractionState() {
     };
 }
 
+function serializeToolGovernanceComparableState(toolState) {
+    return JSON.stringify({
+        activeTool: toolState?.activeTool ?? null,
+        registeredTools: toolState?.registeredTools ?? {},
+        registeredToolDescriptors: toolState?.registeredToolDescriptors ?? {},
+        sourcePriority: toolState?.sourcePriority ?? {},
+    });
+}
+
+function hasToolRegistrationDelta(previousTools, nextTools) {
+    return serializeToolGovernanceComparableState(previousTools)
+        !== serializeToolGovernanceComparableState(nextTools);
+}
+
 function resolveInteractionState(interaction) {
     if (!interaction || typeof interaction !== 'object') {
         return createDefaultInteractionState();
@@ -391,17 +405,24 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
                                 return prev;
                             }
                             const currentTimeMs = resolveToolPolicyTimeMsFromEvent(rawEvent);
-                            uxAuditLog.append(createToolGovernanceAcceptTelemetry({
-                                code: 'tool-registration-approved',
-                                source: rawEvent?.payload?.source,
-                                toolIds: rawEvent?.payload?.tools,
-                                atEventType: rawEvent?.type,
-                                reason: 'dispatcher-ingress-governance-approved',
-                                currentTimeMs,
-                            }));
+                            const nextTools = registerToolSource(
+                                prev?.tools ?? initialToolRuntimeState,
+                                rawEvent?.payload,
+                                { currentTimeMs },
+                            );
+                            if (hasToolRegistrationDelta(prev?.tools ?? initialToolRuntimeState, nextTools)) {
+                                uxAuditLog.append(createToolGovernanceAcceptTelemetry({
+                                    code: 'tool-registration-approved',
+                                    source: rawEvent?.payload?.source,
+                                    toolIds: rawEvent?.payload?.tools,
+                                    atEventType: rawEvent?.type,
+                                    reason: 'dispatcher-ingress-governance-approved',
+                                    currentTimeMs,
+                                }));
+                            }
                             next = {
                                 ...prev,
-                                tools: registerToolSource(prev?.tools ?? initialToolRuntimeState, rawEvent?.payload, { currentTimeMs }),
+                                tools: nextTools,
                             };
                         }
                         break;

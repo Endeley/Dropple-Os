@@ -295,7 +295,7 @@ test('tool registration governance reject emits one telemetry entry per reject a
         source: 'capability.graph',
         toolIds: ['move'],
         atEventType: EventTypes.TOOLS_REGISTER,
-        reason: 'Synthesized tool registration payload contains nested tool-registration intents/actions',
+        reason: 'tool-registration-recursive-sovereignty-blocked',
     });
 });
 
@@ -348,11 +348,11 @@ test('capability boundary tool registration reject telemetry is emitted once and
         source: 'capability.graph',
         toolIds: ['move'],
         atEventType: 'capability.tools.register.requested',
-        reason: 'Synthesized tool registration payload contains nested tool-registration intents/actions',
+        reason: 'tool-registration-recursive-sovereignty-blocked',
     });
 });
 
-test('tool registration governance accept emits one telemetry entry per accepted attempt with stable payload and no truth mutation side effects', async () => {
+test('tool registration governance accept emits once for first accepted attempt and suppresses no-op duplicate accept noise', async () => {
     const dispatcher = createEventDispatcher({ headless: true });
     dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });
 
@@ -393,8 +393,7 @@ test('tool registration governance accept emits one telemetry entry per accepted
 
     const accepts = (getUXAuditLog() ?? [])
         .filter((entry) => entry?.type === 'runtime.tools.governance.accept' && entry?.payload?.atEventType === EventTypes.TOOLS_REGISTER);
-    assert.equal(accepts.length, 2);
-    assert.deepEqual(accepts[0]?.payload, accepts[1]?.payload);
+    assert.equal(accepts.length, 1);
     assert.deepEqual(accepts[0]?.payload, {
         code: 'tool-registration-approved',
         source: 'capability.graph',

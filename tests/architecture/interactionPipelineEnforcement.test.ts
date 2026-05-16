@@ -11,15 +11,29 @@ import {
     WINNER_OWNED_TOOL_DESCRIPTOR_FIELDS,
 } from '@/runtime/tools/toolSemanticPolicy.js';
 import { EXECUTION_SIGNATURE_MIGRATION_WINDOWS } from '@/runtime/tools/resolveToolExecutionSignatureMigration.js';
+import {
+    createToolGovernanceAcceptTelemetry,
+    createToolGovernanceRejectTelemetry,
+} from '@/runtime/tools/toolGovernanceTelemetry.js';
 
 const ROOT = process.cwd();
 
+/**
+ * @param {string} pathname
+ * @returns {string}
+ */
 function read(pathname) {
     return fs.readFileSync(path.join(ROOT, pathname), 'utf8');
 }
 
+/**
+ * @param {string} dir
+ * @param {string} [relBase]
+ * @returns {string[]}
+ */
 function walk(dir, relBase = '') {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
+    /** @type {string[]} */
     const files = [];
 
     for (const entry of entries) {
@@ -249,6 +263,10 @@ test('synthesized tool registration ingress is fail-closed before runtime tool a
 
     assert.match(telemetry, /runtime\.tools\.governance\.reject/);
     assert.match(telemetry, /runtime\.tools\.governance\.accept/);
+    assert.match(telemetry, /GOVERNANCE_REJECT_CODES/);
+    assert.match(telemetry, /GOVERNANCE_ACCEPT_CODES/);
+    assert.match(telemetry, /normalizeGovernanceCode/);
+    assert.match(telemetry, /normalizeGovernanceReason/);
     assert.match(telemetry, /payload/);
     assert.match(telemetry, /code/);
     assert.match(telemetry, /source/);
@@ -256,6 +274,25 @@ test('synthesized tool registration ingress is fail-closed before runtime tool a
     assert.match(telemetry, /atEventType/);
     assert.match(telemetry, /reason/);
     assert.doesNotMatch(telemetry, /applyEvent|registerToolSource|unregisterToolSource|setRuntimeActiveTool|dispatch\(/);
+});
+
+test('tool governance accept and reject telemetry stay payload-schema equivalent and deterministic', () => {
+    const sample = {
+        code: 'tool-registration-approved',
+        source: 'capability.graph',
+        toolIds: ['b-tool', 'a-tool', 'a-tool'],
+        atEventType: 'tools/register',
+        reason: 'dispatcher-ingress-governance-approved',
+        currentTimeMs: 123,
+    };
+
+    const accept = createToolGovernanceAcceptTelemetry(sample);
+    const reject = createToolGovernanceRejectTelemetry(sample);
+
+    assert.deepEqual(Object.keys(accept.payload).sort(), Object.keys(reject.payload).sort());
+    assert.deepEqual(Object.keys(accept.payload).sort(), ['atEventType', 'code', 'reason', 'source', 'toolIds']);
+    assert.deepEqual(accept.payload.toolIds, ['a-tool', 'b-tool']);
+    assert.deepEqual(reject.payload.toolIds, ['a-tool', 'b-tool']);
 });
 
 test('interaction engines stay pure and do not depend on ui react dom or time randomness', () => {

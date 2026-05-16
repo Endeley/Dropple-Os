@@ -187,7 +187,7 @@ test('capability register intent rejects recursive tool registration payloads', 
         source: 'capability.graph',
         toolIds: ['move'],
         atEventType: 'capability.tools.register.requested',
-        reason: 'Synthesized tool registration payload contains nested tool-registration intents/actions',
+        reason: 'tool-registration-recursive-sovereignty-blocked',
     });
     assert.equal(emitted[0]?.timestamp, 42);
 });
