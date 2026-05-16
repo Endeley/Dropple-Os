@@ -44,6 +44,13 @@ function getQueueEntry(queueState, manifestId) {
     return queueState.entries.find((entry) => entry.manifestId === manifestId) ?? null;
 }
 
+function buildQueueProgressWithScheduler(progress, checkpoint) {
+    return Object.freeze({
+        ...(progress ?? {}),
+        schedulerAttestation: checkpoint?.scheduler?.checkpoint ?? null,
+    });
+}
+
 export function createRenderQueueExecution({
     queueState = createRenderQueueState(),
     manifest,
@@ -90,11 +97,18 @@ export function createRenderQueueExecution({
               renderInput,
           });
 
+    const checkpointSnapshot = buildRenderExecutionCheckpoint({
+        manifest,
+        executionState: normalizedExecution,
+    });
     nextQueueState = markRenderManifestRunning(
         nextQueueState,
         manifest.manifestId,
         normalizedExecution.executionId,
-        buildRenderProgressSnapshot(normalizedExecution),
+        buildQueueProgressWithScheduler(
+            buildRenderProgressSnapshot(normalizedExecution),
+            checkpointSnapshot,
+        ),
     );
 
     return Object.freeze({
@@ -103,10 +117,8 @@ export function createRenderQueueExecution({
         queueState: nextQueueState,
         executionState: normalizedExecution,
         queueEntry: getQueueEntry(nextQueueState, manifest.manifestId),
-        checkpoint: buildRenderExecutionCheckpoint({
-            manifest,
-            executionState: normalizedExecution,
-        }),
+        checkpoint: checkpointSnapshot,
+        schedulerAttestation: checkpointSnapshot?.scheduler ?? null,
     });
 }
 
@@ -129,15 +141,23 @@ export function stepRenderQueueExecution({
     });
 
     const steppedExecution = stepRenderSessionExecution(active.executionState);
+    const checkpointSnapshot = buildRenderExecutionCheckpoint({
+        manifest,
+        executionState: steppedExecution,
+    });
     const progress = buildRenderProgressSnapshot(steppedExecution);
     const nextQueueState =
         steppedExecution.status === 'completed'
-            ? markRenderManifestCompleted(active.queueState, manifest.manifestId, progress)
+            ? markRenderManifestCompleted(
+                  active.queueState,
+                  manifest.manifestId,
+                  buildQueueProgressWithScheduler(progress, checkpointSnapshot),
+              )
             : markRenderManifestRunning(
                   active.queueState,
                   manifest.manifestId,
                   steppedExecution.executionId,
-                  progress,
+                  buildQueueProgressWithScheduler(progress, checkpointSnapshot),
               );
 
     return Object.freeze({
@@ -146,10 +166,8 @@ export function stepRenderQueueExecution({
         queueState: nextQueueState,
         executionState: steppedExecution,
         queueEntry: getQueueEntry(nextQueueState, manifest.manifestId),
-        checkpoint: buildRenderExecutionCheckpoint({
-            manifest,
-            executionState: steppedExecution,
-        }),
+        checkpoint: checkpointSnapshot,
+        schedulerAttestation: checkpointSnapshot?.scheduler ?? null,
     });
 }
 
@@ -177,10 +195,17 @@ export function runRenderQueueExecution({
             renderInput,
             executionState: active.executionState,
         });
+        const checkpointSnapshot = buildRenderExecutionCheckpoint({
+            manifest,
+            executionState: completedExecution,
+        });
         const nextQueueState = markRenderManifestCompleted(
             active.queueState,
             manifest.manifestId,
-            buildRenderProgressSnapshot(completedExecution),
+            buildQueueProgressWithScheduler(
+                buildRenderProgressSnapshot(completedExecution),
+                checkpointSnapshot,
+            ),
         );
 
         return Object.freeze({
@@ -189,17 +214,22 @@ export function runRenderQueueExecution({
             queueState: nextQueueState,
             executionState: completedExecution,
             queueEntry: getQueueEntry(nextQueueState, manifest.manifestId),
-            checkpoint: buildRenderExecutionCheckpoint({
-                manifest,
-                executionState: completedExecution,
-            }),
+            checkpoint: checkpointSnapshot,
+            schedulerAttestation: checkpointSnapshot?.scheduler ?? null,
         });
     } catch (error) {
+        const checkpointSnapshot = buildRenderExecutionCheckpoint({
+            manifest,
+            executionState: active.executionState,
+        });
         const failedQueueState = markRenderManifestFailed(
             active.queueState,
             manifest.manifestId,
             error,
-            buildRenderProgressSnapshot(active.executionState),
+            buildQueueProgressWithScheduler(
+                buildRenderProgressSnapshot(active.executionState),
+                checkpointSnapshot,
+            ),
         );
 
         return Object.freeze({
@@ -208,10 +238,8 @@ export function runRenderQueueExecution({
             queueState: failedQueueState,
             executionState: active.executionState,
             queueEntry: getQueueEntry(failedQueueState, manifest.manifestId),
-            checkpoint: buildRenderExecutionCheckpoint({
-                manifest,
-                executionState: active.executionState,
-            }),
+            checkpoint: checkpointSnapshot,
+            schedulerAttestation: checkpointSnapshot?.scheduler ?? null,
         });
     }
 }

@@ -128,6 +128,12 @@ test('createRenderQueueExecution binds manifest, queue, and execution determinis
     assert.equal(left.queueEntry?.status, 'running');
     assert.equal(left.queueEntry?.executionId, left.executionState.executionId);
     assert.equal(left.queueEntry?.progress?.completedFrameCount, 0);
+    assert.equal(typeof left.schedulerAttestation?.checkpoint?.scheduleSignature, 'string');
+    assert.ok((left.schedulerAttestation?.checkpoint?.scheduleSignature ?? '').length > 0);
+    assert.equal(
+        left.queueEntry?.progress?.schedulerAttestation?.scheduleSignature,
+        left.schedulerAttestation?.checkpoint?.scheduleSignature,
+    );
 });
 
 test('runRenderQueueExecution completes queue and execution together', () => {
@@ -142,6 +148,10 @@ test('runRenderQueueExecution completes queue and execution together', () => {
     assert.equal(result.executionState.status, 'completed');
     assert.equal(result.queueEntry?.status, 'completed');
     assert.equal(result.queueEntry?.progress?.completedFrameCount, manifest.totalFrames);
+    assert.equal(
+        result.queueEntry?.progress?.schedulerAttestation?.scheduleSignature,
+        result.schedulerAttestation?.checkpoint?.scheduleSignature,
+    );
 });
 
 test('stepped queue execution equals full run from midpoint', () => {
@@ -178,6 +188,7 @@ test('stepped queue execution equals full run from midpoint', () => {
     assert.deepEqual(resumed.executionState, fullRun.executionState);
     assert.equal(resumed.queueEntry?.status, 'completed');
     assert.deepEqual(resumed.queueEntry?.progress, fullRun.queueEntry?.progress);
+    assert.deepEqual(resumed.schedulerAttestation, fullRun.schedulerAttestation);
 });
 
 test('cancelRenderQueueExecution remains coordination-only', () => {
@@ -235,6 +246,10 @@ test('queue coordination preserves manifest and session truth across create step
     assert.equal(created.session.sessionId, manifest.sessionId);
     assert.equal(stepped.session.sessionId, manifest.sessionId);
     assert.equal(resumed.session.sessionId, manifest.sessionId);
+    assert.equal(
+        resumed.queueEntry?.progress?.schedulerAttestation?.scheduleSignature,
+        resumed.schedulerAttestation?.checkpoint?.scheduleSignature,
+    );
     assert.equal(JSON.stringify(manifest), manifestSnapshot);
     assert.equal(Object.isFrozen(manifest), true);
     assert.equal(

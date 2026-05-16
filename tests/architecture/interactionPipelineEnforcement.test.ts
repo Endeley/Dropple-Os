@@ -369,6 +369,7 @@ test('simulation trace recording is coordination-only and reducer-free', () => {
 
 test('render checkpoint resume legality routes through canonical scheduler authority only', () => {
     const renderProgress = read('runtime/render/renderProgress.js');
+    const renderQueueExecution = read('runtime/render/renderQueueExecution.js');
     const frameSchedule = read('runtime/scheduler/frameExecutionSchedule.js');
     const registry = read('runtime/render/renderExecutionRegistry.js');
     const schema = read('runtime/render/renderExecutionSchema.js');
@@ -380,6 +381,8 @@ test('render checkpoint resume legality routes through canonical scheduler autho
     assert.match(frameSchedule, /createSchedulerExecutionCheckpoint/);
     assert.match(registry, /schedulerAttestation/);
     assert.match(schema, /schedulerAttestation/);
+    assert.match(renderQueueExecution, /schedulerAttestation/);
+    assert.match(renderQueueExecution, /buildRenderExecutionCheckpoint/);
     assert.doesNotMatch(
         renderProgress,
         /applyEvent|registerToolSource|unregisterToolSource|setRuntimeActiveTool|__setRuntimeStateInternal|dispatch\(/,
@@ -391,6 +394,10 @@ test('render checkpoint resume legality routes through canonical scheduler autho
     assert.doesNotMatch(
         frameSchedule,
         /document\.[A-Za-z0-9_.[\]]+\s*=|runtime\.[A-Za-z0-9_.[\]]+\s*=/,
+    );
+    assert.doesNotMatch(
+        renderQueueExecution,
+        /applyEvent|registerToolSource|unregisterToolSource|setRuntimeActiveTool|__setRuntimeStateInternal|dispatch\(/,
     );
     assert.doesNotMatch(
         registry,
