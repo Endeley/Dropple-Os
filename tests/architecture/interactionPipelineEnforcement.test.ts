@@ -308,6 +308,23 @@ test('tool governance replay attestation is coordination-only and reducer-free',
     );
 });
 
+test('simulation trace recording is coordination-only and reducer-free', () => {
+    const trace = read('runtime/simulation/simulationTrace.js');
+
+    assert.match(trace, /recordSimulationTrace/);
+    assert.match(trace, /buildConstraintLayerSignature/);
+    assert.match(trace, /simulationHash/);
+    assert.match(trace, /constraintLayerSignature/);
+    assert.doesNotMatch(
+        trace,
+        /applyEvent|registerToolSource|unregisterToolSource|setRuntimeActiveTool|__setRuntimeStateInternal|dispatch\(/,
+    );
+    assert.doesNotMatch(
+        trace,
+        /document\.[A-Za-z0-9_.[\]]+\s*=|runtime\.[A-Za-z0-9_.[\]]+\s*=/,
+    );
+});
+
 test('interaction engines stay pure and do not depend on ui react dom or time randomness', () => {
     const content = read('scripts/architectureGuard.mjs');
 

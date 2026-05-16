@@ -24,6 +24,8 @@ import { evaluateSceneAnimation } from '@/runtime/animation/evaluateSceneAnimati
 import { buildTemporalContext } from '@/runtime/temporal/buildTemporalContext.js';
 import { evaluateSimulationFrame } from '@/runtime/simulation/evaluateSimulationFrame.js';
 import { hashSimulationState } from '@/runtime/simulation/simulationStateHash.js';
+import { buildSimulationInputs } from '@/runtime/simulation/buildSimulationInputs.js';
+import { recordSimulationTrace } from '@/runtime/simulation/simulationTrace.js';
 
 function isStructuralEvent(eventType) {
     return (
@@ -232,16 +234,32 @@ export function evaluateSceneIncremental({ event, document, runtime = {} }) {
         ),
     });
 
+    const simulationTime = temporalContext?.timeMs ?? runtime?.playback?.timeMs ?? 0;
+    const simulationDeltaTime = temporalContext?.deltaTimeMs ?? 0;
+    const simulationInputs = buildSimulationInputs({
+        document,
+        runtime,
+        time: simulationTime,
+        deltaTime: simulationDeltaTime,
+    });
     const simulationState = evaluateSimulationFrame({
         document,
         runtime,
         previousSimulationState: runtime?.simulation?.state ?? null,
-        time: temporalContext?.timeMs ?? runtime?.playback?.timeMs ?? 0,
-        deltaTime: temporalContext?.deltaTimeMs ?? 0,
+        time: simulationTime,
+        deltaTime: simulationDeltaTime,
+    });
+    const simulationHash = hashSimulationState(simulationState);
+    const simulationTrace = recordSimulationTrace({
+        previousTrace: runtime?.simulation?.trace ?? null,
+        simulationState,
+        simulationHash,
+        simulationInputs,
     });
     runtime.simulation = Object.freeze({
         state: simulationState,
-        hash: hashSimulationState(simulationState),
+        hash: simulationHash,
+        trace: simulationTrace,
     });
 
     if (scene.indexDirty.size > 0) {
