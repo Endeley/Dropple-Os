@@ -295,7 +295,10 @@ export function simulationTick({
 
     const nextEntities = {};
     for (const inputEntity of orderedInputEntities) {
-        const baselineEntity = baselineEntities[inputEntity.id];
+        const baselineEntity =
+            baselineEntities[inputEntity.id] ??
+            normalizedEntities[inputEntity.id] ??
+            normalizeSimulationEntity(null, inputEntity);
         const entityPartitionId = String(inputs?.entityPartitionIds?.[inputEntity.id] ?? '__global__');
         if (activePartitionIds.length > 0 && !activePartitionSet.has(entityPartitionId)) {
             if (completedPartitionSet.has(entityPartitionId) && previousEntities[inputEntity.id]) {
