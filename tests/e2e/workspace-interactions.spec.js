@@ -51,6 +51,7 @@ async function dragOnCanvas(page, from, to) {
 async function createFrame(page, from, to) {
   const nodes = page.locator('[data-node-id]');
   const beforeCount = await nodes.count();
+  const sessionDebugSamples = [];
   const retryOffsets = [
     { x: 0, y: 0 },
     { x: 36, y: 36 },
@@ -88,6 +89,20 @@ async function createFrame(page, from, to) {
       start,
       end
     );
+
+    const createSessionDebug = await page.evaluate(() => {
+      return document.documentElement.dataset.droppleCreateSessionDebug || null;
+    });
+    sessionDebugSamples.push({
+      start,
+      end,
+      createSessionDebug,
+    });
+    expect(createSessionDebug, 'create session should report a commit outcome').toBeTruthy();
+    expect(
+      createSessionDebug,
+      `create session commit outcome must not be pointer mismatch: ${createSessionDebug}`
+    ).not.toContain('pointer-mismatch');
 
     const created = await expect
       .poll(async () => await nodes.count(), {
@@ -132,7 +147,10 @@ async function createFrame(page, from, to) {
     if (created) return;
   }
 
-  throw new Error(`Frame creation did not increase node count from ${beforeCount}`);
+  const overlayDebug = await page.evaluate(() => document.documentElement.dataset.droppleOverlayDebug || null);
+  throw new Error(
+    `Frame creation did not increase node count from ${beforeCount}; overlay=${overlayDebug}; createSessionSamples=${JSON.stringify(sessionDebugSamples)}`
+  );
 }
 
 async function waitForNodeCount(page, expectedCount) {

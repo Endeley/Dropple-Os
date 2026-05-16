@@ -10,6 +10,11 @@ function setOverlayDebug(value) {
     document.documentElement.dataset.droppleOverlayDebug = value;
 }
 
+function setCreateSessionDebug(value) {
+    if (typeof document === 'undefined') return;
+    document.documentElement.dataset.droppleCreateSessionDebug = value;
+}
+
 export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getWorldPointFromEvent, getDefaultParentId }) {
     const createSessionRef = useRef(null);
     const overlaySessionRef = useRef(null);
@@ -205,9 +210,11 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                     nodeType: toolDef.nodeType,
                     start: worldPoint,
                     current: worldPoint,
+                    pointerId: e.pointerId,
                 };
                 e.currentTarget.setPointerCapture?.(e.pointerId);
                 setOverlayDebug(`${tool}:create-start`);
+                setCreateSessionDebug(`${tool}:session-active`);
                 return;
             }
 
@@ -274,11 +281,21 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
             }
 
             if (createSessionRef.current) {
-                const { start, current, nodeType, tool } = createSessionRef.current;
+                const { start, current, nodeType, tool, pointerId } = createSessionRef.current;
                 const width = Math.abs(current.x - start.x);
                 const height = Math.abs(current.y - start.y);
+                const pointerMatches = pointerId === e.pointerId;
+                const sessionState = {
+                    tool,
+                    width,
+                    height,
+                    pointerMatches,
+                    commitAttempted: false,
+                    committed: false,
+                    commitResult: 'skipped',
+                };
 
-                if (width > DRAG_THRESHOLD && height > DRAG_THRESHOLD) {
+                if (pointerMatches && width > DRAG_THRESHOLD && height > DRAG_THRESHOLD) {
                     const bounds = {
                         x: Math.min(start.x, current.x),
                         y: Math.min(start.y, current.y),
@@ -287,6 +304,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                     };
 
                     const parentId = typeof getDefaultParentId === 'function' ? getDefaultParentId() : null;
+                    sessionState.commitAttempted = true;
 
                     const handled = handleInputEvent(
                         {
@@ -315,10 +333,22 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                         nodeCreateIntent({
                             type: nodeType,
                             bounds,
-                            parentId,
+                                parentId,
                         });
+                        sessionState.commitResult = 'fallback-intent';
+                    } else {
+                        sessionState.commitResult = 'engine-handled';
                     }
+                    sessionState.committed = true;
+                } else if (!pointerMatches) {
+                    sessionState.commitResult = 'pointer-mismatch';
+                } else {
+                    sessionState.commitResult = 'threshold-not-met';
                 }
+
+                setCreateSessionDebug(
+                    `${tool}:${sessionState.commitResult}:w=${Math.round(width)}:h=${Math.round(height)}:pointerMatch=${pointerMatches ? '1' : '0'}`,
+                );
 
                 createSessionRef.current = null;
                 dragStartRef.current = null;
