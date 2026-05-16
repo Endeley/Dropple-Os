@@ -57,6 +57,8 @@ export function recordSimulationTrace({
     simulationState,
     simulationHash,
     simulationInputs,
+    simulationPartitionSchedule = null,
+    simulationPartitionCheckpoint = null,
     maxEntries = 256,
 } = {}) {
     const previousEntries = Array.isArray(previousTrace?.entries) ? previousTrace.entries : [];
@@ -66,6 +68,22 @@ export function recordSimulationTrace({
         simulationHash: String(simulationHash ?? ''),
         entityCount: Object.keys(simulationState?.entities ?? {}).length,
         constraintLayerSignature: buildConstraintLayerSignature(simulationInputs),
+        partitionScheduleSignature: String(simulationPartitionSchedule?.scheduleSignature ?? ''),
+        partitionIds: Object.freeze([...(simulationPartitionSchedule?.orderedPartitionIds ?? [])].map(String)),
+        partitionCursor: Math.max(0, Number(simulationPartitionSchedule?.partitionCursor ?? 0) || 0),
+        remainingPartitionIds: Object.freeze(
+            [...(simulationPartitionSchedule?.remainingPartitionIds ?? [])].map(String),
+        ),
+        partitionCheckpoint: Object.freeze({
+            scheduleSignature: String(simulationPartitionCheckpoint?.scheduleSignature ?? ''),
+            partitionCursor: Math.max(0, Number(simulationPartitionCheckpoint?.partitionCursor ?? 0) || 0),
+            completedPartitionIds: Object.freeze(
+                [...(simulationPartitionCheckpoint?.completedPartitionIds ?? [])].map(String),
+            ),
+            remainingPartitionIds: Object.freeze(
+                [...(simulationPartitionCheckpoint?.remainingPartitionIds ?? [])].map(String),
+            ),
+        }),
         primitiveTrace: Object.freeze(
             [...(simulationState?.primitiveTrace ?? [])]
                 .map((traceEntry) => ({
@@ -117,6 +135,20 @@ export function hashSimulationTrace(trace) {
             simulationHash: String(entry?.simulationHash ?? ''),
             entityCount: Math.max(0, Number(entry?.entityCount ?? 0) || 0),
             constraintLayerSignature: String(entry?.constraintLayerSignature ?? ''),
+            partitionScheduleSignature: String(entry?.partitionScheduleSignature ?? ''),
+            partitionIds: [...(entry?.partitionIds ?? [])].map((partitionId) => String(partitionId)),
+            partitionCursor: Math.max(0, Number(entry?.partitionCursor ?? 0) || 0),
+            remainingPartitionIds: [...(entry?.remainingPartitionIds ?? [])].map((partitionId) => String(partitionId)),
+            partitionCheckpoint: {
+                scheduleSignature: String(entry?.partitionCheckpoint?.scheduleSignature ?? ''),
+                partitionCursor: Math.max(0, Number(entry?.partitionCheckpoint?.partitionCursor ?? 0) || 0),
+                completedPartitionIds: [...(entry?.partitionCheckpoint?.completedPartitionIds ?? [])].map(
+                    (partitionId) => String(partitionId),
+                ),
+                remainingPartitionIds: [...(entry?.partitionCheckpoint?.remainingPartitionIds ?? [])].map(
+                    (partitionId) => String(partitionId),
+                ),
+            },
             primitiveTrace: [...(entry?.primitiveTrace ?? [])].map((traceEntry) => ({
                 type: String(traceEntry?.type ?? ''),
                 entityId: String(traceEntry?.entityId ?? ''),

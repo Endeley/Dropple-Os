@@ -26,6 +26,10 @@ import { evaluateSimulationFrame } from '@/runtime/simulation/evaluateSimulation
 import { hashSimulationState } from '@/runtime/simulation/simulationStateHash.js';
 import { buildSimulationInputs } from '@/runtime/simulation/buildSimulationInputs.js';
 import { recordSimulationTrace } from '@/runtime/simulation/simulationTrace.js';
+import {
+    buildSimulationPartitionSchedule,
+    createSimulationPartitionCheckpoint,
+} from '@/runtime/simulation/simulationPartitionSchedule.js';
 
 function isStructuralEvent(eventType) {
     return (
@@ -157,6 +161,7 @@ export function evaluateSceneIncremental({ event, document, runtime = {} }) {
             ? scene.layoutRoots
             : buildLayoutRootIndex(document);
 
+    let activePartitionIdsForSimulation = [];
     if (scene.transformDirty.size > 0) {
         const transformDirty = new Set(scene.transformDirty);
         const propagated = collectDirtyNodes(graph, transformDirty);
@@ -196,6 +201,17 @@ export function evaluateSceneIncremental({ event, document, runtime = {} }) {
         }
 
         scene.transformDirty.clear();
+        activePartitionIdsForSimulation = [...activePartitions].sort();
+    } else {
+        activePartitionIdsForSimulation = [
+            ...collectVisiblePartitions(
+            scene,
+            resolveViewportBounds(runtime),
+            ),
+        ].sort();
+        if (!Array.isArray(activePartitionIdsForSimulation) || activePartitionIdsForSimulation.length === 0) {
+            activePartitionIdsForSimulation = scene.partitions ? [...scene.partitions.keys()].sort() : [];
+        }
     }
 
     if (scene.layoutDirty.size > 0) {
@@ -249,17 +265,30 @@ export function evaluateSceneIncremental({ event, document, runtime = {} }) {
         time: simulationTime,
         deltaTime: simulationDeltaTime,
     });
+    const simulationPartitionSchedule = buildSimulationPartitionSchedule({
+        partitionIds: activePartitionIdsForSimulation,
+        tickTime: simulationTime,
+        deltaTime: simulationDeltaTime,
+        previousCheckpoint: runtime?.simulation?.partitionCheckpoint ?? null,
+    });
+    const simulationPartitionCheckpoint = createSimulationPartitionCheckpoint({
+        ...simulationPartitionSchedule,
+        partitionCursor: simulationPartitionSchedule.orderedPartitionIds.length,
+    });
     const simulationHash = hashSimulationState(simulationState);
     const simulationTrace = recordSimulationTrace({
         previousTrace: runtime?.simulation?.trace ?? null,
         simulationState,
         simulationHash,
         simulationInputs,
+        simulationPartitionSchedule,
+        simulationPartitionCheckpoint,
     });
     runtime.simulation = Object.freeze({
         state: simulationState,
         hash: simulationHash,
         trace: simulationTrace,
+        partitionCheckpoint: simulationPartitionCheckpoint,
     });
 
     if (scene.indexDirty.size > 0) {

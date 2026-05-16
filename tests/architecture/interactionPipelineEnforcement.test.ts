@@ -310,6 +310,7 @@ test('tool governance replay attestation is coordination-only and reducer-free',
 
 test('simulation trace recording is coordination-only and reducer-free', () => {
     const trace = read('runtime/simulation/simulationTrace.js');
+    const partitionSchedule = read('runtime/simulation/simulationPartitionSchedule.js');
 
     assert.match(trace, /recordSimulationTrace/);
     assert.match(trace, /buildConstraintLayerSignature/);
@@ -322,6 +323,16 @@ test('simulation trace recording is coordination-only and reducer-free', () => {
     );
     assert.doesNotMatch(
         trace,
+        /document\.[A-Za-z0-9_.[\]]+\s*=|runtime\.[A-Za-z0-9_.[\]]+\s*=/,
+    );
+    assert.match(partitionSchedule, /buildSimulationPartitionSchedule/);
+    assert.match(partitionSchedule, /createSimulationPartitionCheckpoint/);
+    assert.doesNotMatch(
+        partitionSchedule,
+        /applyEvent|registerToolSource|unregisterToolSource|setRuntimeActiveTool|__setRuntimeStateInternal|dispatch\(/,
+    );
+    assert.doesNotMatch(
+        partitionSchedule,
         /document\.[A-Za-z0-9_.[\]]+\s*=|runtime\.[A-Za-z0-9_.[\]]+\s*=/,
     );
 });

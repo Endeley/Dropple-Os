@@ -5,6 +5,10 @@ import { evaluateSimulationFrame } from '@/runtime/simulation/evaluateSimulation
 import { buildSimulationInputs } from '@/runtime/simulation/buildSimulationInputs.js';
 import { hashSimulationState } from '@/runtime/simulation/simulationStateHash.js';
 import { recordSimulationTrace } from '@/runtime/simulation/simulationTrace.js';
+import {
+    buildSimulationPartitionSchedule,
+    createSimulationPartitionCheckpoint,
+} from '@/runtime/simulation/simulationPartitionSchedule.js';
 import { hashRuntimeState } from '@/core/persistence/hashDocument.js';
 
 function createSnapshot() {
@@ -70,6 +74,16 @@ function runTrace({ ticks = 8, resumeAt = null } = {}) {
             simulationState: state,
             simulationHash: hashSimulationState(state),
             simulationInputs,
+            simulationPartitionSchedule: buildSimulationPartitionSchedule({
+                partitionIds: ['p1', 'p0'],
+                tickTime: time,
+                deltaTime,
+            }),
+            simulationPartitionCheckpoint: createSimulationPartitionCheckpoint({
+                scheduleSignature: 'checkpoint-sig',
+                orderedPartitionIds: ['p0', 'p1'],
+                partitionCursor: 2,
+            }),
         });
 
         if (resumeAt != null && index === resumeAt) {
@@ -121,6 +135,16 @@ test('resume from checkpoint matches uninterrupted trace hash sequence', () => {
             simulationState: resumedState,
             simulationHash: hashSimulationState(resumedState),
             simulationInputs,
+            simulationPartitionSchedule: buildSimulationPartitionSchedule({
+                partitionIds: ['p1', 'p0'],
+                tickTime: time,
+                deltaTime,
+            }),
+            simulationPartitionCheckpoint: createSimulationPartitionCheckpoint({
+                scheduleSignature: 'checkpoint-sig',
+                orderedPartitionIds: ['p0', 'p1'],
+                partitionCursor: 2,
+            }),
         });
     }
 
@@ -179,4 +203,17 @@ test('spring-chain constraints always emit primitive trace lineage entries', () 
     );
 
     assert.ok(constraintEvents.length > 0);
+});
+
+test('trace entries carry deterministic partition schedule attestations', () => {
+    const trace = runTrace({ ticks: 3 }).trace;
+
+    for (const entry of trace.entries) {
+        assert.equal(typeof entry.partitionScheduleSignature, 'string');
+        assert.ok(entry.partitionScheduleSignature.length > 0);
+        assert.deepEqual(entry.partitionIds, ['p0', 'p1']);
+        assert.equal(entry.partitionCursor, 0);
+        assert.deepEqual(entry.remainingPartitionIds, ['p0', 'p1']);
+        assert.deepEqual(entry.partitionCheckpoint.completedPartitionIds, ['p0', 'p1']);
+    }
 });
