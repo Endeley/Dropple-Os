@@ -1,10 +1,13 @@
 import fs from 'fs';
 import path from 'path';
-import { getArchitectureIgnoreDirs } from './architectureIgnorePolicy.mjs';
+import { getArchitectureScannerPolicy } from './architectureIgnorePolicy.mjs';
 
 const ROOT = process.cwd();
 const SOURCE_EXTENSIONS = new Set(['.js', '.jsx', '.mjs', '.ts', '.tsx']);
-const IGNORE_DIRS = getArchitectureIgnoreDirs(['reports']);
+const SCANNER_POLICY = getArchitectureScannerPolicy({
+  scannerId: 'architectureDrift',
+});
+const IGNORE_DIRS = SCANNER_POLICY.ignoreDirs;
 
 const RULES = [
   {

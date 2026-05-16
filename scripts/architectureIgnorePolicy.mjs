@@ -15,6 +15,16 @@ const BASE_IGNORE_DIRS = Object.freeze([
     'tmp',
 ]);
 
+const SCANNER_EXTRA_DIRS = Object.freeze({
+    architectureDrift: Object.freeze(['reports']),
+    dispatcherOwnershipTest: Object.freeze(['convex/_generated']),
+    templateAuthorityTest: Object.freeze(['docs']),
+});
+
+const SCANNER_IGNORE_FILES = Object.freeze({
+    dispatcherOwnershipTest: Object.freeze(['tests/architecture/dispatcherOwnership.test.ts']),
+});
+
 function normalizeEntry(entry) {
     return String(entry).replaceAll('\\', '/').replace(/\/+$/g, '');
 }
@@ -24,6 +34,26 @@ export function getArchitectureIgnoreDirs(extra = []) {
         .map((entry) => normalizeEntry(entry))
         .filter(Boolean);
     return new Set(merged);
+}
+
+export function getArchitectureIgnoreFiles(extra = [], scannerId = '') {
+    const scoped = SCANNER_IGNORE_FILES[scannerId] ?? [];
+    const merged = [...scoped, ...(Array.isArray(extra) ? extra : [])]
+        .map((entry) => normalizeEntry(entry))
+        .filter(Boolean);
+    return new Set(merged);
+}
+
+export function getArchitectureScannerPolicy({
+    scannerId = '',
+    extraDirs = [],
+    extraFiles = [],
+} = {}) {
+    const scopedDirs = SCANNER_EXTRA_DIRS[scannerId] ?? [];
+    return Object.freeze({
+        ignoreDirs: getArchitectureIgnoreDirs([...scopedDirs, ...(Array.isArray(extraDirs) ? extraDirs : [])]),
+        ignoreFiles: getArchitectureIgnoreFiles(extraFiles, scannerId),
+    });
 }
 
 export function shouldIgnoreArchitecturePath(relPath, ignoreDirs) {
@@ -38,4 +68,9 @@ export function shouldIgnoreArchitecturePath(relPath, ignoreDirs) {
         }
     }
     return false;
+}
+
+export function shouldIgnoreArchitectureFile(relPath, ignoreFiles) {
+    const normalized = normalizeEntry(relPath);
+    return !!ignoreFiles?.has(normalized);
 }

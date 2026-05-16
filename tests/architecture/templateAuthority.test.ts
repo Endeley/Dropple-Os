@@ -3,13 +3,16 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-    getArchitectureIgnoreDirs,
+    getArchitectureScannerPolicy,
     shouldIgnoreArchitecturePath,
 } from '../../scripts/architectureIgnorePolicy.mjs';
 
 const ROOT = process.cwd();
 const ALLOWED_EXT = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs']);
-const IGNORE_DIRS = getArchitectureIgnoreDirs(['docs']);
+const SCANNER_POLICY = getArchitectureScannerPolicy({
+    scannerId: 'templateAuthorityTest',
+});
+const IGNORE_DIRS = SCANNER_POLICY.ignoreDirs;
 
 function shouldIgnore(relPath) {
     return shouldIgnoreArchitecturePath(relPath, IGNORE_DIRS);

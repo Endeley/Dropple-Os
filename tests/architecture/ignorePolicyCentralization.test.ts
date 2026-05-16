@@ -31,8 +31,29 @@ test('architecture scanners/tests reuse centralized ignore policy', () => {
         if (/\bconst\s+IGNORE_DIRS\s*=\s*new\s+Set\s*\(/.test(normalized)) {
             violations.push(`${relPath}: declares local IGNORE_DIRS instead of centralized policy`);
         }
+
+        if (/\bconst\s+IGNORE_FILES\s*=\s*new\s+Set\s*\(/.test(normalized)) {
+            violations.push(`${relPath}: declares local IGNORE_FILES instead of centralized policy`);
+        }
     }
 
     assert.deepEqual(violations, []);
 });
 
+test('scanner-specific ignore expansions are declared via shared policy accessors', () => {
+    const requiredSharedAccessor = [
+        'tests/architecture/dispatcherOwnership.test.ts',
+        'tests/architecture/templateAuthority.test.ts',
+        'scripts/architectureDrift.mjs',
+    ];
+    const violations = [];
+
+    for (const relPath of requiredSharedAccessor) {
+        const source = fs.readFileSync(path.join(ROOT, relPath), 'utf8').replaceAll('\r\n', '\n');
+        if (!source.includes('getArchitectureScannerPolicy')) {
+            violations.push(`${relPath}: must use getArchitectureScannerPolicy for scoped ignore expansion`);
+        }
+    }
+
+    assert.deepEqual(violations, []);
+});

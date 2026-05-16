@@ -158,10 +158,9 @@ jobs:
           ROOT_PUBLIC_KEY: ${{ secrets.ROOT_PUBLIC_KEY }}
 
   release-trust-gate-pr:
-    name: Release Trust Validation (PR)
+    name: PR Release Validation (validate:release)
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    needs: app-smoke
     timeout-minutes: 20
 
     steps:

@@ -3,19 +3,21 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import {
-  getArchitectureIgnoreDirs,
+  getArchitectureScannerPolicy,
+  shouldIgnoreArchitectureFile,
   shouldIgnoreArchitecturePath,
 } from "../../scripts/architectureIgnorePolicy.mjs";
 
 const ROOT = process.cwd();
 const ALLOWED_EXT = new Set([".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"]);
-const IGNORE_DIRS = getArchitectureIgnoreDirs(["convex/_generated"]);
-const IGNORE_FILES = new Set(["tests/architecture/dispatcherOwnership.test.ts"]);
+const SCANNER_POLICY = getArchitectureScannerPolicy({
+  scannerId: "dispatcherOwnershipTest",
+});
 
 function shouldIgnore(relPath) {
   const normalized = relPath.replaceAll("\\", "/");
-  if (IGNORE_FILES.has(normalized)) return true;
-  return shouldIgnoreArchitecturePath(normalized, IGNORE_DIRS);
+  if (shouldIgnoreArchitectureFile(normalized, SCANNER_POLICY.ignoreFiles)) return true;
+  return shouldIgnoreArchitecturePath(normalized, SCANNER_POLICY.ignoreDirs);
 }
 
 function walk(dir, relBase = "") {
