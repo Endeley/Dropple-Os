@@ -67,6 +67,18 @@ function resolveViewportBounds(runtime) {
     };
 }
 
+function resolveSimulationSchedulerBudgetConfig(runtime) {
+    const simulationRuntime = runtime?.simulation ?? {};
+    const scheduler = simulationRuntime?.scheduler ?? {};
+
+    return Object.freeze({
+        partitionBudget: Number.isFinite(scheduler?.partitionBudget)
+            ? Number(scheduler.partitionBudget)
+            : null,
+        budgetPolicy: String(scheduler?.budgetPolicy ?? ''),
+    });
+}
+
 function applyAnimationTransformsToScene({ document, scene, transforms }) {
     const sceneNodes = document?.sceneGraph?.nodes ?? {};
     Object.defineProperty(scene.computed, 'transforms', {
@@ -258,11 +270,14 @@ export function evaluateSceneIncremental({ event, document, runtime = {} }) {
         time: simulationTime,
         deltaTime: simulationDeltaTime,
     });
+    const schedulerBudgetConfig = resolveSimulationSchedulerBudgetConfig(runtime);
     const simulationExecutionEnvelope = createSchedulerExecutionEnvelope({
         partitionIds: activePartitionIdsForSimulation,
         tickTime: simulationTime,
         deltaTime: simulationDeltaTime,
         previousCheckpoint: runtime?.simulation?.partitionCheckpoint ?? null,
+        partitionBudget: schedulerBudgetConfig.partitionBudget,
+        budgetPolicy: schedulerBudgetConfig.budgetPolicy,
     });
     const simulationState = evaluateSimulationFrame({
         document,
@@ -288,6 +303,7 @@ export function evaluateSceneIncremental({ event, document, runtime = {} }) {
         simulationPartitionCheckpoint,
     });
     runtime.simulation = Object.freeze({
+        scheduler: runtime?.simulation?.scheduler ?? null,
         state: simulationState,
         hash: simulationHash,
         trace: simulationTrace,

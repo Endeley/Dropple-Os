@@ -16,6 +16,8 @@ test('scheduler execution envelope canonicalizes ids and defaults budget to rema
     assert.deepEqual(envelope.orderedPartitionIds, ['p0', 'p1', 'p2']);
     assert.equal(envelope.partitionCursor, 0);
     assert.equal(envelope.partitionBudget, 3);
+    assert.equal(envelope.budgetPolicy, 'all-remaining');
+    assert.equal(envelope.budgetCode, 'scheduler-budget-all-remaining');
     assert.deepEqual(envelope.remainingPartitionIds, ['p0', 'p1', 'p2']);
 });
 
@@ -42,6 +44,20 @@ test('scheduler execution envelope resumes deterministically for valid checkpoin
     assert.equal(resumed.partitionBudget, 1);
 });
 
+test('scheduler execution envelope enforces fixed bounded budget policy deterministically', () => {
+    const envelope = createSchedulerExecutionEnvelope({
+        partitionIds: ['p0', 'p1', 'p2'],
+        tickTime: 16,
+        deltaTime: 16,
+        budgetPolicy: 'fixed',
+        partitionBudget: 99,
+    });
+
+    assert.equal(envelope.partitionBudget, 3);
+    assert.equal(envelope.budgetPolicy, 'fixed');
+    assert.equal(envelope.budgetCode, 'scheduler-budget-fixed-bounded');
+});
+
 test('scheduler execution envelope resets cursor on illegal checkpoint', () => {
     const first = createSchedulerExecutionEnvelope({
         partitionIds: ['p0', 'p1'],
@@ -57,6 +73,7 @@ test('scheduler execution envelope resets cursor on illegal checkpoint', () => {
             scheduleSignature: first.scheduleSignature,
             partitionCursor: 9,
         },
+        budgetPolicy: 'fixed',
         partitionBudget: 1,
     });
 

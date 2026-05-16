@@ -71,6 +71,9 @@ export function recordSimulationTrace({
         partitionScheduleSignature: String(simulationPartitionSchedule?.scheduleSignature ?? ''),
         partitionIds: Object.freeze([...(simulationPartitionSchedule?.orderedPartitionIds ?? [])].map(String)),
         partitionCursor: Math.max(0, Number(simulationPartitionSchedule?.partitionCursor ?? 0) || 0),
+        partitionBudget: Math.max(0, Number(simulationPartitionSchedule?.partitionBudget ?? 0) || 0),
+        partitionBudgetPolicy: String(simulationPartitionSchedule?.budgetPolicy ?? ''),
+        partitionBudgetCode: String(simulationPartitionSchedule?.budgetCode ?? ''),
         remainingPartitionIds: Object.freeze(
             [...(simulationPartitionSchedule?.remainingPartitionIds ?? [])].map(String),
         ),
@@ -140,6 +143,9 @@ export function hashSimulationTrace(trace) {
             partitionScheduleSignature: String(entry?.partitionScheduleSignature ?? ''),
             partitionIds: [...(entry?.partitionIds ?? [])].map((partitionId) => String(partitionId)),
             partitionCursor: Math.max(0, Number(entry?.partitionCursor ?? 0) || 0),
+            partitionBudget: Math.max(0, Number(entry?.partitionBudget ?? 0) || 0),
+            partitionBudgetPolicy: String(entry?.partitionBudgetPolicy ?? ''),
+            partitionBudgetCode: String(entry?.partitionBudgetCode ?? ''),
             remainingPartitionIds: [...(entry?.remainingPartitionIds ?? [])].map((partitionId) => String(partitionId)),
             partitionCheckpoint: {
                 scheduleSignature: String(entry?.partitionCheckpoint?.scheduleSignature ?? ''),

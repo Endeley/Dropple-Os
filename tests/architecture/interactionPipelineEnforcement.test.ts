@@ -303,6 +303,7 @@ test('simulation trace recording is coordination-only and reducer-free', () => {
     const partitionSchedule = read('runtime/simulation/simulationPartitionSchedule.js');
     const schedulerIdentity = read('runtime/scheduler/scheduleIdentity.js');
     const schedulerEnvelope = read('runtime/scheduler/executionEnvelope.js');
+    const schedulerBudgetPolicy = read('runtime/scheduler/budgetPolicy.js');
 
     assert.match(trace, /recordSimulationTrace/);
     assert.match(trace, /buildConstraintLayerSignature/);
@@ -344,12 +345,24 @@ test('simulation trace recording is coordination-only and reducer-free', () => {
     assert.match(schedulerEnvelope, /createSchedulerExecutionCheckpoint/);
     assert.match(schedulerEnvelope, /createCanonicalScheduleSignature/);
     assert.match(schedulerEnvelope, /validateScheduleCheckpoint/);
+    assert.match(schedulerEnvelope, /resolveSchedulerPartitionBudget/);
     assert.doesNotMatch(
         schedulerEnvelope,
         /applyEvent|registerToolSource|unregisterToolSource|setRuntimeActiveTool|__setRuntimeStateInternal|dispatch\(/,
     );
     assert.doesNotMatch(
         schedulerEnvelope,
+        /document\.[A-Za-z0-9_.[\]]+\s*=|runtime\.[A-Za-z0-9_.[\]]+\s*=/,
+    );
+    assert.match(schedulerBudgetPolicy, /SCHEDULER_BUDGET_POLICIES/);
+    assert.match(schedulerBudgetPolicy, /normalizeSchedulerBudgetPolicy/);
+    assert.match(schedulerBudgetPolicy, /resolveSchedulerPartitionBudget/);
+    assert.doesNotMatch(
+        schedulerBudgetPolicy,
+        /applyEvent|registerToolSource|unregisterToolSource|setRuntimeActiveTool|__setRuntimeStateInternal|dispatch\(/,
+    );
+    assert.doesNotMatch(
+        schedulerBudgetPolicy,
         /document\.[A-Za-z0-9_.[\]]+\s*=|runtime\.[A-Za-z0-9_.[\]]+\s*=/,
     );
 });

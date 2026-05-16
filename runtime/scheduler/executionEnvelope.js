@@ -3,6 +3,7 @@ import {
     createCanonicalScheduleSignature,
     validateScheduleCheckpoint,
 } from './scheduleIdentity.js';
+import { resolveSchedulerPartitionBudget } from './budgetPolicy.js';
 
 function toFiniteNumber(value, fallback = 0) {
     return Number.isFinite(value) ? Number(value) : fallback;
@@ -14,6 +15,7 @@ export function createSchedulerExecutionEnvelope({
     deltaTime = 0,
     previousCheckpoint = null,
     partitionBudget = null,
+    budgetPolicy = null,
 } = {}) {
     const orderedPartitionIds = normalizeSchedulePartitionIds(partitionIds);
     const scheduleSignature = createCanonicalScheduleSignature({
@@ -28,16 +30,20 @@ export function createSchedulerExecutionEnvelope({
     });
     const partitionCursor = checkpointValidation.valid ? checkpointValidation.cursor : 0;
     const remainingPartitionIds = orderedPartitionIds.slice(partitionCursor);
-    const normalizedBudget = Number.isFinite(partitionBudget)
-        ? Math.max(0, Math.floor(toFiniteNumber(partitionBudget, 0)))
-        : remainingPartitionIds.length;
+    const budgetResolution = resolveSchedulerPartitionBudget({
+        remainingPartitionCount: remainingPartitionIds.length,
+        requestedBudget: partitionBudget,
+        policy: budgetPolicy,
+    });
 
     return Object.freeze({
         scheduleSignature,
         orderedPartitionIds: Object.freeze(orderedPartitionIds),
         partitionCursor,
         remainingPartitionIds: Object.freeze(remainingPartitionIds),
-        partitionBudget: normalizedBudget,
+        partitionBudget: budgetResolution.budget,
+        budgetPolicy: budgetResolution.policy,
+        budgetCode: budgetResolution.code,
     });
 }
 

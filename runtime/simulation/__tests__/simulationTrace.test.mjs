@@ -213,6 +213,9 @@ test('trace entries carry deterministic partition schedule attestations', () => 
         assert.ok(entry.partitionScheduleSignature.length > 0);
         assert.deepEqual(entry.partitionIds, ['p0', 'p1']);
         assert.equal(entry.partitionCursor, 0);
+        assert.equal(entry.partitionBudget, 2);
+        assert.equal(entry.partitionBudgetPolicy, 'all-remaining');
+        assert.equal(entry.partitionBudgetCode, 'scheduler-budget-all-remaining');
         assert.deepEqual(entry.remainingPartitionIds, ['p0', 'p1']);
         assert.deepEqual(entry.partitionCheckpoint.completedPartitionIds, ['p0', 'p1']);
     }

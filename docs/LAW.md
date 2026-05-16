@@ -334,6 +334,7 @@ Partition identity, partition ordering, schedule signatures, checkpoint validity
 
 Canonical schedule identity helpers must be centralized in one runtime authority module.
 Execution subsystems must consume canonical scheduler execution envelopes derived from that authority.
+Scheduler budget semantics must be resolved through one canonical budget policy module.
 
 Execution systems may not define ad-hoc schedule hashing or checkpoint legality rules per subsystem.
 
