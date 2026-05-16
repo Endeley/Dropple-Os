@@ -89,6 +89,9 @@ export function transitionFederatedSession(envelope, event = {}) {
         assertFederationInvariant(next.phase !== 'closed', 'SESSION_ALREADY_CLOSED', {
             sessionId: next.sessionId,
         });
+        assertFederationInvariant(next.phase !== 'committed', 'COMMIT_ALREADY_FINALIZED', {
+            sessionId: next.sessionId,
+        });
         next.phase = 'committed';
         next.commitEpoch = next.commitEpoch + 1;
         return next;
@@ -104,4 +107,3 @@ export function transitionFederatedSession(envelope, event = {}) {
         eventType: type,
     });
 }
-

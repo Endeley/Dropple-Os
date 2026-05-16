@@ -18,7 +18,16 @@ function runCommit(inputOverrides = {}, runtimeState = {}) {
     bounds: { x: 10, y: 20, width: 140, height: 110 },
     parentId: null,
     sessionId: 'frame:1',
-    sessionState: { active: true, pointerId: 1 },
+    sessionState: {
+      active: true,
+      pointerId: 1,
+      federationSnapshot: {
+        envelope: {
+          sessionId: 'frame:1',
+          phase: 'committed',
+        },
+      },
+    },
     ...inputOverrides,
   };
   const context = {
@@ -51,6 +60,46 @@ try {
 }
 assert(inactiveReason === 'SESSION_NOT_ACTIVE_AT_COMMIT', 'inactive session should be rejected deterministically');
 
+let federationMismatchReason = null;
+try {
+  runCommit({
+    sessionState: {
+      active: true,
+      pointerId: 1,
+      federationSnapshot: {
+        envelope: { sessionId: 'frame:other', phase: 'committed' },
+      },
+    },
+  });
+  throw new Error('expected federation mismatch invariant');
+} catch (error) {
+  federationMismatchReason = readReason(error);
+}
+assert(
+  federationMismatchReason === 'FEDERATION_SESSION_MISMATCH',
+  'federation session id mismatch should be rejected deterministically',
+);
+
+let federationPhaseReason = null;
+try {
+  runCommit({
+    sessionState: {
+      active: true,
+      pointerId: 1,
+      federationSnapshot: {
+        envelope: { sessionId: 'frame:1', phase: 'preview' },
+      },
+    },
+  });
+  throw new Error('expected federation phase invariant');
+} catch (error) {
+  federationPhaseReason = readReason(error);
+}
+assert(
+  federationPhaseReason === 'FEDERATION_NOT_COMMITTED',
+  'federation phase must be committed at create-session commit',
+);
+
 const runtimeState = {};
 const first = runCommit({}, runtimeState);
 assert(first.result?.handled === true, 'first commit should be handled');
@@ -67,4 +116,3 @@ try {
 assert(duplicateReason === 'COMMIT_ALREADY_FINALIZED', 'duplicate commit should be rejected deterministically');
 
 console.log('CREATE SESSION COMMIT BRIDGE GUARDS: true');
-

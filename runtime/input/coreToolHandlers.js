@@ -667,6 +667,19 @@ function createNodeToolHandler(nodeType) {
             'SESSION_NOT_ACTIVE_AT_COMMIT',
             { sessionId, sessionState: input?.sessionState ?? null },
         );
+        const federationSnapshot = input?.sessionState?.federationSnapshot ?? null;
+        assertCreateSessionInvariant(
+            federationSnapshot?.envelope?.sessionId === sessionId,
+            scope,
+            'FEDERATION_SESSION_MISMATCH',
+            { sessionId, federationSessionId: federationSnapshot?.envelope?.sessionId ?? null },
+        );
+        assertCreateSessionInvariant(
+            federationSnapshot?.envelope?.phase === 'committed',
+            scope,
+            'FEDERATION_NOT_COMMITTED',
+            { sessionId, federationPhase: federationSnapshot?.envelope?.phase ?? null },
+        );
 
         const result = createNodeCreateEvent({
             type: input.nodeType ?? nodeType,

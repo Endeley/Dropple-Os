@@ -4,6 +4,12 @@ import { EventTypes } from '@/core/events/eventTypes.js';
 import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions';
 import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
 import { resolveTargetNodeId } from '@/ui/interactions/resolveTargetNodeId.js';
+import {
+    beginCreateSessionFederation,
+    closeCreateSessionFederation,
+    sealCreateSessionFederationCommit,
+    updateCreateSessionFederationPreview,
+} from '@/ui/bridges/createSessionFederationBridge.js';
 
 function assertCreateSessionInvariant(condition, reason, details = {}) {
     if (condition) return;
@@ -198,6 +204,9 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                         '[useCanvasInteractions] clearing leaked interaction session before new pointerdown',
                     );
                 }
+                if (createSessionRef.current?.sessionId) {
+                    closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId });
+                }
                 createSessionRef.current = null;
                 dragStartRef.current = null;
                 setOverlayDebug('idle');
@@ -230,6 +239,12 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                     current: worldPoint,
                     pointerId: e.pointerId,
                 };
+                beginCreateSessionFederation({
+                    sessionId: createSessionRef.current.sessionId,
+                    pointerId: e.pointerId,
+                    tool,
+                    nodeType: toolDef.nodeType,
+                });
                 e.currentTarget.setPointerCapture?.(e.pointerId);
                 setOverlayDebug(`${tool}:create-start`);
                 setCreateSessionDebug(`${tool}:session-active`);
@@ -256,6 +271,15 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                     ...createSessionRef.current,
                     current: worldPoint,
                 };
+                updateCreateSessionFederationPreview({
+                    sessionId: createSessionRef.current.sessionId,
+                    bounds: {
+                        x: Math.min(createSessionRef.current.start.x, worldPoint.x),
+                        y: Math.min(createSessionRef.current.start.y, worldPoint.y),
+                        width: Math.abs(worldPoint.x - createSessionRef.current.start.x),
+                        height: Math.abs(worldPoint.y - createSessionRef.current.start.y),
+                    },
+                });
                 setOverlayDebug(`${createSessionRef.current.tool}:create-drag`);
                 return;
             }
@@ -292,6 +316,9 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
             e.stopPropagation();
 
             if (overlaySessionRef.current) {
+                if (createSessionRef.current?.sessionId) {
+                    closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId });
+                }
                 createSessionRef.current = null;
                 dragStartRef.current = null;
                 setOverlayDebug('idle');
@@ -326,6 +353,9 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                         width,
                         height,
                     };
+                    const federationSnapshot = sealCreateSessionFederationCommit({
+                        sessionId,
+                    });
 
                     const parentId = typeof getDefaultParentId === 'function' ? getDefaultParentId() : null;
                     sessionState.commitAttempted = true;
@@ -342,6 +372,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                             sessionState: {
                                 active: createSessionRef.current != null,
                                 pointerId,
+                                federationSnapshot,
                             },
                         },
                         {
@@ -381,6 +412,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
 
                 createSessionRef.current = null;
                 dragStartRef.current = null;
+                closeCreateSessionFederation({ sessionId });
                 assertCreateSessionInvariant(
                     createSessionRef.current === null,
                     'create-session',
@@ -419,6 +451,9 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
             }
 
             if (overlaySessionRef.current) {
+                if (createSessionRef.current?.sessionId) {
+                    closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId });
+                }
                 createSessionRef.current = null;
                 dragStartRef.current = null;
                 setOverlayDebug('idle');
@@ -427,6 +462,8 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
 
             if (!createSessionRef.current) {
                 routePointerInput('pointercancel', e);
+            } else if (createSessionRef.current?.sessionId) {
+                closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId });
             }
 
             createSessionRef.current = null;
