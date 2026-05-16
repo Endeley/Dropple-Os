@@ -18,13 +18,13 @@ import {
 
 const ROOT = process.cwd();
 
-function read(pathname: string): string {
+function read(pathname) {
     return fs.readFileSync(path.join(ROOT, pathname), 'utf8');
 }
 
-function walk(dir: string, relBase = ''): string[] {
+function walk(dir, relBase = '') {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
-    const files: string[] = [];
+    const files = [];
 
     for (const entry of entries) {
         const relPath = relBase ? path.join(relBase, entry.name) : entry.name;
