@@ -4,6 +4,12 @@ import assert from 'node:assert/strict';
 import { buildSimulationInputs } from '@/runtime/simulation/buildSimulationInputs.js';
 import { evaluateSimulationFrame } from '@/runtime/simulation/evaluateSimulationFrame.js';
 import { hashSimulationState } from '@/runtime/simulation/simulationStateHash.js';
+import { simulationTick } from '@/runtime/simulation/simulationTick.js';
+import {
+    buildSimulationPartitionSchedule,
+    createSimulationPartitionCheckpoint,
+} from '@/runtime/simulation/simulationPartitionSchedule.js';
+import { hashRuntimeState } from '@/core/persistence/hashDocument.js';
 
 function createSnapshot(nodeOrder = ['node-b', 'node-a']) {
     const nodes = {};
@@ -284,4 +290,78 @@ test('invalid chain and group blend modes coerce deterministically to replace', 
 
     assert.equal(inputs.springChains[0].blendMode, 'replace');
     assert.equal(inputs.springChainGroups[0].blendMode, 'replace');
+});
+
+test('partition-aware tick matches uninterrupted output when resumed from checkpoint', () => {
+    const snapshot = createSnapshot(['node-b', 'node-a']);
+    const simulationInputs = buildSimulationInputs({
+        document: snapshot.document,
+        runtime: snapshot.runtime,
+        time: 16,
+        deltaTime: 16,
+    });
+    const fullSchedule = buildSimulationPartitionSchedule({
+        partitionIds: ['p0', 'p1'],
+        tickTime: 16,
+        deltaTime: 16,
+    });
+    const fullResult = simulationTick({
+        simulationInputs,
+        previousSimulationState: null,
+        simulationPartitionSchedule: {
+            ...fullSchedule,
+            partitionBudget: fullSchedule.orderedPartitionIds.length,
+        },
+    });
+
+    const firstPartialSchedule = buildSimulationPartitionSchedule({
+        partitionIds: ['p0', 'p1'],
+        tickTime: 16,
+        deltaTime: 16,
+    });
+    const firstPartialResult = simulationTick({
+        simulationInputs,
+        previousSimulationState: null,
+        simulationPartitionSchedule: {
+            ...firstPartialSchedule,
+            partitionBudget: 1,
+        },
+    });
+    const resumedSchedule = buildSimulationPartitionSchedule({
+        partitionIds: ['p0', 'p1'],
+        tickTime: 16,
+        deltaTime: 16,
+        previousCheckpoint: createSimulationPartitionCheckpoint({
+            ...firstPartialSchedule,
+            partitionCursor: 1,
+        }),
+    });
+    const resumedResult = simulationTick({
+        simulationInputs,
+        previousSimulationState: firstPartialResult,
+        simulationPartitionSchedule: {
+            ...resumedSchedule,
+            partitionBudget: resumedSchedule.remainingPartitionIds.length,
+        },
+    });
+    assert.equal(
+        hashRuntimeState({
+            tickTime: resumedResult.tickTime,
+            deltaTime: resumedResult.deltaTime,
+            entities: resumedResult.entities,
+        }),
+        hashRuntimeState({
+            tickTime: fullResult.tickTime,
+            deltaTime: fullResult.deltaTime,
+            entities: fullResult.entities,
+        }),
+    );
+    assert.ok(
+        resumedResult.primitiveTrace.some((entry) => entry.type === 'partition.start') &&
+            resumedResult.primitiveTrace.some((entry) => entry.type === 'partition.complete'),
+    );
+    assert.ok(
+        fullResult.primitiveTrace.some((entry) => entry.type === 'partition.start') &&
+            fullResult.primitiveTrace.some((entry) => entry.type === 'partition.complete'),
+    );
 });

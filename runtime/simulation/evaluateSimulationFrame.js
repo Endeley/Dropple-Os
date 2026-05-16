@@ -9,6 +9,7 @@ export function evaluateSimulationFrame({
     deltaTime = 0,
     spring = 24,
     damping = 9,
+    simulationPartitionSchedule = null,
 } = {}) {
     const simulationInputs = buildSimulationInputs({
         document,
@@ -20,6 +21,7 @@ export function evaluateSimulationFrame({
     return simulationTick({
         simulationInputs,
         previousSimulationState,
+        simulationPartitionSchedule,
         spring,
         damping,
     });

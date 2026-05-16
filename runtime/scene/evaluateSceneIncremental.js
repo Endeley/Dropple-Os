@@ -258,22 +258,25 @@ export function evaluateSceneIncremental({ event, document, runtime = {} }) {
         time: simulationTime,
         deltaTime: simulationDeltaTime,
     });
-    const simulationState = evaluateSimulationFrame({
-        document,
-        runtime,
-        previousSimulationState: runtime?.simulation?.state ?? null,
-        time: simulationTime,
-        deltaTime: simulationDeltaTime,
-    });
     const simulationPartitionSchedule = buildSimulationPartitionSchedule({
         partitionIds: activePartitionIdsForSimulation,
         tickTime: simulationTime,
         deltaTime: simulationDeltaTime,
         previousCheckpoint: runtime?.simulation?.partitionCheckpoint ?? null,
     });
+    const simulationState = evaluateSimulationFrame({
+        document,
+        runtime,
+        previousSimulationState: runtime?.simulation?.state ?? null,
+        time: simulationTime,
+        deltaTime: simulationDeltaTime,
+        simulationPartitionSchedule,
+    });
     const simulationPartitionCheckpoint = createSimulationPartitionCheckpoint({
         ...simulationPartitionSchedule,
-        partitionCursor: simulationPartitionSchedule.orderedPartitionIds.length,
+        partitionCursor:
+            simulationState?.partitionExecution?.completedPartitionIds?.length ??
+            simulationPartitionSchedule.orderedPartitionIds.length,
     });
     const simulationHash = hashSimulationState(simulationState);
     const simulationTrace = recordSimulationTrace({

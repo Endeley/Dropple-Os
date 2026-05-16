@@ -95,6 +95,7 @@ export function buildSimulationInputs({
     );
     const entitiesById = Object.fromEntries(entities.map((entity) => [entity.id, entity]));
     const simulationConfig = document?.simulation ?? runtime?.simulation?.config ?? {};
+    const nodeToPartition = runtime?.scene?.nodeToPartition instanceof Map ? runtime.scene.nodeToPartition : null;
     const springChains = normalizeSpringChains(simulationConfig?.springChains ?? [], entitiesById);
     const springChainGroups = normalizeSpringChainGroups(
         simulationConfig?.springChainGroups ?? [],
@@ -114,6 +115,16 @@ export function buildSimulationInputs({
         time: toFiniteNumber(time, 0),
         deltaTime: Math.max(0, toFiniteNumber(deltaTime, 0)),
         entities: Object.freeze(entities),
+        entityPartitionIds: Object.freeze(
+            Object.fromEntries(
+                entities
+                    .map((entity) => [
+                        entity.id,
+                        String(nodeToPartition?.get(entity.id) ?? '__global__'),
+                    ])
+                    .sort(([left], [right]) => left.localeCompare(right)),
+            ),
+        ),
         dampingProfiles: normalizeDampingProfiles(simulationConfig?.dampingProfiles ?? {}),
         entityProfiles,
         springChains,

@@ -2,6 +2,12 @@ function toFiniteNumber(value, fallback = 0) {
     return Number.isFinite(value) ? Number(value) : fallback;
 }
 
+function normalizePartitionIds(partitionIds = []) {
+    return [...new Set(partitionIds.map((partitionId) => String(partitionId)).filter(Boolean))].sort((left, right) =>
+        left.localeCompare(right),
+    );
+}
+
 function normalizeBlendMode(value) {
     return value === 'add' || value === 'replace' ? value : 'replace';
 }
@@ -189,12 +195,14 @@ function buildGroupedChainForceMap({ chainsById, groups, entities, targetsById }
 export function simulationTick({
     simulationInputs,
     previousSimulationState = null,
+    simulationPartitionSchedule = null,
     spring = 24,
     damping = 9,
 } = {}) {
     const inputs = simulationInputs ?? { entities: [], time: 0, deltaTime: 0 };
     const deltaSeconds = Math.max(0, toFiniteNumber(inputs.deltaTime, 0)) / 1000;
     const previousEntities = previousSimulationState?.entities ?? {};
+    const previousPartitionExecution = previousSimulationState?.partitionExecution ?? null;
     const dampingProfiles = inputs?.dampingProfiles ?? {};
     const entityProfiles = inputs?.entityProfiles ?? {};
     const springChains = [...(inputs?.springChains ?? [])].sort((left, right) =>
@@ -223,30 +231,105 @@ export function simulationTick({
 
     const chainsById = Object.fromEntries(springChains.map((chain) => [chain.id, chain]));
     const hasGroups = springChainGroups.length > 0;
+    const sameScheduleSignature =
+        String(previousPartitionExecution?.scheduleSignature ?? '') ===
+        String(simulationPartitionSchedule?.scheduleSignature ?? '');
+    const baselineEntities = sameScheduleSignature && previousPartitionExecution?.baselineEntities
+        ? Object.fromEntries(
+              Object.entries(previousPartitionExecution.baselineEntities).map(([entityId, entity]) => [
+                  entityId,
+                  {
+                      id: String(entity?.id ?? entityId),
+                      x: toFiniteNumber(entity?.x, 0),
+                      y: toFiniteNumber(entity?.y, 0),
+                      vx: toFiniteNumber(entity?.vx, 0),
+                      vy: toFiniteNumber(entity?.vy, 0),
+                  },
+              ]),
+          )
+        : normalizedEntities;
     const chainEvaluation = hasGroups
         ? buildGroupedChainForceMap({
               chainsById,
               groups: springChainGroups,
-              entities: normalizedEntities,
+              entities: baselineEntities,
               targetsById,
           })
         : buildChainForceMap({
               chains: springChains,
-              entities: normalizedEntities,
+              entities: baselineEntities,
               targetsById,
           });
     const chainForceMap = chainEvaluation.forceMap;
-    const primitiveTrace = [...(chainEvaluation.trace ?? [])];
+    const currentPrimitiveTrace = [...(chainEvaluation.trace ?? [])];
+    const allPartitionIds = normalizePartitionIds(Object.values(inputs?.entityPartitionIds ?? { '__global__': '__global__' }));
+    const orderedPartitionIds = normalizePartitionIds(
+        simulationPartitionSchedule?.orderedPartitionIds?.length
+            ? simulationPartitionSchedule.orderedPartitionIds
+            : allPartitionIds,
+    );
+    const partitionCursor = Math.max(0, Math.floor(toFiniteNumber(simulationPartitionSchedule?.partitionCursor, 0)));
+    const partitionBudget = Math.max(
+        0,
+        Math.floor(
+            toFiniteNumber(
+                simulationPartitionSchedule?.partitionBudget,
+                orderedPartitionIds.length - partitionCursor,
+            ),
+        ),
+    );
+    const activePartitionIds = orderedPartitionIds.slice(
+        partitionCursor,
+        partitionCursor + partitionBudget,
+    );
+    const activePartitionSet = new Set(activePartitionIds);
+    const completedPartitionSet = new Set(orderedPartitionIds.slice(0, partitionCursor));
+
+    for (const partitionId of activePartitionIds) {
+        currentPrimitiveTrace.push(
+            Object.freeze({
+                type: 'partition.start',
+                partitionId: String(partitionId),
+                scheduleSignature: String(simulationPartitionSchedule?.scheduleSignature ?? ''),
+            }),
+        );
+    }
 
     const nextEntities = {};
     for (const inputEntity of orderedInputEntities) {
-        const entity = normalizedEntities[inputEntity.id];
+        const baselineEntity = baselineEntities[inputEntity.id];
+        const entityPartitionId = String(inputs?.entityPartitionIds?.[inputEntity.id] ?? '__global__');
+        if (activePartitionIds.length > 0 && !activePartitionSet.has(entityPartitionId)) {
+            if (completedPartitionSet.has(entityPartitionId) && previousEntities[inputEntity.id]) {
+                const preserved = previousEntities[inputEntity.id];
+                nextEntities[inputEntity.id] = Object.freeze({
+                    id: String(preserved?.id ?? inputEntity.id),
+                    x: toFiniteNumber(preserved?.x, toFiniteNumber(inputEntity.targetX, 0)),
+                    y: toFiniteNumber(preserved?.y, toFiniteNumber(inputEntity.targetY, 0)),
+                    vx: toFiniteNumber(preserved?.vx, 0),
+                    vy: toFiniteNumber(preserved?.vy, 0),
+                    targetX: toFiniteNumber(inputEntity.targetX, 0),
+                    targetY: toFiniteNumber(inputEntity.targetY, 0),
+                });
+                continue;
+            }
+            nextEntities[inputEntity.id] = Object.freeze({
+                id: baselineEntity.id,
+                x: baselineEntity.x,
+                y: baselineEntity.y,
+                vx: baselineEntity.vx,
+                vy: baselineEntity.vy,
+                targetX: toFiniteNumber(inputEntity.targetX, 0),
+                targetY: toFiniteNumber(inputEntity.targetY, 0),
+            });
+            continue;
+        }
         const profileId = entityProfiles[inputEntity.id] ?? null;
         const profile = (profileId && dampingProfiles[profileId]) || null;
         const springMultiplier = Math.max(0, toFiniteNumber(profile?.springMultiplier, 1));
         const dampingMultiplier = Math.max(0, toFiniteNumber(profile?.dampingMultiplier, 1));
         const step = evaluateSpringStep(
-            entity,
+            baselineEntity,
             inputEntity,
             deltaSeconds,
             toFiniteNumber(spring, 24) * springMultiplier,
@@ -254,13 +337,52 @@ export function simulationTick({
             chainForceMap[inputEntity.id] ?? null,
         );
         nextEntities[inputEntity.id] = step.next;
-        primitiveTrace.push(step.trace);
+        currentPrimitiveTrace.push(step.trace);
     }
+
+    for (const partitionId of activePartitionIds) {
+        currentPrimitiveTrace.push(
+            Object.freeze({
+                type: 'partition.complete',
+                partitionId: String(partitionId),
+                scheduleSignature: String(simulationPartitionSchedule?.scheduleSignature ?? ''),
+            }),
+        );
+    }
+
+    const carriedPrimitiveTrace = sameScheduleSignature
+        ? [...(previousPartitionExecution?.accumulatedPrimitiveTrace ?? [])]
+        : [];
+    const primitiveTrace = [...carriedPrimitiveTrace, ...currentPrimitiveTrace];
 
     return Object.freeze({
         tickTime: toFiniteNumber(inputs.time, 0),
         deltaTime: Math.max(0, toFiniteNumber(inputs.deltaTime, 0)),
         entities: Object.freeze(nextEntities),
+        partitionExecution: Object.freeze({
+            scheduleSignature: String(simulationPartitionSchedule?.scheduleSignature ?? ''),
+            orderedPartitionIds: Object.freeze(orderedPartitionIds),
+            partitionCursor,
+            completedPartitionIds: Object.freeze(orderedPartitionIds.slice(0, partitionCursor + activePartitionIds.length)),
+            remainingPartitionIds: Object.freeze(orderedPartitionIds.slice(partitionCursor + activePartitionIds.length)),
+            baselineEntities: Object.freeze(
+                Object.fromEntries(
+                    Object.entries(baselineEntities).map(([entityId, entity]) => [
+                        entityId,
+                        Object.freeze({
+                            id: String(entity?.id ?? entityId),
+                            x: toFiniteNumber(entity?.x, 0),
+                            y: toFiniteNumber(entity?.y, 0),
+                            vx: toFiniteNumber(entity?.vx, 0),
+                            vy: toFiniteNumber(entity?.vy, 0),
+                        }),
+                    ]),
+                ),
+            ),
+            accumulatedPrimitiveTrace: Object.freeze(
+                primitiveTrace.map((entry) => Object.freeze({ ...entry })),
+            ),
+        }),
         primitiveTrace: Object.freeze(
             primitiveTrace.sort((left, right) => {
                 const byType = String(left?.type ?? '').localeCompare(String(right?.type ?? ''));
