@@ -7,9 +7,16 @@ const IGNORE_DIRS = new Set([
   '.git',
   'node_modules',
   '.next',
+  '.next-dev',
+  '.next-prod',
+  '.next-e2e',
   'dist',
   'build',
-  'reports'
+  'reports',
+  'coverage',
+  'test-results',
+  'var',
+  'tmp'
 ]);
 
 const RULES = [

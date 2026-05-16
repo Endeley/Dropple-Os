@@ -8,11 +8,17 @@ const ALLOWED_EXT = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs']);
 const IGNORE_DIRS = new Set([
     '.git',
     '.next',
+    '.next-dev',
+    '.next-prod',
+    '.next-e2e',
     'node_modules',
     'out',
     'build',
+    'dist',
     'coverage',
     'test-results',
+    'var',
+    'tmp',
 ]);
 
 const TOKEN_IMPORT = /@\/ui\/tokens\b/;

@@ -4,7 +4,21 @@ import { pathToFileURL } from 'node:url';
 
 const ROOT = process.cwd();
 const ALLOWED_EXT = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs']);
-const IGNORE_DIRS = new Set(['.git', '.next', 'node_modules', 'out', 'build']);
+const IGNORE_DIRS = new Set([
+    '.git',
+    '.next',
+    '.next-dev',
+    '.next-prod',
+    '.next-e2e',
+    'node_modules',
+    'out',
+    'build',
+    'dist',
+    'coverage',
+    'test-results',
+    'var',
+    'tmp',
+]);
 const TOKEN_IMPORT = /@\/ui\/tokens\b/;
 const CSS_SET_PROPERTY = /\.style\.setProperty\s*\(/;
 const TOKEN_TABLE_PATTERNS = [
