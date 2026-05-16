@@ -1,4 +1,8 @@
 import { resumeRenderSessionExecution } from './renderSessionExecution.js';
+import {
+    buildFrameExecutionCheckpoint,
+    assertFrameExecutionCheckpointLegality,
+} from '@/runtime/scheduler/frameExecutionSchedule.js';
 
 function stableStringify(value) {
     if (value === undefined || value === null) return 'null';
@@ -117,6 +121,12 @@ export function buildRenderExecutionCheckpoint({
 
     return Object.freeze({
         checkpointId: `render-checkpoint:${hashString64(stableStringify(checkpointPayload))}`,
+        scheduler: Object.freeze({
+            checkpoint: buildFrameExecutionCheckpoint({
+                frameTimes: manifest.frameTimes,
+                frameCursor: Number(executionState.frameCursor ?? 0),
+            }),
+        }),
         ...checkpointPayload,
     });
 }
@@ -138,8 +148,20 @@ export function resumeRenderExecutionCheckpoint({
     if (checkpoint.sessionId !== manifest.sessionId) {
         throw new Error('render checkpoint session mismatch.');
     }
+    if (!checkpoint.scheduler || typeof checkpoint.scheduler !== 'object') {
+        throw new Error('render checkpoint missing scheduler legality metadata.');
+    }
+
+    const legality = assertFrameExecutionCheckpointLegality({
+        frameTimes: manifest.frameTimes,
+        checkpoint: checkpoint.scheduler.checkpoint ?? null,
+    });
+    const legalCursor = Number(legality.legality.cursor ?? 0);
 
     const session = buildSessionFromManifest(manifest);
+    if (Number((checkpoint.completedFrames ?? []).length) !== legalCursor) {
+        throw new Error('render checkpoint cursor/completedFrames mismatch.');
+    }
     return resumeRenderSessionExecution({
         session,
         renderInput,

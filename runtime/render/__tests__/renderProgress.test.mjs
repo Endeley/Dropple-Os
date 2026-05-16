@@ -151,8 +151,42 @@ test('buildRenderExecutionCheckpoint is deterministic and resumable', () => {
     assert.equal(left.manifestId, manifest.manifestId);
     assert.equal(left.sessionId, manifest.sessionId);
     assert.equal(left.progress.completedFrameCount, 2);
+    assert.equal(left.scheduler.checkpoint.partitionCursor, 2);
     assert.deepEqual(resumed.completedFrames, executionState.completedFrames);
     assert.equal(resumed.frameCursor, executionState.frameCursor);
+});
+
+test('resumeRenderExecutionCheckpoint fails closed for scheduler legality mismatch', () => {
+    const { renderInput, manifest, renderSession } = createBundle();
+    let executionState = createRenderSessionExecution({
+        session: renderSession,
+        renderInput,
+    });
+    executionState = stepRenderSessionExecution(executionState);
+
+    const checkpoint = buildRenderExecutionCheckpoint({
+        manifest,
+        executionState,
+    });
+    const tampered = {
+        ...checkpoint,
+        scheduler: {
+            checkpoint: {
+                ...checkpoint.scheduler.checkpoint,
+                scheduleSignature: 'tampered',
+            },
+        },
+    };
+
+    assert.throws(
+        () =>
+            resumeRenderExecutionCheckpoint({
+                manifest,
+                renderInput,
+                checkpoint: tampered,
+            }),
+        /Illegal schedule resume:/,
+    );
 });
 
 test('buildSessionFromManifest preserves canonical schedule truth', () => {

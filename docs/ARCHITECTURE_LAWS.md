@@ -139,5 +139,6 @@ Schedule identity is canonical runtime authority:
 All schedule hashing + checkpoint legality checks must route through one runtime scheduler identity module.
 Runtime execution systems must consume scheduler envelopes derived from that identity instead of ad-hoc schedule/checkpoint shapes.
 Partition-budget resolution must route through one scheduler budget policy module.
+Render/export resume checkpoints must prove scheduler legality via canonical scheduler authorities before execution continues.
 
 If resume legality cannot be proven, execution must fail closed.

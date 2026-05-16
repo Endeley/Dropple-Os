@@ -367,6 +367,29 @@ test('simulation trace recording is coordination-only and reducer-free', () => {
     );
 });
 
+test('render checkpoint resume legality routes through canonical scheduler authority only', () => {
+    const renderProgress = read('runtime/render/renderProgress.js');
+    const frameSchedule = read('runtime/scheduler/frameExecutionSchedule.js');
+
+    assert.match(renderProgress, /assertFrameExecutionCheckpointLegality/);
+    assert.match(renderProgress, /buildFrameExecutionCheckpoint/);
+    assert.match(frameSchedule, /createSchedulerExecutionEnvelope/);
+    assert.match(frameSchedule, /assertResumabilityLegality/);
+    assert.match(frameSchedule, /createSchedulerExecutionCheckpoint/);
+    assert.doesNotMatch(
+        renderProgress,
+        /applyEvent|registerToolSource|unregisterToolSource|setRuntimeActiveTool|__setRuntimeStateInternal|dispatch\(/,
+    );
+    assert.doesNotMatch(
+        frameSchedule,
+        /applyEvent|registerToolSource|unregisterToolSource|setRuntimeActiveTool|__setRuntimeStateInternal|dispatch\(/,
+    );
+    assert.doesNotMatch(
+        frameSchedule,
+        /document\.[A-Za-z0-9_.[\]]+\s*=|runtime\.[A-Za-z0-9_.[\]]+\s*=/,
+    );
+});
+
 test('export verification policy and gate remain coordination-only and mutation-free', () => {
     const policy = read('runtime/export/verify/exportVerificationPolicy.js');
     const gate = read('runtime/export/verify/verifyExportArtifact.js');
