@@ -65,6 +65,7 @@ export function buildExportManifest({
     renderSession,
     exportTarget,
     verification = {},
+    simulationTraceFingerprint = null,
 } = {}) {
     assertRenderSession(renderSession);
     const normalizedExportTarget = normalizeExportTarget(exportTarget);
@@ -85,6 +86,10 @@ export function buildExportManifest({
         framePolicy: renderSession.framePolicy ?? null,
         samplePolicy: renderSession.samplePolicy ?? null,
         verification: normalizedVerification,
+        simulationTraceFingerprint:
+            typeof simulationTraceFingerprint === 'string' && simulationTraceFingerprint.trim()
+                ? simulationTraceFingerprint.trim()
+                : null,
     };
 
     return Object.freeze({

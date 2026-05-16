@@ -11,6 +11,28 @@ import {
 
 function createWorkspace() {
     return {
+        runtime: {
+            simulation: {
+                trace: {
+                    entries: [
+                        {
+                            tickTime: 16,
+                            deltaTime: 16,
+                            simulationHash: 'sim-hash-1',
+                            entityCount: 2,
+                            constraintLayerSignature: 'layer-a',
+                        },
+                        {
+                            tickTime: 32,
+                            deltaTime: 16,
+                            simulationHash: 'sim-hash-2',
+                            entityCount: 2,
+                            constraintLayerSignature: 'layer-a',
+                        },
+                    ],
+                },
+            },
+        },
         document: {
             sceneGraph: {
                 rootIds: ['fallback-root'],
@@ -77,6 +99,8 @@ test('createExportExecution builds canonical export workflow descriptors', () =>
     assert.equal(workflow.assignment.mode, 'create');
     assert.equal(workflow.queueEntry?.status, 'running');
     assert.equal(workflow.progress?.completedFrameCount, 0);
+    assert.equal(typeof workflow.manifest.simulationTraceFingerprint, 'string');
+    assert.ok(workflow.manifest.simulationTraceFingerprint.length > 0);
 });
 
 test('stepExportExecution resumes from checkpoint deterministically', () => {
@@ -134,6 +158,21 @@ test('resumed and uninterrupted export workflows preserve canonical execution id
     assert.equal(resumed.executionState.executionId, uninterrupted.executionState.executionId);
     assert.equal(resumed.assignment.manifestId, uninterrupted.assignment.manifestId);
     assert.equal(resumed.queueEntry?.executionId, uninterrupted.queueEntry?.executionId);
+    assert.equal(resumed.manifest.simulationTraceFingerprint, uninterrupted.manifest.simulationTraceFingerprint);
+});
+
+test('trace fingerprint is replay-order invariant for equivalent trace entries', () => {
+    const first = createWorkspace();
+    const second = createWorkspace();
+    second.runtime.simulation.trace.entries = [...second.runtime.simulation.trace.entries].reverse();
+
+    const firstWorkflow = createExportExecution({ snapshot: first });
+    const secondWorkflow = createExportExecution({ snapshot: second });
+
+    assert.equal(
+        firstWorkflow.manifest.simulationTraceFingerprint,
+        secondWorkflow.manifest.simulationTraceFingerprint,
+    );
 });
 
 test('performExportExecution preserves canonical export semantics', () => {

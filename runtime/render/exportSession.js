@@ -9,6 +9,7 @@ import { createRenderExecutionRegistryState, recordRenderExecutionWorkflow } fro
 import { buildExportManifest } from './exportManifest.js';
 import { createRenderQueueState } from './renderQueue.js';
 import { buildRenderSession } from './renderSession.js';
+import { hashSimulationTrace } from '@/runtime/simulation/simulationTrace.js';
 
 function resolveExportTarget(snapshot, exportTarget = null) {
     if (exportTarget) return normalizeExportTarget(exportTarget);
@@ -57,6 +58,7 @@ function buildExportWorkflowResult({
         checkpoint: assignmentResult.checkpoint,
         progress: assignmentResult.queueEntry?.progress ?? null,
         registryState,
+        simulationTraceFingerprint: manifest?.simulationTraceFingerprint ?? null,
     });
 }
 
@@ -93,6 +95,7 @@ export function createExportExecution({
     const manifest = buildExportManifest({
         renderSession,
         exportTarget: resolvedExportTarget,
+        simulationTraceFingerprint: hashSimulationTrace(snapshot?.runtime?.simulation?.trace ?? null),
     });
     const assignmentResult = executeRenderAssignment({
         executor,

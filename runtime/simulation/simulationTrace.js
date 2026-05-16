@@ -73,3 +73,23 @@ export function recordSimulationTrace({
         entries: Object.freeze(nextEntries),
     });
 }
+
+export function hashSimulationTrace(trace) {
+    const entries = [...(trace?.entries ?? [])]
+        .map((entry) => ({
+            tickTime: toFiniteNumber(entry?.tickTime, 0),
+            deltaTime: toFiniteNumber(entry?.deltaTime, 0),
+            simulationHash: String(entry?.simulationHash ?? ''),
+            entityCount: Math.max(0, Number(entry?.entityCount ?? 0) || 0),
+            constraintLayerSignature: String(entry?.constraintLayerSignature ?? ''),
+        }))
+        .sort((left, right) => {
+            const byTime = left.tickTime - right.tickTime;
+            if (byTime !== 0) return byTime;
+            const byDelta = left.deltaTime - right.deltaTime;
+            if (byDelta !== 0) return byDelta;
+            return left.simulationHash.localeCompare(right.simulationHash);
+        });
+
+    return hashRuntimeState({ entries });
+}
