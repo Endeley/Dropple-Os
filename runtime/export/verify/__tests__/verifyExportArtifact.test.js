@@ -144,6 +144,7 @@ test('verifyExportArtifact validates an environment export fingerprint', async (
             format: exported.format,
             output: exported.output,
             exportHash: exported.exportHash,
+            simulationTraceFingerprint: exported.simulationTraceFingerprint,
             canonicalVersion: exported.canonicalVersion,
             algorithm: exported.algorithm,
             options: { download: false },
@@ -153,6 +154,7 @@ test('verifyExportArtifact validates an environment export fingerprint', async (
         assert.equal(verification.hashMatches, true);
         assert.equal(verification.capabilityMatches, true);
         assert.equal(verification.reproductionMatches, true);
+        assert.equal(verification.traceFingerprintMatches, true);
     }));
 
 test('verifyExportArtifact validates equivalent snapshot export identity', async () =>
@@ -177,6 +179,7 @@ test('verifyExportArtifact validates equivalent snapshot export identity', async
             format: exported.format,
             output: exported.output,
             exportHash: exported.exportHash,
+            simulationTraceFingerprint: exported.simulationTraceFingerprint,
             canonicalVersion: exported.canonicalVersion,
             algorithm: exported.algorithm,
             options: { download: false },
@@ -205,6 +208,7 @@ test('verifyExportArtifact rejects mismatched export hashes', async () =>
             format: exported.format,
             output: exported.output,
             exportHash: `${exported.exportHash.slice(0, -1)}0`,
+            simulationTraceFingerprint: exported.simulationTraceFingerprint,
             canonicalVersion: exported.canonicalVersion,
             algorithm: exported.algorithm,
             options: { download: false },
@@ -213,3 +217,85 @@ test('verifyExportArtifact rejects mismatched export hashes', async () =>
         assert.equal(verification.valid, false);
         assert.equal(verification.hashMatches, false);
     }));
+
+test('verifyExportArtifact rejects tampered simulation trace fingerprint', async () => {
+    const runtimeSnapshot = {
+        document: createDocument(),
+        runtime: {
+            simulation: {
+                trace: {
+                    entries: [
+                        {
+                            tickTime: 16,
+                            deltaTime: 16,
+                            simulationHash: 'sim-a',
+                            entityCount: 1,
+                            constraintLayerSignature: 'layer-a',
+                        },
+                    ],
+                },
+            },
+        },
+    };
+    const artifact = createSnapshotArtifact({ snapshot: runtimeSnapshot });
+    const exported = await exportArtifact({
+        artifact,
+        format: ArtifactExportKinds.JSON,
+        options: { download: false },
+    });
+
+    const verification = await verifyExportArtifact({
+        artifact,
+        format: exported.format,
+        output: exported.output,
+        exportHash: exported.exportHash,
+        simulationTraceFingerprint: `${exported.simulationTraceFingerprint.slice(0, -1)}0`,
+        canonicalVersion: exported.canonicalVersion,
+        algorithm: exported.algorithm,
+        options: { download: false, requireSimulationTraceFingerprint: true },
+    });
+
+    assert.equal(verification.valid, false);
+    assert.equal(verification.traceFingerprintMatches, false);
+});
+
+test('verifyExportArtifact rejects missing simulation trace fingerprint when required', async () => {
+    const runtimeSnapshot = {
+        document: createDocument(),
+        runtime: {
+            simulation: {
+                trace: {
+                    entries: [
+                        {
+                            tickTime: 16,
+                            deltaTime: 16,
+                            simulationHash: 'sim-a',
+                            entityCount: 1,
+                            constraintLayerSignature: 'layer-a',
+                        },
+                    ],
+                },
+            },
+        },
+    };
+    const artifact = createSnapshotArtifact({ snapshot: runtimeSnapshot });
+    const exported = await exportArtifact({
+        artifact,
+        format: ArtifactExportKinds.JSON,
+        options: { download: false },
+    });
+
+    const verification = await verifyExportArtifact({
+        artifact,
+        format: exported.format,
+        output: exported.output,
+        exportHash: exported.exportHash,
+        canonicalVersion: exported.canonicalVersion,
+        algorithm: exported.algorithm,
+        options: { download: false, requireSimulationTraceFingerprint: true },
+    });
+
+    assert.equal(verification.valid, false);
+    assert.equal(verification.traceFingerprintRequired, true);
+    assert.equal(verification.traceFingerprintProvided, false);
+});

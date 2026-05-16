@@ -6,6 +6,7 @@ import {
 } from '../exportArtifact.js';
 import { getExportCapabilities } from '../getExportCapabilities.js';
 import { createExportFingerprint } from '../exportFingerprint.js';
+import { hashSimulationTrace } from '@/runtime/simulation/simulationTrace.js';
 
 function isPlainObject(value) {
     return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -18,6 +19,7 @@ export async function verifyExportArtifact({
     exportHash,
     canonicalVersion = EXPORT_CANONICAL_VERSION,
     algorithm = EXPORT_HASH_ALGORITHM,
+    simulationTraceFingerprint = null,
     options = {},
 } = {}) {
     if (!isPlainObject(artifact)) {
@@ -55,15 +57,34 @@ export async function verifyExportArtifact({
         algorithm,
         canonicalVersion,
     });
+    const reconstructedSimulationTraceFingerprint = hashSimulationTrace(
+        snapshot?.runtime?.simulation?.trace ?? null
+    );
+    const traceFingerprintProvided =
+        typeof simulationTraceFingerprint === 'string' && simulationTraceFingerprint.length > 0;
+    const traceFingerprintRequired = options?.requireSimulationTraceFingerprint === true;
+    const traceFingerprintMatches =
+        traceFingerprintProvided &&
+        simulationTraceFingerprint === reconstructedSimulationTraceFingerprint;
+    const traceRequirementSatisfied = traceFingerprintRequired ? traceFingerprintProvided : true;
     const reproductionMatches =
         reproducedFingerprint.exportHash === exportHash &&
         reproducedFingerprint.exportHash === providedFingerprint.exportHash;
 
     return Object.freeze({
-        valid: capabilityMatches && hashMatches && reproductionMatches,
+        valid:
+            capabilityMatches &&
+            hashMatches &&
+            reproductionMatches &&
+            traceRequirementSatisfied &&
+            (!traceFingerprintProvided || traceFingerprintMatches),
         hashMatches,
         capabilityMatches,
         reproductionMatches,
+        traceFingerprintMatches,
+        traceFingerprintRequired,
+        traceFingerprintProvided,
+        reconstructedSimulationTraceFingerprint,
         exportHash,
         algorithm,
         canonicalVersion,

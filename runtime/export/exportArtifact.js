@@ -4,6 +4,7 @@ import { LOCAL_DOCUMENT_VERSION } from '@/core/persistence/localDocumentVersion.
 import { initialRuntimeState } from '@/runtime/state/runtimeState.internal.js';
 import { buildRuntimeSnapshotFromTemplateEnvironment } from '@/runtime/templates/activateResolvedTemplateEnvironment.js';
 import { getExportCapabilities } from './getExportCapabilities.js';
+import { hashSimulationTrace } from '@/runtime/simulation/simulationTrace.js';
 import {
     createExportFingerprint,
     EXPORT_CANONICAL_VERSION,
@@ -268,12 +269,14 @@ export async function exportArtifact({
     const { exportHash, algorithm, canonicalVersion } = await createExportFingerprint({
         output,
     });
+    const simulationTraceFingerprint = hashSimulationTrace(snapshot?.runtime?.simulation?.trace ?? null);
 
     return Object.freeze({
         artifactKind: artifact.kind,
         exportMode: mode,
         format,
         exportHash,
+        simulationTraceFingerprint,
         algorithm,
         canonicalVersion,
         output,
