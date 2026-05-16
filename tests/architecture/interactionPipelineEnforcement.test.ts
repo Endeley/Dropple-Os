@@ -229,6 +229,7 @@ test('synthesized tool registration ingress is fail-closed before runtime tool a
     assert.match(dispatcher, /if \(!ingress\.ok\)\s*\{[\s\S]*?return prev;/);
     assert.match(dispatcher, /if \(!recursiveGuard\.ok\)\s*\{[\s\S]*?return prev;/);
     assert.match(dispatcher, /createToolGovernanceRejectTelemetry/);
+    assert.match(dispatcher, /createToolGovernanceAcceptTelemetry/);
     assert.match(dispatcher, /uxAuditLog\.append/);
 
     assert.match(ingress, /tool-registration-descriptor-authority-leak/);
@@ -242,9 +243,12 @@ test('synthesized tool registration ingress is fail-closed before runtime tool a
 
     assert.match(capabilityRuntime, /validateNoRecursiveToolRegistration/);
     assert.match(capabilityRuntime, /createToolGovernanceRejectTelemetry/);
+    assert.match(capabilityRuntime, /createToolGovernanceAcceptTelemetry/);
     assert.match(capabilityRuntime, /onGovernanceReject/);
+    assert.match(capabilityRuntime, /onGovernanceAccept/);
 
     assert.match(telemetry, /runtime\.tools\.governance\.reject/);
+    assert.match(telemetry, /runtime\.tools\.governance\.accept/);
     assert.match(telemetry, /payload/);
     assert.match(telemetry, /code/);
     assert.match(telemetry, /source/);

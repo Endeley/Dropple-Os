@@ -6,6 +6,7 @@ import { handleCapabilityIntent } from '@/runtime/capabilities/toolRegistrationR
 
 test('register intent dispatches registerTools action', () => {
     const dispatched = [];
+    const emitted = [];
     const dispatcher = {
         dispatch(action) {
             dispatched.push(action);
@@ -18,9 +19,10 @@ test('register intent dispatches registerTools action', () => {
             payload: {
                 source: 'graph',
                 tools: ['select', 'shape'],
+                currentTimeMs: 7,
             },
         },
-        { dispatcher },
+        { dispatcher, onGovernanceAccept: (entry) => emitted.push(entry) },
     );
 
     assert.equal(dispatched.length, 1);
@@ -33,6 +35,16 @@ test('register intent dispatches registerTools action', () => {
             priority: 0,
         },
     });
+    assert.equal(emitted.length, 1);
+    assert.equal(emitted[0]?.type, 'runtime.tools.governance.accept');
+    assert.deepEqual(emitted[0]?.payload, {
+        code: 'tool-registration-approved',
+        source: 'graph',
+        toolIds: ['select', 'shape'],
+        atEventType: 'capability.tools.register.requested',
+        reason: 'capability-boundary-governance-approved',
+    });
+    assert.equal(emitted[0]?.timestamp, 7);
 });
 
 test('unregister intent dispatches unregisterTools action', () => {

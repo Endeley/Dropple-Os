@@ -46,3 +46,32 @@ export function createToolGovernanceRejectTelemetry({
     });
 }
 
+export function createToolGovernanceAcceptTelemetry({
+    code,
+    source,
+    toolIds,
+    atEventType,
+    reason,
+    currentTimeMs,
+} = {}) {
+    const normalizedSource = normalizeSource(source);
+    const normalizedToolIds = normalizeToolIds(toolIds);
+    const normalizedCode = typeof code === 'string' ? code : 'tool-registration-approved';
+    const normalizedEventType = typeof atEventType === 'string' ? atEventType : 'unknown';
+    const normalizedReason = typeof reason === 'string' ? reason : 'tool-registration-governance-approved';
+    const normalizedTimestamp = Number.isFinite(currentTimeMs) ? Number(currentTimeMs) : 0;
+
+    return Object.freeze({
+        type: 'runtime.tools.governance.accept',
+        level: 'info',
+        timestamp: normalizedTimestamp,
+        message: normalizedReason,
+        payload: Object.freeze({
+            code: normalizedCode,
+            source: normalizedSource,
+            toolIds: normalizedToolIds,
+            atEventType: normalizedEventType,
+            reason: normalizedReason,
+        }),
+    });
+}

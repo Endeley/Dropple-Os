@@ -1,6 +1,6 @@
 import { registerTools, unregisterTools } from '@/runtime/actions/toolActions.js';
 import { validateNoRecursiveToolRegistration } from '@/runtime/tools/toolRegistrationRecursionGuard.js';
-import { createToolGovernanceRejectTelemetry } from '@/runtime/tools/toolGovernanceTelemetry.js';
+import { createToolGovernanceAcceptTelemetry, createToolGovernanceRejectTelemetry } from '@/runtime/tools/toolGovernanceTelemetry.js';
 
 function safeDispatch(dispatcher, action, type) {
     try {
@@ -19,7 +19,7 @@ function safeDispatch(dispatcher, action, type) {
     }
 }
 
-function handleRegisterRequested(event, dispatcher, onGovernanceReject) {
+function handleRegisterRequested(event, dispatcher, onGovernanceReject, onGovernanceAccept) {
     const source = event?.payload?.source ?? null;
     const tools = Array.isArray(event?.payload?.tools)
         ? event.payload.tools
@@ -44,6 +44,14 @@ function handleRegisterRequested(event, dispatcher, onGovernanceReject) {
         }));
         return null;
     }
+    onGovernanceAccept?.(createToolGovernanceAcceptTelemetry({
+        code: 'tool-registration-approved',
+        source,
+        toolIds: tools,
+        atEventType: event?.type,
+        reason: 'capability-boundary-governance-approved',
+        currentTimeMs: event?.payload?.currentTimeMs,
+    }));
 
     return safeDispatch(
         dispatcher,
@@ -71,12 +79,12 @@ function handleUnregisterRequested(event, dispatcher) {
     );
 }
 
-export function handleCapabilityIntent(event, { dispatcher, onGovernanceReject } = {}) {
+export function handleCapabilityIntent(event, { dispatcher, onGovernanceReject, onGovernanceAccept } = {}) {
     if (!event || typeof event.type !== 'string') return null;
 
     switch (event.type) {
         case 'capability.tools.register.requested':
-            return handleRegisterRequested(event, dispatcher, onGovernanceReject);
+            return handleRegisterRequested(event, dispatcher, onGovernanceReject, onGovernanceAccept);
         case 'capability.tools.unregister.requested':
             return handleUnregisterRequested(event, dispatcher);
         default:

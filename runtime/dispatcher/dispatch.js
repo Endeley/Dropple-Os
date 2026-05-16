@@ -64,7 +64,7 @@ import { applyWorkspaceActivation, applyViewportUpdate, applyCanvasSurfaceUpdate
 import { initialToolRuntimeState, registerToolSource, setRuntimeActiveTool, unregisterToolSource } from '@/runtime/tools/toolRuntime.js';
 import { validateToolRegistrationIngress } from '@/runtime/tools/validateToolRegistrationIngress.js';
 import { validateNoRecursiveToolRegistration } from '@/runtime/tools/toolRegistrationRecursionGuard.js';
-import { createToolGovernanceRejectTelemetry } from '@/runtime/tools/toolGovernanceTelemetry.js';
+import { createToolGovernanceAcceptTelemetry, createToolGovernanceRejectTelemetry } from '@/runtime/tools/toolGovernanceTelemetry.js';
 import { endDrag, initialDragState, startDrag, updateDrag } from '@/runtime/interaction/dragRuntime.js';
 import { isShotTransitionValidationError } from '@/core/project/normalizeShotTransitionOut.js';
 
@@ -266,6 +266,7 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
             handleCapabilityIntent(rawEvent, {
                 dispatcher: { dispatch },
                 onGovernanceReject: (entry) => uxAuditLog.append(entry),
+                onGovernanceAccept: (entry) => uxAuditLog.append(entry),
             });
             if (uxAuditLog.snapshot().length !== auditCountBeforeCapabilityIntent) {
                 const runtimeState = __getRuntimeStateInternal() ?? initialRuntimeState;
@@ -390,6 +391,14 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
                                 return prev;
                             }
                             const currentTimeMs = resolveToolPolicyTimeMsFromEvent(rawEvent);
+                            uxAuditLog.append(createToolGovernanceAcceptTelemetry({
+                                code: 'tool-registration-approved',
+                                source: rawEvent?.payload?.source,
+                                toolIds: rawEvent?.payload?.tools,
+                                atEventType: rawEvent?.type,
+                                reason: 'dispatcher-ingress-governance-approved',
+                                currentTimeMs,
+                            }));
                             next = {
                                 ...prev,
                                 tools: registerToolSource(prev?.tools ?? initialToolRuntimeState, rawEvent?.payload, { currentTimeMs }),

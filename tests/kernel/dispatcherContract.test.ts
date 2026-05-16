@@ -352,6 +352,106 @@ test('capability boundary tool registration reject telemetry is emitted once and
     });
 });
 
+test('tool registration governance accept emits one telemetry entry per accepted attempt with stable payload and no truth mutation side effects', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });
+
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: {
+                id: 'graphic',
+                tools: ['select'],
+                policy: {
+                    mutation: 'allow',
+                    capabilities: ['node:create'],
+                },
+            },
+        },
+    });
+
+    const acceptedEvent = {
+        type: EventTypes.TOOLS_REGISTER,
+        payload: {
+            source: 'capability.graph',
+            tools: ['b-tool', 'a-tool', 'a-tool'],
+            currentTimeMs: 1111,
+            descriptors: [{
+                id: 'a-tool',
+                label: 'A Tool',
+                handlerFamily: 'session',
+            }, {
+                id: 'b-tool',
+                label: 'B Tool',
+                handlerFamily: 'session',
+            }],
+        },
+    };
+
+    await dispatcher.dispatch(acceptedEvent);
+    await dispatcher.dispatch(acceptedEvent);
+
+    const accepts = (getUXAuditLog() ?? [])
+        .filter((entry) => entry?.type === 'runtime.tools.governance.accept' && entry?.payload?.atEventType === EventTypes.TOOLS_REGISTER);
+    assert.equal(accepts.length, 2);
+    assert.deepEqual(accepts[0]?.payload, accepts[1]?.payload);
+    assert.deepEqual(accepts[0]?.payload, {
+        code: 'tool-registration-approved',
+        source: 'capability.graph',
+        toolIds: ['a-tool', 'b-tool'],
+        atEventType: EventTypes.TOOLS_REGISTER,
+        reason: 'dispatcher-ingress-governance-approved',
+    });
+
+    const state = dispatcher.getState();
+    assert.equal(getVisibleTools(state?.tools ?? initialRuntimeState.tools).includes('a-tool'), true);
+    assert.equal(getVisibleTools(state?.tools ?? initialRuntimeState.tools).includes('b-tool'), true);
+});
+
+test('capability boundary tool registration accept telemetry is emitted once per accepted intent with deterministic payload', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });
+
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: {
+                id: 'graphic',
+                tools: ['select'],
+                policy: {
+                    mutation: 'allow',
+                    capabilities: ['node:create'],
+                },
+            },
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: 'capability.tools.register.requested',
+        payload: {
+            source: 'capability.graph',
+            tools: ['move'],
+            currentTimeMs: 2222,
+            descriptors: [{
+                id: 'move',
+                label: 'Move',
+                handlerFamily: 'session',
+            }],
+        },
+    });
+
+    const accepts = (getUXAuditLog() ?? [])
+        .filter((entry) => entry?.type === 'runtime.tools.governance.accept' && entry?.payload?.atEventType === 'capability.tools.register.requested');
+    assert.equal(accepts.length, 1);
+    assert.deepEqual(accepts[0]?.payload, {
+        code: 'tool-registration-approved',
+        source: 'capability.graph',
+        toolIds: ['move'],
+        atEventType: 'capability.tools.register.requested',
+        reason: 'capability-boundary-governance-approved',
+    });
+});
+
 test('dispatcher undo and redo replay canonical persisted truth while preserving runtime workspace', async () => {
     const dispatcher = createEventDispatcher({ headless: true });
     dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });
