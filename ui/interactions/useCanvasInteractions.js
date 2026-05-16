@@ -69,19 +69,6 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
         }
     }, []);
 
-    const scheduleOverlaySessionClear = useCallback(() => {
-        if (typeof queueMicrotask === 'function') {
-            queueMicrotask(() => {
-                clearOverlaySession();
-            });
-            return;
-        }
-
-        setTimeout(() => {
-            clearOverlaySession();
-        }, 0);
-    }, [clearOverlaySession]);
-
     const bindOverlayPointerSession = useCallback(
         (event, overrides) => {
             if (typeof window === 'undefined') return;
@@ -108,7 +95,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                 if (overlaySessionRef.current?.pointerId !== nextEvent.pointerId) return;
 
                 routePointerInput(type, nextEvent, overlaySessionRef.current.overrides);
-                scheduleOverlaySessionClear();
+                clearOverlaySession();
             };
 
             const handlePointerUp = handleEnd('pointerup');
@@ -129,7 +116,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
 
                 routePointerInput('pointerup', nextEvent, overlaySessionRef.current.overrides);
 
-                scheduleOverlaySessionClear();
+                clearOverlaySession();
             };
 
             window.addEventListener('pointermove', handleMove, true);
@@ -146,7 +133,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                 window.removeEventListener('mouseup', handleMouseUp, true);
             };
         },
-        [clearOverlaySession, routePointerInput, scheduleOverlaySessionClear],
+        [clearOverlaySession, routePointerInput],
     );
 
     useEffect(
@@ -183,6 +170,17 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
         (e) => {
             if (e.defaultPrevented) return;
             e.stopPropagation();
+
+            if (createSessionRef.current || dragStartRef.current) {
+                if (process.env.NODE_ENV === 'development') {
+                    console.warn(
+                        '[useCanvasInteractions] clearing leaked interaction session before new pointerdown',
+                    );
+                }
+                createSessionRef.current = null;
+                dragStartRef.current = null;
+                setOverlayDebug('idle');
+            }
 
             const worldPoint = toWorldPoint(e);
             const tool = typeof getActiveToolId === 'function' ? getActiveToolId(e) : 'select';
@@ -269,6 +267,9 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
             e.stopPropagation();
 
             if (overlaySessionRef.current) {
+                createSessionRef.current = null;
+                dragStartRef.current = null;
+                setOverlayDebug('idle');
                 return;
             }
 
@@ -352,6 +353,9 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
             }
 
             if (overlaySessionRef.current) {
+                createSessionRef.current = null;
+                dragStartRef.current = null;
+                setOverlayDebug('idle');
                 return;
             }
 

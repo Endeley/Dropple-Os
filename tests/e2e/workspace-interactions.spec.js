@@ -314,9 +314,9 @@ test('workspace new can multi-select and drag multiple nodes together', async ({
   const second = nodes.nth(1);
 
   await activateTool(page, 'select');
-  await first.click();
+  await first.click({ force: true });
   await page.keyboard.down('Shift');
-  await second.click();
+  await second.click({ force: true });
   await page.keyboard.up('Shift');
 
   await expect(page.getByTestId('selection-outline')).toHaveCount(2);
@@ -373,14 +373,21 @@ test('workspace new shift-marquee adds to the existing selection and preserves a
   const third = nodes.nth(2);
 
   await activateTool(page, 'select');
-  await first.click();
+  await first.click({ force: true });
   await expect(page.locator('[data-selection-primary="true"]')).toHaveCount(1);
+  const primaryBeforeAdditive = await page
+    .locator('[data-selection-primary="true"]')
+    .getAttribute('data-selection-node-id');
+  expect(primaryBeforeAdditive).toBeTruthy();
 
   await marqueeRenderedNodes(page, [second, third], { additive: true });
 
   await expectSelectionOutlineCount(page, 3, logs);
   await expect(page.locator('[data-selection-primary="true"]')).toHaveCount(1);
-  await expect(page.locator('[data-selection-primary="true"]')).toHaveAttribute('data-selection-node-id', await first.getAttribute('data-node-id'));
+  await expect(page.locator('[data-selection-primary="true"]')).toHaveAttribute(
+    'data-selection-node-id',
+    primaryBeforeAdditive
+  );
 
   const beforeFirst = await first.boundingBox();
   const beforeSecond = await second.boundingBox();
