@@ -1,23 +1,10 @@
 import fs from 'fs';
 import path from 'path';
+import { getArchitectureIgnoreDirs } from './architectureIgnorePolicy.mjs';
 
 const ROOT = process.cwd();
 const SOURCE_EXTENSIONS = new Set(['.js', '.jsx', '.mjs', '.ts', '.tsx']);
-const IGNORE_DIRS = new Set([
-  '.git',
-  'node_modules',
-  '.next',
-  '.next-dev',
-  '.next-prod',
-  '.next-e2e',
-  'dist',
-  'build',
-  'reports',
-  'coverage',
-  'test-results',
-  'var',
-  'tmp'
-]);
+const IGNORE_DIRS = getArchitectureIgnoreDirs(['reports']);
 
 const RULES = [
   {

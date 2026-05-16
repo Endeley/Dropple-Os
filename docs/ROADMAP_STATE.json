@@ -309,6 +309,32 @@
       ]
     }
   },
+  "orchestration_session_federation": {
+    "status": "active",
+    "frozen": false,
+    "requires": [
+      "federated_session_envelope",
+      "federation_lifecycle_transitions",
+      "deterministic_orchestration_invariants"
+    ],
+    "depends_on": [
+      "tool_synthesis"
+    ],
+    "risks": [],
+    "proofs": {
+      "federated_session_envelope": [
+        "runtime/orchestration/sessionFederation.js"
+      ],
+      "federation_lifecycle_transitions": [
+        "runtime/orchestration/sessionFederation.js",
+        "runtime/orchestration/__tests__/sessionFederation.test.mjs"
+      ],
+      "deterministic_orchestration_invariants": [
+        "runtime/orchestration/sessionFederation.js",
+        "tests/architecture/interactionPipelineEnforcement.test.ts"
+      ]
+    }
+  },
   "os_surface": {
     "status": "not-started",
     "frozen": false,
@@ -318,7 +344,7 @@
       "lawful_self_extension_surface"
     ],
     "depends_on": [
-      "creative_physics"
+      "orchestration_session_federation"
     ],
     "risks": [],
     "proofs": {

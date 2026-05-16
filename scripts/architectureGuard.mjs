@@ -1,24 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import {
+    getArchitectureIgnoreDirs,
+    shouldIgnoreArchitecturePath,
+} from './architectureIgnorePolicy.mjs';
 
 const ROOT = process.cwd();
 const ALLOWED_EXT = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs']);
-const IGNORE_DIRS = new Set([
-    '.git',
-    '.next',
-    '.next-dev',
-    '.next-prod',
-    '.next-e2e',
-    'node_modules',
-    'out',
-    'build',
-    'dist',
-    'coverage',
-    'test-results',
-    'var',
-    'tmp',
-]);
+const IGNORE_DIRS = getArchitectureIgnoreDirs();
 const TOKEN_IMPORT = /@\/ui\/tokens\b/;
 const CSS_SET_PROPERTY = /\.style\.setProperty\s*\(/;
 const TOKEN_TABLE_PATTERNS = [
@@ -33,13 +23,7 @@ const TOKEN_TABLE_ALLOWLIST = new Set([
 ]);
 
 function shouldIgnore(relPath) {
-    const normalized = relPath.replaceAll('\\', '/');
-    const [rootDir] = normalized.split('/');
-    if (rootDir?.startsWith('.next')) return true;
-    for (const dir of IGNORE_DIRS) {
-        if (normalized === dir || normalized.startsWith(`${dir}/`)) return true;
-    }
-    return false;
+    return shouldIgnoreArchitecturePath(relPath, IGNORE_DIRS);
 }
 
 function walk(dir, relBase = '') {

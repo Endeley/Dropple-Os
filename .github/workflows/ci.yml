@@ -156,3 +156,32 @@ jobs:
         env:
           ENGINE_VERSION: ${{ secrets.ENGINE_VERSION }}
           ROOT_PUBLIC_KEY: ${{ secrets.ROOT_PUBLIC_KEY }}
+
+  release-trust-gate-pr:
+    name: Release Trust Validation (PR)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: app-smoke
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20.19.0'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Validate release trust
+        run: npm run validate:release
+        env:
+          ENGINE_VERSION: ${{ secrets.ENGINE_VERSION }}
+          ROOT_PUBLIC_KEY: ${{ secrets.ROOT_PUBLIC_KEY }}

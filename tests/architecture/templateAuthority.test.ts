@@ -2,36 +2,17 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import {
+    getArchitectureIgnoreDirs,
+    shouldIgnoreArchitecturePath,
+} from '../../scripts/architectureIgnorePolicy.mjs';
 
 const ROOT = process.cwd();
 const ALLOWED_EXT = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs']);
-const IGNORE_DIRS = new Set([
-    '.git',
-    '.next',
-    '.next-dev',
-    '.next-prod',
-    '.next-e2e',
-    'node_modules',
-    'out',
-    'build',
-    'dist',
-    'coverage',
-    'test-results',
-    'docs',
-    'var',
-    'tmp',
-]);
+const IGNORE_DIRS = getArchitectureIgnoreDirs(['docs']);
 
 function shouldIgnore(relPath) {
-    const normalized = relPath.replaceAll('\\', '/');
-    const [rootDir] = normalized.split('/');
-    if (rootDir?.startsWith('.next')) return true;
-
-    for (const dir of IGNORE_DIRS) {
-        if (normalized === dir || normalized.startsWith(`${dir}/`)) return true;
-    }
-
-    return false;
+    return shouldIgnoreArchitecturePath(relPath, IGNORE_DIRS);
 }
 
 function walk(dir, relBase = '') {
