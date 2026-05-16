@@ -19,9 +19,30 @@ async function dragOnCanvas(page, from, to) {
     throw new Error('Canvas host did not render');
   }
 
-  await page.mouse.move(box.x + from.x, box.y + from.y);
+  const margin = 12;
+  const minX = box.x + margin;
+  const minY = box.y + margin;
+  const maxX = box.x + box.width - margin;
+  const maxY = box.y + box.height - margin;
+  const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+  let startX = clamp(box.x + from.x, minX, maxX);
+  let startY = clamp(box.y + from.y, minY, maxY);
+  let endX = clamp(box.x + to.x, minX, maxX);
+  let endY = clamp(box.y + to.y, minY, maxY);
+
+  // Ensure create-gesture has enough distance even on smaller canvases.
+  const minDelta = 24;
+  if (Math.abs(endX - startX) < minDelta) {
+    endX = clamp(startX + minDelta, minX, maxX);
+  }
+  if (Math.abs(endY - startY) < minDelta) {
+    endY = clamp(startY + minDelta, minY, maxY);
+  }
+
+  await page.mouse.move(startX, startY);
   await page.mouse.down();
-  await page.mouse.move(box.x + to.x, box.y + to.y, { steps: 8 });
+  await page.mouse.move(endX, endY, { steps: 8 });
   await page.mouse.up();
 }
 
@@ -38,6 +59,28 @@ async function createFrame(page, from, to) {
 
   for (const offset of retryOffsets) {
     await activateTool(page, 'frame');
+    await page.waitForTimeout(50);
+    const canvas = page.getByTestId('canvas-host');
+    const box = await canvas.boundingBox();
+    if (!box) {
+      throw new Error('Canvas host did not render');
+    }
+
+    const startX = box.x + from.x + offset.x;
+    const startY = box.y + from.y + offset.y;
+    const startHitsNode = await page.evaluate(
+      ({ x, y }) => {
+        const hit = document.elementFromPoint(x, y);
+        return Boolean(hit?.closest?.('[data-node-id]'));
+      },
+      { x: startX, y: startY }
+    );
+
+    // Create-node sessions only start when pointer-down lands on empty canvas.
+    if (startHitsNode) {
+      continue;
+    }
+
     await dragOnCanvas(
       page,
       { x: from.x + offset.x, y: from.y + offset.y },
