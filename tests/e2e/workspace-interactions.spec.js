@@ -32,7 +32,9 @@ async function dragOnCanvas(page, from, to) {
   let endY = clamp(box.y + to.y, minY, maxY);
 
   // Ensure create-gesture has enough distance even on smaller canvases.
-  const minDelta = 24;
+  // Runtime create commit requires world-space width/height > 6.
+  // Keep a large pixel delta so high zoom levels still exceed threshold.
+  const minDelta = 96;
   if (Math.abs(endX - startX) < minDelta) {
     endX = clamp(startX + minDelta, minX, maxX);
   }
@@ -57,7 +59,7 @@ async function createFrame(page, from, to) {
     { x: 160, y: 36 },
   ];
 
-  for (const offset of retryOffsets) {
+  const tryCreate = async (start, end) => {
     await activateTool(page, 'frame');
     await page.waitForTimeout(50);
     const canvas = page.getByTestId('canvas-host');
@@ -66,8 +68,8 @@ async function createFrame(page, from, to) {
       throw new Error('Canvas host did not render');
     }
 
-    const startX = box.x + from.x + offset.x;
-    const startY = box.y + from.y + offset.y;
+    const startX = box.x + start.x;
+    const startY = box.y + start.y;
     const startHitsNode = await page.evaluate(
       ({ x, y }) => {
         const hit = document.elementFromPoint(x, y);
@@ -78,13 +80,13 @@ async function createFrame(page, from, to) {
 
     // Create-node sessions only start when pointer-down lands on empty canvas.
     if (startHitsNode) {
-      continue;
+      return false;
     }
 
     await dragOnCanvas(
       page,
-      { x: from.x + offset.x, y: from.y + offset.y },
-      { x: to.x + offset.x, y: to.y + offset.y }
+      start,
+      end
     );
 
     const created = await expect
@@ -96,8 +98,38 @@ async function createFrame(page, from, to) {
       .catch(() => false);
 
     if (created) {
-      return;
+      return true;
     }
+
+    return false;
+  };
+
+  for (const offset of retryOffsets) {
+    const created = await tryCreate(
+      { x: from.x + offset.x, y: from.y + offset.y },
+      { x: to.x + offset.x, y: to.y + offset.y }
+    );
+    if (created) return;
+  }
+
+  // Fallback: scan deterministic empty zones across the canvas so we don't rely
+  // on fixed coordinates that can become occupied after prior frame creation.
+  const scanStarts = [
+    { x: 64, y: 64 },
+    { x: 240, y: 64 },
+    { x: 420, y: 64 },
+    { x: 64, y: 240 },
+    { x: 240, y: 240 },
+    { x: 420, y: 240 },
+    { x: 64, y: 420 },
+    { x: 240, y: 420 },
+  ];
+  for (const start of scanStarts) {
+    const created = await tryCreate(
+      start,
+      { x: start.x + 140, y: start.y + 110 }
+    );
+    if (created) return;
   }
 
   throw new Error(`Frame creation did not increase node count from ${beforeCount}`);
