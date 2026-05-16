@@ -66,6 +66,41 @@ export function recordSimulationTrace({
         simulationHash: String(simulationHash ?? ''),
         entityCount: Object.keys(simulationState?.entities ?? {}).length,
         constraintLayerSignature: buildConstraintLayerSignature(simulationInputs),
+        primitiveTrace: Object.freeze(
+            [...(simulationState?.primitiveTrace ?? [])]
+                .map((traceEntry) => ({
+                    type: String(traceEntry?.type ?? ''),
+                    entityId: String(traceEntry?.entityId ?? ''),
+                    chainId: String(traceEntry?.chainId ?? ''),
+                    memberId: String(traceEntry?.memberId ?? ''),
+                    parentId: String(traceEntry?.parentId ?? ''),
+                    groupId: String(traceEntry?.groupId ?? ''),
+                    chainBlendMode: String(traceEntry?.chainBlendMode ?? ''),
+                    groupBlendMode: String(traceEntry?.groupBlendMode ?? ''),
+                    blendMode: String(traceEntry?.blendMode ?? ''),
+                    spring: toFiniteNumber(traceEntry?.spring, 0),
+                    damping: toFiniteNumber(traceEntry?.damping, 0),
+                    chainAx: toFiniteNumber(traceEntry?.chainAx, 0),
+                    chainAy: toFiniteNumber(traceEntry?.chainAy, 0),
+                    ax: toFiniteNumber(traceEntry?.ax, 0),
+                    ay: toFiniteNumber(traceEntry?.ay, 0),
+                    x: toFiniteNumber(traceEntry?.x, 0),
+                    y: toFiniteNumber(traceEntry?.y, 0),
+                    vx: toFiniteNumber(traceEntry?.vx, 0),
+                    vy: toFiniteNumber(traceEntry?.vy, 0),
+                }))
+                .sort((left, right) => {
+                    const byType = left.type.localeCompare(right.type);
+                    if (byType !== 0) return byType;
+                    const byEntity = left.entityId.localeCompare(right.entityId);
+                    if (byEntity !== 0) return byEntity;
+                    const byChain = left.chainId.localeCompare(right.chainId);
+                    if (byChain !== 0) return byChain;
+                    const byMember = left.memberId.localeCompare(right.memberId);
+                    if (byMember !== 0) return byMember;
+                    return left.groupId.localeCompare(right.groupId);
+                }),
+        ),
     });
 
     const nextEntries = [...previousEntries, entry].slice(-Math.max(1, Math.floor(maxEntries)));
@@ -82,6 +117,27 @@ export function hashSimulationTrace(trace) {
             simulationHash: String(entry?.simulationHash ?? ''),
             entityCount: Math.max(0, Number(entry?.entityCount ?? 0) || 0),
             constraintLayerSignature: String(entry?.constraintLayerSignature ?? ''),
+            primitiveTrace: [...(entry?.primitiveTrace ?? [])].map((traceEntry) => ({
+                type: String(traceEntry?.type ?? ''),
+                entityId: String(traceEntry?.entityId ?? ''),
+                chainId: String(traceEntry?.chainId ?? ''),
+                memberId: String(traceEntry?.memberId ?? ''),
+                parentId: String(traceEntry?.parentId ?? ''),
+                groupId: String(traceEntry?.groupId ?? ''),
+                chainBlendMode: String(traceEntry?.chainBlendMode ?? ''),
+                groupBlendMode: String(traceEntry?.groupBlendMode ?? ''),
+                blendMode: String(traceEntry?.blendMode ?? ''),
+                spring: toFiniteNumber(traceEntry?.spring, 0),
+                damping: toFiniteNumber(traceEntry?.damping, 0),
+                chainAx: toFiniteNumber(traceEntry?.chainAx, 0),
+                chainAy: toFiniteNumber(traceEntry?.chainAy, 0),
+                ax: toFiniteNumber(traceEntry?.ax, 0),
+                ay: toFiniteNumber(traceEntry?.ay, 0),
+                x: toFiniteNumber(traceEntry?.x, 0),
+                y: toFiniteNumber(traceEntry?.y, 0),
+                vx: toFiniteNumber(traceEntry?.vx, 0),
+                vy: toFiniteNumber(traceEntry?.vy, 0),
+            })),
         }))
         .sort((left, right) => {
             const byTime = left.tickTime - right.tickTime;

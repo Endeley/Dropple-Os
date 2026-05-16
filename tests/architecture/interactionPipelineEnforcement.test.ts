@@ -315,6 +315,7 @@ test('simulation trace recording is coordination-only and reducer-free', () => {
     assert.match(trace, /buildConstraintLayerSignature/);
     assert.match(trace, /simulationHash/);
     assert.match(trace, /constraintLayerSignature/);
+    assert.match(trace, /primitiveTrace/);
     assert.doesNotMatch(
         trace,
         /applyEvent|registerToolSource|unregisterToolSource|setRuntimeActiveTool|__setRuntimeStateInternal|dispatch\(/,

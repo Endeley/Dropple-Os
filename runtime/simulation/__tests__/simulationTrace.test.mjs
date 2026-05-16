@@ -157,3 +157,26 @@ test('trace recording is coordination-only and does not mutate simulation truth'
 
     assert.deepEqual(state, stateBefore);
 });
+
+test('primitive simulation trace sequence and fingerprint are deterministic across repeated runs', () => {
+    const left = runTrace({ ticks: 6 }).trace;
+    const right = runTrace({ ticks: 6 }).trace;
+
+    const leftPrimitive = left.entries.map((entry) => entry.primitiveTrace);
+    const rightPrimitive = right.entries.map((entry) => entry.primitiveTrace);
+
+    assert.ok(left.entries.every((entry) => Array.isArray(entry.primitiveTrace) && entry.primitiveTrace.length > 0));
+    assert.deepEqual(leftPrimitive, rightPrimitive);
+    assert.equal(hashRuntimeState(left), hashRuntimeState(right));
+});
+
+test('spring-chain constraints always emit primitive trace lineage entries', () => {
+    const trace = runTrace({ ticks: 3 }).trace;
+    const constraintEvents = trace.entries.flatMap((entry) =>
+        (entry.primitiveTrace ?? []).filter((primitive) =>
+            String(primitive?.type).startsWith('constraint.spring-chain'),
+        ),
+    );
+
+    assert.ok(constraintEvents.length > 0);
+});

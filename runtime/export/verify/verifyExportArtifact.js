@@ -67,6 +67,18 @@ export async function verifyExportArtifact({
         traceFingerprintProvided &&
         simulationTraceFingerprint === reconstructedSimulationTraceFingerprint;
     const traceRequirementSatisfied = traceFingerprintRequired ? traceFingerprintProvided : true;
+    const primitiveTraceLineageRequired = options?.requireSimulationPrimitiveTraceLineage === true;
+    const traceEntries = Array.isArray(snapshot?.runtime?.simulation?.trace?.entries)
+        ? snapshot.runtime.simulation.trace.entries
+        : [];
+    const primitiveTraceLineageProvided =
+        traceEntries.length > 0 &&
+        traceEntries.every(
+            (entry) => Array.isArray(entry?.primitiveTrace) && entry.primitiveTrace.length > 0,
+        );
+    const primitiveTraceLineageSatisfied = primitiveTraceLineageRequired
+        ? primitiveTraceLineageProvided
+        : true;
     const reproductionMatches =
         reproducedFingerprint.exportHash === exportHash &&
         reproducedFingerprint.exportHash === providedFingerprint.exportHash;
@@ -77,6 +89,7 @@ export async function verifyExportArtifact({
             hashMatches &&
             reproductionMatches &&
             traceRequirementSatisfied &&
+            primitiveTraceLineageSatisfied &&
             (!traceFingerprintProvided || traceFingerprintMatches),
         hashMatches,
         capabilityMatches,
@@ -84,6 +97,8 @@ export async function verifyExportArtifact({
         traceFingerprintMatches,
         traceFingerprintRequired,
         traceFingerprintProvided,
+        primitiveTraceLineageRequired,
+        primitiveTraceLineageProvided,
         reconstructedSimulationTraceFingerprint,
         exportHash,
         algorithm,

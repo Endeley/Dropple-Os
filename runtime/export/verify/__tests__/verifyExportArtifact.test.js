@@ -231,6 +231,14 @@ test('verifyExportArtifact rejects tampered simulation trace fingerprint', async
                             simulationHash: 'sim-a',
                             entityCount: 1,
                             constraintLayerSignature: 'layer-a',
+                            primitiveTrace: [
+                                {
+                                    type: 'entity.spring-step',
+                                    entityId: 'root',
+                                    spring: 24,
+                                    damping: 9,
+                                },
+                            ],
                         },
                     ],
                 },
@@ -272,6 +280,14 @@ test('verifyExportArtifact rejects missing simulation trace fingerprint when req
                             simulationHash: 'sim-a',
                             entityCount: 1,
                             constraintLayerSignature: 'layer-a',
+                            primitiveTrace: [
+                                {
+                                    type: 'entity.spring-step',
+                                    entityId: 'root',
+                                    spring: 24,
+                                    damping: 9,
+                                },
+                            ],
                         },
                     ],
                 },
@@ -298,4 +314,50 @@ test('verifyExportArtifact rejects missing simulation trace fingerprint when req
     assert.equal(verification.valid, false);
     assert.equal(verification.traceFingerprintRequired, true);
     assert.equal(verification.traceFingerprintProvided, false);
+});
+
+test('verifyExportArtifact rejects missing primitive simulation trace lineage when required', async () => {
+    const runtimeSnapshot = {
+        document: createDocument(),
+        runtime: {
+            simulation: {
+                trace: {
+                    entries: [
+                        {
+                            tickTime: 16,
+                            deltaTime: 16,
+                            simulationHash: 'sim-a',
+                            entityCount: 1,
+                            constraintLayerSignature: 'layer-a',
+                        },
+                    ],
+                },
+            },
+        },
+    };
+    const artifact = createSnapshotArtifact({ snapshot: runtimeSnapshot });
+    const exported = await exportArtifact({
+        artifact,
+        format: ArtifactExportKinds.JSON,
+        options: { download: false },
+    });
+
+    const verification = await verifyExportArtifact({
+        artifact,
+        format: exported.format,
+        output: exported.output,
+        exportHash: exported.exportHash,
+        simulationTraceFingerprint: exported.simulationTraceFingerprint,
+        canonicalVersion: exported.canonicalVersion,
+        algorithm: exported.algorithm,
+        options: {
+            download: false,
+            requireSimulationTraceFingerprint: true,
+            requireSimulationPrimitiveTraceLineage: true,
+        },
+    });
+
+    assert.equal(verification.valid, false);
+    assert.equal(verification.primitiveTraceLineageRequired, true);
+    assert.equal(verification.primitiveTraceLineageProvided, false);
 });

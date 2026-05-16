@@ -31,7 +31,7 @@ function evaluateSpringStep(entity, inputEntity, deltaSeconds, spring, damping, 
     const x = entity.x + vx * deltaSeconds;
     const y = entity.y + vy * deltaSeconds;
 
-    return Object.freeze({
+    const next = Object.freeze({
         id: entity.id,
         x,
         y,
@@ -40,10 +40,25 @@ function evaluateSpringStep(entity, inputEntity, deltaSeconds, spring, damping, 
         targetX,
         targetY,
     });
+    const trace = Object.freeze({
+        type: 'entity.spring-step',
+        entityId: entity.id,
+        spring: toFiniteNumber(spring, 0),
+        damping: toFiniteNumber(damping, 0),
+        chainAx,
+        chainAy,
+        x,
+        y,
+        vx,
+        vy,
+    });
+
+    return { next, trace };
 }
 
 function buildChainForceMap({ chains, entities, targetsById }) {
     const forceMap = {};
+    const trace = [];
 
     for (const chain of chains) {
         const members = chain?.members ?? [];
@@ -72,10 +87,32 @@ function buildChainForceMap({ chains, entities, targetsById }) {
                 ax: previous.ax + ax,
                 ay: previous.ay + ay,
             };
+            trace.push(
+                Object.freeze({
+                    type: 'constraint.spring-chain-force',
+                    chainId: String(chain?.id ?? ''),
+                    memberId: String(memberId),
+                    parentId: String(parentId),
+                    ax: toFiniteNumber(ax, 0),
+                    ay: toFiniteNumber(ay, 0),
+                    blendMode: normalizeBlendMode(chain?.blendMode),
+                }),
+            );
         }
     }
 
-    return forceMap;
+    return {
+        forceMap,
+        trace: Object.freeze(
+            trace.sort((left, right) => {
+                const byChain = left.chainId.localeCompare(right.chainId);
+                if (byChain !== 0) return byChain;
+                const byParent = left.parentId.localeCompare(right.parentId);
+                if (byParent !== 0) return byParent;
+                return left.memberId.localeCompare(right.memberId);
+            }),
+        ),
+    };
 }
 
 function blendForceMaps(baseMap, nextMap, blendMode = 'replace') {
@@ -104,23 +141,49 @@ function blendForceMaps(baseMap, nextMap, blendMode = 'replace') {
 
 function buildGroupedChainForceMap({ chainsById, groups, entities, targetsById }) {
     let forceMap = {};
+    const trace = [];
 
     for (const group of groups) {
         let groupForce = {};
         for (const chainId of group.chainIds ?? []) {
             const chain = chainsById[chainId];
             if (!chain) continue;
-            const chainForce = buildChainForceMap({
+            const chainEvaluation = buildChainForceMap({
                 chains: [chain],
                 entities,
                 targetsById,
             });
-            groupForce = blendForceMaps(groupForce, chainForce, chain.blendMode);
+            groupForce = blendForceMaps(groupForce, chainEvaluation.forceMap, chain.blendMode);
+            trace.push(...chainEvaluation.trace);
+            trace.push(
+                Object.freeze({
+                    type: 'constraint.spring-chain-apply',
+                    groupId: String(group?.id ?? ''),
+                    chainId: String(chainId),
+                    chainBlendMode: normalizeBlendMode(chain?.blendMode),
+                    groupBlendMode: normalizeBlendMode(group?.blendMode),
+                }),
+            );
         }
         forceMap = blendForceMaps(forceMap, groupForce, group.blendMode);
     }
 
-    return forceMap;
+    return {
+        forceMap,
+        trace: Object.freeze(
+            trace.sort((left, right) => {
+                const byType = left.type.localeCompare(right.type);
+                if (byType !== 0) return byType;
+                const leftGroup = String(left.groupId ?? '');
+                const rightGroup = String(right.groupId ?? '');
+                const byGroup = leftGroup.localeCompare(rightGroup);
+                if (byGroup !== 0) return byGroup;
+                const leftChain = String(left.chainId ?? '');
+                const rightChain = String(right.chainId ?? '');
+                return leftChain.localeCompare(rightChain);
+            }),
+        ),
+    };
 }
 
 export function simulationTick({
@@ -160,7 +223,7 @@ export function simulationTick({
 
     const chainsById = Object.fromEntries(springChains.map((chain) => [chain.id, chain]));
     const hasGroups = springChainGroups.length > 0;
-    const chainForceMap = hasGroups
+    const chainEvaluation = hasGroups
         ? buildGroupedChainForceMap({
               chainsById,
               groups: springChainGroups,
@@ -172,6 +235,8 @@ export function simulationTick({
               entities: normalizedEntities,
               targetsById,
           });
+    const chainForceMap = chainEvaluation.forceMap;
+    const primitiveTrace = [...(chainEvaluation.trace ?? [])];
 
     const nextEntities = {};
     for (const inputEntity of orderedInputEntities) {
@@ -180,7 +245,7 @@ export function simulationTick({
         const profile = (profileId && dampingProfiles[profileId]) || null;
         const springMultiplier = Math.max(0, toFiniteNumber(profile?.springMultiplier, 1));
         const dampingMultiplier = Math.max(0, toFiniteNumber(profile?.dampingMultiplier, 1));
-        nextEntities[inputEntity.id] = evaluateSpringStep(
+        const step = evaluateSpringStep(
             entity,
             inputEntity,
             deltaSeconds,
@@ -188,11 +253,29 @@ export function simulationTick({
             toFiniteNumber(damping, 9) * dampingMultiplier,
             chainForceMap[inputEntity.id] ?? null,
         );
+        nextEntities[inputEntity.id] = step.next;
+        primitiveTrace.push(step.trace);
     }
 
     return Object.freeze({
         tickTime: toFiniteNumber(inputs.time, 0),
         deltaTime: Math.max(0, toFiniteNumber(inputs.deltaTime, 0)),
         entities: Object.freeze(nextEntities),
+        primitiveTrace: Object.freeze(
+            primitiveTrace.sort((left, right) => {
+                const byType = String(left?.type ?? '').localeCompare(String(right?.type ?? ''));
+                if (byType !== 0) return byType;
+                const leftEntity = String(left?.entityId ?? '');
+                const rightEntity = String(right?.entityId ?? '');
+                if (leftEntity !== rightEntity) return leftEntity.localeCompare(rightEntity);
+                const leftChain = String(left?.chainId ?? '');
+                const rightChain = String(right?.chainId ?? '');
+                if (leftChain !== rightChain) return leftChain.localeCompare(rightChain);
+                const leftMember = String(left?.memberId ?? '');
+                const rightMember = String(right?.memberId ?? '');
+                if (leftMember !== rightMember) return leftMember.localeCompare(rightMember);
+                return String(left?.groupId ?? '').localeCompare(String(right?.groupId ?? ''));
+            }),
+        ),
     });
 }
