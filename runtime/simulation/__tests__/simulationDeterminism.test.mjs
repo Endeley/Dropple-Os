@@ -23,6 +23,24 @@ function createSnapshot(nodeOrder = ['node-b', 'node-a']) {
             sceneGraph: {
                 nodes,
             },
+            simulation: {
+                dampingProfiles: {
+                    smooth: { dampingMultiplier: 1.5, springMultiplier: 0.8 },
+                    snappy: { dampingMultiplier: 0.6, springMultiplier: 1.2 },
+                },
+                entityProfiles: {
+                    'node-a': 'smooth',
+                    'node-b': 'snappy',
+                },
+                springChains: [
+                    {
+                        id: 'chain-main',
+                        members: ['node-a', 'node-b'],
+                        stiffness: 1.1,
+                        damping: 0.4,
+                    },
+                ],
+            },
         },
         runtime: {
             scene: {
@@ -48,6 +66,9 @@ test('buildSimulationInputs canonicalizes entity ordering deterministically', ()
         inputs.entities.map((entity) => entity.id),
         ['node-a', 'node-b'],
     );
+    assert.deepEqual(Object.keys(inputs.dampingProfiles), ['smooth', 'snappy']);
+    assert.deepEqual(inputs.entityProfiles, { 'node-a': 'smooth', 'node-b': 'snappy' });
+    assert.deepEqual(inputs.springChains.map((chain) => chain.id), ['chain-main']);
 });
 
 test('evaluateSimulationFrame is deterministic for identical input + previous state', () => {
@@ -129,4 +150,33 @@ test('reordered source nodes produce identical simulation state hash', () => {
 
     assert.equal(hashSimulationState(left), hashSimulationState(right));
     assert.deepEqual(left, right);
+});
+
+test('damping profiles and spring chains remain deterministic across repeated ticks', () => {
+    const snapshot = createSnapshot();
+    const seed = evaluateSimulationFrame({
+        document: snapshot.document,
+        runtime: snapshot.runtime,
+        previousSimulationState: null,
+        time: 16,
+        deltaTime: 16,
+    });
+
+    const runTrace = () => {
+        let previous = seed;
+        const hashes = [];
+        for (let step = 1; step <= 5; step += 1) {
+            previous = evaluateSimulationFrame({
+                document: snapshot.document,
+                runtime: snapshot.runtime,
+                previousSimulationState: previous,
+                time: 16 + step * 16,
+                deltaTime: 16,
+            });
+            hashes.push(hashSimulationState(previous));
+        }
+        return hashes;
+    };
+
+    assert.deepEqual(runTrace(), runTrace());
 });
