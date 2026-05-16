@@ -289,7 +289,7 @@
     }
   },
   "creative_physics": {
-    "status": "not-started",
+    "status": "active",
     "frozen": false,
     "requires": [
       "physics_evaluator_law",
