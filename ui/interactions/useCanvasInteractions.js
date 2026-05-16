@@ -4,7 +4,21 @@ import { EventTypes } from '@/core/events/eventTypes.js';
 import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions';
 import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
 import { resolveTargetNodeId } from '@/ui/interactions/resolveTargetNodeId.js';
-import { assertCreateSessionInvariant } from '@/runtime/input/createSessionInvariant.js';
+
+function assertCreateSessionInvariant(condition, reason, details = {}) {
+    if (condition) return;
+    const orderedDetails = {};
+    for (const key of Object.keys(details).sort()) {
+        orderedDetails[key] = details[key];
+    }
+    throw new Error(
+        JSON.stringify({
+            scope: 'ui-create-session',
+            reason,
+            details: orderedDetails,
+        }),
+    );
+}
 
 function setOverlayDebug(value) {
     if (typeof document === 'undefined') return;

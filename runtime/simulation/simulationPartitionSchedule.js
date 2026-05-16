@@ -2,7 +2,7 @@ import {
     createSchedulerExecutionEnvelope,
     createSchedulerExecutionCheckpoint,
 } from '@/runtime/scheduler/executionEnvelope.js';
-import { createCanonicalScheduleSignature } from '@/runtime/scheduler/scheduleIdentity.js';
+import { createCanonicalScheduleSignature, validateScheduleCheckpoint } from '@/runtime/scheduler/scheduleIdentity.js';
 
 export function createSimulationPartitionScheduleSignature({
     partitionIds = [],
@@ -22,12 +22,19 @@ export function buildSimulationPartitionSchedule({
     deltaTime = 0,
     previousCheckpoint = null,
 } = {}) {
-    return createSchedulerExecutionEnvelope({
+    const schedule = createSchedulerExecutionEnvelope({
         partitionIds,
         tickTime,
         deltaTime,
         previousCheckpoint,
     });
+    // Keep schedule legality explicit at the simulation boundary as required by architecture checks.
+    validateScheduleCheckpoint({
+        checkpoint: previousCheckpoint,
+        scheduleSignature: schedule.scheduleSignature,
+        partitionCount: schedule.orderedPartitionIds.length,
+    });
+    return schedule;
 }
 
 export function createSimulationPartitionCheckpoint(schedule) {
