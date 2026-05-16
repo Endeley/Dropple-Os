@@ -9,10 +9,11 @@ import {
   resolveSeededWorkspace,
 } from './workspaceEnvironmentBoot.js';
 
-export default function WorkspaceNewPage({ searchParams = {} }) {
-  const initialEnvironmentDescriptor = buildInitialEnvironmentDescriptorFromQuery(searchParams);
-  const fromTemplate = getSearchParam(searchParams, 'fromTemplate');
-  const fromLesson = getSearchParam(searchParams, 'fromLesson');
+export default async function WorkspaceNewPage({ searchParams = {} }) {
+  const resolvedSearchParams = await searchParams;
+  const initialEnvironmentDescriptor = buildInitialEnvironmentDescriptorFromQuery(resolvedSearchParams);
+  const fromTemplate = getSearchParam(resolvedSearchParams, 'fromTemplate');
+  const fromLesson = getSearchParam(resolvedSearchParams, 'fromLesson');
   const {
     workspace,
     initialRuntimeSnapshot,
