@@ -7,6 +7,7 @@ import { resolveBoundsSelection } from '@/runtime/selection/selectBounds.js';
 import { registerToolHandler, unregisterToolHandler } from '@/runtime/tools/toolController.js';
 import { createNodeCreateEvent } from '@/runtime/input/nodeCreateRuntimeBridge.js';
 import { computeResizeDelta as computeResizeSessionDelta } from '@/runtime/transforms/computeResizeDelta.js';
+import { assertCreateSessionInvariant } from '@/runtime/input/createSessionInvariant.js';
 
 const DRAG_THRESHOLD = 4;
 
@@ -651,6 +652,21 @@ function createNodeToolHandler(nodeType) {
 
         const dispatcher = context?.dispatcher;
         if (!dispatcher?.dispatch) return null;
+        const sessionId = input?.sessionId ?? null;
+        const scope = 'create-session-commit';
+
+        assertCreateSessionInvariant(
+            typeof sessionId === 'string' && sessionId.length > 0,
+            scope,
+            'MISSING_SESSION_ID',
+            { sessionId },
+        );
+        assertCreateSessionInvariant(
+            input?.sessionState?.active === true,
+            scope,
+            'SESSION_NOT_ACTIVE_AT_COMMIT',
+            { sessionId, sessionState: input?.sessionState ?? null },
+        );
 
         const result = createNodeCreateEvent({
             type: input.nodeType ?? nodeType,
@@ -659,6 +675,24 @@ function createNodeToolHandler(nodeType) {
         });
 
         if (!result?.event) return null;
+        const runtimeState = context?.runtimeState ?? {};
+        const ledger = runtimeState.__createCommitLedger ?? new Set();
+        if (!runtimeState.__createCommitLedger) {
+            Object.defineProperty(runtimeState, '__createCommitLedger', {
+                value: ledger,
+                configurable: true,
+                enumerable: false,
+                writable: false,
+            });
+        }
+
+        assertCreateSessionInvariant(
+            !ledger.has(sessionId),
+            scope,
+            'COMMIT_ALREADY_FINALIZED',
+            { sessionId },
+        );
+        ledger.add(sessionId);
 
         dispatcher.dispatch(result.event);
         return { handled: true };

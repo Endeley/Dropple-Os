@@ -3,6 +3,7 @@ import { createNode } from '../../core/nodes/createNode.js';
 import { normalizeNodeShape } from '../../design/state/normalizeNodeShape.js';
 import { canProjectToCanonicalNode } from '../../validation/canProjectToCanonicalNode.js';
 import { generateNodeId } from '@/runtime/nodes/generateNodeId.js';
+import { assertCreateSessionInvariant } from '@/runtime/input/createSessionInvariant.js';
 
 function finiteOr(value, fallback) {
     return Number.isFinite(value) ? value : fallback;
@@ -37,6 +38,22 @@ export function createNodeCreateEvent(intent) {
         width: finiteOr(sourceLayout?.width, 160),
         height: finiteOr(sourceLayout?.height, 100),
     };
+
+    assertCreateSessionInvariant(
+        Number.isFinite(layout.x) &&
+            Number.isFinite(layout.y) &&
+            Number.isFinite(layout.width) &&
+            Number.isFinite(layout.height),
+        'create-session',
+        'INVALID_LAYOUT_VALUES',
+        { layout },
+    );
+    assertCreateSessionInvariant(
+        layout.width > 0 && layout.height > 0,
+        'create-session',
+        'NON_POSITIVE_LAYOUT',
+        { layout },
+    );
 
     const node = createNode(
         normalizeNodeShape({

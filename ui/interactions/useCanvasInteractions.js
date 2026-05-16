@@ -4,6 +4,7 @@ import { EventTypes } from '@/core/events/eventTypes.js';
 import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions';
 import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
 import { resolveTargetNodeId } from '@/ui/interactions/resolveTargetNodeId.js';
+import { assertCreateSessionInvariant } from '@/runtime/input/createSessionInvariant.js';
 
 function setOverlayDebug(value) {
     if (typeof document === 'undefined') return;
@@ -17,6 +18,7 @@ function setCreateSessionDebug(value) {
 
 export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getWorldPointFromEvent, getDefaultParentId }) {
     const createSessionRef = useRef(null);
+    const createSessionOrdinalRef = useRef(0);
     const overlaySessionRef = useRef(null);
     const overlayCleanupRef = useRef(null);
     const handleDownRef = useRef(null);
@@ -205,7 +207,9 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
             };
 
             if (toolDef?.createsNode && !targetNodeId) {
+                createSessionOrdinalRef.current += 1;
                 createSessionRef.current = {
+                    sessionId: `${tool}:${createSessionOrdinalRef.current}`,
                     tool,
                     nodeType: toolDef.nodeType,
                     start: worldPoint,
@@ -281,7 +285,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
             }
 
             if (createSessionRef.current) {
-                const { start, current, nodeType, tool, pointerId } = createSessionRef.current;
+                const { start, current, nodeType, tool, pointerId, sessionId } = createSessionRef.current;
                 const width = Math.abs(current.x - start.x);
                 const height = Math.abs(current.y - start.y);
                 const pointerMatches = pointerId === e.pointerId;
@@ -296,6 +300,12 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                 };
 
                 if (pointerMatches && width > DRAG_THRESHOLD && height > DRAG_THRESHOLD) {
+                    assertCreateSessionInvariant(
+                        typeof sessionId === 'string' && sessionId.length > 0,
+                        'create-session',
+                        'MISSING_SESSION_ID',
+                        { sessionId },
+                    );
                     const bounds = {
                         x: Math.min(start.x, current.x),
                         y: Math.min(start.y, current.y),
@@ -314,6 +324,11 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                             bounds,
                             nodeType,
                             parentId,
+                            sessionId,
+                            sessionState: {
+                                active: createSessionRef.current != null,
+                                pointerId,
+                            },
                         },
                         {
                             dispatcher,
@@ -352,7 +367,14 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
 
                 createSessionRef.current = null;
                 dragStartRef.current = null;
+                assertCreateSessionInvariant(
+                    createSessionRef.current === null,
+                    'create-session',
+                    'SESSION_NOT_RELEASED',
+                    { sessionId },
+                );
                 setOverlayDebug('idle');
+                setCreateSessionDebug(`${tool}:session-closed:${sessionId}`);
                 e.currentTarget.releasePointerCapture?.(e.pointerId);
                 return;
             }
