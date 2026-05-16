@@ -435,3 +435,34 @@ test('runtime evaluation authority routes transition and frame evaluators throug
 
     assert.deepEqual(violations, []);
 });
+
+test('non-runtime modules do not import deep simulation internals directly', () => {
+    const scopes = ['ui', 'platform', 'ai', 'tests', 'core', 'engine', 'branching'];
+    const violations = [];
+
+    for (const scope of scopes) {
+        const scopeRoot = path.join(ROOT, scope);
+        if (!fs.existsSync(scopeRoot)) continue;
+
+        const files = walk(scopeRoot, scope);
+        for (const file of files) {
+            const normalized = file.relPath.replaceAll('\\', '/');
+            if (normalized.startsWith('tests/')) continue;
+
+            const content = fs.readFileSync(file.fullPath, 'utf8');
+            const lines = content.split('\n');
+            lines.forEach((line, index) => {
+                if (!line.includes('import') && !line.includes('import(')) return;
+                const hitsDeepSimulation =
+                    /runtime\/simulation\//.test(line) &&
+                    !/runtime\/simulation\/index\.js/.test(line);
+
+                if (hitsDeepSimulation) {
+                    violations.push(`${file.relPath}:${index + 1}: ${line.trim()}`);
+                }
+            });
+        }
+    }
+
+    assert.deepEqual(violations, []);
+});

@@ -22,6 +22,8 @@ import {
 } from '../math/matrix2d.js';
 import { evaluateSceneAnimation } from '@/runtime/animation/evaluateSceneAnimation.js';
 import { buildTemporalContext } from '@/runtime/temporal/buildTemporalContext.js';
+import { evaluateSimulationFrame } from '@/runtime/simulation/evaluateSimulationFrame.js';
+import { hashSimulationState } from '@/runtime/simulation/simulationStateHash.js';
 
 function isStructuralEvent(eventType) {
     return (
@@ -228,6 +230,18 @@ export function evaluateSceneIncremental({ event, document, runtime = {} }) {
                     null,
             }
         ),
+    });
+
+    const simulationState = evaluateSimulationFrame({
+        document,
+        runtime,
+        previousSimulationState: runtime?.simulation?.state ?? null,
+        time: temporalContext?.timeMs ?? runtime?.playback?.timeMs ?? 0,
+        deltaTime: temporalContext?.deltaTimeMs ?? 0,
+    });
+    runtime.simulation = Object.freeze({
+        state: simulationState,
+        hash: hashSimulationState(simulationState),
     });
 
     if (scene.indexDirty.size > 0) {
