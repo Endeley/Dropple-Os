@@ -59,14 +59,16 @@ function createReleaseSnapshot() {
 }
 
 function runArchitectureGateStatus() {
-    const outcome = spawnSync('node', ['enforceDroppleLaws.cjs'], {
+    const outcome = spawnSync(process.execPath, ['enforceDroppleLaws.cjs'], {
         cwd: process.cwd(),
         stdio: 'pipe',
         encoding: 'utf8',
     });
+    const error = outcome.error ? String(outcome.error.message ?? outcome.error) : null;
     return Object.freeze({
         ok: outcome.status === 0,
         exitCode: Number.isInteger(outcome.status) ? outcome.status : 1,
+        error,
     });
 }
 
@@ -203,6 +205,12 @@ if (isEntrypoint) {
     const report = await generateReleaseTrustReport({ write: true });
     if (!report.overallOk) {
         console.error('[ReleaseTrustReport] FAIL');
+        for (const [checkId, check] of Object.entries(report.checks ?? {})) {
+            if (check?.ok === true) continue;
+            console.error(`[ReleaseTrustReport] check failed: ${checkId}`);
+            console.error(`[ReleaseTrustReport] payload: ${JSON.stringify(check)}`);
+        }
+        console.error(`[ReleaseTrustReport] reportPath: ${REPORT_PATH}`);
         process.exit(1);
     }
     console.log('[ReleaseTrustReport] OK');
