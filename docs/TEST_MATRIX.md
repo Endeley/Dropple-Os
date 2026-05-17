@@ -73,6 +73,7 @@ Notes:
 - PR CI uploads release trust artifacts and enforces a blocking `release:trust:diff` step for trust drift protection.
 - Baseline diff enforcement is date-gated via `RELEASE_TRUST_BASELINE_REQUIRED_AFTER` (currently `2026-07-01T00:00:00.000Z`).
 - `release:trust:diff` supports semantic strict mode via `RELEASE_TRUST_DIFF_STRICT=true` (default `false`).
+- PR CI publishes a semantic release-trust summary to `GITHUB_STEP_SUMMARY` for reviewer-readable governance outcomes.
 
 ---
 

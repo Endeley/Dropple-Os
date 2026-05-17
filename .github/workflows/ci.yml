@@ -245,3 +245,9 @@ jobs:
         env:
           RELEASE_TRUST_BASELINE_REQUIRED_AFTER: '2026-07-01T00:00:00.000Z'
         run: npm run release:trust:diff
+
+      - name: Publish release trust summary
+        if: always()
+        env:
+          RELEASE_TRUST_BASELINE_REQUIRED_AFTER: '2026-07-01T00:00:00.000Z'
+        run: npm run release:trust:summary
