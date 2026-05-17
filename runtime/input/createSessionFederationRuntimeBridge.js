@@ -6,6 +6,7 @@ import {
     commitFederationSessionAction,
     updateFederationPreviewAction,
 } from '@/runtime/orchestration/sessionFederationActions.js';
+import { validateFederationIngress } from '@/runtime/orchestration/validateFederationIngress.js';
 
 let federationRuntimeState = {
     collaboration: {
@@ -37,7 +38,10 @@ function getSessionRecord(sessionId) {
 }
 
 function applyFederationAction(event) {
-    federationRuntimeState = collaborationReducers(federationRuntimeState, event);
+    const payloadSessionId = String(event?.payload?.sessionId ?? '').trim();
+    const existing = payloadSessionId ? getSessionRecord(payloadSessionId) : null;
+    const validatedEvent = validateFederationIngress(event, existing);
+    federationRuntimeState = collaborationReducers(federationRuntimeState, validatedEvent);
 }
 
 function createSnapshot(sessionId) {
@@ -139,6 +143,15 @@ export function getCreateSessionFederationSnapshotRuntime(sessionId) {
     return createSnapshot(sessionId);
 }
 
+export function dispatchFederationIngressRuntime(event = {}) {
+    applyFederationAction(event);
+    const sessionId = String(event?.payload?.sessionId ?? '').trim();
+    if (!sessionId) return null;
+    const record = getSessionRecord(sessionId);
+    if (!record) return null;
+    return createSnapshot(sessionId);
+}
+
 export function resetCreateSessionFederationRuntimeForTests() {
     federationRuntimeState = {
         collaboration: {
@@ -151,4 +164,3 @@ export function resetCreateSessionFederationRuntimeForTests() {
         },
     };
 }
-

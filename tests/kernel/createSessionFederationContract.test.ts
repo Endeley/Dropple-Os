@@ -4,11 +4,13 @@ import assert from 'node:assert/strict';
 import { getRuntimeState } from '@/runtime/state/runtimeState.js';
 import {
     beginCreateSessionFederationRuntime,
+    dispatchFederationIngressRuntime,
     closeCreateSessionFederationRuntime,
     resetCreateSessionFederationRuntimeForTests,
     sealCreateSessionFederationCommitRuntime,
     updateCreateSessionFederationPreviewRuntime,
 } from '@/runtime/input/createSessionFederationRuntimeBridge.js';
+import { EventTypes } from '@/core/events/eventTypes.js';
 
 test('create-session federation lifecycle is deterministic and closed', () => {
     resetCreateSessionFederationRuntimeForTests();
@@ -56,6 +58,27 @@ test('create-session federation is coordination-only and does not mutate runtime
     });
     sealCreateSessionFederationCommitRuntime({ sessionId: 'frame:kernel-2' });
     closeCreateSessionFederationRuntime({ sessionId: 'frame:kernel-2' });
+
+    const after = getRuntimeState();
+    assert.deepEqual(after, before);
+});
+
+test('federation ingress reject is coordination-only and does not mutate runtime truth', () => {
+    resetCreateSessionFederationRuntimeForTests();
+
+    const before = getRuntimeState();
+
+    assert.throws(
+        () =>
+            dispatchFederationIngressRuntime({
+                type: EventTypes.COLLABORATION_FEDERATION_SESSION_COMMIT,
+                payload: {
+                    sessionId: 'foreign-session',
+                    expectedCheckpointSignature: 'sig',
+                },
+            }),
+        /"reason":"SESSION_NOT_FOUND"/,
+    );
 
     const after = getRuntimeState();
     assert.deepEqual(after, before);
