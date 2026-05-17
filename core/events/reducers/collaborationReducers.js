@@ -3,7 +3,7 @@ import {
   createFederatedSessionEnvelope,
   createFederatedSessionCheckpoint,
   transitionFederatedSession,
-} from '@/runtime/orchestration/sessionFederation.js';
+} from '@/core/collaboration/sessionFederationEnvelope.js';
 
 const EMPTY_COLLABORATION = Object.freeze({
   session: null,
