@@ -30,11 +30,13 @@ test('release trust summary formatter is deterministic for identical semantic ou
         result,
         strict: false,
         baselineRequiredAfter: '2026-07-01T00:00:00.000Z',
+        ledger: { ok: true, entryCount: 12, reason: null, index: null },
     });
     const b = formatReleaseTrustSummary({
         result,
         strict: false,
         baselineRequiredAfter: '2026-07-01T00:00:00.000Z',
+        ledger: { ok: true, entryCount: 12, reason: null, index: null },
     });
 
     assert.equal(a, b);
@@ -42,5 +44,6 @@ test('release trust summary formatter is deterministic for identical semantic ou
     assert.match(a, /Constitutional Regressions/);
     assert.match(a, /Semantic Drift/);
     assert.match(a, /Lawful Evolution/);
+    assert.match(a, /Ledger entries: `12`/);
+    assert.match(a, /Ledger chain: `ok`/);
 });
-

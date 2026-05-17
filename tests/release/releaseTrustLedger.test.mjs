@@ -98,3 +98,29 @@ test('release trust ledger verification fails closed when historical entry is ta
     assert.equal(verification.index, 0);
     assert.equal(verification.reason, 'entry-hash-mismatch');
 });
+
+test('release trust ledger append preserves baseline chain continuity', () => {
+    const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'dropple-release-ledger-baseline-'));
+    const reportPath = path.join(tmpRoot, 'release-trust.json');
+    const ledgerPath = path.join(tmpRoot, 'release-trust-ledger.jsonl');
+
+    const baselineEntry = createLedgerEntry({
+        report: createReport({ reportHash: 'baseline-hash' }),
+        previousEntryHash: null,
+        timestamp: '2026-05-17T00:00:00.000Z',
+        commitSha: 'baseline-sha',
+        prNumber: null,
+        strict: false,
+    });
+    fs.writeFileSync(ledgerPath, `${JSON.stringify(baselineEntry)}\n`, 'utf8');
+
+    fs.writeFileSync(reportPath, JSON.stringify(createReport({ reportHash: 'pr-hash' })), 'utf8');
+    const appended = appendReleaseTrustLedger({ reportPath, ledgerPath });
+    const entries = parseLedgerLines(fs.readFileSync(ledgerPath, 'utf8'));
+    const verification = verifyLedgerChain(entries);
+
+    assert.equal(entries.length, 2);
+    assert.equal(appended.previousEntryHash, baselineEntry.entryHash);
+    assert.equal(entries[1].previousEntryHash, baselineEntry.entryHash);
+    assert.equal(verification.ok, true);
+});

@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import { runReleaseTrustDiff } from './releaseTrustDiff.mjs';
+import { parseLedgerLines, verifyLedgerChain } from './releaseTrustLedger.mjs';
 
 function groupOutcomes(outcomes = []) {
     const groups = {
@@ -18,6 +19,7 @@ export function formatReleaseTrustSummary({
     result,
     strict = false,
     baselineRequiredAfter = null,
+    ledger = null,
 } = {}) {
     const safeResult = result ?? { ok: false, errors: ['release trust diff result unavailable.'], warnings: [], deltas: [], outcomes: [] };
     const grouped = groupOutcomes(safeResult.outcomes ?? []);
@@ -28,6 +30,13 @@ export function formatReleaseTrustSummary({
     lines.push(`- Status: **${safeResult.ok ? 'PASS' : 'FAIL'}**`);
     lines.push(`- Strict mode: \`${strict ? 'true' : 'false'}\``);
     lines.push(`- Baseline required after: \`${baselineRequiredAfter ?? 'not-set'}\``);
+    if (ledger) {
+        lines.push(`- Ledger entries: \`${Number(ledger.entryCount ?? 0)}\``);
+        lines.push(`- Ledger chain: \`${ledger.ok ? 'ok' : 'fail'}\``);
+        if (!ledger.ok && ledger.reason) {
+            lines.push(`- Ledger issue: \`${ledger.reason}\` (index=${Number(ledger.index ?? -1)})`);
+        }
+    }
     lines.push('');
 
     if ((safeResult.errors ?? []).length > 0) {
@@ -65,9 +74,38 @@ export function formatReleaseTrustSummary({
     return `${lines.join('\n').trim()}\n`;
 }
 
+function resolveLedgerStatus(ledgerPath) {
+    if (!ledgerPath || !fs.existsSync(ledgerPath)) {
+        return Object.freeze({
+            ok: true,
+            entryCount: 0,
+            reason: null,
+            index: null,
+        });
+    }
+    const content = fs.readFileSync(ledgerPath, 'utf8');
+    const entries = parseLedgerLines(content);
+    const verification = verifyLedgerChain(entries);
+    if (!verification.ok) {
+        return Object.freeze({
+            ok: false,
+            entryCount: entries.length,
+            reason: verification.reason ?? 'unknown',
+            index: Number.isInteger(verification.index) ? verification.index : null,
+        });
+    }
+    return Object.freeze({
+        ok: true,
+        entryCount: entries.length,
+        reason: null,
+        index: null,
+    });
+}
+
 export function buildReleaseTrustSummary({
     currentPath = process.env.RELEASE_TRUST_CURRENT_PATH || '.artifacts/release-trust.json',
     baselinePath = process.env.RELEASE_TRUST_BASELINE_PATH || '.artifacts/release-trust-baseline.json',
+    ledgerPath = process.env.RELEASE_TRUST_LEDGER_PATH || '.artifacts/release-trust-ledger.jsonl',
     baselineRequiredAfter = process.env.RELEASE_TRUST_BASELINE_REQUIRED_AFTER || null,
     strict = process.env.RELEASE_TRUST_DIFF_STRICT || 'false',
 } = {}) {
@@ -82,6 +120,7 @@ export function buildReleaseTrustSummary({
         result,
         strict: strictEnabled,
         baselineRequiredAfter,
+        ledger: resolveLedgerStatus(ledgerPath),
     });
 }
 
@@ -93,4 +132,3 @@ if (process.argv[1] && process.argv[1].endsWith('releaseTrustSummary.mjs')) {
         fs.appendFileSync(summaryPath, `${summary}\n`, 'utf8');
     }
 }
-

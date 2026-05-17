@@ -208,6 +208,63 @@ jobs:
           ENGINE_VERSION: ${{ secrets.ENGINE_VERSION }}
           ROOT_PUBLIC_KEY: ${{ secrets.ROOT_PUBLIC_KEY }}
 
+      - name: Fetch main release trust baseline artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p .artifacts
+          WORKFLOW_FILE="ci.yml"
+          REPORT_ARTIFACT_NAME="release-trust-report-main"
+          LEDGER_ARTIFACT_NAME="release-trust-ledger-main"
+
+          RUN_ID="$(gh api \
+            "repos/${{ github.repository }}/actions/workflows/${WORKFLOW_FILE}/runs" \
+            -f branch=main \
+            -f status=success \
+            -f event=push \
+            -q '.workflow_runs[0].id // empty')"
+
+          if [ -z "${RUN_ID}" ]; then
+            echo "No successful main run found; skipping baseline download."
+            exit 0
+          fi
+
+          REPORT_ARTIFACT_ID="$(gh api \
+            "repos/${{ github.repository }}/actions/runs/${RUN_ID}/artifacts" \
+            -q '.artifacts[] | select(.name=="'"${REPORT_ARTIFACT_NAME}"'") | .id' | head -n 1)"
+
+          if [ -z "${REPORT_ARTIFACT_ID}" ]; then
+            echo "No ${REPORT_ARTIFACT_NAME} artifact found in run ${RUN_ID}; skipping baseline download."
+            exit 0
+          fi
+
+          gh api \
+            "repos/${{ github.repository }}/actions/artifacts/${REPORT_ARTIFACT_ID}/zip" \
+            > .artifacts/release-trust-baseline.zip
+
+          unzip -o .artifacts/release-trust-baseline.zip -d .artifacts/release-trust-baseline-unpacked
+          cp .artifacts/release-trust-baseline-unpacked/release-trust.json .artifacts/release-trust-baseline.json
+          echo "Baseline report ready at .artifacts/release-trust-baseline.json"
+
+          LEDGER_ARTIFACT_ID="$(gh api \
+            "repos/${{ github.repository }}/actions/runs/${RUN_ID}/artifacts" \
+            -q '.artifacts[] | select(.name=="'"${LEDGER_ARTIFACT_NAME}"'") | .id' | head -n 1)"
+
+          if [ -z "${LEDGER_ARTIFACT_ID}" ]; then
+            echo "No ${LEDGER_ARTIFACT_NAME} artifact found in run ${RUN_ID}; starting a new ledger chain for this PR run."
+            exit 0
+          fi
+
+          gh api \
+            "repos/${{ github.repository }}/actions/artifacts/${LEDGER_ARTIFACT_ID}/zip" \
+            > .artifacts/release-trust-ledger-baseline.zip
+
+          unzip -o .artifacts/release-trust-ledger-baseline.zip -d .artifacts/release-trust-ledger-baseline-unpacked
+          cp .artifacts/release-trust-ledger-baseline-unpacked/release-trust-ledger.jsonl .artifacts/release-trust-ledger.jsonl
+          echo "Baseline ledger seeded at .artifacts/release-trust-ledger.jsonl"
+
       - name: Append release trust ledger entry (pr)
         run: npm run release:trust:ledger
         env:
@@ -229,45 +286,6 @@ jobs:
           name: release-trust-ledger-pr
           path: .artifacts/release-trust-ledger.jsonl
           if-no-files-found: error
-
-      - name: Fetch main release trust baseline artifact
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-
-          mkdir -p .artifacts
-          WORKFLOW_FILE="ci.yml"
-          ARTIFACT_NAME="release-trust-report-main"
-
-          RUN_ID="$(gh api \
-            "repos/${{ github.repository }}/actions/workflows/${WORKFLOW_FILE}/runs" \
-            -f branch=main \
-            -f status=success \
-            -f event=push \
-            -q '.workflow_runs[0].id // empty')"
-
-          if [ -z "${RUN_ID}" ]; then
-            echo "No successful main run found; skipping baseline download."
-            exit 0
-          fi
-
-          ARTIFACT_ID="$(gh api \
-            "repos/${{ github.repository }}/actions/runs/${RUN_ID}/artifacts" \
-            -q '.artifacts[] | select(.name=="'"${ARTIFACT_NAME}"'") | .id' | head -n 1)"
-
-          if [ -z "${ARTIFACT_ID}" ]; then
-            echo "No ${ARTIFACT_NAME} artifact found in run ${RUN_ID}; skipping baseline download."
-            exit 0
-          fi
-
-          gh api \
-            "repos/${{ github.repository }}/actions/artifacts/${ARTIFACT_ID}/zip" \
-            > .artifacts/release-trust-baseline.zip
-
-          unzip -o .artifacts/release-trust-baseline.zip -d .artifacts/release-trust-baseline-unpacked
-          cp .artifacts/release-trust-baseline-unpacked/release-trust.json .artifacts/release-trust-baseline.json
-          echo "Baseline report ready at .artifacts/release-trust-baseline.json"
 
       - name: Release trust diff (blocking)
         env:
