@@ -251,3 +251,11 @@ jobs:
         env:
           RELEASE_TRUST_BASELINE_REQUIRED_AFTER: '2026-07-01T00:00:00.000Z'
         run: npm run release:trust:summary
+
+      - name: Publish release trust PR comment
+        if: always()
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RELEASE_TRUST_BASELINE_REQUIRED_AFTER: '2026-07-01T00:00:00.000Z'
+        run: npm run release:trust:pr-comment

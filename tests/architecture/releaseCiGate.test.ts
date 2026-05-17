@@ -23,10 +23,15 @@ test('pull request CI workflow runs validate:release as a required release gate'
     assert.match(workflow, /actions\/workflows\/\$\{WORKFLOW_FILE\}\/runs/);
     assert.match(workflow, /release-trust-baseline\.json/);
     assert.match(workflow, /name:\s*Release trust diff \(blocking\)/);
-    assert.doesNotMatch(workflow, /continue-on-error:\s*true/);
+    assert.doesNotMatch(
+        workflow,
+        /name:\s*Release trust diff \(blocking\)\n(?:.*\n){0,4}\s*continue-on-error:\s*true/,
+    );
     assert.match(workflow, /RELEASE_TRUST_BASELINE_REQUIRED_AFTER:\s*'2026-07-01T00:00:00.000Z'/);
     assert.match(workflow, /run:\s*npm run release:trust:diff/);
     assert.match(workflow, /name:\s*Publish release trust summary/);
     assert.match(workflow, /if:\s*always\(\)/);
     assert.match(workflow, /run:\s*npm run release:trust:summary/);
+    assert.match(workflow, /name:\s*Publish release trust PR comment/);
+    assert.match(workflow, /run:\s*npm run release:trust:pr-comment/);
 });
