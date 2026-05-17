@@ -59,16 +59,20 @@ function createReleaseSnapshot() {
 }
 
 function runArchitectureGateStatus() {
-    const outcome = spawnSync(process.execPath, ['enforceDroppleLaws.cjs'], {
+    const outcome = spawnSync('npm', ['run', 'architecture:ci'], {
         cwd: process.cwd(),
         stdio: 'pipe',
         encoding: 'utf8',
     });
     const error = outcome.error ? String(outcome.error.message ?? outcome.error) : null;
+    const stdout = typeof outcome.stdout === 'string' ? outcome.stdout.trim() : '';
+    const stderr = typeof outcome.stderr === 'string' ? outcome.stderr.trim() : '';
     return Object.freeze({
         ok: outcome.status === 0,
         exitCode: Number.isInteger(outcome.status) ? outcome.status : 1,
         error,
+        stdoutTail: stdout ? stdout.split('\n').slice(-12).join('\n') : null,
+        stderrTail: stderr ? stderr.split('\n').slice(-12).join('\n') : null,
     });
 }
 
