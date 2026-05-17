@@ -4,6 +4,7 @@ import { rootReducer } from "./reducers/index.js";
 import { createTimeline } from "@/timeline/schema/timeline.js";
 import { createInitialGraphInteractionState } from './graphInteractionState.js';
 import { createCanonicalDocumentEnvelope } from '@/core/persistence/documentEnvelope.js';
+import { createInitialFederationAuditState } from '@/core/collaboration/federationAuditState.js';
 
 const initialState = Object.freeze({
     document: Object.freeze(createCanonicalDocumentEnvelope()),
@@ -45,6 +46,7 @@ const initialState = Object.freeze({
             sessions: Object.freeze({}),
         }),
     }),
+    federationAudit: createInitialFederationAuditState(),
 });
 
 function ensureDefaultTimeline(state) {

@@ -94,6 +94,7 @@ const NON_PERSISTED_EVENTS = new Set([
     EventTypes.DRAG_START,
     EventTypes.DRAG_UPDATE,
     EventTypes.DRAG_END,
+    EventTypes.FEDERATION_AUDIT_APPEND,
 
 ]);
 

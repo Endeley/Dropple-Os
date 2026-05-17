@@ -41,6 +41,7 @@ export function getProjectedWorkspaceViewState() {
         allowedEventTypes: workspace?.allowedEventTypes ?? null,
         selection: state?.selection ?? null,
         selectionBounds: state?.selectionBounds ?? null,
+        federationAudit: state?.federationAudit ?? { entries: [], hash: '', maxEntries: 256 },
         guides: state?.guides ?? [],
         groupTransform: state?.groupTransform ?? null,
         tools: state?.tools ?? null,

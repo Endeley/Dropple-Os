@@ -1,4 +1,6 @@
-import { hashRuntimeState } from '@/core/persistence/hashDocument.js';
+import { createFederationAuditHash } from '@/core/collaboration/federationAuditState.js';
+
+export { createFederationAuditHash };
 
 function normalizeString(value, fallback = '') {
     const normalized = typeof value === 'string' ? value.trim() : '';
@@ -52,48 +54,35 @@ export function createFederationAuditEntry({
     });
 }
 
-export function createFederationAuditHash(entries = []) {
-    const normalized = (Array.isArray(entries) ? entries : [])
-        .filter((entry) => entry?.type === 'runtime.federation.audit')
-        .map((entry) => entry.payload)
-        .map((payload) => ({
-            eventType: normalizeString(payload?.eventType, 'unknown'),
-            sessionId: normalizeString(payload?.sessionId, 'unknown'),
-            outcome: normalizeString(payload?.outcome, 'accepted'),
-            reason: normalizeString(payload?.reason, 'none'),
-            beforeSignature: normalizeString(payload?.beforeSignature, ''),
-            afterSignature: normalizeString(payload?.afterSignature, ''),
-            phaseBefore: normalizeString(payload?.phaseBefore, ''),
-            phaseAfter: normalizeString(payload?.phaseAfter, ''),
-            epochBefore: normalizeNumber(payload?.epochBefore, 0),
-            epochAfter: normalizeNumber(payload?.epochAfter, 0),
-        }));
-
-    return hashRuntimeState(normalized);
-}
-
 export function createFederationSessionFingerprint(snapshot = null) {
     const envelope = snapshot?.envelope ?? null;
-    return hashRuntimeState({
+    return createFederationAuditHash([
+        {
+            type: 'runtime.federation.audit',
+            payload: {
         sessionId: normalizeString(envelope?.sessionId, ''),
-        sessionType: normalizeString(envelope?.sessionType, ''),
-        phase: normalizeString(envelope?.phase, ''),
-        commitEpoch: normalizeNumber(envelope?.commitEpoch, 0),
-        checkpointSignature: normalizeString(envelope?.checkpointSignature, ''),
-        participants: normalizeParticipants(envelope?.participants ?? []),
-        authority: {
-            ownerId: normalizeString(envelope?.authority?.ownerId, ''),
-            mode: normalizeString(envelope?.authority?.mode, ''),
+                eventType: normalizeString(envelope?.sessionType, 'unknown'),
+                outcome: normalizeString(envelope?.phase, ''),
+                reason: normalizeString(envelope?.checkpointSignature, ''),
+                beforeSignature: JSON.stringify(normalizeParticipants(envelope?.participants ?? [])),
+                afterSignature: JSON.stringify({
+                    ownerId: normalizeString(envelope?.authority?.ownerId, ''),
+                    mode: normalizeString(envelope?.authority?.mode, ''),
+                    previewBounds:
+                        snapshot?.previewBounds && typeof snapshot.previewBounds === 'object'
+                            ? {
+                                  x: normalizeNumber(snapshot.previewBounds.x, 0),
+                                  y: normalizeNumber(snapshot.previewBounds.y, 0),
+                                  width: normalizeNumber(snapshot.previewBounds.width, 0),
+                                  height: normalizeNumber(snapshot.previewBounds.height, 0),
+                              }
+                            : null,
+                }),
+                phaseBefore: normalizeString(envelope?.sessionType, ''),
+                phaseAfter: normalizeString(envelope?.phase, ''),
+                epochBefore: normalizeNumber(envelope?.commitEpoch, 0),
+                epochAfter: normalizeNumber(envelope?.commitEpoch, 0),
+            },
         },
-        previewBounds:
-            snapshot?.previewBounds && typeof snapshot.previewBounds === 'object'
-                ? {
-                      x: normalizeNumber(snapshot.previewBounds.x, 0),
-                      y: normalizeNumber(snapshot.previewBounds.y, 0),
-                      width: normalizeNumber(snapshot.previewBounds.width, 0),
-                      height: normalizeNumber(snapshot.previewBounds.height, 0),
-                  }
-                : null,
-    });
+    ]);
 }
-

@@ -94,6 +94,7 @@ export function syncRuntimeToZustand(nextState, options = {}) {
                 stateMachines: {},
                 navigation: {},
                 collaboration: { session: null, presence: [], cursors: [] },
+                federationAudit: { entries: [], hash: '', maxEntries: 256 },
                 ai: { requests: [], latestRequest: null },
                 graph: projectGraphInteraction(nextState),
                 tools: {
@@ -200,6 +201,13 @@ export function syncRuntimeToZustand(nextState, options = {}) {
                 userId,
                 ...cursor,
             })),
+        },
+        federationAudit: {
+            entries: Array.isArray(nextState.federationAudit?.entries) ? nextState.federationAudit.entries : [],
+            hash: typeof nextState.federationAudit?.hash === 'string' ? nextState.federationAudit.hash : '',
+            maxEntries: Number.isFinite(nextState.federationAudit?.maxEntries)
+                ? Number(nextState.federationAudit.maxEntries)
+                : 256,
         },
         ai: {
             requests: (nextState.ai?.order ?? []).map((id) => nextState.ai?.requests?.[id]).filter(Boolean),

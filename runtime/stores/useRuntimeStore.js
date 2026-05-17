@@ -29,6 +29,7 @@ export const useRuntimeStore = create((set) => ({
     stateMachines: {},
     navigation: {},
     collaboration: { session: null, presence: [], cursors: [] },
+    federationAudit: { entries: [], hash: '', maxEntries: 256 },
     ai: { requests: [], latestRequest: null },
     graph: {
         activeGraphId: null,

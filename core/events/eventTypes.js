@@ -64,6 +64,7 @@ export const EventTypes = Object.freeze({
     COLLABORATION_FEDERATION_SESSION_PREVIEW: 'collaboration/federation/session/preview',
     COLLABORATION_FEDERATION_SESSION_COMMIT: 'collaboration/federation/session/commit',
     COLLABORATION_FEDERATION_SESSION_CLOSE: 'collaboration/federation/session/close',
+    FEDERATION_AUDIT_APPEND: 'federation/audit/append',
 
     // ─────────────────────────────
     // AI

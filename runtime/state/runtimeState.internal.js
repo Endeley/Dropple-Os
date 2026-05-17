@@ -5,6 +5,7 @@ import { createPreviewState } from '@/runtime/state/previewState.js';
 import { createCanonicalDocumentEnvelope } from '@/core/persistence/documentEnvelope.js';
 import { initialToolRuntimeState } from '@/runtime/tools/toolRuntime.js';
 import { createInitialGraphInteractionState } from '@/core/events/graphInteractionState.js';
+import { createInitialFederationAuditState } from '@/core/collaboration/federationAuditState.js';
 
 export const initialRuntimeState = {
   document: createCanonicalDocumentEnvelope(),
@@ -52,6 +53,7 @@ export const initialRuntimeState = {
       sessions: {},
     },
   },
+  federationAudit: createInitialFederationAuditState(),
   ai: {
     requests: {},
     order: [],

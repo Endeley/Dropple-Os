@@ -7,6 +7,7 @@ import {
 } from '@/runtime/orchestration/sessionFederationActions.js';
 import { validateFederationIngress } from '@/runtime/orchestration/validateFederationIngress.js';
 import { replayEvents } from '@/runtime/dispatcher/replayEvents.js';
+import { EventTypes } from '@/core/events/eventTypes.js';
 import {
     createFederationAuditEntry,
     createFederationAuditHash,
@@ -15,6 +16,19 @@ import {
 
 let federationRuntimeState = undefined;
 let federationAuditEntries = [];
+
+function mirrorLatestAuditEntry(dispatcher, maxEntries = 256) {
+    if (!dispatcher || typeof dispatcher.dispatch !== 'function') return;
+    const latest = federationAuditEntries[federationAuditEntries.length - 1] ?? null;
+    if (!latest) return;
+    dispatcher.dispatch({
+        type: EventTypes.FEDERATION_AUDIT_APPEND,
+        payload: {
+            entry: latest,
+            maxEntries,
+        },
+    });
+}
 
 function toFiniteNumber(value) {
     return Number.isFinite(value) ? Number(value) : null;
@@ -105,6 +119,7 @@ export function beginCreateSessionFederationRuntime({
     pointerId,
     tool = null,
     nodeType = null,
+    dispatcher = null,
 } = {}) {
     assertFederationInvariant(
         typeof sessionId === 'string' && sessionId.length > 0,
@@ -128,11 +143,12 @@ export function beginCreateSessionFederationRuntime({
             ].filter(Boolean),
         }),
     );
+    mirrorLatestAuditEntry(dispatcher);
 
     return createSnapshot(sessionId);
 }
 
-export function updateCreateSessionFederationPreviewRuntime({ sessionId, bounds } = {}) {
+export function updateCreateSessionFederationPreviewRuntime({ sessionId, bounds, dispatcher = null } = {}) {
     const record = getSessionRecord(sessionId);
     assertFederationInvariant(record !== null, 'SESSION_NOT_REGISTERED', { sessionId });
     assertFederationInvariant(record.envelope?.phase !== 'closed', 'SESSION_ALREADY_CLOSED', { sessionId });
@@ -144,10 +160,11 @@ export function updateCreateSessionFederationPreviewRuntime({ sessionId, bounds 
             expectedCheckpointSignature: record.checkpoint?.checkpointSignature ?? null,
         }),
     );
+    mirrorLatestAuditEntry(dispatcher);
     return createSnapshot(sessionId);
 }
 
-export function sealCreateSessionFederationCommitRuntime({ sessionId } = {}) {
+export function sealCreateSessionFederationCommitRuntime({ sessionId, dispatcher = null } = {}) {
     const record = getSessionRecord(sessionId);
     assertFederationInvariant(record !== null, 'SESSION_NOT_REGISTERED', { sessionId });
 
@@ -157,10 +174,11 @@ export function sealCreateSessionFederationCommitRuntime({ sessionId } = {}) {
             expectedCheckpointSignature: record.checkpoint?.checkpointSignature ?? null,
         }),
     );
+    mirrorLatestAuditEntry(dispatcher);
     return createSnapshot(sessionId);
 }
 
-export function closeCreateSessionFederationRuntime({ sessionId } = {}) {
+export function closeCreateSessionFederationRuntime({ sessionId, dispatcher = null } = {}) {
     const record = getSessionRecord(sessionId);
     assertFederationInvariant(record !== null, 'SESSION_NOT_REGISTERED', { sessionId });
 
@@ -170,6 +188,7 @@ export function closeCreateSessionFederationRuntime({ sessionId } = {}) {
             expectedCheckpointSignature: record.checkpoint?.checkpointSignature ?? null,
         }),
     );
+    mirrorLatestAuditEntry(dispatcher);
     assertFederationInvariant(getSessionRecord(sessionId) === null, 'SESSION_NOT_RELEASED', {
         sessionId,
     });
@@ -185,8 +204,14 @@ export function getCreateSessionFederationSnapshotRuntime(sessionId) {
     return createSnapshot(sessionId);
 }
 
-export function dispatchFederationIngressRuntime(event = {}) {
-    applyFederationAction(event);
+export function dispatchFederationIngressRuntime(event = {}, { dispatcher = null, maxEntries = 256 } = {}) {
+    try {
+        applyFederationAction(event);
+    } catch (error) {
+        mirrorLatestAuditEntry(dispatcher, maxEntries);
+        throw error;
+    }
+    mirrorLatestAuditEntry(dispatcher, maxEntries);
     const sessionId = String(event?.payload?.sessionId ?? '').trim();
     if (!sessionId) return null;
     const record = getSessionRecord(sessionId);

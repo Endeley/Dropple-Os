@@ -205,7 +205,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                     );
                 }
                 if (createSessionRef.current?.sessionId) {
-                    closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId });
+                    closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId, dispatcher });
                 }
                 createSessionRef.current = null;
                 dragStartRef.current = null;
@@ -240,6 +240,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                     pointerId: e.pointerId,
                 };
                 beginCreateSessionFederation({
+                    dispatcher,
                     sessionId: createSessionRef.current.sessionId,
                     pointerId: e.pointerId,
                     tool,
@@ -254,7 +255,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
             e.currentTarget.setPointerCapture?.(e.pointerId);
             setOverlayDebug(`${tool}:pending`);
         },
-        [getActiveToolId, toWorldPoint],
+        [dispatcher, getActiveToolId, toWorldPoint],
     );
 
     const onPointerMove = useCallback(
@@ -272,6 +273,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                     current: worldPoint,
                 };
                 updateCreateSessionFederationPreview({
+                    dispatcher,
                     sessionId: createSessionRef.current.sessionId,
                     bounds: {
                         x: Math.min(createSessionRef.current.start.x, worldPoint.x),
@@ -307,7 +309,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
 
             routePointerInput('pointermove', e);
         },
-        [routePointerInput, toWorldPoint],
+        [dispatcher, routePointerInput, toWorldPoint],
     );
 
     const onPointerUp = useCallback(
@@ -317,7 +319,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
 
             if (overlaySessionRef.current) {
                 if (createSessionRef.current?.sessionId) {
-                    closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId });
+                    closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId, dispatcher });
                 }
                 createSessionRef.current = null;
                 dragStartRef.current = null;
@@ -354,6 +356,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                         height,
                     };
                     const federationSnapshot = sealCreateSessionFederationCommit({
+                        dispatcher,
                         sessionId,
                     });
 
@@ -412,7 +415,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
 
                 createSessionRef.current = null;
                 dragStartRef.current = null;
-                closeCreateSessionFederation({ sessionId });
+                closeCreateSessionFederation({ sessionId, dispatcher });
                 assertCreateSessionInvariant(
                     createSessionRef.current === null,
                     'create-session',
@@ -452,7 +455,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
 
             if (overlaySessionRef.current) {
                 if (createSessionRef.current?.sessionId) {
-                    closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId });
+                    closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId, dispatcher });
                 }
                 createSessionRef.current = null;
                 dragStartRef.current = null;
@@ -463,7 +466,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
             if (!createSessionRef.current) {
                 routePointerInput('pointercancel', e);
             } else if (createSessionRef.current?.sessionId) {
-                closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId });
+                closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId, dispatcher });
             }
 
             createSessionRef.current = null;
@@ -472,7 +475,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
 
             e.currentTarget.releasePointerCapture?.(e.pointerId);
         },
-        [routePointerInput],
+        [dispatcher, routePointerInput],
     );
 
     const onResizeHandlePointerDown = useCallback(

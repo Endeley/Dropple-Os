@@ -11,6 +11,7 @@ export * from './runtimeBridgeBus.js';
 export * from './evaluateTimelinePreview.js';
 export * from './projectStateAtTime.js';
 export * from './useWorkspaceProjectionState.js';
+export * from './useFederationAuditProjectionState.js';
 export * from './useWorkspaceVisualState.js';
 export * from './useWorkspaceViewState.js';
 export * from './nonReactProjection.js';
