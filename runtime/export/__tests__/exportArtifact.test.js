@@ -228,6 +228,13 @@ test('snapshot artifact export deterministically resolves canonical output', asy
             activeSceneId: 'sceneA',
             activeShotId: 'shotA',
         },
+        runtime: {
+            federationAudit: {
+                entries: [{ type: 'runtime.federation.audit', sessionId: 'fed-snap', status: 'accepted' }],
+                hash: 'fed-snap-hash',
+                maxEntries: 256,
+            },
+        },
         nodes: {},
         rootIds: ['root'],
     };
@@ -250,6 +257,9 @@ test('snapshot artifact export deterministically resolves canonical output', asy
 
     assert.deepEqual(first.output, second.output);
     assert.equal(first.exportHash, second.exportHash);
+    assert.deepEqual(first.federationAuditAttestation, second.federationAuditAttestation);
+    assert.equal(first.federationAuditAttestation?.hash, 'fed-snap-hash');
+    assert.equal(first.federationAuditAttestation?.entryCount, 1);
 });
 
 test('environment rebuild and equivalent snapshot runtime resolve to the same canonical spec', async () =>

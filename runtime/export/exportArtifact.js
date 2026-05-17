@@ -6,6 +6,7 @@ import { buildRuntimeSnapshotFromTemplateEnvironment } from '@/runtime/templates
 import { getExportCapabilities } from './getExportCapabilities.js';
 import { hashSimulationTrace } from '@/runtime/simulation/simulationTrace.js';
 import { resolveExportVerificationPolicy } from './verify/exportVerificationPolicy.js';
+import { resolveFederationAuditAttestation } from './federationAuditAttestation.js';
 import {
     createExportFingerprint,
     EXPORT_CANONICAL_VERSION,
@@ -271,6 +272,7 @@ export async function exportArtifact({
         output,
     });
     const simulationTraceFingerprint = hashSimulationTrace(snapshot?.runtime?.simulation?.trace ?? null);
+    const federationAuditAttestation = resolveFederationAuditAttestation(snapshot);
     const verificationPolicy = resolveExportVerificationPolicy({
         artifact,
         format,
@@ -285,6 +287,7 @@ export async function exportArtifact({
             output,
             exportHash,
             simulationTraceFingerprint,
+            federationAuditAttestation,
             canonicalVersion,
             algorithm,
             options: {
@@ -305,6 +308,7 @@ export async function exportArtifact({
         format,
         exportHash,
         simulationTraceFingerprint,
+        federationAuditAttestation,
         algorithm,
         canonicalVersion,
         output,

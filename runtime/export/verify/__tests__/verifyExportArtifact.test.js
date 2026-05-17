@@ -415,3 +415,110 @@ test('verifyExportArtifact rejects missing primitive simulation trace lineage wh
     assert.equal(verification.primitiveTraceLineageRequired, true);
     assert.equal(verification.primitiveTraceLineageProvided, false);
 });
+
+test('verifyExportArtifact validates federation audit attestation when provided', async () => {
+    const runtimeSnapshot = {
+        document: createDocument(),
+        runtime: {
+            federationAudit: {
+                entries: [
+                    { type: 'runtime.federation.audit', sessionId: 'fed-a', status: 'accepted' },
+                    { type: 'runtime.federation.audit', sessionId: 'fed-a', status: 'closed' },
+                ],
+                hash: 'fed-hash-a',
+                maxEntries: 256,
+            },
+        },
+    };
+    const artifact = createSnapshotArtifact({ snapshot: runtimeSnapshot });
+    const exported = await exportArtifact({
+        artifact,
+        format: ArtifactExportKinds.JSON,
+        options: { download: false },
+    });
+
+    const verification = await verifyExportArtifact({
+        artifact,
+        format: exported.format,
+        output: exported.output,
+        exportHash: exported.exportHash,
+        federationAuditAttestation: exported.federationAuditAttestation,
+        canonicalVersion: exported.canonicalVersion,
+        algorithm: exported.algorithm,
+        options: { download: false },
+    });
+
+    assert.equal(verification.valid, true);
+    assert.equal(verification.federationAuditAttestationProvided, true);
+    assert.equal(verification.federationAuditAttestationMatches, true);
+});
+
+test('verifyExportArtifact rejects tampered federation audit attestation when required', async () => {
+    const runtimeSnapshot = {
+        document: createDocument(),
+        runtime: {
+            federationAudit: {
+                entries: [{ type: 'runtime.federation.audit', sessionId: 'fed-a', status: 'accepted' }],
+                hash: 'fed-hash-a',
+                maxEntries: 256,
+            },
+        },
+    };
+    const artifact = createSnapshotArtifact({ snapshot: runtimeSnapshot });
+    const exported = await exportArtifact({
+        artifact,
+        format: ArtifactExportKinds.JSON,
+        options: { download: false },
+    });
+
+    const verification = await verifyExportArtifact({
+        artifact,
+        format: exported.format,
+        output: exported.output,
+        exportHash: exported.exportHash,
+        federationAuditAttestation: {
+            hash: `${exported.federationAuditAttestation.hash.slice(0, -1)}0`,
+            entryCount: exported.federationAuditAttestation.entryCount,
+        },
+        canonicalVersion: exported.canonicalVersion,
+        algorithm: exported.algorithm,
+        options: { download: false, requireFederationAuditAttestation: true },
+    });
+
+    assert.equal(verification.valid, false);
+    assert.equal(verification.federationAuditAttestationRequired, true);
+    assert.equal(verification.federationAuditAttestationMatches, false);
+});
+
+test('verifyExportArtifact fails closed when federation audit attestation is required but missing', async () => {
+    const runtimeSnapshot = {
+        document: createDocument(),
+        runtime: {
+            federationAudit: {
+                entries: [{ type: 'runtime.federation.audit', sessionId: 'fed-a', status: 'accepted' }],
+                hash: 'fed-hash-a',
+                maxEntries: 256,
+            },
+        },
+    };
+    const artifact = createSnapshotArtifact({ snapshot: runtimeSnapshot });
+    const exported = await exportArtifact({
+        artifact,
+        format: ArtifactExportKinds.JSON,
+        options: { download: false },
+    });
+
+    const verification = await verifyExportArtifact({
+        artifact,
+        format: exported.format,
+        output: exported.output,
+        exportHash: exported.exportHash,
+        canonicalVersion: exported.canonicalVersion,
+        algorithm: exported.algorithm,
+        options: { download: false, requireFederationAuditAttestation: true },
+    });
+
+    assert.equal(verification.valid, false);
+    assert.equal(verification.federationAuditAttestationRequired, true);
+    assert.equal(verification.federationAuditAttestationProvided, false);
+});

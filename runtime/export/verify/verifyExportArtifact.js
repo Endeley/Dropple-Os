@@ -7,6 +7,10 @@ import {
 import { getExportCapabilities } from '../getExportCapabilities.js';
 import { createExportFingerprint } from '../exportFingerprint.js';
 import { hashSimulationTrace } from '@/runtime/simulation/simulationTrace.js';
+import {
+    normalizeFederationAuditAttestation,
+    resolveFederationAuditAttestation,
+} from '../federationAuditAttestation.js';
 
 function isPlainObject(value) {
     return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -20,6 +24,7 @@ export async function verifyExportArtifact({
     canonicalVersion = EXPORT_CANONICAL_VERSION,
     algorithm = EXPORT_HASH_ALGORITHM,
     simulationTraceFingerprint = null,
+    federationAuditAttestation = null,
     options = {},
 } = {}) {
     if (!isPlainObject(artifact)) {
@@ -79,6 +84,19 @@ export async function verifyExportArtifact({
     const primitiveTraceLineageSatisfied = primitiveTraceLineageRequired
         ? primitiveTraceLineageProvided
         : true;
+    const reconstructedFederationAuditAttestation = resolveFederationAuditAttestation(snapshot);
+    const normalizedProvidedFederationAuditAttestation =
+        normalizeFederationAuditAttestation(federationAuditAttestation);
+    const federationAuditAttestationRequired = options?.requireFederationAuditAttestation === true;
+    const federationAuditAttestationProvided = Boolean(normalizedProvidedFederationAuditAttestation);
+    const federationAuditAttestationMatches =
+        federationAuditAttestationProvided &&
+        Boolean(reconstructedFederationAuditAttestation) &&
+        normalizedProvidedFederationAuditAttestation.hash === reconstructedFederationAuditAttestation.hash &&
+        normalizedProvidedFederationAuditAttestation.entryCount === reconstructedFederationAuditAttestation.entryCount;
+    const federationAuditAttestationRequirementSatisfied = federationAuditAttestationRequired
+        ? federationAuditAttestationProvided
+        : true;
     const reproductionMatches =
         reproducedFingerprint.exportHash === exportHash &&
         reproducedFingerprint.exportHash === providedFingerprint.exportHash;
@@ -90,6 +108,8 @@ export async function verifyExportArtifact({
             reproductionMatches &&
             traceRequirementSatisfied &&
             primitiveTraceLineageSatisfied &&
+            federationAuditAttestationRequirementSatisfied &&
+            (!federationAuditAttestationProvided || federationAuditAttestationMatches) &&
             (!traceFingerprintProvided || traceFingerprintMatches),
         hashMatches,
         capabilityMatches,
@@ -99,6 +119,10 @@ export async function verifyExportArtifact({
         traceFingerprintProvided,
         primitiveTraceLineageRequired,
         primitiveTraceLineageProvided,
+        federationAuditAttestationRequired,
+        federationAuditAttestationProvided,
+        federationAuditAttestationMatches,
+        reconstructedFederationAuditAttestation,
         reconstructedSimulationTraceFingerprint,
         exportHash,
         algorithm,

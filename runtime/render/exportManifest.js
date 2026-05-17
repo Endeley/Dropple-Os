@@ -66,6 +66,7 @@ export function buildExportManifest({
     exportTarget,
     verification = {},
     simulationTraceFingerprint = null,
+    federationAuditAttestation = null,
 } = {}) {
     assertRenderSession(renderSession);
     const normalizedExportTarget = normalizeExportTarget(exportTarget);
@@ -89,6 +90,18 @@ export function buildExportManifest({
         simulationTraceFingerprint:
             typeof simulationTraceFingerprint === 'string' && simulationTraceFingerprint.trim()
                 ? simulationTraceFingerprint.trim()
+                : null,
+        federationAuditAttestation:
+            federationAuditAttestation &&
+            typeof federationAuditAttestation === 'object' &&
+            typeof federationAuditAttestation.hash === 'string' &&
+            federationAuditAttestation.hash.trim()
+                ? Object.freeze({
+                    hash: federationAuditAttestation.hash.trim(),
+                    entryCount: Number.isFinite(federationAuditAttestation.entryCount)
+                        ? Math.max(0, Math.floor(Number(federationAuditAttestation.entryCount)))
+                        : 0,
+                })
                 : null,
     };
 

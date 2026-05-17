@@ -12,6 +12,13 @@ import {
 function createWorkspace() {
     return {
         runtime: {
+            federationAudit: {
+                entries: [
+                    { type: 'runtime.federation.audit', sessionId: 'session-a', status: 'accepted' },
+                ],
+                hash: 'federation-hash-a',
+                maxEntries: 256,
+            },
             simulation: {
                 trace: {
                     entries: [
@@ -103,6 +110,8 @@ test('createExportExecution builds canonical export workflow descriptors', () =>
     assert.ok((workflow.schedulerAttestation?.checkpoint?.scheduleSignature ?? '').length > 0);
     assert.equal(typeof workflow.manifest.simulationTraceFingerprint, 'string');
     assert.ok(workflow.manifest.simulationTraceFingerprint.length > 0);
+    assert.equal(workflow.manifest.federationAuditAttestation?.hash, 'federation-hash-a');
+    assert.equal(workflow.manifest.federationAuditAttestation?.entryCount, 1);
 });
 
 test('stepExportExecution resumes from checkpoint deterministically', () => {

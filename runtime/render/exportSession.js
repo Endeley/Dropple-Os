@@ -10,6 +10,7 @@ import { buildExportManifest } from './exportManifest.js';
 import { createRenderQueueState } from './renderQueue.js';
 import { buildRenderSession } from './renderSession.js';
 import { hashSimulationTrace } from '@/runtime/simulation/simulationTrace.js';
+import { resolveFederationAuditAttestation } from '@/runtime/export/federationAuditAttestation.js';
 
 function resolveExportTarget(snapshot, exportTarget = null) {
     if (exportTarget) return normalizeExportTarget(exportTarget);
@@ -99,6 +100,7 @@ export function createExportExecution({
         renderSession,
         exportTarget: resolvedExportTarget,
         simulationTraceFingerprint: hashSimulationTrace(snapshot?.runtime?.simulation?.trace ?? null),
+        federationAuditAttestation: resolveFederationAuditAttestation(snapshot),
     });
     const assignmentResult = executeRenderAssignment({
         executor,

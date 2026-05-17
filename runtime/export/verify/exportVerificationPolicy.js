@@ -32,6 +32,8 @@ export function resolveExportVerificationPolicy({
                 verification.requireSimulationTraceFingerprint !== false,
             requireSimulationPrimitiveTraceLineage:
                 verification.requireSimulationPrimitiveTraceLineage !== false,
+            requireFederationAuditAttestation:
+                verification.requireFederationAuditAttestation === true,
         }),
     });
 }
