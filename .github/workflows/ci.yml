@@ -166,6 +166,12 @@ jobs:
       - name: Verify release trust ledger chain (main)
         run: npm run release:trust:ledger:verify
 
+      - name: Append federation lineage ledger entry (main)
+        run: npm run release:federation:lineage:ledger
+
+      - name: Verify federation lineage ledger chain (main)
+        run: npm run release:federation:lineage:ledger:verify
+
       - name: Upload release trust report (main)
         uses: actions/upload-artifact@v5
         with:
@@ -185,6 +191,13 @@ jobs:
         with:
           name: federation-audit-lineage-main
           path: .artifacts/federation-audit-lineage.json
+          if-no-files-found: error
+
+      - name: Upload federation audit lineage ledger (main)
+        uses: actions/upload-artifact@v5
+        with:
+          name: federation-audit-lineage-ledger-main
+          path: .artifacts/federation-audit-lineage-ledger.jsonl
           if-no-files-found: error
 
   release-trust-gate-pr:
@@ -225,6 +238,8 @@ jobs:
           WORKFLOW_FILE="ci.yml"
           REPORT_ARTIFACT_NAME="release-trust-report-main"
           LEDGER_ARTIFACT_NAME="release-trust-ledger-main"
+          FEDERATION_LINEAGE_ARTIFACT_NAME="federation-audit-lineage-main"
+          FEDERATION_LINEAGE_LEDGER_ARTIFACT_NAME="federation-audit-lineage-ledger-main"
 
           RUN_ID="$(gh api \
             "repos/${{ github.repository }}/actions/workflows/${WORKFLOW_FILE}/runs" \
@@ -272,6 +287,38 @@ jobs:
           cp .artifacts/release-trust-ledger-baseline-unpacked/release-trust-ledger.jsonl .artifacts/release-trust-ledger.jsonl
           echo "Baseline ledger seeded at .artifacts/release-trust-ledger.jsonl"
 
+          FEDERATION_LINEAGE_ARTIFACT_ID="$(gh api \
+            "repos/${{ github.repository }}/actions/runs/${RUN_ID}/artifacts" \
+            -q '.artifacts[] | select(.name=="'"${FEDERATION_LINEAGE_ARTIFACT_NAME}"'") | .id' | head -n 1)"
+
+          if [ -n "${FEDERATION_LINEAGE_ARTIFACT_ID}" ]; then
+            gh api \
+              "repos/${{ github.repository }}/actions/artifacts/${FEDERATION_LINEAGE_ARTIFACT_ID}/zip" \
+              > .artifacts/federation-audit-lineage-baseline.zip
+
+            unzip -o .artifacts/federation-audit-lineage-baseline.zip -d .artifacts/federation-audit-lineage-baseline-unpacked
+            cp .artifacts/federation-audit-lineage-baseline-unpacked/federation-audit-lineage.json .artifacts/federation-audit-lineage-baseline.json
+            echo "Federation baseline lineage ready at .artifacts/federation-audit-lineage-baseline.json"
+          else
+            echo "No ${FEDERATION_LINEAGE_ARTIFACT_NAME} artifact found in run ${RUN_ID}; skipping federation lineage baseline."
+          fi
+
+          FEDERATION_LINEAGE_LEDGER_ARTIFACT_ID="$(gh api \
+            "repos/${{ github.repository }}/actions/runs/${RUN_ID}/artifacts" \
+            -q '.artifacts[] | select(.name=="'"${FEDERATION_LINEAGE_LEDGER_ARTIFACT_NAME}"'") | .id' | head -n 1)"
+
+          if [ -n "${FEDERATION_LINEAGE_LEDGER_ARTIFACT_ID}" ]; then
+            gh api \
+              "repos/${{ github.repository }}/actions/artifacts/${FEDERATION_LINEAGE_LEDGER_ARTIFACT_ID}/zip" \
+              > .artifacts/federation-audit-lineage-ledger-baseline.zip
+
+            unzip -o .artifacts/federation-audit-lineage-ledger-baseline.zip -d .artifacts/federation-audit-lineage-ledger-baseline-unpacked
+            cp .artifacts/federation-audit-lineage-ledger-baseline-unpacked/federation-audit-lineage-ledger.jsonl .artifacts/federation-audit-lineage-ledger.jsonl
+            echo "Federation lineage ledger seeded at .artifacts/federation-audit-lineage-ledger.jsonl"
+          else
+            echo "No ${FEDERATION_LINEAGE_LEDGER_ARTIFACT_NAME} artifact found in run ${RUN_ID}; starting a new federation lineage ledger chain for this PR run."
+          fi
+
       - name: Append release trust ledger entry (pr)
         run: npm run release:trust:ledger
         env:
@@ -279,6 +326,14 @@ jobs:
 
       - name: Verify release trust ledger chain (pr)
         run: npm run release:trust:ledger:verify
+
+      - name: Append federation lineage ledger entry (pr)
+        run: npm run release:federation:lineage:ledger
+        env:
+          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+
+      - name: Verify federation lineage ledger chain (pr)
+        run: npm run release:federation:lineage:ledger:verify
 
       - name: Upload release trust report (pr)
         uses: actions/upload-artifact@v5
@@ -299,6 +354,13 @@ jobs:
         with:
           name: federation-audit-lineage-pr
           path: .artifacts/federation-audit-lineage.json
+          if-no-files-found: error
+
+      - name: Upload federation audit lineage ledger (pr)
+        uses: actions/upload-artifact@v5
+        with:
+          name: federation-audit-lineage-ledger-pr
+          path: .artifacts/federation-audit-lineage-ledger.jsonl
           if-no-files-found: error
 
       - name: Release trust diff (blocking)

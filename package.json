@@ -67,6 +67,8 @@
         "release:trust:ledger": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustLedger.mjs append",
         "release:trust:ledger:verify": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustLedger.mjs verify",
         "release:federation:lineage": "node --import ./bench/register-alias-loader.mjs scripts/federationAuditLineageReport.mjs",
+        "release:federation:lineage:ledger": "node --import ./bench/register-alias-loader.mjs scripts/federationAuditLineageLedger.mjs append",
+        "release:federation:lineage:ledger:verify": "node --import ./bench/register-alias-loader.mjs scripts/federationAuditLineageLedger.mjs verify",
         "test:federation:release": "node --import ./tests/register-test-loaders.mjs --test tests/kernel/createSessionFederationContract.test.ts tests/kernel/sessionFederationOrchestrationContract.test.ts tests/kernel/federationAuditRuntime.test.ts && node --import ./bench/register-alias-loader.mjs --test tests/release/releaseFederationAttestationGate.test.mjs",
         "release:trust:diff": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustDiff.mjs",
         "release:trust:summary": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustSummary.mjs",

@@ -21,6 +21,7 @@ export function formatReleaseTrustSummary({
     baselineRequiredAfter = null,
     ledger = null,
     federationLineage = null,
+    federationLineageLedger = null,
 } = {}) {
     const safeResult = result ?? { ok: false, errors: ['release trust diff result unavailable.'], warnings: [], deltas: [], outcomes: [] };
     const grouped = groupOutcomes(safeResult.outcomes ?? []);
@@ -44,6 +45,17 @@ export function formatReleaseTrustSummary({
         lines.push(`- Federation replay equivalent: \`${federationLineage.replayEquivalent ? 'true' : 'false'}\``);
         lines.push(`- Federation stale rejected: \`${federationLineage.staleRejected ? 'true' : 'false'}\``);
         lines.push(`- Federation ordering closed: \`${federationLineage.orderingClosed ? 'true' : 'false'}\``);
+    }
+    if (federationLineageLedger) {
+        lines.push(`- Federation lineage ledger entries: \`${Number(federationLineageLedger.entryCount ?? 0)}\``);
+        lines.push(`- Federation lineage ledger chain: \`${federationLineageLedger.ok ? 'ok' : 'fail'}\``);
+        if (!federationLineageLedger.ok && federationLineageLedger.reason) {
+            lines.push(
+                `- Federation lineage ledger issue: \`${federationLineageLedger.reason}\` (index=${Number(
+                    federationLineageLedger.index ?? -1,
+                )})`,
+            );
+        }
     }
     lines.push('');
 
@@ -132,11 +144,41 @@ function resolveFederationLineageStatus(lineagePath) {
     }
 }
 
+function resolveFederationLineageLedgerStatus(ledgerPath) {
+    if (!ledgerPath || !fs.existsSync(ledgerPath)) {
+        return Object.freeze({
+            ok: true,
+            entryCount: 0,
+            reason: null,
+            index: null,
+        });
+    }
+    const content = fs.readFileSync(ledgerPath, 'utf8');
+    const entries = parseLedgerLines(content);
+    const verification = verifyLedgerChain(entries);
+    if (!verification.ok) {
+        return Object.freeze({
+            ok: false,
+            entryCount: entries.length,
+            reason: verification.reason ?? 'unknown',
+            index: Number.isInteger(verification.index) ? verification.index : null,
+        });
+    }
+    return Object.freeze({
+        ok: true,
+        entryCount: entries.length,
+        reason: null,
+        index: null,
+    });
+}
+
 export function buildReleaseTrustSummary({
     currentPath = process.env.RELEASE_TRUST_CURRENT_PATH || '.artifacts/release-trust.json',
     baselinePath = process.env.RELEASE_TRUST_BASELINE_PATH || '.artifacts/release-trust-baseline.json',
     ledgerPath = process.env.RELEASE_TRUST_LEDGER_PATH || '.artifacts/release-trust-ledger.jsonl',
     federationLineagePath = process.env.FEDERATION_AUDIT_LINEAGE_PATH || '.artifacts/federation-audit-lineage.json',
+    federationLineageLedgerPath =
+        process.env.FEDERATION_AUDIT_LINEAGE_LEDGER_PATH || '.artifacts/federation-audit-lineage-ledger.jsonl',
     baselineRequiredAfter = process.env.RELEASE_TRUST_BASELINE_REQUIRED_AFTER || null,
     strict = process.env.RELEASE_TRUST_DIFF_STRICT || 'false',
 } = {}) {
@@ -153,6 +195,7 @@ export function buildReleaseTrustSummary({
         baselineRequiredAfter,
         ledger: resolveLedgerStatus(ledgerPath),
         federationLineage: resolveFederationLineageStatus(federationLineagePath),
+        federationLineageLedger: resolveFederationLineageLedgerStatus(federationLineageLedgerPath),
     });
 }
 

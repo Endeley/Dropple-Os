@@ -27,11 +27,19 @@ test('pull request CI workflow runs validate:release as a required release gate'
     assert.match(workflow, /name:\s*release-trust-ledger-pr/);
     assert.match(workflow, /name:\s*Upload federation audit lineage \(pr\)/);
     assert.match(workflow, /name:\s*federation-audit-lineage-pr/);
+    assert.match(workflow, /name:\s*Append federation lineage ledger entry \(pr\)/);
+    assert.match(workflow, /run:\s*npm run release:federation:lineage:ledger/);
+    assert.match(workflow, /name:\s*Verify federation lineage ledger chain \(pr\)/);
+    assert.match(workflow, /run:\s*npm run release:federation:lineage:ledger:verify/);
+    assert.match(workflow, /name:\s*Upload federation audit lineage ledger \(pr\)/);
+    assert.match(workflow, /name:\s*federation-audit-lineage-ledger-pr/);
     assert.match(workflow, /name:\s*Fetch main release trust baseline artifacts/);
     assert.match(workflow, /actions\/workflows\/\$\{WORKFLOW_FILE\}\/runs/);
     assert.match(workflow, /release-trust-baseline\.json/);
     assert.match(workflow, /release-trust-ledger-main/);
     assert.match(workflow, /release-trust-ledger\.jsonl/);
+    assert.match(workflow, /federation-audit-lineage-main/);
+    assert.match(workflow, /federation-audit-lineage-ledger-main/);
     assert.match(workflow, /name:\s*Release trust diff \(blocking\)/);
     assert.doesNotMatch(
         workflow,

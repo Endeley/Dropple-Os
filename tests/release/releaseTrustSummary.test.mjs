@@ -38,6 +38,7 @@ test('release trust summary formatter is deterministic for identical semantic ou
             staleRejected: true,
             orderingClosed: true,
         },
+        federationLineageLedger: { ok: true, entryCount: 7, reason: null, index: null },
     });
     const b = formatReleaseTrustSummary({
         result,
@@ -51,6 +52,7 @@ test('release trust summary formatter is deterministic for identical semantic ou
             staleRejected: true,
             orderingClosed: true,
         },
+        federationLineageLedger: { ok: true, entryCount: 7, reason: null, index: null },
     });
 
     assert.equal(a, b);
@@ -62,4 +64,6 @@ test('release trust summary formatter is deterministic for identical semantic ou
     assert.match(a, /Ledger chain: `ok`/);
     assert.match(a, /Federation lineage hash: `lineage-hash-a`/);
     assert.match(a, /Federation replay equivalent: `true`/);
+    assert.match(a, /Federation lineage ledger entries: `7`/);
+    assert.match(a, /Federation lineage ledger chain: `ok`/);
 });
