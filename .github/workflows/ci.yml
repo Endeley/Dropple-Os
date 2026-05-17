@@ -180,6 +180,13 @@ jobs:
           path: .artifacts/release-trust-ledger.jsonl
           if-no-files-found: error
 
+      - name: Upload federation audit lineage (main)
+        uses: actions/upload-artifact@v5
+        with:
+          name: federation-audit-lineage-main
+          path: .artifacts/federation-audit-lineage.json
+          if-no-files-found: error
+
   release-trust-gate-pr:
     name: PR Release Validation (validate:release)
     runs-on: ubuntu-latest
@@ -285,6 +292,13 @@ jobs:
         with:
           name: release-trust-ledger-pr
           path: .artifacts/release-trust-ledger.jsonl
+          if-no-files-found: error
+
+      - name: Upload federation audit lineage (pr)
+        uses: actions/upload-artifact@v5
+        with:
+          name: federation-audit-lineage-pr
+          path: .artifacts/federation-audit-lineage.json
           if-no-files-found: error
 
       - name: Release trust diff (blocking)

@@ -72,8 +72,11 @@ Notes:
 - `npm run validate:release` emits `.artifacts/release-trust.json` with canonical trust checks and a report hash.
 - `npm run release:trust:ledger` appends `.artifacts/release-trust-ledger.jsonl` with tamper-evident chained entries.
 - `npm run release:trust:ledger:verify` fails closed if any historical ledger entry hash or chain pointer is tampered.
+- `npm run release:federation:lineage` emits `.artifacts/federation-audit-lineage.json` and fails closed when federation lifecycle invariants regress.
+- `npm run test:federation:release` is the focused federation release gate (tamper, stale event rejection, replay equivalence, ordering closure).
 - PR CI uploads release trust artifacts and enforces a blocking `release:trust:diff` step for trust drift protection.
 - PR and main CI now upload both `release-trust.json` and `release-trust-ledger.jsonl` artifacts.
+- PR and main CI also upload `federation-audit-lineage.json` for federation governance lineage visibility.
 - Baseline diff enforcement is date-gated via `RELEASE_TRUST_BASELINE_REQUIRED_AFTER` (currently `2026-07-01T00:00:00.000Z`).
 - `release:trust:diff` supports semantic strict mode via `RELEASE_TRUST_DIFF_STRICT=true` (default `false`).
 - PR CI publishes a semantic release-trust summary to `GITHUB_STEP_SUMMARY` for reviewer-readable governance outcomes.

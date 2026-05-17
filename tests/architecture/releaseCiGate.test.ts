@@ -25,6 +25,8 @@ test('pull request CI workflow runs validate:release as a required release gate'
     assert.match(workflow, /name:\s*release-trust-report-pr/);
     assert.match(workflow, /name:\s*Upload release trust ledger \(pr\)/);
     assert.match(workflow, /name:\s*release-trust-ledger-pr/);
+    assert.match(workflow, /name:\s*Upload federation audit lineage \(pr\)/);
+    assert.match(workflow, /name:\s*federation-audit-lineage-pr/);
     assert.match(workflow, /name:\s*Fetch main release trust baseline artifacts/);
     assert.match(workflow, /actions\/workflows\/\$\{WORKFLOW_FILE\}\/runs/);
     assert.match(workflow, /release-trust-baseline\.json/);

@@ -9,6 +9,13 @@ import {
     exportArtifact,
 } from '../runtime/export/exportArtifact.js';
 import { verifyExportArtifact } from '../runtime/export/verify/verifyExportArtifact.js';
+import { replayEvents } from '../runtime/dispatcher/replayEvents.js';
+import {
+    beginFederationSessionAction,
+    closeFederationSessionAction,
+    commitFederationSessionAction,
+    updateFederationPreviewAction,
+} from '../runtime/orchestration/sessionFederationActions.js';
 
 const REPORT_SCHEMA_VERSION = '1.0.0';
 const REPORT_PATH = path.join(process.cwd(), '.artifacts', 'release-trust.json');
@@ -82,6 +89,66 @@ function writeReport(report, reportPath = REPORT_PATH) {
     fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
 }
 
+function getSession(state, sessionId) {
+    return state?.collaboration?.federation?.sessions?.[sessionId] ?? null;
+}
+
+function evaluateFederationLifecycleGate() {
+    const sessionId = 'release:trust:federation';
+    const begin = beginFederationSessionAction({
+        sessionId,
+        participants: ['peer-z', 'peer-a'],
+        authority: { ownerId: 'release-trust', mode: 'coordination-only' },
+    });
+    let uninterrupted = replayEvents({ initialState: undefined, events: [begin] });
+    const started = getSession(uninterrupted, sessionId);
+    const preview = updateFederationPreviewAction({
+        sessionId,
+        bounds: { x: 4, y: 5, width: 6, height: 7 },
+        expectedCheckpointSignature: started?.checkpoint?.checkpointSignature ?? null,
+    });
+    uninterrupted = replayEvents({ initialState: uninterrupted, events: [preview] });
+    const afterPreview = getSession(uninterrupted, sessionId);
+    const commit = commitFederationSessionAction({
+        sessionId,
+        expectedCheckpointSignature: afterPreview?.checkpoint?.checkpointSignature ?? null,
+    });
+    uninterrupted = replayEvents({ initialState: uninterrupted, events: [commit] });
+    const afterCommit = getSession(uninterrupted, sessionId);
+    const close = closeFederationSessionAction({
+        sessionId,
+        expectedCheckpointSignature: afterCommit?.checkpoint?.checkpointSignature ?? null,
+    });
+    uninterrupted = replayEvents({ initialState: uninterrupted, events: [close] });
+
+    let resumed = replayEvents({ initialState: undefined, events: [begin] });
+    resumed = replayEvents({ initialState: resumed, events: [preview] });
+    resumed = replayEvents({ initialState: resumed, events: [commit] });
+    resumed = replayEvents({ initialState: resumed, events: [close] });
+
+    let staleRejected = false;
+    try {
+        replayEvents({
+            initialState: replayEvents({ initialState: undefined, events: [begin] }),
+            events: [
+                commitFederationSessionAction({
+                    sessionId,
+                    expectedCheckpointSignature: 'stale-signature',
+                }),
+            ],
+        });
+    } catch (error) {
+        staleRejected = /"reason":"STALE_FEDERATION_EVENT"/.test(String(error?.message ?? ''));
+    }
+
+    return Object.freeze({
+        ok: staleRejected && JSON.stringify(resumed) === JSON.stringify(uninterrupted) && getSession(uninterrupted, sessionId) === null,
+        staleRejected,
+        replayEquivalent: JSON.stringify(resumed) === JSON.stringify(uninterrupted),
+        orderingClosed: getSession(uninterrupted, sessionId) === null,
+    });
+}
+
 export async function generateReleaseTrustReport({ write = true } = {}) {
     const artifact = createSnapshotArtifact({
         snapshot: createReleaseSnapshot(),
@@ -149,6 +216,7 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
     });
 
     const architectureGate = runArchitectureGateStatus();
+    const federationLifecycle = evaluateFederationLifecycleGate();
 
     const checks = Object.freeze({
         architectureGate: Object.freeze({
@@ -171,6 +239,15 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
                 ? Number(exported.federationAuditAttestation.entryCount)
                 : 0,
             tamperRejected: tamperedFederation.valid === false,
+        }),
+        federationLifecycle: Object.freeze({
+            ok:
+                federationLifecycle.staleRejected === true &&
+                federationLifecycle.replayEquivalent === true &&
+                federationLifecycle.orderingClosed === true,
+            staleRejected: federationLifecycle.staleRejected === true,
+            replayEquivalent: federationLifecycle.replayEquivalent === true,
+            orderingClosed: federationLifecycle.orderingClosed === true,
         }),
         simulationTrace: Object.freeze({
             ok:

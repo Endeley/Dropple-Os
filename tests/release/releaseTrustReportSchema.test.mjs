@@ -13,7 +13,7 @@ test('release trust report schema is stable and required checks are present', as
 
     assert.deepEqual(
         Object.keys(report.checks).sort((left, right) => left.localeCompare(right)),
-        ['architectureGate', 'exportVerification', 'federationAttestation', 'simulationTrace'],
+        ['architectureGate', 'exportVerification', 'federationAttestation', 'federationLifecycle', 'simulationTrace'],
     );
 
     assert.equal(typeof report.checks.architectureGate.ok, 'boolean');
@@ -29,9 +29,13 @@ test('release trust report schema is stable and required checks are present', as
     assert.equal(typeof report.checks.federationAttestation.entryCount, 'number');
     assert.equal(typeof report.checks.federationAttestation.tamperRejected, 'boolean');
 
+    assert.equal(typeof report.checks.federationLifecycle.ok, 'boolean');
+    assert.equal(typeof report.checks.federationLifecycle.staleRejected, 'boolean');
+    assert.equal(typeof report.checks.federationLifecycle.replayEquivalent, 'boolean');
+    assert.equal(typeof report.checks.federationLifecycle.orderingClosed, 'boolean');
+
     assert.equal(typeof report.checks.simulationTrace.ok, 'boolean');
     assert.equal(typeof report.checks.simulationTrace.fingerprint, 'string');
     assert.equal(typeof report.checks.simulationTrace.primitiveTraceLineageProvided, 'boolean');
     assert.equal(typeof report.checks.simulationTrace.tamperRejected, 'boolean');
 });
-

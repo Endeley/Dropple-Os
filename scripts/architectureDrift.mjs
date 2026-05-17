@@ -44,6 +44,19 @@ const RULES = [
       /from\s+['"]@\/ui\//,
       /from\s+['"](?:\.\.\/)+ui\//
     ]
+  },
+  {
+    id: 'federation-bridge-imports-authority',
+    description: 'Create-session federation bridge must stay coordination-only and never import reducer/core authority paths',
+    roots: ['runtime/input'],
+    fileMatchers: ['createSessionFederationRuntimeBridge.js'],
+    patterns: [
+      /from\s+['"]@\/core\/events\/reducers\//,
+      /from\s+['"]@\/runtime\/state\//,
+      /from\s+['"]@\/runtime\/dispatcher\/dispatcherStore\//,
+      /\buseRuntimeStore\b/,
+      /\.setState\s*\(/
+    ]
   }
 ];
 
@@ -78,6 +91,11 @@ function findViolations() {
       const files = walk(rootPath);
 
       for (const file of files) {
+        if (Array.isArray(rule.fileMatchers) && rule.fileMatchers.length > 0) {
+          const rel = relative(file);
+          const matched = rule.fileMatchers.some((suffix) => rel.endsWith(String(suffix)));
+          if (!matched) continue;
+        }
         const source = fs.readFileSync(file, 'utf8');
         for (const pattern of rule.patterns) {
           if (pattern.test(source)) {

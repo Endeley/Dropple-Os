@@ -66,12 +66,14 @@
         "release:trust:report": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustReport.mjs",
         "release:trust:ledger": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustLedger.mjs append",
         "release:trust:ledger:verify": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustLedger.mjs verify",
+        "release:federation:lineage": "node --import ./bench/register-alias-loader.mjs scripts/federationAuditLineageReport.mjs",
+        "test:federation:release": "node --import ./tests/register-test-loaders.mjs --test tests/kernel/createSessionFederationContract.test.ts tests/kernel/sessionFederationOrchestrationContract.test.ts tests/kernel/federationAuditRuntime.test.ts && node --import ./bench/register-alias-loader.mjs --test tests/release/releaseFederationAttestationGate.test.mjs",
         "release:trust:diff": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustDiff.mjs",
         "release:trust:summary": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustSummary.mjs",
         "release:trust:pr-comment": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustPrComment.mjs",
         "test:release:attestation": "node --import ./bench/register-alias-loader.mjs --test tests/release/*.test.mjs",
         "validate:all": "npm run test:all && npm run test:system:all && npm run determinism && npm run architecture:ci",
-        "validate:release": "npm run validate:all && npm run template:verify-all && npm run test:release:attestation && npm run release:trust:report",
+        "validate:release": "npm run validate:all && npm run template:verify-all && npm run test:federation:release && npm run test:release:attestation && npm run release:trust:report && npm run release:federation:lineage",
         "validate:app": "npm run build:smoke && npm run test:routes:smoke"
     },
     "dependencies": {
