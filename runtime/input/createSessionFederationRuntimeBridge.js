@@ -1,10 +1,22 @@
+import { collaborationReducers } from '@/core/events/reducers/collaborationReducers.js';
+import { assertFederationInvariant } from '@/runtime/orchestration/sessionFederation.js';
 import {
-    assertFederationInvariant,
-    createFederatedSessionEnvelope,
-    transitionFederatedSession,
-} from '@/runtime/orchestration/sessionFederation.js';
+    beginFederationSessionAction,
+    closeFederationSessionAction,
+    commitFederationSessionAction,
+    updateFederationPreviewAction,
+} from '@/runtime/orchestration/sessionFederationActions.js';
 
-const createSessionFederationRegistry = new Map();
+let federationRuntimeState = {
+    collaboration: {
+        session: null,
+        presence: {},
+        cursors: {},
+        federation: {
+            sessions: {},
+        },
+    },
+};
 
 function toFiniteNumber(value) {
     return Number.isFinite(value) ? Number(value) : null;
@@ -20,15 +32,24 @@ function cloneBounds(bounds) {
     return { x, y, width, height };
 }
 
-function getRequiredRecord(sessionId) {
-    const record = createSessionFederationRegistry.get(sessionId) ?? null;
-    assertFederationInvariant(record !== null, 'SESSION_NOT_REGISTERED', { sessionId });
-    return record;
+function getSessionRecord(sessionId) {
+    return federationRuntimeState?.collaboration?.federation?.sessions?.[sessionId] ?? null;
 }
 
-function createSnapshot(record) {
+function applyFederationAction(event) {
+    federationRuntimeState = collaborationReducers(federationRuntimeState, event);
+}
+
+function createSnapshot(sessionId) {
+    const record = getSessionRecord(sessionId);
+    assertFederationInvariant(record !== null, 'SESSION_NOT_REGISTERED', { sessionId });
     return {
-        envelope: { ...record.envelope, participants: [...(record.envelope.participants ?? [])] },
+        envelope: {
+            ...record.envelope,
+            participants: [...(record.envelope?.participants ?? [])],
+            authority: record.envelope?.authority ? { ...record.envelope.authority } : null,
+        },
+        checkpoint: record.checkpoint ? { ...record.checkpoint } : null,
         previewBounds: record.previewBounds ? { ...record.previewBounds } : null,
     };
 }
@@ -44,58 +65,66 @@ export function beginCreateSessionFederationRuntime({
         'INVALID_SESSION_ID',
         { sessionId: sessionId ?? null },
     );
-    assertFederationInvariant(
-        !createSessionFederationRegistry.has(sessionId),
-        'SESSION_ALREADY_REGISTERED',
-        { sessionId },
+    assertFederationInvariant(getSessionRecord(sessionId) === null, 'SESSION_ALREADY_REGISTERED', { sessionId });
+
+    applyFederationAction(
+        beginFederationSessionAction({
+            sessionId,
+            sessionType: 'create',
+            authority: {
+                ownerId: 'runtime:create-session',
+                mode: 'coordination-only',
+            },
+            participants: [
+                Number.isFinite(pointerId) ? `pointer:${pointerId}` : null,
+                typeof tool === 'string' && tool.length > 0 ? `tool:${tool}` : null,
+                typeof nodeType === 'string' && nodeType.length > 0 ? `node:${nodeType}` : null,
+            ].filter(Boolean),
+        }),
     );
 
-    const envelope = createFederatedSessionEnvelope({
-        sessionId,
-        sessionType: 'create',
-        participants: [
-            Number.isFinite(pointerId) ? `pointer:${pointerId}` : null,
-            typeof tool === 'string' && tool.length > 0 ? `tool:${tool}` : null,
-            typeof nodeType === 'string' && nodeType.length > 0 ? `node:${nodeType}` : null,
-        ].filter(Boolean),
-        phase: 'created',
-        commitEpoch: 0,
-    });
-
-    const record = {
-        envelope,
-        previewBounds: null,
-    };
-    createSessionFederationRegistry.set(sessionId, record);
-    return createSnapshot(record);
+    return createSnapshot(sessionId);
 }
 
 export function updateCreateSessionFederationPreviewRuntime({ sessionId, bounds } = {}) {
-    const record = getRequiredRecord(sessionId);
-    assertFederationInvariant(record.envelope.phase !== 'closed', 'SESSION_ALREADY_CLOSED', {
-        sessionId,
-    });
-    record.previewBounds = cloneBounds(bounds);
-    if (record.envelope.phase === 'created') {
-        record.envelope = {
-            ...record.envelope,
-            phase: 'preview',
-        };
-    }
-    return createSnapshot(record);
+    const record = getSessionRecord(sessionId);
+    assertFederationInvariant(record !== null, 'SESSION_NOT_REGISTERED', { sessionId });
+    assertFederationInvariant(record.envelope?.phase !== 'closed', 'SESSION_ALREADY_CLOSED', { sessionId });
+
+    applyFederationAction(
+        updateFederationPreviewAction({
+            sessionId,
+            bounds: cloneBounds(bounds),
+            expectedCheckpointSignature: record.checkpoint?.checkpointSignature ?? null,
+        }),
+    );
+    return createSnapshot(sessionId);
 }
 
 export function sealCreateSessionFederationCommitRuntime({ sessionId } = {}) {
-    const record = getRequiredRecord(sessionId);
-    record.envelope = transitionFederatedSession(record.envelope, { type: 'seal-commit' });
-    return createSnapshot(record);
+    const record = getSessionRecord(sessionId);
+    assertFederationInvariant(record !== null, 'SESSION_NOT_REGISTERED', { sessionId });
+
+    applyFederationAction(
+        commitFederationSessionAction({
+            sessionId,
+            expectedCheckpointSignature: record.checkpoint?.checkpointSignature ?? null,
+        }),
+    );
+    return createSnapshot(sessionId);
 }
 
 export function closeCreateSessionFederationRuntime({ sessionId } = {}) {
-    const record = getRequiredRecord(sessionId);
-    record.envelope = transitionFederatedSession(record.envelope, { type: 'close-session' });
-    createSessionFederationRegistry.delete(sessionId);
-    assertFederationInvariant(!createSessionFederationRegistry.has(sessionId), 'SESSION_NOT_RELEASED', {
+    const record = getSessionRecord(sessionId);
+    assertFederationInvariant(record !== null, 'SESSION_NOT_REGISTERED', { sessionId });
+
+    applyFederationAction(
+        closeFederationSessionAction({
+            sessionId,
+            expectedCheckpointSignature: record.checkpoint?.checkpointSignature ?? null,
+        }),
+    );
+    assertFederationInvariant(getSessionRecord(sessionId) === null, 'SESSION_NOT_RELEASED', {
         sessionId,
     });
     return {
@@ -105,11 +134,21 @@ export function closeCreateSessionFederationRuntime({ sessionId } = {}) {
 }
 
 export function getCreateSessionFederationSnapshotRuntime(sessionId) {
-    const record = createSessionFederationRegistry.get(sessionId) ?? null;
-    return record ? createSnapshot(record) : null;
+    const record = getSessionRecord(sessionId);
+    if (!record) return null;
+    return createSnapshot(sessionId);
 }
 
 export function resetCreateSessionFederationRuntimeForTests() {
-    createSessionFederationRegistry.clear();
+    federationRuntimeState = {
+        collaboration: {
+            session: null,
+            presence: {},
+            cursors: {},
+            federation: {
+                sessions: {},
+            },
+        },
+    };
 }
 

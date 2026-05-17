@@ -48,6 +48,9 @@ export const initialRuntimeState = {
     session: null,
     presence: {},
     cursors: {},
+    federation: {
+      sessions: {},
+    },
   },
   ai: {
     requests: {},

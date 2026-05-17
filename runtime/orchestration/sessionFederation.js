@@ -22,6 +22,26 @@ function fail(reason, details = {}) {
     );
 }
 
+function toCanonicalAuthority(authority = null) {
+    const ownerId = String(authority?.ownerId ?? 'runtime:local').trim() || 'runtime:local';
+    const mode = String(authority?.mode ?? 'coordination-only').trim() || 'coordination-only';
+    return Object.freeze({
+        ownerId,
+        mode,
+    });
+}
+
+function toCheckpointSignature(envelope = {}) {
+    return JSON.stringify({
+        sessionId: String(envelope.sessionId ?? ''),
+        sessionType: String(envelope.sessionType ?? ''),
+        phase: String(envelope.phase ?? ''),
+        commitEpoch: Number.isFinite(envelope.commitEpoch) ? Number(envelope.commitEpoch) : 0,
+        participants: toCanonicalParticipantSet(envelope.participants ?? []),
+        authority: toCanonicalAuthority(envelope.authority ?? null),
+    });
+}
+
 export function assertFederationInvariant(condition, reason, details = {}) {
     if (condition) return;
     fail(reason, details);
@@ -33,6 +53,7 @@ export function createFederatedSessionEnvelope({
     participants = [],
     phase = 'created',
     commitEpoch = 0,
+    authority = null,
 } = {}) {
     assertFederationInvariant(typeof sessionId === 'string' && sessionId.length > 0, 'INVALID_SESSION_ID', {
         sessionId: sessionId ?? null,
@@ -44,12 +65,17 @@ export function createFederatedSessionEnvelope({
         commitEpoch: commitEpoch ?? null,
     });
 
-    return {
+    const base = {
         sessionId,
         sessionType,
         phase,
         commitEpoch,
         participants: toCanonicalParticipantSet(participants),
+        authority: toCanonicalAuthority(authority),
+    };
+    return {
+        ...base,
+        checkpointSignature: toCheckpointSignature(base),
     };
 }
 
@@ -57,7 +83,7 @@ export function transitionFederatedSession(envelope, event = {}) {
     assertFederationInvariant(envelope && typeof envelope === 'object', 'INVALID_ENVELOPE', {
         envelopeType: typeof envelope,
     });
-    const { type, participantId } = event;
+    const { type, participantId, expectedCheckpointSignature = null } = event;
     assertFederationInvariant(typeof type === 'string' && type.length > 0, 'INVALID_EVENT_TYPE', {
         eventType: type ?? null,
     });
@@ -65,7 +91,19 @@ export function transitionFederatedSession(envelope, event = {}) {
     const next = {
         ...envelope,
         participants: [...(envelope.participants ?? [])],
+        authority: toCanonicalAuthority(envelope.authority ?? null),
     };
+    if (expectedCheckpointSignature !== null && expectedCheckpointSignature !== undefined) {
+        assertFederationInvariant(
+            String(expectedCheckpointSignature) === String(envelope.checkpointSignature ?? ''),
+            'STALE_FEDERATION_EVENT',
+            {
+                expectedCheckpointSignature: String(expectedCheckpointSignature),
+                checkpointSignature: String(envelope.checkpointSignature ?? ''),
+                eventType: type,
+            },
+        );
+    }
 
     if (type === 'attach-participant') {
         const canonicalId = toCanonicalParticipantId(participantId);
@@ -73,7 +111,10 @@ export function transitionFederatedSession(envelope, event = {}) {
             participantId: participantId ?? null,
         });
         next.participants = toCanonicalParticipantSet([...next.participants, canonicalId]);
-        return next;
+        return {
+            ...next,
+            checkpointSignature: toCheckpointSignature(next),
+        };
     }
 
     if (type === 'detach-participant') {
@@ -82,7 +123,10 @@ export function transitionFederatedSession(envelope, event = {}) {
             participantId: participantId ?? null,
         });
         next.participants = next.participants.filter((id) => id !== canonicalId);
-        return next;
+        return {
+            ...next,
+            checkpointSignature: toCheckpointSignature(next),
+        };
     }
 
     if (type === 'seal-commit') {
@@ -94,16 +138,46 @@ export function transitionFederatedSession(envelope, event = {}) {
         });
         next.phase = 'committed';
         next.commitEpoch = next.commitEpoch + 1;
-        return next;
+        return {
+            ...next,
+            checkpointSignature: toCheckpointSignature(next),
+        };
+    }
+
+    if (type === 'set-preview') {
+        assertFederationInvariant(next.phase !== 'closed', 'SESSION_ALREADY_CLOSED', {
+            sessionId: next.sessionId,
+        });
+        if (next.phase === 'created') {
+            next.phase = 'preview';
+        }
+        return {
+            ...next,
+            checkpointSignature: toCheckpointSignature(next),
+        };
     }
 
     if (type === 'close-session') {
         next.phase = 'closed';
         next.participants = [];
-        return next;
+        return {
+            ...next,
+            checkpointSignature: toCheckpointSignature(next),
+        };
     }
 
     fail('UNSUPPORTED_EVENT_TYPE', {
         eventType: type,
+    });
+}
+
+export function createFederatedSessionCheckpoint(envelope = null) {
+    assertFederationInvariant(envelope && typeof envelope === 'object', 'INVALID_ENVELOPE', {
+        envelopeType: typeof envelope,
+    });
+    return Object.freeze({
+        sessionId: String(envelope.sessionId ?? ''),
+        commitEpoch: Number.isFinite(envelope.commitEpoch) ? Number(envelope.commitEpoch) : 0,
+        checkpointSignature: String(envelope.checkpointSignature ?? ''),
     });
 }

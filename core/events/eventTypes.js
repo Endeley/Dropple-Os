@@ -60,6 +60,10 @@ export const EventTypes = Object.freeze({
     COLLABORATION_PRESENCE_REMOVE: 'collaboration/presence/remove',
     COLLABORATION_CURSOR_UPDATE: 'collaboration/cursor/update',
     COLLABORATION_CURSOR_REMOVE: 'collaboration/cursor/remove',
+    COLLABORATION_FEDERATION_SESSION_BEGIN: 'collaboration/federation/session/begin',
+    COLLABORATION_FEDERATION_SESSION_PREVIEW: 'collaboration/federation/session/preview',
+    COLLABORATION_FEDERATION_SESSION_COMMIT: 'collaboration/federation/session/commit',
+    COLLABORATION_FEDERATION_SESSION_CLOSE: 'collaboration/federation/session/close',
 
     // ─────────────────────────────
     // AI

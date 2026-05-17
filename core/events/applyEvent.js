@@ -41,6 +41,9 @@ const initialState = Object.freeze({
         session: null,
         presence: Object.freeze({}),
         cursors: Object.freeze({}),
+        federation: Object.freeze({
+            sessions: Object.freeze({}),
+        }),
     }),
 });
 
