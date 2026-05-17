@@ -17,8 +17,14 @@ test('pull request CI workflow runs validate:release as a required release gate'
     assert.match(workflow, /name:\s*PR Release Validation \(validate:release\)/);
     assert.match(workflow, /if:\s*github\.event_name\s*==\s*'pull_request'/);
     assert.match(workflow, /run:\s*npm run validate:release/);
+    assert.match(workflow, /name:\s*Append release trust ledger entry \(pr\)/);
+    assert.match(workflow, /run:\s*npm run release:trust:ledger/);
+    assert.match(workflow, /name:\s*Verify release trust ledger chain \(pr\)/);
+    assert.match(workflow, /run:\s*npm run release:trust:ledger:verify/);
     assert.match(workflow, /name:\s*Upload release trust report \(pr\)/);
     assert.match(workflow, /name:\s*release-trust-report-pr/);
+    assert.match(workflow, /name:\s*Upload release trust ledger \(pr\)/);
+    assert.match(workflow, /name:\s*release-trust-ledger-pr/);
     assert.match(workflow, /name:\s*Fetch main release trust baseline artifact/);
     assert.match(workflow, /actions\/workflows\/\$\{WORKFLOW_FILE\}\/runs/);
     assert.match(workflow, /release-trust-baseline\.json/);

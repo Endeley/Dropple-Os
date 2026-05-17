@@ -160,11 +160,24 @@ jobs:
           ENGINE_VERSION: ${{ secrets.ENGINE_VERSION }}
           ROOT_PUBLIC_KEY: ${{ secrets.ROOT_PUBLIC_KEY }}
 
+      - name: Append release trust ledger entry (main)
+        run: npm run release:trust:ledger
+
+      - name: Verify release trust ledger chain (main)
+        run: npm run release:trust:ledger:verify
+
       - name: Upload release trust report (main)
         uses: actions/upload-artifact@v5
         with:
           name: release-trust-report-main
           path: .artifacts/release-trust.json
+          if-no-files-found: error
+
+      - name: Upload release trust ledger (main)
+        uses: actions/upload-artifact@v5
+        with:
+          name: release-trust-ledger-main
+          path: .artifacts/release-trust-ledger.jsonl
           if-no-files-found: error
 
   release-trust-gate-pr:
@@ -195,11 +208,26 @@ jobs:
           ENGINE_VERSION: ${{ secrets.ENGINE_VERSION }}
           ROOT_PUBLIC_KEY: ${{ secrets.ROOT_PUBLIC_KEY }}
 
+      - name: Append release trust ledger entry (pr)
+        run: npm run release:trust:ledger
+        env:
+          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+
+      - name: Verify release trust ledger chain (pr)
+        run: npm run release:trust:ledger:verify
+
       - name: Upload release trust report (pr)
         uses: actions/upload-artifact@v5
         with:
           name: release-trust-report-pr
           path: .artifacts/release-trust.json
+          if-no-files-found: error
+
+      - name: Upload release trust ledger (pr)
+        uses: actions/upload-artifact@v5
+        with:
+          name: release-trust-ledger-pr
+          path: .artifacts/release-trust-ledger.jsonl
           if-no-files-found: error
 
       - name: Fetch main release trust baseline artifact

@@ -64,6 +64,8 @@
         "ci:determinism": "npm run determinism",
         "template:verify-all": "NODE_ENV=test node scripts/templateVerifyAll.mjs",
         "release:trust:report": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustReport.mjs",
+        "release:trust:ledger": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustLedger.mjs append",
+        "release:trust:ledger:verify": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustLedger.mjs verify",
         "release:trust:diff": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustDiff.mjs",
         "release:trust:summary": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustSummary.mjs",
         "release:trust:pr-comment": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustPrComment.mjs",
