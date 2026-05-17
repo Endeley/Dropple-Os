@@ -37,12 +37,24 @@ function readJsonFile(filePath) {
     return JSON.parse(fs.readFileSync(absolutePath, 'utf8'));
 }
 
+function parseUtcTimestamp(value) {
+    if (typeof value !== 'string' || !value.trim()) return null;
+    const parsed = Date.parse(value.trim());
+    if (!Number.isFinite(parsed)) return null;
+    return parsed;
+}
+
 function resolveCheckSet(report) {
     if (!isPlainObject(report?.checks)) return new Set();
     return new Set(Object.keys(report.checks));
 }
 
-export function diffReleaseTrustReports({ current, baseline }) {
+export function diffReleaseTrustReports({
+    current,
+    baseline,
+    nowMs = Date.now(),
+    baselineRequiredAfter = null,
+}) {
     const errors = [];
     const warnings = [];
     const deltas = [];
@@ -53,6 +65,14 @@ export function diffReleaseTrustReports({ current, baseline }) {
     }
 
     if (!isPlainObject(baseline)) {
+        const cutoffMs = parseUtcTimestamp(baselineRequiredAfter);
+        if (cutoffMs !== null && Number.isFinite(nowMs) && Number(nowMs) >= cutoffMs) {
+            errors.push(
+                `baseline report unavailable after enforcement cutoff (${baselineRequiredAfter}).`,
+            );
+            return Object.freeze({ ok: false, errors, warnings, deltas });
+        }
+
         warnings.push('baseline report unavailable; diff skipped.');
         return Object.freeze({ ok: true, errors, warnings, deltas });
     }
@@ -96,10 +116,17 @@ export function diffReleaseTrustReports({ current, baseline }) {
 export function runReleaseTrustDiff({
     currentPath = '.artifacts/release-trust.json',
     baselinePath = '.artifacts/release-trust-baseline.json',
+    nowMs = Date.now(),
+    baselineRequiredAfter = process.env.RELEASE_TRUST_BASELINE_REQUIRED_AFTER || null,
 } = {}) {
     const current = readJsonFile(currentPath);
     const baseline = readJsonFile(baselinePath);
-    return diffReleaseTrustReports({ current, baseline });
+    return diffReleaseTrustReports({
+        current,
+        baseline,
+        nowMs,
+        baselineRequiredAfter,
+    });
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url))) {

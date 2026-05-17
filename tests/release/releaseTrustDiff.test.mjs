@@ -47,3 +47,31 @@ test('release trust diff is non-blocking when baseline is unavailable', () => {
     assert.equal(result.warnings.some((entry) => entry.includes('baseline report unavailable')), true);
 });
 
+test('release trust diff is non-blocking before baseline enforcement cutoff', () => {
+    const current = createReport();
+    const result = diffReleaseTrustReports({
+        baseline: null,
+        current,
+        nowMs: Date.parse('2026-05-17T00:00:00.000Z'),
+        baselineRequiredAfter: '2026-06-30T00:00:00.000Z',
+    });
+
+    assert.equal(result.ok, true);
+    assert.equal(result.warnings.some((entry) => entry.includes('baseline report unavailable')), true);
+});
+
+test('release trust diff fails when baseline is unavailable after enforcement cutoff', () => {
+    const current = createReport();
+    const result = diffReleaseTrustReports({
+        baseline: null,
+        current,
+        nowMs: Date.parse('2026-07-01T00:00:00.000Z'),
+        baselineRequiredAfter: '2026-06-30T00:00:00.000Z',
+    });
+
+    assert.equal(result.ok, false);
+    assert.equal(
+        result.errors.some((entry) => entry.includes('baseline report unavailable after enforcement cutoff')),
+        true,
+    );
+});

@@ -242,4 +242,6 @@ jobs:
           echo "Baseline report ready at .artifacts/release-trust-baseline.json"
 
       - name: Release trust diff (blocking)
+        env:
+          RELEASE_TRUST_BASELINE_REQUIRED_AFTER: '2026-07-01T00:00:00.000Z'
         run: npm run release:trust:diff
