@@ -241,6 +241,5 @@ jobs:
           cp .artifacts/release-trust-baseline-unpacked/release-trust.json .artifacts/release-trust-baseline.json
           echo "Baseline report ready at .artifacts/release-trust-baseline.json"
 
-      - name: Release trust diff (non-blocking)
-        continue-on-error: true
+      - name: Release trust diff (blocking)
         run: npm run release:trust:diff
