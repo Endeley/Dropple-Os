@@ -289,11 +289,15 @@
     }
   },
   "creative_physics": {
-    "status": "active",
+    "status": "complete",
     "frozen": false,
     "requires": [
       "physics_evaluator_law",
-      "no_durable_truth_mutation"
+      "no_durable_truth_mutation",
+      "deterministic_partition_scheduler_envelope",
+      "checkpoint_resume_equivalence",
+      "simulation_trace_attestation",
+      "release_facing_governance_visibility"
     ],
     "depends_on": [
       "tool_synthesis"
@@ -302,10 +306,36 @@
     "proofs": {
       "physics_evaluator_law": [
         "runtime/frame/runFramePipeline.js",
-        "runtime/scene/evaluateSceneIncremental.js"
+        "runtime/scene/evaluateSceneIncremental.js",
+        "runtime/simulation/simulationTick.js",
+        "runtime/simulation/evaluateSimulationFrame.js"
       ],
       "no_durable_truth_mutation": [
-        "docs/LAW.md"
+        "docs/LAW.md",
+        "tests/architecture/interactionPipelineEnforcement.test.ts"
+      ],
+      "deterministic_partition_scheduler_envelope": [
+        "runtime/frame/renderPassScheduler.js",
+        "runtime/frame/renderGraphEnvelope.js",
+        "runtime/frame/__tests__/renderPassScheduler.test.mjs",
+        "runtime/simulation/simulationPartitionSchedule.js",
+        "runtime/simulation/__tests__/simulationPartitionSchedule.test.mjs"
+      ],
+      "checkpoint_resume_equivalence": [
+        "runtime/simulation/__tests__/simulationPartitionSchedule.test.mjs",
+        "runtime/simulation/__tests__/simulationDeterminism.test.mjs",
+        "runtime/simulation/evaluateSimulationFrame.js"
+      ],
+      "simulation_trace_attestation": [
+        "runtime/simulation/simulationTrace.js",
+        "runtime/simulation/simulationStateHash.js",
+        "runtime/simulation/__tests__/simulationTrace.test.mjs"
+      ],
+      "release_facing_governance_visibility": [
+        "scripts/releaseTrustReport.mjs",
+        "scripts/releaseTrustComparators/simulationTraceComparator.mjs",
+        "tests/release/releaseTrustReportSchema.test.mjs",
+        "tests/release/releaseTrustDiff.test.mjs"
       ]
     }
   },

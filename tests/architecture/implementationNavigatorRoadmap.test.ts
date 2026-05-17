@@ -47,3 +47,30 @@ test('orchestration session federation roadmap evidence is complete and file-bac
 
     assertProofArtifactsExist(proofs);
 });
+
+test('creative physics roadmap evidence is complete and file-backed', () => {
+    const state = readRoadmapState();
+    const phase = state?.creative_physics;
+
+    assert.ok(phase, 'creative_physics phase missing');
+    assert.equal(phase.status, 'complete');
+
+    const requires = Array.isArray(phase.requires) ? phase.requires : [];
+    const proofs = phase.proofs ?? {};
+
+    const expectedRequirements = [
+        'physics_evaluator_law',
+        'no_durable_truth_mutation',
+        'deterministic_partition_scheduler_envelope',
+        'checkpoint_resume_equivalence',
+        'simulation_trace_attestation',
+        'release_facing_governance_visibility',
+    ];
+
+    for (const requirement of expectedRequirements) {
+        assert.equal(requires.includes(requirement), true, `missing roadmap requirement: ${requirement}`);
+        assert.ok(proofs[requirement], `missing proofs entry for requirement: ${requirement}`);
+    }
+
+    assertProofArtifactsExist(proofs);
+});
