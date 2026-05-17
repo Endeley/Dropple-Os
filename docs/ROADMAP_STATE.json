@@ -310,12 +310,15 @@
     }
   },
   "orchestration_session_federation": {
-    "status": "active",
+    "status": "complete",
     "frozen": false,
     "requires": [
       "federated_session_envelope",
       "federation_lifecycle_transitions",
-      "deterministic_orchestration_invariants"
+      "deterministic_orchestration_invariants",
+      "federation_release_gate",
+      "federation_lineage_artifacts",
+      "federation_lineage_ledger_continuity"
     ],
     "depends_on": [
       "tool_synthesis"
@@ -323,15 +326,37 @@
     "risks": [],
     "proofs": {
       "federated_session_envelope": [
-        "runtime/orchestration/sessionFederation.js"
+        "runtime/orchestration/sessionFederation.js",
+        "runtime/orchestration/sessionFederationActions.js",
+        "runtime/orchestration/validateFederationIngress.js",
+        "runtime/input/createSessionFederationRuntimeBridge.js"
       ],
       "federation_lifecycle_transitions": [
         "runtime/orchestration/sessionFederation.js",
-        "runtime/orchestration/__tests__/sessionFederation.test.mjs"
+        "runtime/orchestration/__tests__/sessionFederation.test.mjs",
+        "tests/kernel/createSessionFederationContract.test.ts",
+        "tests/kernel/sessionFederationOrchestrationContract.test.ts"
       ],
       "deterministic_orchestration_invariants": [
         "runtime/orchestration/sessionFederation.js",
-        "tests/architecture/interactionPipelineEnforcement.test.ts"
+        "tests/kernel/federationAuditRuntime.test.ts",
+        "tests/architecture/federationIngressArchitecture.test.ts",
+        "scripts/architectureDrift.mjs"
+      ],
+      "federation_release_gate": [
+        "package.json",
+        "tests/release/releaseFederationAttestationGate.test.mjs",
+        "scripts/releaseTrustReport.mjs"
+      ],
+      "federation_lineage_artifacts": [
+        "scripts/federationAuditLineageReport.mjs",
+        "tests/release/federationAuditLineageReport.test.mjs",
+        "scripts/releaseTrustSummary.mjs"
+      ],
+      "federation_lineage_ledger_continuity": [
+        "scripts/federationAuditLineageLedger.mjs",
+        "tests/release/federationAuditLineageLedger.test.mjs",
+        ".github/workflows/ci.yml"
       ]
     }
   },
