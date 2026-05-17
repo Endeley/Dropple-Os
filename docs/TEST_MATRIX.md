@@ -70,6 +70,7 @@ Notes:
 - `npm run validate:release` now includes a federation export-attestation gate that fails closed on missing or tampered attestation.
 - Required PR check name: `PR Release Validation (validate:release)` from `.github/workflows/ci.yml`.
 - `npm run validate:release` emits `.artifacts/release-trust.json` with canonical trust checks and a report hash.
+- PR CI uploads release trust artifacts and runs a non-blocking `release:trust:diff` step for drift visibility.
 
 ---
 

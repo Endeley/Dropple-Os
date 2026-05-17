@@ -16,4 +16,9 @@ test('pull request CI workflow runs validate:release as a required release gate'
     assert.match(workflow, /name:\s*PR Release Validation \(validate:release\)/);
     assert.match(workflow, /if:\s*github\.event_name\s*==\s*'pull_request'/);
     assert.match(workflow, /run:\s*npm run validate:release/);
+    assert.match(workflow, /name:\s*Upload release trust report \(pr\)/);
+    assert.match(workflow, /name:\s*release-trust-report-pr/);
+    assert.match(workflow, /name:\s*Release trust diff \(non-blocking\)/);
+    assert.match(workflow, /continue-on-error:\s*true/);
+    assert.match(workflow, /run:\s*npm run release:trust:diff/);
 });
