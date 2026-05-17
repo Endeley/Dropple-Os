@@ -1,4 +1,3 @@
-import { collaborationReducers } from '@/core/events/reducers/collaborationReducers.js';
 import { assertFederationInvariant } from '@/runtime/orchestration/sessionFederation.js';
 import {
     beginFederationSessionAction,
@@ -7,17 +6,9 @@ import {
     updateFederationPreviewAction,
 } from '@/runtime/orchestration/sessionFederationActions.js';
 import { validateFederationIngress } from '@/runtime/orchestration/validateFederationIngress.js';
+import { replayEvents } from '@/runtime/dispatcher/replayEvents.js';
 
-let federationRuntimeState = {
-    collaboration: {
-        session: null,
-        presence: {},
-        cursors: {},
-        federation: {
-            sessions: {},
-        },
-    },
-};
+let federationRuntimeState = undefined;
 
 function toFiniteNumber(value) {
     return Number.isFinite(value) ? Number(value) : null;
@@ -41,7 +32,10 @@ function applyFederationAction(event) {
     const payloadSessionId = String(event?.payload?.sessionId ?? '').trim();
     const existing = payloadSessionId ? getSessionRecord(payloadSessionId) : null;
     const validatedEvent = validateFederationIngress(event, existing);
-    federationRuntimeState = collaborationReducers(federationRuntimeState, validatedEvent);
+    federationRuntimeState = replayEvents({
+        events: [validatedEvent],
+        initialState: federationRuntimeState,
+    });
 }
 
 function createSnapshot(sessionId) {
@@ -153,14 +147,5 @@ export function dispatchFederationIngressRuntime(event = {}) {
 }
 
 export function resetCreateSessionFederationRuntimeForTests() {
-    federationRuntimeState = {
-        collaboration: {
-            session: null,
-            presence: {},
-            cursors: {},
-            federation: {
-                sessions: {},
-            },
-        },
-    };
+    federationRuntimeState = undefined;
 }

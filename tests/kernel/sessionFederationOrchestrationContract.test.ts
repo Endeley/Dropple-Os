@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { applyEvent } from '@/core/events/applyEvent.js';
+import { replayEvents } from '@/runtime/dispatcher/replayEvents.js';
 import {
     beginFederationSessionAction,
     closeFederationSessionAction,
@@ -11,6 +11,13 @@ import {
 
 function getSession(state, sessionId) {
     return state?.collaboration?.federation?.sessions?.[sessionId] ?? null;
+}
+
+function applyEvent(state, event) {
+    return replayEvents({
+        initialState: state,
+        events: [event],
+    });
 }
 
 test('session federation reducer canonicalizes participants and evolves checkpoints deterministically', () => {
