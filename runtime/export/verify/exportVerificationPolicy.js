@@ -18,6 +18,11 @@ export function resolveExportVerificationPolicy({
 } = {}) {
     const verification = isPlainObject(options?.verification) ? options.verification : {};
     const critical = isExportVerificationCriticalFlow({ artifact, format });
+    const profile =
+        typeof verification.profile === 'string' && verification.profile.trim()
+            ? verification.profile.trim().toLowerCase()
+            : null;
+    const isReleaseProfile = profile === 'release';
 
     const enabled =
         typeof verification.enabled === 'boolean'
@@ -33,7 +38,7 @@ export function resolveExportVerificationPolicy({
             requireSimulationPrimitiveTraceLineage:
                 verification.requireSimulationPrimitiveTraceLineage !== false,
             requireFederationAuditAttestation:
-                verification.requireFederationAuditAttestation === true,
+                verification.requireFederationAuditAttestation === true || isReleaseProfile,
         }),
     });
 }

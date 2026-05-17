@@ -67,6 +67,7 @@ npm run validate:release
 Notes:
 - `npm run validate:release` is the main release gate.
 - `npm run validate:release` does not run every custom script in the repo; it runs the primary release path.
+- `npm run validate:release` now includes a federation export-attestation gate that fails closed on missing or tampered attestation.
 
 ---
 
