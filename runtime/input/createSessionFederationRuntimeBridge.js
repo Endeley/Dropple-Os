@@ -7,8 +7,14 @@ import {
 } from '@/runtime/orchestration/sessionFederationActions.js';
 import { validateFederationIngress } from '@/runtime/orchestration/validateFederationIngress.js';
 import { replayEvents } from '@/runtime/dispatcher/replayEvents.js';
+import {
+    createFederationAuditEntry,
+    createFederationAuditHash,
+    createFederationSessionFingerprint,
+} from '@/runtime/orchestration/federationAudit.js';
 
 let federationRuntimeState = undefined;
+let federationAuditEntries = [];
 
 function toFiniteNumber(value) {
     return Number.isFinite(value) ? Number(value) : null;
@@ -31,11 +37,53 @@ function getSessionRecord(sessionId) {
 function applyFederationAction(event) {
     const payloadSessionId = String(event?.payload?.sessionId ?? '').trim();
     const existing = payloadSessionId ? getSessionRecord(payloadSessionId) : null;
-    const validatedEvent = validateFederationIngress(event, existing);
-    federationRuntimeState = replayEvents({
-        events: [validatedEvent],
-        initialState: federationRuntimeState,
-    });
+    const beforeSignature = String(existing?.checkpoint?.checkpointSignature ?? '');
+    const phaseBefore = String(existing?.envelope?.phase ?? '');
+    const epochBefore = Number.isFinite(existing?.envelope?.commitEpoch) ? Number(existing.envelope.commitEpoch) : 0;
+
+    try {
+        const validatedEvent = validateFederationIngress(event, existing);
+        federationRuntimeState = replayEvents({
+            events: [validatedEvent],
+            initialState: federationRuntimeState,
+        });
+        const next = payloadSessionId ? getSessionRecord(payloadSessionId) : null;
+        federationAuditEntries.push(
+            createFederationAuditEntry({
+                eventType: validatedEvent?.type,
+                sessionId: payloadSessionId || 'unknown',
+                outcome: 'accepted',
+                reason: 'ingress-accepted',
+                beforeSignature,
+                afterSignature: String(next?.checkpoint?.checkpointSignature ?? ''),
+                phaseBefore,
+                phaseAfter: String(next?.envelope?.phase ?? ''),
+                epochBefore,
+                epochAfter: Number.isFinite(next?.envelope?.commitEpoch) ? Number(next.envelope.commitEpoch) : 0,
+            }),
+        );
+    } catch (error) {
+        let reason = 'ingress-rejected';
+        try {
+            const parsed = JSON.parse(String(error?.message ?? '{}'));
+            reason = String(parsed?.reason ?? reason);
+        } catch {}
+        federationAuditEntries.push(
+            createFederationAuditEntry({
+                eventType: event?.type,
+                sessionId: payloadSessionId || 'unknown',
+                outcome: 'rejected',
+                reason,
+                beforeSignature,
+                afterSignature: beforeSignature,
+                phaseBefore,
+                phaseAfter: phaseBefore,
+                epochBefore,
+                epochAfter: epochBefore,
+            }),
+        );
+        throw error;
+    }
 }
 
 function createSnapshot(sessionId) {
@@ -148,4 +196,21 @@ export function dispatchFederationIngressRuntime(event = {}) {
 
 export function resetCreateSessionFederationRuntimeForTests() {
     federationRuntimeState = undefined;
+    federationAuditEntries = [];
+}
+
+export function getCreateSessionFederationAuditRuntime() {
+    return federationAuditEntries.map((entry) => ({
+        ...entry,
+        payload: { ...(entry?.payload ?? {}) },
+    }));
+}
+
+export function getCreateSessionFederationAuditHashRuntime() {
+    return createFederationAuditHash(federationAuditEntries);
+}
+
+export function getCreateSessionFederationFingerprintRuntime(sessionId) {
+    const snapshot = getCreateSessionFederationSnapshotRuntime(sessionId);
+    return createFederationSessionFingerprint(snapshot);
 }

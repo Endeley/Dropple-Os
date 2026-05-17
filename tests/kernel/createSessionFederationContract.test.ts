@@ -6,6 +6,9 @@ import {
     beginCreateSessionFederationRuntime,
     dispatchFederationIngressRuntime,
     closeCreateSessionFederationRuntime,
+    getCreateSessionFederationAuditHashRuntime,
+    getCreateSessionFederationAuditRuntime,
+    getCreateSessionFederationFingerprintRuntime,
     resetCreateSessionFederationRuntimeForTests,
     sealCreateSessionFederationCommitRuntime,
     updateCreateSessionFederationPreviewRuntime,
@@ -82,4 +85,72 @@ test('federation ingress reject is coordination-only and does not mutate runtime
 
     const after = getRuntimeState();
     assert.deepEqual(after, before);
+    const audit = getCreateSessionFederationAuditRuntime();
+    assert.equal(audit.length, 1);
+    assert.equal(audit[0]?.payload?.outcome, 'rejected');
+});
+
+test('identical federation event streams yield identical audit hash', () => {
+    resetCreateSessionFederationRuntimeForTests();
+    beginCreateSessionFederationRuntime({
+        sessionId: 'frame:kernel-hash',
+        pointerId: 1,
+        tool: 'frame',
+        nodeType: 'frame',
+    });
+    updateCreateSessionFederationPreviewRuntime({
+        sessionId: 'frame:kernel-hash',
+        bounds: { x: 1, y: 2, width: 3, height: 4 },
+    });
+    sealCreateSessionFederationCommitRuntime({ sessionId: 'frame:kernel-hash' });
+    closeCreateSessionFederationRuntime({ sessionId: 'frame:kernel-hash' });
+    const hashA = getCreateSessionFederationAuditHashRuntime();
+
+    resetCreateSessionFederationRuntimeForTests();
+    beginCreateSessionFederationRuntime({
+        sessionId: 'frame:kernel-hash',
+        pointerId: 1,
+        tool: 'frame',
+        nodeType: 'frame',
+    });
+    updateCreateSessionFederationPreviewRuntime({
+        sessionId: 'frame:kernel-hash',
+        bounds: { x: 1, y: 2, width: 3, height: 4 },
+    });
+    sealCreateSessionFederationCommitRuntime({ sessionId: 'frame:kernel-hash' });
+    closeCreateSessionFederationRuntime({ sessionId: 'frame:kernel-hash' });
+    const hashB = getCreateSessionFederationAuditHashRuntime();
+
+    assert.equal(hashA, hashB);
+});
+
+test('resumed federation lifecycle fingerprint matches uninterrupted lifecycle', () => {
+    resetCreateSessionFederationRuntimeForTests();
+    beginCreateSessionFederationRuntime({
+        sessionId: 'frame:kernel-fp',
+        pointerId: 5,
+        tool: 'frame',
+        nodeType: 'frame',
+    });
+    updateCreateSessionFederationPreviewRuntime({
+        sessionId: 'frame:kernel-fp',
+        bounds: { x: 10, y: 20, width: 30, height: 40 },
+    });
+    const uninterruptedFingerprint = getCreateSessionFederationFingerprintRuntime('frame:kernel-fp');
+
+    resetCreateSessionFederationRuntimeForTests();
+    beginCreateSessionFederationRuntime({
+        sessionId: 'frame:kernel-fp',
+        pointerId: 5,
+        tool: 'frame',
+        nodeType: 'frame',
+    });
+    // resume point: same canonical preview update after restart
+    updateCreateSessionFederationPreviewRuntime({
+        sessionId: 'frame:kernel-fp',
+        bounds: { x: 10, y: 20, width: 30, height: 40 },
+    });
+    const resumedFingerprint = getCreateSessionFederationFingerprintRuntime('frame:kernel-fp');
+
+    assert.equal(resumedFingerprint, uninterruptedFingerprint);
 });
