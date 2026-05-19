@@ -1,9 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useDispatcher } from '@/ui/workspace/DispatcherContext.jsx';
 import { readOsWorkspaceShellSurfaceModel } from '@/ui/bridges/osSurfaceReadBridge.js';
-import { dispatchOsWorkspaceShellIntent } from '@/ui/bridges/osSurfaceIntentBridge.js';
 
 function readModel() {
     try {
@@ -14,7 +12,6 @@ function readModel() {
 }
 
 export function OsWorkspaceSurfaceShell() {
-    const dispatcher = useDispatcher();
     const [model, setModel] = useState(() => readModel());
 
     useEffect(() => {
@@ -26,50 +23,6 @@ export function OsWorkspaceSurfaceShell() {
     }, []);
 
     if (!model) return null;
-
-    const activateSelect = () => {
-        dispatchOsWorkspaceShellIntent(
-            {
-                action: 'tool.activate',
-                toolId: 'select',
-            },
-            dispatcher,
-        );
-    };
-
-    const resetViewport = () => {
-        dispatchOsWorkspaceShellIntent(
-            {
-                action: 'viewport.set',
-                viewport: { x: 0, y: 0, zoom: 1 },
-            },
-            dispatcher,
-        );
-    };
-
-    const switchWorkspace = () => {
-        const nextWorkspaceId = model.workspaceId === 'design' ? 'media' : 'design';
-        dispatchOsWorkspaceShellIntent(
-            {
-                action: 'workspace.activate',
-                workspaceId: nextWorkspaceId,
-            },
-            dispatcher,
-        );
-    };
-
-    const switchMode = () => {
-        const nextModeId = model.modeId === 'graphic' ? 'animation' : 'graphic';
-        const nextWorkspaceId = nextModeId === 'animation' ? 'media' : 'design';
-        dispatchOsWorkspaceShellIntent(
-            {
-                action: 'mode.activate',
-                workspaceId: nextWorkspaceId,
-                modeId: nextModeId,
-            },
-            dispatcher,
-        );
-    };
 
     return (
         <div
@@ -94,35 +47,7 @@ export function OsWorkspaceSurfaceShell() {
             <div>Mode: {model.modeId ?? 'n/a'}</div>
             <div>Session: {model.sessionId ?? 'n/a'}</div>
             <div>Participants: {model.participantIds.length}</div>
-            <div style={{ marginBottom: 8 }}>Trust: {model.releaseTrustHash ? 'present' : 'n/a'}</div>
-            <div style={{ display: 'flex', gap: 6, pointerEvents: 'auto' }}>
-                <button
-                    type='button'
-                    onClick={activateSelect}
-                    style={{ border: '1px solid #d1d5db', borderRadius: 6, padding: '4px 8px', background: '#f9fafb' }}>
-                    Activate Select
-                </button>
-                <button
-                    type='button'
-                    onClick={resetViewport}
-                    style={{ border: '1px solid #d1d5db', borderRadius: 6, padding: '4px 8px', background: '#f9fafb' }}>
-                    Reset View
-                </button>
-            </div>
-            <div style={{ display: 'flex', gap: 6, marginTop: 6, pointerEvents: 'auto' }}>
-                <button
-                    type='button'
-                    onClick={switchWorkspace}
-                    style={{ border: '1px solid #d1d5db', borderRadius: 6, padding: '4px 8px', background: '#f9fafb' }}>
-                    Switch Workspace
-                </button>
-                <button
-                    type='button'
-                    onClick={switchMode}
-                    style={{ border: '1px solid #d1d5db', borderRadius: 6, padding: '4px 8px', background: '#f9fafb' }}>
-                    Switch Mode
-                </button>
-            </div>
+            <div>Trust: {model.releaseTrustHash ? 'present' : 'n/a'}</div>
         </div>
     );
 }
