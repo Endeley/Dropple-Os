@@ -391,7 +391,7 @@
     }
   },
   "os_surface": {
-    "status": "active",
+    "status": "complete",
     "frozen": false,
     "requires": [
       "surface_projection_purity",
@@ -408,6 +408,7 @@
         "runtime/osSurface/buildEnvironmentSurfaceModel.js",
         "runtime/osSurface/buildSynthesizedToolSurfaceModel.js",
         "runtime/osSurface/fromProjectionSurface.js",
+        "ui/bridges/osSurfaceReadBridge.js",
         "tests/architecture/osSurfaceBoundary.test.ts"
       ],
       "surface_intent_routing_only": [
@@ -419,13 +420,15 @@
       ],
       "surface_replay_equivalence": [
         "runtime/osSurface/__tests__/osSurfaceProjection.test.mjs",
-        "runtime/osSurface/__tests__/osSurfaceProjectionFromRuntime.test.mjs"
+        "runtime/osSurface/__tests__/osSurfaceProjectionFromRuntime.test.mjs",
+        "ui/bridges/__tests__/osSurfaceBridge.test.mjs"
       ],
       "surface_capability_visibility_contract": [
         "runtime/osSurface/buildEnvironmentSurfaceModel.js",
         "runtime/osSurface/buildSynthesizedToolSurfaceModel.js",
         "runtime/osSurface/fromProjectionSurface.js",
-        "runtime/osSurface/__tests__/osSurfaceProjection.test.mjs"
+        "runtime/osSurface/__tests__/osSurfaceProjection.test.mjs",
+        "ui/bridges/osSurfaceReadBridge.js"
       ]
     }
   }

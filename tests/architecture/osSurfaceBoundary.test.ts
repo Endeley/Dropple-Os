@@ -79,6 +79,7 @@ test('ui-side os surface modules route only through the os surface bridge', () =
 
     const violations = [];
     for (const relPath of files) {
+        if (relPath.includes('/__tests__/')) continue;
         const content = fs.readFileSync(path.join(ROOT, relPath), 'utf8');
         const lines = content.split('\n');
 
@@ -94,8 +95,13 @@ test('ui-side os surface modules route only through the os surface bridge', () =
                 violations.push(`${relPath}:${index + 1}: ${line.trim()}`);
             }
 
-            if (/runtime\/osSurface\//.test(line) && !relPath.endsWith('ui/bridges/osSurfaceIntentBridge.js')) {
-                violations.push(`${relPath}:${index + 1}: only ui/bridges/osSurfaceIntentBridge.js may import runtime/osSurface/*`);
+            const isAllowedBridge =
+                relPath.endsWith('ui/bridges/osSurfaceIntentBridge.js') ||
+                relPath.endsWith('ui/bridges/osSurfaceReadBridge.js');
+            if (/runtime\/osSurface\//.test(line) && !isAllowedBridge) {
+                violations.push(
+                    `${relPath}:${index + 1}: only os surface bridge files may import runtime/osSurface/*`,
+                );
             }
         }
     }

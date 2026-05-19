@@ -141,6 +141,7 @@ test('non-bridge ui modules do not import runtime implementation paths directly'
         /runtime\/instrumentation\//,
         /runtime\/tools\//,
         /runtime\/dispatcher\//,
+        /runtime\/osSurface\//,
     ]);
 
     assert.deepEqual(violations, []);
