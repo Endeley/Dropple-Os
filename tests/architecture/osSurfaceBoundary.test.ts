@@ -71,7 +71,7 @@ test('ui-side os surface modules route only through the os surface bridge', () =
         return;
     }
 
-    const files = walk(uiRoot, 'ui').filter((relPath) => /ossurface/i.test(relPath));
+    const files = walk(uiRoot, 'ui');
     if (files.length === 0) {
         assert.ok(true);
         return;
@@ -82,15 +82,19 @@ test('ui-side os surface modules route only through the os surface bridge', () =
         if (relPath.includes('/__tests__/')) continue;
         const content = fs.readFileSync(path.join(ROOT, relPath), 'utf8');
         const lines = content.split('\n');
+        const isOsSurfaceUiModule = /ossurface/i.test(relPath);
 
         for (let index = 0; index < lines.length; index += 1) {
             const line = lines[index];
             if (!line.includes('import')) continue;
 
             if (
-                /runtime\/dispatcher\//.test(line) ||
-                /runtime\/stores\/useRuntimeStore\.js/.test(line) ||
-                /core\/events\/reducers\//.test(line)
+                isOsSurfaceUiModule &&
+                (
+                    /runtime\/dispatcher\//.test(line) ||
+                    /runtime\/stores\/useRuntimeStore\.js/.test(line) ||
+                    /core\/events\/reducers\//.test(line)
+                )
             ) {
                 violations.push(`${relPath}:${index + 1}: ${line.trim()}`);
             }
@@ -100,7 +104,7 @@ test('ui-side os surface modules route only through the os surface bridge', () =
                 relPath.endsWith('ui/bridges/osSurfaceReadBridge.js');
             if (/runtime\/osSurface\//.test(line) && !isAllowedBridge) {
                 violations.push(
-                    `${relPath}:${index + 1}: only os surface bridge files may import runtime/osSurface/*`,
+                    `${relPath}:${index + 1}: only ui/bridges/osSurfaceIntentBridge.js and ui/bridges/osSurfaceReadBridge.js may import runtime/osSurface/*`,
                 );
             }
         }
