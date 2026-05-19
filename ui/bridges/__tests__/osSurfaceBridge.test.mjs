@@ -3,7 +3,10 @@ import assert from 'node:assert/strict';
 import { INTENTS } from '@/core/intents/intentTypes.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { syncRuntimeToZustand } from '@/runtime/projection/zustandBridge.js';
-import { readOsSurfaceSnapshot } from '@/ui/bridges/osSurfaceReadBridge.js';
+import {
+    readOsSurfaceSnapshot,
+    readOsWorkspaceShellSurfaceModel,
+} from '@/ui/bridges/osSurfaceReadBridge.js';
 import { dispatchOsSurfaceIntent } from '@/ui/bridges/osSurfaceIntentBridge.js';
 
 function createProjectionRuntime() {
@@ -68,6 +71,18 @@ test('os surface read + intent route roundtrip is deterministic', () => {
     assert.deepEqual(first, second);
     assert.deepEqual(routeA, routeB);
     assert.deepEqual(eventsA, eventsB);
+});
+
+test('os workspace shell surface model read is deterministic', () => {
+    syncRuntimeToZustand(createProjectionRuntime());
+    const left = readOsWorkspaceShellSurfaceModel();
+    const right = readOsWorkspaceShellSurfaceModel();
+
+    assert.deepEqual(left, right);
+    assert.equal(left.workspaceId, 'workspace');
+    assert.equal(left.modeId, 'graphic');
+    assert.equal(left.sessionId, 'session-a');
+    assert.deepEqual(left.participantIds, ['amy', 'zed']);
 });
 
 test('os surface bridge roundtrip is coordination-only and does not mutate projected truth', () => {

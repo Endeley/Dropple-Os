@@ -15,7 +15,7 @@ import { ModeProvider, useMode } from '@/ui/workspace/shared/ModeContext.jsx';
 import { useKeyboardShortcuts } from '@/ui/interaction/interaction/useKeyboardShortcuts.js';
 import { getDesignStateAtCursor } from '@/core/persistence/index.js';
 
-import { useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useCallback, useState } from 'react';
 
 import { registerWorkspaceTools } from '@/ui/interaction/toolRegistration';
 import { useKeyboardNudge } from '@/ui/keyboard/useKeyboardNudge';
@@ -42,6 +42,7 @@ import { WorkspaceSwitcher } from '@/ui/workspace/shared/WorkspaceSwitcher.jsx';
 import { ModeSwitcher } from '@/ui/workspace/shared/ModeSwitcher.jsx';
 import { useDispatcher } from '@/ui/workspace/DispatcherContext.jsx';
 import { dispatchOsWorkspaceShellIntent } from '@/ui/bridges/osSurfaceIntentBridge.js';
+import { readOsWorkspaceShellSurfaceModel } from '@/ui/bridges/osSurfaceReadBridge.js';
 
 function EditorWorkspaceLayoutInner({
     adapter,
@@ -88,6 +89,7 @@ function EditorWorkspaceLayoutInner({
     capabilitySurfacePanels = [],
 }) {
     const dispatcher = useDispatcher();
+    const [shellStatus, setShellStatus] = useState(null);
     const { selectedIds, setSelection } = useSelection();
 
     const keyboardEnabled = adapter?.interactions?.keyboard !== false && adapter?.ui?.editing !== false && adapter?.id !== 'review' && !readOnly;
@@ -189,6 +191,25 @@ function EditorWorkspaceLayoutInner({
         return () => unregister?.();
     }, [workspaceId, toolModeId, overlayId]);
 
+    useEffect(() => {
+        const readStatus = () => {
+            try {
+                const snapshot = readOsWorkspaceShellSurfaceModel();
+                setShellStatus({
+                    sessionId: snapshot?.sessionId ?? null,
+                    participantCount: Array.isArray(snapshot?.participantIds) ? snapshot.participantIds.length : 0,
+                    releaseTrustHash: snapshot?.releaseTrustHash ?? null,
+                });
+            } catch {
+                setShellStatus(null);
+            }
+        };
+
+        readStatus();
+        const timer = setInterval(readStatus, 500);
+        return () => clearInterval(timer);
+    }, []);
+
     const routeWorkspaceSwitch = useCallback(
         (nextWorkspaceId) => {
             dispatchOsWorkspaceShellIntent(
@@ -248,7 +269,14 @@ function EditorWorkspaceLayoutInner({
             )}
 
             {/* Top bar */}
-            <TopBar workspaceLabel={workspaceContext?.workspaceId} modeLabel={adapter.label} documentName={documentName} onSave={onSave} readOnly={readOnly} />
+            <TopBar
+                workspaceLabel={workspaceContext?.workspaceId}
+                modeLabel={adapter.label}
+                documentName={documentName}
+                onSave={onSave}
+                readOnly={readOnly}
+                shellStatus={shellStatus}
+            />
 
             {/* Toolbar */}
             {isLearningOverlay ? (
