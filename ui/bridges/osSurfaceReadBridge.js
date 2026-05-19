@@ -1,6 +1,7 @@
 import {
     buildEnvironmentSurfaceModelFromProjection,
     buildSynthesizedToolSurfaceModelFromProjection,
+    buildWorkspaceShellSurfaceModel,
 } from '@/runtime/osSurface/index.js';
 
 export function readOsSurfaceSnapshot() {
@@ -8,4 +9,8 @@ export function readOsSurfaceSnapshot() {
         environment: buildEnvironmentSurfaceModelFromProjection(),
         synthesizedTools: buildSynthesizedToolSurfaceModelFromProjection(),
     });
+}
+
+export function readOsWorkspaceShellSurfaceModel() {
+    return buildWorkspaceShellSurfaceModel(readOsSurfaceSnapshot());
 }
