@@ -1,9 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { evaluateSurfaceIntentRoutingContract } from '@/runtime/osSurface/validateSurfaceIntentRouting.js';
+import { getRuntimeState } from '@/runtime/state/runtimeState.js';
 
 test('os surface strict intent-routing matrix is deterministic and fail-closed', () => {
-    const result = evaluateSurfaceIntentRoutingContract();
+    const result = evaluateSurfaceIntentRoutingContract({
+        readSnapshot: () => getRuntimeState(),
+    });
     assert.equal(result.ok, true);
     assert.equal(result.mutationFree, true);
     assert.equal(result.acceptedCount >= 4, true);

@@ -1,6 +1,5 @@
 import { INTENTS } from '@/core/intents/intentTypes.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
-import { getRuntimeState } from '@/runtime/state/runtimeState.js';
 import { routeSurfaceIntent } from './routeSurfaceIntent.js';
 
 function clone(value) {
@@ -113,12 +112,16 @@ function runRejectedCases() {
     });
 }
 
-export function evaluateSurfaceIntentRoutingContract() {
-    const before = clone(getRuntimeState());
+export function evaluateSurfaceIntentRoutingContract({
+    readSnapshot = null,
+} = {}) {
+    const before = typeof readSnapshot === 'function' ? clone(readSnapshot()) : null;
     const accepted = runAcceptedCases();
     const rejected = runRejectedCases();
-    const after = clone(getRuntimeState());
-    const mutationFree = JSON.stringify(before) === JSON.stringify(after);
+    const after = typeof readSnapshot === 'function' ? clone(readSnapshot()) : null;
+    const mutationFree = typeof readSnapshot === 'function'
+        ? JSON.stringify(before) === JSON.stringify(after)
+        : true;
 
     const failures = [];
     if (!accepted.ok) failures.push(...accepted.failures);
