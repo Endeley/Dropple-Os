@@ -74,3 +74,30 @@ test('creative physics roadmap evidence is complete and file-backed', () => {
 
     assertProofArtifactsExist(proofs);
 });
+
+test('constitutional navigator roadmap evidence is complete and file-backed', () => {
+    const state = readRoadmapState();
+    const phase = state?.constitutional_navigator;
+
+    assert.ok(phase, 'constitutional_navigator phase missing');
+    assert.equal(phase.status, 'complete');
+
+    const requires = Array.isArray(phase.requires) ? phase.requires : [];
+    const proofs = phase.proofs ?? {};
+
+    const expectedRequirements = [
+        'constitution_v2_draft',
+        'compatibility_matrix',
+        'navigator_doc',
+        'roadmap_state',
+        'navigator_script',
+        'system_map',
+    ];
+
+    for (const requirement of expectedRequirements) {
+        assert.equal(requires.includes(requirement), true, `missing roadmap requirement: ${requirement}`);
+        assert.ok(proofs[requirement], `missing proofs entry for requirement: ${requirement}`);
+    }
+
+    assertProofArtifactsExist(proofs);
+});

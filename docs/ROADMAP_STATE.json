@@ -43,7 +43,7 @@
     }
   },
   "constitutional_navigator": {
-    "status": "active",
+    "status": "complete",
     "frozen": false,
     "requires": [
       "constitution_v2_draft",
