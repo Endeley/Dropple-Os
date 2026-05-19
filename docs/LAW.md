@@ -318,6 +318,29 @@ Rules:
 - compositionId must exist in project.compositions.
 - Scene order defines render order.
 - activeShotId must belong to activeSceneId.
+
+---
+
+## 16. OS Surface Non-Sovereignty Law
+
+OS Surface owns:
+
+- visibility
+- coordination
+- intent routing
+
+OS Surface does not own runtime truth.
+
+Rules:
+
+- OS surface modules must be projection-only read models.
+- OS surface modules must not import reducer internals.
+- OS surface modules must not import runtime state setters or dispatcher internals.
+- OS surface modules must not mutate runtime truth directly.
+- OS surface modules may only route intent through canonical dispatcher-owned pathways.
+- Equivalent replay inputs must produce equivalent OS surface outputs.
+
+This law prevents surface-layer accidental sovereignty and preserves constitutional runtime integrity.
 - activeShotId must not be null if the active scene has shots.
 - Scene without shots may set activeShotId to null.
 - If activeSceneId changes, activeShotId must be updated accordingly.

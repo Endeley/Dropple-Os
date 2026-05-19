@@ -391,26 +391,35 @@
     }
   },
   "os_surface": {
-    "status": "not-started",
+    "status": "active",
     "frozen": false,
     "requires": [
-      "generated_environment_surface",
-      "generated_tool_surface",
-      "lawful_self_extension_surface"
+      "surface_projection_purity",
+      "surface_intent_routing_only",
+      "surface_replay_equivalence",
+      "surface_capability_visibility_contract"
     ],
     "depends_on": [
       "orchestration_session_federation"
     ],
     "risks": [],
     "proofs": {
-      "generated_environment_surface": [
-        "ui/"
+      "surface_projection_purity": [
+        "runtime/osSurface/buildEnvironmentSurfaceModel.js",
+        "runtime/osSurface/buildSynthesizedToolSurfaceModel.js",
+        "tests/architecture/osSurfaceBoundary.test.ts"
       ],
-      "generated_tool_surface": [
-        "ui/"
+      "surface_intent_routing_only": [
+        "docs/LAW.md",
+        "tests/architecture/osSurfaceBoundary.test.ts"
       ],
-      "lawful_self_extension_surface": [
-        "docs/CONSTITUTION_V2.md"
+      "surface_replay_equivalence": [
+        "runtime/osSurface/__tests__/osSurfaceProjection.test.mjs"
+      ],
+      "surface_capability_visibility_contract": [
+        "runtime/osSurface/buildEnvironmentSurfaceModel.js",
+        "runtime/osSurface/buildSynthesizedToolSurfaceModel.js",
+        "runtime/osSurface/__tests__/osSurfaceProjection.test.mjs"
       ]
     }
   }
