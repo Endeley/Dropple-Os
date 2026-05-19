@@ -76,7 +76,7 @@ export function OsWorkspaceSurfaceShell() {
             aria-label='OS Surface Shell'
             style={{
                 position: 'absolute',
-                top: 12,
+                bottom: 12,
                 right: 12,
                 zIndex: 1000,
                 background: '#ffffff',
@@ -87,6 +87,7 @@ export function OsWorkspaceSurfaceShell() {
                 minWidth: 260,
                 fontSize: 12,
                 lineHeight: 1.35,
+                pointerEvents: 'none',
             }}>
             <div style={{ fontWeight: 700, marginBottom: 6 }}>OS Surface</div>
             <div>Workspace: {model.workspaceId ?? 'n/a'}</div>
@@ -94,7 +95,7 @@ export function OsWorkspaceSurfaceShell() {
             <div>Session: {model.sessionId ?? 'n/a'}</div>
             <div>Participants: {model.participantIds.length}</div>
             <div style={{ marginBottom: 8 }}>Trust: {model.releaseTrustHash ? 'present' : 'n/a'}</div>
-            <div style={{ display: 'flex', gap: 6 }}>
+            <div style={{ display: 'flex', gap: 6, pointerEvents: 'auto' }}>
                 <button
                     type='button'
                     onClick={activateSelect}
@@ -108,7 +109,7 @@ export function OsWorkspaceSurfaceShell() {
                     Reset View
                 </button>
             </div>
-            <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+            <div style={{ display: 'flex', gap: 6, marginTop: 6, pointerEvents: 'auto' }}>
                 <button
                     type='button'
                     onClick={switchWorkspace}
