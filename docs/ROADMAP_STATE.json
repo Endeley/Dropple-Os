@@ -412,6 +412,9 @@
       ],
       "surface_intent_routing_only": [
         "docs/LAW.md",
+        "runtime/osSurface/routeSurfaceIntent.js",
+        "runtime/osSurface/__tests__/routeSurfaceIntent.test.mjs",
+        "ui/bridges/osSurfaceIntentBridge.js",
         "tests/architecture/osSurfaceBoundary.test.ts"
       ],
       "surface_replay_equivalence": [

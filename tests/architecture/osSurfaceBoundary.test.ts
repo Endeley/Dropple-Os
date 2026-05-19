@@ -63,3 +63,42 @@ test('os surface remains projection-only and non-sovereign', () => {
 
     assert.deepEqual(violations, []);
 });
+
+test('ui-side os surface modules route only through the os surface bridge', () => {
+    const uiRoot = path.join(ROOT, 'ui');
+    if (!fs.existsSync(uiRoot)) {
+        assert.ok(true);
+        return;
+    }
+
+    const files = walk(uiRoot, 'ui').filter((relPath) => /ossurface/i.test(relPath));
+    if (files.length === 0) {
+        assert.ok(true);
+        return;
+    }
+
+    const violations = [];
+    for (const relPath of files) {
+        const content = fs.readFileSync(path.join(ROOT, relPath), 'utf8');
+        const lines = content.split('\n');
+
+        for (let index = 0; index < lines.length; index += 1) {
+            const line = lines[index];
+            if (!line.includes('import')) continue;
+
+            if (
+                /runtime\/dispatcher\//.test(line) ||
+                /runtime\/stores\/useRuntimeStore\.js/.test(line) ||
+                /core\/events\/reducers\//.test(line)
+            ) {
+                violations.push(`${relPath}:${index + 1}: ${line.trim()}`);
+            }
+
+            if (/runtime\/osSurface\//.test(line) && !relPath.endsWith('ui/bridges/osSurfaceIntentBridge.js')) {
+                violations.push(`${relPath}:${index + 1}: only ui/bridges/osSurfaceIntentBridge.js may import runtime/osSurface/*`);
+            }
+        }
+    }
+
+    assert.deepEqual(violations, []);
+});
