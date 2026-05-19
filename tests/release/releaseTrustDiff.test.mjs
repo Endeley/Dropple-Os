@@ -19,7 +19,15 @@ function createReport({
             },
             federationAttestation: { ok: true, tamperRejected: true, hash: 'fed-hash-a', entryCount: 1 },
             federationLifecycle: { ok: true, replayEquivalent: true, staleRejected: true, orderingClosed: true },
-            osSurfaceIntentRouting: { ok: true, mutationFree: true, acceptedCount: 4, rejectedCount: 6 },
+            osSurfaceIntentRouting: {
+                ok: true,
+                mutationFree: true,
+                acceptedCount: 4,
+                rejectedCount: 6,
+                allowlistPolicyVersion: '1',
+                allowlistActionCount: 4,
+                allowlistActionHash: 'os-allowlist-hash-a',
+            },
             simulationTrace: {
                 ok: true,
                 fingerprint: 'sim-fingerprint-a',
@@ -90,12 +98,28 @@ test('release trust diff fails on constitutional federation replay-equivalence r
 test('release trust diff fails on constitutional os surface intent-routing regression', () => {
     const baseline = createReport({
         checks: {
-            osSurfaceIntentRouting: { ok: true, mutationFree: true, acceptedCount: 4, rejectedCount: 6 },
+            osSurfaceIntentRouting: {
+                ok: true,
+                mutationFree: true,
+                acceptedCount: 4,
+                rejectedCount: 6,
+                allowlistPolicyVersion: '1',
+                allowlistActionCount: 4,
+                allowlistActionHash: 'os-allowlist-hash-a',
+            },
         },
     });
     const current = createReport({
         checks: {
-            osSurfaceIntentRouting: { ok: false, mutationFree: false, acceptedCount: 4, rejectedCount: 6 },
+            osSurfaceIntentRouting: {
+                ok: false,
+                mutationFree: false,
+                acceptedCount: 4,
+                rejectedCount: 6,
+                allowlistPolicyVersion: '1',
+                allowlistActionCount: 4,
+                allowlistActionHash: 'os-allowlist-hash-a',
+            },
         },
     });
 
@@ -103,6 +127,42 @@ test('release trust diff fails on constitutional os surface intent-routing regre
     assert.equal(result.ok, false);
     assert.equal(result.errors.some((entry) => entry.includes('osSurfaceIntentRouting.ok')), true);
     assert.equal(result.errors.some((entry) => entry.includes('osSurfaceIntentRouting.mutationFree')), true);
+});
+
+test('release trust diff fails when os surface allowlist hash drifts', () => {
+    const baseline = createReport({
+        checks: {
+            osSurfaceIntentRouting: {
+                ok: true,
+                mutationFree: true,
+                acceptedCount: 4,
+                rejectedCount: 6,
+                allowlistPolicyVersion: '1',
+                allowlistActionCount: 4,
+                allowlistActionHash: 'os-allowlist-hash-a',
+            },
+        },
+    });
+    const current = createReport({
+        checks: {
+            osSurfaceIntentRouting: {
+                ok: true,
+                mutationFree: true,
+                acceptedCount: 4,
+                rejectedCount: 6,
+                allowlistPolicyVersion: '1',
+                allowlistActionCount: 5,
+                allowlistActionHash: 'os-allowlist-hash-b',
+            },
+        },
+    });
+
+    const result = diffReleaseTrustReports({ baseline, current });
+    assert.equal(result.ok, false);
+    assert.equal(
+        result.errors.some((entry) => entry.includes('osSurfaceIntentRouting.allowlistActionHash-stable')),
+        true,
+    );
 });
 
 test('release trust diff treats hash changes as deltas in non-strict mode', () => {

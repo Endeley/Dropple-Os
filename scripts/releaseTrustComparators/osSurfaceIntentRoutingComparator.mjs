@@ -1,6 +1,7 @@
 import { createOutcome, isPlainObject } from './common.mjs';
 
 export function compareOsSurfaceIntentRouting({
+    baseline,
     current,
 } = {}) {
     const outcomes = [];
@@ -59,6 +60,42 @@ export function compareOsSurfaceIntentRouting({
             ? `reject routing coverage count is ${Number(current.rejectedCount)}.`
             : 'reject routing coverage count is missing or invalid.',
     }));
+
+    const allowlistActionCountValid =
+        Number.isFinite(current.allowlistActionCount) && Number(current.allowlistActionCount) >= 1;
+    outcomes.push(createOutcome({
+        ok: allowlistActionCountValid,
+        severity: allowlistActionCountValid ? 'info' : 'error',
+        invariant: 'osSurfaceIntentRouting.allowlistActionCount',
+        classification: allowlistActionCountValid ? 'lawful-evolution' : 'constitutional-regression',
+        message: allowlistActionCountValid
+            ? `allowlist action count is ${Number(current.allowlistActionCount)}.`
+            : 'allowlist action count is missing or invalid.',
+    }));
+
+    const allowlistHashValid = typeof current.allowlistActionHash === 'string' && current.allowlistActionHash.length > 0;
+    outcomes.push(createOutcome({
+        ok: allowlistHashValid,
+        severity: allowlistHashValid ? 'info' : 'error',
+        invariant: 'osSurfaceIntentRouting.allowlistActionHash',
+        classification: allowlistHashValid ? 'lawful-evolution' : 'constitutional-regression',
+        message: allowlistHashValid
+            ? 'allowlist action hash is present.'
+            : 'allowlist action hash is missing.',
+    }));
+
+    if (isPlainObject(baseline) && typeof baseline.allowlistActionHash === 'string' && baseline.allowlistActionHash.length > 0) {
+        const allowlistStable = baseline.allowlistActionHash === current.allowlistActionHash;
+        outcomes.push(createOutcome({
+            ok: allowlistStable,
+            severity: allowlistStable ? 'info' : 'error',
+            invariant: 'osSurfaceIntentRouting.allowlistActionHash-stable',
+            classification: allowlistStable ? 'lawful-evolution' : 'constitutional-regression',
+            message: allowlistStable
+                ? 'allowlist action hash unchanged.'
+                : 'allowlist action hash changed; policy expansion/regression requires explicit governance update.',
+        }));
+    }
 
     return Object.freeze(outcomes);
 }

@@ -17,6 +17,10 @@ import {
     updateFederationPreviewAction,
 } from '../runtime/orchestration/sessionFederationActions.js';
 import { evaluateSurfaceIntentRoutingContract } from '../runtime/osSurface/validateSurfaceIntentRouting.js';
+import {
+    OS_WORKSPACE_SHELL_ALLOWED_ACTIONS,
+    OS_WORKSPACE_SHELL_ACTION_POLICY_VERSION,
+} from '../runtime/osSurface/shellActionPolicy.js';
 
 const REPORT_SCHEMA_VERSION = '1.0.0';
 const REPORT_PATH = path.join(process.cwd(), '.artifacts', 'release-trust.json');
@@ -270,6 +274,9 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
             rejectedCount: Number.isFinite(osSurfaceIntentRouting.rejectedCount)
                 ? Number(osSurfaceIntentRouting.rejectedCount)
                 : 0,
+            allowlistPolicyVersion: OS_WORKSPACE_SHELL_ACTION_POLICY_VERSION,
+            allowlistActionCount: OS_WORKSPACE_SHELL_ALLOWED_ACTIONS.length,
+            allowlistActionHash: hashRuntimeState(OS_WORKSPACE_SHELL_ALLOWED_ACTIONS),
         }),
     });
 

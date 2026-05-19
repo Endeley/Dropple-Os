@@ -1,13 +1,9 @@
 import { INTENTS } from '@/core/intents/intentTypes.js';
 import { routeSurfaceIntent } from '@/runtime/osSurface/routeSurfaceIntent.js';
 import { resolveWorkspaceContext } from '@/platform/workspaces/index.js';
+import { OS_WORKSPACE_SHELL_ALLOWED_ACTIONS } from '@/runtime/osSurface/shellActionPolicy.js';
 
-export const OS_WORKSPACE_SHELL_ALLOWED_ACTIONS = Object.freeze([
-    'workspace.activate',
-    'mode.activate',
-    'tool.activate',
-    'viewport.set',
-]);
+export { OS_WORKSPACE_SHELL_ALLOWED_ACTIONS } from '@/runtime/osSurface/shellActionPolicy.js';
 
 export function dispatchOsSurfaceIntent(intent, dispatcher) {
     return routeSurfaceIntent(intent, dispatcher);
