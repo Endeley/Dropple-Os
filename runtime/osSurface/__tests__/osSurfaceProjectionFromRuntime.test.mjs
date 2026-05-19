@@ -151,3 +151,38 @@ test('os surface adapters do not mutate runtime truth', () => {
 
     assert.deepEqual(runtime, before);
 });
+
+test('environment surface projection canonicalizes presence object and array deterministically', () => {
+    const objectPresenceProjection = {
+        workspace: {
+            id: 'workspace',
+            mode: 'graphic',
+            policy: { mode: { overlays: ['conversion', 'ai', 'conversion'] } },
+            profile: { environmentId: 'env-a' },
+        },
+        collaboration: {
+            session: { id: 'session-a', phase: 'preview' },
+            presence: {
+                z: { userId: 'zed' },
+                a: { userId: 'amy' },
+            },
+        },
+        federationAudit: { hash: 'fed-hash-a' },
+        timeline: {},
+        viewNodes: { a: {}, b: {} },
+    };
+
+    const arrayPresenceProjection = {
+        ...objectPresenceProjection,
+        collaboration: {
+            ...objectPresenceProjection.collaboration,
+            presence: [{ userId: 'amy' }, { userId: 'zed' }, { userId: 'amy' }],
+        },
+    };
+
+    const fromObject = buildEnvironmentSurfaceModelFromProjection(objectPresenceProjection);
+    const fromArray = buildEnvironmentSurfaceModelFromProjection(arrayPresenceProjection);
+
+    assert.deepEqual(fromObject, fromArray);
+    assert.deepEqual(fromObject.federation.participantIds, ['amy', 'zed']);
+});

@@ -13,6 +13,24 @@ function toCapabilityOverlays(policy) {
     return Array.isArray(overlays) ? overlays : [];
 }
 
+function toParticipantIds(presence) {
+    if (Array.isArray(presence)) {
+        return presence
+            .map((entry) => entry?.userId)
+            .filter((value) => typeof value === 'string' && value.trim().length > 0)
+            .sort((left, right) => left.localeCompare(right));
+    }
+
+    if (presence && typeof presence === 'object') {
+        return Object.values(presence)
+            .map((entry) => entry?.userId)
+            .filter((value) => typeof value === 'string' && value.trim().length > 0)
+            .sort((left, right) => left.localeCompare(right));
+    }
+
+    return [];
+}
+
 function toToolEntries(visibleToolDefinitions) {
     if (!visibleToolDefinitions || typeof visibleToolDefinitions !== 'object') return [];
     return Object.entries(visibleToolDefinitions)
@@ -54,7 +72,7 @@ export function buildEnvironmentSurfaceModelFromProjection(projected = null) {
             capabilityOverlays: toCapabilityOverlays(workspace.policy),
         },
         federation: {
-            participantIds: (renderState?.collaboration?.presence ?? []).map((entry) => entry?.userId).filter(Boolean),
+            participantIds: toParticipantIds(renderState?.collaboration?.presence),
             sessionPhase: renderState?.collaboration?.session?.phase ?? null,
             lineageHash: renderState?.federationAudit?.hash ?? null,
             attestationHash: renderState?.federationAudit?.hash ?? null,
