@@ -1,5 +1,13 @@
 import { INTENTS } from '@/core/intents/intentTypes.js';
 import { routeSurfaceIntent } from '@/runtime/osSurface/routeSurfaceIntent.js';
+import { resolveWorkspaceContext } from '@/platform/workspaces/index.js';
+
+export const OS_WORKSPACE_SHELL_ALLOWED_ACTIONS = Object.freeze([
+    'workspace.activate',
+    'mode.activate',
+    'tool.activate',
+    'viewport.set',
+]);
 
 export function dispatchOsSurfaceIntent(intent, dispatcher) {
     return routeSurfaceIntent(intent, dispatcher);
@@ -12,12 +20,39 @@ export function dispatchOsWorkspaceShellIntent({
     toolId = null,
     viewport = null,
 } = {}, dispatcher) {
+    if (!OS_WORKSPACE_SHELL_ALLOWED_ACTIONS.includes(action)) {
+        return Object.freeze({
+            ok: false,
+            reason: 'unsupported-shell-action',
+        });
+    }
+
     if (action === 'workspace.activate') {
         return dispatchOsSurfaceIntent({
             type: INTENTS.WORKSPACE_ACTIVATE,
             payload: {
                 workspaceId,
-                modeId,
+            },
+        }, dispatcher);
+    }
+
+    if (action === 'mode.activate') {
+        let resolved = null;
+        try {
+            resolved = resolveWorkspaceContext({
+                workspace: workspaceId,
+                mode: modeId,
+            });
+        } catch {
+            return Object.freeze({
+                ok: false,
+                reason: 'invalid-shell-action-payload',
+            });
+        }
+        return dispatchOsSurfaceIntent({
+            type: INTENTS.WORKSPACE_ACTIVATE,
+            payload: {
+                workspaceId: resolved.workspaceId ?? workspaceId,
             },
         }, dispatcher);
     }
@@ -37,9 +72,4 @@ export function dispatchOsWorkspaceShellIntent({
             payload: viewport && typeof viewport === 'object' ? { viewport } : {},
         }, dispatcher);
     }
-
-    return Object.freeze({
-        ok: false,
-        reason: 'unsupported-shell-action',
-    });
 }

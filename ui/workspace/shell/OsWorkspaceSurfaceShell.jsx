@@ -47,6 +47,30 @@ export function OsWorkspaceSurfaceShell() {
         );
     };
 
+    const switchWorkspace = () => {
+        const nextWorkspaceId = model.workspaceId === 'design' ? 'media' : 'design';
+        dispatchOsWorkspaceShellIntent(
+            {
+                action: 'workspace.activate',
+                workspaceId: nextWorkspaceId,
+            },
+            dispatcher,
+        );
+    };
+
+    const switchMode = () => {
+        const nextModeId = model.modeId === 'graphic' ? 'animation' : 'graphic';
+        const nextWorkspaceId = nextModeId === 'animation' ? 'media' : 'design';
+        dispatchOsWorkspaceShellIntent(
+            {
+                action: 'mode.activate',
+                workspaceId: nextWorkspaceId,
+                modeId: nextModeId,
+            },
+            dispatcher,
+        );
+    };
+
     return (
         <div
             aria-label='OS Surface Shell'
@@ -82,6 +106,20 @@ export function OsWorkspaceSurfaceShell() {
                     onClick={resetViewport}
                     style={{ border: '1px solid #d1d5db', borderRadius: 6, padding: '4px 8px', background: '#f9fafb' }}>
                     Reset View
+                </button>
+            </div>
+            <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                <button
+                    type='button'
+                    onClick={switchWorkspace}
+                    style={{ border: '1px solid #d1d5db', borderRadius: 6, padding: '4px 8px', background: '#f9fafb' }}>
+                    Switch Workspace
+                </button>
+                <button
+                    type='button'
+                    onClick={switchMode}
+                    style={{ border: '1px solid #d1d5db', borderRadius: 6, padding: '4px 8px', background: '#f9fafb' }}>
+                    Switch Mode
                 </button>
             </div>
         </div>
