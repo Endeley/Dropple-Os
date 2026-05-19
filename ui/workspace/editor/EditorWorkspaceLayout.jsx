@@ -40,6 +40,8 @@ import { getNodes } from '@/runtime/document/documentAdapter.js';
 import { UIUXToolRail } from '@/ui/workspace/ux/UIUXToolRail.jsx';
 import { WorkspaceSwitcher } from '@/ui/workspace/shared/WorkspaceSwitcher.jsx';
 import { ModeSwitcher } from '@/ui/workspace/shared/ModeSwitcher.jsx';
+import { useDispatcher } from '@/ui/workspace/DispatcherContext.jsx';
+import { dispatchOsWorkspaceShellIntent } from '@/ui/bridges/osSurfaceIntentBridge.js';
 
 function EditorWorkspaceLayoutInner({
     adapter,
@@ -85,6 +87,7 @@ function EditorWorkspaceLayoutInner({
     presence,
     capabilitySurfacePanels = [],
 }) {
+    const dispatcher = useDispatcher();
     const { selectedIds, setSelection } = useSelection();
 
     const keyboardEnabled = adapter?.interactions?.keyboard !== false && adapter?.ui?.editing !== false && adapter?.id !== 'review' && !readOnly;
@@ -186,6 +189,36 @@ function EditorWorkspaceLayoutInner({
         return () => unregister?.();
     }, [workspaceId, toolModeId, overlayId]);
 
+    const routeWorkspaceSwitch = useCallback(
+        (nextWorkspaceId) => {
+            dispatchOsWorkspaceShellIntent(
+                {
+                    action: 'workspace.activate',
+                    workspaceId: nextWorkspaceId,
+                },
+                dispatcher,
+            );
+            onGoToWorkspace?.(nextWorkspaceId);
+        },
+        [dispatcher, onGoToWorkspace],
+    );
+
+    const routeModeSwitch = useCallback(
+        (nextModeId) => {
+            const currentWorkspaceId = workspaceContext?.workspaceId ?? workspaceId;
+            dispatchOsWorkspaceShellIntent(
+                {
+                    action: 'mode.activate',
+                    workspaceId: currentWorkspaceId,
+                    modeId: nextModeId,
+                },
+                dispatcher,
+            );
+            onGoToMode?.(currentWorkspaceId, nextModeId);
+        },
+        [dispatcher, onGoToMode, workspaceContext?.workspaceId, workspaceId],
+    );
+
     return (
         <div className='workspace-root'>
             <PresenceDots presence={presence} />
@@ -209,8 +242,8 @@ function EditorWorkspaceLayoutInner({
             {/* Navigation UI (moved from Shell → correct) */}
             {showWorkspaceNavigation && workspaceContext && (
                 <div className='workspace-nav'>
-                    <WorkspaceSwitcher activeWorkspace={workspaceContext.workspaceId} onChange={onGoToWorkspace} />
-                    <ModeSwitcher workspace={workspaceContext.workspaceId} activeMode={workspaceContext.modeId} onChange={(nextMode) => onGoToMode(workspaceContext.workspaceId, nextMode)} />
+                    <WorkspaceSwitcher activeWorkspace={workspaceContext.workspaceId} onChange={routeWorkspaceSwitch} />
+                    <ModeSwitcher workspace={workspaceContext.workspaceId} activeMode={workspaceContext.modeId} onChange={routeModeSwitch} />
                 </div>
             )}
 

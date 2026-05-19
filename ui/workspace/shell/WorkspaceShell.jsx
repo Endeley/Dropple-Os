@@ -6,7 +6,6 @@ import { MediaWorkspaceShell } from '@/ui/workspace/media/MediaWorkspaceShell.js
 import { EditorWorkspaceShell } from '@/ui/workspace/editor/EditorWorkspaceShell.jsx';
 import { UIUXAuthoringShell } from '@/ui/workspace/uiux/UIUXAuthoringShell.jsx';
 import { UXWorkspaceShell } from '@/ui/workspace/ux/UXWorkspaceShell';
-import { OsWorkspaceSurfaceShell } from '@/ui/workspace/shell/OsWorkspaceSurfaceShell.jsx';
 
 /**
  * Authoritative workspace shell router.
@@ -53,10 +52,5 @@ export function WorkspaceShell({ workspace, modeId = null, workspaceContext = nu
         innerShell = <EditorWorkspaceShell workspace={workspace} modeId={activeMode} workspaceContext={workspaceContext} {...shellProps} />;
     }
 
-    return (
-        <>
-            {innerShell}
-            <OsWorkspaceSurfaceShell />
-        </>
-    );
+    return innerShell;
 }
