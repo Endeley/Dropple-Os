@@ -19,6 +19,7 @@ function createReport({
             },
             federationAttestation: { ok: true, tamperRejected: true, hash: 'fed-hash-a', entryCount: 1 },
             federationLifecycle: { ok: true, replayEquivalent: true, staleRejected: true, orderingClosed: true },
+            osSurfaceIntentRouting: { ok: true, mutationFree: true, acceptedCount: 4, rejectedCount: 6 },
             simulationTrace: {
                 ok: true,
                 fingerprint: 'sim-fingerprint-a',
@@ -84,6 +85,24 @@ test('release trust diff fails on constitutional federation replay-equivalence r
     assert.equal(result.ok, false);
     assert.equal(result.errors.some((entry) => entry.includes('federationLifecycle.ok')), true);
     assert.equal(result.errors.some((entry) => entry.includes('federationLifecycle.replayEquivalent')), true);
+});
+
+test('release trust diff fails on constitutional os surface intent-routing regression', () => {
+    const baseline = createReport({
+        checks: {
+            osSurfaceIntentRouting: { ok: true, mutationFree: true, acceptedCount: 4, rejectedCount: 6 },
+        },
+    });
+    const current = createReport({
+        checks: {
+            osSurfaceIntentRouting: { ok: false, mutationFree: false, acceptedCount: 4, rejectedCount: 6 },
+        },
+    });
+
+    const result = diffReleaseTrustReports({ baseline, current });
+    assert.equal(result.ok, false);
+    assert.equal(result.errors.some((entry) => entry.includes('osSurfaceIntentRouting.ok')), true);
+    assert.equal(result.errors.some((entry) => entry.includes('osSurfaceIntentRouting.mutationFree')), true);
 });
 
 test('release trust diff treats hash changes as deltas in non-strict mode', () => {

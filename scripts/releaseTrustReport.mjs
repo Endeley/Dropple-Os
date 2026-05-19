@@ -16,6 +16,7 @@ import {
     commitFederationSessionAction,
     updateFederationPreviewAction,
 } from '../runtime/orchestration/sessionFederationActions.js';
+import { evaluateSurfaceIntentRoutingContract } from '../runtime/osSurface/validateSurfaceIntentRouting.js';
 
 const REPORT_SCHEMA_VERSION = '1.0.0';
 const REPORT_PATH = path.join(process.cwd(), '.artifacts', 'release-trust.json');
@@ -217,6 +218,7 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
 
     const architectureGate = runArchitectureGateStatus();
     const federationLifecycle = evaluateFederationLifecycleGate();
+    const osSurfaceIntentRouting = evaluateSurfaceIntentRoutingContract();
 
     const checks = Object.freeze({
         architectureGate: Object.freeze({
@@ -258,6 +260,16 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
             fingerprint: exported.simulationTraceFingerprint,
             primitiveTraceLineageProvided: strictVerification.primitiveTraceLineageProvided === true,
             tamperRejected: tamperedSimulation.valid === false,
+        }),
+        osSurfaceIntentRouting: Object.freeze({
+            ok: osSurfaceIntentRouting.ok === true,
+            mutationFree: osSurfaceIntentRouting.mutationFree === true,
+            acceptedCount: Number.isFinite(osSurfaceIntentRouting.acceptedCount)
+                ? Number(osSurfaceIntentRouting.acceptedCount)
+                : 0,
+            rejectedCount: Number.isFinite(osSurfaceIntentRouting.rejectedCount)
+                ? Number(osSurfaceIntentRouting.rejectedCount)
+                : 0,
         }),
     });
 

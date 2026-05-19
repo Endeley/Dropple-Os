@@ -3,6 +3,7 @@ import { compareExportVerification } from './exportVerificationComparator.mjs';
 import { compareFederationAttestation } from './federationAttestationComparator.mjs';
 import { compareFederationLifecycle } from './federationLifecycleComparator.mjs';
 import { compareSimulationTrace } from './simulationTraceComparator.mjs';
+import { compareOsSurfaceIntentRouting } from './osSurfaceIntentRoutingComparator.mjs';
 
 export const RELEASE_TRUST_REQUIRED_CHECK_IDS = Object.freeze([
     'architectureGate',
@@ -10,6 +11,7 @@ export const RELEASE_TRUST_REQUIRED_CHECK_IDS = Object.freeze([
     'federationAttestation',
     'federationLifecycle',
     'simulationTrace',
+    'osSurfaceIntentRouting',
 ]);
 
 export function compareReleaseTrustChecks({
@@ -40,6 +42,11 @@ export function compareReleaseTrustChecks({
         ...compareSimulationTrace({
             baseline: baselineChecks.simulationTrace,
             current: currentChecks.simulationTrace,
+            strict,
+        }),
+        ...compareOsSurfaceIntentRouting({
+            baseline: baselineChecks.osSurfaceIntentRouting,
+            current: currentChecks.osSurfaceIntentRouting,
             strict,
         }),
     ]);

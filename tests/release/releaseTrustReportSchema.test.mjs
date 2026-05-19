@@ -13,7 +13,14 @@ test('release trust report schema is stable and required checks are present', as
 
     assert.deepEqual(
         Object.keys(report.checks).sort((left, right) => left.localeCompare(right)),
-        ['architectureGate', 'exportVerification', 'federationAttestation', 'federationLifecycle', 'simulationTrace'],
+        [
+            'architectureGate',
+            'exportVerification',
+            'federationAttestation',
+            'federationLifecycle',
+            'osSurfaceIntentRouting',
+            'simulationTrace',
+        ],
     );
 
     assert.equal(typeof report.checks.architectureGate.ok, 'boolean');
@@ -38,4 +45,9 @@ test('release trust report schema is stable and required checks are present', as
     assert.equal(typeof report.checks.simulationTrace.fingerprint, 'string');
     assert.equal(typeof report.checks.simulationTrace.primitiveTraceLineageProvided, 'boolean');
     assert.equal(typeof report.checks.simulationTrace.tamperRejected, 'boolean');
+
+    assert.equal(typeof report.checks.osSurfaceIntentRouting.ok, 'boolean');
+    assert.equal(typeof report.checks.osSurfaceIntentRouting.mutationFree, 'boolean');
+    assert.equal(typeof report.checks.osSurfaceIntentRouting.acceptedCount, 'number');
+    assert.equal(typeof report.checks.osSurfaceIntentRouting.rejectedCount, 'number');
 });
