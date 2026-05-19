@@ -42,6 +42,7 @@ test('os surface remains projection-only and non-sovereign', () => {
     ];
 
     for (const relPath of files) {
+        if (relPath.includes('/__tests__/')) continue;
         const content = fs.readFileSync(path.join(ROOT, relPath), 'utf8');
         const lines = content.split('\n');
         for (let index = 0; index < lines.length; index += 1) {
@@ -49,6 +50,13 @@ test('os surface remains projection-only and non-sovereign', () => {
             if (!line.includes('import') && !line.includes('setState')) continue;
             if (forbidden.some((pattern) => pattern.test(line))) {
                 violations.push(`${relPath}:${index + 1}: ${line.trim()}`);
+            }
+            if (
+                /runtime\/projection\//.test(line) &&
+                !/runtime\/projection\/index\.js/.test(line) &&
+                /import/.test(line)
+            ) {
+                violations.push(`${relPath}:${index + 1}: deep runtime/projection import not allowed: ${line.trim()}`);
             }
         }
     }

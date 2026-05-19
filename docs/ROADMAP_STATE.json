@@ -407,6 +407,7 @@
       "surface_projection_purity": [
         "runtime/osSurface/buildEnvironmentSurfaceModel.js",
         "runtime/osSurface/buildSynthesizedToolSurfaceModel.js",
+        "runtime/osSurface/fromProjectionSurface.js",
         "tests/architecture/osSurfaceBoundary.test.ts"
       ],
       "surface_intent_routing_only": [
@@ -414,11 +415,13 @@
         "tests/architecture/osSurfaceBoundary.test.ts"
       ],
       "surface_replay_equivalence": [
-        "runtime/osSurface/__tests__/osSurfaceProjection.test.mjs"
+        "runtime/osSurface/__tests__/osSurfaceProjection.test.mjs",
+        "runtime/osSurface/__tests__/osSurfaceProjectionFromRuntime.test.mjs"
       ],
       "surface_capability_visibility_contract": [
         "runtime/osSurface/buildEnvironmentSurfaceModel.js",
         "runtime/osSurface/buildSynthesizedToolSurfaceModel.js",
+        "runtime/osSurface/fromProjectionSurface.js",
         "runtime/osSurface/__tests__/osSurfaceProjection.test.mjs"
       ]
     }
