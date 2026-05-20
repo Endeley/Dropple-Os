@@ -43,6 +43,7 @@ test('release trust summary formatter is deterministic for identical semantic ou
             publishClickable: true,
             keyframeClickable: true,
             interceptErrors: 0,
+            reason: null,
             durationMs: 1700,
         },
         osSurfaceProbeBaseline: {
@@ -66,6 +67,7 @@ test('release trust summary formatter is deterministic for identical semantic ou
             publishClickable: true,
             keyframeClickable: true,
             interceptErrors: 0,
+            reason: null,
             durationMs: 1700,
         },
         osSurfaceProbeBaseline: {
@@ -87,6 +89,7 @@ test('release trust summary formatter is deterministic for identical semantic ou
     assert.match(a, /OS Surface Probe/);
     assert.match(a, /Publish clickable: `true`/);
     assert.match(a, /Keyframe clickable: `true`/);
+    assert.match(a, /Failure reason: `none`/);
     assert.match(a, /Duration \(current\): `1700ms`/);
     assert.match(a, /Duration \(baseline\): `1000ms`/);
     assert.match(a, /Duration delta: `\+70.0%`/);
@@ -116,6 +119,7 @@ test('release trust summary surfaces runtime probe duration warning as non-block
             publishClickable: true,
             keyframeClickable: true,
             interceptErrors: 0,
+            reason: 'pointer-intercept-detected',
             durationMs: 1700,
         },
         osSurfaceProbeBaseline: {
@@ -124,5 +128,6 @@ test('release trust summary surfaces runtime probe duration warning as non-block
     });
 
     assert.match(summary, /Duration status: `WARN`/);
+    assert.match(summary, /Failure reason: `pointer-intercept-detected`/);
     assert.match(summary, /runtime probe duration regressed/);
 });

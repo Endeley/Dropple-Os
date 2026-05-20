@@ -7,6 +7,7 @@ test('release trust probe summary formatter renders stable one-line diagnostics'
         probe: {
             check: {
                 ok: true,
+                reason: null,
                 publishClickable: true,
                 keyframeClickable: true,
                 interceptErrors: 0,
@@ -28,6 +29,7 @@ test('release trust probe summary formatter renders stable one-line diagnostics'
     });
 
     assert.match(line, /\[ReleaseTrustProbeSummary\] status=PASS/);
+    assert.match(line, /failureReason=none/);
     assert.match(line, /publishClickable=true/);
     assert.match(line, /keyframeClickable=true/);
     assert.match(line, /interceptErrors=0/);
@@ -48,6 +50,7 @@ test('release trust probe summary formatter marks regressions and improvements w
         probe: {
             check: {
                 ok: true,
+                reason: 'pointer-intercept-detected',
                 publishClickable: true,
                 keyframeClickable: true,
                 interceptErrors: 0,
@@ -60,6 +63,7 @@ test('release trust probe summary formatter marks regressions and improvements w
             },
         },
     });
+    assert.match(regressed, /failureReason=pointer-intercept-detected/);
     assert.match(regressed, /trend=regressed/);
     assert.match(regressed, /durationStatus=WARN/);
     assert.match(regressed, /durationDeltaPct=\+80\.0%/);

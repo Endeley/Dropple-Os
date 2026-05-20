@@ -45,6 +45,20 @@ export function compareOsSurfaceShellRuntimeProbe({
                 : 'runtime probe failed.',
     }));
 
+    const failureReasonValid =
+        skipped ||
+        probeOk ||
+        (typeof current.reason === 'string' && current.reason.trim().length > 0);
+    outcomes.push(createOutcome({
+        ok: failureReasonValid,
+        severity: failureReasonValid ? 'info' : 'error',
+        invariant: 'osSurfaceShellRuntimeProbe.failureReason',
+        classification: failureReasonValid ? 'lawful-evolution' : 'constitutional-regression',
+        message: failureReasonValid
+            ? `runtime probe failure reason: ${current.reason ?? 'none'}.`
+            : 'runtime probe failed without a classified failure reason.',
+    }));
+
     const publishClickable = current.publishClickable === true;
     outcomes.push(createOutcome({
         ok: skipped || publishClickable,

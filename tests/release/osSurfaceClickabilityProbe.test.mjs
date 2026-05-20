@@ -81,6 +81,32 @@ test('normalizeOsSurfaceClickabilityProbeResult fails closed on intercept eviden
         exitCode: 0,
     });
     assert.equal(normalized.ok, false);
-    assert.equal(normalized.reason, 'unknown-probe-failure');
+    assert.equal(normalized.reason, 'pointer-intercept-detected');
     assert.equal(normalized.interceptErrors, 2);
+});
+
+test('normalizeOsSurfaceClickabilityProbeResult classifies malformed json as parse failure', () => {
+    const parsed = parseOsSurfaceClickabilityJsonReport('not-json');
+    const normalized = normalizeOsSurfaceClickabilityProbeResult({
+        runOk: true,
+        parsedReport: parsed,
+        interceptErrors: 0,
+        durationMs: 12,
+        exitCode: 0,
+    });
+    assert.equal(normalized.ok, false);
+    assert.equal(normalized.reason, 'json-parse-failure');
+});
+
+test('normalizeOsSurfaceClickabilityProbeResult classifies missing expected tests', () => {
+    const parsed = parseOsSurfaceClickabilityJsonReport(JSON.stringify({ suites: [] }));
+    const normalized = normalizeOsSurfaceClickabilityProbeResult({
+        runOk: true,
+        parsedReport: parsed,
+        interceptErrors: 0,
+        durationMs: 12,
+        exitCode: 0,
+    });
+    assert.equal(normalized.ok, false);
+    assert.equal(normalized.reason, 'missing-expected-tests');
 });

@@ -87,6 +87,9 @@ export function formatReleaseTrustSummary({
         lines.push(`- Publish clickable: \`${osSurfaceProbeCurrent.publishClickable ? 'true' : 'false'}\``);
         lines.push(`- Keyframe clickable: \`${osSurfaceProbeCurrent.keyframeClickable ? 'true' : 'false'}\``);
         lines.push(`- Pointer intercept errors: \`${Number(osSurfaceProbeCurrent.interceptErrors ?? 0)}\``);
+        lines.push(
+            `- Failure reason: \`${typeof osSurfaceProbeCurrent.reason === 'string' ? osSurfaceProbeCurrent.reason : 'none'}\``,
+        );
         lines.push(`- Duration (current): \`${currentDuration}ms\``);
         if (baselineDuration !== null) {
             lines.push(`- Duration (baseline): \`${baselineDuration}ms\``);

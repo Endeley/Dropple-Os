@@ -231,7 +231,7 @@ function evaluateOsSurfaceShellRuntimeProbeGate() {
         ok: result.ok === true,
         skipped: false,
         required,
-        reason: null,
+        reason: typeof result.reason === 'string' ? result.reason : null,
         publishClickable: result.publishClickable === true,
         keyframeClickable: result.keyframeClickable === true,
         interceptErrors: Number.isFinite(result.interceptErrors) ? Number(result.interceptErrors) : 0,

@@ -112,6 +112,20 @@ export function normalizeOsSurfaceClickabilityProbeResult({
     const normalizedInterceptErrors = Number.isFinite(interceptErrors) ? Number(interceptErrors) : 0;
     const normalizedDurationMs = Number.isFinite(durationMs) && Number(durationMs) >= 0 ? Number(durationMs) : 0;
 
+    const parseReason = parsedReport?.reason ?? null;
+    const failureReason =
+        runOk !== true
+            ? 'playwright-exit-nonzero'
+            : parseReason === 'invalid-json-report'
+                ? 'json-parse-failure'
+                : parseReason === 'missing-expected-tests'
+                    ? 'missing-expected-tests'
+                    : normalizedInterceptErrors > 0
+                        ? 'pointer-intercept-detected'
+                        : parseReason === null && publishClickable && keyframeClickable
+                            ? null
+                            : 'unknown-probe-failure';
+
     return Object.freeze({
         ok:
             runOk === true &&
@@ -120,7 +134,7 @@ export function normalizeOsSurfaceClickabilityProbeResult({
             publishClickable &&
             keyframeClickable &&
             normalizedInterceptErrors === 0,
-        reason: parsedReport?.reason ?? (runOk ? 'unknown-probe-failure' : 'playwright-exit-nonzero'),
+        reason: failureReason,
         publishClickable,
         keyframeClickable,
         interceptErrors: normalizedInterceptErrors,

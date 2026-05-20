@@ -70,6 +70,7 @@ export function formatReleaseTrustProbeSummary({
 
     return [
         `[ReleaseTrustProbeSummary] status=${status}`,
+        `failureReason=${check.reason ?? 'none'}`,
         `publishClickable=${check.publishClickable === true}`,
         `keyframeClickable=${check.keyframeClickable === true}`,
         `interceptErrors=${Number.isFinite(check.interceptErrors) ? Number(check.interceptErrors) : 0}`,

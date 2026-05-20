@@ -253,6 +253,31 @@ test('release trust diff fails when required os surface runtime probe is skipped
     assert.equal(result.errors.some((entry) => entry.includes('osSurfaceShellRuntimeProbe.ok')), false);
 });
 
+test('release trust diff fails when os surface runtime probe failure reason is missing', () => {
+    const baseline = createReport();
+    const current = createReport({
+        checks: {
+            osSurfaceShellRuntimeProbe: {
+                ok: false,
+                skipped: false,
+                required: true,
+                reason: null,
+                publishClickable: false,
+                keyframeClickable: false,
+                interceptErrors: 1,
+                durationMs: 10,
+            },
+        },
+    });
+
+    const result = diffReleaseTrustReports({ baseline, current });
+    assert.equal(result.ok, false);
+    assert.equal(
+        result.errors.some((entry) => entry.includes('osSurfaceShellRuntimeProbe.failureReason')),
+        true,
+    );
+});
+
 test('release trust diff emits non-blocking delta on os surface runtime probe duration regression', () => {
     const baseline = createReport({
         checks: {
