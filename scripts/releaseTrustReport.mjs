@@ -25,6 +25,11 @@ import { runOsSurfaceClickabilityProbe } from './releaseTrustChecks/osSurfaceCli
 
 const REPORT_SCHEMA_VERSION = '1.0.0';
 const REPORT_PATH = path.join(process.cwd(), '.artifacts', 'release-trust.json');
+const OS_SURFACE_CLICKABILITY_PROBE_PATH = path.join(
+    process.cwd(),
+    '.artifacts',
+    'os-surface-clickability-probe.json',
+);
 const UIUX_TEMPLATE_GENERATION_SPEC_PATH = path.join(
     process.cwd(),
     'tests',
@@ -99,6 +104,12 @@ function writeReport(report, reportPath = REPORT_PATH) {
     const directory = path.dirname(reportPath);
     fs.mkdirSync(directory, { recursive: true });
     fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+}
+
+function writeProbeArtifact(probePayload, probePath = OS_SURFACE_CLICKABILITY_PROBE_PATH) {
+    const directory = path.dirname(probePath);
+    fs.mkdirSync(directory, { recursive: true });
+    fs.writeFileSync(probePath, `${JSON.stringify(probePayload, null, 2)}\n`, 'utf8');
 }
 
 function getSession(state, sessionId) {
@@ -388,6 +399,10 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
 
     if (write) {
         writeReport(report);
+        writeProbeArtifact(Object.freeze({
+            generatedAt: new Date().toISOString(),
+            check: checks.osSurfaceShellRuntimeProbe,
+        }));
     }
 
     return report;

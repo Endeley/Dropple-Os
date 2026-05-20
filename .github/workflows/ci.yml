@@ -159,6 +159,7 @@ jobs:
         env:
           ENGINE_VERSION: ${{ secrets.ENGINE_VERSION }}
           ROOT_PUBLIC_KEY: ${{ secrets.ROOT_PUBLIC_KEY }}
+          RELEASE_TRUST_REQUIRE_UI_PROBE: "1"
 
       - name: Append release trust ledger entry (main)
         run: npm run release:trust:ledger
@@ -177,6 +178,13 @@ jobs:
         with:
           name: release-trust-report-main
           path: .artifacts/release-trust.json
+          if-no-files-found: error
+
+      - name: Upload os surface clickability probe (main)
+        uses: actions/upload-artifact@v5
+        with:
+          name: os-surface-clickability-probe-main
+          path: .artifacts/os-surface-clickability-probe.json
           if-no-files-found: error
 
       - name: Upload release trust ledger (main)
@@ -227,6 +235,7 @@ jobs:
         env:
           ENGINE_VERSION: ${{ secrets.ENGINE_VERSION }}
           ROOT_PUBLIC_KEY: ${{ secrets.ROOT_PUBLIC_KEY }}
+          RELEASE_TRUST_REQUIRE_UI_PROBE: "1"
 
       - name: Fetch main release trust baseline artifacts
         env:
@@ -340,6 +349,13 @@ jobs:
         with:
           name: release-trust-report-pr
           path: .artifacts/release-trust.json
+          if-no-files-found: error
+
+      - name: Upload os surface clickability probe (pr)
+        uses: actions/upload-artifact@v5
+        with:
+          name: os-surface-clickability-probe-pr
+          path: .artifacts/os-surface-clickability-probe.json
           if-no-files-found: error
 
       - name: Upload release trust ledger (pr)
