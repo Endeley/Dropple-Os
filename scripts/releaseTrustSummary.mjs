@@ -15,6 +15,15 @@ function groupOutcomes(outcomes = []) {
     return groups;
 }
 
+function readJsonOrNull(filePath) {
+    if (!filePath || !fs.existsSync(filePath)) return null;
+    try {
+        return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    } catch {
+        return null;
+    }
+}
+
 export function formatReleaseTrustSummary({
     result,
     strict = false,
@@ -22,6 +31,8 @@ export function formatReleaseTrustSummary({
     ledger = null,
     federationLineage = null,
     federationLineageLedger = null,
+    osSurfaceProbeCurrent = null,
+    osSurfaceProbeBaseline = null,
 } = {}) {
     const safeResult = result ?? { ok: false, errors: ['release trust diff result unavailable.'], warnings: [], deltas: [], outcomes: [] };
     const grouped = groupOutcomes(safeResult.outcomes ?? []);
@@ -56,6 +67,39 @@ export function formatReleaseTrustSummary({
                 )})`,
             );
         }
+    }
+    if (osSurfaceProbeCurrent) {
+        const durationOutcome = (safeResult.outcomes ?? []).find(
+            (entry) => entry?.invariant === 'osSurfaceShellRuntimeProbe.duration-regression',
+        );
+        const currentDuration = Number.isFinite(osSurfaceProbeCurrent.durationMs)
+            ? Number(osSurfaceProbeCurrent.durationMs)
+            : 0;
+        const baselineDuration = Number.isFinite(osSurfaceProbeBaseline?.durationMs)
+            ? Number(osSurfaceProbeBaseline.durationMs)
+            : null;
+        const regressionPct =
+            baselineDuration && baselineDuration > 0
+                ? (((currentDuration - baselineDuration) / baselineDuration) * 100)
+                : null;
+
+        lines.push('### OS Surface Probe');
+        lines.push(`- Publish clickable: \`${osSurfaceProbeCurrent.publishClickable ? 'true' : 'false'}\``);
+        lines.push(`- Keyframe clickable: \`${osSurfaceProbeCurrent.keyframeClickable ? 'true' : 'false'}\``);
+        lines.push(`- Pointer intercept errors: \`${Number(osSurfaceProbeCurrent.interceptErrors ?? 0)}\``);
+        lines.push(`- Duration (current): \`${currentDuration}ms\``);
+        if (baselineDuration !== null) {
+            lines.push(`- Duration (baseline): \`${baselineDuration}ms\``);
+        }
+        if (regressionPct !== null) {
+            lines.push(`- Duration delta: \`${regressionPct >= 0 ? '+' : ''}${regressionPct.toFixed(1)}%\``);
+        }
+        if (durationOutcome?.severity === 'warning') {
+            lines.push(`- Duration status: \`WARN\` (${durationOutcome.message})`);
+        } else {
+            lines.push('- Duration status: `OK`');
+        }
+        lines.push('');
     }
     lines.push('');
 
@@ -189,6 +233,8 @@ export function buildReleaseTrustSummary({
         baselineRequiredAfter,
         strict: strictEnabled,
     });
+    const currentReport = readJsonOrNull(currentPath);
+    const baselineReport = readJsonOrNull(baselinePath);
     return formatReleaseTrustSummary({
         result,
         strict: strictEnabled,
@@ -196,6 +242,8 @@ export function buildReleaseTrustSummary({
         ledger: resolveLedgerStatus(ledgerPath),
         federationLineage: resolveFederationLineageStatus(federationLineagePath),
         federationLineageLedger: resolveFederationLineageLedgerStatus(federationLineageLedgerPath),
+        osSurfaceProbeCurrent: currentReport?.checks?.osSurfaceShellRuntimeProbe ?? null,
+        osSurfaceProbeBaseline: baselineReport?.checks?.osSurfaceShellRuntimeProbe ?? null,
     });
 }
 
