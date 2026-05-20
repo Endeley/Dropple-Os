@@ -187,6 +187,10 @@ jobs:
           path: .artifacts/os-surface-clickability-probe.json
           if-no-files-found: error
 
+      - name: Publish os surface probe summary (main)
+        if: always()
+        run: node --import ./bench/register-alias-loader.mjs scripts/releaseTrustProbeSummary.mjs
+
       - name: Upload release trust ledger (main)
         uses: actions/upload-artifact@v5
         with:
@@ -357,6 +361,10 @@ jobs:
           name: os-surface-clickability-probe-pr
           path: .artifacts/os-surface-clickability-probe.json
           if-no-files-found: error
+
+      - name: Publish os surface probe summary (pr)
+        if: always()
+        run: node --import ./bench/register-alias-loader.mjs scripts/releaseTrustProbeSummary.mjs
 
       - name: Upload release trust ledger (pr)
         uses: actions/upload-artifact@v5

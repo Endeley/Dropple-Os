@@ -26,6 +26,8 @@ test('pull request CI workflow runs validate:release as a required release gate'
     assert.match(workflow, /name:\s*release-trust-report-pr/);
     assert.match(workflow, /name:\s*Upload os surface clickability probe \(pr\)/);
     assert.match(workflow, /name:\s*os-surface-clickability-probe-pr/);
+    assert.match(workflow, /name:\s*Publish os surface probe summary \(pr\)/);
+    assert.match(workflow, /run:\s*node --import \.\/bench\/register-alias-loader\.mjs scripts\/releaseTrustProbeSummary\.mjs/);
     assert.match(workflow, /name:\s*Upload release trust ledger \(pr\)/);
     assert.match(workflow, /name:\s*release-trust-ledger-pr/);
     assert.match(workflow, /name:\s*Upload federation audit lineage \(pr\)/);
@@ -53,6 +55,7 @@ test('pull request CI workflow runs validate:release as a required release gate'
     assert.match(workflow, /name:\s*Publish release trust summary/);
     assert.match(workflow, /if:\s*always\(\)/);
     assert.match(workflow, /run:\s*npm run release:trust:summary/);
+    assert.match(workflow, /name:\s*Publish os surface probe summary \(main\)/);
     assert.match(workflow, /name:\s*Publish release trust PR comment/);
     assert.match(workflow, /run:\s*npm run release:trust:pr-comment/);
 });
