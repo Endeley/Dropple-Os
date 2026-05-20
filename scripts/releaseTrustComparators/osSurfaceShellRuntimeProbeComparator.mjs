@@ -59,6 +59,22 @@ export function compareOsSurfaceShellRuntimeProbe({
             : 'runtime probe failed without a classified failure reason.',
     }));
 
+    const evidencePresent =
+        skipped ||
+        probeOk ||
+        (typeof current.failedTestTitle === 'string' && current.failedTestTitle.trim().length > 0) ||
+        (typeof current.traceHint === 'string' && current.traceHint.trim().length > 0) ||
+        (typeof current.stderrTail === 'string' && current.stderrTail.trim().length > 0);
+    outcomes.push(createOutcome({
+        ok: evidencePresent,
+        severity: evidencePresent ? 'info' : 'error',
+        invariant: 'osSurfaceShellRuntimeProbe.evidencePresent',
+        classification: evidencePresent ? 'lawful-evolution' : 'constitutional-regression',
+        message: evidencePresent
+            ? 'runtime probe failure evidence pointers are present.'
+            : 'runtime probe failed without evidence pointers (failedTestTitle/traceHint/stderrTail).',
+    }));
+
     const publishClickable = current.publishClickable === true;
     outcomes.push(createOutcome({
         ok: skipped || publishClickable,

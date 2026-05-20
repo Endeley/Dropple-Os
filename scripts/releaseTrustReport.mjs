@@ -223,6 +223,10 @@ function evaluateOsSurfaceShellRuntimeProbeGate() {
             keyframeClickable: required ? false : true,
             interceptErrors: 0,
             durationMs: 0,
+            failedTestTitle: null,
+            traceHint: null,
+            stdoutTail: null,
+            stderrTail: null,
         });
     }
 
@@ -236,6 +240,10 @@ function evaluateOsSurfaceShellRuntimeProbeGate() {
         keyframeClickable: result.keyframeClickable === true,
         interceptErrors: Number.isFinite(result.interceptErrors) ? Number(result.interceptErrors) : 0,
         durationMs: Number.isFinite(result.durationMs) && Number(result.durationMs) >= 0 ? Number(result.durationMs) : 0,
+        failedTestTitle: typeof result.failedTestTitle === 'string' ? result.failedTestTitle : null,
+        traceHint: typeof result.traceHint === 'string' ? result.traceHint : null,
+        stdoutTail: typeof result.stdoutTail === 'string' ? result.stdoutTail : null,
+        stderrTail: typeof result.stderrTail === 'string' ? result.stderrTail : null,
     });
 }
 
@@ -387,6 +395,18 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
             durationMs: Number.isFinite(osSurfaceShellRuntimeProbe.durationMs)
                 ? Number(osSurfaceShellRuntimeProbe.durationMs)
                 : 0,
+            failedTestTitle: typeof osSurfaceShellRuntimeProbe.failedTestTitle === 'string'
+                ? osSurfaceShellRuntimeProbe.failedTestTitle
+                : null,
+            traceHint: typeof osSurfaceShellRuntimeProbe.traceHint === 'string'
+                ? osSurfaceShellRuntimeProbe.traceHint
+                : null,
+            stdoutTail: typeof osSurfaceShellRuntimeProbe.stdoutTail === 'string'
+                ? osSurfaceShellRuntimeProbe.stdoutTail
+                : null,
+            stderrTail: typeof osSurfaceShellRuntimeProbe.stderrTail === 'string'
+                ? osSurfaceShellRuntimeProbe.stderrTail
+                : null,
         }),
     });
 

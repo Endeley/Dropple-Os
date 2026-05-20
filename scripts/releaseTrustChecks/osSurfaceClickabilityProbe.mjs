@@ -74,6 +74,7 @@ export function parseOsSurfaceClickabilityJsonReport(jsonText, {
 
     const publishEntry = matched.find((entry) => entry.title.includes(PUBLISH_TEST_NAME));
     const keyframeEntry = matched.find((entry) => entry.title.includes(KEYFRAME_TEST_NAME));
+    const failedEntry = matched.find((entry) => entry.status && entry.status !== 'passed') ?? null;
 
     const publishClickable = publishEntry?.status === 'passed';
     const keyframeClickable = keyframeEntry?.status === 'passed';
@@ -86,6 +87,7 @@ export function parseOsSurfaceClickabilityJsonReport(jsonText, {
             publishClickable,
             keyframeClickable,
             matchedTestCount: matched.length,
+            failedTestTitle: failedEntry?.title ?? null,
         });
     }
 
@@ -95,6 +97,7 @@ export function parseOsSurfaceClickabilityJsonReport(jsonText, {
         publishClickable,
         keyframeClickable,
         matchedTestCount: matched.length,
+        failedTestTitle: failedEntry?.title ?? null,
     });
 }
 
@@ -126,6 +129,17 @@ export function normalizeOsSurfaceClickabilityProbeResult({
                             ? null
                             : 'unknown-probe-failure';
 
+    const normalizedStdoutTail = typeof stdoutTail === 'string' && stdoutTail.trim().length > 0 ? stdoutTail : null;
+    const normalizedStderrTail = typeof stderrTail === 'string' && stderrTail.trim().length > 0 ? stderrTail : null;
+    const failedTestTitle =
+        typeof parsedReport?.failedTestTitle === 'string' && parsedReport.failedTestTitle.trim().length > 0
+            ? parsedReport.failedTestTitle
+            : null;
+    const traceHint =
+        failureReason === null
+            ? null
+            : 'test-results/**/trace.zip (run: npx playwright show-trace <trace.zip>)';
+
     return Object.freeze({
         ok:
             runOk === true &&
@@ -140,9 +154,11 @@ export function normalizeOsSurfaceClickabilityProbeResult({
         interceptErrors: normalizedInterceptErrors,
         durationMs: normalizedDurationMs,
         matchedTestCount: Number.isFinite(parsedReport?.matchedTestCount) ? Number(parsedReport.matchedTestCount) : 0,
+        failedTestTitle,
+        traceHint,
         exitCode: Number.isInteger(exitCode) ? exitCode : 1,
-        stdoutTail: typeof stdoutTail === 'string' && stdoutTail.trim().length > 0 ? stdoutTail : null,
-        stderrTail: typeof stderrTail === 'string' && stderrTail.trim().length > 0 ? stderrTail : null,
+        stdoutTail: normalizedStdoutTail,
+        stderrTail: normalizedStderrTail,
     });
 }
 

@@ -44,6 +44,8 @@ test('release trust summary formatter is deterministic for identical semantic ou
             keyframeClickable: true,
             interceptErrors: 0,
             reason: null,
+            failedTestTitle: null,
+            traceHint: null,
             durationMs: 1700,
         },
         osSurfaceProbeBaseline: {
@@ -68,6 +70,8 @@ test('release trust summary formatter is deterministic for identical semantic ou
             keyframeClickable: true,
             interceptErrors: 0,
             reason: null,
+            failedTestTitle: null,
+            traceHint: null,
             durationMs: 1700,
         },
         osSurfaceProbeBaseline: {
@@ -120,6 +124,8 @@ test('release trust summary surfaces runtime probe duration warning as non-block
             keyframeClickable: true,
             interceptErrors: 0,
             reason: 'pointer-intercept-detected',
+            failedTestTitle: 'tests/e2e/uiux-template-generation.spec.js › uiux transition timeline can author a motion keyframe through lawful intents',
+            traceHint: 'test-results/**/trace.zip (run: npx playwright show-trace <trace.zip>)',
             durationMs: 1700,
         },
         osSurfaceProbeBaseline: {
@@ -129,5 +135,7 @@ test('release trust summary surfaces runtime probe duration warning as non-block
 
     assert.match(summary, /Duration status: `WARN`/);
     assert.match(summary, /Failure reason: `pointer-intercept-detected`/);
+    assert.match(summary, /Failed test:/);
+    assert.match(summary, /Trace hint:/);
     assert.match(summary, /runtime probe duration regressed/);
 });

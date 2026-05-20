@@ -278,6 +278,34 @@ test('release trust diff fails when os surface runtime probe failure reason is m
     );
 });
 
+test('release trust diff fails when os surface runtime probe fails without evidence pointers', () => {
+    const baseline = createReport();
+    const current = createReport({
+        checks: {
+            osSurfaceShellRuntimeProbe: {
+                ok: false,
+                skipped: false,
+                required: true,
+                reason: 'playwright-exit-nonzero',
+                publishClickable: false,
+                keyframeClickable: false,
+                interceptErrors: 1,
+                durationMs: 10,
+                failedTestTitle: null,
+                traceHint: null,
+                stderrTail: null,
+            },
+        },
+    });
+
+    const result = diffReleaseTrustReports({ baseline, current });
+    assert.equal(result.ok, false);
+    assert.equal(
+        result.errors.some((entry) => entry.includes('osSurfaceShellRuntimeProbe.evidencePresent')),
+        true,
+    );
+});
+
 test('release trust diff emits non-blocking delta on os surface runtime probe duration regression', () => {
     const baseline = createReport({
         checks: {

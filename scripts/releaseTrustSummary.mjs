@@ -90,6 +90,12 @@ export function formatReleaseTrustSummary({
         lines.push(
             `- Failure reason: \`${typeof osSurfaceProbeCurrent.reason === 'string' ? osSurfaceProbeCurrent.reason : 'none'}\``,
         );
+        if (typeof osSurfaceProbeCurrent.failedTestTitle === 'string' && osSurfaceProbeCurrent.failedTestTitle.trim()) {
+            lines.push(`- Failed test: \`${osSurfaceProbeCurrent.failedTestTitle}\``);
+        }
+        if (typeof osSurfaceProbeCurrent.traceHint === 'string' && osSurfaceProbeCurrent.traceHint.trim()) {
+            lines.push(`- Trace hint: \`${osSurfaceProbeCurrent.traceHint}\``);
+        }
         lines.push(`- Duration (current): \`${currentDuration}ms\``);
         if (baselineDuration !== null) {
             lines.push(`- Duration (baseline): \`${baselineDuration}ms\``);

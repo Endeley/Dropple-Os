@@ -44,6 +44,7 @@ test('parseOsSurfaceClickabilityJsonReport extracts pass states deterministicall
     assert.equal(parsed.keyframeClickable, true);
     assert.equal(parsed.reason, null);
     assert.equal(parsed.matchedTestCount, 2);
+    assert.equal(parsed.failedTestTitle, null);
 });
 
 test('parseOsSurfaceClickabilityJsonReport fails closed when expected tests are missing', () => {
@@ -69,6 +70,7 @@ test('normalizeOsSurfaceClickabilityProbeResult fails closed on parse/run mismat
     });
     assert.equal(normalized.ok, false);
     assert.equal(normalized.reason, 'playwright-exit-nonzero');
+    assert.equal(typeof normalized.traceHint, 'string');
 });
 
 test('normalizeOsSurfaceClickabilityProbeResult fails closed on intercept evidence', () => {
@@ -83,6 +85,7 @@ test('normalizeOsSurfaceClickabilityProbeResult fails closed on intercept eviden
     assert.equal(normalized.ok, false);
     assert.equal(normalized.reason, 'pointer-intercept-detected');
     assert.equal(normalized.interceptErrors, 2);
+    assert.equal(typeof normalized.traceHint, 'string');
 });
 
 test('normalizeOsSurfaceClickabilityProbeResult classifies malformed json as parse failure', () => {
@@ -96,6 +99,7 @@ test('normalizeOsSurfaceClickabilityProbeResult classifies malformed json as par
     });
     assert.equal(normalized.ok, false);
     assert.equal(normalized.reason, 'json-parse-failure');
+    assert.equal(typeof normalized.traceHint, 'string');
 });
 
 test('normalizeOsSurfaceClickabilityProbeResult classifies missing expected tests', () => {
@@ -109,4 +113,5 @@ test('normalizeOsSurfaceClickabilityProbeResult classifies missing expected test
     });
     assert.equal(normalized.ok, false);
     assert.equal(normalized.reason, 'missing-expected-tests');
+    assert.equal(typeof normalized.traceHint, 'string');
 });
