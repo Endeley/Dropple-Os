@@ -6,6 +6,10 @@ async function gotoWorkspace(page, path = '/workspace/new') {
     await expect(page.getByTestId('canvas-host')).toBeVisible();
 }
 
+async function assertReceivesPointerEvents(locator) {
+    await locator.click({ trial: true });
+}
+
 async function dragOnCanvas(page, from, to) {
     const canvas = page.getByTestId('canvas-host');
     const box = await canvas.boundingBox();
@@ -118,7 +122,9 @@ test('uiux authoring roundtrip publishes from the toolbar flow and installs into
 
     await expect(page.locator('[data-node-id]')).toHaveCount(1);
 
-    await page.getByRole('button', { name: 'Publish' }).click();
+    const publishButton = page.getByRole('button', { name: 'Publish' });
+    await assertReceivesPointerEvents(publishButton);
+    await publishButton.click();
 
     await expect(page.locator('body')).toContainText('Create Template');
 
@@ -231,7 +237,9 @@ test('uiux transition timeline can author a motion keyframe through lawful inten
     await page.getByLabel('Property').selectOption('opacity');
     await page.getByLabel('Value').fill('0.35');
     await page.getByLabel('Easing').selectOption('ease-in-out');
-    await page.getByTestId('uiux-transition-add-keyframe').click();
+    const addKeyframeButton = page.getByTestId('uiux-transition-add-keyframe');
+    await assertReceivesPointerEvents(addKeyframeButton);
+    await addKeyframeButton.click();
 
     await expect(page.getByTestId('uiux-transition-clip-count')).toHaveText('1 selected clips');
 
