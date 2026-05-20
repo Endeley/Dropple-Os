@@ -80,4 +80,5 @@ test('release trust report schema is stable and required checks are present', as
     assert.equal(typeof report.checks.osSurfaceShellRuntimeProbe.publishClickable, 'boolean');
     assert.equal(typeof report.checks.osSurfaceShellRuntimeProbe.keyframeClickable, 'boolean');
     assert.equal(typeof report.checks.osSurfaceShellRuntimeProbe.interceptErrors, 'number');
+    assert.equal(typeof report.checks.osSurfaceShellRuntimeProbe.durationMs, 'number');
 });

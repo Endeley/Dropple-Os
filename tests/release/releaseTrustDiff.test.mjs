@@ -43,6 +43,7 @@ function createReport({
                 publishClickable: true,
                 keyframeClickable: true,
                 interceptErrors: 0,
+                durationMs: 1000,
             },
             simulationTrace: {
                 ok: true,
@@ -224,6 +225,7 @@ test('release trust diff fails when required os surface runtime probe is skipped
                 publishClickable: true,
                 keyframeClickable: true,
                 interceptErrors: 0,
+                durationMs: 1000,
             },
         },
     });
@@ -237,6 +239,7 @@ test('release trust diff fails when required os surface runtime probe is skipped
                 publishClickable: false,
                 keyframeClickable: false,
                 interceptErrors: 2,
+                durationMs: 0,
             },
         },
     });
@@ -248,6 +251,48 @@ test('release trust diff fails when required os surface runtime probe is skipped
         true,
     );
     assert.equal(result.errors.some((entry) => entry.includes('osSurfaceShellRuntimeProbe.ok')), false);
+});
+
+test('release trust diff emits non-blocking delta on os surface runtime probe duration regression', () => {
+    const baseline = createReport({
+        checks: {
+            osSurfaceShellRuntimeProbe: {
+                ok: true,
+                skipped: false,
+                required: true,
+                reason: null,
+                publishClickable: true,
+                keyframeClickable: true,
+                interceptErrors: 0,
+                durationMs: 1000,
+            },
+        },
+    });
+    const current = createReport({
+        checks: {
+            osSurfaceShellRuntimeProbe: {
+                ok: true,
+                skipped: false,
+                required: true,
+                reason: null,
+                publishClickable: true,
+                keyframeClickable: true,
+                interceptErrors: 0,
+                durationMs: 1700,
+            },
+        },
+    });
+
+    const result = diffReleaseTrustReports({ baseline, current });
+    assert.equal(result.ok, true);
+    assert.equal(
+        result.deltas.some((entry) => entry.includes('osSurfaceShellRuntimeProbe.duration-regression')),
+        true,
+    );
+    assert.equal(
+        result.errors.some((entry) => entry.includes('osSurfaceShellRuntimeProbe.duration-regression')),
+        false,
+    );
 });
 
 test('release trust diff treats hash changes as deltas in non-strict mode', () => {

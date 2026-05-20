@@ -222,6 +222,7 @@ function evaluateOsSurfaceShellRuntimeProbeGate() {
             publishClickable: required ? false : true,
             keyframeClickable: required ? false : true,
             interceptErrors: 0,
+            durationMs: 0,
         });
     }
 
@@ -234,6 +235,7 @@ function evaluateOsSurfaceShellRuntimeProbeGate() {
         publishClickable: result.publishClickable === true,
         keyframeClickable: result.keyframeClickable === true,
         interceptErrors: Number.isFinite(result.interceptErrors) ? Number(result.interceptErrors) : 0,
+        durationMs: Number.isFinite(result.durationMs) && Number(result.durationMs) >= 0 ? Number(result.durationMs) : 0,
     });
 }
 
@@ -381,6 +383,9 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
             keyframeClickable: osSurfaceShellRuntimeProbe.keyframeClickable === true,
             interceptErrors: Number.isFinite(osSurfaceShellRuntimeProbe.interceptErrors)
                 ? Number(osSurfaceShellRuntimeProbe.interceptErrors)
+                : 0,
+            durationMs: Number.isFinite(osSurfaceShellRuntimeProbe.durationMs)
+                ? Number(osSurfaceShellRuntimeProbe.durationMs)
                 : 0,
         }),
     });

@@ -1,6 +1,9 @@
 import { createOutcome, isPlainObject } from './common.mjs';
 
+const DURATION_REGRESSION_THRESHOLD = 1.4;
+
 export function compareOsSurfaceShellRuntimeProbe({
+    baseline,
     current,
 } = {}) {
     const outcomes = [];
@@ -74,6 +77,34 @@ export function compareOsSurfaceShellRuntimeProbe({
             ? 'runtime probe observed no pointer-event interception errors.'
             : `runtime probe observed ${Number(current.interceptErrors)} pointer-event interception errors.`,
     }));
+
+    const currentDurationValid = Number.isFinite(current.durationMs) && Number(current.durationMs) >= 0;
+    outcomes.push(createOutcome({
+        ok: currentDurationValid,
+        severity: currentDurationValid ? 'info' : 'error',
+        invariant: 'osSurfaceShellRuntimeProbe.durationMs',
+        classification: currentDurationValid ? 'lawful-evolution' : 'constitutional-regression',
+        message: currentDurationValid
+            ? `runtime probe duration recorded (${Number(current.durationMs)}ms).`
+            : 'runtime probe duration is missing or invalid.',
+    }));
+
+    const baselineDurationValid = Number.isFinite(baseline?.durationMs) && Number(baseline.durationMs) > 0;
+    if (baselineDurationValid && currentDurationValid && skipped !== true) {
+        const baselineDuration = Number(baseline.durationMs);
+        const currentDuration = Number(current.durationMs);
+        const ratio = currentDuration / baselineDuration;
+        const regressionExceeded = ratio > DURATION_REGRESSION_THRESHOLD;
+        outcomes.push(createOutcome({
+            ok: true,
+            severity: regressionExceeded ? 'warning' : 'info',
+            invariant: 'osSurfaceShellRuntimeProbe.duration-regression',
+            classification: regressionExceeded ? 'semantic-drift' : 'lawful-evolution',
+            message: regressionExceeded
+                ? `runtime probe duration regressed (${baselineDuration}ms -> ${currentDuration}ms, ${(ratio * 100).toFixed(1)}%).`
+                : `runtime probe duration within threshold (${baselineDuration}ms -> ${currentDuration}ms).`,
+        }));
+    }
 
     return Object.freeze(outcomes);
 }
