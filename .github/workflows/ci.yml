@@ -321,16 +321,19 @@ jobs:
 
           REPORT_ARTIFACT_ID="$(gh api \
             "repos/${{ github.repository }}/actions/runs/${RUN_ID}/artifacts" \
-            -q '.artifacts[] | select(.name=="'"${REPORT_ARTIFACT_NAME}"'") | .id' | head -n 1)"
+            -q '.artifacts[] | select(.name=="'"${REPORT_ARTIFACT_NAME}"'") | .id' | head -n 1 || true)"
 
           if [ -z "${REPORT_ARTIFACT_ID}" ]; then
             echo "No ${REPORT_ARTIFACT_NAME} artifact found in run ${RUN_ID}; skipping baseline download."
             exit 0
           fi
 
-          gh api \
+          if ! gh api \
             "repos/${{ github.repository }}/actions/artifacts/${REPORT_ARTIFACT_ID}/zip" \
-            > .artifacts/release-trust-baseline.zip
+            > .artifacts/release-trust-baseline.zip; then
+            echo "Unable to download ${REPORT_ARTIFACT_NAME} from run ${RUN_ID}; skipping baseline download."
+            exit 0
+          fi
 
           unzip -o .artifacts/release-trust-baseline.zip -d .artifacts/release-trust-baseline-unpacked
           cp .artifacts/release-trust-baseline-unpacked/release-trust.json .artifacts/release-trust-baseline.json
@@ -338,32 +341,38 @@ jobs:
 
           PROBE_ARTIFACT_ID="$(gh api \
             "repos/${{ github.repository }}/actions/runs/${RUN_ID}/artifacts" \
-            -q '.artifacts[] | select(.name=="'"${PROBE_ARTIFACT_NAME}"'") | .id' | head -n 1)"
+            -q '.artifacts[] | select(.name=="'"${PROBE_ARTIFACT_NAME}"'") | .id' | head -n 1 || true)"
 
           if [ -n "${PROBE_ARTIFACT_ID}" ]; then
-            gh api \
+            if ! gh api \
               "repos/${{ github.repository }}/actions/artifacts/${PROBE_ARTIFACT_ID}/zip" \
-              > .artifacts/os-surface-clickability-probe-baseline.zip
+              > .artifacts/os-surface-clickability-probe-baseline.zip; then
+              echo "Unable to download ${PROBE_ARTIFACT_NAME} from run ${RUN_ID}; skipping os-surface probe baseline."
+            else
 
-            unzip -o .artifacts/os-surface-clickability-probe-baseline.zip -d .artifacts/os-surface-clickability-probe-baseline-unpacked
-            cp .artifacts/os-surface-clickability-probe-baseline-unpacked/os-surface-clickability-probe.json .artifacts/os-surface-clickability-probe-baseline.json
-            echo "Baseline os-surface probe ready at .artifacts/os-surface-clickability-probe-baseline.json"
+              unzip -o .artifacts/os-surface-clickability-probe-baseline.zip -d .artifacts/os-surface-clickability-probe-baseline-unpacked
+              cp .artifacts/os-surface-clickability-probe-baseline-unpacked/os-surface-clickability-probe.json .artifacts/os-surface-clickability-probe-baseline.json
+              echo "Baseline os-surface probe ready at .artifacts/os-surface-clickability-probe-baseline.json"
+            fi
           else
             echo "No ${PROBE_ARTIFACT_NAME} artifact found in run ${RUN_ID}; skipping os-surface probe baseline."
           fi
 
           LEDGER_ARTIFACT_ID="$(gh api \
             "repos/${{ github.repository }}/actions/runs/${RUN_ID}/artifacts" \
-            -q '.artifacts[] | select(.name=="'"${LEDGER_ARTIFACT_NAME}"'") | .id' | head -n 1)"
+            -q '.artifacts[] | select(.name=="'"${LEDGER_ARTIFACT_NAME}"'") | .id' | head -n 1 || true)"
 
           if [ -z "${LEDGER_ARTIFACT_ID}" ]; then
             echo "No ${LEDGER_ARTIFACT_NAME} artifact found in run ${RUN_ID}; starting a new ledger chain for this PR run."
             exit 0
           fi
 
-          gh api \
+          if ! gh api \
             "repos/${{ github.repository }}/actions/artifacts/${LEDGER_ARTIFACT_ID}/zip" \
-            > .artifacts/release-trust-ledger-baseline.zip
+            > .artifacts/release-trust-ledger-baseline.zip; then
+            echo "Unable to download ${LEDGER_ARTIFACT_NAME} from run ${RUN_ID}; starting a new ledger chain for this PR run."
+            exit 0
+          fi
 
           unzip -o .artifacts/release-trust-ledger-baseline.zip -d .artifacts/release-trust-ledger-baseline-unpacked
           cp .artifacts/release-trust-ledger-baseline-unpacked/release-trust-ledger.jsonl .artifacts/release-trust-ledger.jsonl
@@ -371,32 +380,38 @@ jobs:
 
           FEDERATION_LINEAGE_ARTIFACT_ID="$(gh api \
             "repos/${{ github.repository }}/actions/runs/${RUN_ID}/artifacts" \
-            -q '.artifacts[] | select(.name=="'"${FEDERATION_LINEAGE_ARTIFACT_NAME}"'") | .id' | head -n 1)"
+            -q '.artifacts[] | select(.name=="'"${FEDERATION_LINEAGE_ARTIFACT_NAME}"'") | .id' | head -n 1 || true)"
 
           if [ -n "${FEDERATION_LINEAGE_ARTIFACT_ID}" ]; then
-            gh api \
+            if ! gh api \
               "repos/${{ github.repository }}/actions/artifacts/${FEDERATION_LINEAGE_ARTIFACT_ID}/zip" \
-              > .artifacts/federation-audit-lineage-baseline.zip
+              > .artifacts/federation-audit-lineage-baseline.zip; then
+              echo "Unable to download ${FEDERATION_LINEAGE_ARTIFACT_NAME} from run ${RUN_ID}; skipping federation lineage baseline."
+            else
 
-            unzip -o .artifacts/federation-audit-lineage-baseline.zip -d .artifacts/federation-audit-lineage-baseline-unpacked
-            cp .artifacts/federation-audit-lineage-baseline-unpacked/federation-audit-lineage.json .artifacts/federation-audit-lineage-baseline.json
-            echo "Federation baseline lineage ready at .artifacts/federation-audit-lineage-baseline.json"
+              unzip -o .artifacts/federation-audit-lineage-baseline.zip -d .artifacts/federation-audit-lineage-baseline-unpacked
+              cp .artifacts/federation-audit-lineage-baseline-unpacked/federation-audit-lineage.json .artifacts/federation-audit-lineage-baseline.json
+              echo "Federation baseline lineage ready at .artifacts/federation-audit-lineage-baseline.json"
+            fi
           else
             echo "No ${FEDERATION_LINEAGE_ARTIFACT_NAME} artifact found in run ${RUN_ID}; skipping federation lineage baseline."
           fi
 
           FEDERATION_LINEAGE_LEDGER_ARTIFACT_ID="$(gh api \
             "repos/${{ github.repository }}/actions/runs/${RUN_ID}/artifacts" \
-            -q '.artifacts[] | select(.name=="'"${FEDERATION_LINEAGE_LEDGER_ARTIFACT_NAME}"'") | .id' | head -n 1)"
+            -q '.artifacts[] | select(.name=="'"${FEDERATION_LINEAGE_LEDGER_ARTIFACT_NAME}"'") | .id' | head -n 1 || true)"
 
           if [ -n "${FEDERATION_LINEAGE_LEDGER_ARTIFACT_ID}" ]; then
-            gh api \
+            if ! gh api \
               "repos/${{ github.repository }}/actions/artifacts/${FEDERATION_LINEAGE_LEDGER_ARTIFACT_ID}/zip" \
-              > .artifacts/federation-audit-lineage-ledger-baseline.zip
+              > .artifacts/federation-audit-lineage-ledger-baseline.zip; then
+              echo "Unable to download ${FEDERATION_LINEAGE_LEDGER_ARTIFACT_NAME} from run ${RUN_ID}; starting a new federation lineage ledger chain for this PR run."
+            else
 
-            unzip -o .artifacts/federation-audit-lineage-ledger-baseline.zip -d .artifacts/federation-audit-lineage-ledger-baseline-unpacked
-            cp .artifacts/federation-audit-lineage-ledger-baseline-unpacked/federation-audit-lineage-ledger.jsonl .artifacts/federation-audit-lineage-ledger.jsonl
-            echo "Federation lineage ledger seeded at .artifacts/federation-audit-lineage-ledger.jsonl"
+              unzip -o .artifacts/federation-audit-lineage-ledger-baseline.zip -d .artifacts/federation-audit-lineage-ledger-baseline-unpacked
+              cp .artifacts/federation-audit-lineage-ledger-baseline-unpacked/federation-audit-lineage-ledger.jsonl .artifacts/federation-audit-lineage-ledger.jsonl
+              echo "Federation lineage ledger seeded at .artifacts/federation-audit-lineage-ledger.jsonl"
+            fi
           else
             echo "No ${FEDERATION_LINEAGE_LEDGER_ARTIFACT_NAME} artifact found in run ${RUN_ID}; starting a new federation lineage ledger chain for this PR run."
           fi
