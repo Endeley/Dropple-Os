@@ -41,6 +41,8 @@ test('pull request CI workflow runs validate:release as a required release gate'
     assert.match(workflow, /name:\s*Fetch main release trust baseline artifacts/);
     assert.match(workflow, /actions\/workflows\/\$\{WORKFLOW_FILE\}\/runs/);
     assert.match(workflow, /release-trust-baseline\.json/);
+    assert.match(workflow, /os-surface-clickability-probe-main/);
+    assert.match(workflow, /os-surface-clickability-probe-baseline\.json/);
     assert.match(workflow, /release-trust-ledger-main/);
     assert.match(workflow, /release-trust-ledger\.jsonl/);
     assert.match(workflow, /federation-audit-lineage-main/);
@@ -56,6 +58,7 @@ test('pull request CI workflow runs validate:release as a required release gate'
     assert.match(workflow, /if:\s*always\(\)/);
     assert.match(workflow, /run:\s*npm run release:trust:summary/);
     assert.match(workflow, /name:\s*Publish os surface probe summary \(main\)/);
+    assert.match(workflow, /RELEASE_TRUST_UI_PROBE_BASELINE_PATH:\s*\.artifacts\/os-surface-clickability-probe-baseline\.json/);
     assert.match(workflow, /name:\s*Publish release trust PR comment/);
     assert.match(workflow, /run:\s*npm run release:trust:pr-comment/);
 });

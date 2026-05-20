@@ -250,6 +250,7 @@ jobs:
           mkdir -p .artifacts
           WORKFLOW_FILE="ci.yml"
           REPORT_ARTIFACT_NAME="release-trust-report-main"
+          PROBE_ARTIFACT_NAME="os-surface-clickability-probe-main"
           LEDGER_ARTIFACT_NAME="release-trust-ledger-main"
           FEDERATION_LINEAGE_ARTIFACT_NAME="federation-audit-lineage-main"
           FEDERATION_LINEAGE_LEDGER_ARTIFACT_NAME="federation-audit-lineage-ledger-main"
@@ -282,6 +283,22 @@ jobs:
           unzip -o .artifacts/release-trust-baseline.zip -d .artifacts/release-trust-baseline-unpacked
           cp .artifacts/release-trust-baseline-unpacked/release-trust.json .artifacts/release-trust-baseline.json
           echo "Baseline report ready at .artifacts/release-trust-baseline.json"
+
+          PROBE_ARTIFACT_ID="$(gh api \
+            "repos/${{ github.repository }}/actions/runs/${RUN_ID}/artifacts" \
+            -q '.artifacts[] | select(.name=="'"${PROBE_ARTIFACT_NAME}"'") | .id' | head -n 1)"
+
+          if [ -n "${PROBE_ARTIFACT_ID}" ]; then
+            gh api \
+              "repos/${{ github.repository }}/actions/artifacts/${PROBE_ARTIFACT_ID}/zip" \
+              > .artifacts/os-surface-clickability-probe-baseline.zip
+
+            unzip -o .artifacts/os-surface-clickability-probe-baseline.zip -d .artifacts/os-surface-clickability-probe-baseline-unpacked
+            cp .artifacts/os-surface-clickability-probe-baseline-unpacked/os-surface-clickability-probe.json .artifacts/os-surface-clickability-probe-baseline.json
+            echo "Baseline os-surface probe ready at .artifacts/os-surface-clickability-probe-baseline.json"
+          else
+            echo "No ${PROBE_ARTIFACT_NAME} artifact found in run ${RUN_ID}; skipping os-surface probe baseline."
+          fi
 
           LEDGER_ARTIFACT_ID="$(gh api \
             "repos/${{ github.repository }}/actions/runs/${RUN_ID}/artifacts" \
@@ -364,6 +381,8 @@ jobs:
 
       - name: Publish os surface probe summary (pr)
         if: always()
+        env:
+          RELEASE_TRUST_UI_PROBE_BASELINE_PATH: .artifacts/os-surface-clickability-probe-baseline.json
         run: node --import ./bench/register-alias-loader.mjs scripts/releaseTrustProbeSummary.mjs
 
       - name: Upload release trust ledger (pr)

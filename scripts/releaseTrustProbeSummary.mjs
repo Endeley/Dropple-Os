@@ -20,36 +20,53 @@ function readReport(reportPath) {
     }
 }
 
-function findDurationRegressionOutcome(report) {
-    const baselinePath = process.env.RELEASE_TRUST_BASELINE_PATH || '.artifacts/release-trust-baseline.json';
-    const baseline = readReport(baselinePath);
-    const currentDuration = report?.checks?.osSurfaceShellRuntimeProbe?.durationMs;
-    const baselineDuration = baseline?.checks?.osSurfaceShellRuntimeProbe?.durationMs;
+function resolveDurationTrend({
+    currentDuration,
+    baselineDuration,
+} = {}) {
     if (!Number.isFinite(currentDuration) || !Number.isFinite(baselineDuration) || Number(baselineDuration) <= 0) {
         return null;
     }
     const ratio = Number(currentDuration) / Number(baselineDuration);
-    const regression = ratio > 1.4;
+    const deltaPercent = ((Number(currentDuration) - Number(baselineDuration)) / Number(baselineDuration)) * 100;
+    let trend = 'stable';
+    if (deltaPercent > 5) trend = 'regressed';
+    if (deltaPercent < -5) trend = 'improved';
     return Object.freeze({
-        regression,
+        regression: ratio > 1.4,
+        trend,
         baselineDuration: Number(baselineDuration),
         currentDuration: Number(currentDuration),
-        percent: ((Number(currentDuration) - Number(baselineDuration)) / Number(baselineDuration)) * 100,
+        percent: deltaPercent,
     });
 }
 
 export function formatReleaseTrustProbeSummary({
     probe,
     report,
+    baselineProbe = null,
 } = {}) {
     if (!probe?.check || typeof probe.check !== 'object') {
         return '[ReleaseTrustProbeSummary] status=missing-probe payload';
     }
     const check = probe.check;
-    const regression = findDurationRegressionOutcome(report);
+    const baselineFromReport = readReport(
+        process.env.RELEASE_TRUST_BASELINE_PATH || '.artifacts/release-trust-baseline.json',
+    )?.checks?.osSurfaceShellRuntimeProbe?.durationMs;
+    const baselineFromProbe = baselineProbe?.check?.durationMs;
+    const baselineDuration = Number.isFinite(baselineFromProbe)
+        ? Number(baselineFromProbe)
+        : Number.isFinite(baselineFromReport)
+            ? Number(baselineFromReport)
+            : null;
+    const trend = resolveDurationTrend({
+        currentDuration: check.durationMs,
+        baselineDuration,
+    });
     const status = check.ok === true ? 'PASS' : 'FAIL';
-    const durationStatus = regression?.regression ? 'WARN' : 'OK';
-    const deltaText = regression ? `${regression.percent >= 0 ? '+' : ''}${regression.percent.toFixed(1)}%` : 'n/a';
+    const durationStatus = trend?.regression ? 'WARN' : 'OK';
+    const deltaText = trend ? `${trend.percent >= 0 ? '+' : ''}${trend.percent.toFixed(1)}%` : 'n/a';
+    const trendText = trend?.trend ?? 'unknown';
 
     return [
         `[ReleaseTrustProbeSummary] status=${status}`,
@@ -57,19 +74,24 @@ export function formatReleaseTrustProbeSummary({
         `keyframeClickable=${check.keyframeClickable === true}`,
         `interceptErrors=${Number.isFinite(check.interceptErrors) ? Number(check.interceptErrors) : 0}`,
         `durationMs=${Number.isFinite(check.durationMs) ? Number(check.durationMs) : 0}`,
+        `baselineDurationMs=${Number.isFinite(baselineDuration) ? Number(baselineDuration) : 'n/a'}`,
+        `durationDeltaPct=${deltaText}`,
+        `trend=${trendText}`,
         `durationStatus=${durationStatus}`,
-        `durationDelta=${deltaText}`,
     ].join(' ');
 }
 
 export function runReleaseTrustProbeSummary({
     probePath = process.env.RELEASE_TRUST_UI_PROBE_PATH || '.artifacts/os-surface-clickability-probe.json',
+    baselineProbePath =
+        process.env.RELEASE_TRUST_UI_PROBE_BASELINE_PATH || '.artifacts/os-surface-clickability-probe-baseline.json',
     reportPath = process.env.RELEASE_TRUST_CURRENT_PATH || '.artifacts/release-trust.json',
     stepSummaryPath = process.env.GITHUB_STEP_SUMMARY || '',
 } = {}) {
     const probe = readProbeArtifact(probePath);
+    const baselineProbe = readProbeArtifact(baselineProbePath);
     const report = readReport(reportPath);
-    const line = formatReleaseTrustProbeSummary({ probe, report });
+    const line = formatReleaseTrustProbeSummary({ probe, report, baselineProbe });
 
     console.log(line);
     if (stepSummaryPath && String(stepSummaryPath).trim()) {
