@@ -297,12 +297,22 @@ jobs:
           FEDERATION_LINEAGE_ARTIFACT_NAME="federation-audit-lineage-main"
           FEDERATION_LINEAGE_LEDGER_ARTIFACT_NAME="federation-audit-lineage-ledger-main"
 
-          RUN_ID="$(gh api \
+          set +e
+          RUN_ID_QUERY="$(gh api \
             "repos/${{ github.repository }}/actions/workflows/${WORKFLOW_FILE}/runs" \
             -f branch=main \
             -f status=success \
             -f event=push \
-            -q '.workflow_runs[0].id // empty')"
+            -q '.workflow_runs[0].id // empty' 2>&1)"
+          RUN_ID_QUERY_EXIT=$?
+          set -e
+
+          if [ "${RUN_ID_QUERY_EXIT}" -ne 0 ]; then
+            echo "Unable to query main baseline run via GitHub Actions API; skipping baseline download."
+            echo "Reason: ${RUN_ID_QUERY}"
+            exit 0
+          fi
+          RUN_ID="${RUN_ID_QUERY}"
 
           if [ -z "${RUN_ID}" ]; then
             echo "No successful main run found; skipping baseline download."
