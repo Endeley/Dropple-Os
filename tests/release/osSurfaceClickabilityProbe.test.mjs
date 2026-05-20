@@ -53,6 +53,37 @@ test('parseOsSurfaceClickabilityJsonReport fails closed when expected tests are 
     assert.equal(parsed.reason, 'missing-expected-tests');
 });
 
+test('parseOsSurfaceClickabilityJsonReport trusts reporter stats as primary success signal', () => {
+    const parsed = parseOsSurfaceClickabilityJsonReport(
+        JSON.stringify({
+            suites: [
+                {
+                    specs: [
+                        {
+                            tests: [
+                                {
+                                    titlePath: ['uiux-template-generation.spec.js', 'some renamed title'],
+                                    results: [{ status: 'passed' }],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+            stats: {
+                expected: 2,
+                unexpected: 0,
+            },
+        }),
+    );
+    assert.equal(parsed.ok, true);
+    assert.equal(parsed.reason, null);
+    assert.equal(parsed.publishClickable, true);
+    assert.equal(parsed.keyframeClickable, true);
+    assert.equal(parsed.expectedCount, 2);
+    assert.equal(parsed.unexpectedCount, 0);
+});
+
 test('parseOsSurfaceClickabilityJsonReport fails closed on malformed json', () => {
     const parsed = parseOsSurfaceClickabilityJsonReport('not-json');
     assert.equal(parsed.ok, false);

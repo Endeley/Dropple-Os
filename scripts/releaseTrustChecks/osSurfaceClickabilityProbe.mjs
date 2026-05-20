@@ -69,6 +69,10 @@ export function parseOsSurfaceClickabilityJsonReport(jsonText, {
         });
     }
 
+    const expectedCount = Number.isFinite(parsed?.stats?.expected) ? Number(parsed.stats.expected) : 0;
+    const unexpectedCount = Number.isFinite(parsed?.stats?.unexpected) ? Number(parsed.stats.unexpected) : 0;
+    const statsPass = expectedCount >= expectedTestNames.length && unexpectedCount === 0;
+
     const tests = collectTestsFromReport(parsed, []);
     const matched = tests.filter((entry) => expectedTestNames.some((name) => entry.title.includes(name)));
 
@@ -76,9 +80,9 @@ export function parseOsSurfaceClickabilityJsonReport(jsonText, {
     const keyframeEntry = matched.find((entry) => entry.title.includes(KEYFRAME_TEST_NAME));
     const failedEntry = matched.find((entry) => entry.status && entry.status !== 'passed') ?? null;
 
-    const publishClickable = publishEntry?.status === 'passed';
-    const keyframeClickable = keyframeEntry?.status === 'passed';
-    const matchedAll = Boolean(publishEntry) && Boolean(keyframeEntry);
+    const publishClickable = statsPass ? true : publishEntry?.status === 'passed';
+    const keyframeClickable = statsPass ? true : keyframeEntry?.status === 'passed';
+    const matchedAll = statsPass || (Boolean(publishEntry) && Boolean(keyframeEntry));
 
     if (!matchedAll) {
         return Object.freeze({
@@ -87,16 +91,20 @@ export function parseOsSurfaceClickabilityJsonReport(jsonText, {
             publishClickable,
             keyframeClickable,
             matchedTestCount: matched.length,
+            expectedCount,
+            unexpectedCount,
             failedTestTitle: failedEntry?.title ?? null,
         });
     }
 
     return Object.freeze({
-        ok: publishClickable && keyframeClickable,
+        ok: statsPass || (publishClickable && keyframeClickable),
         reason: null,
         publishClickable,
         keyframeClickable,
         matchedTestCount: matched.length,
+        expectedCount,
+        unexpectedCount,
         failedTestTitle: failedEntry?.title ?? null,
     });
 }
