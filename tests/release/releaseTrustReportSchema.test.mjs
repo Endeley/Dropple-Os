@@ -3,7 +3,14 @@ import assert from 'node:assert/strict';
 import { generateReleaseTrustReport } from '@/scripts/releaseTrustReport.mjs';
 
 test('release trust report schema is stable and required checks are present', async () => {
+    const previousProbeFlag = process.env.RELEASE_TRUST_UI_PROBE;
+    process.env.RELEASE_TRUST_UI_PROBE = '0';
     const report = await generateReleaseTrustReport({ write: false });
+    if (typeof previousProbeFlag === 'string') {
+        process.env.RELEASE_TRUST_UI_PROBE = previousProbeFlag;
+    } else {
+        delete process.env.RELEASE_TRUST_UI_PROBE;
+    }
 
     assert.equal(typeof report, 'object');
     assert.equal(report.schemaVersion, '1.0.0');
@@ -20,6 +27,7 @@ test('release trust report schema is stable and required checks are present', as
             'federationLifecycle',
             'osSurfaceIntentRouting',
             'osSurfaceShellClickability',
+            'osSurfaceShellRuntimeProbe',
             'simulationTrace',
         ],
     );
@@ -60,4 +68,16 @@ test('release trust report schema is stable and required checks are present', as
     assert.equal(typeof report.checks.osSurfaceShellClickability.publishGuarded, 'boolean');
     assert.equal(typeof report.checks.osSurfaceShellClickability.addKeyframeGuarded, 'boolean');
     assert.equal(typeof report.checks.osSurfaceShellClickability.trialGuardCount, 'number');
+
+    assert.equal(typeof report.checks.osSurfaceShellRuntimeProbe.ok, 'boolean');
+    assert.equal(typeof report.checks.osSurfaceShellRuntimeProbe.skipped, 'boolean');
+    assert.equal(typeof report.checks.osSurfaceShellRuntimeProbe.required, 'boolean');
+    assert.equal(
+        report.checks.osSurfaceShellRuntimeProbe.reason === null ||
+            typeof report.checks.osSurfaceShellRuntimeProbe.reason === 'string',
+        true,
+    );
+    assert.equal(typeof report.checks.osSurfaceShellRuntimeProbe.publishClickable, 'boolean');
+    assert.equal(typeof report.checks.osSurfaceShellRuntimeProbe.keyframeClickable, 'boolean');
+    assert.equal(typeof report.checks.osSurfaceShellRuntimeProbe.interceptErrors, 'number');
 });

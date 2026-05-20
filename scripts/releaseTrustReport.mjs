@@ -21,6 +21,7 @@ import {
     OS_WORKSPACE_SHELL_ALLOWED_ACTIONS,
     OS_WORKSPACE_SHELL_ACTION_POLICY_VERSION,
 } from '../runtime/osSurface/shellActionPolicy.js';
+import { runOsSurfaceClickabilityProbe } from './releaseTrustChecks/osSurfaceClickabilityProbe.mjs';
 
 const REPORT_SCHEMA_VERSION = '1.0.0';
 const REPORT_PATH = path.join(process.cwd(), '.artifacts', 'release-trust.json');
@@ -189,6 +190,42 @@ function evaluateOsSurfaceShellClickabilityGate() {
     });
 }
 
+function parseEnvBoolean(value, fallback = false) {
+    if (typeof value !== 'string') return fallback;
+    const normalized = value.trim().toLowerCase();
+    if (['1', 'true', 'yes', 'on'].includes(normalized)) return true;
+    if (['0', 'false', 'no', 'off'].includes(normalized)) return false;
+    return fallback;
+}
+
+function evaluateOsSurfaceShellRuntimeProbeGate() {
+    const shouldProbe = parseEnvBoolean(process.env.RELEASE_TRUST_UI_PROBE, true);
+    const required = parseEnvBoolean(process.env.CI, false) || parseEnvBoolean(process.env.RELEASE_TRUST_REQUIRE_UI_PROBE, false);
+
+    if (!shouldProbe) {
+        return Object.freeze({
+            ok: required ? false : true,
+            skipped: true,
+            required,
+            reason: required ? 'probe-required-but-disabled' : 'probe-disabled-by-env',
+            publishClickable: required ? false : true,
+            keyframeClickable: required ? false : true,
+            interceptErrors: 0,
+        });
+    }
+
+    const result = runOsSurfaceClickabilityProbe();
+    return Object.freeze({
+        ok: result.ok === true,
+        skipped: false,
+        required,
+        reason: null,
+        publishClickable: result.publishClickable === true,
+        keyframeClickable: result.keyframeClickable === true,
+        interceptErrors: Number.isFinite(result.interceptErrors) ? Number(result.interceptErrors) : 0,
+    });
+}
+
 export async function generateReleaseTrustReport({ write = true } = {}) {
     const artifact = createSnapshotArtifact({
         snapshot: createReleaseSnapshot(),
@@ -259,6 +296,7 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
     const federationLifecycle = evaluateFederationLifecycleGate();
     const osSurfaceIntentRouting = evaluateSurfaceIntentRoutingContract();
     const osSurfaceShellClickability = evaluateOsSurfaceShellClickabilityGate();
+    const osSurfaceShellRuntimeProbe = evaluateOsSurfaceShellRuntimeProbeGate();
 
     const checks = Object.freeze({
         architectureGate: Object.freeze({
@@ -323,6 +361,17 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
                 ? Number(osSurfaceShellClickability.trialGuardCount)
                 : 0,
         }),
+        osSurfaceShellRuntimeProbe: Object.freeze({
+            ok: osSurfaceShellRuntimeProbe.ok === true,
+            skipped: osSurfaceShellRuntimeProbe.skipped === true,
+            required: osSurfaceShellRuntimeProbe.required === true,
+            reason: typeof osSurfaceShellRuntimeProbe.reason === 'string' ? osSurfaceShellRuntimeProbe.reason : null,
+            publishClickable: osSurfaceShellRuntimeProbe.publishClickable === true,
+            keyframeClickable: osSurfaceShellRuntimeProbe.keyframeClickable === true,
+            interceptErrors: Number.isFinite(osSurfaceShellRuntimeProbe.interceptErrors)
+                ? Number(osSurfaceShellRuntimeProbe.interceptErrors)
+                : 0,
+        }),
     });
 
     const overallOk = Object.values(checks).every((check) => check.ok === true);
@@ -348,6 +397,11 @@ const isEntrypoint = process.argv[1] && path.resolve(process.argv[1]) === path.r
 
 if (isEntrypoint) {
     const report = await generateReleaseTrustReport({ write: true });
+    if (report?.checks?.osSurfaceShellRuntimeProbe?.skipped === true) {
+        console.warn(
+            `[ReleaseTrustReport] WARN os surface runtime probe skipped (${report.checks.osSurfaceShellRuntimeProbe.reason ?? 'unspecified-reason'})`,
+        );
+    }
     if (!report.overallOk) {
         console.error('[ReleaseTrustReport] FAIL');
         for (const [checkId, check] of Object.entries(report.checks ?? {})) {

@@ -35,6 +35,15 @@ function createReport({
                 addKeyframeGuarded: true,
                 trialGuardCount: 2,
             },
+            osSurfaceShellRuntimeProbe: {
+                ok: true,
+                skipped: false,
+                required: true,
+                reason: null,
+                publishClickable: true,
+                keyframeClickable: true,
+                interceptErrors: 0,
+            },
             simulationTrace: {
                 ok: true,
                 fingerprint: 'sim-fingerprint-a',
@@ -202,6 +211,43 @@ test('release trust diff fails on constitutional os surface shell clickability r
     assert.equal(result.errors.some((entry) => entry.includes('osSurfaceShellClickability.helperPresent')), true);
     assert.equal(result.errors.some((entry) => entry.includes('osSurfaceShellClickability.publishGuarded')), true);
     assert.equal(result.errors.some((entry) => entry.includes('osSurfaceShellClickability.trialGuardCount')), true);
+});
+
+test('release trust diff fails when required os surface runtime probe is skipped or fails', () => {
+    const baseline = createReport({
+        checks: {
+            osSurfaceShellRuntimeProbe: {
+                ok: true,
+                skipped: false,
+                required: true,
+                reason: null,
+                publishClickable: true,
+                keyframeClickable: true,
+                interceptErrors: 0,
+            },
+        },
+    });
+    const current = createReport({
+        checks: {
+            osSurfaceShellRuntimeProbe: {
+                ok: false,
+                skipped: true,
+                required: true,
+                reason: 'probe-required-but-disabled',
+                publishClickable: false,
+                keyframeClickable: false,
+                interceptErrors: 2,
+            },
+        },
+    });
+
+    const result = diffReleaseTrustReports({ baseline, current });
+    assert.equal(result.ok, false);
+    assert.equal(
+        result.errors.some((entry) => entry.includes('osSurfaceShellRuntimeProbe.required-not-skipped')),
+        true,
+    );
+    assert.equal(result.errors.some((entry) => entry.includes('osSurfaceShellRuntimeProbe.ok')), false);
 });
 
 test('release trust diff treats hash changes as deltas in non-strict mode', () => {
