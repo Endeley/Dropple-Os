@@ -19,6 +19,7 @@ test('release trust report schema is stable and required checks are present', as
             'federationAttestation',
             'federationLifecycle',
             'osSurfaceIntentRouting',
+            'osSurfaceShellClickability',
             'simulationTrace',
         ],
     );
@@ -53,4 +54,10 @@ test('release trust report schema is stable and required checks are present', as
     assert.equal(typeof report.checks.osSurfaceIntentRouting.allowlistPolicyVersion, 'string');
     assert.equal(typeof report.checks.osSurfaceIntentRouting.allowlistActionCount, 'number');
     assert.equal(typeof report.checks.osSurfaceIntentRouting.allowlistActionHash, 'string');
+
+    assert.equal(typeof report.checks.osSurfaceShellClickability.ok, 'boolean');
+    assert.equal(typeof report.checks.osSurfaceShellClickability.helperPresent, 'boolean');
+    assert.equal(typeof report.checks.osSurfaceShellClickability.publishGuarded, 'boolean');
+    assert.equal(typeof report.checks.osSurfaceShellClickability.addKeyframeGuarded, 'boolean');
+    assert.equal(typeof report.checks.osSurfaceShellClickability.trialGuardCount, 'number');
 });

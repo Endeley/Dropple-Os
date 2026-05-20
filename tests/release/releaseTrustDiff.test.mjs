@@ -28,6 +28,13 @@ function createReport({
                 allowlistActionCount: 4,
                 allowlistActionHash: 'os-allowlist-hash-a',
             },
+            osSurfaceShellClickability: {
+                ok: true,
+                helperPresent: true,
+                publishGuarded: true,
+                addKeyframeGuarded: true,
+                trialGuardCount: 2,
+            },
             simulationTrace: {
                 ok: true,
                 fingerprint: 'sim-fingerprint-a',
@@ -163,6 +170,38 @@ test('release trust diff fails when os surface allowlist hash drifts', () => {
         result.errors.some((entry) => entry.includes('osSurfaceIntentRouting.allowlistActionHash-stable')),
         true,
     );
+});
+
+test('release trust diff fails on constitutional os surface shell clickability regression', () => {
+    const baseline = createReport({
+        checks: {
+            osSurfaceShellClickability: {
+                ok: true,
+                helperPresent: true,
+                publishGuarded: true,
+                addKeyframeGuarded: true,
+                trialGuardCount: 2,
+            },
+        },
+    });
+    const current = createReport({
+        checks: {
+            osSurfaceShellClickability: {
+                ok: false,
+                helperPresent: false,
+                publishGuarded: false,
+                addKeyframeGuarded: true,
+                trialGuardCount: 0,
+            },
+        },
+    });
+
+    const result = diffReleaseTrustReports({ baseline, current });
+    assert.equal(result.ok, false);
+    assert.equal(result.errors.some((entry) => entry.includes('osSurfaceShellClickability.ok')), true);
+    assert.equal(result.errors.some((entry) => entry.includes('osSurfaceShellClickability.helperPresent')), true);
+    assert.equal(result.errors.some((entry) => entry.includes('osSurfaceShellClickability.publishGuarded')), true);
+    assert.equal(result.errors.some((entry) => entry.includes('osSurfaceShellClickability.trialGuardCount')), true);
 });
 
 test('release trust diff treats hash changes as deltas in non-strict mode', () => {

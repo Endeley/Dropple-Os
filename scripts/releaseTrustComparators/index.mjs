@@ -4,6 +4,7 @@ import { compareFederationAttestation } from './federationAttestationComparator.
 import { compareFederationLifecycle } from './federationLifecycleComparator.mjs';
 import { compareSimulationTrace } from './simulationTraceComparator.mjs';
 import { compareOsSurfaceIntentRouting } from './osSurfaceIntentRoutingComparator.mjs';
+import { compareOsSurfaceShellClickability } from './osSurfaceShellClickabilityComparator.mjs';
 
 export const RELEASE_TRUST_REQUIRED_CHECK_IDS = Object.freeze([
     'architectureGate',
@@ -12,6 +13,7 @@ export const RELEASE_TRUST_REQUIRED_CHECK_IDS = Object.freeze([
     'federationLifecycle',
     'simulationTrace',
     'osSurfaceIntentRouting',
+    'osSurfaceShellClickability',
 ]);
 
 export function compareReleaseTrustChecks({
@@ -47,6 +49,11 @@ export function compareReleaseTrustChecks({
         ...compareOsSurfaceIntentRouting({
             baseline: baselineChecks.osSurfaceIntentRouting,
             current: currentChecks.osSurfaceIntentRouting,
+            strict,
+        }),
+        ...compareOsSurfaceShellClickability({
+            baseline: baselineChecks.osSurfaceShellClickability,
+            current: currentChecks.osSurfaceShellClickability,
             strict,
         }),
     ]);

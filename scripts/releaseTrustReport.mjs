@@ -24,6 +24,12 @@ import {
 
 const REPORT_SCHEMA_VERSION = '1.0.0';
 const REPORT_PATH = path.join(process.cwd(), '.artifacts', 'release-trust.json');
+const UIUX_TEMPLATE_GENERATION_SPEC_PATH = path.join(
+    process.cwd(),
+    'tests',
+    'e2e',
+    'uiux-template-generation.spec.js',
+);
 
 function createReleaseSnapshot() {
     return {
@@ -154,6 +160,35 @@ function evaluateFederationLifecycleGate() {
     });
 }
 
+function evaluateOsSurfaceShellClickabilityGate() {
+    if (!fs.existsSync(UIUX_TEMPLATE_GENERATION_SPEC_PATH)) {
+        return Object.freeze({
+            ok: false,
+            helperPresent: false,
+            publishGuarded: false,
+            addKeyframeGuarded: false,
+            trialGuardCount: 0,
+        });
+    }
+    const source = fs.readFileSync(UIUX_TEMPLATE_GENERATION_SPEC_PATH, 'utf8');
+    const helperPresent = /async function assertReceivesPointerEvents\s*\(/.test(source);
+    const publishGuarded =
+        /const publishButton = page\.getByRole\('button',\s*\{\s*name:\s*'Publish'\s*\}\);/.test(source) &&
+        /await assertReceivesPointerEvents\(publishButton\);/.test(source);
+    const addKeyframeGuarded =
+        /const addKeyframeButton = page\.getByTestId\('uiux-transition-add-keyframe'\);/.test(source) &&
+        /await assertReceivesPointerEvents\(addKeyframeButton\);/.test(source);
+    const trialGuardCount = Array.from(source.matchAll(/click\(\{\s*trial:\s*true\s*\}\)/g)).length;
+
+    return Object.freeze({
+        ok: helperPresent && publishGuarded && addKeyframeGuarded && trialGuardCount >= 1,
+        helperPresent,
+        publishGuarded,
+        addKeyframeGuarded,
+        trialGuardCount,
+    });
+}
+
 export async function generateReleaseTrustReport({ write = true } = {}) {
     const artifact = createSnapshotArtifact({
         snapshot: createReleaseSnapshot(),
@@ -223,6 +258,7 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
     const architectureGate = runArchitectureGateStatus();
     const federationLifecycle = evaluateFederationLifecycleGate();
     const osSurfaceIntentRouting = evaluateSurfaceIntentRoutingContract();
+    const osSurfaceShellClickability = evaluateOsSurfaceShellClickabilityGate();
 
     const checks = Object.freeze({
         architectureGate: Object.freeze({
@@ -277,6 +313,15 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
             allowlistPolicyVersion: OS_WORKSPACE_SHELL_ACTION_POLICY_VERSION,
             allowlistActionCount: OS_WORKSPACE_SHELL_ALLOWED_ACTIONS.length,
             allowlistActionHash: hashRuntimeState(OS_WORKSPACE_SHELL_ALLOWED_ACTIONS),
+        }),
+        osSurfaceShellClickability: Object.freeze({
+            ok: osSurfaceShellClickability.ok === true,
+            helperPresent: osSurfaceShellClickability.helperPresent === true,
+            publishGuarded: osSurfaceShellClickability.publishGuarded === true,
+            addKeyframeGuarded: osSurfaceShellClickability.addKeyframeGuarded === true,
+            trialGuardCount: Number.isFinite(osSurfaceShellClickability.trialGuardCount)
+                ? Number(osSurfaceShellClickability.trialGuardCount)
+                : 0,
         }),
     });
 
