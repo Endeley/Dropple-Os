@@ -33,9 +33,30 @@ function parseStrictFlag(value) {
     return ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase());
 }
 
+function resolveOsSurfaceRuntimeProbeBaselineCheck({
+    baselineReport = null,
+    baselineProbe = null,
+} = {}) {
+    const reportCheck = isPlainObject(baselineReport?.checks?.osSurfaceShellRuntimeProbe)
+        ? baselineReport.checks.osSurfaceShellRuntimeProbe
+        : null;
+    const probeCheck = isPlainObject(baselineProbe?.check) ? baselineProbe.check : null;
+
+    if (!reportCheck && !probeCheck) return null;
+    if (!reportCheck) return probeCheck;
+    if (!probeCheck) return reportCheck;
+
+    return Object.freeze({
+        ...probeCheck,
+        ...reportCheck,
+        durationMs: Number.isFinite(reportCheck?.durationMs) ? reportCheck.durationMs : probeCheck?.durationMs,
+    });
+}
+
 export function diffReleaseTrustReports({
     current,
     baseline,
+    baselineProbe = null,
     nowMs = Date.now(),
     baselineRequiredAfter = null,
     strict = false,
@@ -73,16 +94,24 @@ export function diffReleaseTrustReports({
     }
 
     const currentChecks = resolveCheckSet(current);
-    const baselineChecks = resolveCheckSet(baseline);
+    const baselineCheckSet = resolveCheckSet(baseline);
     for (const checkId of RELEASE_TRUST_REQUIRED_CHECK_IDS) {
-        if (baselineChecks.has(checkId) && !currentChecks.has(checkId)) {
+        if (baselineCheckSet.has(checkId) && !currentChecks.has(checkId)) {
             errors.push(`required check disappeared: ${checkId}`);
         }
     }
 
+    const baselineChecks = Object.freeze({
+        ...(isPlainObject(baseline?.checks) ? baseline.checks : {}),
+        osSurfaceShellRuntimeProbe: resolveOsSurfaceRuntimeProbeBaselineCheck({
+            baselineReport: baseline,
+            baselineProbe,
+        }),
+    });
+
     outcomes.push(
         ...compareReleaseTrustChecks({
-            baselineChecks: baseline.checks ?? {},
+            baselineChecks,
             currentChecks: current.checks ?? {},
             strict,
         }),
@@ -110,15 +139,19 @@ export function diffReleaseTrustReports({
 export function runReleaseTrustDiff({
     currentPath = '.artifacts/release-trust.json',
     baselinePath = '.artifacts/release-trust-baseline.json',
+    baselineProbePath =
+        process.env.RELEASE_TRUST_UI_PROBE_BASELINE_PATH || '.artifacts/os-surface-clickability-probe-baseline.json',
     nowMs = Date.now(),
     baselineRequiredAfter = process.env.RELEASE_TRUST_BASELINE_REQUIRED_AFTER || null,
     strict = parseStrictFlag(process.env.RELEASE_TRUST_DIFF_STRICT || 'false'),
 } = {}) {
     const current = readJsonFile(currentPath);
     const baseline = readJsonFile(baselinePath);
+    const baselineProbe = readJsonFile(baselineProbePath);
     return diffReleaseTrustReports({
         current,
         baseline,
+        baselineProbe,
         nowMs,
         baselineRequiredAfter,
         strict,

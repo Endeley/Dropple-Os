@@ -154,6 +154,46 @@ jobs:
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
+      - name: Fetch previous main os-surface probe baseline (main)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .artifacts
+
+          WORKFLOW_FILE="ci.yml"
+          PROBE_ARTIFACT_NAME="os-surface-clickability-probe-main"
+          CURRENT_RUN_ID="${{ github.run_id }}"
+
+          RUN_ID="$(gh api \
+            "repos/${{ github.repository }}/actions/workflows/${WORKFLOW_FILE}/runs" \
+            -f branch=main \
+            -f status=success \
+            -f event=push \
+            -q ".workflow_runs[] | select((.id|tostring)!=\"${CURRENT_RUN_ID}\") | .id" | head -n 1)"
+
+          if [ -z "${RUN_ID}" ]; then
+            echo "No previous successful main run found; skipping probe baseline download."
+            exit 0
+          fi
+
+          PROBE_ARTIFACT_ID="$(gh api \
+            "repos/${{ github.repository }}/actions/runs/${RUN_ID}/artifacts" \
+            -q '.artifacts[] | select(.name=="'"${PROBE_ARTIFACT_NAME}"'") | .id' | head -n 1)"
+
+          if [ -z "${PROBE_ARTIFACT_ID}" ]; then
+            echo "No ${PROBE_ARTIFACT_NAME} artifact found in run ${RUN_ID}; skipping probe baseline download."
+            exit 0
+          fi
+
+          gh api \
+            "repos/${{ github.repository }}/actions/artifacts/${PROBE_ARTIFACT_ID}/zip" \
+            > .artifacts/os-surface-clickability-probe-baseline.zip
+
+          unzip -o .artifacts/os-surface-clickability-probe-baseline.zip -d .artifacts/os-surface-clickability-probe-baseline-unpacked
+          cp .artifacts/os-surface-clickability-probe-baseline-unpacked/os-surface-clickability-probe.json .artifacts/os-surface-clickability-probe-baseline.json
+          echo "Main probe baseline ready at .artifacts/os-surface-clickability-probe-baseline.json"
+
       - name: Validate release trust
         run: npm run validate:release
         env:
@@ -189,6 +229,8 @@ jobs:
 
       - name: Publish os surface probe summary (main)
         if: always()
+        env:
+          RELEASE_TRUST_UI_PROBE_BASELINE_PATH: .artifacts/os-surface-clickability-probe-baseline.json
         run: node --import ./bench/register-alias-loader.mjs scripts/releaseTrustProbeSummary.mjs
 
       - name: Upload release trust ledger (main)

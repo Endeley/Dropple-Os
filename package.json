@@ -74,6 +74,7 @@
         "release:trust:diff": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustDiff.mjs",
         "release:trust:summary": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustSummary.mjs",
         "release:trust:pr-comment": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustPrComment.mjs",
+        "release:trust:baseline:capture": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustCaptureBaseline.mjs",
         "test:release:attestation": "node --import ./bench/register-alias-loader.mjs --test tests/release/*.test.mjs",
         "validate:all": "npm run test:all && npm run test:system:all && npm run determinism && npm run architecture:ci",
         "validate:release": "npm run validate:all && npm run performance:determinism && npm run template:verify-all && npm run test:federation:release && npm run test:release:attestation && npm run release:trust:report && npm run release:federation:lineage",

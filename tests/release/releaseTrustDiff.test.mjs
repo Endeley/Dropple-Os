@@ -348,6 +348,53 @@ test('release trust diff emits non-blocking delta on os surface runtime probe du
     );
 });
 
+test('release trust diff uses probe baseline fallback when report baseline probe duration is missing', () => {
+    const baseline = createReport({
+        checks: {
+            osSurfaceShellRuntimeProbe: {
+                ok: true,
+                skipped: false,
+                required: true,
+                reason: null,
+                publishClickable: true,
+                keyframeClickable: true,
+                interceptErrors: 0,
+                durationMs: null,
+            },
+        },
+    });
+    const current = createReport({
+        checks: {
+            osSurfaceShellRuntimeProbe: {
+                ok: true,
+                skipped: false,
+                required: true,
+                reason: null,
+                publishClickable: true,
+                keyframeClickable: true,
+                interceptErrors: 0,
+                durationMs: 1700,
+            },
+        },
+    });
+
+    const result = diffReleaseTrustReports({
+        baseline,
+        baselineProbe: {
+            generatedAt: '2026-05-20T00:00:00.000Z',
+            check: {
+                durationMs: 1000,
+            },
+        },
+        current,
+    });
+    assert.equal(result.ok, true);
+    assert.equal(
+        result.deltas.some((entry) => entry.includes('osSurfaceShellRuntimeProbe.duration-regression')),
+        true,
+    );
+});
+
 test('release trust diff treats hash changes as deltas in non-strict mode', () => {
     const baseline = createReport({
         checks: {
