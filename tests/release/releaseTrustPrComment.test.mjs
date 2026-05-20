@@ -17,6 +17,9 @@ test('release trust PR comment body is deterministic and carries marker', () => 
         '- Keyframe clickable: `true`',
         '- Pointer intercept errors: `0`',
         '- Duration (current): `1200ms`',
+        '- Duration (baseline): `1000ms`',
+        '- Duration delta: `+20.0%`',
+        '- Duration trend: `regressed`',
         '- Duration status: `OK`',
     ].join('\n');
     const a = buildReleaseTrustCommentBody(summary);
@@ -27,6 +30,9 @@ test('release trust PR comment body is deterministic and carries marker', () => 
     assert.match(a, /Release Trust Diff Summary/);
     assert.match(a, /OS Surface Probe/);
     assert.match(a, /Duration \(current\): `1200ms`/);
+    assert.match(a, /Duration \(baseline\): `1000ms`/);
+    assert.match(a, /Duration delta: `\+20\.0%`/);
+    assert.match(a, /Duration trend: `regressed`/);
 });
 
 test('release trust PR comment locator finds existing tagged comment', () => {

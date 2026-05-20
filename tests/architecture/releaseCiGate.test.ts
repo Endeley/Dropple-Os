@@ -61,4 +61,19 @@ test('pull request CI workflow runs validate:release as a required release gate'
     assert.match(workflow, /RELEASE_TRUST_UI_PROBE_BASELINE_PATH:\s*\.artifacts\/os-surface-clickability-probe-baseline\.json/);
     assert.match(workflow, /name:\s*Publish release trust PR comment/);
     assert.match(workflow, /run:\s*npm run release:trust:pr-comment/);
+
+    const prProbeStepIndex = workflow.indexOf('name: Publish os surface probe summary (pr)');
+    const prCommentStepIndex = workflow.indexOf('name: Publish release trust PR comment');
+    assert.equal(prProbeStepIndex > -1, true);
+    assert.equal(prCommentStepIndex > -1, true);
+    assert.equal(prProbeStepIndex < prCommentStepIndex, true);
+
+    assert.match(
+        workflow,
+        /name:\s*Publish os surface probe summary \(pr\)\n\s*if:\s*always\(\)/,
+    );
+    assert.match(
+        workflow,
+        /name:\s*Publish release trust PR comment\n\s*if:\s*always\(\)/,
+    );
 });
