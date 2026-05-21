@@ -39,6 +39,20 @@ test('release trust summary formatter is deterministic for identical semantic ou
             orderingClosed: true,
         },
         federationLineageLedger: { ok: true, entryCount: 7, reason: null, index: null },
+        osSurfaceShellContractCurrent: {
+            ok: true,
+            policyVersion: '1',
+            policyHash: 'policy-hash-a',
+            matrixOk: true,
+            projectionShapeOk: true,
+            projectionDeterministic: true,
+            projectionKeyHash: 'projection-key-hash-a',
+        },
+        osSurfaceShellContractBaseline: {
+            policyVersion: '1',
+            policyHash: 'policy-hash-a',
+            projectionKeyHash: 'projection-key-hash-a',
+        },
         osSurfaceProbeCurrent: {
             publishClickable: true,
             keyframeClickable: true,
@@ -65,6 +79,20 @@ test('release trust summary formatter is deterministic for identical semantic ou
             orderingClosed: true,
         },
         federationLineageLedger: { ok: true, entryCount: 7, reason: null, index: null },
+        osSurfaceShellContractCurrent: {
+            ok: true,
+            policyVersion: '1',
+            policyHash: 'policy-hash-a',
+            matrixOk: true,
+            projectionShapeOk: true,
+            projectionDeterministic: true,
+            projectionKeyHash: 'projection-key-hash-a',
+        },
+        osSurfaceShellContractBaseline: {
+            policyVersion: '1',
+            policyHash: 'policy-hash-a',
+            projectionKeyHash: 'projection-key-hash-a',
+        },
         osSurfaceProbeCurrent: {
             publishClickable: true,
             keyframeClickable: true,
@@ -90,6 +118,13 @@ test('release trust summary formatter is deterministic for identical semantic ou
     assert.match(a, /Federation replay equivalent: `true`/);
     assert.match(a, /Federation lineage ledger entries: `7`/);
     assert.match(a, /Federation lineage ledger chain: `ok`/);
+    assert.match(a, /OS Surface Shell Contract/);
+    assert.match(a, /Contract ok: `true`/);
+    assert.match(a, /Policy version: `1`/);
+    assert.match(a, /Matrix ok: `true`/);
+    assert.match(a, /Projection shape ok: `true`/);
+    assert.match(a, /Projection deterministic: `true`/);
+    assert.match(a, /Projection key hash: `projection-key-hash-a`/);
     assert.match(a, /OS Surface Probe/);
     assert.match(a, /Publish clickable: `true`/);
     assert.match(a, /Keyframe clickable: `true`/);

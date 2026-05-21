@@ -31,6 +31,8 @@ export function formatReleaseTrustSummary({
     ledger = null,
     federationLineage = null,
     federationLineageLedger = null,
+    osSurfaceShellContractCurrent = null,
+    osSurfaceShellContractBaseline = null,
     osSurfaceProbeCurrent = null,
     osSurfaceProbeBaseline = null,
 } = {}) {
@@ -67,6 +69,26 @@ export function formatReleaseTrustSummary({
                 )})`,
             );
         }
+    }
+    if (osSurfaceShellContractCurrent) {
+        lines.push('### OS Surface Shell Contract');
+        lines.push(`- Contract ok: \`${osSurfaceShellContractCurrent.ok ? 'true' : 'false'}\``);
+        lines.push(`- Policy version: \`${String(osSurfaceShellContractCurrent.policyVersion ?? 'unknown')}\``);
+        lines.push(`- Policy hash: \`${String(osSurfaceShellContractCurrent.policyHash ?? 'missing')}\``);
+        lines.push(`- Matrix ok: \`${osSurfaceShellContractCurrent.matrixOk ? 'true' : 'false'}\``);
+        lines.push(`- Projection shape ok: \`${osSurfaceShellContractCurrent.projectionShapeOk ? 'true' : 'false'}\``);
+        lines.push(
+            `- Projection deterministic: \`${osSurfaceShellContractCurrent.projectionDeterministic ? 'true' : 'false'}\``,
+        );
+        lines.push(`- Projection key hash: \`${String(osSurfaceShellContractCurrent.projectionKeyHash ?? 'missing')}\``);
+        if (osSurfaceShellContractBaseline) {
+            lines.push(`- Baseline policy version: \`${String(osSurfaceShellContractBaseline.policyVersion ?? 'unknown')}\``);
+            lines.push(`- Baseline policy hash: \`${String(osSurfaceShellContractBaseline.policyHash ?? 'missing')}\``);
+            lines.push(
+                `- Baseline projection key hash: \`${String(osSurfaceShellContractBaseline.projectionKeyHash ?? 'missing')}\``,
+            );
+        }
+        lines.push('');
     }
     if (osSurfaceProbeCurrent) {
         const durationOutcome = (safeResult.outcomes ?? []).find(
@@ -251,6 +273,8 @@ export function buildReleaseTrustSummary({
         ledger: resolveLedgerStatus(ledgerPath),
         federationLineage: resolveFederationLineageStatus(federationLineagePath),
         federationLineageLedger: resolveFederationLineageLedgerStatus(federationLineageLedgerPath),
+        osSurfaceShellContractCurrent: currentReport?.checks?.osSurfaceShellContract ?? null,
+        osSurfaceShellContractBaseline: baselineReport?.checks?.osSurfaceShellContract ?? null,
         osSurfaceProbeCurrent: currentReport?.checks?.osSurfaceShellRuntimeProbe ?? null,
         osSurfaceProbeBaseline: baselineReport?.checks?.osSurfaceShellRuntimeProbe ?? null,
     });
