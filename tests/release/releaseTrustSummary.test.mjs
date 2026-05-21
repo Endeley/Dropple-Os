@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { formatReleaseTrustSummary } from '@/scripts/releaseTrustSummary.mjs';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { buildReleaseTrustSummary, formatReleaseTrustSummary } from '@/scripts/releaseTrustSummary.mjs';
 
 test('release trust summary formatter is deterministic for identical semantic outcomes', () => {
     const result = Object.freeze({
@@ -236,4 +239,156 @@ test('release trust summary surfaces runtime probe duration warning as non-block
     assert.match(summary, /Failed test:/);
     assert.match(summary, /Trace hint:/);
     assert.match(summary, /runtime probe duration regressed/);
+});
+
+test('buildReleaseTrustSummary includes explicit os-surface sections from current report checks', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'release-trust-summary-'));
+    const currentPath = path.join(tempDir, 'current.json');
+    const baselinePath = path.join(tempDir, 'baseline.json');
+    const ledgerPath = path.join(tempDir, 'ledger.jsonl');
+    const federationLineagePath = path.join(tempDir, 'federation-lineage.json');
+    const federationLineageLedgerPath = path.join(tempDir, 'federation-lineage-ledger.jsonl');
+
+    const current = {
+        schemaVersion: '1.0.0',
+        overallOk: true,
+        checks: {
+            architectureGate: { ok: true, exitCode: 0 },
+            exportVerification: { ok: true, exportHash: 'a', canonicalVersion: 'v1', algorithm: 'sha-256' },
+            federationAttestation: { ok: true, tamperRejected: true, hash: 'h', entryCount: 1 },
+            federationLifecycle: { ok: true, replayEquivalent: true, staleRejected: true, orderingClosed: true },
+            simulationTrace: { ok: true, fingerprint: 'f', primitiveTraceLineageProvided: true, tamperRejected: true },
+            osSurfaceIntentRouting: {
+                ok: true,
+                mutationFree: true,
+                acceptedCount: 1,
+                rejectedCount: 1,
+                allowlistPolicyVersion: '1',
+                allowlistActionCount: 4,
+                allowlistActionHash: 'hash-a',
+            },
+            osSurfaceShellContract: {
+                ok: true,
+                policyVersion: '1',
+                policyHash: 'policy-hash-a',
+                matrixOk: true,
+                projectionShapeOk: true,
+                projectionDeterministic: true,
+                projectionKeyHash: 'projection-hash-a',
+            },
+            osSurfaceWorkspaceIdentity: {
+                ok: true,
+                workspaceId: 'design',
+                modeId: 'graphic',
+                overlaysCount: 2,
+                overlaysHash: 'overlays-hash-a',
+            },
+            osSurfaceActivationProvenance: {
+                ok: true,
+                tuplesDeterministic: true,
+                sampleCount: 6,
+                tuplesHash: 'tuples-hash-a',
+                sourceHash: 'source-hash-a',
+                overlayHash: 'overlay-hash-a',
+            },
+            osSurfaceShellClickability: {
+                ok: true,
+                helperPresent: true,
+                publishGuarded: true,
+                addKeyframeGuarded: true,
+                trialGuardCount: 1,
+            },
+            osSurfaceShellRuntimeProbe: {
+                ok: true,
+                skipped: false,
+                required: false,
+                reason: null,
+                publishClickable: true,
+                keyframeClickable: true,
+                interceptErrors: 0,
+                durationMs: 1200,
+            },
+        },
+        reportHash: 'r',
+    };
+
+    fs.writeFileSync(currentPath, JSON.stringify(current), 'utf8');
+    fs.writeFileSync(baselinePath, JSON.stringify(current), 'utf8');
+
+    const summary = buildReleaseTrustSummary({
+        currentPath,
+        baselinePath,
+        ledgerPath,
+        federationLineagePath,
+        federationLineageLedgerPath,
+        strict: 'false',
+    });
+
+    assert.match(summary, /OS Surface Shell Contract/);
+    assert.match(summary, /OS Surface Workspace Identity/);
+    assert.match(summary, /OS Surface Activation Provenance/);
+});
+
+test('buildReleaseTrustSummary omits explicit os-surface sections when checks are absent', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'release-trust-summary-'));
+    const currentPath = path.join(tempDir, 'current.json');
+    const baselinePath = path.join(tempDir, 'baseline.json');
+    const ledgerPath = path.join(tempDir, 'ledger.jsonl');
+    const federationLineagePath = path.join(tempDir, 'federation-lineage.json');
+    const federationLineageLedgerPath = path.join(tempDir, 'federation-lineage-ledger.jsonl');
+
+    const current = {
+        schemaVersion: '1.0.0',
+        overallOk: true,
+        checks: {
+            architectureGate: { ok: true, exitCode: 0 },
+            exportVerification: { ok: true, exportHash: 'a', canonicalVersion: 'v1', algorithm: 'sha-256' },
+            federationAttestation: { ok: true, tamperRejected: true, hash: 'h', entryCount: 1 },
+            federationLifecycle: { ok: true, replayEquivalent: true, staleRejected: true, orderingClosed: true },
+            simulationTrace: { ok: true, fingerprint: 'f', primitiveTraceLineageProvided: true, tamperRejected: true },
+            osSurfaceIntentRouting: {
+                ok: true,
+                mutationFree: true,
+                acceptedCount: 1,
+                rejectedCount: 1,
+                allowlistPolicyVersion: '1',
+                allowlistActionCount: 4,
+                allowlistActionHash: 'hash-a',
+            },
+            osSurfaceShellClickability: {
+                ok: true,
+                helperPresent: true,
+                publishGuarded: true,
+                addKeyframeGuarded: true,
+                trialGuardCount: 1,
+            },
+            osSurfaceShellRuntimeProbe: {
+                ok: true,
+                skipped: false,
+                required: false,
+                reason: null,
+                publishClickable: true,
+                keyframeClickable: true,
+                interceptErrors: 0,
+                durationMs: 1200,
+            },
+        },
+        reportHash: 'r',
+    };
+
+    fs.writeFileSync(currentPath, JSON.stringify(current), 'utf8');
+    fs.writeFileSync(baselinePath, JSON.stringify(current), 'utf8');
+
+    const summary = buildReleaseTrustSummary({
+        currentPath,
+        baselinePath,
+        ledgerPath,
+        federationLineagePath,
+        federationLineageLedgerPath,
+        strict: 'false',
+    });
+
+    assert.doesNotMatch(summary, /OS Surface Shell Contract/);
+    assert.doesNotMatch(summary, /OS Surface Workspace Identity/);
+    assert.doesNotMatch(summary, /OS Surface Activation Provenance/);
 });
