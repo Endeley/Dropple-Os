@@ -27,6 +27,7 @@ test('release trust report schema is stable and required checks are present', as
             'federationLifecycle',
             'osSurfaceIntentRouting',
             'osSurfaceShellClickability',
+            'osSurfaceShellContract',
             'osSurfaceShellRuntimeProbe',
             'simulationTrace',
         ],
@@ -62,6 +63,14 @@ test('release trust report schema is stable and required checks are present', as
     assert.equal(typeof report.checks.osSurfaceIntentRouting.allowlistPolicyVersion, 'string');
     assert.equal(typeof report.checks.osSurfaceIntentRouting.allowlistActionCount, 'number');
     assert.equal(typeof report.checks.osSurfaceIntentRouting.allowlistActionHash, 'string');
+
+    assert.equal(typeof report.checks.osSurfaceShellContract.ok, 'boolean');
+    assert.equal(typeof report.checks.osSurfaceShellContract.policyVersion, 'string');
+    assert.equal(typeof report.checks.osSurfaceShellContract.policyHash, 'string');
+    assert.equal(typeof report.checks.osSurfaceShellContract.matrixOk, 'boolean');
+    assert.equal(typeof report.checks.osSurfaceShellContract.projectionShapeOk, 'boolean');
+    assert.equal(typeof report.checks.osSurfaceShellContract.projectionDeterministic, 'boolean');
+    assert.equal(typeof report.checks.osSurfaceShellContract.projectionKeyHash, 'string');
 
     assert.equal(typeof report.checks.osSurfaceShellClickability.ok, 'boolean');
     assert.equal(typeof report.checks.osSurfaceShellClickability.helperPresent, 'boolean');

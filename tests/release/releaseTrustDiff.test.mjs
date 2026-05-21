@@ -28,6 +28,15 @@ function createReport({
                 allowlistActionCount: 4,
                 allowlistActionHash: 'os-allowlist-hash-a',
             },
+            osSurfaceShellContract: {
+                ok: true,
+                policyVersion: '1',
+                policyHash: 'os-shell-policy-hash-a',
+                matrixOk: true,
+                projectionShapeOk: true,
+                projectionDeterministic: true,
+                projectionKeyHash: 'os-shell-projection-key-hash-a',
+            },
             osSurfaceShellClickability: {
                 ok: true,
                 helperPresent: true,
@@ -212,6 +221,60 @@ test('release trust diff fails on constitutional os surface shell clickability r
     assert.equal(result.errors.some((entry) => entry.includes('osSurfaceShellClickability.helperPresent')), true);
     assert.equal(result.errors.some((entry) => entry.includes('osSurfaceShellClickability.publishGuarded')), true);
     assert.equal(result.errors.some((entry) => entry.includes('osSurfaceShellClickability.trialGuardCount')), true);
+});
+
+test('release trust diff fails when os surface shell contract drifts', () => {
+    const baseline = createReport({
+        checks: {
+            osSurfaceShellContract: {
+                ok: true,
+                policyVersion: '1',
+                policyHash: 'os-shell-policy-hash-a',
+                matrixOk: true,
+                projectionShapeOk: true,
+                projectionDeterministic: true,
+                projectionKeyHash: 'os-shell-projection-key-hash-a',
+            },
+        },
+    });
+    const current = createReport({
+        checks: {
+            osSurfaceShellContract: {
+                ok: false,
+                policyVersion: '2',
+                policyHash: 'os-shell-policy-hash-b',
+                matrixOk: false,
+                projectionShapeOk: false,
+                projectionDeterministic: false,
+                projectionKeyHash: 'os-shell-projection-key-hash-b',
+            },
+        },
+    });
+
+    const result = diffReleaseTrustReports({ baseline, current });
+    assert.equal(result.ok, false);
+    assert.equal(result.errors.some((entry) => entry.includes('osSurfaceShellContract.ok')), true);
+    assert.equal(result.errors.some((entry) => entry.includes('osSurfaceShellContract.matrixOk')), true);
+    assert.equal(
+        result.errors.some((entry) => entry.includes('osSurfaceShellContract.projectionShapeOk')),
+        true,
+    );
+    assert.equal(
+        result.errors.some((entry) => entry.includes('osSurfaceShellContract.projectionDeterministic')),
+        true,
+    );
+    assert.equal(
+        result.errors.some((entry) => entry.includes('osSurfaceShellContract.policyVersion-stable')),
+        true,
+    );
+    assert.equal(
+        result.errors.some((entry) => entry.includes('osSurfaceShellContract.policyHash-stable')),
+        true,
+    );
+    assert.equal(
+        result.errors.some((entry) => entry.includes('osSurfaceShellContract.projectionKeyHash-stable')),
+        true,
+    );
 });
 
 test('release trust diff fails when required os surface runtime probe is skipped or fails', () => {

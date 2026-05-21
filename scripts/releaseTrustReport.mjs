@@ -21,6 +21,7 @@ import {
     OS_WORKSPACE_SHELL_ALLOWED_ACTIONS,
     OS_WORKSPACE_SHELL_ACTION_POLICY_VERSION,
 } from '../runtime/osSurface/shellActionPolicy.js';
+import { buildWorkspaceShellSurfaceModel } from '../runtime/osSurface/buildWorkspaceShellSurfaceModel.js';
 import { runOsSurfaceClickabilityProbe } from './releaseTrustChecks/osSurfaceClickabilityProbe.mjs';
 
 const REPORT_SCHEMA_VERSION = '1.0.0';
@@ -247,6 +248,82 @@ function evaluateOsSurfaceShellRuntimeProbeGate() {
     });
 }
 
+function evaluateOsSurfaceShellContractGate(osSurfaceIntentRouting) {
+    const policyHash = hashRuntimeState(OS_WORKSPACE_SHELL_ALLOWED_ACTIONS);
+    const sample = buildWorkspaceShellSurfaceModel({
+        environment: {
+            workspaceId: 'design',
+            modeId: 'graphic',
+            activeEnvironmentId: 'env-a',
+            activeSessionId: 'session-a',
+            capabilityOverlays: ['conversion', 'ai', 'conversion'],
+            federation: {
+                participantIds: ['peer-z', 'peer-a', 'peer-z'],
+                sessionPhase: 'preview',
+            },
+            trustEnvelope: {
+                releaseTrustHash: 'trust-a',
+            },
+        },
+        synthesizedTools: {
+            activeToolId: 'select',
+            tools: [{ toolId: 'move' }, { toolId: 'select' }, { toolId: 'move' }],
+        },
+    });
+    const expectedKeys = [
+        'workspaceId',
+        'modeId',
+        'environmentId',
+        'sessionId',
+        'overlays',
+        'participantIds',
+        'federationPhase',
+        'releaseTrustHash',
+        'activeToolId',
+        'visibleToolIds',
+    ];
+    const sampleKeys = Object.keys(sample);
+    const projectionShapeOk = JSON.stringify(sampleKeys) === JSON.stringify(expectedKeys);
+    const sampleRoundtrip = buildWorkspaceShellSurfaceModel({
+        environment: {
+            workspaceId: 'design',
+            modeId: 'graphic',
+            activeEnvironmentId: 'env-a',
+            activeSessionId: 'session-a',
+            capabilityOverlays: ['ai', 'conversion'],
+            federation: {
+                participantIds: ['peer-a', 'peer-z'],
+                sessionPhase: 'preview',
+            },
+            trustEnvelope: {
+                releaseTrustHash: 'trust-a',
+            },
+        },
+        synthesizedTools: {
+            activeToolId: 'select',
+            tools: [{ toolId: 'select' }, { toolId: 'move' }],
+        },
+    });
+    const projectionDeterministic = JSON.stringify(sample) === JSON.stringify(sampleRoundtrip);
+    const projectionKeyHash = hashRuntimeState(sampleKeys);
+
+    return Object.freeze({
+        ok:
+            OS_WORKSPACE_SHELL_ACTION_POLICY_VERSION === '1' &&
+            policyHash.length > 0 &&
+            osSurfaceIntentRouting?.ok === true &&
+            osSurfaceIntentRouting?.mutationFree === true &&
+            projectionShapeOk &&
+            projectionDeterministic,
+        policyVersion: OS_WORKSPACE_SHELL_ACTION_POLICY_VERSION,
+        policyHash,
+        matrixOk: osSurfaceIntentRouting?.ok === true && osSurfaceIntentRouting?.mutationFree === true,
+        projectionShapeOk,
+        projectionDeterministic,
+        projectionKeyHash,
+    });
+}
+
 export async function generateReleaseTrustReport({ write = true } = {}) {
     const artifact = createSnapshotArtifact({
         snapshot: createReleaseSnapshot(),
@@ -316,6 +393,7 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
     const architectureGate = runArchitectureGateStatus();
     const federationLifecycle = evaluateFederationLifecycleGate();
     const osSurfaceIntentRouting = evaluateSurfaceIntentRoutingContract();
+    const osSurfaceShellContract = evaluateOsSurfaceShellContractGate(osSurfaceIntentRouting);
     const osSurfaceShellClickability = evaluateOsSurfaceShellClickabilityGate();
     const osSurfaceShellRuntimeProbe = evaluateOsSurfaceShellRuntimeProbeGate();
 
@@ -372,6 +450,15 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
             allowlistPolicyVersion: OS_WORKSPACE_SHELL_ACTION_POLICY_VERSION,
             allowlistActionCount: OS_WORKSPACE_SHELL_ALLOWED_ACTIONS.length,
             allowlistActionHash: hashRuntimeState(OS_WORKSPACE_SHELL_ALLOWED_ACTIONS),
+        }),
+        osSurfaceShellContract: Object.freeze({
+            ok: osSurfaceShellContract.ok === true,
+            policyVersion: String(osSurfaceShellContract.policyVersion ?? ''),
+            policyHash: String(osSurfaceShellContract.policyHash ?? ''),
+            matrixOk: osSurfaceShellContract.matrixOk === true,
+            projectionShapeOk: osSurfaceShellContract.projectionShapeOk === true,
+            projectionDeterministic: osSurfaceShellContract.projectionDeterministic === true,
+            projectionKeyHash: String(osSurfaceShellContract.projectionKeyHash ?? ''),
         }),
         osSurfaceShellClickability: Object.freeze({
             ok: osSurfaceShellClickability.ok === true,

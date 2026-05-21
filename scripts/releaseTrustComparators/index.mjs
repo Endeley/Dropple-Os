@@ -4,6 +4,7 @@ import { compareFederationAttestation } from './federationAttestationComparator.
 import { compareFederationLifecycle } from './federationLifecycleComparator.mjs';
 import { compareSimulationTrace } from './simulationTraceComparator.mjs';
 import { compareOsSurfaceIntentRouting } from './osSurfaceIntentRoutingComparator.mjs';
+import { compareOsSurfaceShellContract } from './osSurfaceShellContractComparator.mjs';
 import { compareOsSurfaceShellClickability } from './osSurfaceShellClickabilityComparator.mjs';
 import { compareOsSurfaceShellRuntimeProbe } from './osSurfaceShellRuntimeProbeComparator.mjs';
 
@@ -14,6 +15,7 @@ export const RELEASE_TRUST_REQUIRED_CHECK_IDS = Object.freeze([
     'federationLifecycle',
     'simulationTrace',
     'osSurfaceIntentRouting',
+    'osSurfaceShellContract',
     'osSurfaceShellClickability',
     'osSurfaceShellRuntimeProbe',
 ]);
@@ -51,6 +53,11 @@ export function compareReleaseTrustChecks({
         ...compareOsSurfaceIntentRouting({
             baseline: baselineChecks.osSurfaceIntentRouting,
             current: currentChecks.osSurfaceIntentRouting,
+            strict,
+        }),
+        ...compareOsSurfaceShellContract({
+            baseline: baselineChecks.osSurfaceShellContract,
+            current: currentChecks.osSurfaceShellContract,
             strict,
         }),
         ...compareOsSurfaceShellClickability({
