@@ -35,6 +35,8 @@ export function formatReleaseTrustSummary({
     osSurfaceShellContractBaseline = null,
     osSurfaceWorkspaceIdentityCurrent = null,
     osSurfaceWorkspaceIdentityBaseline = null,
+    osSurfaceActivationProvenanceCurrent = null,
+    osSurfaceActivationProvenanceBaseline = null,
     osSurfaceProbeCurrent = null,
     osSurfaceProbeBaseline = null,
 } = {}) {
@@ -106,6 +108,29 @@ export function formatReleaseTrustSummary({
             lines.push(`- Baseline mode id: \`${String(osSurfaceWorkspaceIdentityBaseline.modeId ?? 'missing')}\``);
             lines.push(
                 `- Baseline overlays hash: \`${String(osSurfaceWorkspaceIdentityBaseline.overlaysHash ?? 'missing')}\``,
+            );
+        }
+        lines.push('');
+    }
+    if (osSurfaceActivationProvenanceCurrent) {
+        lines.push('### OS Surface Activation Provenance');
+        lines.push(`- Provenance ok: \`${osSurfaceActivationProvenanceCurrent.ok ? 'true' : 'false'}\``);
+        lines.push(
+            `- Tuples deterministic: \`${osSurfaceActivationProvenanceCurrent.tuplesDeterministic ? 'true' : 'false'}\``,
+        );
+        lines.push(`- Sample count: \`${Number(osSurfaceActivationProvenanceCurrent.sampleCount ?? 0)}\``);
+        lines.push(`- Tuples hash: \`${String(osSurfaceActivationProvenanceCurrent.tuplesHash ?? 'missing')}\``);
+        lines.push(`- Source hash: \`${String(osSurfaceActivationProvenanceCurrent.sourceHash ?? 'missing')}\``);
+        lines.push(`- Overlay hash: \`${String(osSurfaceActivationProvenanceCurrent.overlayHash ?? 'missing')}\``);
+        if (osSurfaceActivationProvenanceBaseline) {
+            lines.push(
+                `- Baseline tuples hash: \`${String(osSurfaceActivationProvenanceBaseline.tuplesHash ?? 'missing')}\``,
+            );
+            lines.push(
+                `- Baseline source hash: \`${String(osSurfaceActivationProvenanceBaseline.sourceHash ?? 'missing')}\``,
+            );
+            lines.push(
+                `- Baseline overlay hash: \`${String(osSurfaceActivationProvenanceBaseline.overlayHash ?? 'missing')}\``,
             );
         }
         lines.push('');
@@ -297,6 +322,8 @@ export function buildReleaseTrustSummary({
         osSurfaceShellContractBaseline: baselineReport?.checks?.osSurfaceShellContract ?? null,
         osSurfaceWorkspaceIdentityCurrent: currentReport?.checks?.osSurfaceWorkspaceIdentity ?? null,
         osSurfaceWorkspaceIdentityBaseline: baselineReport?.checks?.osSurfaceWorkspaceIdentity ?? null,
+        osSurfaceActivationProvenanceCurrent: currentReport?.checks?.osSurfaceActivationProvenance ?? null,
+        osSurfaceActivationProvenanceBaseline: baselineReport?.checks?.osSurfaceActivationProvenance ?? null,
         osSurfaceProbeCurrent: currentReport?.checks?.osSurfaceShellRuntimeProbe ?? null,
         osSurfaceProbeBaseline: baselineReport?.checks?.osSurfaceShellRuntimeProbe ?? null,
     });

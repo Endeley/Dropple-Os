@@ -25,6 +25,7 @@ test('release trust report schema is stable and required checks are present', as
             'exportVerification',
             'federationAttestation',
             'federationLifecycle',
+            'osSurfaceActivationProvenance',
             'osSurfaceIntentRouting',
             'osSurfaceShellClickability',
             'osSurfaceShellContract',
@@ -78,6 +79,13 @@ test('release trust report schema is stable and required checks are present', as
     assert.equal(typeof report.checks.osSurfaceWorkspaceIdentity.modeId, 'string');
     assert.equal(typeof report.checks.osSurfaceWorkspaceIdentity.overlaysCount, 'number');
     assert.equal(typeof report.checks.osSurfaceWorkspaceIdentity.overlaysHash, 'string');
+
+    assert.equal(typeof report.checks.osSurfaceActivationProvenance.ok, 'boolean');
+    assert.equal(typeof report.checks.osSurfaceActivationProvenance.tuplesDeterministic, 'boolean');
+    assert.equal(typeof report.checks.osSurfaceActivationProvenance.sampleCount, 'number');
+    assert.equal(typeof report.checks.osSurfaceActivationProvenance.tuplesHash, 'string');
+    assert.equal(typeof report.checks.osSurfaceActivationProvenance.sourceHash, 'string');
+    assert.equal(typeof report.checks.osSurfaceActivationProvenance.overlayHash, 'string');
 
     assert.equal(typeof report.checks.osSurfaceShellClickability.ok, 'boolean');
     assert.equal(typeof report.checks.osSurfaceShellClickability.helperPresent, 'boolean');

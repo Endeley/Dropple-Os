@@ -22,6 +22,10 @@ import {
     OS_WORKSPACE_SHELL_ACTION_POLICY_VERSION,
 } from '../runtime/osSurface/shellActionPolicy.js';
 import { buildWorkspaceShellSurfaceModel } from '../runtime/osSurface/buildWorkspaceShellSurfaceModel.js';
+import {
+    resolveCanonicalWorkspaceOverlayContext,
+    resolveWorkspaceContext,
+} from '../platform/workspaces/index.js';
 import { runOsSurfaceClickabilityProbe } from './releaseTrustChecks/osSurfaceClickabilityProbe.mjs';
 
 const REPORT_SCHEMA_VERSION = '1.0.0';
@@ -324,6 +328,61 @@ function evaluateOsSurfaceShellContractGate(osSurfaceIntentRouting) {
     });
 }
 
+function evaluateOsSurfaceActivationProvenanceGate() {
+    const samples = Object.freeze([
+        Object.freeze({ workspaceId: 'design', modeId: 'graphic' }),
+        Object.freeze({ workspace: 'uiux' }),
+        Object.freeze({ workspace: 'media', mode: 'podcast' }),
+        Object.freeze({ workspace: 'build', mode: 'conversion' }),
+        Object.freeze({ workspace: 'system', mode: 'versioning' }),
+        Object.freeze({ workspace: 'unknown-workspace' }),
+    ]);
+
+    const project = (entry) => {
+        const canonical = resolveWorkspaceContext(entry);
+        const overlay = resolveCanonicalWorkspaceOverlayContext(entry);
+        return Object.freeze({
+            inputWorkspace: String(entry.workspaceId ?? entry.workspace ?? ''),
+            inputMode: String(entry.modeId ?? entry.mode ?? ''),
+            workspaceId: String(canonical.workspaceId ?? ''),
+            modeId: String(canonical.modeId ?? ''),
+            source: String(canonical.source ?? ''),
+            overlayId: String(overlay.overlayId ?? ''),
+            canonicalModeId: String(overlay.canonicalModeId ?? ''),
+        });
+    };
+
+    const tuples = Object.freeze(samples.map(project));
+    const replayTuples = Object.freeze(samples.map((entry) => project({ ...entry })));
+
+    const tuplesDeterministic = JSON.stringify(tuples) === JSON.stringify(replayTuples);
+    const tuplesHash = hashRuntimeState(tuples);
+    const sourceHash = hashRuntimeState(tuples.map((entry) => entry.source));
+    const overlayHash = hashRuntimeState(
+        tuples
+            .map((entry) => entry.overlayId)
+            .filter((value) => typeof value === 'string' && value.length > 0),
+    );
+    const samplesValid = tuples.every(
+        (entry) =>
+            typeof entry.workspaceId === 'string' &&
+            entry.workspaceId.length > 0 &&
+            typeof entry.modeId === 'string' &&
+            entry.modeId.length > 0 &&
+            typeof entry.source === 'string' &&
+            entry.source.length > 0,
+    );
+
+    return Object.freeze({
+        ok: tuplesDeterministic && samplesValid && tuples.length === samples.length,
+        tuplesDeterministic,
+        sampleCount: tuples.length,
+        tuplesHash,
+        sourceHash,
+        overlayHash,
+    });
+}
+
 export async function generateReleaseTrustReport({ write = true } = {}) {
     const artifact = createSnapshotArtifact({
         snapshot: createReleaseSnapshot(),
@@ -394,6 +453,7 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
     const federationLifecycle = evaluateFederationLifecycleGate();
     const osSurfaceIntentRouting = evaluateSurfaceIntentRoutingContract();
     const osSurfaceShellContract = evaluateOsSurfaceShellContractGate(osSurfaceIntentRouting);
+    const osSurfaceActivationProvenance = evaluateOsSurfaceActivationProvenanceGate();
     const osSurfaceShellClickability = evaluateOsSurfaceShellClickabilityGate();
     const osSurfaceShellRuntimeProbe = evaluateOsSurfaceShellRuntimeProbeGate();
     const workspaceIdentityModel = buildWorkspaceShellSurfaceModel({
@@ -494,6 +554,16 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
                 ? workspaceIdentityModel.overlays.length
                 : 0,
             overlaysHash: String(overlaysHash ?? ''),
+        }),
+        osSurfaceActivationProvenance: Object.freeze({
+            ok: osSurfaceActivationProvenance.ok === true,
+            tuplesDeterministic: osSurfaceActivationProvenance.tuplesDeterministic === true,
+            sampleCount: Number.isFinite(osSurfaceActivationProvenance.sampleCount)
+                ? Number(osSurfaceActivationProvenance.sampleCount)
+                : 0,
+            tuplesHash: String(osSurfaceActivationProvenance.tuplesHash ?? ''),
+            sourceHash: String(osSurfaceActivationProvenance.sourceHash ?? ''),
+            overlayHash: String(osSurfaceActivationProvenance.overlayHash ?? ''),
         }),
         osSurfaceShellClickability: Object.freeze({
             ok: osSurfaceShellClickability.ok === true,

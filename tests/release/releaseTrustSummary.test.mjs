@@ -65,6 +65,19 @@ test('release trust summary formatter is deterministic for identical semantic ou
             modeId: 'graphic',
             overlaysHash: 'os-overlays-hash-a',
         },
+        osSurfaceActivationProvenanceCurrent: {
+            ok: true,
+            tuplesDeterministic: true,
+            sampleCount: 6,
+            tuplesHash: 'os-activation-tuples-hash-a',
+            sourceHash: 'os-activation-source-hash-a',
+            overlayHash: 'os-activation-overlay-hash-a',
+        },
+        osSurfaceActivationProvenanceBaseline: {
+            tuplesHash: 'os-activation-tuples-hash-a',
+            sourceHash: 'os-activation-source-hash-a',
+            overlayHash: 'os-activation-overlay-hash-a',
+        },
         osSurfaceProbeCurrent: {
             publishClickable: true,
             keyframeClickable: true,
@@ -117,6 +130,19 @@ test('release trust summary formatter is deterministic for identical semantic ou
             modeId: 'graphic',
             overlaysHash: 'os-overlays-hash-a',
         },
+        osSurfaceActivationProvenanceCurrent: {
+            ok: true,
+            tuplesDeterministic: true,
+            sampleCount: 6,
+            tuplesHash: 'os-activation-tuples-hash-a',
+            sourceHash: 'os-activation-source-hash-a',
+            overlayHash: 'os-activation-overlay-hash-a',
+        },
+        osSurfaceActivationProvenanceBaseline: {
+            tuplesHash: 'os-activation-tuples-hash-a',
+            sourceHash: 'os-activation-source-hash-a',
+            overlayHash: 'os-activation-overlay-hash-a',
+        },
         osSurfaceProbeCurrent: {
             publishClickable: true,
             keyframeClickable: true,
@@ -155,6 +181,13 @@ test('release trust summary formatter is deterministic for identical semantic ou
     assert.match(a, /Mode id: `graphic`/);
     assert.match(a, /Overlays count: `2`/);
     assert.match(a, /Overlays hash: `os-overlays-hash-a`/);
+    assert.match(a, /OS Surface Activation Provenance/);
+    assert.match(a, /Provenance ok: `true`/);
+    assert.match(a, /Tuples deterministic: `true`/);
+    assert.match(a, /Sample count: `6`/);
+    assert.match(a, /Tuples hash: `os-activation-tuples-hash-a`/);
+    assert.match(a, /Source hash: `os-activation-source-hash-a`/);
+    assert.match(a, /Overlay hash: `os-activation-overlay-hash-a`/);
     assert.match(a, /OS Surface Probe/);
     assert.match(a, /Publish clickable: `true`/);
     assert.match(a, /Keyframe clickable: `true`/);

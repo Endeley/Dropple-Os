@@ -44,6 +44,14 @@ function createReport({
                 overlaysCount: 2,
                 overlaysHash: 'os-overlays-hash-a',
             },
+            osSurfaceActivationProvenance: {
+                ok: true,
+                tuplesDeterministic: true,
+                sampleCount: 6,
+                tuplesHash: 'os-activation-tuples-hash-a',
+                sourceHash: 'os-activation-source-hash-a',
+                overlayHash: 'os-activation-overlay-hash-a',
+            },
             osSurfaceShellClickability: {
                 ok: true,
                 helperPresent: true,
@@ -321,6 +329,57 @@ test('release trust diff fails when os surface workspace identity drifts', () =>
     );
     assert.equal(
         result.errors.some((entry) => entry.includes('osSurfaceWorkspaceIdentity.overlaysHash-stable')),
+        true,
+    );
+});
+
+test('release trust diff fails when os surface activation provenance drifts', () => {
+    const baseline = createReport({
+        checks: {
+            osSurfaceActivationProvenance: {
+                ok: true,
+                tuplesDeterministic: true,
+                sampleCount: 6,
+                tuplesHash: 'os-activation-tuples-hash-a',
+                sourceHash: 'os-activation-source-hash-a',
+                overlayHash: 'os-activation-overlay-hash-a',
+            },
+        },
+    });
+    const current = createReport({
+        checks: {
+            osSurfaceActivationProvenance: {
+                ok: false,
+                tuplesDeterministic: false,
+                sampleCount: 0,
+                tuplesHash: 'os-activation-tuples-hash-b',
+                sourceHash: 'os-activation-source-hash-b',
+                overlayHash: 'os-activation-overlay-hash-b',
+            },
+        },
+    });
+
+    const result = diffReleaseTrustReports({ baseline, current });
+    assert.equal(result.ok, false);
+    assert.equal(result.errors.some((entry) => entry.includes('osSurfaceActivationProvenance.ok')), true);
+    assert.equal(
+        result.errors.some((entry) => entry.includes('osSurfaceActivationProvenance.tuplesDeterministic')),
+        true,
+    );
+    assert.equal(
+        result.errors.some((entry) => entry.includes('osSurfaceActivationProvenance.sampleCount-valid')),
+        true,
+    );
+    assert.equal(
+        result.errors.some((entry) => entry.includes('osSurfaceActivationProvenance.sourceHash-stable')),
+        true,
+    );
+    assert.equal(
+        result.errors.some((entry) => entry.includes('osSurfaceActivationProvenance.overlayHash-stable')),
+        true,
+    );
+    assert.equal(
+        result.errors.some((entry) => entry.includes('osSurfaceActivationProvenance.tuplesHash-stable')),
         true,
     );
 });

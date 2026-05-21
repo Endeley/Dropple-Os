@@ -6,6 +6,7 @@ import { compareSimulationTrace } from './simulationTraceComparator.mjs';
 import { compareOsSurfaceIntentRouting } from './osSurfaceIntentRoutingComparator.mjs';
 import { compareOsSurfaceShellContract } from './osSurfaceShellContractComparator.mjs';
 import { compareOsSurfaceWorkspaceIdentity } from './osSurfaceWorkspaceIdentityComparator.mjs';
+import { compareOsSurfaceActivationProvenance } from './osSurfaceActivationProvenanceComparator.mjs';
 import { compareOsSurfaceShellClickability } from './osSurfaceShellClickabilityComparator.mjs';
 import { compareOsSurfaceShellRuntimeProbe } from './osSurfaceShellRuntimeProbeComparator.mjs';
 
@@ -18,6 +19,7 @@ export const RELEASE_TRUST_REQUIRED_CHECK_IDS = Object.freeze([
     'osSurfaceIntentRouting',
     'osSurfaceShellContract',
     'osSurfaceWorkspaceIdentity',
+    'osSurfaceActivationProvenance',
     'osSurfaceShellClickability',
     'osSurfaceShellRuntimeProbe',
 ]);
@@ -65,6 +67,11 @@ export function compareReleaseTrustChecks({
         ...compareOsSurfaceWorkspaceIdentity({
             baseline: baselineChecks.osSurfaceWorkspaceIdentity,
             current: currentChecks.osSurfaceWorkspaceIdentity,
+            strict,
+        }),
+        ...compareOsSurfaceActivationProvenance({
+            baseline: baselineChecks.osSurfaceActivationProvenance,
+            current: currentChecks.osSurfaceActivationProvenance,
             strict,
         }),
         ...compareOsSurfaceShellClickability({
