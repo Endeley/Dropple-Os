@@ -29,6 +29,7 @@ test('release trust report schema is stable and required checks are present', as
             'osSurfaceShellClickability',
             'osSurfaceShellContract',
             'osSurfaceShellRuntimeProbe',
+            'osSurfaceWorkspaceIdentity',
             'simulationTrace',
         ],
     );
@@ -71,6 +72,12 @@ test('release trust report schema is stable and required checks are present', as
     assert.equal(typeof report.checks.osSurfaceShellContract.projectionShapeOk, 'boolean');
     assert.equal(typeof report.checks.osSurfaceShellContract.projectionDeterministic, 'boolean');
     assert.equal(typeof report.checks.osSurfaceShellContract.projectionKeyHash, 'string');
+
+    assert.equal(typeof report.checks.osSurfaceWorkspaceIdentity.ok, 'boolean');
+    assert.equal(typeof report.checks.osSurfaceWorkspaceIdentity.workspaceId, 'string');
+    assert.equal(typeof report.checks.osSurfaceWorkspaceIdentity.modeId, 'string');
+    assert.equal(typeof report.checks.osSurfaceWorkspaceIdentity.overlaysCount, 'number');
+    assert.equal(typeof report.checks.osSurfaceWorkspaceIdentity.overlaysHash, 'string');
 
     assert.equal(typeof report.checks.osSurfaceShellClickability.ok, 'boolean');
     assert.equal(typeof report.checks.osSurfaceShellClickability.helperPresent, 'boolean');

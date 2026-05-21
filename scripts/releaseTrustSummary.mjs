@@ -33,6 +33,8 @@ export function formatReleaseTrustSummary({
     federationLineageLedger = null,
     osSurfaceShellContractCurrent = null,
     osSurfaceShellContractBaseline = null,
+    osSurfaceWorkspaceIdentityCurrent = null,
+    osSurfaceWorkspaceIdentityBaseline = null,
     osSurfaceProbeCurrent = null,
     osSurfaceProbeBaseline = null,
 } = {}) {
@@ -86,6 +88,24 @@ export function formatReleaseTrustSummary({
             lines.push(`- Baseline policy hash: \`${String(osSurfaceShellContractBaseline.policyHash ?? 'missing')}\``);
             lines.push(
                 `- Baseline projection key hash: \`${String(osSurfaceShellContractBaseline.projectionKeyHash ?? 'missing')}\``,
+            );
+        }
+        lines.push('');
+    }
+    if (osSurfaceWorkspaceIdentityCurrent) {
+        lines.push('### OS Surface Workspace Identity');
+        lines.push(`- Identity ok: \`${osSurfaceWorkspaceIdentityCurrent.ok ? 'true' : 'false'}\``);
+        lines.push(`- Workspace id: \`${String(osSurfaceWorkspaceIdentityCurrent.workspaceId ?? 'missing')}\``);
+        lines.push(`- Mode id: \`${String(osSurfaceWorkspaceIdentityCurrent.modeId ?? 'missing')}\``);
+        lines.push(`- Overlays count: \`${Number(osSurfaceWorkspaceIdentityCurrent.overlaysCount ?? 0)}\``);
+        lines.push(`- Overlays hash: \`${String(osSurfaceWorkspaceIdentityCurrent.overlaysHash ?? 'missing')}\``);
+        if (osSurfaceWorkspaceIdentityBaseline) {
+            lines.push(
+                `- Baseline workspace id: \`${String(osSurfaceWorkspaceIdentityBaseline.workspaceId ?? 'missing')}\``,
+            );
+            lines.push(`- Baseline mode id: \`${String(osSurfaceWorkspaceIdentityBaseline.modeId ?? 'missing')}\``);
+            lines.push(
+                `- Baseline overlays hash: \`${String(osSurfaceWorkspaceIdentityBaseline.overlaysHash ?? 'missing')}\``,
             );
         }
         lines.push('');
@@ -275,6 +295,8 @@ export function buildReleaseTrustSummary({
         federationLineageLedger: resolveFederationLineageLedgerStatus(federationLineageLedgerPath),
         osSurfaceShellContractCurrent: currentReport?.checks?.osSurfaceShellContract ?? null,
         osSurfaceShellContractBaseline: baselineReport?.checks?.osSurfaceShellContract ?? null,
+        osSurfaceWorkspaceIdentityCurrent: currentReport?.checks?.osSurfaceWorkspaceIdentity ?? null,
+        osSurfaceWorkspaceIdentityBaseline: baselineReport?.checks?.osSurfaceWorkspaceIdentity ?? null,
         osSurfaceProbeCurrent: currentReport?.checks?.osSurfaceShellRuntimeProbe ?? null,
         osSurfaceProbeBaseline: baselineReport?.checks?.osSurfaceShellRuntimeProbe ?? null,
     });

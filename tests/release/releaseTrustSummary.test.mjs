@@ -53,6 +53,18 @@ test('release trust summary formatter is deterministic for identical semantic ou
             policyHash: 'policy-hash-a',
             projectionKeyHash: 'projection-key-hash-a',
         },
+        osSurfaceWorkspaceIdentityCurrent: {
+            ok: true,
+            workspaceId: 'design',
+            modeId: 'graphic',
+            overlaysCount: 2,
+            overlaysHash: 'os-overlays-hash-a',
+        },
+        osSurfaceWorkspaceIdentityBaseline: {
+            workspaceId: 'design',
+            modeId: 'graphic',
+            overlaysHash: 'os-overlays-hash-a',
+        },
         osSurfaceProbeCurrent: {
             publishClickable: true,
             keyframeClickable: true,
@@ -93,6 +105,18 @@ test('release trust summary formatter is deterministic for identical semantic ou
             policyHash: 'policy-hash-a',
             projectionKeyHash: 'projection-key-hash-a',
         },
+        osSurfaceWorkspaceIdentityCurrent: {
+            ok: true,
+            workspaceId: 'design',
+            modeId: 'graphic',
+            overlaysCount: 2,
+            overlaysHash: 'os-overlays-hash-a',
+        },
+        osSurfaceWorkspaceIdentityBaseline: {
+            workspaceId: 'design',
+            modeId: 'graphic',
+            overlaysHash: 'os-overlays-hash-a',
+        },
         osSurfaceProbeCurrent: {
             publishClickable: true,
             keyframeClickable: true,
@@ -125,6 +149,12 @@ test('release trust summary formatter is deterministic for identical semantic ou
     assert.match(a, /Projection shape ok: `true`/);
     assert.match(a, /Projection deterministic: `true`/);
     assert.match(a, /Projection key hash: `projection-key-hash-a`/);
+    assert.match(a, /OS Surface Workspace Identity/);
+    assert.match(a, /Identity ok: `true`/);
+    assert.match(a, /Workspace id: `design`/);
+    assert.match(a, /Mode id: `graphic`/);
+    assert.match(a, /Overlays count: `2`/);
+    assert.match(a, /Overlays hash: `os-overlays-hash-a`/);
     assert.match(a, /OS Surface Probe/);
     assert.match(a, /Publish clickable: `true`/);
     assert.match(a, /Keyframe clickable: `true`/);

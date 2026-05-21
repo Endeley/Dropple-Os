@@ -396,6 +396,27 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
     const osSurfaceShellContract = evaluateOsSurfaceShellContractGate(osSurfaceIntentRouting);
     const osSurfaceShellClickability = evaluateOsSurfaceShellClickabilityGate();
     const osSurfaceShellRuntimeProbe = evaluateOsSurfaceShellRuntimeProbeGate();
+    const workspaceIdentityModel = buildWorkspaceShellSurfaceModel({
+        environment: {
+            workspaceId: 'design',
+            modeId: 'graphic',
+            activeEnvironmentId: 'env-a',
+            activeSessionId: 'session-a',
+            capabilityOverlays: ['conversion', 'ai', 'conversion'],
+            federation: {
+                participantIds: ['peer-z', 'peer-a', 'peer-z'],
+                sessionPhase: 'preview',
+            },
+            trustEnvelope: {
+                releaseTrustHash: 'trust-a',
+            },
+        },
+        synthesizedTools: {
+            activeToolId: 'select',
+            tools: [{ toolId: 'move' }, { toolId: 'select' }, { toolId: 'move' }],
+        },
+    });
+    const overlaysHash = hashRuntimeState(workspaceIdentityModel.overlays ?? []);
 
     const checks = Object.freeze({
         architectureGate: Object.freeze({
@@ -459,6 +480,20 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
             projectionShapeOk: osSurfaceShellContract.projectionShapeOk === true,
             projectionDeterministic: osSurfaceShellContract.projectionDeterministic === true,
             projectionKeyHash: String(osSurfaceShellContract.projectionKeyHash ?? ''),
+        }),
+        osSurfaceWorkspaceIdentity: Object.freeze({
+            ok:
+                typeof workspaceIdentityModel.workspaceId === 'string' &&
+                workspaceIdentityModel.workspaceId.length > 0 &&
+                typeof workspaceIdentityModel.modeId === 'string' &&
+                workspaceIdentityModel.modeId.length > 0 &&
+                Array.isArray(workspaceIdentityModel.overlays),
+            workspaceId: String(workspaceIdentityModel.workspaceId ?? ''),
+            modeId: String(workspaceIdentityModel.modeId ?? ''),
+            overlaysCount: Array.isArray(workspaceIdentityModel.overlays)
+                ? workspaceIdentityModel.overlays.length
+                : 0,
+            overlaysHash: String(overlaysHash ?? ''),
         }),
         osSurfaceShellClickability: Object.freeze({
             ok: osSurfaceShellClickability.ok === true,

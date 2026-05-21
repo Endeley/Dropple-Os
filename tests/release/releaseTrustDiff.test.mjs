@@ -37,6 +37,13 @@ function createReport({
                 projectionDeterministic: true,
                 projectionKeyHash: 'os-shell-projection-key-hash-a',
             },
+            osSurfaceWorkspaceIdentity: {
+                ok: true,
+                workspaceId: 'design',
+                modeId: 'graphic',
+                overlaysCount: 2,
+                overlaysHash: 'os-overlays-hash-a',
+            },
             osSurfaceShellClickability: {
                 ok: true,
                 helperPresent: true,
@@ -273,6 +280,47 @@ test('release trust diff fails when os surface shell contract drifts', () => {
     );
     assert.equal(
         result.errors.some((entry) => entry.includes('osSurfaceShellContract.projectionKeyHash-stable')),
+        true,
+    );
+});
+
+test('release trust diff fails when os surface workspace identity drifts', () => {
+    const baseline = createReport({
+        checks: {
+            osSurfaceWorkspaceIdentity: {
+                ok: true,
+                workspaceId: 'design',
+                modeId: 'graphic',
+                overlaysCount: 2,
+                overlaysHash: 'os-overlays-hash-a',
+            },
+        },
+    });
+    const current = createReport({
+        checks: {
+            osSurfaceWorkspaceIdentity: {
+                ok: false,
+                workspaceId: 'media',
+                modeId: 'video',
+                overlaysCount: 3,
+                overlaysHash: 'os-overlays-hash-b',
+            },
+        },
+    });
+
+    const result = diffReleaseTrustReports({ baseline, current });
+    assert.equal(result.ok, false);
+    assert.equal(result.errors.some((entry) => entry.includes('osSurfaceWorkspaceIdentity.ok')), true);
+    assert.equal(
+        result.errors.some((entry) => entry.includes('osSurfaceWorkspaceIdentity.workspaceId-stable')),
+        true,
+    );
+    assert.equal(
+        result.errors.some((entry) => entry.includes('osSurfaceWorkspaceIdentity.modeId-stable')),
+        true,
+    );
+    assert.equal(
+        result.errors.some((entry) => entry.includes('osSurfaceWorkspaceIdentity.overlaysHash-stable')),
         true,
     );
 });
