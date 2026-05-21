@@ -16,6 +16,15 @@ test('release trust probe summary formatter renders stable one-line diagnostics'
         },
         report: {
             checks: {
+                osSurfaceShellContract: {
+                    ok: true,
+                },
+                osSurfaceWorkspaceIdentity: {
+                    ok: true,
+                },
+                osSurfaceActivationProvenance: {
+                    ok: true,
+                },
                 osSurfaceShellRuntimeProbe: {
                     durationMs: 1234,
                 },
@@ -33,6 +42,9 @@ test('release trust probe summary formatter renders stable one-line diagnostics'
     assert.match(line, /publishClickable=true/);
     assert.match(line, /keyframeClickable=true/);
     assert.match(line, /interceptErrors=0/);
+    assert.match(line, /shellContractOk=true/);
+    assert.match(line, /workspaceIdentityOk=true/);
+    assert.match(line, /activationProvenanceOk=true/);
     assert.match(line, /durationMs=1234/);
     assert.match(line, /baselineDurationMs=1200/);
     assert.match(line, /durationDeltaPct=\+2\.8%/);
@@ -87,4 +99,7 @@ test('release trust probe summary formatter marks regressions and improvements w
     assert.match(improved, /trend=improved/);
     assert.match(improved, /durationStatus=OK/);
     assert.match(improved, /durationDeltaPct=-20\.0%/);
+    assert.match(improved, /shellContractOk=unknown/);
+    assert.match(improved, /workspaceIdentityOk=unknown/);
+    assert.match(improved, /activationProvenanceOk=unknown/);
 });

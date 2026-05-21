@@ -63,10 +63,14 @@ export function formatReleaseTrustProbeSummary({
         currentDuration: check.durationMs,
         baselineDuration,
     });
+    const shellContractOk = report?.checks?.osSurfaceShellContract?.ok;
+    const workspaceIdentityOk = report?.checks?.osSurfaceWorkspaceIdentity?.ok;
+    const activationProvenanceOk = report?.checks?.osSurfaceActivationProvenance?.ok;
     const status = check.ok === true ? 'PASS' : 'FAIL';
     const durationStatus = trend?.regression ? 'WARN' : 'OK';
     const deltaText = trend ? `${trend.percent >= 0 ? '+' : ''}${trend.percent.toFixed(1)}%` : 'n/a';
     const trendText = trend?.trend ?? 'unknown';
+    const toTriState = (value) => (value === true ? 'true' : value === false ? 'false' : 'unknown');
 
     return [
         `[ReleaseTrustProbeSummary] status=${status}`,
@@ -74,6 +78,9 @@ export function formatReleaseTrustProbeSummary({
         `publishClickable=${check.publishClickable === true}`,
         `keyframeClickable=${check.keyframeClickable === true}`,
         `interceptErrors=${Number.isFinite(check.interceptErrors) ? Number(check.interceptErrors) : 0}`,
+        `shellContractOk=${toTriState(shellContractOk)}`,
+        `workspaceIdentityOk=${toTriState(workspaceIdentityOk)}`,
+        `activationProvenanceOk=${toTriState(activationProvenanceOk)}`,
         `durationMs=${Number.isFinite(check.durationMs) ? Number(check.durationMs) : 0}`,
         `baselineDurationMs=${Number.isFinite(baselineDuration) ? Number(baselineDuration) : 'n/a'}`,
         `durationDeltaPct=${deltaText}`,
