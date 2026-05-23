@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { syncRuntimeToZustand } from '@/runtime/projection/zustandBridge.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
+import { hashRuntimeState } from '@/core/persistence/hashDocument.js';
 
 test.beforeEach(() => {
     useRuntimeStore.setState({
@@ -157,4 +158,69 @@ test('projection sync overlays active interaction transforms into projected view
     assert.equal(projection.viewNodes.nodeA.transform.y, 220);
     assert.equal(runtimeState.document.layout.nodes.nodeA.x, 10);
     assert.equal(runtimeState.document.layout.nodes.nodeA.y, 20);
+});
+
+test('projection converges to canonical truth after interaction completion and final hash is replay-stable', () => {
+    const buildRuntimeState = () => ({
+        document: {
+            sceneGraph: {
+                rootIds: ['nodeA'],
+                nodes: {
+                    nodeA: {
+                        id: 'nodeA',
+                        type: 'frame',
+                        parentId: null,
+                        children: [],
+                    },
+                },
+            },
+            layout: {
+                version: 1,
+                nodes: {
+                    nodeA: { x: 10, y: 20, width: 80, height: 40 },
+                },
+                computed: {},
+                breakpoints: { mobile: 480, tablet: 768, desktop: 1200 },
+                dirty: { nodeIds: [], fullPass: false, revision: 0 },
+                metadata: { schemaVersion: 1 },
+            },
+        },
+        selection: { ids: new Set(['nodeA']), primary: 'nodeA' },
+        interaction: {
+            drag: {
+                active: true,
+                type: 'move',
+                interactionTransforms: {
+                    nodeA: { x: 110, y: 220 },
+                },
+            },
+        },
+    });
+
+    const runtimeStateA = buildRuntimeState();
+    syncRuntimeToZustand(runtimeStateA);
+    let projection = useRuntimeStore.getState();
+    assert.equal(projection.viewNodes.nodeA.layout.x, 110);
+    assert.equal(projection.viewNodes.nodeA.layout.y, 220);
+
+    runtimeStateA.document.layout.nodes.nodeA = { x: 110, y: 220, width: 80, height: 40 };
+    runtimeStateA.interaction.drag = { active: false, type: 'move', interactionTransforms: {} };
+    syncRuntimeToZustand(runtimeStateA);
+
+    projection = useRuntimeStore.getState();
+    assert.equal(projection.viewNodes.nodeA.layout.x, 110);
+    assert.equal(projection.viewNodes.nodeA.layout.y, 220);
+    assert.equal(runtimeStateA.document.layout.nodes.nodeA.x, 110);
+    assert.equal(runtimeStateA.document.layout.nodes.nodeA.y, 220);
+
+    const finalHashA = hashRuntimeState(runtimeStateA);
+
+    const runtimeStateB = buildRuntimeState();
+    syncRuntimeToZustand(runtimeStateB);
+    runtimeStateB.document.layout.nodes.nodeA = { x: 110, y: 220, width: 80, height: 40 };
+    runtimeStateB.interaction.drag = { active: false, type: 'move', interactionTransforms: {} };
+    syncRuntimeToZustand(runtimeStateB);
+    const finalHashB = hashRuntimeState(runtimeStateB);
+
+    assert.equal(finalHashA, finalHashB);
 });
