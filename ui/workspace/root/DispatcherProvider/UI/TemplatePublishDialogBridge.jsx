@@ -23,6 +23,8 @@ export function TemplatePublishDialogBridge() {
     const [metadata, setMetadata] = useState(INITIAL_METADATA);
     const [isPublishing, setIsPublishing] = useState(false);
     const [error, setError] = useState(null);
+    const [showFullTrustSummary, setShowFullTrustSummary] = useState(false);
+    const [copyState, setCopyState] = useState('idle');
 
     const events = useWorkspaceProjectionState((state) => state.events ?? []);
     const cursorIndex = useWorkspaceProjectionState((state) => state.cursorIndex ?? -1);
@@ -33,6 +35,10 @@ export function TemplatePublishDialogBridge() {
             if (nextState?.open) {
                 setError(null);
                 setMetadata(INITIAL_METADATA);
+            }
+            if (!nextState?.publishTrust) {
+                setShowFullTrustSummary(false);
+                setCopyState('idle');
             }
         });
     }, []);
@@ -122,6 +128,17 @@ export function TemplatePublishDialogBridge() {
             .slice(0, 4)
             .join('\n')
         : '';
+    const fullTrustSummary = typeof publishTrust?.summary === 'string' ? publishTrust.summary : '';
+
+    const copyTrustSummary = async () => {
+        if (!fullTrustSummary.trim()) return;
+        try {
+            await navigator.clipboard.writeText(fullTrustSummary);
+            setCopyState('copied');
+        } catch {
+            setCopyState('failed');
+        }
+    };
 
     return (
         <>
@@ -253,19 +270,47 @@ export function TemplatePublishDialogBridge() {
                         <strong style={{ fontSize: 12, color: trustTone }}>
                             Release Trust: {trustStatus}
                         </strong>
-                        <button
-                            onClick={clearTemplatePublishTrust}
-                            style={{
-                                minWidth: 24,
-                                height: 24,
-                                border: '1px solid var(--border-default)',
-                                borderRadius: 'var(--radius-sm)',
-                                background: 'var(--surface-1)',
-                                color: 'var(--text-primary)',
-                                fontSize: 11,
-                            }}>
-                            Dismiss
-                        </button>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                            <button
+                                onClick={() => setShowFullTrustSummary((current) => !current)}
+                                style={{
+                                    minWidth: 24,
+                                    height: 24,
+                                    border: '1px solid var(--border-default)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    background: 'var(--surface-1)',
+                                    color: 'var(--text-primary)',
+                                    fontSize: 11,
+                                }}>
+                                {showFullTrustSummary ? 'Hide Summary' : 'View Full Trust Summary'}
+                            </button>
+                            <button
+                                onClick={copyTrustSummary}
+                                style={{
+                                    minWidth: 24,
+                                    height: 24,
+                                    border: '1px solid var(--border-default)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    background: 'var(--surface-1)',
+                                    color: 'var(--text-primary)',
+                                    fontSize: 11,
+                                }}>
+                                {copyState === 'copied' ? 'Copied' : copyState === 'failed' ? 'Copy Failed' : 'Copy Summary'}
+                            </button>
+                            <button
+                                onClick={clearTemplatePublishTrust}
+                                style={{
+                                    minWidth: 24,
+                                    height: 24,
+                                    border: '1px solid var(--border-default)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    background: 'var(--surface-1)',
+                                    color: 'var(--text-primary)',
+                                    fontSize: 11,
+                                }}>
+                                Dismiss
+                            </button>
+                        </div>
                     </div>
                     <pre
                         style={{
@@ -279,6 +324,25 @@ export function TemplatePublishDialogBridge() {
                         }}>
                         {trustSummaryPreview || 'No trust summary available for this publish.'}
                     </pre>
+                    {showFullTrustSummary ? (
+                        <pre
+                            data-testid='template-publish-trust-summary-full'
+                            style={{
+                                margin: 0,
+                                fontSize: 11,
+                                lineHeight: 1.35,
+                                whiteSpace: 'pre-wrap',
+                                color: 'var(--text-primary)',
+                                maxHeight: 260,
+                                overflow: 'auto',
+                                border: '1px solid var(--border-default)',
+                                borderRadius: 'var(--radius-sm)',
+                                padding: 8,
+                                background: 'var(--surface-1)',
+                            }}>
+                            {fullTrustSummary || 'No full trust summary available.'}
+                        </pre>
+                    ) : null}
                 </aside>
             ) : null}
         </>

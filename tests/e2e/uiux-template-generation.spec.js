@@ -166,6 +166,10 @@ test('uiux authoring roundtrip publishes from the toolbar flow and installs into
     } else {
         await expect(trustSurface).toContainText('Release Trust:');
     }
+    await trustSurface.getByRole('button', { name: 'View Full Trust Summary' }).click();
+    const fullTrustSummary = page.getByTestId('template-publish-trust-summary-full');
+    await expect(fullTrustSummary).toBeVisible();
+    await expect(fullTrustSummary).toContainText('## Release Trust Diff Summary');
 
     const registryResponse = await request.get(`/api/templates/certified?mode=${publishedMode}`);
 
