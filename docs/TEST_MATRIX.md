@@ -62,6 +62,7 @@ npm run template:verify-all
 npm run validate:pr:fast
 npm run ci:fast
 npm run ci:release-trust
+npm run ci:release-trust:locked
 npm run ci:full
 npm run preflight
 npm run validate:all
@@ -75,6 +76,7 @@ Notes:
 - `npm run validate:pr:fast` is the lightweight PR gate for rapid iteration (`test:architecture` + `test:release:operator-surfaces`).
 - `npm run ci:fast` is the CI alias for `validate:pr:fast`.
 - `npm run ci:release-trust` runs the focused release-trust lane (attestation tests, operator-surface tests, report, summary).
+- `npm run ci:release-trust:locked` runs the focused release-trust lane with enforced baseline cutoff policy.
 - `npm run ci:full` runs the full release lane (`validate:release`).
 - `npm run preflight` is the daily contributor confidence flow: clean generated trust noise, ensure baseline presence, then run the fast PR gate.
 - `npm run release:trust:baseline:ensure` bootstraps missing release-trust baseline artifacts from current artifacts, fails open before cutoff, and fails closed after `RELEASE_TRUST_BASELINE_REQUIRED_AFTER`.
@@ -95,6 +97,10 @@ Notes:
 - PR and main CI also upload `federation-audit-lineage.json` for federation governance lineage visibility.
 - PR and main CI now upload `federation-audit-lineage-ledger.jsonl` and seed PR lineage-ledger continuity from the latest successful `main`.
 - Baseline diff enforcement is date-gated via `RELEASE_TRUST_BASELINE_REQUIRED_AFTER` (currently `2026-07-01T00:00:00.000Z`).
+- Enforced policy commands:
+- `npm run release:trust:diff:enforced`
+- `npm run release:trust:summary:enforced`
+- `npm run release:trust:pr-comment:enforced`
 - `release:trust:diff` supports semantic strict mode via `RELEASE_TRUST_DIFF_STRICT=true` (default `false`).
 - PR CI publishes a semantic release-trust summary to `GITHUB_STEP_SUMMARY` for reviewer-readable governance outcomes.
 - PR CI also publishes/updates a sticky release-trust PR comment (best-effort) for thread-level reviewer visibility.

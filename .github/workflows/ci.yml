@@ -477,20 +477,15 @@ jobs:
           if-no-files-found: error
 
       - name: Release trust diff (blocking)
-        env:
-          RELEASE_TRUST_BASELINE_REQUIRED_AFTER: '2026-07-01T00:00:00.000Z'
-        run: npm run release:trust:diff
+        run: npm run release:trust:diff:enforced
 
       - name: Publish release trust summary
         if: always()
-        env:
-          RELEASE_TRUST_BASELINE_REQUIRED_AFTER: '2026-07-01T00:00:00.000Z'
-        run: npm run release:trust:summary
+        run: npm run release:trust:summary:enforced
 
       - name: Publish release trust PR comment
         if: always()
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          RELEASE_TRUST_BASELINE_REQUIRED_AFTER: '2026-07-01T00:00:00.000Z'
-        run: npm run release:trust:pr-comment
+        run: npm run release:trust:pr-comment:enforced
