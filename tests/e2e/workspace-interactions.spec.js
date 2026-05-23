@@ -300,6 +300,20 @@ async function waitForResized(locator, before, minimumDelta) {
     .toBeTruthy();
 }
 
+function attachRuntimeErrorCollectors(page) {
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on('pageerror', (error) => {
+    pageErrors.push(String(error?.message ?? error));
+  });
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') {
+      consoleErrors.push(msg.text());
+    }
+  });
+  return { pageErrors, consoleErrors };
+}
+
 test('workspace new can create and drag a single selected node', async ({ page }) => {
   await gotoNewWorkspace(page);
 
@@ -439,4 +453,50 @@ test('workspace new single-node resize updates bounds and persists', async ({ pa
 
   await dragResizeHandle(page, resizeHandle, { x: 60, y: 40 });
   await waitForResized(node, before, { dw: 20, dh: 15 });
+});
+
+test('workspace new deterministic create-select-drag-resize roundtrip preserves selection identity', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoNewWorkspace(page);
+
+  await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+  const node = page.locator('[data-node-id]').first();
+  await expect(node).toBeVisible();
+
+  await activateTool(page, 'select');
+  await node.click({ force: true });
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+
+  const selectedNodeId = await node.getAttribute('data-node-id');
+  expect(selectedNodeId).toBeTruthy();
+
+  const selectionPrimary = page.locator('[data-selection-primary="true"]');
+  await expect(selectionPrimary).toHaveCount(1);
+  await expect(selectionPrimary).toHaveAttribute('data-selection-node-id', selectedNodeId);
+
+  const beforeDrag = await node.boundingBox();
+  expect(beforeDrag).not.toBeNull();
+  await dragNode(page, node, { x: 90, y: 60 });
+  await waitForMoved(node, beforeDrag, { dx: 40, dy: 20 });
+
+  const resizeHandle = page.getByTestId('resize-handle').first();
+  await expect(resizeHandle).toBeVisible();
+  const beforeResize = await node.boundingBox();
+  expect(beforeResize).not.toBeNull();
+  await dragResizeHandle(page, resizeHandle, { x: 60, y: 40 });
+  await waitForResized(node, beforeResize, { dw: 20, dh: 15 });
+
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  await expect(selectionPrimary).toHaveCount(1);
+  await expect(selectionPrimary).toHaveAttribute('data-selection-node-id', selectedNodeId);
+
+  const after = await node.boundingBox();
+  expect(after).not.toBeNull();
+  expect(after.x).not.toBe(beforeDrag.x);
+  expect(after.y).not.toBe(beforeDrag.y);
+  expect(after.width).toBeGreaterThan(beforeResize.width);
+  expect(after.height).toBeGreaterThan(beforeResize.height);
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
 });
