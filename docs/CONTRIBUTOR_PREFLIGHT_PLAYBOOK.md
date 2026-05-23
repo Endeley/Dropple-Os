@@ -90,6 +90,7 @@ npm run release:trust:diff
 - `release:trust:baseline:ensure` is fail-open before cutoff and fail-closed after cutoff.
 - Cutoff is controlled by `RELEASE_TRUST_BASELINE_REQUIRED_AFTER`.
 - Current locked cutoff policy date: `2026-07-01T00:00:00.000Z`.
+- CI authority source: workflow-global env in `.github/workflows/ci.yml`.
 - Pre-cutoff warning:
 - `baseline report unavailable; diff skipped.`
 - This warning remains valid only before the cutoff date.

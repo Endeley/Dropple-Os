@@ -83,6 +83,7 @@ npm run release:trust:diff
 
 ### `baseline report unavailable after enforcement cutoff`
 - Meaning: baseline missing after `RELEASE_TRUST_BASELINE_REQUIRED_AFTER`.
+- Cutoff authority source: workflow-global env in `.github/workflows/ci.yml` (`2026-07-01T00:00:00.000Z`).
 - Run:
 
 ```bash

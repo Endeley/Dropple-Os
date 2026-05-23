@@ -97,6 +97,7 @@ Notes:
 - PR and main CI also upload `federation-audit-lineage.json` for federation governance lineage visibility.
 - PR and main CI now upload `federation-audit-lineage-ledger.jsonl` and seed PR lineage-ledger continuity from the latest successful `main`.
 - Baseline diff enforcement is date-gated via `RELEASE_TRUST_BASELINE_REQUIRED_AFTER` (currently `2026-07-01T00:00:00.000Z`).
+- CI cutoff policy authority is workflow-global env in `.github/workflows/ci.yml` (single source of truth).
 - Enforced policy commands:
 - `npm run release:trust:diff:enforced`
 - `npm run release:trust:summary:enforced`
