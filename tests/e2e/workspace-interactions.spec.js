@@ -319,6 +319,41 @@ async function readCanonicalLayoutX(page, nodeId) {
   }, nodeId);
 }
 
+async function readInteractionProjectionX(page, nodeId) {
+  return page.evaluate((id) => {
+    const state = globalThis.__droppleDispatcher?.getState?.();
+    return state?.interaction?.drag?.interactionTransforms?.[id]?.x ?? null;
+  }, nodeId);
+}
+
+async function readNormalizedInteractionEndHash(page) {
+  return page.evaluate(() => {
+    const state = globalThis.__droppleDispatcher?.getState?.();
+    const ids = Object.keys(state?.document?.layout?.nodes ?? {}).sort();
+    const firstId = ids[0] ?? null;
+    const layout = firstId ? state.document.layout.nodes[firstId] : null;
+    const payload = {
+      nodeCount: ids.length,
+      firstNode: layout
+        ? {
+            x: layout.x ?? null,
+            y: layout.y ?? null,
+            width: layout.width ?? null,
+            height: layout.height ?? null,
+          }
+        : null,
+      dragActive: Boolean(state?.interaction?.drag?.active),
+      selectedCount:
+        state?.selection?.ids instanceof Set
+          ? state.selection.ids.size
+          : Array.isArray(state?.selection?.ids)
+          ? state.selection.ids.length
+          : 0,
+    };
+    return JSON.stringify(payload);
+  });
+}
+
 function attachRuntimeErrorCollectors(page) {
   const pageErrors = [];
   const consoleErrors = [];
@@ -570,6 +605,43 @@ test('workspace new keyboard nudge and shift-nudge move selected node with prese
   await expect(page.getByTestId('selection-outline')).toHaveCount(1);
   await expect(selectionPrimary).toHaveCount(1);
   await expect(selectionPrimary).toHaveAttribute('data-selection-node-id', selectedNodeId);
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
+test('workspace new keyboard nudge commits canonical layout and remains replay-stable with no projection residue', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  const runFlow = async () => {
+    await gotoNewWorkspace(page);
+    await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+    const node = page.locator('[data-node-id]').first();
+    await expect(node).toBeVisible();
+    await activateTool(page, 'select');
+    await node.click({ force: true });
+    await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+    const selectedNodeId = await node.getAttribute('data-node-id');
+    expect(selectedNodeId).toBeTruthy();
+
+    const beforeLayoutX = await readCanonicalLayoutX(page, selectedNodeId);
+    expect(typeof beforeLayoutX).toBe('number');
+
+    await page.keyboard.press('ArrowRight');
+    await expect
+      .poll(async () => {
+        const layoutX = await readCanonicalLayoutX(page, selectedNodeId);
+        return typeof layoutX === 'number' ? layoutX - beforeLayoutX : null;
+      })
+      .toBeGreaterThan(0);
+    expect(await readInteractionProjectionX(page, selectedNodeId)).toBe(null);
+
+    return readNormalizedInteractionEndHash(page);
+  };
+
+  const hashA = await runFlow();
+  await page.reload({ waitUntil: 'networkidle' });
+  const hashB = await runFlow();
+  expect(hashB).toBe(hashA);
 
   expect(runtimeErrors.pageErrors).toEqual([]);
   expect(runtimeErrors.consoleErrors).toEqual([]);
