@@ -246,16 +246,25 @@ test('uiux transition timeline can author a motion keyframe through lawful inten
 
     await expect(page.getByTestId('uiux-transition-timeline')).toBeVisible();
     await expect(page.getByTestId('uiux-transition-clip-count')).toHaveText('0 selected clips');
-    await expect(page.getByTestId('uiux-transition-add-keyframe')).toBeEnabled();
+    const addKeyframeButton = page.getByTestId('uiux-transition-add-keyframe');
+    const updateKeyframeButton = page.getByTestId('uiux-transition-update-keyframe');
+    const moveKeyframeButton = page.getByTestId('uiux-transition-move-keyframe');
+    const deleteKeyframeButton = page.getByTestId('uiux-transition-delete-keyframe');
+    await expect(addKeyframeButton).toBeEnabled();
+    await expect(updateKeyframeButton).toBeDisabled();
+    await expect(moveKeyframeButton).toBeDisabled();
+    await expect(deleteKeyframeButton).toBeDisabled();
 
     await page.getByLabel('Property').selectOption('opacity');
     await page.getByLabel('Value').fill('0.35');
     await page.getByLabel('Easing').selectOption('ease-in-out');
-    const addKeyframeButton = page.getByTestId('uiux-transition-add-keyframe');
     await assertReceivesPointerEvents(addKeyframeButton);
     await addKeyframeButton.click();
 
     await expect(page.getByTestId('uiux-transition-clip-count')).toHaveText('1 selected clips');
+    await expect(updateKeyframeButton).toBeEnabled();
+    await expect(moveKeyframeButton).toBeEnabled();
+    await expect(deleteKeyframeButton).toBeEnabled();
 
     const runtimeMotion = await page.evaluate(() => {
         const runtimeState = globalThis.__droppleDispatcher?.getState?.() ?? null;
@@ -306,12 +315,16 @@ test('uiux transition timeline can author a motion keyframe through lawful inten
         easing: 'linear',
     });
 
-    await page.getByTestId('uiux-transition-delete-keyframe').click();
+    await deleteKeyframeButton.click();
     await page.waitForFunction(() => {
         const runtimeState = globalThis.__droppleDispatcher?.getState?.() ?? null;
         const clip = Object.values(runtimeState?.document?.motion?.clips ?? {})[0];
         return Array.isArray(clip?.keyframes) && clip.keyframes.length === 0;
     });
+    await expect(page.getByTestId('uiux-transition-clip-count')).toHaveText('1 selected clips');
+    await expect(updateKeyframeButton).toBeDisabled();
+    await expect(moveKeyframeButton).toBeDisabled();
+    await expect(deleteKeyframeButton).toBeDisabled();
 
     const deletedMotion = await page.evaluate(() => {
         const runtimeState = globalThis.__droppleDispatcher?.getState?.() ?? null;
