@@ -646,3 +646,79 @@ test('workspace new keyboard nudge commits canonical layout and remains replay-s
   expect(runtimeErrors.pageErrors).toEqual([]);
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
+
+test('workspace new keyboard nudge applies symmetric canonical deltas across all arrow directions', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoNewWorkspace(page);
+
+  await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+  const node = page.locator('[data-node-id]').first();
+  await expect(node).toBeVisible();
+
+  await activateTool(page, 'select');
+  await node.click({ force: true });
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  const selectedNodeId = await node.getAttribute('data-node-id');
+  expect(selectedNodeId).toBeTruthy();
+
+  const readCanonicalLayout = async () =>
+    page.evaluate((id) => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const layout = state?.document?.layout?.nodes?.[id] ?? null;
+      if (!layout) return null;
+      return { x: layout.x ?? null, y: layout.y ?? null };
+    }, selectedNodeId);
+
+  const start = await readCanonicalLayout();
+  expect(start).toBeTruthy();
+  expect(typeof start.x).toBe('number');
+  expect(typeof start.y).toBe('number');
+
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowLeft');
+  await expect
+    .poll(async () => {
+      const layout = await readCanonicalLayout();
+      if (!layout) return null;
+      return layout.x - start.x;
+    })
+    .toBe(0);
+
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowUp');
+  await expect
+    .poll(async () => {
+      const layout = await readCanonicalLayout();
+      if (!layout) return null;
+      return layout.y - start.y;
+    })
+    .toBe(0);
+
+  await page.keyboard.press('ArrowLeft');
+  await expect
+    .poll(async () => {
+      const layout = await readCanonicalLayout();
+      if (!layout) return null;
+      return layout.x - start.x;
+    })
+    .toBeLessThan(0);
+
+  await page.keyboard.press('ArrowUp');
+  await expect
+    .poll(async () => {
+      const layout = await readCanonicalLayout();
+      if (!layout) return null;
+      return layout.y - start.y;
+    })
+    .toBeLessThan(0);
+
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  await expect(page.locator('[data-selection-primary="true"]')).toHaveCount(1);
+  await expect(page.locator('[data-selection-primary="true"]')).toHaveAttribute(
+    'data-selection-node-id',
+    selectedNodeId
+  );
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
