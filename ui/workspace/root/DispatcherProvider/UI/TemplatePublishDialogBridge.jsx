@@ -110,6 +110,7 @@ export function TemplatePublishDialogBridge() {
     }, [events, metadata, resolvedMode, state]);
 
     const publishTrust = dialogState?.publishTrust ?? null;
+    const publishTrustHistory = Array.isArray(dialogState?.publishTrustHistory) ? dialogState.publishTrustHistory : [];
 
     if (!dialogState?.open && !publishTrust) return null;
 
@@ -342,6 +343,41 @@ export function TemplatePublishDialogBridge() {
                             }}>
                             {fullTrustSummary || 'No full trust summary available.'}
                         </pre>
+                    ) : null}
+                    {publishTrustHistory.length > 0 ? (
+                        <div
+                            data-testid='template-publish-trust-history'
+                            style={{
+                                borderTop: '1px solid var(--border-default)',
+                                paddingTop: 8,
+                                display: 'grid',
+                                gap: 6,
+                            }}>
+                            <strong style={{ fontSize: 11, color: 'var(--text-muted)' }}>Recent Publish Trust</strong>
+                            <ul
+                                style={{
+                                    margin: 0,
+                                    paddingLeft: 16,
+                                    display: 'grid',
+                                    gap: 4,
+                                    fontSize: 11,
+                                    color: 'var(--text-muted)',
+                                }}>
+                                {publishTrustHistory.map((entry, index) => {
+                                    const status = entry?.status ?? 'UNKNOWN';
+                                    const timestamp = Number.isFinite(entry?.timestampMs)
+                                        ? new Date(entry.timestampMs).toLocaleTimeString()
+                                        : 'unknown-time';
+                                    return (
+                                        <li key={`${String(entry?.timestampMs ?? 'na')}-${index}`} data-testid='template-publish-trust-history-item'>
+                                            <span>{status}</span>
+                                            {' · '}
+                                            <span>{timestamp}</span>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
                     ) : null}
                 </aside>
             ) : null}

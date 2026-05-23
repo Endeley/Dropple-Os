@@ -170,6 +170,20 @@ test('uiux authoring roundtrip publishes from the toolbar flow and installs into
     const fullTrustSummary = page.getByTestId('template-publish-trust-summary-full');
     await expect(fullTrustSummary).toBeVisible();
     await expect(fullTrustSummary).toContainText('## Release Trust Diff Summary');
+    await expect(page.getByTestId('template-publish-trust-history-item')).toHaveCount(1);
+
+    const secondTemplateName = `${templateName} 2`;
+    await publishButton.click();
+    await expect(page.locator('body')).toContainText('Create Template');
+    await page.getByPlaceholder('Untitled Template').fill(secondTemplateName);
+    await page.getByPlaceholder('What does this template preserve?').fill('Phase 2 second publish for trust history');
+    const secondPublishResponsePromise = page.waitForResponse(
+        (response) => response.url().includes('/api/templates/publish') && response.request().method() === 'POST',
+    );
+    await page.getByRole('button', { name: 'Publish Template' }).click();
+    await secondPublishResponsePromise;
+    await expect(page.locator('body')).not.toContainText('Create Template');
+    await expect(page.getByTestId('template-publish-trust-history-item')).toHaveCount(2);
 
     const registryResponse = await request.get(`/api/templates/certified?mode=${publishedMode}`);
 
