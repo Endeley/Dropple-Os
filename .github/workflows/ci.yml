@@ -163,6 +163,9 @@ jobs:
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
+      - name: Clean generated release-trust artifacts
+        run: npm run release:trust:clean-generated
+
       - name: Fetch previous main os-surface probe baseline (main)
         env:
           GH_TOKEN: ${{ github.token }}
@@ -287,6 +290,9 @@ jobs:
 
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
+
+      - name: Clean generated release-trust artifacts
+        run: npm run release:trust:clean-generated
 
       - name: Validate release trust
         run: npm run validate:release
