@@ -226,14 +226,14 @@ jobs:
         run: npm run release:federation:lineage:ledger:verify
 
       - name: Upload release trust report (main)
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: release-trust-report-main
           path: .artifacts/release-trust.json
           if-no-files-found: error
 
       - name: Upload os surface clickability probe (main)
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: os-surface-clickability-probe-main
           path: .artifacts/os-surface-clickability-probe.json
@@ -246,21 +246,21 @@ jobs:
         run: node --import ./bench/register-alias-loader.mjs scripts/releaseTrustProbeSummary.mjs
 
       - name: Upload release trust ledger (main)
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: release-trust-ledger-main
           path: .artifacts/release-trust-ledger.jsonl
           if-no-files-found: error
 
       - name: Upload federation audit lineage (main)
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: federation-audit-lineage-main
           path: .artifacts/federation-audit-lineage.json
           if-no-files-found: error
 
       - name: Upload federation audit lineage ledger (main)
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: federation-audit-lineage-ledger-main
           path: .artifacts/federation-audit-lineage-ledger.jsonl
@@ -445,14 +445,14 @@ jobs:
         run: npm run release:federation:lineage:ledger:verify
 
       - name: Upload release trust report (pr)
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: release-trust-report-pr
           path: .artifacts/release-trust.json
           if-no-files-found: error
 
       - name: Upload os surface clickability probe (pr)
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: os-surface-clickability-probe-pr
           path: .artifacts/os-surface-clickability-probe.json
@@ -465,21 +465,21 @@ jobs:
         run: node --import ./bench/register-alias-loader.mjs scripts/releaseTrustProbeSummary.mjs
 
       - name: Upload release trust ledger (pr)
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: release-trust-ledger-pr
           path: .artifacts/release-trust-ledger.jsonl
           if-no-files-found: error
 
       - name: Upload federation audit lineage (pr)
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: federation-audit-lineage-pr
           path: .artifacts/federation-audit-lineage.json
           if-no-files-found: error
 
       - name: Upload federation audit lineage ledger (pr)
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: federation-audit-lineage-ledger-pr
           path: .artifacts/federation-audit-lineage-ledger.jsonl
