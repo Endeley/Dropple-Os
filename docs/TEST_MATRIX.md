@@ -63,10 +63,12 @@ npm run validate:pr:fast
 npm run validate:all
 npm run validate:app
 npm run validate:release
+npm run release:trust:baseline:ensure
 ```
 
 Notes:
 - `npm run validate:pr:fast` is the lightweight PR gate for rapid iteration (`test:architecture` + `test:release:operator-surfaces`).
+- `npm run release:trust:baseline:ensure` bootstraps missing release-trust baseline artifacts from current artifacts, fails open before cutoff, and fails closed after `RELEASE_TRUST_BASELINE_REQUIRED_AFTER`.
 - `npm run validate:release` is the main release gate.
 - `npm run validate:release` does not run every custom script in the repo; it runs the primary release path.
 - `npm run validate:release` now includes a federation export-attestation gate that fails closed on missing or tampered attestation.
