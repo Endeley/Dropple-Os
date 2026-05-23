@@ -2,12 +2,53 @@
 
 const listeners = new Set();
 const PUBLISH_TRUST_HISTORY_LIMIT = 5;
+const PUBLISH_TRUST_HISTORY_STORAGE_KEY = 'dropple.templatePublishTrustHistory';
+
+function normalizeHistoryEntry(entry) {
+    if (!entry || typeof entry !== 'object') return null;
+    const status = typeof entry.status === 'string' ? entry.status : 'UNKNOWN';
+    const summary = typeof entry.summary === 'string' ? entry.summary : '';
+    const timestampMs = Number.isFinite(entry.timestampMs) ? Number(entry.timestampMs) : Date.now();
+    return Object.freeze({
+        status,
+        summary,
+        timestampMs,
+    });
+}
+
+function loadPublishTrustHistory() {
+    if (typeof window === 'undefined' || !window.localStorage) return Object.freeze([]);
+    try {
+        const raw = window.localStorage.getItem(PUBLISH_TRUST_HISTORY_STORAGE_KEY);
+        if (!raw) return Object.freeze([]);
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return Object.freeze([]);
+        const normalized = parsed
+            .map((entry) => normalizeHistoryEntry(entry))
+            .filter(Boolean)
+            .slice(0, PUBLISH_TRUST_HISTORY_LIMIT);
+        return Object.freeze(normalized);
+    } catch {
+        return Object.freeze([]);
+    }
+}
+
+function persistPublishTrustHistory(history) {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+        window.localStorage.setItem(PUBLISH_TRUST_HISTORY_STORAGE_KEY, JSON.stringify(history ?? []));
+    } catch {
+        // Non-blocking persistence surface.
+    }
+}
+
+const initialHistory = loadPublishTrustHistory();
 
 let state = Object.freeze({
     open: false,
     mode: null,
     publishTrust: null,
-    publishTrustHistory: Object.freeze([]),
+    publishTrustHistory: initialHistory,
 });
 
 function emit() {
@@ -41,7 +82,7 @@ export function closeTemplatePublishDialog() {
 }
 
 export function setTemplatePublishTrust(publishTrust) {
-    const nextPublishTrust = publishTrust ?? null;
+    const nextPublishTrust = normalizeHistoryEntry(publishTrust) ?? null;
     const nextHistory = nextPublishTrust
         ? [nextPublishTrust, ...(state.publishTrustHistory ?? [])].slice(0, PUBLISH_TRUST_HISTORY_LIMIT)
         : state.publishTrustHistory ?? [];
@@ -50,6 +91,7 @@ export function setTemplatePublishTrust(publishTrust) {
         publishTrust: nextPublishTrust,
         publishTrustHistory: Object.freeze(nextHistory),
     });
+    persistPublishTrustHistory(nextHistory);
     emit();
 }
 

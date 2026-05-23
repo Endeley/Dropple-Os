@@ -184,6 +184,9 @@ test('uiux authoring roundtrip publishes from the toolbar flow and installs into
     await secondPublishResponsePromise;
     await expect(page.locator('body')).not.toContainText('Create Template');
     await expect(page.getByTestId('template-publish-trust-history-item')).toHaveCount(2);
+    await page.reload({ waitUntil: 'networkidle' });
+    await expect(page.getByTestId('template-publish-trust-surface')).toBeVisible();
+    await expect(page.getByTestId('template-publish-trust-history-item')).toHaveCount(2);
 
     const registryResponse = await request.get(`/api/templates/certified?mode=${publishedMode}`);
 

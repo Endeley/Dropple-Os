@@ -111,10 +111,11 @@ export function TemplatePublishDialogBridge() {
 
     const publishTrust = dialogState?.publishTrust ?? null;
     const publishTrustHistory = Array.isArray(dialogState?.publishTrustHistory) ? dialogState.publishTrustHistory : [];
+    const latestTrustEntry = publishTrust ?? publishTrustHistory[0] ?? null;
 
-    if (!dialogState?.open && !publishTrust) return null;
+    if (!dialogState?.open && !latestTrustEntry) return null;
 
-    const trustStatus = publishTrust?.status ?? 'UNKNOWN';
+    const trustStatus = latestTrustEntry?.status ?? 'UNKNOWN';
     const trustTone =
         trustStatus === 'PASS'
             ? 'var(--success-600, #166534)'
@@ -122,14 +123,14 @@ export function TemplatePublishDialogBridge() {
                 ? 'var(--danger-600, #b91c1c)'
                 : 'var(--warning-600, #92400e)';
 
-    const trustSummaryPreview = typeof publishTrust?.summary === 'string'
-        ? publishTrust.summary
+    const trustSummaryPreview = typeof latestTrustEntry?.summary === 'string'
+        ? latestTrustEntry.summary
             .split('\n')
             .filter((line) => line.startsWith('- Status:') || line.startsWith('- Baseline required after:') || line.startsWith('### OS Surface'))
             .slice(0, 4)
             .join('\n')
         : '';
-    const fullTrustSummary = typeof publishTrust?.summary === 'string' ? publishTrust.summary : '';
+    const fullTrustSummary = typeof latestTrustEntry?.summary === 'string' ? latestTrustEntry.summary : '';
 
     const copyTrustSummary = async () => {
         if (!fullTrustSummary.trim()) return;
@@ -249,7 +250,7 @@ export function TemplatePublishDialogBridge() {
                 </div>
             ) : null}
 
-            {publishTrust ? (
+            {latestTrustEntry ? (
                 <aside
                     data-testid='template-publish-trust-surface'
                     style={{
