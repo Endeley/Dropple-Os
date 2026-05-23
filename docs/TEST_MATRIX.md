@@ -88,6 +88,7 @@ Notes:
 - `release:trust:diff` supports semantic strict mode via `RELEASE_TRUST_DIFF_STRICT=true` (default `false`).
 - PR CI publishes a semantic release-trust summary to `GITHUB_STEP_SUMMARY` for reviewer-readable governance outcomes.
 - PR CI also publishes/updates a sticky release-trust PR comment (best-effort) for thread-level reviewer visibility.
+- Triage runbook: `docs/RELEASE_TRUST_TRIAGE_RUNBOOK.md`.
 
 ---
 
