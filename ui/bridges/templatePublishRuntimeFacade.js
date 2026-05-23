@@ -5,6 +5,7 @@ const listeners = new Set();
 let state = Object.freeze({
     open: false,
     mode: null,
+    publishTrust: null,
 });
 
 function emit() {
@@ -21,6 +22,7 @@ export function openTemplatePublishDialog({ mode = null } = {}) {
     state = Object.freeze({
         open: true,
         mode: mode ?? null,
+        publishTrust: state.publishTrust ?? null,
     });
     emit();
 }
@@ -29,6 +31,23 @@ export function closeTemplatePublishDialog() {
     state = Object.freeze({
         open: false,
         mode: null,
+        publishTrust: state.publishTrust ?? null,
+    });
+    emit();
+}
+
+export function setTemplatePublishTrust(publishTrust) {
+    state = Object.freeze({
+        ...state,
+        publishTrust: publishTrust ?? null,
+    });
+    emit();
+}
+
+export function clearTemplatePublishTrust() {
+    state = Object.freeze({
+        ...state,
+        publishTrust: null,
     });
     emit();
 }

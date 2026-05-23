@@ -154,10 +154,18 @@ test('uiux authoring roundtrip publishes from the toolbar flow and installs into
 
     const publishedTemplateId = publishPayload?.result?.seed?.id ?? null;
     const publishedMode = publishPayload?.result?.seed?.mode ?? 'design';
+    const publishTrustStatus = publishPayload?.releaseTrust?.status ?? null;
 
     expect(publishedTemplateId).toBeTruthy();
 
     await expect(page.locator('body')).not.toContainText('Create Template');
+    const trustSurface = page.getByTestId('template-publish-trust-surface');
+    await expect(trustSurface).toBeVisible();
+    if (publishTrustStatus) {
+        await expect(trustSurface).toContainText(`Release Trust: ${publishTrustStatus}`);
+    } else {
+        await expect(trustSurface).toContainText('Release Trust:');
+    }
 
     const registryResponse = await request.get(`/api/templates/certified?mode=${publishedMode}`);
 
