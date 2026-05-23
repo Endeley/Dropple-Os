@@ -17,6 +17,9 @@ test('pull request CI workflow runs validate:release as a required release gate'
     assert.match(workflow, /name:\s*PR Release Validation \(validate:release\)/);
     assert.match(workflow, /if:\s*github\.event_name\s*==\s*'pull_request'/);
     assert.match(workflow, /run:\s*npm run validate:release/);
+    assert.match(workflow, /app-smoke:[\s\S]*name:\s*Clean generated release-trust artifacts[\s\S]*run:\s*npm run release:trust:clean-generated/);
+    assert.match(workflow, /release-trust-gate:[\s\S]*name:\s*Clean generated release-trust artifacts[\s\S]*run:\s*npm run release:trust:clean-generated/);
+    assert.match(workflow, /release-trust-gate-pr:[\s\S]*name:\s*Clean generated release-trust artifacts[\s\S]*run:\s*npm run release:trust:clean-generated/);
     assert.match(workflow, /RELEASE_TRUST_REQUIRE_UI_PROBE:\s*"1"/);
     assert.match(workflow, /name:\s*Append release trust ledger entry \(pr\)/);
     assert.match(workflow, /run:\s*npm run release:trust:ledger/);
