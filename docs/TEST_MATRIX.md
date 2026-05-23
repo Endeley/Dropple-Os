@@ -63,6 +63,7 @@ npm run validate:pr:fast
 npm run ci:fast
 npm run ci:release-trust
 npm run ci:full
+npm run preflight
 npm run validate:all
 npm run validate:app
 npm run validate:release
@@ -75,6 +76,7 @@ Notes:
 - `npm run ci:fast` is the CI alias for `validate:pr:fast`.
 - `npm run ci:release-trust` runs the focused release-trust lane (attestation tests, operator-surface tests, report, summary).
 - `npm run ci:full` runs the full release lane (`validate:release`).
+- `npm run preflight` is the daily contributor confidence flow: clean generated trust noise, ensure baseline presence, then run the fast PR gate.
 - `npm run release:trust:baseline:ensure` bootstraps missing release-trust baseline artifacts from current artifacts, fails open before cutoff, and fails closed after `RELEASE_TRUST_BASELINE_REQUIRED_AFTER`.
 - `npm run release:trust:clean-generated` removes local generated trust noise directories (`.artifacts`, `.tmp`, `var`) without touching tracked source files.
 - `npm run validate:release` is the main release gate.
