@@ -19,6 +19,7 @@ import { PersistenceBridge } from '@/ui/bridges/PersistenceBridge.jsx';
 import { TokenCssBridge } from '@/ui/bridges/tokenCssBridge.js';
 import { TemplateMotionInspectorPanel } from './TemplateMotionInspectorPanel.jsx';
 import { UIUXTransitionTimelinePanel } from './UIUXTransitionTimelinePanel.jsx';
+import { useKeyboardNudge } from '@/ui/keyboard/useKeyboardNudge';
 
 export function UIUXAuthoringShell({
     profile = 'uiux-authoring',
@@ -52,6 +53,13 @@ export function UIUXAuthoringShell({
     const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
 
     const node = selectedId ? nodes[selectedId] : null;
+
+    useKeyboardNudge({
+        enabled: true,
+        emit,
+        getState: () => ({ nodes }),
+        selectedIds,
+    });
 
     return (
         <>

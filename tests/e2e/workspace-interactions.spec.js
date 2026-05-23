@@ -312,6 +312,13 @@ async function waitForNudged(locator, before, minimumDeltaX) {
     .toBeGreaterThan(minimumDeltaX);
 }
 
+async function readCanonicalLayoutX(page, nodeId) {
+  return page.evaluate((id) => {
+    const state = globalThis.__droppleDispatcher?.getState?.();
+    return state?.document?.layout?.nodes?.[id]?.x ?? null;
+  }, nodeId);
+}
+
 function attachRuntimeErrorCollectors(page) {
   const pageErrors = [];
   const consoleErrors = [];
@@ -513,7 +520,7 @@ test('workspace new deterministic create-select-drag-resize roundtrip preserves 
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
 
-test.fixme('workspace new keyboard nudge and shift-nudge move selected node with preserved identity', async ({ page }) => {
+test('workspace new keyboard nudge and shift-nudge move selected node with preserved identity', async ({ page }) => {
   const runtimeErrors = attachRuntimeErrorCollectors(page);
   await gotoNewWorkspace(page);
 
@@ -534,20 +541,29 @@ test.fixme('workspace new keyboard nudge and shift-nudge move selected node with
 
   const beforeNudge = await node.boundingBox();
   expect(beforeNudge).not.toBeNull();
+  const beforeLayoutX = await readCanonicalLayoutX(page, selectedNodeId);
+  expect(typeof beforeLayoutX).toBe('number');
   await page.keyboard.press('ArrowRight');
-  await waitForNudged(node, beforeNudge, 0);
+  await expect
+    .poll(async () => {
+      const nextX = await readCanonicalLayoutX(page, selectedNodeId);
+      if (typeof nextX !== 'number') return null;
+      return nextX - beforeLayoutX;
+    })
+    .toBeGreaterThan(0);
 
   const afterNudge = await node.boundingBox();
   expect(afterNudge).not.toBeNull();
-  const nudgeDx = afterNudge.x - beforeNudge.x;
+  const afterNudgeLayoutX = await readCanonicalLayoutX(page, selectedNodeId);
+  const nudgeDx = afterNudgeLayoutX - beforeLayoutX;
   expect(nudgeDx).toBeGreaterThan(0);
 
   await page.keyboard.press('Shift+ArrowRight');
   await expect
     .poll(async () => {
-      const afterShiftNudge = await node.boundingBox();
-      if (!afterShiftNudge) return null;
-      return afterShiftNudge.x - afterNudge.x;
+      const afterShiftNudgeLayoutX = await readCanonicalLayoutX(page, selectedNodeId);
+      if (typeof afterShiftNudgeLayoutX !== 'number') return null;
+      return afterShiftNudgeLayoutX - afterNudgeLayoutX;
     })
     .toBeGreaterThan(nudgeDx);
 
