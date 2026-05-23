@@ -76,6 +76,7 @@
         "release:trust:pr-comment": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustPrComment.mjs",
         "release:trust:baseline:capture": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustCaptureBaseline.mjs",
         "release:trust:baseline:ensure": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustEnsureBaseline.mjs",
+        "release:trust:clean-generated": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustCleanGenerated.mjs",
         "test:release:attestation": "node --import ./bench/register-alias-loader.mjs --test tests/release/*.test.mjs",
         "test:release:operator-surfaces": "node --import ./bench/register-alias-loader.mjs --test tests/release/releaseTrustSummaryCli.test.mjs tests/release/releaseTrustProbeSummaryCli.test.mjs tests/release/releaseTrustPrComment.test.mjs tests/release/releaseTrustOperatorSurfacesUmbrella.test.mjs",
         "validate:pr:fast": "npm run test:architecture && npm run test:release:operator-surfaces",

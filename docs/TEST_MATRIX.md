@@ -67,6 +67,7 @@ npm run validate:all
 npm run validate:app
 npm run validate:release
 npm run release:trust:baseline:ensure
+npm run release:trust:clean-generated
 ```
 
 Notes:
@@ -75,6 +76,7 @@ Notes:
 - `npm run ci:release-trust` runs the focused release-trust lane (attestation tests, operator-surface tests, report, summary).
 - `npm run ci:full` runs the full release lane (`validate:release`).
 - `npm run release:trust:baseline:ensure` bootstraps missing release-trust baseline artifacts from current artifacts, fails open before cutoff, and fails closed after `RELEASE_TRUST_BASELINE_REQUIRED_AFTER`.
+- `npm run release:trust:clean-generated` removes local generated trust noise directories (`.artifacts`, `.tmp`, `var`) without touching tracked source files.
 - `npm run validate:release` is the main release gate.
 - `npm run validate:release` does not run every custom script in the repo; it runs the primary release path.
 - `npm run validate:release` now includes a federation export-attestation gate that fails closed on missing or tampered attestation.
