@@ -132,9 +132,19 @@ test('uiux authoring roundtrip publishes from the toolbar flow and installs into
 
     await page.getByPlaceholder('What does this template preserve?').fill('Phase 2 authoring roundtrip');
 
+    const publishTemplateButton = page.getByRole('button', { name: 'Publish Template' });
+    await expect(publishTemplateButton).toBeEnabled();
+    await assertReceivesPointerEvents(publishTemplateButton);
+
     const publishResponsePromise = page.waitForResponse((response) => response.url().includes('/api/templates/publish') && response.request().method() === 'POST');
 
-    await page.getByRole('button', { name: 'Publish Template' }).click();
+    await publishTemplateButton.click();
+    await page.waitForFunction(() => {
+        const button = Array.from(document.querySelectorAll('button')).find(
+            (entry) => entry.textContent?.trim() === 'Publish Template',
+        );
+        return !button || button.hasAttribute('disabled');
+    });
 
     const publishResponse = await publishResponsePromise;
 
@@ -170,6 +180,10 @@ test('uiux authoring roundtrip publishes from the toolbar flow and installs into
     await gotoWorkspace(page, buildEnvironmentWorkspacePath(template));
     await expect(page.locator('[data-node-id]')).toHaveCount(1);
     await expect(page.locator('body')).not.toContainText('Application error');
+
+    const installedPublishButton = page.getByRole('button', { name: 'Publish' });
+    await expect(installedPublishButton).toBeVisible();
+    await assertReceivesPointerEvents(installedPublishButton);
 });
 
 test('certified uiux template install preserves motion runtime truth', async ({ page, request }) => {
