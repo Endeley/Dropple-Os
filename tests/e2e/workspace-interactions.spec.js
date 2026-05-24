@@ -1079,3 +1079,71 @@ test('workspace new keyboard nudges preserve primary selection anchor across mul
   expect(runtimeErrors.pageErrors).toEqual([]);
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
+
+test('workspace new keyboard nudges remain lawful under undo and redo history', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoNewWorkspace(page);
+
+  await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+  const node = page.locator('[data-node-id]').first();
+  await expect(node).toBeVisible();
+
+  await activateTool(page, 'select');
+  await node.click({ force: true });
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  const selectedNodeId = await node.getAttribute('data-node-id');
+  expect(selectedNodeId).toBeTruthy();
+
+  const selectionPrimary = page.locator('[data-selection-primary="true"]');
+  await expect(selectionPrimary).toHaveCount(1);
+  const primaryBefore = await selectionPrimary.getAttribute('data-selection-node-id');
+  expect(primaryBefore).toBe(selectedNodeId);
+
+  const readLayout = async () =>
+    page.evaluate((id) => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const layout = state?.document?.layout?.nodes?.[id] ?? null;
+      if (!layout) return null;
+      return {
+        x: layout.x ?? null,
+        y: layout.y ?? null,
+        width: layout.width ?? null,
+        height: layout.height ?? null,
+      };
+    }, selectedNodeId);
+
+  const before = await readLayout();
+  expect(before).toBeTruthy();
+
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('Shift+ArrowDown');
+  await page.keyboard.press('Alt+ArrowLeft');
+
+  const afterNudge = await readLayout();
+  expect(afterNudge).toBeTruthy();
+  expect(afterNudge).not.toEqual(before);
+
+  let undoSteps = 0;
+  for (; undoSteps < 8; undoSteps += 1) {
+    const current = await readLayout();
+    if (JSON.stringify(current) === JSON.stringify(before)) break;
+    await page.evaluate(() => globalThis.__droppleDispatcher?.undo?.());
+  }
+  expect(undoSteps).toBeGreaterThan(0);
+  await expect
+    .poll(async () => await readLayout())
+    .toEqual(before);
+
+  for (let i = 0; i < undoSteps; i += 1) {
+    await page.evaluate(() => globalThis.__droppleDispatcher?.redo?.());
+  }
+  await expect
+    .poll(async () => await readLayout())
+    .toEqual(afterNudge);
+
+  const finalLayout = await readLayout();
+  expect(finalLayout).toEqual(afterNudge);
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
