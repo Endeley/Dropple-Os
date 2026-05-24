@@ -849,3 +849,79 @@ test('workspace new keyboard nudge Y-axis quantization preserves base/shift/alt 
   expect(runtimeErrors.pageErrors).toEqual([]);
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
+
+test('workspace new keyboard nudge is inert with no selection and while focus is in input or contenteditable', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoNewWorkspace(page);
+
+  await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+  const node = page.locator('[data-node-id]').first();
+  await expect(node).toBeVisible();
+  const selectedNodeId = await node.getAttribute('data-node-id');
+  expect(selectedNodeId).toBeTruthy();
+
+  const readLayout = async () =>
+    page.evaluate((id) => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const layout = state?.document?.layout?.nodes?.[id] ?? null;
+      if (!layout) return null;
+      return { x: layout.x ?? null, y: layout.y ?? null };
+    }, selectedNodeId);
+
+  // No selection: nudge must be inert.
+  const noSelectionStart = await readLayout();
+  expect(noSelectionStart).toBeTruthy();
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowDown');
+  const noSelectionEnd = await readLayout();
+  expect(noSelectionEnd).toEqual(noSelectionStart);
+
+  // With selection established.
+  await activateTool(page, 'select');
+  await node.click({ force: true });
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  const selectedStart = await readLayout();
+  expect(selectedStart).toBeTruthy();
+
+  // Input focus: nudge must be inert.
+  await page.evaluate(() => {
+    const input = document.createElement('input');
+    input.id = 'dropple-test-input-nudge-guard';
+    input.value = 'focus-guard';
+    document.body.appendChild(input);
+    input.focus();
+  });
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowDown');
+  const afterInputFocus = await readLayout();
+  expect(afterInputFocus).toEqual(selectedStart);
+
+  // Contenteditable focus: nudge must be inert.
+  await page.evaluate(() => {
+    const editable = document.createElement('div');
+    editable.id = 'dropple-test-contenteditable-nudge-guard';
+    editable.contentEditable = 'true';
+    editable.textContent = 'editable-guard';
+    document.body.appendChild(editable);
+    editable.focus();
+  });
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowDown');
+  const afterContentEditableFocus = await readLayout();
+  expect(afterContentEditableFocus).toEqual(selectedStart);
+
+  await page.evaluate(() => {
+    document.getElementById('dropple-test-input-nudge-guard')?.remove();
+    document.getElementById('dropple-test-contenteditable-nudge-guard')?.remove();
+  });
+
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  await expect(page.locator('[data-selection-primary="true"]')).toHaveCount(1);
+  await expect(page.locator('[data-selection-primary="true"]')).toHaveAttribute(
+    'data-selection-node-id',
+    selectedNodeId
+  );
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
