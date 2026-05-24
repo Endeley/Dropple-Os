@@ -925,3 +925,75 @@ test('workspace new keyboard nudge is inert with no selection and while focus is
   expect(runtimeErrors.pageErrors).toEqual([]);
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
+
+test('workspace new keyboard nudges preserve finite positive canonical layout bounds under repeated movement', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoNewWorkspace(page);
+
+  await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+  const node = page.locator('[data-node-id]').first();
+  await expect(node).toBeVisible();
+
+  await activateTool(page, 'select');
+  await node.click({ force: true });
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  const selectedNodeId = await node.getAttribute('data-node-id');
+  expect(selectedNodeId).toBeTruthy();
+
+  const readLayout = async () =>
+    page.evaluate((id) => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const layout = state?.document?.layout?.nodes?.[id] ?? null;
+      if (!layout) return null;
+      return {
+        x: layout.x ?? null,
+        y: layout.y ?? null,
+        width: layout.width ?? null,
+        height: layout.height ?? null,
+      };
+    }, selectedNodeId);
+
+  const assertFinitePositiveLayout = (layout) => {
+    expect(layout).toBeTruthy();
+    expect(Number.isFinite(layout.x)).toBe(true);
+    expect(Number.isFinite(layout.y)).toBe(true);
+    expect(Number.isFinite(layout.width)).toBe(true);
+    expect(Number.isFinite(layout.height)).toBe(true);
+    expect(layout.width).toBeGreaterThan(0);
+    expect(layout.height).toBeGreaterThan(0);
+  };
+
+  const startLayout = await readLayout();
+  assertFinitePositiveLayout(startLayout);
+
+  for (let i = 0; i < 40; i += 1) {
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('ArrowUp');
+  }
+  const afterNegativeDrift = await readLayout();
+  assertFinitePositiveLayout(afterNegativeDrift);
+
+  for (let i = 0; i < 80; i += 1) {
+    await page.keyboard.press('Shift+ArrowRight');
+    await page.keyboard.press('Shift+ArrowDown');
+  }
+  const afterPositiveDrift = await readLayout();
+  assertFinitePositiveLayout(afterPositiveDrift);
+
+  for (let i = 0; i < 30; i += 1) {
+    await page.keyboard.press('Alt+ArrowLeft');
+    await page.keyboard.press('Alt+ArrowUp');
+  }
+  const afterFineAdjust = await readLayout();
+  assertFinitePositiveLayout(afterFineAdjust);
+
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  await expect(page.locator('[data-selection-primary="true"]')).toHaveCount(1);
+  await expect(page.locator('[data-selection-primary="true"]')).toHaveAttribute(
+    'data-selection-node-id',
+    selectedNodeId
+  );
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
