@@ -722,3 +722,53 @@ test('workspace new keyboard nudge applies symmetric canonical deltas across all
   expect(runtimeErrors.pageErrors).toEqual([]);
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
+
+test('workspace new keyboard nudge quantization preserves base/shift/alt canonical step ordering', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoNewWorkspace(page);
+
+  await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+  const node = page.locator('[data-node-id]').first();
+  await expect(node).toBeVisible();
+
+  await activateTool(page, 'select');
+  await node.click({ force: true });
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  const selectedNodeId = await node.getAttribute('data-node-id');
+  expect(selectedNodeId).toBeTruthy();
+
+  const selectionPrimary = page.locator('[data-selection-primary="true"]');
+  await expect(selectionPrimary).toHaveCount(1);
+  await expect(selectionPrimary).toHaveAttribute('data-selection-node-id', selectedNodeId);
+
+  const readLayoutX = async () => await readCanonicalLayoutX(page, selectedNodeId);
+
+  const startX = await readLayoutX();
+  expect(typeof startX).toBe('number');
+
+  await page.keyboard.press('ArrowRight');
+  const afterBaseX = await readLayoutX();
+  expect(typeof afterBaseX).toBe('number');
+  const baseStep = afterBaseX - startX;
+  expect(baseStep).toBeGreaterThan(0);
+
+  await page.keyboard.press('Shift+ArrowRight');
+  const afterShiftX = await readLayoutX();
+  expect(typeof afterShiftX).toBe('number');
+  const shiftStep = afterShiftX - afterBaseX;
+  expect(shiftStep).toBeGreaterThan(baseStep);
+
+  await page.keyboard.press('Alt+ArrowRight');
+  const afterAltX = await readLayoutX();
+  expect(typeof afterAltX).toBe('number');
+  const altStep = afterAltX - afterShiftX;
+  expect(altStep).toBeGreaterThan(0);
+  expect(altStep).toBeLessThan(baseStep);
+
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  await expect(selectionPrimary).toHaveCount(1);
+  await expect(selectionPrimary).toHaveAttribute('data-selection-node-id', selectedNodeId);
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
