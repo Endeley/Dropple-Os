@@ -1147,3 +1147,65 @@ test('workspace new keyboard nudges remain lawful under undo and redo history', 
   expect(runtimeErrors.pageErrors).toEqual([]);
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
+
+test('workspace new keyboard nudge remains stable across workspace route transitions without duplicate handler drift', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoNewWorkspace(page);
+
+  await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+  let node = page.locator('[data-node-id]').first();
+  await expect(node).toBeVisible();
+  await activateTool(page, 'select');
+  await node.click({ force: true });
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+
+  const selectedNodeIdFirst = await node.getAttribute('data-node-id');
+  expect(selectedNodeIdFirst).toBeTruthy();
+
+  const readLayoutX = async (id) =>
+    page.evaluate((id) => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      return state?.document?.layout?.nodes?.[id]?.x ?? null;
+    }, id);
+
+  const beforeFirstNudge = await readLayoutX(selectedNodeIdFirst);
+  expect(typeof beforeFirstNudge).toBe('number');
+  await page.keyboard.press('ArrowRight');
+  const afterFirstNudge = await readLayoutX(selectedNodeIdFirst);
+  expect(typeof afterFirstNudge).toBe('number');
+  const firstDelta = afterFirstNudge - beforeFirstNudge;
+  expect(firstDelta).toBeGreaterThan(0);
+
+  await page.goto('/workspace/graphic', { waitUntil: 'networkidle' });
+  await expect(page.getByTestId('canvas-host')).toBeVisible();
+  await page.goto('/workspace/new', { waitUntil: 'networkidle' });
+  await expect(page.getByTestId('canvas-host')).toBeVisible();
+
+  await createFrame(page, { x: 260, y: 220 }, { x: 400, y: 340 });
+  node = page.locator('[data-node-id]').first();
+  await expect(node).toBeVisible();
+  const selectedNodeIdSecond = await node.getAttribute('data-node-id');
+  expect(selectedNodeIdSecond).toBeTruthy();
+  await activateTool(page, 'select');
+  await node.click({ force: true });
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+
+  const beforeSecondNudge = await readLayoutX(selectedNodeIdSecond);
+  expect(typeof beforeSecondNudge).toBe('number');
+  await page.keyboard.press('ArrowRight');
+  const afterSecondNudge = await readLayoutX(selectedNodeIdSecond);
+  expect(typeof afterSecondNudge).toBe('number');
+  const secondDelta = afterSecondNudge - beforeSecondNudge;
+  expect(secondDelta).toBeGreaterThan(0);
+  expect(secondDelta).toBe(firstDelta);
+
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  await expect(page.locator('[data-selection-primary="true"]')).toHaveCount(1);
+  await expect(page.locator('[data-selection-primary="true"]')).toHaveAttribute(
+    'data-selection-node-id',
+    selectedNodeIdSecond
+  );
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
