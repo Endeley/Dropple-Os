@@ -997,3 +997,85 @@ test('workspace new keyboard nudges preserve finite positive canonical layout bo
   expect(runtimeErrors.pageErrors).toEqual([]);
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
+
+test('workspace new keyboard nudges preserve primary selection anchor across multi-selection while moving selected nodes canonically', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoNewWorkspace(page);
+
+  await createFrame(page, { x: 140, y: 180 }, { x: 260, y: 300 });
+  await createFrame(page, { x: 340, y: 180 }, { x: 460, y: 300 });
+  await createFrame(page, { x: 540, y: 180 }, { x: 660, y: 300 });
+
+  const nodes = page.locator('[data-node-id]');
+  await waitForNodeCount(page, 3);
+
+  const first = nodes.nth(0);
+  const second = nodes.nth(1);
+  const third = nodes.nth(2);
+
+  await activateTool(page, 'select');
+  await first.click({ force: true });
+  await page.keyboard.down('Shift');
+  await second.click({ force: true });
+  await third.click({ force: true });
+  await page.keyboard.up('Shift');
+
+  await expect(page.getByTestId('selection-outline')).toHaveCount(3);
+  const selectionPrimary = page.locator('[data-selection-primary="true"]');
+  await expect(selectionPrimary).toHaveCount(1);
+  const primaryBefore = await selectionPrimary.getAttribute('data-selection-node-id');
+  expect(primaryBefore).toBeTruthy();
+
+  const selectedNodeIds = await page.evaluate(() => {
+    const state = globalThis.__droppleDispatcher?.getState?.();
+    const ids = state?.selection?.ids;
+    if (ids instanceof Set) return Array.from(ids);
+    if (Array.isArray(ids)) return ids.slice();
+    return [];
+  });
+  expect(selectedNodeIds.length).toBe(3);
+
+  const readLayoutMap = async () =>
+    page.evaluate((ids) => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const map = {};
+      for (const id of ids) {
+        const layout = state?.document?.layout?.nodes?.[id];
+        if (!layout) continue;
+        map[id] = {
+          x: layout.x ?? null,
+          y: layout.y ?? null,
+        };
+      }
+      return map;
+    }, selectedNodeIds);
+
+  const before = await readLayoutMap();
+  for (const id of selectedNodeIds) {
+    expect(before[id]).toBeTruthy();
+    expect(Number.isFinite(before[id].x)).toBe(true);
+    expect(Number.isFinite(before[id].y)).toBe(true);
+  }
+
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('Shift+ArrowDown');
+  await page.keyboard.press('Alt+ArrowLeft');
+  await page.keyboard.press('Alt+ArrowUp');
+
+  const after = await readLayoutMap();
+  let movedCount = 0;
+  for (const id of selectedNodeIds) {
+    expect(after[id]).toBeTruthy();
+    const dx = after[id].x - before[id].x;
+    const dy = after[id].y - before[id].y;
+    if (dx !== 0 || dy !== 0) movedCount += 1;
+  }
+  expect(movedCount).toBe(selectedNodeIds.length);
+
+  await expect(page.getByTestId('selection-outline')).toHaveCount(3);
+  await expect(selectionPrimary).toHaveCount(1);
+  await expect(selectionPrimary).toHaveAttribute('data-selection-node-id', primaryBefore);
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
