@@ -7,6 +7,8 @@ Audience: CI operators, release maintainers, reviewers
 
 1. Re-run and capture current trust outputs:
 
+Commands only:
+
 ```bash
 npm run release:trust:report
 npm run release:trust:summary
@@ -18,12 +20,16 @@ npm run release:trust:diff
 
 3. Run focused suites by surface:
 
+Commands only:
+
 ```bash
 npm run test:release:operator-surfaces
 npm run test:architecture
 ```
 
 4. If baseline-related, run:
+
+Commands only:
 
 ```bash
 npm run release:trust:baseline:ensure
@@ -35,6 +41,8 @@ npm run release:trust:baseline:ensure
 - Meaning: expected probe tests were not found in Playwright JSON.
 - Run:
 
+Commands only:
+
 ```bash
 npx playwright test tests/e2e/uiux-template-generation.spec.js --workers=1 -g "uiux authoring roundtrip publishes from the toolbar flow and installs into a fresh workspace|uiux transition timeline can author a motion keyframe through lawful intents"
 npm run test:release:operator-surfaces
@@ -43,6 +51,8 @@ npm run test:release:operator-surfaces
 ### `pointer-intercept-detected`
 - Meaning: OS surface shell intercepted pointer events in probe flow.
 - Run:
+
+Commands only:
 
 ```bash
 npm run release:trust:summary
@@ -53,6 +63,8 @@ npx playwright test tests/e2e/uiux-template-generation.spec.js --workers=1 -g "u
 - Meaning: probe run failed before valid trust extraction.
 - Run:
 
+Commands only:
+
 ```bash
 npm run build:e2e
 npx playwright test tests/e2e/uiux-template-generation.spec.js --workers=1
@@ -61,6 +73,8 @@ npx playwright test tests/e2e/uiux-template-generation.spec.js --workers=1
 ### `probe-required-but-disabled`
 - Meaning: probe disabled while required in CI/release policy.
 - Run:
+
+Commands only:
 
 ```bash
 npm run release:trust:report
@@ -75,6 +89,8 @@ npm run release:trust:report
 - Meaning: no baseline report available pre-cutoff.
 - Run:
 
+Commands only:
+
 ```bash
 npm run release:trust:baseline:ensure
 npm run release:trust:baseline:capture
@@ -85,6 +101,8 @@ npm run release:trust:diff
 - Meaning: baseline missing after `RELEASE_TRUST_BASELINE_REQUIRED_AFTER`.
 - Cutoff authority source: workflow-global env in `.github/workflows/ci.yml` (`2026-07-01T00:00:00.000Z`).
 - Run:
+
+Commands only:
 
 ```bash
 npm run release:trust:baseline:ensure
@@ -100,6 +118,8 @@ If still failing after ensure/capture, treat as release-blocking.
 - Check shell contract projection and policy drift.
 - Run:
 
+Commands only:
+
 ```bash
 npm run test:architecture
 npm run test:release:operator-surfaces
@@ -108,6 +128,8 @@ npm run test:release:operator-surfaces
 ### `osSurfaceWorkspaceIdentity.*`
 - Check workspace/mode/overlay identity stability.
 - Run:
+
+Commands only:
 
 ```bash
 npm run test:architecture
@@ -118,6 +140,8 @@ npm run release:trust:summary
 - Check activation tuple/source/overlay hash stability.
 - Run:
 
+Commands only:
+
 ```bash
 npm run test:release:operator-surfaces
 npm run test:architecture
@@ -126,6 +150,8 @@ npm run test:architecture
 ### `osSurfaceShellRuntimeProbe.evidencePresent`
 - Meaning: probe failed but no `failedTestTitle`/`traceHint`/stderr evidence.
 - Run:
+
+Commands only:
 
 ```bash
 npm run release:trust:report
@@ -148,8 +174,15 @@ Then collect Playwright trace/log evidence before retrying CI.
 - Fix regression or explicitly roll back offending commit.
 - Re-run:
 
+Commands only:
+
 ```bash
 npm run validate:pr:fast
 ```
 
 before requesting review.
+
+## Copy/Paste Safety Rule
+
+- Only copy fenced `bash` blocks into terminal.
+- Never run plain-text references or markdown file names as commands.

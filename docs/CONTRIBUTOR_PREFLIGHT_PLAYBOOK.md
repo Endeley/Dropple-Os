@@ -17,6 +17,8 @@ Do not collapse these into one command path.
 
 Run this when you start work and before opening/updating a PR:
 
+Commands only:
+
 ```bash
 npm run preflight
 ```
@@ -37,6 +39,8 @@ Expected outcome:
 
 Use this sequence when preparing a PR update:
 
+Commands only:
+
 ```bash
 npm run preflight
 npm run test:release:attestation
@@ -53,6 +57,8 @@ Expected outcome:
 ## Release Flow (Authority Gate)
 
 Use this sequence for release decisions:
+
+Commands only:
 
 ```bash
 npm run ci:full
@@ -76,14 +82,15 @@ When `preflight` fails:
 1. Re-run focused failing command from the output.
 2. If trust-related, run:
 
+Commands only:
+
 ```bash
 npm run release:trust:report
 npm run release:trust:summary
 npm run release:trust:diff
 ```
 
-3. Follow detailed remediation in:
-- `docs/RELEASE_TRUST_TRIAGE_RUNBOOK.md`
+3. Follow detailed remediation in `docs/RELEASE_TRUST_TRIAGE_RUNBOOK.md`.
 
 ## Baseline Policy Notes
 
@@ -99,11 +106,15 @@ npm run release:trust:diff
 
 Daily:
 
+Commands only:
+
 ```bash
 npm run preflight
 ```
 
 PR-ready:
+
+Commands only:
 
 ```bash
 npm run preflight
@@ -114,6 +125,13 @@ npm run release:trust:summary
 
 Release:
 
+Commands only:
+
 ```bash
 npm run ci:full
 ```
+
+## Copy/Paste Safety Rule
+
+- Only copy fenced `bash` blocks into terminal.
+- Do not execute prose lines or file names (for example `CONTRIBUTING.md`).
