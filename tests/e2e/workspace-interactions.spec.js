@@ -772,3 +772,80 @@ test('workspace new keyboard nudge quantization preserves base/shift/alt canonic
   expect(runtimeErrors.pageErrors).toEqual([]);
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
+
+test('workspace new keyboard nudge Y-axis quantization preserves base/shift/alt ordering and upward symmetry', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoNewWorkspace(page);
+
+  await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+  const node = page.locator('[data-node-id]').first();
+  await expect(node).toBeVisible();
+
+  await activateTool(page, 'select');
+  await node.click({ force: true });
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  const selectedNodeId = await node.getAttribute('data-node-id');
+  expect(selectedNodeId).toBeTruthy();
+
+  const selectionPrimary = page.locator('[data-selection-primary="true"]');
+  await expect(selectionPrimary).toHaveCount(1);
+  await expect(selectionPrimary).toHaveAttribute('data-selection-node-id', selectedNodeId);
+
+  const readLayoutY = async () =>
+    page.evaluate((id) => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      return state?.document?.layout?.nodes?.[id]?.y ?? null;
+    }, selectedNodeId);
+
+  const startY = await readLayoutY();
+  expect(typeof startY).toBe('number');
+
+  await page.keyboard.press('ArrowDown');
+  const afterBaseDownY = await readLayoutY();
+  expect(typeof afterBaseDownY).toBe('number');
+  const baseDownStep = afterBaseDownY - startY;
+  expect(baseDownStep).toBeGreaterThan(0);
+
+  await page.keyboard.press('Shift+ArrowDown');
+  const afterShiftDownY = await readLayoutY();
+  expect(typeof afterShiftDownY).toBe('number');
+  const shiftDownStep = afterShiftDownY - afterBaseDownY;
+  expect(shiftDownStep).toBeGreaterThan(baseDownStep);
+
+  await page.keyboard.press('Alt+ArrowDown');
+  const afterAltDownY = await readLayoutY();
+  expect(typeof afterAltDownY).toBe('number');
+  const altDownStep = afterAltDownY - afterShiftDownY;
+  expect(altDownStep).toBeGreaterThan(0);
+  expect(altDownStep).toBeLessThan(baseDownStep);
+
+  const downEndY = afterAltDownY;
+  await page.keyboard.press('ArrowUp');
+  const afterBaseUpY = await readLayoutY();
+  expect(typeof afterBaseUpY).toBe('number');
+  const baseUpStep = downEndY - afterBaseUpY;
+  expect(baseUpStep).toBeGreaterThan(0);
+  expect(baseUpStep).toBe(baseDownStep);
+
+  await page.keyboard.press('Shift+ArrowUp');
+  const afterShiftUpY = await readLayoutY();
+  expect(typeof afterShiftUpY).toBe('number');
+  const shiftUpStep = afterBaseUpY - afterShiftUpY;
+  expect(shiftUpStep).toBeGreaterThan(baseUpStep);
+  expect(shiftUpStep).toBe(shiftDownStep);
+
+  await page.keyboard.press('Alt+ArrowUp');
+  const afterAltUpY = await readLayoutY();
+  expect(typeof afterAltUpY).toBe('number');
+  const altUpStep = afterShiftUpY - afterAltUpY;
+  expect(altUpStep).toBeGreaterThan(0);
+  expect(altUpStep).toBeLessThan(baseUpStep);
+  expect(altUpStep).toBe(altDownStep);
+
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  await expect(selectionPrimary).toHaveCount(1);
+  await expect(selectionPrimary).toHaveAttribute('data-selection-node-id', selectedNodeId);
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
