@@ -39,6 +39,15 @@ function withAlpha(color, alpha) {
   return `#${normalized}${alphaHex}`;
 }
 
+function setDuplicateDebugSignal(payload) {
+  if (typeof document === 'undefined') return;
+  try {
+    document.documentElement.dataset.droppleDuplicateDebug = JSON.stringify(payload);
+  } catch {
+    document.documentElement.dataset.droppleDuplicateDebug = '{"error":"serialize-failed"}';
+  }
+}
+
 export default function ReadOnlyNodeRenderer({
   nodes,
   emit,
@@ -172,6 +181,15 @@ export default function ReadOnlyNodeRenderer({
       snapshot,
       modifiersAllowed: allowModifiers,
     };
+    setDuplicateDebugSignal({
+      phase: 'drag-start',
+      alt: mods.alt,
+      duplicating,
+      modifiersAllowed: allowModifiers,
+      selectionCount: selection.size,
+      snapshotNodes: snapshot?.nodes?.length ?? 0,
+      nodeId: node.id,
+    });
 
     canvasBus.emit('intent.edit.begin', { source: 'canvas.drag' });
     setIsDragging(true);
@@ -463,12 +481,31 @@ export default function ReadOnlyNodeRenderer({
           dragRef.current.duplicating &&
           dragRef.current.modifiersAllowed &&
           mods.alt;
+        setDuplicateDebugSignal({
+          phase: 'drag-end-eval',
+          shouldDuplicate,
+          alt: mods.alt,
+          duplicating: dragRef.current.duplicating,
+          modifiersAllowed: dragRef.current.modifiersAllowed,
+          snapshotNodes: dragRef.current.snapshot?.nodes?.length ?? 0,
+          originCount: origins.size,
+          baseDx,
+          baseDy,
+          snapDx: dx,
+          snapDy: dy,
+        });
 
         if (shouldDuplicate && dragRef.current.snapshot) {
           const newIds = pasteFromClipboard({
             clipboard: dragRef.current.snapshot,
             emit,
             offset: 0,
+          });
+          setDuplicateDebugSignal({
+            phase: 'duplicate-commit',
+            createdCount: newIds.length,
+            createdIds: newIds,
+            snapshotNodes: dragRef.current.snapshot.nodes.length,
           });
 
           dragRef.current.snapshot.nodes.forEach((node, index) => {
