@@ -106,3 +106,28 @@ test('contributing checklist includes canonical PR confidence sequence', () => {
   // Ensure release authority remains documented as separate from preflight.
   assert.match(markdown, /Release authority remains separate:/);
 });
+
+test('stabilization lock keeps core workflow scripts and ci release wiring intact', () => {
+  const pkg = readPackageJson();
+  const scripts = pkg?.scripts ?? {};
+  const requiredScripts = [
+    'preflight',
+    'validate:pr:fast',
+    'validate:release',
+    'release:trust:report',
+    'release:trust:summary',
+    'test:release:operator-surfaces',
+  ];
+
+  for (const scriptName of requiredScripts) {
+    assert.equal(
+      typeof scripts[scriptName],
+      'string',
+      `stabilization lock missing package script: ${scriptName}`,
+    );
+  }
+
+  const workflow = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'ci.yml'), 'utf8');
+  assert.match(workflow, /name:\s*PR Release Validation \(validate:release\)/);
+  assert.match(workflow, /run:\s*npm run validate:release/);
+});
