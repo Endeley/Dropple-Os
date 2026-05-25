@@ -1457,6 +1457,90 @@ test('workspace new keyboard nudges preserve primary selection anchor across mul
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
 
+test('workspace new keyboard shift-alt nudge on multi-selection is deterministic, non-duplicating, and preserves primary anchor', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+
+  const runFlow = async () => {
+    await gotoNewWorkspace(page);
+    await createFrame(page, { x: 140, y: 180 }, { x: 260, y: 300 });
+    await createFrame(page, { x: 340, y: 180 }, { x: 460, y: 300 });
+    await createFrame(page, { x: 540, y: 180 }, { x: 660, y: 300 });
+
+    const nodes = page.locator('[data-node-id]');
+    await waitForNodeCount(page, 3);
+
+    const first = nodes.nth(0);
+    const second = nodes.nth(1);
+    const third = nodes.nth(2);
+
+    await activateTool(page, 'select');
+    await first.click({ force: true });
+    await page.keyboard.down('Shift');
+    await second.click({ force: true });
+    await third.click({ force: true });
+    await page.keyboard.up('Shift');
+
+    await expect(page.getByTestId('selection-outline')).toHaveCount(3);
+    const selectionPrimary = page.locator('[data-selection-primary="true"]');
+    await expect(selectionPrimary).toHaveCount(1);
+    const primaryBefore = await selectionPrimary.getAttribute('data-selection-node-id');
+    expect(primaryBefore).toBeTruthy();
+
+    const selectedNodeIds = await page.evaluate(() => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const ids = state?.selection?.ids;
+      if (ids instanceof Set) return Array.from(ids);
+      if (Array.isArray(ids)) return ids.slice();
+      return [];
+    });
+    expect(selectedNodeIds.length).toBe(3);
+
+    const readLayouts = async () =>
+      page.evaluate((ids) => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const layoutNodes = state?.document?.layout?.nodes ?? {};
+        const result = {};
+        ids.forEach((id) => {
+          const layout = layoutNodes[id];
+          if (!layout) return;
+          result[id] = { x: layout.x ?? null, y: layout.y ?? null };
+        });
+        return result;
+      }, selectedNodeIds);
+
+    const before = await readLayouts();
+    await page.keyboard.press('Shift+Alt+ArrowRight');
+    await page.keyboard.press('Shift+Alt+ArrowDown');
+    const after = await readLayouts();
+
+    selectedNodeIds.forEach((id) => {
+      expect(after[id].x - before[id].x).toBe(10);
+      expect(after[id].y - before[id].y).toBe(10);
+    });
+
+    await expect(nodes).toHaveCount(3);
+    await expect(page.getByTestId('selection-outline')).toHaveCount(3);
+    await expect(selectionPrimary).toHaveCount(1);
+    await expect(selectionPrimary).toHaveAttribute('data-selection-node-id', primaryBefore);
+
+    const normalized = selectedNodeIds
+      .map((id) => `${after[id].x}:${after[id].y}`)
+      .sort();
+    return JSON.stringify({
+      count: await nodes.count(),
+      normalized,
+    });
+  };
+
+  const hashA = await runFlow();
+  await page.reload({ waitUntil: 'networkidle' });
+  const hashB = await runFlow();
+  expect(hashB).toBe(hashA);
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
 test('workspace new keyboard nudges remain lawful under undo and redo history', async ({ page }) => {
   const runtimeErrors = attachRuntimeErrorCollectors(page);
   await gotoNewWorkspace(page);
