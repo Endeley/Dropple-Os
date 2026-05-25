@@ -306,6 +306,31 @@ async function dragNodeWithAltReleaseBeforeThreshold(page, locator, delta) {
   await page.mouse.up();
 }
 
+async function dragNodeWithShiftReleaseMidDrag(page, locator, delta, releaseAfter = 24) {
+  const box = await locator.boundingBox();
+  if (!box) {
+    throw new Error('Target node did not render');
+  }
+
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+  const horizontalFirst = Math.max(releaseAfter, Math.round(delta.x * 0.4));
+  await page.mouse.move(cx, cy);
+  await page.mouse.down();
+
+  // Start the drag first, then toggle shift during the active interaction.
+  await page.mouse.move(cx + 18, cy + 12, { steps: 4 });
+  await page.keyboard.down('Shift');
+  await page.waitForTimeout(16);
+  await page.mouse.move(cx + horizontalFirst, cy + 12, { steps: 6 });
+  await page.keyboard.up('Shift');
+  await page.waitForTimeout(16);
+
+  // Continue drag after shift release; Y should now be allowed to change.
+  await page.mouse.move(cx + delta.x, cy + delta.y, { steps: 8 });
+  await page.mouse.up();
+}
+
 async function dragResizeHandle(page, locator, delta) {
   const box = await locator.boundingBox();
   if (!box) {
@@ -1055,6 +1080,61 @@ test('workspace new shift-alt drag on multi-selection stays non-duplicating and 
     return JSON.stringify({
       count: afterMove.allIds.length,
       normalized,
+    });
+  };
+
+  const hashA = await runFlow();
+  await page.reload({ waitUntil: 'networkidle' });
+  const hashB = await runFlow();
+  expect(hashB).toBe(hashA);
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
+test('workspace new shift-drag releasing shift mid-drag clears axis lock and remains deterministic', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+
+  const runFlow = async () => {
+    await gotoNewWorkspace(page);
+    await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+
+    const nodes = page.locator('[data-node-id]');
+    await expect(nodes).toHaveCount(1);
+    const source = nodes.first();
+
+    await activateTool(page, 'select');
+    await source.click({ force: true });
+    await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+
+    const sourceId = await source.getAttribute('data-node-id');
+    expect(sourceId).toBeTruthy();
+    const before = await source.boundingBox();
+    expect(before).not.toBeNull();
+
+    await dragNodeWithShiftReleaseMidDrag(page, source, { x: 96, y: 56 });
+
+    const after = page.locator(`[data-node-id="${sourceId}"]`);
+    await expect(after).toBeVisible();
+    const afterBox = await after.boundingBox();
+    expect(afterBox).not.toBeNull();
+
+    const dx = Math.abs(afterBox.x - before.x);
+    const dy = Math.abs(afterBox.y - before.y);
+    expect(dx).toBeGreaterThanOrEqual(32);
+    expect(dy).toBeGreaterThanOrEqual(20);
+
+    await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+    await expect(page.locator('[data-selection-primary="true"]')).toHaveAttribute(
+      'data-selection-node-id',
+      sourceId
+    );
+
+    return JSON.stringify({
+      x: Math.round(afterBox.x),
+      y: Math.round(afterBox.y),
+      width: Math.round(afterBox.width),
+      height: Math.round(afterBox.height),
     });
   };
 
