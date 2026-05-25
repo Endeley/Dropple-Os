@@ -54,8 +54,5 @@ if (nonGeneratedChanges.length === 0) {
 }
 
 console.error('[GeneratedDriftCheck] Mixed commit risk: feature files + generated drift are both changed.');
-console.error('[GeneratedDriftCheck] Recommended cleanup:');
-console.error(
-  "git restore .registry/certifiedTemplates.json reports/architecture-phase-progress.json reports/architecture-radar.json reports/architecture-score.json reports/architecture-status.json",
-);
+console.error('[GeneratedDriftCheck] Recommended cleanup: restore generated drift targets before feature commit.');
 process.exit(2);

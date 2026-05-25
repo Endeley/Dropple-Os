@@ -25,9 +25,10 @@ npm run preflight
 
 This executes:
 
-1. `npm run release:trust:clean-generated`
-2. `npm run release:trust:baseline:ensure`
-3. `npm run validate:pr:fast`
+1. `npm run check:generated-drift`
+2. `npm run release:trust:clean-generated`
+3. `npm run release:trust:baseline:ensure`
+4. `npm run validate:pr:fast`
 
 Expected outcome:
 
