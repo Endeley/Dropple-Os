@@ -1186,6 +1186,159 @@ test('workspace new alt-held shift-release mid-drag duplicates once and exits ax
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
 
+test('workspace new alt-held shift-release duplicate remains undo-redo lawful and replay-stable', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+
+  const runFlow = async () => {
+    await gotoNewWorkspace(page);
+    await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+
+    const nodes = page.locator('[data-node-id]');
+    await waitForNodeCount(page, 1);
+    const source = nodes.first();
+    await activateTool(page, 'select');
+    await source.click({ force: true });
+
+    const sourceId = await source.getAttribute('data-node-id');
+    expect(sourceId).toBeTruthy();
+
+    const before = await page.evaluate((id) => {
+      const el = document.querySelector(`[data-node-id="${id}"]`);
+      if (!el) return null;
+      const rect = el.getBoundingClientRect();
+      return { x: Math.round(rect.x), y: Math.round(rect.y) };
+    }, sourceId);
+    expect(before).not.toBeNull();
+
+    await dragNodeWithAltHeldShiftReleasedMidDrag(page, source, { x: 92, y: 54 });
+    await waitForNodeCount(page, 2);
+
+    const duplicatedSnapshot = await page.evaluate((id) => {
+      const allIds = Array.from(document.querySelectorAll('[data-node-id]'))
+        .map((el) => el.getAttribute('data-node-id'))
+        .filter(Boolean)
+        .sort();
+      const duplicateId = allIds.find((candidate) => candidate !== id) ?? null;
+      const byId = {};
+      allIds.forEach((nodeId) => {
+        const el = document.querySelector(`[data-node-id="${nodeId}"]`);
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        byId[nodeId] = {
+          x: Math.round(rect.x),
+          y: Math.round(rect.y),
+        };
+      });
+      const primary = document
+        .querySelector('[data-selection-primary="true"]')
+        ?.getAttribute('data-selection-node-id');
+      return {
+        allIds,
+        duplicateId,
+        primary,
+        byId,
+      };
+    }, sourceId);
+
+    expect(duplicatedSnapshot.allIds).toHaveLength(2);
+    expect(duplicatedSnapshot.duplicateId).toBeTruthy();
+    expect(duplicatedSnapshot.duplicateId).not.toBe(sourceId);
+    expect(duplicatedSnapshot.primary).toBe(duplicatedSnapshot.duplicateId);
+
+    let undoSteps = 0;
+    let reachedSingle = false;
+    for (; undoSteps < 16; undoSteps += 1) {
+      await page.evaluate(() => globalThis.__droppleDispatcher?.undo?.());
+      const count = await nodes.count();
+      if (count === 1) {
+        reachedSingle = true;
+        break;
+      }
+    }
+    expect(reachedSingle).toBe(true);
+    await waitForNodeCount(page, 1);
+
+    const afterUndo = await page.evaluate((id) => {
+      const allIds = Array.from(document.querySelectorAll('[data-node-id]'))
+        .map((el) => el.getAttribute('data-node-id'))
+        .filter(Boolean)
+        .sort();
+      const el = document.querySelector(`[data-node-id="${id}"]`);
+      if (!el) return { allIds, source: null };
+      const rect = el.getBoundingClientRect();
+      const primary = document
+        .querySelector('[data-selection-primary="true"]')
+        ?.getAttribute('data-selection-node-id');
+      return {
+        allIds,
+        primary,
+        source: {
+          x: Math.round(rect.x),
+          y: Math.round(rect.y),
+        },
+      };
+    }, sourceId);
+
+    expect(afterUndo.allIds).toEqual([sourceId]);
+    if (afterUndo.primary != null) {
+      expect(afterUndo.primary).toBe(sourceId);
+    }
+    expect(afterUndo.source?.x).toBe(before.x);
+    expect(afterUndo.source?.y).toBe(before.y);
+
+    for (let i = 0; i <= undoSteps; i += 1) {
+      await page.evaluate(() => globalThis.__droppleDispatcher?.redo?.());
+    }
+    await waitForNodeCount(page, 2);
+
+    const afterRedo = await page.evaluate(() => {
+      const allIds = Array.from(document.querySelectorAll('[data-node-id]'))
+        .map((el) => el.getAttribute('data-node-id'))
+        .filter(Boolean)
+        .sort();
+      const byId = {};
+      allIds.forEach((nodeId) => {
+        const el = document.querySelector(`[data-node-id="${nodeId}"]`);
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        byId[nodeId] = {
+          x: Math.round(rect.x),
+          y: Math.round(rect.y),
+        };
+      });
+      const primary = document
+        .querySelector('[data-selection-primary="true"]')
+        ?.getAttribute('data-selection-node-id');
+      return { allIds, byId, primary };
+    });
+
+    expect(afterRedo.allIds).toEqual(duplicatedSnapshot.allIds);
+    if (afterRedo.primary != null && duplicatedSnapshot.primary != null) {
+      expect(afterRedo.primary).toBe(duplicatedSnapshot.primary);
+    }
+    for (const nodeId of duplicatedSnapshot.allIds) {
+      expect(afterRedo.byId[nodeId]?.x).toBe(duplicatedSnapshot.byId[nodeId]?.x);
+      expect(afterRedo.byId[nodeId]?.y).toBe(duplicatedSnapshot.byId[nodeId]?.y);
+    }
+
+    const canonicalPoints = Object.values(afterRedo.byId)
+      .map((entry) => `${entry.x}:${entry.y}`)
+      .sort();
+    return JSON.stringify({
+      count: afterRedo.allIds.length,
+      points: canonicalPoints,
+    });
+  };
+
+  const hashA = await runFlow();
+  await page.reload({ waitUntil: 'networkidle' });
+  const hashB = await runFlow();
+  expect(hashB).toBe(hashA);
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
 test('workspace new shift-drag releasing shift mid-drag clears axis lock and remains deterministic', async ({ page }) => {
   const runtimeErrors = attachRuntimeErrorCollectors(page);
 
