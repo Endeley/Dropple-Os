@@ -257,11 +257,12 @@ export default function ReadOnlyNodeRenderer({
     if (dragRef.current.dragging) {
       const dx = e.clientX - dragRef.current.startX;
       const dy = e.clientY - dragRef.current.startY;
+      const shiftActive = e.shiftKey === true || mods.shift === true;
 
       let lockedDx = dx;
       let lockedDy = dy;
 
-      if (dragRef.current.modifiersAllowed && mods.shift) {
+      if (dragRef.current.modifiersAllowed && shiftActive) {
         if (Math.abs(dx) > Math.abs(dy)) {
           lockedDy = 0;
         } else {
@@ -340,7 +341,7 @@ export default function ReadOnlyNodeRenderer({
         selectedIds.size === 1 &&
         modifiersAllowed(nodes[resizingId], nodes);
 
-      if (allowResizeModifiers && mods.shift) {
+      if (allowResizeModifiers && (e.shiftKey === true || mods.shift === true)) {
         const hasH = handle.includes('e') || handle.includes('w');
         const hasV = handle.includes('n') || handle.includes('s');
         const useWidth = hasH && (!hasV || Math.abs(dx) >= Math.abs(dy));
@@ -605,7 +606,7 @@ export default function ReadOnlyNodeRenderer({
           finalHeight = snapped.height;
         }
 
-        const lockRatio = allowResizeModifiers && mods.shift;
+        const lockRatio = allowResizeModifiers && (e.shiftKey === true || mods.shift === true);
         const ratio =
           node.layout?.constraints?.aspectRatio ??
           (lockRatio ? originW / originH : null);
@@ -683,7 +684,7 @@ export default function ReadOnlyNodeRenderer({
           !isPreview &&
           selectedIds.size === 1 &&
           modifiersAllowed(node, nodes);
-        if (isResizing && allowResizeModifiers && mods.shift) {
+        if (isResizing && allowResizeModifiers && (mods.shift === true)) {
           const ratio = baseWidth / baseHeight;
           previewHeight = Math.max(20, previewWidth / ratio);
         }
