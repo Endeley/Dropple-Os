@@ -2225,6 +2225,73 @@ test('workspace drag session is cleared across route transition and resumes clea
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
 
+test('workspace pointercancel does not leave stuck alt/shift state for keyboard nudge deltas', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoNewWorkspace(page);
+
+  await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+  const nodes = page.locator('[data-node-id]');
+  await waitForNodeCount(page, 1);
+  const node = nodes.first();
+  await expect(node).toBeVisible();
+  await activateTool(page, 'select');
+  await node.click({ force: true });
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+
+  const nodeId = await node.getAttribute('data-node-id');
+  expect(nodeId).toBeTruthy();
+
+  const readLayoutX = async () =>
+    page.evaluate((id) => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      return state?.document?.layout?.nodes?.[id]?.x ?? null;
+    }, nodeId);
+
+  const beforeBase = await readLayoutX();
+  expect(typeof beforeBase).toBe('number');
+  await page.keyboard.press('ArrowRight');
+  const afterBase = await readLayoutX();
+  expect(typeof afterBase).toBe('number');
+  const baseStep = afterBase - beforeBase;
+  expect(baseStep).toBeGreaterThan(0);
+
+  const box = await node.boundingBox();
+  expect(box).not.toBeNull();
+
+  // Enter an alt+shift pending drag, then cancel it.
+  await page.keyboard.down('Alt');
+  await page.keyboard.down('Shift');
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 2, box.y + box.height / 2 + 1, { steps: 2 });
+  await cancelActivePointerSession(page, {
+    pointerId: 1,
+    clientX: box.x + box.width / 2 + 2,
+    clientY: box.y + box.height / 2 + 1,
+  });
+  await page.keyboard.up('Shift');
+  await page.keyboard.up('Alt');
+  await waitForNodeCount(page, 1);
+
+  const beforePostCancelNudge = await readLayoutX();
+  expect(typeof beforePostCancelNudge).toBe('number');
+  await page.keyboard.press('ArrowRight');
+  const afterPostCancelNudge = await readLayoutX();
+  expect(typeof afterPostCancelNudge).toBe('number');
+  const postCancelStep = afterPostCancelNudge - beforePostCancelNudge;
+
+  expect(postCancelStep).toBe(baseStep);
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  await expect(page.locator('[data-selection-primary="true"]')).toHaveCount(1);
+  await expect(page.locator('[data-selection-primary="true"]')).toHaveAttribute(
+    'data-selection-node-id',
+    nodeId
+  );
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
 test('workspace new resize remains modifier-neutral and deterministic across base/shift/alt gestures', async ({ page }) => {
   const runtimeErrors = attachRuntimeErrorCollectors(page);
   await gotoNewWorkspace(page);
