@@ -283,6 +283,29 @@ async function dragNode(
   }
 }
 
+async function dragNodeWithAltReleaseBeforeThreshold(page, locator, delta) {
+  const box = await locator.boundingBox();
+  if (!box) {
+    throw new Error('Target node did not render');
+  }
+
+  await page.keyboard.down('Alt');
+  await page.waitForTimeout(16);
+
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+  await page.mouse.move(cx, cy);
+  await page.mouse.down();
+
+  // Release alt before any drag threshold-crossing movement.
+  await page.keyboard.up('Alt');
+  await page.waitForTimeout(48);
+
+  // Cross threshold only after alt release.
+  await page.mouse.move(cx + delta.x, cy + delta.y, { steps: 10 });
+  await page.mouse.up();
+}
+
 async function dragResizeHandle(page, locator, delta) {
   const box = await locator.boundingBox();
   if (!box) {
@@ -891,6 +914,63 @@ test('workspace new alt-drag duplicate on multi-selection keeps sources stable a
     expect(afterRedo.byId[id]?.x).toBe(duplicatedSnapshot.byId[id]?.x);
     expect(afterRedo.byId[id]?.y).toBe(duplicatedSnapshot.byId[id]?.y);
   }
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
+test('workspace new alt-drag releasing alt before threshold stays non-duplicating and deterministic', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+
+  const runFlow = async () => {
+    await gotoNewWorkspace(page);
+    await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+
+    const nodes = page.locator('[data-node-id]');
+    await expect(nodes).toHaveCount(1);
+    const source = nodes.first();
+    await expect(source).toBeVisible();
+
+    await activateTool(page, 'select');
+    await source.click({ force: true });
+    await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+
+    const sourceId = await source.getAttribute('data-node-id');
+    expect(sourceId).toBeTruthy();
+
+    const before = await source.boundingBox();
+    expect(before).not.toBeNull();
+
+    await dragNodeWithAltReleaseBeforeThreshold(page, source, { x: 90, y: 55 });
+    await waitForNodeCount(page, 1);
+
+    const after = page.locator(`[data-node-id="${sourceId}"]`);
+    await expect(after).toBeVisible();
+    const afterBox = await after.boundingBox();
+    expect(afterBox).not.toBeNull();
+    expect(Math.abs(afterBox.x - before.x)).toBeGreaterThanOrEqual(30);
+    expect(Math.abs(afterBox.y - before.y)).toBeGreaterThanOrEqual(20);
+
+    await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+    await expect(page.locator('[data-selection-primary="true"]')).toHaveCount(1);
+    await expect(page.locator('[data-selection-primary="true"]')).toHaveAttribute(
+      'data-selection-node-id',
+      sourceId
+    );
+
+    return JSON.stringify({
+      x: Math.round(afterBox.x),
+      y: Math.round(afterBox.y),
+      width: Math.round(afterBox.width),
+      height: Math.round(afterBox.height),
+      count: await nodes.count(),
+    });
+  };
+
+  const hashA = await runFlow();
+  await page.reload({ waitUntil: 'networkidle' });
+  const hashB = await runFlow();
+  expect(hashB).toBe(hashA);
 
   expect(runtimeErrors.pageErrors).toEqual([]);
   expect(runtimeErrors.consoleErrors).toEqual([]);

@@ -397,7 +397,7 @@ export default function ReadOnlyNodeRenderer({
     }
   }
 
-  function onMouseUp() {
+  function onMouseUp(e) {
     if (isReadOnly) {
       return;
     }
@@ -477,14 +477,15 @@ export default function ReadOnlyNodeRenderer({
         const dx = snapped.x - movingPrimary.x;
         const dy = snapped.y - movingPrimary.y;
 
+        const altActiveAtCommit = e?.altKey === true;
         const shouldDuplicate =
           dragRef.current.duplicating &&
           dragRef.current.modifiersAllowed &&
-          mods.alt;
+          altActiveAtCommit;
         setDuplicateDebugSignal({
           phase: 'drag-end-eval',
           shouldDuplicate,
-          alt: mods.alt,
+          alt: altActiveAtCommit,
           duplicating: dragRef.current.duplicating,
           modifiersAllowed: dragRef.current.modifiersAllowed,
           snapshotNodes: dragRef.current.snapshot?.nodes?.length ?? 0,
