@@ -238,10 +238,20 @@ async function marqueeRenderedNodes(page, locators, { additive = false, padding 
   }
 }
 
-async function dragNode(page, locator, delta, { holdAlt = false } = {}) {
+async function dragNode(
+  page,
+  locator,
+  delta,
+  { holdAlt = false, holdShift = false, holdShiftDuringMove = false } = {}
+) {
   const box = await locator.boundingBox();
   if (!box) {
     throw new Error('Target node did not render');
+  }
+
+  if (holdShift) {
+    await page.keyboard.down('Shift');
+    await page.waitForTimeout(16);
   }
 
   if (holdAlt) {
@@ -251,6 +261,10 @@ async function dragNode(page, locator, delta, { holdAlt = false } = {}) {
 
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
+  if (holdShiftDuringMove) {
+    await page.keyboard.down('Shift');
+    await page.waitForTimeout(16);
+  }
   await page.mouse.move(
     box.x + box.width / 2 + delta.x,
     box.y + box.height / 2 + delta.y,
@@ -258,8 +272,14 @@ async function dragNode(page, locator, delta, { holdAlt = false } = {}) {
   );
   await page.mouse.up();
 
+  if (holdShiftDuringMove) {
+    await page.keyboard.up('Shift');
+  }
   if (holdAlt) {
     await page.keyboard.up('Alt');
+  }
+  if (holdShift) {
+    await page.keyboard.up('Shift');
   }
 }
 
@@ -871,6 +891,97 @@ test('workspace new alt-drag duplicate on multi-selection keeps sources stable a
     expect(afterRedo.byId[id]?.x).toBe(duplicatedSnapshot.byId[id]?.x);
     expect(afterRedo.byId[id]?.y).toBe(duplicatedSnapshot.byId[id]?.y);
   }
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
+test('workspace new shift-alt drag on multi-selection stays non-duplicating and mutation-free', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+
+  const runFlow = async () => {
+    await gotoNewWorkspace(page);
+    await createFrame(page, { x: 140, y: 180 }, { x: 280, y: 300 });
+    await createFrame(page, { x: 320, y: 220 }, { x: 460, y: 340 });
+
+    const nodes = page.locator('[data-node-id]');
+    await waitForNodeCount(page, 2);
+
+    const sourceA = nodes.nth(0);
+    const sourceB = nodes.nth(1);
+    await activateTool(page, 'select');
+    await sourceA.click({ force: true });
+    await page.keyboard.down('Shift');
+    await sourceB.click({ force: true });
+    await page.keyboard.up('Shift');
+    await expect(page.getByTestId('selection-outline')).toHaveCount(2);
+
+    const sourceAId = await sourceA.getAttribute('data-node-id');
+    const sourceBId = await sourceB.getAttribute('data-node-id');
+    expect(sourceAId).toBeTruthy();
+    expect(sourceBId).toBeTruthy();
+
+    const beforeState = await page.evaluate((ids) => {
+      const out = {};
+      ids.forEach((id) => {
+        const el = document.querySelector(`[data-node-id="${id}"]`);
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        out[id] = {
+          x: Math.round(rect.x),
+          y: Math.round(rect.y),
+        };
+      });
+      return out;
+    }, [sourceAId, sourceBId]);
+
+    await dragNode(page, sourceB, { x: 90, y: 55 }, { holdAlt: true, holdShiftDuringMove: true });
+    await waitForNodeCount(page, 2);
+    await expect(page.getByTestId('selection-outline')).toHaveCount(2);
+
+    const afterMove = await page.evaluate((sourceIds) => {
+      const sourceSet = new Set(sourceIds);
+      const allIds = Array.from(document.querySelectorAll('[data-node-id]'))
+        .map((el) => el.getAttribute('data-node-id'))
+        .filter(Boolean);
+      const duplicateIds = allIds.filter((id) => !sourceSet.has(id));
+      const byId = {};
+      allIds.forEach((id) => {
+        const el = document.querySelector(`[data-node-id="${id}"]`);
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        byId[id] = {
+          x: Math.round(rect.x),
+          y: Math.round(rect.y),
+        };
+      });
+      return {
+        allIds: [...allIds].sort(),
+        duplicateIds,
+        byId,
+      };
+    }, [sourceAId, sourceBId]);
+
+    expect(afterMove.duplicateIds).toHaveLength(0);
+    expect(afterMove.allIds).toEqual([sourceAId, sourceBId].sort());
+    expect(afterMove.byId[sourceAId].x).toBe(beforeState[sourceAId].x);
+    expect(afterMove.byId[sourceAId].y).toBe(beforeState[sourceAId].y);
+    expect(afterMove.byId[sourceBId].x).toBe(beforeState[sourceBId].x);
+    expect(afterMove.byId[sourceBId].y).toBe(beforeState[sourceBId].y);
+
+    const normalized = [afterMove.byId[sourceAId], afterMove.byId[sourceBId]]
+      .map((entry) => `${entry.x}:${entry.y}`)
+      .sort();
+    return JSON.stringify({
+      count: afterMove.allIds.length,
+      normalized,
+    });
+  };
+
+  const hashA = await runFlow();
+  await page.reload({ waitUntil: 'networkidle' });
+  const hashB = await runFlow();
+  expect(hashB).toBe(hashA);
 
   expect(runtimeErrors.pageErrors).toEqual([]);
   expect(runtimeErrors.consoleErrors).toEqual([]);
