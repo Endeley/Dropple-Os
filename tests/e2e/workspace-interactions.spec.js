@@ -610,6 +610,107 @@ test('workspace new keyboard nudge and shift-nudge move selected node with prese
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
 
+test.skip('workspace new alt-drag duplicate preserves source identity and projection law', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+
+  const runFlow = async () => {
+    await gotoNewWorkspace(page);
+    await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+
+    const nodes = page.locator('[data-node-id]');
+    await expect(nodes).toHaveCount(1);
+    const source = nodes.first();
+    await expect(source).toBeVisible();
+
+    await activateTool(page, 'select');
+    await source.click({ force: true });
+    await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+
+    const sourceId = await source.getAttribute('data-node-id');
+    expect(sourceId).toBeTruthy();
+
+    const sourceBefore = await source.boundingBox();
+    expect(sourceBefore).not.toBeNull();
+
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Alt',
+          altKey: true,
+          bubbles: true,
+          cancelable: true,
+        })
+      );
+    });
+    await page.waitForTimeout(50);
+    await dragNode(page, source, { x: 90, y: 55 });
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new KeyboardEvent('keyup', {
+          key: 'Alt',
+          bubbles: true,
+          cancelable: true,
+        })
+      );
+    });
+
+    await expect(nodes).toHaveCount(2);
+    const duplicateId = await page.evaluate((id) => {
+      const ids = Array.from(document.querySelectorAll('[data-node-id]'))
+        .map((el) => el.getAttribute('data-node-id'))
+        .filter(Boolean);
+      return ids.find((nodeId) => nodeId !== id) ?? null;
+    }, sourceId);
+    expect(duplicateId).toBeTruthy();
+    const duplicate = page.locator(`[data-node-id="${duplicateId}"]`);
+    await expect(duplicate).toBeVisible();
+    expect(duplicateId).not.toBe(sourceId);
+
+    const selectionPrimary = page.locator('[data-selection-primary="true"]');
+    await expect(selectionPrimary).toHaveCount(1);
+    await expect(selectionPrimary).toHaveAttribute('data-selection-node-id', duplicateId);
+
+    const duplicateBefore = await duplicate.boundingBox();
+    expect(duplicateBefore).not.toBeNull();
+
+    await waitForMoved(duplicate, duplicateBefore, { dx: 30, dy: 20 });
+    const sourceAfter = page.locator(`[data-node-id="${sourceId}"]`);
+    await expect(sourceAfter).toBeVisible();
+    const sourceAfterBox = await sourceAfter.boundingBox();
+    expect(sourceAfterBox).not.toBeNull();
+    expect(sourceAfterBox.x).toBeCloseTo(sourceBefore.x, 0);
+    expect(sourceAfterBox.y).toBeCloseTo(sourceBefore.y, 0);
+
+    const duplicateAfter = await duplicate.boundingBox();
+    expect(duplicateAfter).not.toBeNull();
+    expect(duplicateAfter.x).not.toBe(duplicateBefore.x);
+    expect(duplicateAfter.y).not.toBe(duplicateBefore.y);
+
+    return JSON.stringify({
+      source: {
+        x: Math.round(sourceAfterBox.x),
+        y: Math.round(sourceAfterBox.y),
+        width: Math.round(sourceAfterBox.width),
+        height: Math.round(sourceAfterBox.height),
+      },
+      duplicate: {
+        x: Math.round(duplicateAfter.x),
+        y: Math.round(duplicateAfter.y),
+        width: Math.round(duplicateAfter.width),
+        height: Math.round(duplicateAfter.height),
+      },
+    });
+  };
+
+  const hashA = await runFlow();
+  await page.reload({ waitUntil: 'networkidle' });
+  const hashB = await runFlow();
+  expect(hashB).toBe(hashA);
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
 test('workspace new keyboard nudge commits canonical layout and remains replay-stable with no projection residue', async ({ page }) => {
   const runtimeErrors = attachRuntimeErrorCollectors(page);
   const runFlow = async () => {
