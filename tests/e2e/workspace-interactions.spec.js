@@ -1209,3 +1209,83 @@ test('workspace new keyboard nudge remains stable across workspace route transit
   expect(runtimeErrors.pageErrors).toEqual([]);
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
+
+test('workspace new resize remains modifier-neutral and deterministic across base/shift/alt gestures', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoNewWorkspace(page);
+
+  await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+  const node = page.locator('[data-node-id]').first();
+  await expect(node).toBeVisible();
+
+  await activateTool(page, 'select');
+  await node.click({ force: true });
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  const selectedNodeId = await node.getAttribute('data-node-id');
+  expect(selectedNodeId).toBeTruthy();
+
+  const selectionPrimary = page.locator('[data-selection-primary="true"]');
+  await expect(selectionPrimary).toHaveCount(1);
+  await expect(selectionPrimary).toHaveAttribute('data-selection-node-id', selectedNodeId);
+
+  const resizeHandle = page.getByTestId('resize-handle').first();
+  await expect(resizeHandle).toBeVisible();
+
+  const readLayoutSize = async () =>
+    page.evaluate((id) => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const layout = state?.document?.layout?.nodes?.[id] ?? null;
+      if (!layout) return null;
+      return {
+        width: layout.width ?? null,
+        height: layout.height ?? null,
+      };
+    }, selectedNodeId);
+
+  const start = await readLayoutSize();
+  expect(start).toBeTruthy();
+  expect(Number.isFinite(start.width)).toBe(true);
+  expect(Number.isFinite(start.height)).toBe(true);
+  expect(start.width).toBeGreaterThan(0);
+  expect(start.height).toBeGreaterThan(0);
+
+  await dragResizeHandle(page, resizeHandle, { x: 24, y: 16 });
+  const afterBase = await readLayoutSize();
+  expect(afterBase).toBeTruthy();
+  const baseDw = afterBase.width - start.width;
+  const baseDh = afterBase.height - start.height;
+  expect(baseDw).toBeGreaterThan(0);
+  expect(baseDh).toBeGreaterThan(0);
+
+  await page.keyboard.down('Shift');
+  await dragResizeHandle(page, resizeHandle, { x: 24, y: 16 });
+  await page.keyboard.up('Shift');
+  const afterShift = await readLayoutSize();
+  expect(afterShift).toBeTruthy();
+  const shiftDw = afterShift.width - afterBase.width;
+  const shiftDh = afterShift.height - afterBase.height;
+  expect(shiftDw).toBe(baseDw);
+  expect(shiftDh).toBe(baseDh);
+
+  await page.keyboard.down('Alt');
+  await dragResizeHandle(page, resizeHandle, { x: 24, y: 16 });
+  await page.keyboard.up('Alt');
+  const afterAlt = await readLayoutSize();
+  expect(afterAlt).toBeTruthy();
+  const altDw = afterAlt.width - afterShift.width;
+  const altDh = afterAlt.height - afterShift.height;
+  expect(altDw).toBe(baseDw);
+  expect(altDh).toBe(baseDh);
+
+  expect(Number.isFinite(afterAlt.width)).toBe(true);
+  expect(Number.isFinite(afterAlt.height)).toBe(true);
+  expect(afterAlt.width).toBeGreaterThan(0);
+  expect(afterAlt.height).toBeGreaterThan(0);
+
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  await expect(selectionPrimary).toHaveCount(1);
+  await expect(selectionPrimary).toHaveAttribute('data-selection-node-id', selectedNodeId);
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
