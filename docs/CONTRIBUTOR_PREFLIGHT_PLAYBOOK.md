@@ -131,6 +131,28 @@ Commands only:
 npm run ci:full
 ```
 
+## Commit Hygiene (Generated Drift Policy)
+
+Run this before commit:
+
+Commands only:
+
+```bash
+npm run check:generated-drift
+```
+
+Policy:
+
+- Feature/test commits must not include generated registry/report drift.
+- If only generated files changed, use a dedicated artifact commit.
+- If feature files and generated files are mixed, clean generated drift before feature commit.
+
+Cleanup command:
+
+```bash
+git restore .registry/certifiedTemplates.json reports/architecture-phase-progress.json reports/architecture-radar.json reports/architecture-score.json reports/architecture-status.json
+```
+
 ## Copy/Paste Safety Rule
 
 - Only copy fenced `bash` blocks into terminal.

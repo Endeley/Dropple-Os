@@ -80,6 +80,7 @@
         "release:trust:baseline:capture": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustCaptureBaseline.mjs",
         "release:trust:baseline:ensure": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustEnsureBaseline.mjs",
         "release:trust:clean-generated": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustCleanGenerated.mjs",
+        "check:generated-drift": "node scripts/checkGeneratedDrift.mjs",
         "preflight": "npm run release:trust:clean-generated && npm run release:trust:baseline:ensure && npm run validate:pr:fast",
         "test:release:attestation": "node --import ./bench/register-alias-loader.mjs --test tests/release/*.test.mjs",
         "test:release:operator-surfaces": "node --import ./bench/register-alias-loader.mjs --test tests/release/releaseTrustSummaryCli.test.mjs tests/release/releaseTrustProbeSummaryCli.test.mjs tests/release/releaseTrustPrComment.test.mjs tests/release/releaseTrustOperatorSurfacesUmbrella.test.mjs",
