@@ -74,6 +74,12 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                     event: e,
                     pointerId: e.pointerId,
                     worldPoint,
+                    modifiers: overrides?.modifiers ?? {
+                        shift: Boolean(e?.shiftKey),
+                        alt: Boolean(e?.altKey),
+                        ctrl: Boolean(e?.ctrlKey),
+                        meta: Boolean(e?.metaKey),
+                    },
                     targetNodeId,
                     resizeHandle: overrides?.resizeHandle ?? null,
                 },
@@ -226,6 +232,12 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                 pointerId: e.pointerId,
                 tool,
                 targetNodeId,
+                modifiers: {
+                    shift: Boolean(e.shiftKey),
+                    alt: Boolean(e.altKey),
+                    ctrl: Boolean(e.ctrlKey),
+                    meta: Boolean(e.metaKey),
+                },
                 hasMoved: false,
             };
 
@@ -300,6 +312,21 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                 routePointerInput('pointerdown', e, {
                     tool: dragStartRef.current.tool,
                     targetNodeId: dragStartRef.current.targetNodeId,
+                    modifiers: {
+                        ...dragStartRef.current.modifiers,
+                        shift:
+                            dragStartRef.current.modifiers?.shift === true ||
+                            Boolean(e.shiftKey),
+                        alt:
+                            dragStartRef.current.modifiers?.alt === true ||
+                            Boolean(e.altKey),
+                        ctrl:
+                            dragStartRef.current.modifiers?.ctrl === true ||
+                            Boolean(e.ctrlKey),
+                        meta:
+                            dragStartRef.current.modifiers?.meta === true ||
+                            Boolean(e.metaKey),
+                    },
                 });
             }
 

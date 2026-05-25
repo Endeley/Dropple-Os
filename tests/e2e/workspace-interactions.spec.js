@@ -238,10 +238,15 @@ async function marqueeRenderedNodes(page, locators, { additive = false, padding 
   }
 }
 
-async function dragNode(page, locator, delta) {
+async function dragNode(page, locator, delta, { holdAlt = false } = {}) {
   const box = await locator.boundingBox();
   if (!box) {
     throw new Error('Target node did not render');
+  }
+
+  if (holdAlt) {
+    await page.keyboard.down('Alt');
+    await page.waitForTimeout(16);
   }
 
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
@@ -252,6 +257,10 @@ async function dragNode(page, locator, delta) {
     { steps: 10 }
   );
   await page.mouse.up();
+
+  if (holdAlt) {
+    await page.keyboard.up('Alt');
+  }
 }
 
 async function dragResizeHandle(page, locator, delta) {
@@ -610,7 +619,7 @@ test('workspace new keyboard nudge and shift-nudge move selected node with prese
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
 
-test.skip('workspace new alt-drag duplicate preserves source identity and projection law', async ({ page }) => {
+test('workspace new alt-drag duplicate preserves source identity and projection law', async ({ page }) => {
   const runtimeErrors = attachRuntimeErrorCollectors(page);
 
   const runFlow = async () => {
@@ -632,29 +641,26 @@ test.skip('workspace new alt-drag duplicate preserves source identity and projec
     const sourceBefore = await source.boundingBox();
     expect(sourceBefore).not.toBeNull();
 
-    await page.evaluate(() => {
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'Alt',
-          altKey: true,
-          bubbles: true,
-          cancelable: true,
-        })
-      );
-    });
-    await page.waitForTimeout(50);
-    await dragNode(page, source, { x: 90, y: 55 });
-    await page.evaluate(() => {
-      window.dispatchEvent(
-        new KeyboardEvent('keyup', {
-          key: 'Alt',
-          bubbles: true,
-          cancelable: true,
-        })
-      );
-    });
+    await dragNode(page, source, { x: 90, y: 55 }, { holdAlt: true });
 
-    await expect(nodes).toHaveCount(2);
+    const duplicated = await expect
+      .poll(async () => await nodes.count(), {
+        timeout: 5000,
+      })
+      .toBe(2)
+      .then(() => true)
+      .catch(() => false);
+    if (!duplicated) {
+      const duplicateDebug = await page.evaluate(() => {
+        return document.documentElement.dataset.droppleDuplicateDebug || null;
+      });
+      const overlayDebug = await page.evaluate(() => {
+        return document.documentElement.dataset.droppleOverlayDebug || null;
+      });
+      throw new Error(
+        `Alt-drag duplicate did not create a second node; duplicateDebug=${duplicateDebug}; overlayDebug=${overlayDebug}`
+      );
+    }
     const duplicateId = await page.evaluate((id) => {
       const ids = Array.from(document.querySelectorAll('[data-node-id]'))
         .map((el) => el.getAttribute('data-node-id'))
@@ -670,10 +676,6 @@ test.skip('workspace new alt-drag duplicate preserves source identity and projec
     await expect(selectionPrimary).toHaveCount(1);
     await expect(selectionPrimary).toHaveAttribute('data-selection-node-id', duplicateId);
 
-    const duplicateBefore = await duplicate.boundingBox();
-    expect(duplicateBefore).not.toBeNull();
-
-    await waitForMoved(duplicate, duplicateBefore, { dx: 30, dy: 20 });
     const sourceAfter = page.locator(`[data-node-id="${sourceId}"]`);
     await expect(sourceAfter).toBeVisible();
     const sourceAfterBox = await sourceAfter.boundingBox();
@@ -683,8 +685,8 @@ test.skip('workspace new alt-drag duplicate preserves source identity and projec
 
     const duplicateAfter = await duplicate.boundingBox();
     expect(duplicateAfter).not.toBeNull();
-    expect(duplicateAfter.x).not.toBe(duplicateBefore.x);
-    expect(duplicateAfter.y).not.toBe(duplicateBefore.y);
+    expect(Math.abs(duplicateAfter.x - sourceAfterBox.x)).toBeGreaterThanOrEqual(30);
+    expect(Math.abs(duplicateAfter.y - sourceAfterBox.y)).toBeGreaterThanOrEqual(20);
 
     return JSON.stringify({
       source: {

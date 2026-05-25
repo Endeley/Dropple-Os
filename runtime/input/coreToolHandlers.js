@@ -8,6 +8,8 @@ import { registerToolHandler, unregisterToolHandler } from '@/runtime/tools/tool
 import { createNodeCreateEvent } from '@/runtime/input/nodeCreateRuntimeBridge.js';
 import { computeResizeDelta as computeResizeSessionDelta } from '@/runtime/transforms/computeResizeDelta.js';
 import { assertCreateSessionInvariant } from '@/runtime/input/createSessionInvariant.js';
+import { copySelection } from '@/runtime/clipboard/copySelection.js';
+import { generateNodeId } from '@/runtime/nodes/generateNodeId.js';
 
 const DRAG_THRESHOLD = 4;
 
@@ -145,18 +147,86 @@ function buildOriginMap(nodeIds, nodesById, runtimeState) {
     return origin;
 }
 
+function remapCopiedNode(node, idMap) {
+    const nextId = idMap.get(node.id);
+    const mappedParentId = node.parentId ? idMap.get(node.parentId) ?? null : null;
+    const mappedChildren = Array.isArray(node.children)
+        ? node.children.map((id) => idMap.get(id)).filter(Boolean)
+        : [];
+
+    return {
+        ...structuredClone(node),
+        id: nextId,
+        parentId: mappedParentId,
+        children: mappedChildren,
+    };
+}
+
+function duplicateMoveSelection({ dispatcher, runtimeState, nodeIds }) {
+    if (!dispatcher?.dispatch || !runtimeState?.document || !Array.isArray(nodeIds) || nodeIds.length === 0) {
+        return null;
+    }
+
+    const clipboard = copySelection(nodeIds, runtimeState.document);
+    if (!clipboard?.nodes?.length) {
+        return null;
+    }
+
+    const existingIds = new Set(Object.keys(getNodes(runtimeState)).sort());
+    const idMap = new Map();
+
+    clipboard.nodes.forEach((node) => {
+        let nextId = generateNodeId(node.type || 'node');
+        while (existingIds.has(nextId)) {
+            nextId = generateNodeId(node.type || 'node');
+        }
+        existingIds.add(nextId);
+        idMap.set(node.id, nextId);
+    });
+
+    const createdNodes = clipboard.nodes.map((node) => remapCopiedNode(node, idMap));
+    createdNodes.forEach((node) => {
+        dispatcher.dispatch({
+            type: EventTypes.NODE_CREATE,
+            payload: { node },
+        });
+    });
+
+    createdNodes.forEach((node) => {
+        if (!node.parentId) return;
+        dispatcher.dispatch({
+            type: EventTypes.NODE_ATTACH,
+            payload: {
+                parentId: node.parentId,
+                childId: node.id,
+            },
+        });
+    });
+
+    const duplicatedRootIds = (clipboard.rootIds ?? [])
+        .map((id) => idMap.get(id))
+        .filter(Boolean);
+    if (!duplicatedRootIds.length) return null;
+
+    return {
+        nodeIds: duplicatedRootIds,
+        primary: duplicatedRootIds[0] ?? null,
+    };
+}
+
 function dispatchMoveDragStart({
     dispatcher,
     runtimeState,
     worldPoint,
     hitNodeId,
     additive = false,
+    duplicate = false,
 }) {
     if (!dispatcher?.dispatch || !runtimeState || !worldPoint || !hitNodeId) return false;
 
     const nodesById = getToolNodes(runtimeState);
     const currentSelection = resolveCurrentSelection(runtimeState);
-    const nodeIds = resolveNextMoveSelection({
+    let nodeIds = resolveNextMoveSelection({
         additive,
         currentSelection,
         hitNodeId,
@@ -178,7 +248,10 @@ function dispatchMoveDragStart({
         nodeIds,
         pointer: worldPoint,
         origin,
-        meta: { snapTargets: [] },
+        meta: {
+            snapTargets: [],
+            duplicateRequested: duplicate,
+        },
     };
 
     if (nodeIds.length > 1) {
@@ -246,13 +319,38 @@ function moveToolHandler(input, context) {
                 return { handled: true };
             }
 
+            let promotedNodeIds = drag.nodeIds ?? [];
+            let promotedOrigin = drag.origin ?? null;
+            if (drag.meta?.duplicateRequested === true) {
+                const duplicatedSelection = duplicateMoveSelection({
+                    dispatcher,
+                    runtimeState,
+                    nodeIds: promotedNodeIds,
+                });
+
+                if (duplicatedSelection?.nodeIds?.length) {
+                    promotedNodeIds = duplicatedSelection.nodeIds;
+                    const refreshedState = dispatcher.getState?.() ?? runtimeState;
+                    const refreshedNodes = getToolNodes(refreshedState);
+                    promotedOrigin = buildOriginMap(promotedNodeIds, refreshedNodes, refreshedState);
+
+                    dispatcher.dispatch({
+                        type: EventTypes.SELECTION_SET,
+                        payload: {
+                            ids: promotedNodeIds,
+                            primary: duplicatedSelection.primary ?? promotedNodeIds[0] ?? null,
+                        },
+                    });
+                }
+            }
+
             dispatcher.dispatch({
                 type: EventTypes.DRAG_START,
                 payload: {
                     type: 'move',
-                    nodeIds: drag.nodeIds ?? [],
+                    nodeIds: promotedNodeIds,
                     pointer: drag.startPointer,
-                    origin: drag.origin ?? null,
+                    origin: promotedOrigin,
                     meta: drag.meta ?? { snapTargets: [] },
                     group: drag.group ?? null,
                 },
@@ -278,7 +376,7 @@ function moveToolHandler(input, context) {
 
             dispatchLayoutBulk(
                 dispatcher,
-                buildMoveUpdates(drag.nodeIds ?? [], drag.origin ?? null, delta),
+                buildMoveUpdates(promotedNodeIds, promotedOrigin, delta),
             );
 
             return { handled: true };
@@ -525,6 +623,28 @@ function selectToolHandler(input, context) {
                     return { handled: true };
                 }
 
+                const dragHitNodeId = drag.meta?.hitNodeId ?? null;
+                const dragWasHitSelected = drag.meta?.wasHitSelected === true;
+                const dragAdditive = drag.meta?.additive === true;
+                if (dragHitNodeId && dragWasHitSelected && !dragAdditive) {
+                    dispatchMoveDragStart({
+                        dispatcher,
+                        runtimeState,
+                        worldPoint: drag.startPointer,
+                        hitNodeId: dragHitNodeId,
+                        additive: false,
+                        duplicate: drag.meta?.duplicateRequested === true,
+                    });
+
+                    return moveToolHandler(
+                        {
+                            ...input,
+                            worldPoint,
+                        },
+                        context,
+                    );
+                }
+
                 dispatcher.dispatch({
                     type: EventTypes.DRAG_START,
                     payload: {
@@ -615,6 +735,7 @@ function selectToolHandler(input, context) {
     const hit = resolvePrimaryHit(runtimeState, worldPoint, input.event, input.targetNodeId);
     const hitNodeId = hit?.id ?? input.targetNodeId ?? null;
     const additive = input.event?.shiftKey === true;
+    const duplicate = input.event?.altKey === true || input.modifiers?.alt === true;
     const currentSelection = resolveCurrentSelection(runtimeState);
     const wasHitSelected = hitNodeId ? currentSelection.includes(hitNodeId) : false;
 
@@ -625,6 +746,7 @@ function selectToolHandler(input, context) {
             worldPoint,
             hitNodeId,
             additive,
+            duplicate,
         });
         return { handled: true };
     }
@@ -639,6 +761,7 @@ function selectToolHandler(input, context) {
                 hitNodeId,
                 wasHitSelected,
                 pendingToggleId: additive ? hitNodeId : null,
+                duplicateRequested: duplicate,
             },
         },
     });
