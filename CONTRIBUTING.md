@@ -27,6 +27,27 @@ No direct commits without an issue.
 
 ---
 
+## PR Readiness Checklist
+
+Use this exact contributor confidence sequence before opening or updating a PR:
+
+```bash
+npm run preflight
+npm run test:release:attestation
+npm run release:trust:report
+npm run release:trust:summary
+```
+
+Release authority remains separate:
+
+```bash
+npm run validate:release
+```
+
+Do not replace contributor preflight with release authority validation for normal PR iteration.
+
+---
+
 ## Adding or Modifying Tools
 Before coding, answer:
 - What capability does this require?

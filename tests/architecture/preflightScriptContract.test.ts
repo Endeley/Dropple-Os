@@ -75,3 +75,34 @@ test('runbook npm scripts are defined in package scripts', () => {
     }
   }
 });
+
+test('contributing checklist includes canonical PR confidence sequence', () => {
+  const pkg = readPackageJson();
+  const scripts = pkg?.scripts ?? {};
+  const contributingPath = path.join(ROOT, 'CONTRIBUTING.md');
+  const markdown = fs.readFileSync(contributingPath, 'utf8');
+
+  const requiredCommands = [
+    'preflight',
+    'test:release:attestation',
+    'release:trust:report',
+    'release:trust:summary',
+    'validate:release',
+  ];
+
+  for (const command of requiredCommands) {
+    assert.equal(
+      typeof scripts[command],
+      'string',
+      `contributing checklist command npm run ${command} is not defined in package.json scripts`,
+    );
+    assert.match(
+      markdown,
+      new RegExp(`npm run ${command}`),
+      `CONTRIBUTING.md is missing required command: npm run ${command}`,
+    );
+  }
+
+  // Ensure release authority remains documented as separate from preflight.
+  assert.match(markdown, /Release authority remains separate:/);
+});
