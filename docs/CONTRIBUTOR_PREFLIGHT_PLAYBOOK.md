@@ -55,6 +55,34 @@ Expected outcome:
 - trust report is generated with deterministic checks
 - summary is readable for reviewers and includes explicit OS surface sections
 
+## Canonical Command Order
+
+Use this exact sequence to avoid drift between contributor, PR, and release flows:
+
+Commands only:
+
+```bash
+npm run preflight
+npm run test:release:attestation
+npm run release:trust:report
+npm run release:trust:summary
+```
+
+Release authority remains separate:
+
+```bash
+npm run validate:release
+```
+
+Optional ledger append/verify (operator/release maintenance):
+
+```bash
+npm run release:trust:ledger
+npm run release:trust:ledger:verify
+npm run release:federation:lineage:ledger
+npm run release:federation:lineage:ledger:verify
+```
+
 ## Release Flow (Authority Gate)
 
 Use this sequence for release decisions:

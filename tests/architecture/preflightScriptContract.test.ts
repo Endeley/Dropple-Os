@@ -10,6 +10,21 @@ function readPackageJson() {
   return JSON.parse(raw);
 }
 
+function extractNpmRunCommands(markdown) {
+  const commands = new Set();
+  const fenced = markdown.match(/```bash[\s\S]*?```/g) ?? [];
+  const npmRunPattern = /\bnpm run ([a-zA-Z0-9:_-]+)/g;
+
+  for (const block of fenced) {
+    let match = null;
+    while ((match = npmRunPattern.exec(block)) !== null) {
+      commands.add(match[1]);
+    }
+  }
+
+  return [...commands].sort();
+}
+
 test('preflight script includes generated drift guard before fast gate', () => {
   const pkg = readPackageJson();
   const scripts = pkg?.scripts ?? {};
@@ -28,4 +43,26 @@ test('preflight script includes generated drift guard before fast gate', () => {
   assert.equal(checkIndex > -1, true);
   assert.equal(fastGateIndex > -1, true);
   assert.equal(checkIndex < fastGateIndex, true);
+});
+
+test('runbook npm scripts are defined in package scripts', () => {
+  const pkg = readPackageJson();
+  const scripts = pkg?.scripts ?? {};
+
+  const runbookPaths = [
+    path.join(ROOT, 'docs', 'CONTRIBUTOR_PREFLIGHT_PLAYBOOK.md'),
+    path.join(ROOT, 'docs', 'RELEASE_TRUST_TRIAGE_RUNBOOK.md'),
+  ];
+
+  for (const runbookPath of runbookPaths) {
+    const markdown = fs.readFileSync(runbookPath, 'utf8');
+    const commands = extractNpmRunCommands(markdown);
+    for (const command of commands) {
+      assert.equal(
+        typeof scripts[command],
+        'string',
+        `runbook command npm run ${command} is not defined in package.json scripts`,
+      );
+    }
+  }
 });
