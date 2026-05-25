@@ -360,6 +360,22 @@ async function dragNodeWithAltHeldShiftReleasedMidDrag(page, locator, delta) {
   await page.keyboard.up('Alt');
 }
 
+async function cancelActivePointerSession(page, { pointerId = 1, clientX = 0, clientY = 0 } = {}) {
+  await page.evaluate(
+    ({ id, x, y }) => {
+      const event = new PointerEvent('pointercancel', {
+        pointerId: id,
+        bubbles: true,
+        cancelable: true,
+        clientX: x,
+        clientY: y,
+      });
+      window.dispatchEvent(event);
+    },
+    { id: pointerId, x: clientX, y: clientY },
+  );
+}
+
 async function dragResizeHandle(page, locator, delta) {
   const box = await locator.boundingBox();
   if (!box) {
@@ -1327,6 +1343,68 @@ test('workspace new alt-held shift-release duplicate remains undo-redo lawful an
     return JSON.stringify({
       count: afterRedo.allIds.length,
       points: canonicalPoints,
+    });
+  };
+
+  const hashA = await runFlow();
+  await page.reload({ waitUntil: 'networkidle' });
+  const hashB = await runFlow();
+  expect(hashB).toBe(hashA);
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
+test('workspace new pointercancel during alt+shift pending drag fails closed and next drag stays clean', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+
+  const runFlow = async () => {
+    await gotoNewWorkspace(page);
+    await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+
+    const nodes = page.locator('[data-node-id]');
+    await waitForNodeCount(page, 1);
+    const source = nodes.first();
+    await activateTool(page, 'select');
+    await source.click({ force: true });
+    await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+
+    const sourceId = await source.getAttribute('data-node-id');
+    expect(sourceId).toBeTruthy();
+    const before = await source.boundingBox();
+    expect(before).not.toBeNull();
+
+    await page.keyboard.down('Alt');
+    await page.keyboard.down('Shift');
+    await page.mouse.move(before.x + before.width / 2, before.y + before.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(before.x + before.width / 2 + 2, before.y + before.height / 2 + 1, {
+      steps: 2,
+    });
+    await cancelActivePointerSession(page, {
+      pointerId: 1,
+      clientX: before.x + before.width / 2 + 2,
+      clientY: before.y + before.height / 2 + 1,
+    });
+    await page.keyboard.up('Shift');
+    await page.keyboard.up('Alt');
+
+    await waitForNodeCount(page, 1);
+    const afterCancel = page.locator(`[data-node-id="${sourceId}"]`);
+    await expect(afterCancel).toBeVisible();
+
+    // Ensure subsequent drag starts from a clean interaction state.
+    await dragNode(page, afterCancel, { x: 70, y: 45 });
+    const moved = await afterCancel.boundingBox();
+    expect(Math.abs(moved.x - before.x)).toBeGreaterThanOrEqual(24);
+    expect(Math.abs(moved.y - before.y)).toBeGreaterThanOrEqual(16);
+
+    return JSON.stringify({
+      count: await nodes.count(),
+      x: Math.round(moved.x),
+      y: Math.round(moved.y),
+      w: Math.round(moved.width),
+      h: Math.round(moved.height),
     });
   };
 
