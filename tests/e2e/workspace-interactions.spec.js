@@ -713,6 +713,169 @@ test('workspace new alt-drag duplicate preserves source identity and projection 
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
 
+test('workspace new alt-drag duplicate on multi-selection keeps sources stable and remains undo-redo lawful', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+
+  await gotoNewWorkspace(page);
+  await createFrame(page, { x: 140, y: 180 }, { x: 280, y: 300 });
+  await createFrame(page, { x: 320, y: 220 }, { x: 460, y: 340 });
+
+  const nodes = page.locator('[data-node-id]');
+  await waitForNodeCount(page, 2);
+
+  const sourceA = nodes.nth(0);
+  const sourceB = nodes.nth(1);
+  await activateTool(page, 'select');
+  await sourceA.click({ force: true });
+  await page.keyboard.down('Shift');
+  await sourceB.click({ force: true });
+  await page.keyboard.up('Shift');
+  await expect(page.getByTestId('selection-outline')).toHaveCount(2);
+
+  const sourceAId = await sourceA.getAttribute('data-node-id');
+  const sourceBId = await sourceB.getAttribute('data-node-id');
+  expect(sourceAId).toBeTruthy();
+  expect(sourceBId).toBeTruthy();
+
+  const sourceABefore = await page.evaluate((ids) => {
+    const out = {};
+    ids.forEach((id) => {
+      const el = document.querySelector(`[data-node-id="${id}"]`);
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      out[id] = {
+        x: Math.round(rect.x),
+        y: Math.round(rect.y),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+      };
+    });
+    return out;
+  }, [sourceAId, sourceBId]);
+
+  await dragNode(page, sourceB, { x: 90, y: 55 }, { holdAlt: true });
+  await waitForNodeCount(page, 4);
+  await expect(page.getByTestId('selection-outline')).toHaveCount(2);
+
+  const afterDuplicate = await page.evaluate((sourceIds) => {
+    const sourceSet = new Set(sourceIds);
+    const allIds = Array.from(document.querySelectorAll('[data-node-id]'))
+      .map((el) => el.getAttribute('data-node-id'))
+      .filter(Boolean);
+    const duplicateIds = allIds.filter((id) => !sourceSet.has(id));
+    const primary = document
+      .querySelector('[data-selection-primary="true"]')
+      ?.getAttribute('data-selection-node-id') ?? null;
+    const byId = {};
+    allIds.forEach((id) => {
+      const el = document.querySelector(`[data-node-id="${id}"]`);
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      byId[id] = {
+        x: Math.round(rect.x),
+        y: Math.round(rect.y),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+      };
+    });
+    return { allIds, duplicateIds, primary, byId };
+  }, [sourceAId, sourceBId]);
+
+  expect(afterDuplicate.duplicateIds).toHaveLength(2);
+  expect(afterDuplicate.primary).toBeTruthy();
+  expect(afterDuplicate.duplicateIds.includes(afterDuplicate.primary)).toBe(true);
+
+  for (const sourceId of [sourceAId, sourceBId]) {
+    expect(afterDuplicate.byId[sourceId]).toBeTruthy();
+    expect(afterDuplicate.byId[sourceId].x).toBe(sourceABefore[sourceId].x);
+    expect(afterDuplicate.byId[sourceId].y).toBe(sourceABefore[sourceId].y);
+  }
+
+  const duplicatedSnapshot = await page.evaluate((sourceIds) => {
+    const sourceSet = new Set(sourceIds);
+    const allIds = Array.from(document.querySelectorAll('[data-node-id]'))
+      .map((el) => el.getAttribute('data-node-id'))
+      .filter(Boolean);
+    const duplicateIds = allIds.filter((id) => !sourceSet.has(id));
+    const byId = {};
+    allIds.forEach((id) => {
+      const el = document.querySelector(`[data-node-id="${id}"]`);
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      byId[id] = {
+        x: Math.round(rect.x),
+        y: Math.round(rect.y),
+      };
+    });
+    return {
+      allIds: [...allIds].sort(),
+      duplicateIds: [...duplicateIds].sort(),
+      byId,
+    };
+  }, [sourceAId, sourceBId]);
+
+  const undoSteps = 4;
+  for (let i = 0; i < undoSteps; i += 1) {
+    await page.evaluate(() => globalThis.__droppleDispatcher?.undo?.());
+  }
+
+  const afterUndo = await page.evaluate((ids) => {
+    const allIds = Array.from(document.querySelectorAll('[data-node-id]'))
+      .map((el) => el.getAttribute('data-node-id'))
+      .filter(Boolean);
+    const byId = {};
+    ids.forEach((id) => {
+      const el = document.querySelector(`[data-node-id="${id}"]`);
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      byId[id] = {
+        x: Math.round(rect.x),
+        y: Math.round(rect.y),
+      };
+    });
+    return { allIds, byId };
+  }, [sourceAId, sourceBId]);
+
+  expect(afterUndo.allIds.length === 2 || afterUndo.allIds.length === 4).toBe(true);
+
+  for (let i = 0; i < undoSteps; i += 1) {
+    await page.evaluate(() => globalThis.__droppleDispatcher?.redo?.());
+  }
+  await waitForNodeCount(page, 4);
+
+  const afterRedo = await page.evaluate((sourceIds) => {
+    const sourceSet = new Set(sourceIds);
+    const allIds = Array.from(document.querySelectorAll('[data-node-id]'))
+      .map((el) => el.getAttribute('data-node-id'))
+      .filter(Boolean);
+    const duplicateIds = allIds.filter((id) => !sourceSet.has(id));
+    const byId = {};
+    allIds.forEach((id) => {
+      const el = document.querySelector(`[data-node-id="${id}"]`);
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      byId[id] = {
+        x: Math.round(rect.x),
+        y: Math.round(rect.y),
+      };
+    });
+    return {
+      allIds: [...allIds].sort(),
+      duplicateIds: [...duplicateIds].sort(),
+      byId,
+    };
+  }, [sourceAId, sourceBId]);
+  expect(afterRedo.duplicateIds).toHaveLength(2);
+  expect(afterRedo.allIds).toEqual(duplicatedSnapshot.allIds);
+  for (const id of afterRedo.allIds) {
+    expect(afterRedo.byId[id]?.x).toBe(duplicatedSnapshot.byId[id]?.x);
+    expect(afterRedo.byId[id]?.y).toBe(duplicatedSnapshot.byId[id]?.y);
+  }
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
 test('workspace new keyboard nudge commits canonical layout and remains replay-stable with no projection residue', async ({ page }) => {
   const runtimeErrors = attachRuntimeErrorCollectors(page);
   const runFlow = async () => {
