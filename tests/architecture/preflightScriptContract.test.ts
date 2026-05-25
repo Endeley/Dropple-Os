@@ -43,6 +43,15 @@ test('preflight script includes generated drift guard before fast gate', () => {
   assert.equal(checkIndex > -1, true);
   assert.equal(fastGateIndex > -1, true);
   assert.equal(checkIndex < fastGateIndex, true);
+
+  // Contributor preflight must remain a fast confidence lane,
+  // not a release-authority lane.
+  assert.doesNotMatch(preflight, /npm run validate:release/);
+  assert.doesNotMatch(preflight, /npm run test:release:attestation/);
+  assert.doesNotMatch(preflight, /npm run release:trust:ledger/);
+  assert.doesNotMatch(preflight, /npm run release:trust:ledger:verify/);
+  assert.doesNotMatch(preflight, /npm run release:federation:lineage:ledger/);
+  assert.doesNotMatch(preflight, /npm run release:federation:lineage:ledger:verify/);
 });
 
 test('runbook npm scripts are defined in package scripts', () => {
