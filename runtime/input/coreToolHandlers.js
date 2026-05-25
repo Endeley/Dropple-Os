@@ -277,6 +277,10 @@ function hasCrossedThreshold(startPointer, currentPointer, threshold = DRAG_THRE
     );
 }
 
+function isAxisLockRequested(input) {
+    return input?.event?.shiftKey === true || input?.modifiers?.shift === true;
+}
+
 function buildMarqueeRect(startPointer, currentPointer) {
     if (!startPointer || !currentPointer) return null;
 
@@ -366,6 +370,7 @@ function moveToolHandler(input, context) {
             };
             const delta = computeDragDelta(promotedDrag, {
                 runtime: runtimeState,
+                axisLock: isAxisLockRequested(input),
             });
 
             dispatcher.dispatch({
@@ -404,6 +409,7 @@ function moveToolHandler(input, context) {
         };
         const delta = computeDragDelta(nextDrag, {
             runtime: runtimeState,
+            axisLock: isAxisLockRequested(input),
         });
 
         dispatcher.dispatch({
