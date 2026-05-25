@@ -2156,6 +2156,75 @@ test('workspace new keyboard nudge remains stable across workspace route transit
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
 
+test('workspace drag session is cleared across route transition and resumes cleanly on return', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoNewWorkspace(page);
+
+  await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+  const node = page.locator('[data-node-id]').first();
+  await expect(node).toBeVisible();
+  await activateTool(page, 'select');
+  await node.click({ force: true });
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+
+  const sourceId = await node.getAttribute('data-node-id');
+  expect(sourceId).toBeTruthy();
+  const before = await node.boundingBox();
+  expect(before).not.toBeNull();
+
+  // Start an in-flight drag (pointer down + movement over threshold), then route away.
+  await page.mouse.move(before.x + before.width / 2, before.y + before.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(before.x + before.width / 2 + 26, before.y + before.height / 2 + 14, {
+    steps: 5,
+  });
+
+  await page.goto('/workspace/graphic', { waitUntil: 'networkidle' });
+  await expect(page.getByTestId('canvas-host')).toBeVisible();
+
+  const dragActiveAfterRoute = await page.evaluate(() => {
+    const state = globalThis.__droppleDispatcher?.getState?.();
+    return Boolean(state?.interaction?.drag?.active);
+  });
+  expect(dragActiveAfterRoute).toBe(false);
+
+  // Defensive pointer release in case browser kept button state.
+  await page.mouse.up().catch(() => {});
+
+  await page.goto('/workspace/new', { waitUntil: 'networkidle' });
+  await expect(page.getByTestId('canvas-host')).toBeVisible();
+
+  const dragActiveOnReturn = await page.evaluate(() => {
+    const state = globalThis.__droppleDispatcher?.getState?.();
+    return Boolean(state?.interaction?.drag?.active);
+  });
+  expect(dragActiveOnReturn).toBe(false);
+  const overlayDebug = await page.evaluate(() => document.documentElement.dataset.droppleOverlayDebug || null);
+  expect(overlayDebug === null || overlayDebug === 'idle').toBe(true);
+
+  // Fresh drag on return must behave normally and not leak duplicate/ghost mutations.
+  await createFrame(page, { x: 260, y: 220 }, { x: 400, y: 340 });
+  const returnNode = page.locator('[data-node-id]').first();
+  await expect(returnNode).toBeVisible();
+  await activateTool(page, 'select');
+  await returnNode.click({ force: true });
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+
+  const returnId = await returnNode.getAttribute('data-node-id');
+  expect(returnId).toBeTruthy();
+  const returnBefore = await returnNode.boundingBox();
+  expect(returnBefore).not.toBeNull();
+  await dragNode(page, returnNode, { x: 74, y: 46 });
+  await waitForNodeCount(page, 1);
+
+  const moved = await page.locator(`[data-node-id="${returnId}"]`).boundingBox();
+  expect(Math.abs(moved.x - returnBefore.x)).toBeGreaterThanOrEqual(24);
+  expect(Math.abs(moved.y - returnBefore.y)).toBeGreaterThanOrEqual(16);
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
 test('workspace new resize remains modifier-neutral and deterministic across base/shift/alt gestures', async ({ page }) => {
   const runtimeErrors = attachRuntimeErrorCollectors(page);
   await gotoNewWorkspace(page);
