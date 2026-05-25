@@ -331,6 +331,35 @@ async function dragNodeWithShiftReleaseMidDrag(page, locator, delta, releaseAfte
   await page.mouse.up();
 }
 
+async function dragNodeWithAltHeldShiftReleasedMidDrag(page, locator, delta) {
+  const box = await locator.boundingBox();
+  if (!box) {
+    throw new Error('Target node did not render');
+  }
+
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+
+  await page.keyboard.down('Alt');
+  await page.waitForTimeout(16);
+
+  await page.mouse.move(cx, cy);
+  await page.mouse.down();
+  // Cross threshold with alt held (duplicate request stays live).
+  await page.mouse.move(cx + 20, cy + 8, { steps: 4 });
+  // Enable shift only after promotion to move.
+  await page.keyboard.down('Shift');
+  await page.waitForTimeout(16);
+  await page.mouse.move(cx + 44, cy + 8, { steps: 4 });
+  await page.keyboard.up('Shift');
+  await page.waitForTimeout(16);
+  // Continue with alt still down; y movement should now be applied without lock.
+  await page.mouse.move(cx + delta.x, cy + delta.y, { steps: 8 });
+  await page.mouse.up();
+
+  await page.keyboard.up('Alt');
+}
+
 async function dragResizeHandle(page, locator, delta) {
   const box = await locator.boundingBox();
   if (!box) {
@@ -1080,6 +1109,71 @@ test('workspace new shift-alt drag on multi-selection stays non-duplicating and 
     return JSON.stringify({
       count: afterMove.allIds.length,
       normalized,
+    });
+  };
+
+  const hashA = await runFlow();
+  await page.reload({ waitUntil: 'networkidle' });
+  const hashB = await runFlow();
+  expect(hashB).toBe(hashA);
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
+test('workspace new alt-held shift-release mid-drag duplicates once and exits axis lock deterministically', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+
+  const runFlow = async () => {
+    await gotoNewWorkspace(page);
+    await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+
+    const nodes = page.locator('[data-node-id]');
+    await expect(nodes).toHaveCount(1);
+    const source = nodes.first();
+
+    await activateTool(page, 'select');
+    await source.click({ force: true });
+    await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+
+    const sourceId = await source.getAttribute('data-node-id');
+    expect(sourceId).toBeTruthy();
+
+    await dragNodeWithAltHeldShiftReleasedMidDrag(page, source, { x: 92, y: 54 });
+
+    await waitForNodeCount(page, 2);
+    const duplicateId = await page.evaluate((id) => {
+      const ids = Array.from(document.querySelectorAll('[data-node-id]'))
+        .map((el) => el.getAttribute('data-node-id'))
+        .filter(Boolean);
+      return ids.find((candidate) => candidate !== id) || null;
+    }, sourceId);
+    expect(duplicateId).toBeTruthy();
+
+    const sourceAfter = page.locator(`[data-node-id="${sourceId}"]`);
+    const duplicate = page.locator(`[data-node-id="${duplicateId}"]`);
+    await expect(sourceAfter).toBeVisible();
+    await expect(duplicate).toBeVisible();
+
+    const sourceBox = await sourceAfter.boundingBox();
+    const duplicateBox = await duplicate.boundingBox();
+    expect(sourceBox).not.toBeNull();
+    expect(duplicateBox).not.toBeNull();
+
+    expect(Math.abs(duplicateBox.x - sourceBox.x)).toBeGreaterThanOrEqual(24);
+    expect(Math.abs(duplicateBox.y - sourceBox.y)).toBeGreaterThanOrEqual(18);
+    await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+
+    return JSON.stringify({
+      source: {
+        x: Math.round(sourceBox.x),
+        y: Math.round(sourceBox.y),
+      },
+      duplicate: {
+        x: Math.round(duplicateBox.x),
+        y: Math.round(duplicateBox.y),
+      },
+      count: await nodes.count(),
     });
   };
 
