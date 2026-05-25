@@ -174,6 +174,7 @@ function EditorWorkspaceLayoutInner({
         enabled: keyboardEnabled,
         emit,
         getState,
+        selectedIds,
     });
 
     useGroupShortcuts({
