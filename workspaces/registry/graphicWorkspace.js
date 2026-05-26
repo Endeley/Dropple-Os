@@ -48,6 +48,8 @@ export const graphicWorkspace = {
         EventTypes.NODE_MOVE,
         EventTypes.NODE_RESIZE,
         EventTypes.NODE_REORDER,
+        EventTypes.ALIGN_NODES,
+        EventTypes.DISTRIBUTE_NODES,
         'node.layout.update',
         'node.layout.bulk',
         'node.layout.rotate',

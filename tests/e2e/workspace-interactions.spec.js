@@ -441,6 +441,23 @@ async function readCanonicalLayoutX(page, nodeId) {
   }, nodeId);
 }
 
+async function triggerAlignmentShortcut(page, key, { shift = false } = {}) {
+  await page.evaluate(
+    ({ keyboardKey, shiftKey }) => {
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: keyboardKey,
+          bubbles: true,
+          cancelable: true,
+          ctrlKey: true,
+          shiftKey,
+        }),
+      );
+    },
+    { keyboardKey: key, shiftKey: shift },
+  );
+}
+
 async function readInteractionProjectionX(page, nodeId) {
   return page.evaluate((id) => {
     const state = globalThis.__droppleDispatcher?.getState?.();
@@ -522,6 +539,8 @@ test('workspace new can multi-select and drag multiple nodes together', async ({
   const second = nodes.nth(1);
 
   await activateTool(page, 'select');
+  await second.click({ force: true });
+  await page.keyboard.press('ArrowRight');
   await first.click({ force: true });
   await page.keyboard.down('Shift');
   await second.click({ force: true });
@@ -727,6 +746,105 @@ test('workspace new keyboard nudge and shift-nudge move selected node with prese
   await expect(page.getByTestId('selection-outline')).toHaveCount(1);
   await expect(selectionPrimary).toHaveCount(1);
   await expect(selectionPrimary).toHaveAttribute('data-selection-node-id', selectedNodeId);
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
+test('workspace new keyboard align-left shortcut is deterministic and undo-redo lawful', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoNewWorkspace(page);
+
+  await createFrame(page, { x: 140, y: 180 }, { x: 280, y: 300 });
+  await createFrame(page, { x: 340, y: 240 }, { x: 500, y: 360 });
+  const nodes = page.locator('[data-node-id]');
+  await expect(nodes).toHaveCount(2);
+
+  const first = nodes.nth(0);
+  const second = nodes.nth(1);
+
+  await activateTool(page, 'select');
+  await first.click({ force: true });
+  await page.keyboard.down('Shift');
+  await second.click({ force: true });
+  await page.keyboard.up('Shift');
+  await expect(page.getByTestId('selection-outline')).toHaveCount(2);
+
+  const [idA, idB] = await Promise.all([
+    first.getAttribute('data-node-id'),
+    second.getAttribute('data-node-id'),
+  ]);
+  expect(idA).toBeTruthy();
+  expect(idB).toBeTruthy();
+
+  const readLayoutPair = async () =>
+    page.evaluate((ids) => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const nodesById = state?.document?.layout?.nodes ?? {};
+      const selectionIds = state?.runtime?.selection?.ids ?? state?.selection?.ids ?? [];
+      const selectionCount = Array.isArray(selectionIds) ? selectionIds.length : selectionIds?.size ?? 0;
+      return {
+        values: ids.map((id) => {
+          const node = nodesById[id];
+          if (!node) return null;
+          return { x: node.x ?? 0, y: node.y ?? 0 };
+        }),
+        selectionCount,
+      };
+    }, [idA, idB]);
+
+  await expect
+    .poll(async () => (await readLayoutPair()).selectionCount)
+    .toBeGreaterThan(1);
+  await expect
+    .poll(async () => {
+      const { values } = await readLayoutPair();
+      const [a, b] = values;
+      if (!a || !b) return null;
+      return a.x !== b.x;
+    })
+    .toBe(true);
+
+  await triggerAlignmentShortcut(page, 'ArrowLeft');
+  await expect
+    .poll(async () => {
+      const { values } = await readLayoutPair();
+      const [a, b] = values;
+      if (!a || !b) return null;
+      return a.x === b.x;
+    })
+    .toBe(true);
+
+  let undoObserved = false;
+  for (let i = 0; i < 3; i += 1) {
+    await page.evaluate(() => globalThis.__droppleDispatcher?.undo?.());
+    const { values } = await readLayoutPair();
+    const [a, b] = values;
+    if (a && b && a.x !== b.x) {
+      undoObserved = true;
+      break;
+    }
+  }
+  expect(undoObserved).toBe(true);
+
+  let redoObserved = false;
+  for (let i = 0; i < 3; i += 1) {
+    await page.evaluate(() => globalThis.__droppleDispatcher?.redo?.());
+    const { values } = await readLayoutPair();
+    const [a, b] = values;
+    if (a && b && a.x === b.x) {
+      redoObserved = true;
+      break;
+    }
+  }
+  expect(redoObserved).toBe(true);
+
+  await first.click({ force: true });
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  const beforeSingle = await readLayoutPair();
+  await triggerAlignmentShortcut(page, 'ArrowRight');
+  const afterSingle = await readLayoutPair();
+  expect(afterSingle.values).toEqual(beforeSingle.values);
 
   expect(runtimeErrors.pageErrors).toEqual([]);
   expect(runtimeErrors.consoleErrors).toEqual([]);

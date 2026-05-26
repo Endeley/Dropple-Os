@@ -59,6 +59,8 @@ export const uiuxWorkspace = {
     },
 
     allowedEventTypes: [
+        EventTypes.ALIGN_NODES,
+        EventTypes.DISTRIBUTE_NODES,
         EventTypes.VECTOR_CREATE,
         EventTypes.VECTOR_UPDATE,
         EventTypes.VECTOR_DELETE,

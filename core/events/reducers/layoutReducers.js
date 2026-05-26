@@ -2,6 +2,8 @@
 
 import { EventTypes } from '../eventTypes.js';
 import { markLayoutDirty } from './layoutDirtyHelpers.js';
+import { alignNodes } from '@/engine/alignment/alignNodes.js';
+import { distributeNodes } from '@/engine/alignment/distributeNodes.js';
 
 function getSceneNodes(state) {
     return state?.document?.sceneGraph?.nodes ?? {};
@@ -80,6 +82,70 @@ export function layoutReducers(state, event) {
                 },
             }), {
                 nodeIds: [id],
+            });
+        }
+
+        case EventTypes.ALIGN_NODES: {
+            const { alignment, nodeIds } = payload || {};
+            if (!alignment || !Array.isArray(nodeIds) || nodeIds.length < 2) return state;
+
+            const nextLayoutNodes = {
+                ...(getLayoutSystem(state)?.nodes ?? {}),
+            };
+            const targets = nodeIds
+                .map((id) => {
+                    const layout = nextLayoutNodes[id];
+                    return layout ? { id, layout } : null;
+                })
+                .filter(Boolean);
+            if (targets.length < 2) return state;
+
+            const updates = alignNodes(targets, alignment);
+            if (!Array.isArray(updates) || updates.length === 0) return state;
+
+            updates.forEach((update) => {
+                const prevLayout = nextLayoutNodes[update.id] ?? {};
+                nextLayoutNodes[update.id] = {
+                    ...prevLayout,
+                    x: update.x,
+                    y: update.y,
+                };
+            });
+
+            return markLayoutDirty(applyLayoutNodes(state, nextLayoutNodes), {
+                nodeIds: updates.map((update) => update.id),
+            });
+        }
+
+        case EventTypes.DISTRIBUTE_NODES: {
+            const { axis, nodeIds } = payload || {};
+            if (!axis || !Array.isArray(nodeIds) || nodeIds.length < 3) return state;
+
+            const nextLayoutNodes = {
+                ...(getLayoutSystem(state)?.nodes ?? {}),
+            };
+            const targets = nodeIds
+                .map((id) => {
+                    const layout = nextLayoutNodes[id];
+                    return layout ? { id, layout } : null;
+                })
+                .filter(Boolean);
+            if (targets.length < 3) return state;
+
+            const updates = distributeNodes(targets, axis);
+            if (!Array.isArray(updates) || updates.length === 0) return state;
+
+            updates.forEach((update) => {
+                const prevLayout = nextLayoutNodes[update.id] ?? {};
+                nextLayoutNodes[update.id] = {
+                    ...prevLayout,
+                    x: update.x,
+                    y: update.y,
+                };
+            });
+
+            return markLayoutDirty(applyLayoutNodes(state, nextLayoutNodes), {
+                nodeIds: updates.map((update) => update.id),
             });
         }
 
