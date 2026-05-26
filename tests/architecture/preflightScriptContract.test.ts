@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { GENERATED_DRIFT_TARGETS } from '@/scripts/generatedDriftTargets.mjs';
 
 const ROOT = process.cwd();
 
@@ -145,5 +146,22 @@ test('workspace interaction contract keeps alt-release duplicate semantics align
   assert.doesNotMatch(
     interactionsSpec,
     /workspace new alt-drag releasing alt before threshold stays non-duplicating and deterministic/,
+  );
+});
+
+test('generated drift cleanup command in playbook stays aligned with canonical target list', () => {
+  const playbook = fs.readFileSync(
+    path.join(ROOT, 'docs', 'CONTRIBUTOR_PREFLIGHT_PLAYBOOK.md'),
+    'utf8',
+  );
+
+  const restoreLineMatch = playbook.match(/git restore ([^\n]+)/);
+  assert.ok(restoreLineMatch, 'playbook must include generated drift restore command');
+  const listedTargets = restoreLineMatch[1].trim().split(/\s+/).filter(Boolean);
+
+  assert.deepEqual(
+    listedTargets,
+    GENERATED_DRIFT_TARGETS,
+    'playbook generated drift restore command must match canonical targets helper',
   );
 });

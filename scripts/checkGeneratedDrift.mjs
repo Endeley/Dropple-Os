@@ -1,14 +1,7 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
-
-const GENERATED_PATH_PATTERNS = [
-  /^\.registry\/certifiedTemplates\.json$/,
-  /^reports\/architecture-phase-progress\.json$/,
-  /^reports\/architecture-radar\.json$/,
-  /^reports\/architecture-score\.json$/,
-  /^reports\/architecture-status\.json$/,
-];
+import { GENERATED_DRIFT_TARGET_PATTERNS } from './generatedDriftTargets.mjs';
 
 function runGitStatus() {
   const result = spawnSync('git', ['status', '--porcelain'], {
@@ -30,7 +23,7 @@ function parseChangedPaths(statusOutput) {
 }
 
 function isGeneratedPath(path) {
-  return GENERATED_PATH_PATTERNS.some((pattern) => pattern.test(path));
+  return GENERATED_DRIFT_TARGET_PATTERNS.some((pattern) => pattern.test(path));
 }
 
 const statusOutput = runGitStatus();
