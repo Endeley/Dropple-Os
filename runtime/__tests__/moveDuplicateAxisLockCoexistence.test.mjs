@@ -7,7 +7,7 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-function runPendingMovePromotion({ alt, shift }) {
+function runPendingMovePromotion({ alt, shift, duplicateRequested = true }) {
   const dispatched = [];
   const runtimeState = {
     document: {
@@ -29,7 +29,7 @@ function runPendingMovePromotion({ alt, shift }) {
         currentPointer: { x: 0, y: 0 },
         previousPointer: { x: 0, y: 0 },
         origin: { a: { x: 0, y: 0 } },
-        meta: { snapTargets: [], duplicateRequested: true },
+        meta: { snapTargets: [], duplicateRequested },
         group: null,
       },
     },
@@ -91,5 +91,16 @@ assert(
 const shiftOnlyBulk = shiftOnly.dispatched.find((event) => event.type === 'node.layout.bulk');
 assert(Boolean(shiftOnlyBulk), 'shift-only promotion should emit layout bulk update');
 assert(shiftOnlyBulk.payload?.updates?.[0]?.y === 0, 'shift-only move should keep axis lock');
+
+const lateAltPress = runPendingMovePromotion({
+  alt: true,
+  shift: false,
+  duplicateRequested: false,
+});
+assert(lateAltPress.result?.handled === true, 'late-alt promotion should be handled');
+assert(
+  lateAltPress.dispatched.every((event) => event.type !== EventTypes.NODE_CREATE),
+  'late alt press must not retroactively duplicate when duplicate intent was not requested at drag start',
+);
 
 console.log('MOVE DUPLICATE + AXIS LOCK COEXISTENCE: true');
