@@ -13,6 +13,8 @@ test('pull request CI workflow runs validate:release as a required release gate'
     const workflow = read('.github/workflows/ci.yml');
 
     assert.match(workflow, /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24:\s*"true"/);
+    assert.match(workflow, /concurrency:\s*\n\s*group:\s*ci-\$\{\{\s*github\.ref\s*\}\}/);
+    assert.match(workflow, /concurrency:[\s\S]*cancel-in-progress:\s*true/);
     assert.match(workflow, /release-trust-gate-pr:/);
     assert.match(workflow, /name:\s*PR Release Validation \(validate:release\)/);
     assert.match(workflow, /if:\s*github\.event_name\s*==\s*'pull_request'/);

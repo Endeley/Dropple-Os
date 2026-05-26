@@ -182,6 +182,20 @@ npm run validate:pr:fast
 
 before requesting review.
 
+## CI Cancellation Annotations (Expected Behavior)
+
+- Annotation examples:
+- `Canceling since a higher priority waiting request for ci-refs/heads/main exists`
+- `The operation was canceled.`
+
+Meaning:
+- CI concurrency is configured to prefer the latest run per branch ref.
+- Older in-flight runs are auto-canceled (`concurrency.group=ci-${{ github.ref }}`, `cancel-in-progress=true`).
+
+Triage rule:
+- Do not treat these as product/runtime regressions.
+- Evaluate the newest run on the same ref as authoritative.
+
 ## Copy/Paste Safety Rule
 
 - Only copy fenced `bash` blocks into terminal.
