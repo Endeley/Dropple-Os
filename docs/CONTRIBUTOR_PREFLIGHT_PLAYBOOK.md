@@ -186,3 +186,20 @@ git restore .registry/certifiedTemplates.json reports/architecture-phase-progres
 
 - Only copy fenced `bash` blocks into terminal.
 - Do not execute prose lines or file names (for example `CONTRIBUTING.md`).
+
+## Behavior Law Update Checklist
+
+When runtime behavior law changes (especially interaction lifecycle semantics):
+
+1. Update runtime contract tests first.
+2. Update matching e2e contract expectations in the same change set.
+3. Run:
+
+Commands only:
+
+```bash
+npm run preflight
+npm run test:release:operator-surfaces
+```
+
+4. Push runtime + e2e contract updates together to avoid CI drift where old e2e expectations conflict with new runtime behavior.

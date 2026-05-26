@@ -131,3 +131,19 @@ test('stabilization lock keeps core workflow scripts and ci release wiring intac
   assert.match(workflow, /name:\s*PR Release Validation \(validate:release\)/);
   assert.match(workflow, /run:\s*npm run validate:release/);
 });
+
+test('workspace interaction contract keeps alt-release duplicate semantics aligned with runtime law', () => {
+  const interactionsSpec = fs.readFileSync(
+    path.join(ROOT, 'tests', 'e2e', 'workspace-interactions.spec.js'),
+    'utf8',
+  );
+
+  assert.match(
+    interactionsSpec,
+    /workspace new alt-drag releasing alt before threshold still duplicates from drag-start intent/,
+  );
+  assert.doesNotMatch(
+    interactionsSpec,
+    /workspace new alt-drag releasing alt before threshold stays non-duplicating and deterministic/,
+  );
+});
