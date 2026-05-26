@@ -989,7 +989,7 @@ test('workspace new alt-drag duplicate on multi-selection keeps sources stable a
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
 
-test('workspace new alt-drag releasing alt before threshold stays non-duplicating and deterministic', async ({ page }) => {
+test('workspace new alt-drag releasing alt before threshold still duplicates from drag-start intent', async ({ page }) => {
   const runtimeErrors = attachRuntimeErrorCollectors(page);
 
   const runFlow = async () => {
@@ -1012,27 +1012,46 @@ test('workspace new alt-drag releasing alt before threshold stays non-duplicatin
     expect(before).not.toBeNull();
 
     await dragNodeWithAltReleaseBeforeThreshold(page, source, { x: 90, y: 55 });
-    await waitForNodeCount(page, 1);
+    await waitForNodeCount(page, 2);
 
-    const after = page.locator(`[data-node-id="${sourceId}"]`);
-    await expect(after).toBeVisible();
-    const afterBox = await after.boundingBox();
-    expect(afterBox).not.toBeNull();
-    expect(Math.abs(afterBox.x - before.x)).toBeGreaterThanOrEqual(30);
-    expect(Math.abs(afterBox.y - before.y)).toBeGreaterThanOrEqual(20);
+    const duplicateId = await page.evaluate((id) => {
+      const ids = Array.from(document.querySelectorAll('[data-node-id]'))
+        .map((el) => el.getAttribute('data-node-id'))
+        .filter(Boolean);
+      return ids.find((nodeId) => nodeId !== id) ?? null;
+    }, sourceId);
+    expect(duplicateId).toBeTruthy();
+
+    const sourceAfter = page.locator(`[data-node-id="${sourceId}"]`);
+    await expect(sourceAfter).toBeVisible();
+    const sourceAfterBox = await sourceAfter.boundingBox();
+    expect(sourceAfterBox).not.toBeNull();
+    expect(sourceAfterBox.x).toBeCloseTo(before.x, 0);
+    expect(sourceAfterBox.y).toBeCloseTo(before.y, 0);
+
+    const duplicate = page.locator(`[data-node-id="${duplicateId}"]`);
+    await expect(duplicate).toBeVisible();
+    const duplicateBox = await duplicate.boundingBox();
+    expect(duplicateBox).not.toBeNull();
+    expect(Math.abs(duplicateBox.x - sourceAfterBox.x)).toBeGreaterThanOrEqual(30);
+    expect(Math.abs(duplicateBox.y - sourceAfterBox.y)).toBeGreaterThanOrEqual(20);
 
     await expect(page.getByTestId('selection-outline')).toHaveCount(1);
     await expect(page.locator('[data-selection-primary="true"]')).toHaveCount(1);
     await expect(page.locator('[data-selection-primary="true"]')).toHaveAttribute(
       'data-selection-node-id',
-      sourceId
+      duplicateId
     );
 
     return JSON.stringify({
-      x: Math.round(afterBox.x),
-      y: Math.round(afterBox.y),
-      width: Math.round(afterBox.width),
-      height: Math.round(afterBox.height),
+      source: {
+        x: Math.round(sourceAfterBox.x),
+        y: Math.round(sourceAfterBox.y),
+      },
+      duplicate: {
+        x: Math.round(duplicateBox.x),
+        y: Math.round(duplicateBox.y),
+      },
       count: await nodes.count(),
     });
   };
