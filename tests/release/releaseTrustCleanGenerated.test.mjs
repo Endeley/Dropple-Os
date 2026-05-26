@@ -5,6 +5,11 @@ import path from 'node:path';
 import test from 'node:test';
 
 import { cleanReleaseTrustGenerated } from '@/scripts/releaseTrustCleanGenerated.mjs';
+import { RELEASE_TRUST_CLEAN_TARGETS } from '@/scripts/generatedDriftTargets.mjs';
+
+test('release trust generated cleanup targets remain centrally defined', () => {
+    assert.deepEqual(RELEASE_TRUST_CLEAN_TARGETS, ['.artifacts', '.tmp', 'var']);
+});
 
 test('release trust generated cleanup removes only configured directories', () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'dropple-release-trust-clean-'));

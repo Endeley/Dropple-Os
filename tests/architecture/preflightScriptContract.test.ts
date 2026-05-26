@@ -2,7 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { GENERATED_DRIFT_TARGETS } from '@/scripts/generatedDriftTargets.mjs';
+import {
+  GENERATED_DRIFT_TARGETS,
+  RELEASE_TRUST_CLEAN_TARGETS,
+} from '@/scripts/generatedDriftTargets.mjs';
 
 const ROOT = process.cwd();
 
@@ -163,5 +166,17 @@ test('generated drift cleanup command in playbook stays aligned with canonical t
     listedTargets,
     GENERATED_DRIFT_TARGETS,
     'playbook generated drift restore command must match canonical targets helper',
+  );
+});
+
+test('test matrix release-trust cleanup targets stay aligned with canonical helper', () => {
+  const matrix = fs.readFileSync(path.join(ROOT, 'docs', 'TEST_MATRIX.md'), 'utf8');
+  const expected = RELEASE_TRUST_CLEAN_TARGETS.join('`, `');
+  assert.match(
+    matrix,
+    new RegExp(
+      `release:trust:clean-generated[\\s\\S]*\\(\\\`${expected}\\\`\\)`,
+    ),
+    'TEST_MATRIX.md cleanup target list must match canonical helper targets',
   );
 });

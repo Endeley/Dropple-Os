@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { RELEASE_TRUST_CLEAN_TARGETS } from './generatedDriftTargets.mjs';
 
-const DEFAULT_TARGETS = Object.freeze(['.artifacts', '.tmp', 'var']);
+const DEFAULT_TARGETS = RELEASE_TRUST_CLEAN_TARGETS;
 
 function toAbsolute(cwd, target) {
     return path.resolve(cwd, target);

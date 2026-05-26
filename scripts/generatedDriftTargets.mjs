@@ -14,4 +14,10 @@ const GENERATED_DRIFT_TARGET_PATTERNS = Object.freeze(
   GENERATED_DRIFT_TARGETS.map((target) => new RegExp(`^${escapeRegExp(target)}$`)),
 );
 
-export { GENERATED_DRIFT_TARGETS, GENERATED_DRIFT_TARGET_PATTERNS };
+const RELEASE_TRUST_CLEAN_TARGETS = Object.freeze(['.artifacts', '.tmp', 'var']);
+
+export {
+  GENERATED_DRIFT_TARGETS,
+  GENERATED_DRIFT_TARGET_PATTERNS,
+  RELEASE_TRUST_CLEAN_TARGETS,
+};
