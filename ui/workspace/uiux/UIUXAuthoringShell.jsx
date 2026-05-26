@@ -20,6 +20,7 @@ import { TokenCssBridge } from '@/ui/bridges/tokenCssBridge.js';
 import { TemplateMotionInspectorPanel } from './TemplateMotionInspectorPanel.jsx';
 import { UIUXTransitionTimelinePanel } from './UIUXTransitionTimelinePanel.jsx';
 import { useKeyboardNudge } from '@/ui/keyboard/useKeyboardNudge';
+import { useAlignmentShortcuts } from '@/ui/keyboard/useAlignmentShortcuts';
 
 export function UIUXAuthoringShell({
     profile = 'uiux-authoring',
@@ -55,6 +56,13 @@ export function UIUXAuthoringShell({
     const node = selectedId ? nodes[selectedId] : null;
 
     useKeyboardNudge({
+        enabled: true,
+        emit,
+        getState: () => ({ nodes }),
+        selectedIds,
+    });
+
+    useAlignmentShortcuts({
         enabled: true,
         emit,
         getState: () => ({ nodes }),
