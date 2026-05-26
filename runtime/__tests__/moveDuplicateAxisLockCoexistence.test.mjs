@@ -85,8 +85,8 @@ assert(lockedBulk.payload?.updates?.[0]?.y === 0, 'shift should axis-lock y delt
 const shiftOnly = runPendingMovePromotion({ alt: false, shift: true });
 assert(shiftOnly.result?.handled === true, 'shift-only promotion should be handled');
 assert(
-  shiftOnly.dispatched.every((event) => event.type !== EventTypes.NODE_CREATE),
-  'without live alt, promotion must not duplicate even when duplicate was requested at drag start',
+  shiftOnly.dispatched.some((event) => event.type === EventTypes.NODE_CREATE),
+  'promotion must still duplicate when duplicate intent was requested at drag start, even if live alt is not present',
 );
 const shiftOnlyBulk = shiftOnly.dispatched.find((event) => event.type === 'node.layout.bulk');
 assert(Boolean(shiftOnlyBulk), 'shift-only promotion should emit layout bulk update');

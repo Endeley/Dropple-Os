@@ -325,9 +325,7 @@ function moveToolHandler(input, context) {
 
             let promotedNodeIds = drag.nodeIds ?? [];
             let promotedOrigin = drag.origin ?? null;
-            const duplicateStillRequested =
-                drag.meta?.duplicateRequested === true &&
-                (input.event?.altKey === true || input.modifiers?.alt === true);
+            const duplicateStillRequested = drag.meta?.duplicateRequested === true;
             if (duplicateStillRequested) {
                 const duplicatedSelection = duplicateMoveSelection({
                     dispatcher,
