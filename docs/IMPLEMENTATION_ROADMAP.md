@@ -94,6 +94,26 @@ A slice is `done` only when all are true:
 - `npm run preflight`
 - `npm run test:release:operator-surfaces`
 
+### UI-SLICE-ALIGNMENT-HOOK-CANONICALIZATION
+
+- status: `done`
+- commit: `54b6333`
+- summary: removed persistent global keyboard shortcut hook and replaced it with an event bridge routed through the canonical intent path
+- verification:
+- targeted workspace interactions e2e (alignment/distribute helper coverage)
+- `npm run preflight`
+- `npm run test:release:operator-surfaces`
+
+### MEDIA-SLICE-TIMELINE-SEEK-ERGONOMICS
+
+- status: `done`
+- commit: `<pending-local>`
+- summary: added animation timeline deterministic track-selection ergonomics coverage
+- verification:
+- `PLAYWRIGHT_SKIP_BUILD=1 PLAYWRIGHT_PORT=3115 npx playwright test tests/e2e/workspace-workflows.smoke.spec.js --workers=1 -g "animation timeline track selection marks active row deterministically"`
+- `npm run preflight`
+- `npm run test:release:operator-surfaces`
+
 ## Slice Template (Copy For Next Work)
 
 ### <SLICE-ID>
@@ -109,4 +129,3 @@ A slice is `done` only when all are true:
 - `npm run test:release:operator-surfaces`
 - notes:
 - `<blockers or decisions>`
-

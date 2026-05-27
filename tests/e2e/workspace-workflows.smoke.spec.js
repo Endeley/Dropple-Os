@@ -307,3 +307,22 @@ test('mounted shared tool projects when major-version migration window is explic
 
   assertNoFatalErrors(tracked, 'mounted execution signature migration window flow');
 });
+
+test('animation timeline track selection marks active row deterministically', async ({ page }) => {
+  const tracked = attachErrorTracking(page);
+
+  const response = await page.goto('/workspace/animation', {
+    waitUntil: 'networkidle',
+  });
+  expect(response?.ok(), 'animation workspace should respond successfully').toBeTruthy();
+
+  const playhead = page.getByRole('slider', { name: 'Media timeline playhead' });
+  await expect(playhead).toBeVisible();
+
+  const keyframeCountBadge = page.locator('span', { hasText: /\d+ keyframes/ }).first();
+  await expect(keyframeCountBadge).toBeVisible();
+  await keyframeCountBadge.click();
+  await expect(page.locator('span', { hasText: /· active$/ }).first()).toBeVisible();
+
+  assertNoFatalErrors(tracked, 'animation timeline track selection flow');
+});
