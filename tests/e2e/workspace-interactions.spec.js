@@ -459,13 +459,17 @@ async function waitForRuntimeSelectionCount(page, expectedCount) {
 async function triggerAlignmentShortcut(page, key, { shift = false, nodeIds = null } = {}) {
   await page.evaluate(
     ({ keyboardKey, shiftKey, explicitNodeIds }) => {
-      const dispatchShortcut = globalThis.__droppleTestDispatchAlignmentShortcut;
-      if (typeof dispatchShortcut !== 'function') return false;
-      return dispatchShortcut({
-        key: keyboardKey,
-        shiftKey,
-        nodeIds: Array.isArray(explicitNodeIds) ? explicitNodeIds : null,
-      });
+      return window.dispatchEvent(
+        new CustomEvent('dropple:test:alignment-shortcut', {
+          detail: {
+            key: keyboardKey,
+            shiftKey,
+            nodeIds: Array.isArray(explicitNodeIds) ? explicitNodeIds : null,
+          },
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
     },
     { keyboardKey: key, shiftKey: shift, explicitNodeIds: nodeIds },
   );

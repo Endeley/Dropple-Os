@@ -78,6 +78,19 @@ export function useAlignmentShortcuts({
             return runtimeSelectionIds.length >= selectedIds.size ? runtimeSelectionIds : Array.from(selectedIds);
         }
 
+        function handleShortcut({ key, shiftKey = false, selectedIdsOverride = null }) {
+            const selectedIdsToUse =
+                Array.isArray(selectedIdsOverride) && selectedIdsOverride.length > 0
+                    ? selectedIdsOverride
+                    : resolveEffectiveSelectionIds();
+            return dispatchAlignmentShortcutIntent({
+                key,
+                shiftKey: shiftKey === true,
+                selectedIds: selectedIdsToUse,
+                emit,
+            });
+        }
+
         function onKeyDown(e) {
             const tag = e.target?.tagName;
             if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) {
@@ -86,30 +99,27 @@ export function useAlignmentShortcuts({
 
             const mod = e.metaKey === true || e.ctrlKey === true;
             if (!mod) return;
-            const handled = dispatchAlignmentShortcutIntent({
-                key: e.key,
-                shiftKey: e.shiftKey === true,
-                selectedIds: resolveEffectiveSelectionIds(),
-                emit,
-            });
+            const handled = handleShortcut({ key: e.key, shiftKey: e.shiftKey === true });
             if (!handled) return;
             e.preventDefault();
         }
 
-        globalThis.__droppleTestDispatchAlignmentShortcut = ({ key, shiftKey = false, nodeIds = null }) => {
-            const selectedForDispatch = Array.isArray(nodeIds) && nodeIds.length > 0 ? nodeIds : resolveEffectiveSelectionIds();
-            return dispatchAlignmentShortcutIntent({
-                key,
-                shiftKey,
-                selectedIds: selectedForDispatch,
-                emit,
+        function onTestShortcutEvent(event) {
+            const detail = event?.detail ?? {};
+            const handled = handleShortcut({
+                key: detail?.key,
+                shiftKey: detail?.shiftKey === true,
+                selectedIdsOverride: Array.isArray(detail?.nodeIds) ? detail.nodeIds : null,
             });
-        };
+            if (!handled) return;
+            event.preventDefault?.();
+        }
 
         window.addEventListener('keydown', onKeyDown);
+        window.addEventListener('dropple:test:alignment-shortcut', onTestShortcutEvent);
         return () => {
             window.removeEventListener('keydown', onKeyDown);
-            delete globalThis.__droppleTestDispatchAlignmentShortcut;
+            window.removeEventListener('dropple:test:alignment-shortcut', onTestShortcutEvent);
         };
     }, [enabled, selectedIds, emit, getState]);
 }
