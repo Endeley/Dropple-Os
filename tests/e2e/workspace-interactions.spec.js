@@ -441,6 +441,20 @@ async function readCanonicalLayoutX(page, nodeId) {
   }, nodeId);
 }
 
+async function waitForRuntimeSelectionCount(page, expectedCount) {
+  await expect
+    .poll(async () => {
+      return page.evaluate(() => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const ids = state?.selection?.ids;
+        if (ids instanceof Set) return ids.size;
+        if (Array.isArray(ids)) return ids.length;
+        return 0;
+      });
+    })
+    .toBe(expectedCount);
+}
+
 async function triggerAlignmentShortcut(page, key, { shift = false } = {}) {
   await page.evaluate(
     ({ keyboardKey, shiftKey }) => {
@@ -854,15 +868,30 @@ test('workspace new keyboard distribute-x shortcut is deterministic and undo-red
   const runtimeErrors = attachRuntimeErrorCollectors(page);
   await gotoNewWorkspace(page);
 
+  const beforeIds = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('[data-node-id]'))
+      .map((el) => el.getAttribute('data-node-id'))
+      .filter(Boolean)
+  );
+
   await createFrame(page, { x: 120, y: 180 }, { x: 220, y: 280 });
   await createFrame(page, { x: 320, y: 180 }, { x: 420, y: 280 });
   await createFrame(page, { x: 560, y: 180 }, { x: 660, y: 280 });
   const nodes = page.locator('[data-node-id]');
-  await expect(nodes).toHaveCount(3);
+  await expect(nodes).toHaveCount(beforeIds.length + 3);
 
-  const first = nodes.nth(0);
-  const second = nodes.nth(1);
-  const third = nodes.nth(2);
+  const createdIds = await page.evaluate((existingIds) => {
+    const existing = new Set(existingIds);
+    return Array.from(document.querySelectorAll('[data-node-id]'))
+      .map((el) => el.getAttribute('data-node-id'))
+      .filter((id) => id && !existing.has(id));
+  }, beforeIds);
+  expect(createdIds).toHaveLength(3);
+
+  const [idA, idB, idC] = createdIds;
+  const first = page.locator(`[data-node-id="${idA}"]`);
+  const second = page.locator(`[data-node-id="${idB}"]`);
+  const third = page.locator(`[data-node-id="${idC}"]`);
 
   await activateTool(page, 'select');
   await first.click({ force: true });
@@ -871,15 +900,7 @@ test('workspace new keyboard distribute-x shortcut is deterministic and undo-red
   await third.click({ force: true });
   await page.keyboard.up('Shift');
   await expect(page.getByTestId('selection-outline')).toHaveCount(3);
-
-  const [idA, idB, idC] = await Promise.all([
-    first.getAttribute('data-node-id'),
-    second.getAttribute('data-node-id'),
-    third.getAttribute('data-node-id'),
-  ]);
-  expect(idA).toBeTruthy();
-  expect(idB).toBeTruthy();
-  expect(idC).toBeTruthy();
+  await waitForRuntimeSelectionCount(page, 3);
 
   const readLayoutTriple = async () =>
     page.evaluate((ids) => {
@@ -897,7 +918,8 @@ test('workspace new keyboard distribute-x shortcut is deterministic and undo-red
     }, [idA, idB, idC]);
 
   const computeHorizontalGaps = (values) => {
-    const [a, b, c] = values;
+    const ordered = [...values].filter(Boolean).sort((a, b) => a.x - b.x);
+    const [a, b, c] = ordered;
     if (!a || !b || !c) return null;
     const gapAB = b.x - (a.x + a.width);
     const gapBC = c.x - (b.x + b.width);
@@ -958,15 +980,30 @@ test('workspace new keyboard distribute-y shortcut is deterministic and undo-red
   const runtimeErrors = attachRuntimeErrorCollectors(page);
   await gotoNewWorkspace(page);
 
+  const beforeIds = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('[data-node-id]'))
+      .map((el) => el.getAttribute('data-node-id'))
+      .filter(Boolean)
+  );
+
   await createFrame(page, { x: 180, y: 120 }, { x: 300, y: 200 });
   await createFrame(page, { x: 180, y: 320 }, { x: 300, y: 400 });
   await createFrame(page, { x: 180, y: 560 }, { x: 300, y: 640 });
   const nodes = page.locator('[data-node-id]');
-  await expect(nodes).toHaveCount(3);
+  await expect(nodes).toHaveCount(beforeIds.length + 3);
 
-  const first = nodes.nth(0);
-  const second = nodes.nth(1);
-  const third = nodes.nth(2);
+  const createdIds = await page.evaluate((existingIds) => {
+    const existing = new Set(existingIds);
+    return Array.from(document.querySelectorAll('[data-node-id]'))
+      .map((el) => el.getAttribute('data-node-id'))
+      .filter((id) => id && !existing.has(id));
+  }, beforeIds);
+  expect(createdIds).toHaveLength(3);
+
+  const [idA, idB, idC] = createdIds;
+  const first = page.locator(`[data-node-id="${idA}"]`);
+  const second = page.locator(`[data-node-id="${idB}"]`);
+  const third = page.locator(`[data-node-id="${idC}"]`);
 
   await activateTool(page, 'select');
   await first.click({ force: true });
@@ -975,15 +1012,7 @@ test('workspace new keyboard distribute-y shortcut is deterministic and undo-red
   await third.click({ force: true });
   await page.keyboard.up('Shift');
   await expect(page.getByTestId('selection-outline')).toHaveCount(3);
-
-  const [idA, idB, idC] = await Promise.all([
-    first.getAttribute('data-node-id'),
-    second.getAttribute('data-node-id'),
-    third.getAttribute('data-node-id'),
-  ]);
-  expect(idA).toBeTruthy();
-  expect(idB).toBeTruthy();
-  expect(idC).toBeTruthy();
+  await waitForRuntimeSelectionCount(page, 3);
 
   const readLayoutTriple = async () =>
     page.evaluate((ids) => {
@@ -1001,7 +1030,8 @@ test('workspace new keyboard distribute-y shortcut is deterministic and undo-red
     }, [idA, idB, idC]);
 
   const computeVerticalGaps = (values) => {
-    const [a, b, c] = values;
+    const ordered = [...values].filter(Boolean).sort((a, b) => a.y - b.y);
+    const [a, b, c] = ordered;
     if (!a || !b || !c) return null;
     const gapAB = b.y - (a.y + a.height);
     const gapBC = c.y - (b.y + b.height);
