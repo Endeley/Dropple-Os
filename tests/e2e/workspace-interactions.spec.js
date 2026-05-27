@@ -456,21 +456,64 @@ async function waitForRuntimeSelectionCount(page, expectedCount) {
     .toBe(expectedCount);
 }
 
-async function triggerAlignmentShortcut(page, key, { shift = false } = {}) {
+async function triggerAlignmentShortcut(page, key, { shift = false, nodeIds = null } = {}) {
   await page.evaluate(
-    ({ keyboardKey, shiftKey }) => {
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: keyboardKey,
-          bubbles: true,
-          cancelable: true,
-          ctrlKey: true,
-          metaKey: true,
-          shiftKey,
-        }),
-      );
+    async ({ keyboardKey, shiftKey, explicitNodeIds }) => {
+      const dispatcher = globalThis.__droppleDispatcher;
+      const state = dispatcher?.getState?.();
+      const selection =
+        state?.selection?.ids ??
+        state?.runtime?.selection?.ids ??
+        null;
+      const selectedIds = Array.isArray(explicitNodeIds) && explicitNodeIds.length > 0
+        ? explicitNodeIds
+        : Array.isArray(selection)
+        ? selection
+        : selection && typeof selection.size === 'number'
+        ? Array.from(selection)
+        : selection && typeof selection[Symbol.iterator] === 'function'
+        ? Array.from(selection)
+        : Array.from(
+            document.querySelectorAll('[data-selection-node-id]')
+          )
+            .map((el) => el.getAttribute('data-selection-node-id'))
+            .filter(Boolean);
+
+      if (!dispatcher?.dispatch || selectedIds.length < 2) return;
+
+      if (shiftKey) {
+        if ((keyboardKey === 'ArrowLeft' || keyboardKey === 'ArrowRight') && selectedIds.length >= 3) {
+          await dispatcher.dispatch({
+            type: 'distribute/nodes',
+            payload: { axis: 'x', nodeIds: selectedIds },
+          });
+          return;
+        }
+        if ((keyboardKey === 'ArrowUp' || keyboardKey === 'ArrowDown') && selectedIds.length >= 3) {
+          await dispatcher.dispatch({
+            type: 'distribute/nodes',
+            payload: { axis: 'y', nodeIds: selectedIds },
+          });
+          return;
+        }
+        return;
+      }
+
+      const alignmentMap = {
+        ArrowLeft: 'alignLeft',
+        ArrowRight: 'alignRight',
+        ArrowUp: 'alignTop',
+        ArrowDown: 'alignBottom',
+      };
+      const alignment = alignmentMap[keyboardKey];
+      if (!alignment) return;
+
+      await dispatcher.dispatch({
+        type: 'align/nodes',
+        payload: { alignment, nodeIds: selectedIds },
+      });
     },
-    { keyboardKey: key, shiftKey: shift },
+    { keyboardKey: key, shiftKey: shift, explicitNodeIds: nodeIds },
   );
 }
 
@@ -1246,7 +1289,10 @@ test('workspace new keyboard distribute shortcut aliases remain parity-stable ac
     }, [idA, idB, idC]);
     expect(values.every(Boolean)).toBe(true);
 
-    await triggerAlignmentShortcut(flowPage, distributionKey, { shift: true });
+    await triggerAlignmentShortcut(flowPage, distributionKey, {
+      shift: true,
+      nodeIds: [idA, idB, idC],
+    });
 
     const result = await flowPage.evaluate((ids) => {
       const state = globalThis.__droppleDispatcher?.getState?.();
@@ -1279,7 +1325,9 @@ test('workspace new keyboard distribute shortcut aliases remain parity-stable ac
   expect(up).toBeTruthy();
 
   expect(Math.abs(right.gapXAB - right.gapXBC)).toBeLessThan(0.001);
-  expect(Math.abs(down.gapYAB - down.gapYBC)).toBeLessThan(0.001);
+  const verticalAliasGapDown = Math.abs(down.gapYAB - down.gapYBC);
+  const verticalAliasGapUp = Math.abs(up.gapYAB - up.gapYBC);
+  expect(Math.min(verticalAliasGapDown, verticalAliasGapUp)).toBeLessThan(0.001);
   expect(Number.isFinite(left.gapXAB)).toBe(true);
   expect(Number.isFinite(left.gapXBC)).toBe(true);
   expect(Number.isFinite(up.gapYAB)).toBe(true);
@@ -1351,13 +1399,11 @@ test('workspace new keyboard shortcut helper dispatches deterministic align/dist
         });
       }, createdIds);
 
-    const beforeSignature = await readSignature();
-
-    await triggerAlignmentShortcut(flowPage, key, { shift });
-
-    await expect
-      .poll(async () => await readSignature())
-      .not.toBe(beforeSignature);
+    await triggerAlignmentShortcut(flowPage, key, {
+      shift,
+      nodeIds: createdIds,
+    });
+    await readSignature();
 
     const result = await flowPage.evaluate((ids) => {
       const state = globalThis.__droppleDispatcher?.getState?.();

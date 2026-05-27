@@ -165,7 +165,6 @@ function EditorWorkspaceLayoutInner({
     useKeyboardNudge({
         enabled: keyboardEnabled,
         emit,
-        dispatch: dispatcher,
         getState,
         selectedIds,
     });
