@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { expectSingleVisibleCanvasHost, visibleCanvasHost } from './helpers/canvasHost.js';
 
 async function gotoWorkspace(page, path = '/workspace/new') {
     await page.goto(path, { waitUntil: 'networkidle' });
     await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();
-    await expect(page.getByTestId('canvas-host')).toBeVisible();
+    await expectSingleVisibleCanvasHost(page);
 }
 
 async function assertReceivesPointerEvents(locator) {
@@ -11,7 +12,7 @@ async function assertReceivesPointerEvents(locator) {
 }
 
 async function dragOnCanvas(page, from, to) {
-    const canvas = page.getByTestId('canvas-host');
+    const canvas = visibleCanvasHost(page);
     const box = await canvas.boundingBox();
 
     if (!box) {

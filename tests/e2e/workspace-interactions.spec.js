@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { expectSingleVisibleCanvasHost, visibleCanvasHost } from './helpers/canvasHost.js';
 
 async function gotoNewWorkspace(page) {
   await page.goto('/workspace/new', { waitUntil: 'networkidle' });
   await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();
-  await expect(page.getByTestId('canvas-host')).toBeVisible();
+  await expectSingleVisibleCanvasHost(page);
 }
 
 async function activateTool(page, toolId) {
@@ -13,7 +14,7 @@ async function activateTool(page, toolId) {
 }
 
 async function dragOnCanvas(page, from, to) {
-  const canvas = page.getByTestId('canvas-host');
+  const canvas = visibleCanvasHost(page);
   const box = await canvas.boundingBox();
   if (!box) {
     throw new Error('Canvas host did not render');
@@ -63,7 +64,7 @@ async function createFrame(page, from, to) {
   const tryCreate = async (start, end) => {
     await activateTool(page, 'frame');
     await page.waitForTimeout(50);
-    const canvas = page.getByTestId('canvas-host');
+    const canvas = visibleCanvasHost(page);
     const box = await canvas.boundingBox();
     if (!box) {
       throw new Error('Canvas host did not render');
@@ -196,7 +197,7 @@ async function expectSelectionOutlineCount(page, expected, logs) {
 }
 
 async function marqueeRenderedNodes(page, locators, { additive = false, padding = 64 } = {}) {
-  const canvas = page.getByTestId('canvas-host');
+  const canvas = visibleCanvasHost(page);
   const canvasBox = await canvas.boundingBox();
   if (!canvasBox) {
     throw new Error('Canvas host did not render');
@@ -2695,9 +2696,9 @@ test('workspace new keyboard nudge remains stable across workspace route transit
   expect(firstDelta).toBeGreaterThan(0);
 
   await page.goto('/workspace/graphic', { waitUntil: 'networkidle' });
-  await expect(page.getByTestId('canvas-host')).toBeVisible();
+  await expect(visibleCanvasHost(page)).toBeVisible();
   await page.goto('/workspace/new', { waitUntil: 'networkidle' });
-  await expect(page.getByTestId('canvas-host')).toBeVisible();
+  await expect(visibleCanvasHost(page)).toBeVisible();
 
   await createFrame(page, { x: 260, y: 220 }, { x: 400, y: 340 });
   node = page.locator('[data-node-id]').first();
@@ -2752,7 +2753,7 @@ test('workspace drag session is cleared across route transition and resumes clea
   });
 
   await page.goto('/workspace/graphic', { waitUntil: 'networkidle' });
-  await expect(page.getByTestId('canvas-host')).toBeVisible();
+  await expect(visibleCanvasHost(page)).toBeVisible();
 
   const dragActiveAfterRoute = await page.evaluate(() => {
     const state = globalThis.__droppleDispatcher?.getState?.();
@@ -2764,7 +2765,7 @@ test('workspace drag session is cleared across route transition and resumes clea
   await page.mouse.up().catch(() => {});
 
   await page.goto('/workspace/new', { waitUntil: 'networkidle' });
-  await expect(page.getByTestId('canvas-host')).toBeVisible();
+  await expect(visibleCanvasHost(page)).toBeVisible();
 
   const dragActiveOnReturn = await page.evaluate(() => {
     const state = globalThis.__droppleDispatcher?.getState?.();
@@ -2795,6 +2796,24 @@ test('workspace drag session is cleared across route transition and resumes clea
 
   expect(runtimeErrors.pageErrors).toEqual([]);
   expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
+test('workspace canvas host contract keeps exactly one visible host across workspace route transitions', async ({ page }) => {
+  await page.goto('/workspace/new', { waitUntil: 'networkidle' });
+  await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();
+  await expectSingleVisibleCanvasHost(page);
+
+  await page.goto('/workspace/graphic', { waitUntil: 'networkidle' });
+  await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();
+  await expectSingleVisibleCanvasHost(page);
+
+  await page.goto('/workspace/media', { waitUntil: 'networkidle' });
+  await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();
+  await expectSingleVisibleCanvasHost(page);
+
+  await page.goto('/workspace/new', { waitUntil: 'networkidle' });
+  await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();
+  await expectSingleVisibleCanvasHost(page);
 });
 
 test('workspace pointercancel does not leave stuck alt/shift state for keyboard nudge deltas', async ({ page }) => {

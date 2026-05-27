@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { expectSingleVisibleCanvasHost } from './helpers/canvasHost.js';
 
 const ROUTES = [
   {
@@ -135,7 +136,7 @@ test('viewer smoke mounts canonical canvas without runtime errors', async ({ pag
     `viewer console errors: ${runtimeConsoleErrors.join('\n')}`
   ).toEqual([]);
   expect(bodyText, `viewer body: ${bodyText}`).not.toContain('Application error');
-  await expect(page.getByTestId('canvas-host')).toBeVisible();
+  await expectSingleVisibleCanvasHost(page);
   await expect(page.locator('body')).not.toContainText('Module not found');
   await expect(page.locator('body')).not.toContainText('Application error');
 });
@@ -159,7 +160,7 @@ test('viewer uses environment path for environment-backed artifacts', async ({ p
   });
 
   expect(response?.ok(), 'environment-backed viewer route should respond successfully').toBeTruthy();
-  await expect(page.getByTestId('canvas-host')).toBeVisible();
+  await expectSingleVisibleCanvasHost(page);
   await expect
     .poll(() => page.evaluate(() => window.__DROPPLE_VIEWER_MODE__ ?? null))
     .toBe('environment');
@@ -179,7 +180,7 @@ test('viewer falls back to snapshot path for snapshot-backed artifacts', async (
   });
 
   expect(response?.ok(), 'snapshot-backed viewer route should respond successfully').toBeTruthy();
-  await expect(page.getByTestId('canvas-host')).toBeVisible();
+  await expectSingleVisibleCanvasHost(page);
   await expect
     .poll(() => page.evaluate(() => window.__DROPPLE_VIEWER_MODE__ ?? null))
     .toBe('snapshot');
