@@ -465,6 +465,7 @@ async function triggerAlignmentShortcut(page, key, { shift = false } = {}) {
           bubbles: true,
           cancelable: true,
           ctrlKey: true,
+          metaKey: true,
           shiftKey,
         }),
       );
@@ -1284,6 +1285,109 @@ test('workspace new keyboard distribute shortcut aliases remain parity-stable ac
   expect(Number.isFinite(up.gapYAB)).toBe(true);
   expect(Number.isFinite(up.gapYBC)).toBe(true);
 
+});
+
+test('workspace new keyboard shortcut helper dispatches deterministic align/distribute outcomes', async ({ page }) => {
+  const runFlow = async ({ key, shift = false }) => {
+    const flowPage = await page.context().newPage();
+    await gotoNewWorkspace(flowPage);
+
+    const beforeIds = await flowPage.evaluate(() =>
+      Array.from(document.querySelectorAll('[data-node-id]'))
+        .map((el) => el.getAttribute('data-node-id'))
+        .filter(Boolean)
+    );
+
+    await createFrame(flowPage, { x: 120, y: 180 }, { x: 220, y: 280 });
+    await createFrame(flowPage, { x: 360, y: 240 }, { x: 460, y: 340 });
+    await createFrame(flowPage, { x: 580, y: 320 }, { x: 680, y: 420 });
+
+    const nodes = flowPage.locator('[data-node-id]');
+    await expect(nodes).toHaveCount(beforeIds.length + 3);
+
+    const createdIds = await flowPage.evaluate((existingIds) => {
+      const existing = new Set(existingIds);
+      return Array.from(document.querySelectorAll('[data-node-id]'))
+        .map((el) => el.getAttribute('data-node-id'))
+        .filter((id) => id && !existing.has(id));
+    }, beforeIds);
+    expect(createdIds).toHaveLength(3);
+
+    const first = flowPage.locator(`[data-node-id="${createdIds[0]}"]`);
+    const second = flowPage.locator(`[data-node-id="${createdIds[1]}"]`);
+    const third = flowPage.locator(`[data-node-id="${createdIds[2]}"]`);
+
+    await activateTool(flowPage, 'select');
+    await first.click({ force: true });
+    await flowPage.keyboard.down('Shift');
+    await second.click({ force: true });
+    await third.click({ force: true });
+    await flowPage.keyboard.up('Shift');
+    await expect(flowPage.getByTestId('selection-outline')).toHaveCount(3);
+    await expect
+      .poll(async () => {
+        const selectionCount = await flowPage.evaluate(() => {
+          const state = globalThis.__droppleDispatcher?.getState?.();
+          const ids = state?.selection?.ids;
+          if (Array.isArray(ids)) return ids.length;
+          if (ids && typeof ids.size === 'number') return ids.size;
+          return 0;
+        });
+        return selectionCount;
+      })
+      .toBe(3);
+
+    const readSignature = async () =>
+      flowPage.evaluate((ids) => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const nodesById = state?.document?.layout?.nodes ?? {};
+        const values = ids.map((id) => nodesById[id]).filter(Boolean);
+        if (values.length !== 3) return null;
+        const orderedByX = [...values].sort((a, b) => (a.x ?? 0) - (b.x ?? 0));
+        const orderedByY = [...values].sort((a, b) => (a.y ?? 0) - (b.y ?? 0));
+        return JSON.stringify({
+          x: orderedByX.map((node) => node.x ?? 0),
+          y: orderedByY.map((node) => node.y ?? 0),
+        });
+      }, createdIds);
+
+    const beforeSignature = await readSignature();
+
+    await triggerAlignmentShortcut(flowPage, key, { shift });
+
+    await expect
+      .poll(async () => await readSignature())
+      .not.toBe(beforeSignature);
+
+    const result = await flowPage.evaluate((ids) => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const nodesById = state?.document?.layout?.nodes ?? {};
+      const values = ids.map((id) => nodesById[id]).filter(Boolean);
+      if (values.length !== 3) return null;
+      const orderedByX = [...values].sort((a, b) => (a.x ?? 0) - (b.x ?? 0));
+      const orderedByY = [...values].sort((a, b) => (a.y ?? 0) - (b.y ?? 0));
+      return {
+        x: orderedByX.map((node) => node.x ?? 0),
+        y: orderedByY.map((node) => node.y ?? 0),
+        widths: orderedByX.map((node) => node.width ?? 0),
+      };
+    }, createdIds);
+
+    await flowPage.close();
+    return result;
+  };
+
+  const alignLeft = await runFlow({ key: 'ArrowLeft' });
+  expect(alignLeft).toBeTruthy();
+  expect(new Set(alignLeft.x).size).toBe(1);
+
+  const distributeX = await runFlow({ key: 'ArrowRight', shift: true });
+  expect(distributeX).toBeTruthy();
+  const [a, b, c] = distributeX.x;
+  const [wa, wb] = distributeX.widths;
+  const gapAB = b - (a + wa);
+  const gapBC = c - (b + wb);
+  expect(Math.abs(gapAB - gapBC)).toBeLessThan(0.001);
 });
 
 test('workspace new keyboard align shortcuts are inert while focus is in input or contenteditable', async ({ page }) => {
