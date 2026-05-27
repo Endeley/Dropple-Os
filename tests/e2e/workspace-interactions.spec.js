@@ -850,6 +850,110 @@ test('workspace new keyboard align-left shortcut is deterministic and undo-redo 
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
 
+test('workspace new keyboard distribute-x shortcut is deterministic and undo-redo lawful', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoNewWorkspace(page);
+
+  await createFrame(page, { x: 120, y: 180 }, { x: 220, y: 280 });
+  await createFrame(page, { x: 320, y: 180 }, { x: 420, y: 280 });
+  await createFrame(page, { x: 560, y: 180 }, { x: 660, y: 280 });
+  const nodes = page.locator('[data-node-id]');
+  await expect(nodes).toHaveCount(3);
+
+  const first = nodes.nth(0);
+  const second = nodes.nth(1);
+  const third = nodes.nth(2);
+
+  await activateTool(page, 'select');
+  await first.click({ force: true });
+  await page.keyboard.down('Shift');
+  await second.click({ force: true });
+  await third.click({ force: true });
+  await page.keyboard.up('Shift');
+  await expect(page.getByTestId('selection-outline')).toHaveCount(3);
+
+  const [idA, idB, idC] = await Promise.all([
+    first.getAttribute('data-node-id'),
+    second.getAttribute('data-node-id'),
+    third.getAttribute('data-node-id'),
+  ]);
+  expect(idA).toBeTruthy();
+  expect(idB).toBeTruthy();
+  expect(idC).toBeTruthy();
+
+  const readLayoutTriple = async () =>
+    page.evaluate((ids) => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const nodesById = state?.document?.layout?.nodes ?? {};
+      return ids.map((id) => {
+        const node = nodesById[id];
+        if (!node) return null;
+        return {
+          x: node.x ?? 0,
+          y: node.y ?? 0,
+          width: node.width ?? 0,
+        };
+      });
+    }, [idA, idB, idC]);
+
+  const computeHorizontalGaps = (values) => {
+    const [a, b, c] = values;
+    if (!a || !b || !c) return null;
+    const gapAB = b.x - (a.x + a.width);
+    const gapBC = c.x - (b.x + b.width);
+    return { gapAB, gapBC };
+  };
+
+  await expect
+    .poll(async () => {
+      const gaps = computeHorizontalGaps(await readLayoutTriple());
+      if (!gaps) return null;
+      return Math.round(gaps.gapAB) !== Math.round(gaps.gapBC);
+    })
+    .toBe(true);
+
+  await triggerAlignmentShortcut(page, 'ArrowRight', { shift: true });
+  await expect
+    .poll(async () => {
+      const gaps = computeHorizontalGaps(await readLayoutTriple());
+      if (!gaps) return null;
+      return Math.abs(gaps.gapAB - gaps.gapBC) < 0.001;
+    })
+    .toBe(true);
+
+  let undoObserved = false;
+  for (let i = 0; i < 3; i += 1) {
+    await page.evaluate(() => globalThis.__droppleDispatcher?.undo?.());
+    const gaps = computeHorizontalGaps(await readLayoutTriple());
+    if (gaps && Math.round(gaps.gapAB) !== Math.round(gaps.gapBC)) {
+      undoObserved = true;
+      break;
+    }
+  }
+  expect(undoObserved).toBe(true);
+
+  let redoObserved = false;
+  for (let i = 0; i < 3; i += 1) {
+    await page.evaluate(() => globalThis.__droppleDispatcher?.redo?.());
+    const gaps = computeHorizontalGaps(await readLayoutTriple());
+    if (gaps && Math.abs(gaps.gapAB - gaps.gapBC) < 0.001) {
+      redoObserved = true;
+      break;
+    }
+  }
+  expect(redoObserved).toBe(true);
+
+  await first.click({ force: true });
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  const beforeSingle = await readLayoutTriple();
+  await triggerAlignmentShortcut(page, 'ArrowRight', { shift: true });
+  const afterSingle = await readLayoutTriple();
+  expect(afterSingle).toEqual(beforeSingle);
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
 test('workspace new alt-drag duplicate preserves source identity and projection law', async ({ page }) => {
   const runtimeErrors = attachRuntimeErrorCollectors(page);
 

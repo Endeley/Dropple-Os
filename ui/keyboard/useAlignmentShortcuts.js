@@ -34,6 +34,24 @@ export function useAlignmentShortcuts({
             const selected = selectedIds.size > 1 ? Array.from(selectedIds) : null;
             if (!selected || selected.length < 2) return;
 
+            const canDistribute = selected.length >= 3;
+            if (e.shiftKey && canDistribute) {
+                switch (e.key) {
+                    case 'ArrowLeft':
+                    case 'ArrowRight':
+                        CapabilityActions.distributeX(selected, emit);
+                        e.preventDefault();
+                        return;
+                    case 'ArrowUp':
+                    case 'ArrowDown':
+                        CapabilityActions.distributeY(selected, emit);
+                        e.preventDefault();
+                        return;
+                    default:
+                        break;
+                }
+            }
+
             switch (e.key) {
                 case 'ArrowLeft':
                     CapabilityActions.alignLeft(selected, emit);
