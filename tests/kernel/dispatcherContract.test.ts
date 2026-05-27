@@ -537,6 +537,119 @@ test('dispatcher undo and redo replay canonical persisted truth while preserving
     assert.equal(afterRedo?.events?.length, 1);
 });
 
+test('dispatcher align/distribute events replay canonical layout truth through undo-redo while preserving runtime workspace', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });
+
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: {
+                id: 'graphic',
+                tools: ['select'],
+                policy: {
+                    mutation: 'allow',
+                    capabilities: ['node:create', 'node:mutate'],
+                },
+            },
+        },
+    });
+
+    const makeFrame = (id, x, y, width, height) => ({
+        id,
+        type: 'frame',
+        children: [],
+        layout: { x, y, width, height },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.NODE_CREATE,
+        payload: { node: makeFrame('align-a', 100, 120, 80, 60) },
+    });
+    await dispatcher.dispatch({
+        type: EventTypes.NODE_CREATE,
+        payload: { node: makeFrame('align-b', 260, 120, 80, 60) },
+    });
+    await dispatcher.dispatch({
+        type: EventTypes.NODE_CREATE,
+        payload: { node: makeFrame('align-c', 500, 120, 80, 60) },
+    });
+
+    const nodeIds = ['align-a', 'align-b', 'align-c'];
+    const readLayout = () => {
+        const state = dispatcher.getState();
+        const nodes = state?.document?.layout?.nodes ?? {};
+        return nodeIds.map((id) => {
+            const node = nodes[id] ?? {};
+            return {
+                x: node.x ?? 0,
+                y: node.y ?? 0,
+                width: node.width ?? 0,
+                height: node.height ?? 0,
+            };
+        });
+    };
+    const readGapX = (values) => {
+        const ordered = [...values].sort((a, b) => a.x - b.x);
+        const [a, b, c] = ordered;
+        return {
+            ab: b.x - (a.x + a.width),
+            bc: c.x - (b.x + b.width),
+        };
+    };
+
+    const before = readLayout();
+    const beforeGap = readGapX(before);
+    assert.notEqual(Math.round(beforeGap.ab), Math.round(beforeGap.bc));
+
+    await dispatcher.dispatch({
+        type: EventTypes.ALIGN_NODES,
+        payload: {
+            alignment: 'alignLeft',
+            nodeIds,
+        },
+    });
+
+    const afterAlign = readLayout();
+    assert.equal(afterAlign[0].x, afterAlign[1].x);
+    assert.equal(afterAlign[1].x, afterAlign[2].x);
+
+    await dispatcher.dispatch({
+        type: EventTypes.DISTRIBUTE_NODES,
+        payload: {
+            axis: 'x',
+            nodeIds,
+        },
+    });
+
+    const afterDistribute = readLayout();
+    const distributedGap = readGapX(afterDistribute);
+    assert.ok(Math.abs(distributedGap.ab - distributedGap.bc) < 0.001);
+    assert.equal(dispatcher.getState()?.workspace?.id, 'graphic');
+
+    const undoDistribute = dispatcher.undo();
+    const afterUndoDistribute = readLayout();
+    assert.equal(afterUndoDistribute[0].x, afterUndoDistribute[1].x);
+    assert.equal(afterUndoDistribute[1].x, afterUndoDistribute[2].x);
+    assert.equal(undoDistribute?.workspace?.id, 'graphic');
+
+    const undoAlign = dispatcher.undo();
+    const afterUndoAlign = readLayout();
+    assert.deepEqual(afterUndoAlign, before);
+    assert.equal(undoAlign?.workspace?.id, 'graphic');
+
+    const redoAlign = dispatcher.redo();
+    const afterRedoAlign = readLayout();
+    assert.equal(afterRedoAlign[0].x, afterRedoAlign[1].x);
+    assert.equal(afterRedoAlign[1].x, afterRedoAlign[2].x);
+    assert.equal(redoAlign?.workspace?.id, 'graphic');
+
+    const redoDistribute = dispatcher.redo();
+    const afterRedoDistribute = readLayout();
+    assert.deepEqual(afterRedoDistribute, afterDistribute);
+    assert.equal(redoDistribute?.workspace?.id, 'graphic');
+});
+
 test('clipboard system events update runtime clipboard without entering persisted event mirrors', async () => {
     const dispatcher = createEventDispatcher({ headless: true });
     dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });
