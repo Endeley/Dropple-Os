@@ -1058,6 +1058,114 @@ test('workspace new keyboard distribute-y shortcut is deterministic and undo-red
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
 
+test('workspace new keyboard distribute shortcut aliases remain parity-stable across axes', async ({ page }) => {
+  const runFlow = async (distributionKey) => {
+    const flowPage = await page.context().newPage();
+    await gotoNewWorkspace(flowPage);
+
+    const beforeIds = await flowPage.evaluate(() =>
+      Array.from(document.querySelectorAll('[data-node-id]'))
+        .map((el) => el.getAttribute('data-node-id'))
+        .filter(Boolean)
+    );
+
+    await createFrame(flowPage, { x: 120, y: 120 }, { x: 220, y: 200 });
+    await createFrame(flowPage, { x: 320, y: 280 }, { x: 420, y: 360 });
+    await createFrame(flowPage, { x: 560, y: 520 }, { x: 660, y: 600 });
+    const nodes = flowPage.locator('[data-node-id]');
+    await expect(nodes).toHaveCount(beforeIds.length + 3);
+
+    const createdIds = await flowPage.evaluate((existingIds) => {
+      const existing = new Set(existingIds);
+      return Array.from(document.querySelectorAll('[data-node-id]'))
+        .map((el) => el.getAttribute('data-node-id'))
+        .filter((id) => id && !existing.has(id));
+    }, beforeIds);
+    expect(createdIds).toHaveLength(3);
+
+    const first = flowPage.locator(`[data-node-id="${createdIds[0]}"]`);
+    const second = flowPage.locator(`[data-node-id="${createdIds[1]}"]`);
+    const third = flowPage.locator(`[data-node-id="${createdIds[2]}"]`);
+
+    await activateTool(flowPage, 'select');
+    await first.click({ force: true });
+    await flowPage.keyboard.down('Shift');
+    await second.click({ force: true });
+    await third.click({ force: true });
+    await flowPage.keyboard.up('Shift');
+    await expect(flowPage.getByTestId('selection-outline')).toHaveCount(3);
+    await expect
+      .poll(async () => {
+        const selectionCount = await flowPage.evaluate(() => {
+          const state = globalThis.__droppleDispatcher?.getState?.();
+          const ids = state?.selection?.ids;
+          if (Array.isArray(ids)) return ids.length;
+          if (ids && typeof ids.size === 'number') return ids.size;
+          return 0;
+        });
+        return selectionCount;
+      })
+      .toBe(3);
+
+    const [idA, idB, idC] = createdIds;
+
+    const values = await flowPage.evaluate((ids) => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const nodesById = state?.document?.layout?.nodes ?? {};
+      return ids.map((id) => {
+        const node = nodesById[id];
+        if (!node) return null;
+        return {
+          x: node.x ?? 0,
+          y: node.y ?? 0,
+          width: node.width ?? 0,
+          height: node.height ?? 0,
+        };
+      });
+    }, [idA, idB, idC]);
+    expect(values.every(Boolean)).toBe(true);
+
+    await triggerAlignmentShortcut(flowPage, distributionKey, { shift: true });
+
+    const result = await flowPage.evaluate((ids) => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const nodesById = state?.document?.layout?.nodes ?? {};
+      const values = ids.map((id) => nodesById[id]).filter(Boolean);
+      if (values.length !== 3) return null;
+
+      const xOrdered = [...values].sort((a, b) => (a.x ?? 0) - (b.x ?? 0));
+      const yOrdered = [...values].sort((a, b) => (a.y ?? 0) - (b.y ?? 0));
+      const [xa, xb, xc] = xOrdered;
+      const [ya, yb, yc] = yOrdered;
+      const gapXAB = (xb.x ?? 0) - ((xa.x ?? 0) + (xa.width ?? 0));
+      const gapXBC = (xc.x ?? 0) - ((xb.x ?? 0) + (xb.width ?? 0));
+      const gapYAB = (yb.y ?? 0) - ((ya.y ?? 0) + (ya.height ?? 0));
+      const gapYBC = (yc.y ?? 0) - ((yb.y ?? 0) + (yb.height ?? 0));
+      return { gapXAB, gapXBC, gapYAB, gapYBC };
+    }, [idA, idB, idC]);
+    await flowPage.close();
+    return result;
+  };
+
+  const right = await runFlow('ArrowRight');
+  const left = await runFlow('ArrowLeft');
+  const down = await runFlow('ArrowDown');
+  const up = await runFlow('ArrowUp');
+
+  expect(right).toBeTruthy();
+  expect(left).toBeTruthy();
+  expect(down).toBeTruthy();
+  expect(up).toBeTruthy();
+
+  expect(Math.abs(right.gapXAB - right.gapXBC)).toBeLessThan(0.001);
+  expect(Math.abs(down.gapYAB - down.gapYBC)).toBeLessThan(0.001);
+  expect(Number.isFinite(left.gapXAB)).toBe(true);
+  expect(Number.isFinite(left.gapXBC)).toBe(true);
+  expect(Number.isFinite(up.gapYAB)).toBe(true);
+  expect(Number.isFinite(up.gapYBC)).toBe(true);
+
+});
+
 test('workspace new alt-drag duplicate preserves source identity and projection law', async ({ page }) => {
   const runtimeErrors = attachRuntimeErrorCollectors(page);
 

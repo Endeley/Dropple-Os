@@ -221,6 +221,18 @@ test('tool handlers dispatch events instead of mutating runtime truth directly',
     assert.deepEqual(violations, []);
 });
 
+test('keyboard distribute shortcuts route through intent bridge and stay runtime-mutation free', () => {
+    const keyboardShortcuts = read('ui/keyboard/useAlignmentShortcuts.js');
+
+    assert.match(keyboardShortcuts, /CapabilityActions\.distributeX/);
+    assert.match(keyboardShortcuts, /CapabilityActions\.distributeY/);
+
+    assert.doesNotMatch(keyboardShortcuts, /runtime\/dispatcher\//);
+    assert.doesNotMatch(keyboardShortcuts, /runtime\/state\//);
+    assert.doesNotMatch(keyboardShortcuts, /core\/events\/reducers\//);
+    assert.doesNotMatch(keyboardShortcuts, /engine\//);
+});
+
 test('synthesized tool registration ingress is fail-closed before runtime tool authority mutation', () => {
     const dispatcher = read('runtime/dispatcher/dispatch.js');
     const ingress = read('runtime/tools/validateToolRegistrationIngress.js');

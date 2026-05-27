@@ -31,7 +31,19 @@ export function useAlignmentShortcuts({
             const mod = e.metaKey === true || e.ctrlKey === true;
             if (!mod) return;
 
-            const selected = selectedIds.size > 1 ? Array.from(selectedIds) : null;
+            const runtimeSelectionIds = (() => {
+                const runtimeState = globalThis.__droppleDispatcher?.getState?.();
+                const ids = runtimeState?.selection?.ids;
+                if (ids instanceof Set) return Array.from(ids);
+                if (Array.isArray(ids)) return ids;
+                return [];
+            })();
+            const effectiveSelectedIds =
+                runtimeSelectionIds.length >= selectedIds.size
+                    ? runtimeSelectionIds
+                    : Array.from(selectedIds);
+
+            const selected = effectiveSelectedIds.length > 1 ? effectiveSelectedIds : null;
             if (!selected || selected.length < 2) return;
 
             const canDistribute = selected.length >= 3;

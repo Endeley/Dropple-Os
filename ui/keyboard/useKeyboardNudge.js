@@ -4,7 +4,6 @@ import { useEffect, useRef } from 'react';
 import { emitLayoutUpdate } from '@/runtime/events/emitLayoutUpdate.js';
 import { useSelection } from '@/ui/workspace/shared/SelectionContext';
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { CapabilityActions } from '@/ui/capabilities/capabilityActions';
 
 export function useKeyboardNudge({
   enabled = true,
@@ -39,44 +38,6 @@ export function useKeyboardNudge({
 
       const hasMod = e.metaKey || e.ctrlKey;
       if (hasMod) {
-        if (selectedIds.size < 2) return;
-
-        const selected = Array.from(selectedIds);
-        let handledAlignment = false;
-        switch (e.key) {
-          case 'ArrowLeft':
-            CapabilityActions.alignLeft(selected, emit);
-            handledAlignment = true;
-            break;
-          case 'ArrowRight':
-            if (e.shiftKey) {
-              CapabilityActions.alignCenterX(selected, emit);
-            } else {
-              CapabilityActions.alignRight(selected, emit);
-            }
-            handledAlignment = true;
-            break;
-          case 'ArrowUp':
-            if (e.shiftKey) {
-              CapabilityActions.alignCenterY(selected, emit);
-            } else {
-              CapabilityActions.alignTop(selected, emit);
-            }
-            handledAlignment = true;
-            break;
-          case 'ArrowDown':
-            CapabilityActions.alignBottom(selected, emit);
-            handledAlignment = true;
-            break;
-          default:
-            break;
-        }
-
-        if (handledAlignment) {
-          e.preventDefault();
-          return;
-        }
-
         return;
       }
 
