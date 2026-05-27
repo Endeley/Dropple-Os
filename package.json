@@ -91,7 +91,8 @@
         "ci:full": "npm run validate:release",
         "validate:all": "npm run test:all && npm run test:system:all && npm run determinism && npm run architecture:ci",
         "validate:release": "npm run validate:all && npm run performance:determinism && npm run template:verify-all && npm run test:federation:release && npm run test:release:attestation && npm run release:trust:report && npm run release:federation:lineage",
-        "validate:app": "npm run build:smoke && npm run test:routes:smoke"
+        "validate:app": "npm run build:smoke && npm run test:routes:smoke",
+        "validate:fullstack": "node scripts/validateFullStack.mjs"
     },
     "dependencies": {
         "@stackframe/stack": "^2.8.56",
