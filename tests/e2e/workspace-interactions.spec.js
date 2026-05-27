@@ -458,59 +458,13 @@ async function waitForRuntimeSelectionCount(page, expectedCount) {
 
 async function triggerAlignmentShortcut(page, key, { shift = false, nodeIds = null } = {}) {
   await page.evaluate(
-    async ({ keyboardKey, shiftKey, explicitNodeIds }) => {
-      const dispatcher = globalThis.__droppleDispatcher;
-      const state = dispatcher?.getState?.();
-      const selection =
-        state?.selection?.ids ??
-        state?.runtime?.selection?.ids ??
-        null;
-      const selectedIds = Array.isArray(explicitNodeIds) && explicitNodeIds.length > 0
-        ? explicitNodeIds
-        : Array.isArray(selection)
-        ? selection
-        : selection && typeof selection.size === 'number'
-        ? Array.from(selection)
-        : selection && typeof selection[Symbol.iterator] === 'function'
-        ? Array.from(selection)
-        : Array.from(
-            document.querySelectorAll('[data-selection-node-id]')
-          )
-            .map((el) => el.getAttribute('data-selection-node-id'))
-            .filter(Boolean);
-
-      if (!dispatcher?.dispatch || selectedIds.length < 2) return;
-
-      if (shiftKey) {
-        if ((keyboardKey === 'ArrowLeft' || keyboardKey === 'ArrowRight') && selectedIds.length >= 3) {
-          await dispatcher.dispatch({
-            type: 'distribute/nodes',
-            payload: { axis: 'x', nodeIds: selectedIds },
-          });
-          return;
-        }
-        if ((keyboardKey === 'ArrowUp' || keyboardKey === 'ArrowDown') && selectedIds.length >= 3) {
-          await dispatcher.dispatch({
-            type: 'distribute/nodes',
-            payload: { axis: 'y', nodeIds: selectedIds },
-          });
-          return;
-        }
-        return;
-      }
-
-      const alignmentMap = {
-        ArrowLeft: 'alignLeft',
-        ArrowRight: 'alignRight',
-        ArrowUp: 'alignTop',
-        ArrowDown: 'alignBottom',
-      };
-      const alignment = alignmentMap[keyboardKey];
-      if (!alignment) return;
-
-      await dispatcher.dispatch({
-        type: 'align/nodes',
-        payload: { alignment, nodeIds: selectedIds },
+    ({ keyboardKey, shiftKey, explicitNodeIds }) => {
+      const dispatchShortcut = globalThis.__droppleTestDispatchAlignmentShortcut;
+      if (typeof dispatchShortcut !== 'function') return false;
+      return dispatchShortcut({
+        key: keyboardKey,
+        shiftKey,
+        nodeIds: Array.isArray(explicitNodeIds) ? explicitNodeIds : null,
       });
     },
     { keyboardKey: key, shiftKey: shift, explicitNodeIds: nodeIds },
