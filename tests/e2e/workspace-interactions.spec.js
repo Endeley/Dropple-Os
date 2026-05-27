@@ -1286,6 +1286,85 @@ test('workspace new keyboard distribute shortcut aliases remain parity-stable ac
 
 });
 
+test('workspace new keyboard align shortcuts are inert while focus is in input or contenteditable', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoNewWorkspace(page);
+
+  await createFrame(page, { x: 140, y: 180 }, { x: 240, y: 280 });
+  await createFrame(page, { x: 360, y: 240 }, { x: 460, y: 340 });
+  const nodes = page.locator('[data-node-id]');
+  await expect(nodes).toHaveCount(2);
+
+  const first = nodes.nth(0);
+  const second = nodes.nth(1);
+
+  await activateTool(page, 'select');
+  await first.click({ force: true });
+  await page.keyboard.down('Shift');
+  await second.click({ force: true });
+  await page.keyboard.up('Shift');
+  await expect(page.getByTestId('selection-outline')).toHaveCount(2);
+  await waitForRuntimeSelectionCount(page, 2);
+
+  const [idA, idB] = await Promise.all([
+    first.getAttribute('data-node-id'),
+    second.getAttribute('data-node-id'),
+  ]);
+  expect(idA).toBeTruthy();
+  expect(idB).toBeTruthy();
+
+  const readPair = async () =>
+    page.evaluate((ids) => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const nodesById = state?.document?.layout?.nodes ?? {};
+      return ids.map((id) => {
+        const node = nodesById[id];
+        if (!node) return null;
+        return {
+          x: node.x ?? 0,
+          y: node.y ?? 0,
+          width: node.width ?? 0,
+          height: node.height ?? 0,
+        };
+      });
+    }, [idA, idB]);
+
+  await page.evaluate(() => {
+    const input = document.createElement('input');
+    input.id = 'dropple-test-align-input-guard';
+    input.value = 'align-guard';
+    document.body.appendChild(input);
+    input.focus();
+  });
+  const inputBefore = await readPair();
+  await page.keyboard.press('Control+ArrowLeft');
+  await page.keyboard.press('Control+Shift+ArrowRight');
+  const inputAfter = await readPair();
+  expect(inputAfter).toEqual(inputBefore);
+
+  await page.evaluate(() => {
+    const editable = document.createElement('div');
+    editable.id = 'dropple-test-align-contenteditable-guard';
+    editable.contentEditable = 'true';
+    editable.textContent = 'align-guard';
+    document.body.appendChild(editable);
+    editable.focus();
+  });
+  const editableBefore = await readPair();
+  await page.keyboard.press('Control+ArrowLeft');
+  await page.keyboard.press('Control+Shift+ArrowRight');
+  const editableAfter = await readPair();
+  expect(editableAfter).toEqual(editableBefore);
+
+  await page.evaluate(() => {
+    document.getElementById('dropple-test-align-input-guard')?.remove();
+    document.getElementById('dropple-test-align-contenteditable-guard')?.remove();
+  });
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
 test('workspace new alt-drag duplicate preserves source identity and projection law', async ({ page }) => {
   const runtimeErrors = attachRuntimeErrorCollectors(page);
 
