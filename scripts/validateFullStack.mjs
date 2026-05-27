@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
+import { writeSync } from 'node:fs';
 
 const args = new Set(process.argv.slice(2));
 const dryRun = args.has('--dry-run');
@@ -131,8 +132,9 @@ for (const group of commandGroups) {
   }
 }
 
-if (dryRun) {
-  console.log(`\nDry run complete: ${total} commands listed.`);
-} else {
-  console.log(`\nvalidate:fullstack complete: ${total} commands passed.`);
-}
+const endMarker = dryRun
+  ? `\nDry run complete: ${total} commands listed.\n`
+  : `\nvalidate:fullstack complete: ${total} commands passed.\n`;
+
+// Use synchronous stdout write so strict/non-interactive terminals always show the final marker.
+writeSync(1, endMarker);
