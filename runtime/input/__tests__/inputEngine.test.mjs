@@ -149,6 +149,69 @@ test('keyboard engine normalizes key metadata before routing', () => {
     __resetToolHandlers();
 });
 
+test('keyboard engine preserves ctrl/meta parity metadata for shortcut routing', () => {
+    __resetToolHandlers();
+    const events = [];
+    const dispatcher = {
+        getState() {
+            return {
+                tools: {
+                    activeTool: 'select',
+                    registeredTools: {},
+                },
+            };
+        },
+    };
+
+    setRuntimeDispatcher(dispatcher);
+    registerToolHandler('select', (input) => {
+        events.push({
+            key: input.key,
+            shift: input.modifiers?.shift === true,
+            ctrl: input.modifiers?.ctrl === true,
+            meta: input.modifiers?.meta === true,
+        });
+        return { handled: true };
+    });
+
+    handleKeyboardEvent({
+        key: 'ArrowRight',
+        code: 'ArrowRight',
+        repeat: false,
+        shiftKey: true,
+        ctrlKey: true,
+        metaKey: false,
+        altKey: false,
+    });
+
+    handleKeyboardEvent({
+        key: 'ArrowRight',
+        code: 'ArrowRight',
+        repeat: false,
+        shiftKey: true,
+        ctrlKey: false,
+        metaKey: true,
+        altKey: false,
+    });
+
+    assert.equal(events.length, 2);
+    assert.deepEqual(events[0], {
+        key: 'ArrowRight',
+        shift: true,
+        ctrl: true,
+        meta: false,
+    });
+    assert.deepEqual(events[1], {
+        key: 'ArrowRight',
+        shift: true,
+        ctrl: false,
+        meta: true,
+    });
+
+    setRuntimeDispatcher(null);
+    __resetToolHandlers();
+});
+
 test('input engine does not execute handlers registered outside approved families', () => {
     __resetToolHandlers();
     const calls = [];

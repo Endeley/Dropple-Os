@@ -224,8 +224,13 @@ test('tool handlers dispatch events instead of mutating runtime truth directly',
 test('keyboard distribute shortcuts route through intent bridge and stay runtime-mutation free', () => {
     const keyboardShortcuts = read('ui/keyboard/useAlignmentShortcuts.js');
 
+    assert.match(keyboardShortcuts, /const mod = e\.metaKey === true \|\| e\.ctrlKey === true/);
     assert.match(keyboardShortcuts, /CapabilityActions\.distributeX/);
     assert.match(keyboardShortcuts, /CapabilityActions\.distributeY/);
+    assert.match(keyboardShortcuts, /case 'ArrowLeft':/);
+    assert.match(keyboardShortcuts, /case 'ArrowRight':/);
+    assert.match(keyboardShortcuts, /case 'ArrowUp':/);
+    assert.match(keyboardShortcuts, /case 'ArrowDown':/);
     assert.match(keyboardShortcuts, /tag === 'INPUT'/);
     assert.match(keyboardShortcuts, /tag === 'TEXTAREA'/);
     assert.match(keyboardShortcuts, /isContentEditable/);
