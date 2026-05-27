@@ -1357,8 +1357,62 @@ test('workspace new keyboard align shortcuts are inert while focus is in input o
   expect(editableAfter).toEqual(editableBefore);
 
   await page.evaluate(() => {
+    const textarea = document.createElement('textarea');
+    textarea.id = 'dropple-test-align-textarea-guard';
+    textarea.value = 'align-guard';
+    document.body.appendChild(textarea);
+    textarea.focus();
+  });
+  const textareaBefore = await readPair();
+  await page.keyboard.press('Control+ArrowLeft');
+  await page.keyboard.press('Control+Shift+ArrowRight');
+  const textareaAfter = await readPair();
+  expect(textareaAfter).toEqual(textareaBefore);
+
+  await page.evaluate(() => {
+    const overlay = document.createElement('div');
+    overlay.id = 'dropple-test-align-overlay-guard';
+    overlay.setAttribute('role', 'dialog');
+    overlay.style.position = 'fixed';
+    overlay.style.inset = '0';
+    overlay.style.pointerEvents = 'none';
+
+    const overlayInput = document.createElement('input');
+    overlayInput.id = 'dropple-test-align-overlay-input-guard';
+    overlayInput.value = 'overlay-input';
+    overlayInput.style.pointerEvents = 'auto';
+
+    const overlayEditable = document.createElement('div');
+    overlayEditable.id = 'dropple-test-align-overlay-contenteditable-guard';
+    overlayEditable.contentEditable = 'true';
+    overlayEditable.textContent = 'overlay-editable';
+    overlayEditable.style.pointerEvents = 'auto';
+
+    overlay.appendChild(overlayInput);
+    overlay.appendChild(overlayEditable);
+    document.body.appendChild(overlay);
+    overlayInput.focus();
+  });
+  const overlayInputBefore = await readPair();
+  await page.keyboard.press('Control+ArrowLeft');
+  await page.keyboard.press('Control+Shift+ArrowRight');
+  const overlayInputAfter = await readPair();
+  expect(overlayInputAfter).toEqual(overlayInputBefore);
+
+  await page.evaluate(() => {
+    document.getElementById('dropple-test-align-overlay-contenteditable-guard')?.focus();
+  });
+  const overlayEditableBefore = await readPair();
+  await page.keyboard.press('Control+ArrowLeft');
+  await page.keyboard.press('Control+Shift+ArrowRight');
+  const overlayEditableAfter = await readPair();
+  expect(overlayEditableAfter).toEqual(overlayEditableBefore);
+
+  await page.evaluate(() => {
     document.getElementById('dropple-test-align-input-guard')?.remove();
     document.getElementById('dropple-test-align-contenteditable-guard')?.remove();
+    document.getElementById('dropple-test-align-textarea-guard')?.remove();
+    document.getElementById('dropple-test-align-overlay-guard')?.remove();
   });
 
   expect(runtimeErrors.pageErrors).toEqual([]);

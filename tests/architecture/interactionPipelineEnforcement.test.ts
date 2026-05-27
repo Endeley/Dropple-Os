@@ -226,11 +226,16 @@ test('keyboard distribute shortcuts route through intent bridge and stay runtime
 
     assert.match(keyboardShortcuts, /CapabilityActions\.distributeX/);
     assert.match(keyboardShortcuts, /CapabilityActions\.distributeY/);
+    assert.match(keyboardShortcuts, /tag === 'INPUT'/);
+    assert.match(keyboardShortcuts, /tag === 'TEXTAREA'/);
+    assert.match(keyboardShortcuts, /isContentEditable/);
 
     assert.doesNotMatch(keyboardShortcuts, /runtime\/dispatcher\//);
     assert.doesNotMatch(keyboardShortcuts, /runtime\/state\//);
     assert.doesNotMatch(keyboardShortcuts, /core\/events\/reducers\//);
     assert.doesNotMatch(keyboardShortcuts, /engine\//);
+    assert.doesNotMatch(keyboardShortcuts, /dispatch\(/);
+    assert.doesNotMatch(keyboardShortcuts, /\.document\./);
 });
 
 test('synthesized tool registration ingress is fail-closed before runtime tool authority mutation', () => {
