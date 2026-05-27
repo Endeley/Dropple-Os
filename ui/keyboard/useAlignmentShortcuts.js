@@ -47,6 +47,10 @@ export function useAlignmentShortcuts({
             if (!selected || selected.length < 2) return;
 
             const canDistribute = selected.length >= 3;
+            if (e.shiftKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown') && !canDistribute) {
+                e.preventDefault();
+                return;
+            }
             if (e.shiftKey && canDistribute) {
                 switch (e.key) {
                     case 'ArrowLeft':

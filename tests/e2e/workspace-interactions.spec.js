@@ -1058,6 +1058,95 @@ test('workspace new keyboard distribute-y shortcut is deterministic and undo-red
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
 
+test('workspace new keyboard distribute-y is inert for low selection cardinality and focused text inputs', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoNewWorkspace(page);
+
+  await createFrame(page, { x: 180, y: 120 }, { x: 300, y: 200 });
+  await createFrame(page, { x: 180, y: 320 }, { x: 300, y: 400 });
+  await createFrame(page, { x: 180, y: 560 }, { x: 300, y: 640 });
+  const nodes = page.locator('[data-node-id]');
+  await expect(nodes).toHaveCount(3);
+
+  const first = nodes.nth(0);
+  const second = nodes.nth(1);
+
+  await activateTool(page, 'select');
+  await first.click({ force: true });
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+
+  const [idA, idB] = await Promise.all([
+    first.getAttribute('data-node-id'),
+    second.getAttribute('data-node-id'),
+  ]);
+  expect(idA).toBeTruthy();
+  expect(idB).toBeTruthy();
+
+  const readLayoutPair = async () =>
+    page.evaluate((ids) => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const nodesById = state?.document?.layout?.nodes ?? {};
+      return ids.map((id) => {
+        const node = nodesById[id];
+        if (!node) return null;
+        return {
+          x: node.x ?? 0,
+          y: node.y ?? 0,
+          width: node.width ?? 0,
+          height: node.height ?? 0,
+        };
+      });
+    }, [idA, idB]);
+
+  const singleBefore = await readLayoutPair();
+  await page.keyboard.press('Control+Shift+ArrowDown');
+  const singleAfter = await readLayoutPair();
+  expect(singleAfter).toEqual(singleBefore);
+
+  await page.keyboard.down('Shift');
+  await second.click({ force: true });
+  await page.keyboard.up('Shift');
+  await expect(page.getByTestId('selection-outline')).toHaveCount(2);
+
+  const pairBefore = await readLayoutPair();
+  await page.keyboard.press('Control+Shift+ArrowDown');
+  const pairAfter = await readLayoutPair();
+  expect(pairAfter).toEqual(pairBefore);
+
+  await page.evaluate(() => {
+    const input = document.createElement('input');
+    input.id = 'dropple-test-distribute-input-guard';
+    input.value = 'guard';
+    document.body.appendChild(input);
+    input.focus();
+  });
+  const inputFocusedBefore = await readLayoutPair();
+  await page.keyboard.press('Control+Shift+ArrowDown');
+  const inputFocusedAfter = await readLayoutPair();
+  expect(inputFocusedAfter).toEqual(inputFocusedBefore);
+
+  await page.evaluate(() => {
+    const editable = document.createElement('div');
+    editable.id = 'dropple-test-distribute-contenteditable-guard';
+    editable.contentEditable = 'true';
+    editable.textContent = 'guard';
+    document.body.appendChild(editable);
+    editable.focus();
+  });
+  const editableFocusedBefore = await readLayoutPair();
+  await page.keyboard.press('Control+Shift+ArrowDown');
+  const editableFocusedAfter = await readLayoutPair();
+  expect(editableFocusedAfter).toEqual(editableFocusedBefore);
+
+  await page.evaluate(() => {
+    document.getElementById('dropple-test-distribute-input-guard')?.remove();
+    document.getElementById('dropple-test-distribute-contenteditable-guard')?.remove();
+  });
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
 test('workspace new keyboard distribute shortcut aliases remain parity-stable across axes', async ({ page }) => {
   const runFlow = async (distributionKey) => {
     const flowPage = await page.context().newPage();
