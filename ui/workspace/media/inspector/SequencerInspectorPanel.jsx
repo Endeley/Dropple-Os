@@ -23,6 +23,7 @@ import { performServiceExport } from '@/ui/export/exportExecutionClient.js';
 import { useExportExecution } from '@/ui/export/useExportExecution.js';
 import { exportIntentTargetDelete, exportIntentTargetUpsert } from '@/ui/export/exportIntent.js';
 import { actionButtonStyle, actionRowStyle, sectionStyle, sectionTitleStyle } from './inspectorStyles.js';
+import { resolveSequenceClipKeyboardIntent } from './sequenceClipKeyboard.js';
 
 function infoRow(label, value) {
     return (
@@ -134,6 +135,43 @@ export function SequencerInspectorPanel({
         setLabelDraft(selectedClip?.label ?? '');
         setBindingDraft(selectedClip?.binding?.value ?? '');
     }, [selectedClip?.id, selectedClip?.label, selectedClip?.binding?.value]);
+
+    useEffect(() => {
+        if (modeId !== 'animation') return undefined;
+        if (!sequence?.id || !selectedTrackId || !selectedClip?.clipId) return undefined;
+
+        const onKeyDown = (event) => {
+            const intent = resolveSequenceClipKeyboardIntent({
+                event,
+                selectedClip,
+                gridSize: 1,
+            });
+            if (!intent) return;
+            event.preventDefault();
+
+            if (intent.kind === 'move') {
+                timelineIntentSequenceClipMove({
+                    sequenceId: sequence.id,
+                    trackId: selectedTrackId,
+                    clipId: selectedClip.clipId,
+                    ...intent.patch,
+                });
+                return;
+            }
+
+            timelineIntentSequenceClipTrim({
+                sequenceId: sequence.id,
+                trackId: selectedTrackId,
+                clipId: selectedClip.clipId,
+                ...intent.patch,
+            });
+        };
+
+        window.addEventListener('keydown', onKeyDown);
+        return () => {
+            window.removeEventListener('keydown', onKeyDown);
+        };
+    }, [modeId, sequence?.id, selectedTrackId, selectedClip]);
 
     function handleCreateSequence() {
         const nextSequence = createSequence({

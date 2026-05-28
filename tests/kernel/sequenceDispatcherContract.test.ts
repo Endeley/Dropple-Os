@@ -196,3 +196,109 @@ test('sequence clip move-trim is deterministic and undo-redo lawful in animation
     assert.equal(afterRedoTrim.start, 13);
     assert.equal(afterRedoTrim.end, 38);
 });
+
+test('sequence clip move-trim supports keyboard-step parity (+/-10) and remains undo-redo lawful', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(structuredClone(initialRuntimeState), { animate: false });
+
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: adaptWorkspaceToContractV1({
+                ...mediaWorkspace,
+                modeId: 'animation',
+            }),
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.SEQUENCE_CREATE,
+        payload: {
+            sequence: createSequence({
+                id: 'anim-sequence-step',
+                label: 'Animation Keyboard Step',
+                duration: 300,
+                frameRate: 24,
+            }),
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.SEQUENCE_TRACK_CREATE,
+        payload: {
+            sequenceId: 'anim-sequence-step',
+            track: createSequenceTrack({
+                id: 'anim-track-step',
+                type: 'shot',
+                label: 'Anim Track',
+                order: 0,
+            }),
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.SEQUENCE_CLIP_CREATE,
+        payload: {
+            sequenceId: 'anim-sequence-step',
+            trackId: 'anim-track-step',
+            clip: createSequenceClip({
+                id: 'anim-clip-step',
+                start: 40,
+                end: 64,
+            }),
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.SEQUENCE_CLIP_MOVE,
+        payload: {
+            sequenceId: 'anim-sequence-step',
+            trackId: 'anim-track-step',
+            clipId: 'anim-clip-step',
+            start: 50,
+            end: 74,
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.SEQUENCE_CLIP_TRIM,
+        payload: {
+            sequenceId: 'anim-sequence-step',
+            trackId: 'anim-track-step',
+            clipId: 'anim-clip-step',
+            end: 84,
+        },
+    });
+
+    const afterKeyboardParity =
+        dispatcher.getState().document.sequences.sequences['anim-sequence-step'].tracks[
+            'anim-track-step'
+        ].clips['anim-clip-step'];
+    assert.equal(afterKeyboardParity.start, 50);
+    assert.equal(afterKeyboardParity.end, 84);
+
+    dispatcher.undo();
+    const undoTrim =
+        dispatcher.getState().document.sequences.sequences['anim-sequence-step'].tracks[
+            'anim-track-step'
+        ].clips['anim-clip-step'];
+    assert.equal(undoTrim.start, 50);
+    assert.equal(undoTrim.end, 74);
+
+    dispatcher.undo();
+    const undoMove =
+        dispatcher.getState().document.sequences.sequences['anim-sequence-step'].tracks[
+            'anim-track-step'
+        ].clips['anim-clip-step'];
+    assert.equal(undoMove.start, 40);
+    assert.equal(undoMove.end, 64);
+
+    dispatcher.redo();
+    dispatcher.redo();
+    const redoFinal =
+        dispatcher.getState().document.sequences.sequences['anim-sequence-step'].tracks[
+            'anim-track-step'
+        ].clips['anim-clip-step'];
+    assert.equal(redoFinal.start, 50);
+    assert.equal(redoFinal.end, 84);
+});
