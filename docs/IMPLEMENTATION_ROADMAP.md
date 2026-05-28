@@ -114,6 +114,16 @@ A slice is `done` only when all are true:
 - `npm run preflight`
 - `npm run test:release:operator-surfaces`
 
+### MEDIA-SLICE-ANIMATION-CLIP-MOVE-TRIM-LAW
+
+- status: `done`
+- commit: `<pending-local>`
+- summary: added dispatcher contract coverage for animation-mode sequence clip move/trim determinism with undo/redo lawfulness
+- verification:
+- `node --import ./tests/register-test-loaders.mjs --test tests/kernel/sequenceDispatcherContract.test.ts`
+- `npm run preflight`
+- `npm run test:release:operator-surfaces`
+
 ## Slice Template (Copy For Next Work)
 
 ### <SLICE-ID>
