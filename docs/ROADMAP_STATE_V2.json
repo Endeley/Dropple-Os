@@ -94,7 +94,7 @@
     {
       "id": "R8",
       "title": "Animation Workspace Productization Slice A",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["R7"],
       "gates": [
         { "name": "kernel contracts", "command": "npm run test:kernel" },
@@ -105,7 +105,7 @@
     {
       "id": "R9",
       "title": "Media Workspace Productization Slice B",
-      "status": "not-started",
+      "status": "active",
       "depends_on": ["R8"],
       "gates": [
         { "name": "kernel contracts", "command": "npm run test:kernel" },
