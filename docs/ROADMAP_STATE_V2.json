@@ -84,7 +84,7 @@
     {
       "id": "R7",
       "title": "Product Workspace UI Buildout",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["R6"],
       "gates": [
         { "name": "validate app", "command": "npm run validate:app" },
