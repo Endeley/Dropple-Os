@@ -1,0 +1,94 @@
+{
+  "version": "v2",
+  "updated_at": "2026-05-29",
+  "policy": {
+    "status_vocabulary": ["not-started", "active", "blocked", "complete"],
+    "strict_progression": true,
+    "ui_product_workspace_start_phase": "R7"
+  },
+  "phases": [
+    {
+      "id": "R0",
+      "title": "Governance Lock",
+      "status": "active",
+      "depends_on": [],
+      "gates": [
+        { "name": "architecture gate", "command": "npm run arch" },
+        { "name": "law enforcement", "command": "npm run enforce:laws" },
+        { "name": "architecture tests", "command": "npm run test:architecture" }
+      ]
+    },
+    {
+      "id": "R1",
+      "title": "Replay Scale Core",
+      "status": "not-started",
+      "depends_on": ["R0"],
+      "gates": [
+        { "name": "runtime replay", "command": "npm run runtime:replay:test" },
+        { "name": "runtime state hash", "command": "npm run runtime:statehash:test" },
+        { "name": "determinism gate", "command": "npm run determinism" }
+      ]
+    },
+    {
+      "id": "R2",
+      "title": "Event Log Durability",
+      "status": "not-started",
+      "depends_on": ["R1"],
+      "gates": [
+        { "name": "release attestation", "command": "npm run test:release:attestation" },
+        { "name": "release trust report", "command": "npm run release:trust:report" },
+        { "name": "release trust summary", "command": "npm run release:trust:summary" }
+      ]
+    },
+    {
+      "id": "R3",
+      "title": "Projection Performance",
+      "status": "not-started",
+      "depends_on": ["R2"],
+      "gates": [
+        { "name": "performance determinism", "command": "npm run performance:determinism" },
+        { "name": "architecture ci", "command": "npm run architecture:ci" }
+      ]
+    },
+    {
+      "id": "R4",
+      "title": "Collaboration Federation Determinism",
+      "status": "not-started",
+      "depends_on": ["R3"],
+      "gates": [
+        { "name": "federation release tests", "command": "npm run test:federation:release" },
+        { "name": "federation lineage", "command": "npm run release:federation:lineage" }
+      ]
+    },
+    {
+      "id": "R5",
+      "title": "Media Cinema Schema Canonicalization",
+      "status": "not-started",
+      "depends_on": ["R4"],
+      "gates": [
+        { "name": "kernel contracts", "command": "npm run test:kernel" },
+        { "name": "runtime map", "command": "npm run runtime:map:test" }
+      ]
+    },
+    {
+      "id": "R6",
+      "title": "Capability Overlay Unification",
+      "status": "not-started",
+      "depends_on": ["R5"],
+      "gates": [
+        { "name": "implementation navigator", "command": "npm run implementation:navigator" },
+        { "name": "migration legacy scan", "command": "npm run migration:legacy-scan" }
+      ]
+    },
+    {
+      "id": "R7",
+      "title": "Product Workspace UI Buildout",
+      "status": "not-started",
+      "depends_on": ["R6"],
+      "gates": [
+        { "name": "validate app", "command": "npm run validate:app" },
+        { "name": "operator surfaces", "command": "npm run test:release:operator-surfaces" }
+      ]
+    }
+  ]
+}

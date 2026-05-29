@@ -26,6 +26,7 @@
         "architecture:ci": "node scripts/architectureCi.mjs && node scripts/architectureGuard.mjs",
         "architecture:drift": "node scripts/architectureDrift.mjs",
         "implementation:navigator": "node scripts/implementationNavigator.mjs",
+        "implementation:navigator:v2": "node scripts/implementationNavigatorV2.mjs",
         "migration:legacy-scan": "node scripts/scanLegacyModeDependencies.mjs",
         "template:registry:migrate": "node scripts/migrateCertifiedTemplatesToLineage.mjs",
         "engine:test": "node engine/evaluation/evaluateScene.fixture.test.mjs",
