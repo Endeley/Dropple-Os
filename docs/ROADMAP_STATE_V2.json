@@ -53,17 +53,18 @@
     {
       "id": "R4",
       "title": "Collaboration Federation Determinism",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["R3"],
       "gates": [
         { "name": "federation release tests", "command": "npm run test:federation:release" },
+        { "name": "release trust report", "command": "npm run release:trust:report" },
         { "name": "federation lineage", "command": "npm run release:federation:lineage" }
       ]
     },
     {
       "id": "R5",
       "title": "Media Cinema Schema Canonicalization",
-      "status": "not-started",
+      "status": "active",
       "depends_on": ["R4"],
       "gates": [
         { "name": "kernel contracts", "command": "npm run test:kernel" },
