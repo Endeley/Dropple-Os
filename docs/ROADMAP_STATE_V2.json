@@ -43,7 +43,7 @@
     {
       "id": "R3",
       "title": "Projection Performance",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["R2"],
       "gates": [
         { "name": "performance determinism", "command": "npm run performance:determinism" },
@@ -53,7 +53,7 @@
     {
       "id": "R4",
       "title": "Collaboration Federation Determinism",
-      "status": "not-started",
+      "status": "active",
       "depends_on": ["R3"],
       "gates": [
         { "name": "federation release tests", "command": "npm run test:federation:release" },
