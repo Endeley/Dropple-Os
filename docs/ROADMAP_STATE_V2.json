@@ -21,7 +21,7 @@
     {
       "id": "R1",
       "title": "Replay Scale Core",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["R0"],
       "gates": [
         { "name": "runtime replay", "command": "npm run runtime:replay:test" },
@@ -32,7 +32,7 @@
     {
       "id": "R2",
       "title": "Event Log Durability",
-      "status": "not-started",
+      "status": "active",
       "depends_on": ["R1"],
       "gates": [
         { "name": "release attestation", "command": "npm run test:release:attestation" },
