@@ -32,7 +32,7 @@
     {
       "id": "R2",
       "title": "Event Log Durability",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["R1"],
       "gates": [
         { "name": "release attestation", "command": "npm run test:release:attestation" },
@@ -43,7 +43,7 @@
     {
       "id": "R3",
       "title": "Projection Performance",
-      "status": "not-started",
+      "status": "active",
       "depends_on": ["R2"],
       "gates": [
         { "name": "performance determinism", "command": "npm run performance:determinism" },
