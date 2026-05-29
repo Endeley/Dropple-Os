@@ -90,6 +90,39 @@
         { "name": "validate app", "command": "npm run validate:app" },
         { "name": "operator surfaces", "command": "npm run test:release:operator-surfaces" }
       ]
+    },
+    {
+      "id": "R8",
+      "title": "Animation Workspace Productization Slice A",
+      "status": "active",
+      "depends_on": ["R7"],
+      "gates": [
+        { "name": "kernel contracts", "command": "npm run test:kernel" },
+        { "name": "routes smoke", "command": "npm run test:routes:smoke" },
+        { "name": "release operator surfaces", "command": "npm run test:release:operator-surfaces" }
+      ]
+    },
+    {
+      "id": "R9",
+      "title": "Media Workspace Productization Slice B",
+      "status": "not-started",
+      "depends_on": ["R8"],
+      "gates": [
+        { "name": "kernel contracts", "command": "npm run test:kernel" },
+        { "name": "validate app", "command": "npm run validate:app" },
+        { "name": "release trust report", "command": "npm run release:trust:report" }
+      ]
+    },
+    {
+      "id": "R10",
+      "title": "System Workspace Productization Slice C",
+      "status": "not-started",
+      "depends_on": ["R9"],
+      "gates": [
+        { "name": "architecture ci", "command": "npm run architecture:ci" },
+        { "name": "determinism gate", "command": "npm run determinism" },
+        { "name": "operator surfaces", "command": "npm run test:release:operator-surfaces" }
+      ]
     }
   ]
 }
