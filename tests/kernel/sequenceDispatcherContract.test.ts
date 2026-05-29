@@ -302,3 +302,100 @@ test('sequence clip move-trim supports keyboard-step parity (+/-10) and remains 
     assert.equal(redoFinal.start, 50);
     assert.equal(redoFinal.end, 84);
 });
+
+test('sequence clip split is deterministic and undo-redo lawful in animation mode', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(structuredClone(initialRuntimeState), { animate: false });
+
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: adaptWorkspaceToContractV1({
+                ...mediaWorkspace,
+                modeId: 'animation',
+            }),
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.SEQUENCE_CREATE,
+        payload: {
+            sequence: createSequence({
+                id: 'anim-sequence-split',
+                label: 'Animation Split',
+                duration: 240,
+                frameRate: 24,
+            }),
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.SEQUENCE_TRACK_CREATE,
+        payload: {
+            sequenceId: 'anim-sequence-split',
+            track: createSequenceTrack({
+                id: 'anim-track-split',
+                type: 'shot',
+                label: 'Anim Track',
+                order: 0,
+            }),
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.SEQUENCE_CLIP_CREATE,
+        payload: {
+            sequenceId: 'anim-sequence-split',
+            trackId: 'anim-track-split',
+            clip: createSequenceClip({
+                id: 'anim-clip-split',
+                start: 10,
+                end: 40,
+            }),
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.SEQUENCE_CLIP_SPLIT,
+        payload: {
+            sequenceId: 'anim-sequence-split',
+            trackId: 'anim-track-split',
+            clipId: 'anim-clip-split',
+            splitAt: 25,
+            rightClipId: 'anim-clip-split-r',
+        },
+    });
+
+    const splitTrack =
+        dispatcher.getState().document.sequences.sequences['anim-sequence-split'].tracks[
+            'anim-track-split'
+        ];
+    const splitClips = Object.values(splitTrack.clips ?? {});
+    assert.equal(splitClips.length, 2);
+    assert.equal(splitClips[0].start, 10);
+    assert.equal(splitClips[0].end, 25);
+    assert.equal(splitClips[1].start, 25);
+    assert.equal(splitClips[1].end, 40);
+
+    dispatcher.undo();
+    const afterUndoTrack =
+        dispatcher.getState().document.sequences.sequences['anim-sequence-split'].tracks[
+            'anim-track-split'
+        ];
+    const afterUndoClips = Object.values(afterUndoTrack.clips ?? {});
+    assert.equal(afterUndoClips.length, 1);
+    assert.equal(afterUndoClips[0].start, 10);
+    assert.equal(afterUndoClips[0].end, 40);
+
+    dispatcher.redo();
+    const afterRedoTrack =
+        dispatcher.getState().document.sequences.sequences['anim-sequence-split'].tracks[
+            'anim-track-split'
+        ];
+    const afterRedoClips = Object.values(afterRedoTrack.clips ?? {});
+    assert.equal(afterRedoClips.length, 2);
+    assert.equal(afterRedoClips[0].start, 10);
+    assert.equal(afterRedoClips[0].end, 25);
+    assert.equal(afterRedoClips[1].start, 25);
+    assert.equal(afterRedoClips[1].end, 40);
+});

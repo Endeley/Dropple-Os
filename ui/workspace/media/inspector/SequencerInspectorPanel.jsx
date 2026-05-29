@@ -144,10 +144,21 @@ export function SequencerInspectorPanel({
             const intent = resolveSequenceClipKeyboardIntent({
                 event,
                 selectedClip,
+                currentFrame,
                 gridSize: 1,
             });
             if (!intent) return;
             event.preventDefault();
+
+            if (intent.kind === 'split') {
+                timelineIntentSequenceClipSplit({
+                    sequenceId: sequence.id,
+                    trackId: selectedTrackId,
+                    clipId: selectedClip.clipId,
+                    ...intent.patch,
+                });
+                return;
+            }
 
             if (intent.kind === 'move') {
                 timelineIntentSequenceClipMove({
@@ -171,7 +182,7 @@ export function SequencerInspectorPanel({
         return () => {
             window.removeEventListener('keydown', onKeyDown);
         };
-    }, [modeId, sequence?.id, selectedTrackId, selectedClip]);
+    }, [modeId, sequence?.id, selectedTrackId, selectedClip, currentFrame]);
 
     function handleCreateSequence() {
         const nextSequence = createSequence({

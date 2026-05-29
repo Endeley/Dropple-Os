@@ -49,6 +49,13 @@ test('sequence clip keyboard intent resolves deterministic move and trim semanti
         selectedClip,
     });
     assert.deepEqual(trimStart, { kind: 'trim', patch: { start: 19 } });
+
+    const splitClip = resolveSequenceClipKeyboardIntent({
+        event: keyboardEventStub({ key: 'Enter', altKey: true }),
+        selectedClip,
+        currentFrame: 26,
+    });
+    assert.deepEqual(splitClip, { kind: 'split', patch: { splitAt: 26 } });
 });
 
 test('sequence clip keyboard intent is inert on text-edit focus and repeat events', () => {

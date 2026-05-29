@@ -17,11 +17,21 @@ function isTextInputTarget(target) {
 export function resolveSequenceClipKeyboardIntent({
     event,
     selectedClip,
+    currentFrame = null,
     gridSize = 1,
 } = {}) {
     if (!event || !selectedClip) return null;
     if (isTextInputTarget(event.target)) return null;
     const key = event.key;
+    if (event.altKey === true && key === 'Enter') {
+        const start = Number(selectedClip.start ?? 0);
+        const end = Number(selectedClip.end ?? 0);
+        const rawFrame = Number.isFinite(Number(currentFrame)) ? Number(currentFrame) : start;
+        const splitAt = Math.max(start + 1, Math.min(end - 1, Math.round(rawFrame)));
+        if (!Number.isFinite(splitAt) || splitAt <= start || splitAt >= end) return null;
+        return { kind: 'split', patch: { splitAt } };
+    }
+
     if (key !== 'ArrowLeft' && key !== 'ArrowRight') return null;
     if (event.repeat === true) return null;
 
