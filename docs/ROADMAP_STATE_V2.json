@@ -64,7 +64,7 @@
     {
       "id": "R5",
       "title": "Media Cinema Schema Canonicalization",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["R4"],
       "gates": [
         { "name": "kernel contracts", "command": "npm run test:kernel" },
@@ -74,7 +74,7 @@
     {
       "id": "R6",
       "title": "Capability Overlay Unification",
-      "status": "not-started",
+      "status": "active",
       "depends_on": ["R5"],
       "gates": [
         { "name": "implementation navigator", "command": "npm run implementation:navigator" },
