@@ -10,7 +10,7 @@
     {
       "id": "R0",
       "title": "Governance Lock",
-      "status": "active",
+      "status": "complete",
       "depends_on": [],
       "gates": [
         { "name": "architecture gate", "command": "npm run arch" },
@@ -21,7 +21,7 @@
     {
       "id": "R1",
       "title": "Replay Scale Core",
-      "status": "not-started",
+      "status": "active",
       "depends_on": ["R0"],
       "gates": [
         { "name": "runtime replay", "command": "npm run runtime:replay:test" },
