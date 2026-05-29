@@ -74,7 +74,7 @@
     {
       "id": "R6",
       "title": "Capability Overlay Unification",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["R5"],
       "gates": [
         { "name": "implementation navigator", "command": "npm run implementation:navigator" },
@@ -84,7 +84,7 @@
     {
       "id": "R7",
       "title": "Product Workspace UI Buildout",
-      "status": "not-started",
+      "status": "active",
       "depends_on": ["R6"],
       "gates": [
         { "name": "validate app", "command": "npm run validate:app" },
