@@ -111,9 +111,17 @@ function EditorWorkspaceLayoutInner({
 
     const workspaceId = adapter?.workspaceId || adapter?.id || 'graphic';
     const showToolRail = adapter?.ui?.canvas !== false && adapter?.ui?.editing !== false;
-    const showSystemVersioningPanels =
+    const isSystemGovernanceSurface =
         workspaceContext?.workspaceId === 'system' &&
-        (toolModeId === 'governance' || overlayId === 'governance') &&
+        (toolModeId === 'governance' || overlayId === 'governance');
+    const isBuildOverlaySurface =
+        workspaceContext?.workspaceId === 'build' &&
+        (toolModeId === 'systems-engineering' ||
+            toolModeId === 'enterprise-operations' ||
+            overlayId === 'systems-engineering' ||
+            overlayId === 'enterprise-operations');
+    const showCapabilityPanels =
+        (isSystemGovernanceSurface || isBuildOverlaySurface) &&
         Array.isArray(capabilitySurfacePanels) &&
         capabilitySurfacePanels.length > 0;
 
@@ -299,7 +307,7 @@ function EditorWorkspaceLayoutInner({
                 <div className='workspace-canvas-cell'>
                     <WorkspaceCanvasRoot workspaceId={workspaceId} />
 
-                    {showSystemVersioningPanels && (
+                    {showCapabilityPanels && (
                         <div className='workspace-capability-panels'>
                             {capabilitySurfacePanels.map((CapabilityPanel, index) => (
                                 <div

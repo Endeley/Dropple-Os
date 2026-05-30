@@ -4,6 +4,8 @@ import { GraphEditorPanel } from '@/ui/workspace/media/animation/GraphEditorPane
 import { RigControllerOverlay } from '@/ui/rigging/RigControllerOverlay.jsx';
 import { createTokenAuthoringCommandLayer } from '@/ui/workspace/system/tokenAuthoringIntent.js';
 import { TokenVersionGraphPanel } from '@/ui/workspace/system/TokenVersionGraphPanel.jsx';
+import { SystemsEngineeringPanel } from '@/ui/workspace/build/SystemsEngineeringPanel.jsx';
+import { EnterpriseOperationsPanel } from '@/ui/workspace/build/EnterpriseOperationsPanel.jsx';
 
 function safeEmit(context, event, capability, phase = 'emit') {
     try {
@@ -321,7 +323,12 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
         id: 'systems-graph',
         tools: Object.freeze([]),
         ui: Object.freeze({
-            surfacePanels: Object.freeze([]),
+            surfacePanels: Object.freeze([
+                Object.freeze({
+                    component: SystemsEngineeringPanel,
+                    priority: 20,
+                }),
+            ]),
         }),
         lifecycle: Object.freeze({}),
     }),
@@ -366,7 +373,12 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
         id: 'ops-process',
         tools: Object.freeze([]),
         ui: Object.freeze({
-            surfacePanels: Object.freeze([]),
+            surfacePanels: Object.freeze([
+                Object.freeze({
+                    component: EnterpriseOperationsPanel,
+                    priority: 20,
+                }),
+            ]),
         }),
         lifecycle: Object.freeze({}),
     }),
