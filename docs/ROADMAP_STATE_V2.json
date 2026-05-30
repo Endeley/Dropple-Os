@@ -116,7 +116,7 @@
     {
       "id": "R10",
       "title": "System Workspace Productization Slice C",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["R9"],
       "gates": [
         { "name": "architecture ci", "command": "npm run architecture:ci" },
