@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { syncRuntimeToZustand } from '@/runtime/projection/zustandBridge.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { hashRuntimeState } from '@/core/persistence/hashDocument.js';
+import { resolveSemanticZoomPresentation } from '@/runtime/canvas/zoomTiers.js';
 
 test.beforeEach(() => {
     useRuntimeStore.setState({
@@ -223,4 +224,22 @@ test('projection converges to canonical truth after interaction completion and f
     const finalHashB = hashRuntimeState(runtimeStateB);
 
     assert.equal(finalHashA, finalHashB);
+});
+
+test('semantic zoom presentation mapping is deterministic and mutation-free', () => {
+    const input = Object.freeze({ scale: 0.5, perspectiveId: 'create' });
+
+    const left = resolveSemanticZoomPresentation(input);
+    const right = resolveSemanticZoomPresentation(input);
+
+    assert.deepEqual(left, Object.freeze({
+        tier: 'overview',
+        perspectiveId: 'create',
+        detail: 'domain',
+        cluster: 'artifact-group',
+        labels: true,
+        domain: 'creative',
+    }));
+    assert.deepEqual(left, right);
+    assert.deepEqual(input, Object.freeze({ scale: 0.5, perspectiveId: 'create' }));
 });

@@ -6,6 +6,7 @@ import {
     getProjectPerspectiveDefinition,
     hasProjectPerspective,
     listProjectPerspectiveIds,
+    resolveProjectPerspectiveFocus,
     resolveProjectPerspectiveContext,
 } from '@/platform/workspaces/projectPerspectiveRouter.js';
 
@@ -98,6 +99,46 @@ test('project perspective fails closed to defaults for unknown perspective or di
             overlayId: null,
             overlayClass: null,
             canonicalModeId: 'review',
+        }),
+    );
+});
+
+test('project perspective focus mapping is deterministic and fail-closed', () => {
+    assert.deepEqual(
+        resolveProjectPerspectiveFocus({ perspectiveId: 'operate', entryId: 'enterprise-operations' }),
+        Object.freeze({
+            perspectiveId: 'operate',
+            perspectiveLabel: 'Operate',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'enterprise-operations',
+            entrySource: 'entry-direct',
+            workspaceId: 'build',
+            modeId: 'enterprise-operations',
+            definitionId: 'conversion',
+            overlayId: 'enterprise-operations',
+            overlayClass: 'payload',
+            canonicalModeId: 'automation',
+            primaryArtifactKind: 'system-model',
+            secondaryArtifactKinds: Object.freeze(['workflow', 'state-machine', 'knowledge-page']),
+        }),
+    );
+
+    assert.deepEqual(
+        resolveProjectPerspectiveFocus({ perspectiveId: 'unknown', entryId: 'unknown' }),
+        Object.freeze({
+            perspectiveId: 'overview',
+            perspectiveLabel: 'Overview',
+            perspectiveSource: 'perspective-fallback',
+            entryId: 'uiux',
+            entrySource: 'entry-default',
+            workspaceId: 'design',
+            modeId: 'uiux',
+            definitionId: 'uiux',
+            overlayId: null,
+            overlayClass: null,
+            canonicalModeId: 'uiux',
+            primaryArtifactKind: 'project-hub',
+            secondaryArtifactKinds: Object.freeze(['document', 'workflow', 'knowledge-page']),
         }),
     );
 });

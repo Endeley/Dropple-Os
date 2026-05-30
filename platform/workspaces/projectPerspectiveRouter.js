@@ -54,6 +54,33 @@ export const PROJECT_PERSPECTIVES = Object.freeze({
 
 const FALLBACK_PERSPECTIVE_ID = 'overview';
 
+const PROJECT_PERSPECTIVE_FOCUS = Object.freeze({
+    overview: Object.freeze({
+        primaryArtifactKind: 'project-hub',
+        secondaryArtifactKinds: Object.freeze(['document', 'workflow', 'knowledge-page']),
+    }),
+    create: Object.freeze({
+        primaryArtifactKind: 'frame',
+        secondaryArtifactKinds: Object.freeze(['document', 'animation', 'video']),
+    }),
+    build: Object.freeze({
+        primaryArtifactKind: 'workflow',
+        secondaryArtifactKinds: Object.freeze(['state-machine', 'ai-agent', 'system-model']),
+    }),
+    operate: Object.freeze({
+        primaryArtifactKind: 'system-model',
+        secondaryArtifactKinds: Object.freeze(['workflow', 'state-machine', 'knowledge-page']),
+    }),
+    collaborate: Object.freeze({
+        primaryArtifactKind: 'knowledge-page',
+        secondaryArtifactKinds: Object.freeze(['document', 'workflow', 'component-library']),
+    }),
+    publish: Object.freeze({
+        primaryArtifactKind: 'document',
+        secondaryArtifactKinds: Object.freeze(['video', 'animation', 'component-library']),
+    }),
+});
+
 function validatePerspectiveRegistry() {
     for (const [perspectiveId, perspective] of Object.entries(PROJECT_PERSPECTIVES)) {
         if (perspective.id !== perspectiveId) {
@@ -123,5 +150,16 @@ export function resolveProjectPerspectiveContext({ perspectiveId, entryId } = {}
         overlayId: resolved.overlayId,
         overlayClass: resolved.overlayClass,
         canonicalModeId: resolved.canonicalModeId,
+    });
+}
+
+export function resolveProjectPerspectiveFocus({ perspectiveId, entryId } = {}) {
+    const context = resolveProjectPerspectiveContext({ perspectiveId, entryId });
+    const focus = PROJECT_PERSPECTIVE_FOCUS[context.perspectiveId] ?? PROJECT_PERSPECTIVE_FOCUS.overview;
+
+    return Object.freeze({
+        ...context,
+        primaryArtifactKind: focus.primaryArtifactKind,
+        secondaryArtifactKinds: focus.secondaryArtifactKinds,
     });
 }

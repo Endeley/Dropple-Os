@@ -13,3 +13,42 @@ export function getZoomTier(scale) {
         ZOOM_TIERS[0];
     return tier.id;
 }
+
+const DEFAULT_PERSPECTIVE_ID = 'overview';
+const PERSPECTIVE_IDS = new Set(['overview', 'create', 'build', 'operate', 'collaborate', 'publish']);
+
+const BASE_PRESENTATION = Object.freeze({
+    far: Object.freeze({ detail: 'systems', cluster: 'project-domain', labels: false }),
+    overview: Object.freeze({ detail: 'domain', cluster: 'artifact-group', labels: true }),
+    normal: Object.freeze({ detail: 'artifact', cluster: 'artifact-node', labels: true }),
+    detail: Object.freeze({ detail: 'artifact-detail', cluster: 'artifact-node', labels: true }),
+    micro: Object.freeze({ detail: 'node-precision', cluster: 'none', labels: true }),
+});
+
+const PERSPECTIVE_OVERRIDES = Object.freeze({
+    create: Object.freeze({ domain: 'creative' }),
+    build: Object.freeze({ domain: 'execution' }),
+    operate: Object.freeze({ domain: 'operations' }),
+    collaborate: Object.freeze({ domain: 'people' }),
+    publish: Object.freeze({ domain: 'release' }),
+    overview: Object.freeze({ domain: 'project' }),
+});
+
+export function resolveSemanticZoomPresentation({ scale, perspectiveId } = {}) {
+    const tier = getZoomTier(scale);
+    const normalizedPerspectiveId =
+        typeof perspectiveId === 'string' && PERSPECTIVE_IDS.has(perspectiveId.trim().toLowerCase())
+            ? perspectiveId.trim().toLowerCase()
+            : DEFAULT_PERSPECTIVE_ID;
+    const base = BASE_PRESENTATION[tier] ?? BASE_PRESENTATION.overview;
+    const override = PERSPECTIVE_OVERRIDES[normalizedPerspectiveId] ?? PERSPECTIVE_OVERRIDES.overview;
+
+    return Object.freeze({
+        tier,
+        perspectiveId: normalizedPerspectiveId,
+        detail: base.detail,
+        cluster: base.cluster,
+        labels: base.labels,
+        domain: override.domain,
+    });
+}

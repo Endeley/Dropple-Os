@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { normalizeShotTransitionOut } from '../../core/project/normalizeShotTransitionOut.js';
+import { normalizeProjectUniverseArtifacts } from '../../core/project/normalizeProjectUniverseArtifacts.js';
 
 function createProjectWithShot(transitionOut) {
     return {
@@ -76,5 +77,28 @@ test('normalizeShotTransitionOut normalizes transition metadata deterministicall
         type: 'crossfade',
         durationMs: 200,
     });
+    assert.deepEqual(left, right);
+});
+
+test('normalizeProjectUniverseArtifacts canonicalizes project hub and refs deterministically', () => {
+    const input = {
+        version: 99,
+        hubId: 'missing-hub',
+        nodes: {
+            z: { kind: 'workflow', refs: ['a', 'a', '  b  '] },
+            a: { kind: 'project-hub', x: 10, y: 20, label: '  Hub  ' },
+            bad: { kind: 'unsupported-kind', refs: [null, 9] },
+        },
+    };
+
+    const left = normalizeProjectUniverseArtifacts(input);
+    const right = normalizeProjectUniverseArtifacts(input);
+
+    assert.equal(left.version, 1);
+    assert.equal(left.hubId, 'a');
+    assert.deepEqual(Object.keys(left.nodes), ['a', 'bad', 'z']);
+    assert.equal(left.nodes.bad.kind, 'document');
+    assert.deepEqual(left.nodes.z.refs, ['a', 'b']);
+    assert.equal(left.nodes.a.label, 'Hub');
     assert.deepEqual(left, right);
 });

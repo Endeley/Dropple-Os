@@ -2,6 +2,7 @@ import type { ProjectV2, Composition, Asset } from '../contracts/project.v2';
 import { DEFAULT_SHOT_DURATION_MS } from './initProjectWithSceneGraph.v2';
 import { normalizeShotTransitionOut } from './normalizeShotTransitionOut.js';
 import { PRIMARY_SHOT_TRACK_ID, getCanonicalShotTrack, getSceneShotTracks } from '@/core/scene/shotTracks.js';
+import { normalizeProjectUniverseArtifacts } from './normalizeProjectUniverseArtifacts.js';
 
 type ProjectV1 = {
     version: 1;
@@ -81,14 +82,29 @@ function migrateProjectV1ToV2(project: ProjectV1): ProjectV2 {
 
 function normalizeProjectV2(project: ProjectV2): ProjectV2 {
     const graph = project.sceneGraph;
-    if (!graph) return project;
+    const normalizedUniverse = normalizeProjectUniverseArtifacts(project.universe ?? null);
+    if (!graph) {
+        if (normalizedUniverse === project.universe) return project;
+        return {
+            ...project,
+            universe: normalizedUniverse ?? undefined,
+        };
+    }
 
     const normalized = normalizeShotTimelines(project);
     const normalizedGraph = normalized.sceneGraph;
-    if (normalizedGraph?.activeShotId) return normalized;
+    const base =
+        normalizedUniverse !== project.universe
+            ? {
+                ...normalized,
+                universe: normalizedUniverse ?? undefined,
+            }
+            : normalized;
+
+    if (normalizedGraph?.activeShotId) return base;
     if (!graph.activeSceneId) {
         return {
-            ...normalized,
+            ...base,
             sceneGraph: {
                 ...normalizedGraph,
                 activeShotId: null,
@@ -100,7 +116,7 @@ function normalizeProjectV2(project: ProjectV2): ProjectV2 {
     const firstShotId = getCanonicalShotTrack(scene)?.shots?.[0]?.id ?? null;
 
     return {
-        ...normalized,
+        ...base,
         sceneGraph: {
             ...normalizedGraph,
             activeShotId: firstShotId,
