@@ -46,3 +46,8 @@ next-env.d.ts
 
 keys/
 test-results 2/
+
+# generated release/runtime artifacts
+.artifacts/
+.tmp/
+var/
