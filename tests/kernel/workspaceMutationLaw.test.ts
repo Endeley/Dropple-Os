@@ -1015,3 +1015,71 @@ test('animation workspace activation allows canonical timeline track-group unass
     const targetGroup = groups.find((group) => group.id === 'anim-group-4');
     assert.deepEqual(targetGroup?.trackIds, []);
 });
+
+test('systems and operations overlay event stubs fail closed when workspace allowlist excludes them', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: createWorkspaceDef({
+                id: 'build',
+                allowedEventTypes: [EventTypes.NODE_CREATE],
+                capabilities: ['node:create'],
+            }),
+        },
+    });
+
+    const before = dispatcher.getState();
+    const next = await dispatcher.dispatch({
+        type: EventTypes.SYSTEMS_SIMULATION_RUN,
+        payload: {
+            simulationId: 'sim-a',
+            seed: 1,
+        },
+    });
+
+    assert.deepEqual(next, before);
+});
+
+test('systems and operations overlay event stubs are allowlist-addressable when explicitly enabled', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: createWorkspaceDef({
+                id: 'build',
+                allowedEventTypes: [
+                    EventTypes.SYSTEMS_NODE_DEFINE,
+                    EventTypes.OPS_WORKFLOW_DEFINE,
+                ],
+                capabilities: [],
+            }),
+        },
+    });
+
+    const afterSystems = await dispatcher.dispatch({
+        type: EventTypes.SYSTEMS_NODE_DEFINE,
+        payload: {
+            nodeId: 'autonomous-drone',
+            nodeType: 'system.component',
+        },
+    });
+    const afterOps = await dispatcher.dispatch({
+        type: EventTypes.OPS_WORKFLOW_DEFINE,
+        payload: {
+            workflowId: 'order-flow',
+            version: 1,
+        },
+    });
+
+    assert.equal(
+        afterSystems?.workspace?.allowedEventTypes?.has(EventTypes.SYSTEMS_NODE_DEFINE),
+        true,
+    );
+    assert.equal(
+        afterOps?.workspace?.allowedEventTypes?.has(EventTypes.OPS_WORKFLOW_DEFINE),
+        true,
+    );
+});

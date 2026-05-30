@@ -212,6 +212,12 @@ export const EventTypes = Object.freeze({
     GRAPH_DISCONNECT: 'graph/disconnect',
     GRAPH_OUTPUT_SET: 'graph/output/set',
     GRAPH_PARAMETER_UPDATE: 'graph/parameter/update',
+    SYSTEMS_NODE_DEFINE: 'systems/node/define',
+    SYSTEMS_RELATION_DEFINE: 'systems/relation/define',
+    SYSTEMS_SIMULATION_RUN: 'systems/simulation/run',
+    OPS_PROCESS_DEFINE: 'ops/process/define',
+    OPS_WORKFLOW_DEFINE: 'ops/workflow/define',
+    OPS_AUTOMATION_RUN: 'ops/automation/run',
 
     // ─────────────────────────────
     // Workspace

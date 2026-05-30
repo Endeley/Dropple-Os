@@ -174,6 +174,22 @@ test('resolveWorkspaceCapabilities exposes assistive AI overlay capabilities onl
             'ops-ai-assist',
         ],
     );
+
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'build',
+            mode: 'systems-engineering',
+        }),
+        [],
+    );
+
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'build',
+            mode: 'enterprise-operations',
+        }),
+        [],
+    );
 });
 
 test('resolveWorkspaceCapabilities exposes guided learning capabilities only when requested explicitly', () => {

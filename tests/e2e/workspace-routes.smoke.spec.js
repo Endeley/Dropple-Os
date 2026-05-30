@@ -60,10 +60,12 @@ const ROUTES = [
   {
     path: '/workspace/systems-engineering',
     expected: 'Systems Engineering',
+    expectedPanelText: 'Canonical build overlay for architecture graph',
   },
   {
     path: '/workspace/enterprise-operations',
     expected: 'Enterprise Operations',
+    expectedPanelText: 'Canonical build overlay for process modeling',
   },
   {
     path: '/workspace/education',
@@ -105,6 +107,9 @@ for (const route of ROUTES) {
     }
     if (route.expectedButton) {
       await expect(page.getByRole('button', { name: route.expectedButton })).toBeVisible();
+    }
+    if (route.expectedPanelText) {
+      await expect(page.locator('body')).toContainText(route.expectedPanelText);
     }
     await expect(page.locator('body')).not.toContainText('Module not found');
     await expect(page.locator('body')).not.toContainText('Application error');

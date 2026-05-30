@@ -161,6 +161,32 @@ test('overlay-aware mode resolution follows legacy aliases into payload overlays
     );
 });
 
+test('overlay-aware mode resolution keeps systems and operations overlays owned by build automation', () => {
+    assert.deepEqual(
+        resolveModeWithOverlay('systems-engineering'),
+        Object.freeze({
+            originalModeId: 'systems-engineering',
+            canonicalModeId: 'automation',
+            workspaceId: 'build',
+            overlayId: 'systems-engineering',
+            overlayClass: 'payload',
+            source: 'overlay',
+        }),
+    );
+
+    assert.deepEqual(
+        resolveModeWithOverlay('enterprise-operations'),
+        Object.freeze({
+            originalModeId: 'enterprise-operations',
+            canonicalModeId: 'automation',
+            workspaceId: 'build',
+            overlayId: 'enterprise-operations',
+            overlayClass: 'payload',
+            source: 'overlay',
+        }),
+    );
+});
+
 test('overlay workspace context keeps current routing mode while exposing future canonical overlay identity', () => {
     const resolved = resolveCanonicalWorkspaceOverlayContext({
         workspaceId: 'branding',
