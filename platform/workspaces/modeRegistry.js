@@ -429,6 +429,40 @@ const LEGACY_MODE_DEFINITIONS = Object.freeze({
         },
     }),
 
+    'systems-engineering': freezeModeDefinition({
+        id: 'systems-engineering',
+        label: 'Systems Engineering',
+        workspaceId: 'build',
+        definitionId: 'dev',
+        exposure: {
+            tools: true,
+            panels: true,
+            canvas: true,
+            inspector: true,
+            timeline: false,
+            export: true,
+            review: false,
+            readOnly: false,
+        },
+    }),
+
+    'enterprise-operations': freezeModeDefinition({
+        id: 'enterprise-operations',
+        label: 'Enterprise Operations',
+        workspaceId: 'build',
+        definitionId: 'conversion',
+        exposure: {
+            tools: true,
+            panels: true,
+            canvas: false,
+            inspector: true,
+            timeline: false,
+            export: true,
+            review: false,
+            readOnly: false,
+        },
+    }),
+
     variants: freezeModeDefinition({
         id: 'variants',
         label: 'Variants',

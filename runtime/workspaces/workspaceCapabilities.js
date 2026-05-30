@@ -17,6 +17,20 @@ export const WORKSPACE_MODE_CAPABILITIES = Object.freeze({
 
 export const WORKSPACE_OVERLAY_CAPABILITIES = Object.freeze({
     'build:ai-systems': Object.freeze(['ai-assist', 'ai-explain', 'ai-generate']),
+    'build:systems-engineering': Object.freeze([
+        'systems-graph',
+        'systems-control',
+        'systems-dataflow',
+        'systems-simulation',
+        'systems-documentation',
+    ]),
+    'build:enterprise-operations': Object.freeze([
+        'ops-process',
+        'ops-automation',
+        'ops-datasource',
+        'ops-roles',
+        'ops-ai-assist',
+    ]),
     'collaborate:learning': Object.freeze([
         'guided-navigation',
         'step-through',

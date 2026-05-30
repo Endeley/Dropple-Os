@@ -149,6 +149,44 @@ test('resolveWorkspaceContext preserves ai-build as a compatibility surface unde
     });
 });
 
+test('resolveWorkspaceContext preserves systems-engineering as a compatibility surface under build automation', () => {
+    const context = resolveWorkspaceContext({
+        workspace: 'systems-engineering',
+    });
+
+    assert.deepEqual(context, {
+        workspaceId: 'build',
+        modeId: 'systems-engineering',
+        workspace: 'build',
+        mode: 'systems-engineering',
+        label: 'Build',
+        modeLabel: 'Systems Engineering',
+        definitionId: 'dev',
+        isLegacy: true,
+        legacyId: 'systems-engineering',
+        source: 'legacy-alias',
+    });
+});
+
+test('resolveWorkspaceContext preserves enterprise-operations as a compatibility surface under build automation', () => {
+    const context = resolveWorkspaceContext({
+        workspace: 'enterprise-operations',
+    });
+
+    assert.deepEqual(context, {
+        workspaceId: 'build',
+        modeId: 'enterprise-operations',
+        workspace: 'build',
+        mode: 'enterprise-operations',
+        label: 'Build',
+        modeLabel: 'Enterprise Operations',
+        definitionId: 'conversion',
+        isLegacy: true,
+        legacyId: 'enterprise-operations',
+        source: 'legacy-alias',
+    });
+});
+
 test('resolveWorkspaceContext resolves canonical knowledge without forcing legacy learning identity', () => {
     const context = resolveWorkspaceContext({
         workspace: 'knowledge',

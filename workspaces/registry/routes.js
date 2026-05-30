@@ -12,6 +12,8 @@ export function workspaceRoutes() {
     dev: { label: "Dev", href: "/workspace/dev" },
     education: { label: "Education", href: "/workspace/education" },
     ai: { label: "AI Suite", href: "/workspace/ai" },
+    "systems-engineering": { label: "Systems Engineering", href: "/workspace/systems-engineering" },
+    "enterprise-operations": { label: "Enterprise Operations", href: "/workspace/enterprise-operations" },
     branding: { label: "Branding", href: "/workspace/branding" },
     document: { label: "Document", href: "/workspace/document" },
     translate: { label: "Translate", href: "/workspace/translate" },

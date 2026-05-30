@@ -58,6 +58,14 @@ const ROUTES = [
     expected: 'AI Build',
   },
   {
+    path: '/workspace/systems-engineering',
+    expected: 'Systems Engineering',
+  },
+  {
+    path: '/workspace/enterprise-operations',
+    expected: 'Enterprise Operations',
+  },
+  {
     path: '/workspace/education',
     expected: 'Education Mode',
   },

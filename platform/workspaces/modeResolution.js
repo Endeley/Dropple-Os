@@ -123,6 +123,8 @@ export const WORKSPACE_ALIASES = Object.freeze({
 
     dev: Object.freeze({ workspaceId: 'build', modeId: 'application' }),
     conversion: Object.freeze({ workspaceId: 'build', modeId: 'conversion' }),
+    'systems-engineering': Object.freeze({ workspaceId: 'build', modeId: 'systems-engineering' }),
+    'enterprise-operations': Object.freeze({ workspaceId: 'build', modeId: 'enterprise-operations' }),
 
     material: Object.freeze({ workspaceId: 'system', modeId: 'components' }),
     tokens: Object.freeze({ workspaceId: 'system', modeId: 'tokens' }),

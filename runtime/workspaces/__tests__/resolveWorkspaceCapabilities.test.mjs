@@ -144,6 +144,36 @@ test('resolveWorkspaceCapabilities exposes assistive AI overlay capabilities onl
         }),
         ['ai-assist', 'ai-explain', 'ai-generate'],
     );
+
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'build',
+            mode: 'automation',
+            overlayId: 'systems-engineering',
+        }),
+        [
+            'systems-graph',
+            'systems-control',
+            'systems-dataflow',
+            'systems-simulation',
+            'systems-documentation',
+        ],
+    );
+
+    assert.deepEqual(
+        resolveWorkspaceCapabilities({
+            workspace: 'build',
+            mode: 'automation',
+            overlayId: 'enterprise-operations',
+        }),
+        [
+            'ops-process',
+            'ops-automation',
+            'ops-datasource',
+            'ops-roles',
+            'ops-ai-assist',
+        ],
+    );
 });
 
 test('resolveWorkspaceCapabilities exposes guided learning capabilities only when requested explicitly', () => {

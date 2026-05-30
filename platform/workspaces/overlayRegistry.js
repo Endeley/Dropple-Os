@@ -106,6 +106,35 @@ export const OVERLAY_REGISTRY = Object.freeze({
         },
     }),
 
+    'systems-engineering': freezeEntry({
+        ownerWorkspaceId: 'build',
+        ownerModeId: 'automation',
+        overlayId: 'systems-engineering',
+        class: OVERLAY_CLASSES.payload,
+        legacyModes: ['systems-engineering'],
+        payload: {
+            domain: 'systems-engineering',
+            engines: ['graph', 'workflow', 'simulation'],
+            artifacts: ['spec', 'trace', 'report'],
+        },
+    }),
+
+    'enterprise-operations': freezeEntry({
+        ownerWorkspaceId: 'build',
+        ownerModeId: 'automation',
+        overlayId: 'enterprise-operations',
+        class: OVERLAY_CLASSES.payload,
+        legacyModes: ['enterprise-operations'],
+        payload: {
+            domain: 'enterprise-operations',
+            engines: ['workflow', 'data', 'automation'],
+            governanceSurface: {
+                workspaceId: 'collaborate',
+                modeId: 'production',
+            },
+        },
+    }),
+
     themes: freezeEntry({
         ownerWorkspaceId: 'system',
         ownerModeId: 'tokens',
