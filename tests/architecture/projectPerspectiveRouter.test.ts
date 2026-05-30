@@ -1,0 +1,103 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
+import {
+    PROJECT_PERSPECTIVES,
+    getProjectPerspectiveDefinition,
+    hasProjectPerspective,
+    listProjectPerspectiveIds,
+    resolveProjectPerspectiveContext,
+} from '@/platform/workspaces/projectPerspectiveRouter.js';
+
+test('project perspective ids are deterministic and complete', () => {
+    assert.deepEqual(listProjectPerspectiveIds(), ['build', 'collaborate', 'create', 'operate', 'overview', 'publish']);
+});
+
+test('project perspective registry exposes immutable definitions', () => {
+    const create = getProjectPerspectiveDefinition('create');
+    assert.ok(create);
+    assert.equal(Object.isFrozen(create), true);
+    assert.equal(create?.defaultEntryId, 'uiux');
+    assert.deepEqual(create?.entries, ['uiux', 'graphic', 'document', 'animation', 'video', 'audio']);
+    assert.equal(Object.isFrozen(PROJECT_PERSPECTIVES), true);
+});
+
+test('project perspective predicates are strict and normalized', () => {
+    assert.equal(hasProjectPerspective('create'), true);
+    assert.equal(hasProjectPerspective(' CREATE '), true);
+    assert.equal(hasProjectPerspective('unknown'), false);
+});
+
+test('project perspective resolves create entry to canonical workspace context', () => {
+    assert.deepEqual(
+        resolveProjectPerspectiveContext({ perspectiveId: 'create', entryId: 'video' }),
+        Object.freeze({
+            perspectiveId: 'create',
+            perspectiveLabel: 'Create',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'video',
+            entrySource: 'entry-direct',
+            workspaceId: 'media',
+            modeId: 'video',
+            definitionId: 'video',
+            overlayId: null,
+            overlayClass: null,
+            canonicalModeId: 'video',
+        }),
+    );
+});
+
+test('project perspective resolves build/operate overlays without creating new truth models', () => {
+    assert.deepEqual(
+        resolveProjectPerspectiveContext({ perspectiveId: 'operate', entryId: 'systems-engineering' }),
+        Object.freeze({
+            perspectiveId: 'operate',
+            perspectiveLabel: 'Operate',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'systems-engineering',
+            entrySource: 'entry-direct',
+            workspaceId: 'build',
+            modeId: 'systems-engineering',
+            definitionId: 'dev',
+            overlayId: 'systems-engineering',
+            overlayClass: 'payload',
+            canonicalModeId: 'automation',
+        }),
+    );
+});
+
+test('project perspective fails closed to defaults for unknown perspective or disallowed entry', () => {
+    assert.deepEqual(
+        resolveProjectPerspectiveContext({ perspectiveId: 'unknown-perspective', entryId: 'video' }),
+        Object.freeze({
+            perspectiveId: 'overview',
+            perspectiveLabel: 'Overview',
+            perspectiveSource: 'perspective-fallback',
+            entryId: 'uiux',
+            entrySource: 'entry-default',
+            workspaceId: 'design',
+            modeId: 'uiux',
+            definitionId: 'uiux',
+            overlayId: null,
+            overlayClass: null,
+            canonicalModeId: 'uiux',
+        }),
+    );
+
+    assert.deepEqual(
+        resolveProjectPerspectiveContext({ perspectiveId: 'collaborate', entryId: 'video' }),
+        Object.freeze({
+            perspectiveId: 'collaborate',
+            perspectiveLabel: 'Collaborate',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'review',
+            entrySource: 'entry-default',
+            workspaceId: 'collaborate',
+            modeId: 'review',
+            definitionId: 'review',
+            overlayId: null,
+            overlayClass: null,
+            canonicalModeId: 'review',
+        }),
+    );
+});

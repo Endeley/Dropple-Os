@@ -23,6 +23,23 @@ Dropple is already constitutionally structured for a Project-first UX shell:
 
 Conclusion: no substrate rewrite is needed before Project-first UI work.
 
+## Project UX Law (Locked)
+
+Design law for product shell and workspace UX:
+
+- Users navigate by intention.
+- The platform routes by constitution.
+
+Implementation meaning:
+
+- Product UX vocabulary is project-centric:
+  - `Overview`, `Create`, `Build`, `Operate`, `Collaborate`, `Publish`
+- Constitutional substrate remains unchanged and mostly invisible:
+  - `design`, `media`, `build`, `system`, `collaborate`
+- Perspective navigation may never introduce a second authority model.
+- Perspective routing must fail closed to canonical defaults.
+- All authoring truth still flows through event + dispatcher + reducer path.
+
 ## Risks To Control During UI Build
 
 1. Leaking architecture nouns into product UX:

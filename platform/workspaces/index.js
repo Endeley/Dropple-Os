@@ -44,3 +44,11 @@ export {
     listMediaWorkspaceModes,
     resolveMediaWorkspaceMode,
 } from './mediaWorkspace.js';
+
+export {
+    PROJECT_PERSPECTIVES,
+    getProjectPerspectiveDefinition,
+    hasProjectPerspective,
+    listProjectPerspectiveIds,
+    resolveProjectPerspectiveContext,
+} from './projectPerspectiveRouter.js';
