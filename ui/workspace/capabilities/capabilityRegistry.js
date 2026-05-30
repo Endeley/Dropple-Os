@@ -316,6 +316,96 @@ export const CAPABILITY_COMPONENTS = Object.freeze({
         }),
         lifecycle: Object.freeze({}),
     }),
+
+    'systems-graph': Object.freeze({
+        id: 'systems-graph',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([]),
+        }),
+        lifecycle: Object.freeze({}),
+    }),
+
+    'systems-control': Object.freeze({
+        id: 'systems-control',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([]),
+        }),
+        lifecycle: Object.freeze({}),
+    }),
+
+    'systems-dataflow': Object.freeze({
+        id: 'systems-dataflow',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([]),
+        }),
+        lifecycle: Object.freeze({}),
+    }),
+
+    'systems-simulation': Object.freeze({
+        id: 'systems-simulation',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([]),
+        }),
+        lifecycle: Object.freeze({}),
+    }),
+
+    'systems-documentation': Object.freeze({
+        id: 'systems-documentation',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([]),
+        }),
+        lifecycle: Object.freeze({}),
+    }),
+
+    'ops-process': Object.freeze({
+        id: 'ops-process',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([]),
+        }),
+        lifecycle: Object.freeze({}),
+    }),
+
+    'ops-automation': Object.freeze({
+        id: 'ops-automation',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([]),
+        }),
+        lifecycle: Object.freeze({}),
+    }),
+
+    'ops-datasource': Object.freeze({
+        id: 'ops-datasource',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([]),
+        }),
+        lifecycle: Object.freeze({}),
+    }),
+
+    'ops-roles': Object.freeze({
+        id: 'ops-roles',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([]),
+        }),
+        lifecycle: Object.freeze({}),
+    }),
+
+    'ops-ai-assist': Object.freeze({
+        id: 'ops-ai-assist',
+        tools: Object.freeze([]),
+        ui: Object.freeze({
+            surfacePanels: Object.freeze([]),
+        }),
+        lifecycle: Object.freeze({}),
+    }),
 });
 
 export const CAPABILITY_REGISTRY = CAPABILITY_COMPONENTS;
