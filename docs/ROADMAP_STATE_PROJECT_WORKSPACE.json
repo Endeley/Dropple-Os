@@ -3,7 +3,7 @@
     {
       "id": "P0",
       "title": "Project Shell Governance Lock",
-      "status": "active",
+      "status": "complete",
       "depends_on": [],
       "gates": [
         {
@@ -23,7 +23,7 @@
     {
       "id": "P1",
       "title": "Project Context Envelope",
-      "status": "not-started",
+      "status": "complete",
       "depends_on": [
         "P0"
       ],
@@ -41,7 +41,7 @@
     {
       "id": "P2",
       "title": "Perspective Router (Create/Build/Operate/Collaborate/Publish)",
-      "status": "not-started",
+      "status": "complete",
       "depends_on": [
         "P1"
       ],
@@ -59,7 +59,7 @@
     {
       "id": "P3",
       "title": "Create Perspective Binding (Design + Media)",
-      "status": "not-started",
+      "status": "complete",
       "depends_on": [
         "P2"
       ],
@@ -77,7 +77,7 @@
     {
       "id": "P4",
       "title": "Build and Operate Perspective Binding",
-      "status": "not-started",
+      "status": "complete",
       "depends_on": [
         "P3"
       ],
@@ -95,7 +95,7 @@
     {
       "id": "P5",
       "title": "Collaborate and Publish Perspective Binding",
-      "status": "not-started",
+      "status": "complete",
       "depends_on": [
         "P4"
       ],
@@ -113,7 +113,7 @@
     {
       "id": "P6",
       "title": "Project UX Hardening and Deterministic Routing",
-      "status": "not-started",
+      "status": "complete",
       "depends_on": [
         "P5"
       ],
@@ -131,7 +131,7 @@
     {
       "id": "P7",
       "title": "UI Workspace Production Readiness",
-      "status": "not-started",
+      "status": "complete",
       "depends_on": [
         "P6"
       ],
