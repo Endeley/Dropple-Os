@@ -105,7 +105,7 @@
     {
       "id": "R9",
       "title": "Media Workspace Productization Slice B",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["R8"],
       "gates": [
         { "name": "kernel contracts", "command": "npm run test:kernel" },
@@ -116,7 +116,7 @@
     {
       "id": "R10",
       "title": "System Workspace Productization Slice C",
-      "status": "not-started",
+      "status": "active",
       "depends_on": ["R9"],
       "gates": [
         { "name": "architecture ci", "command": "npm run architecture:ci" },
