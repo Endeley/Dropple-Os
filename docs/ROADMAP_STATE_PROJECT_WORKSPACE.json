@@ -1,0 +1,146 @@
+{
+  "phases": [
+    {
+      "id": "P0",
+      "title": "Project Shell Governance Lock",
+      "status": "active",
+      "depends_on": [],
+      "gates": [
+        {
+          "name": "architecture gate",
+          "command": "npm run arch"
+        },
+        {
+          "name": "law enforcement",
+          "command": "npm run enforce:laws"
+        },
+        {
+          "name": "architecture tests",
+          "command": "npm run test:architecture"
+        }
+      ]
+    },
+    {
+      "id": "P1",
+      "title": "Project Context Envelope",
+      "status": "not-started",
+      "depends_on": [
+        "P0"
+      ],
+      "gates": [
+        {
+          "name": "kernel tests",
+          "command": "npm run test:kernel"
+        },
+        {
+          "name": "determinism gate",
+          "command": "npm run determinism"
+        }
+      ]
+    },
+    {
+      "id": "P2",
+      "title": "Perspective Router (Create/Build/Operate/Collaborate/Publish)",
+      "status": "not-started",
+      "depends_on": [
+        "P1"
+      ],
+      "gates": [
+        {
+          "name": "legacy scan compatibility",
+          "command": "npm run migration:legacy-scan"
+        },
+        {
+          "name": "workspace navigator baseline",
+          "command": "npm run implementation:navigator"
+        }
+      ]
+    },
+    {
+      "id": "P3",
+      "title": "Create Perspective Binding (Design + Media)",
+      "status": "not-started",
+      "depends_on": [
+        "P2"
+      ],
+      "gates": [
+        {
+          "name": "route smoke",
+          "command": "npm run test:routes:smoke"
+        },
+        {
+          "name": "operator surface checks",
+          "command": "npm run test:release:operator-surfaces"
+        }
+      ]
+    },
+    {
+      "id": "P4",
+      "title": "Build and Operate Perspective Binding",
+      "status": "not-started",
+      "depends_on": [
+        "P3"
+      ],
+      "gates": [
+        {
+          "name": "kernel truth lawfulness",
+          "command": "npm run test:kernel"
+        },
+        {
+          "name": "performance determinism",
+          "command": "npm run performance:determinism"
+        }
+      ]
+    },
+    {
+      "id": "P5",
+      "title": "Collaborate and Publish Perspective Binding",
+      "status": "not-started",
+      "depends_on": [
+        "P4"
+      ],
+      "gates": [
+        {
+          "name": "release trust report",
+          "command": "npm run release:trust:report"
+        },
+        {
+          "name": "release trust summary",
+          "command": "npm run release:trust:summary"
+        }
+      ]
+    },
+    {
+      "id": "P6",
+      "title": "Project UX Hardening and Deterministic Routing",
+      "status": "not-started",
+      "depends_on": [
+        "P5"
+      ],
+      "gates": [
+        {
+          "name": "validate app",
+          "command": "npm run validate:app"
+        },
+        {
+          "name": "architecture ci",
+          "command": "npm run architecture:ci"
+        }
+      ]
+    },
+    {
+      "id": "P7",
+      "title": "UI Workspace Production Readiness",
+      "status": "not-started",
+      "depends_on": [
+        "P6"
+      ],
+      "gates": [
+        {
+          "name": "full release validation",
+          "command": "npm run validate:release"
+        }
+      ]
+    }
+  ]
+}
