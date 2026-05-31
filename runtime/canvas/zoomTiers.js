@@ -52,3 +52,40 @@ export function resolveSemanticZoomPresentation({ scale, perspectiveId } = {}) {
         domain: override.domain,
     });
 }
+
+const TIER_VISIBILITY = Object.freeze({
+    far: Object.freeze({
+        showProjectHubLabel: true,
+        showNodeLabels: false,
+        showNodeCards: false,
+        showClusterDots: true,
+    }),
+    overview: Object.freeze({
+        showProjectHubLabel: true,
+        showNodeLabels: true,
+        showNodeCards: false,
+        showClusterDots: true,
+    }),
+    normal: Object.freeze({
+        showProjectHubLabel: true,
+        showNodeLabels: true,
+        showNodeCards: true,
+        showClusterDots: false,
+    }),
+    detail: Object.freeze({
+        showProjectHubLabel: true,
+        showNodeLabels: true,
+        showNodeCards: true,
+        showClusterDots: false,
+    }),
+    micro: Object.freeze({
+        showProjectHubLabel: true,
+        showNodeLabels: true,
+        showNodeCards: true,
+        showClusterDots: false,
+    }),
+});
+
+export function resolveSemanticZoomVisibility(tier) {
+    return TIER_VISIBILITY[tier] ?? TIER_VISIBILITY.normal;
+}

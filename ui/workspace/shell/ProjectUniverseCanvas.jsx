@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { resolveSemanticZoomPresentation } from '@/runtime/canvas/zoomTiers.js';
+import { resolveSemanticZoomPresentation, resolveSemanticZoomVisibility } from '@/runtime/canvas/zoomTiers.js';
 
 const MIN_SCALE = 0.1;
 const MAX_SCALE = 8;
@@ -14,39 +14,6 @@ const ARTIFACT_NODES = Object.freeze([
     Object.freeze({ id: 'knowledge', label: 'Knowledge', x: -40, y: 230 }),
     Object.freeze({ id: 'media', label: 'Media Assets', x: 40, y: -230 }),
 ]);
-
-function resolveTierVisibility(tier) {
-    if (tier === 'far') {
-        return Object.freeze({
-            showProjectHubLabel: true,
-            showNodeLabels: false,
-            showNodeCards: false,
-            showClusterDots: true,
-        });
-    }
-    if (tier === 'overview') {
-        return Object.freeze({
-            showProjectHubLabel: true,
-            showNodeLabels: true,
-            showNodeCards: false,
-            showClusterDots: true,
-        });
-    }
-    if (tier === 'normal') {
-        return Object.freeze({
-            showProjectHubLabel: true,
-            showNodeLabels: true,
-            showNodeCards: true,
-            showClusterDots: false,
-        });
-    }
-    return Object.freeze({
-        showProjectHubLabel: true,
-        showNodeLabels: true,
-        showNodeCards: true,
-        showClusterDots: false,
-    });
-}
 
 function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
@@ -70,7 +37,7 @@ export function ProjectUniverseCanvas({
         () => resolveSemanticZoomPresentation({ scale: camera.scale, perspectiveId }),
         [camera.scale, perspectiveId],
     );
-    const visibility = useMemo(() => resolveTierVisibility(presentation.tier), [presentation.tier]);
+    const visibility = useMemo(() => resolveSemanticZoomVisibility(presentation.tier), [presentation.tier]);
     const minimap = useMemo(() => {
         const worldSpan = 640;
         const miniSize = 86;

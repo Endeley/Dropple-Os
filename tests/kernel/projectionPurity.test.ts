@@ -4,7 +4,11 @@ import assert from 'node:assert/strict';
 import { syncRuntimeToZustand } from '@/runtime/projection/zustandBridge.js';
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { hashRuntimeState } from '@/core/persistence/hashDocument.js';
-import { resolveSemanticZoomPresentation } from '@/runtime/canvas/zoomTiers.js';
+import {
+    getZoomTier,
+    resolveSemanticZoomPresentation,
+    resolveSemanticZoomVisibility,
+} from '@/runtime/canvas/zoomTiers.js';
 
 test.beforeEach(() => {
     useRuntimeStore.setState({
@@ -242,4 +246,31 @@ test('semantic zoom presentation mapping is deterministic and mutation-free', ()
     }));
     assert.deepEqual(left, right);
     assert.deepEqual(input, Object.freeze({ scale: 0.5, perspectiveId: 'create' }));
+});
+
+test('zoom tier boundaries are deterministic and fail closed for invalid scale', () => {
+    assert.equal(getZoomTier(-1), 'far');
+    assert.equal(getZoomTier(0), 'far');
+    assert.equal(getZoomTier(0.399999), 'far');
+    assert.equal(getZoomTier(0.4), 'overview');
+    assert.equal(getZoomTier(0.799999), 'overview');
+    assert.equal(getZoomTier(0.8), 'normal');
+    assert.equal(getZoomTier(1.399999), 'normal');
+    assert.equal(getZoomTier(1.4), 'detail');
+    assert.equal(getZoomTier(2.499999), 'detail');
+    assert.equal(getZoomTier(2.5), 'micro');
+    assert.equal(getZoomTier(Number.NaN), 'normal');
+    assert.equal(getZoomTier(undefined), 'normal');
+});
+
+test('semantic zoom visibility is deterministic and defaults to normal for unknown tier', () => {
+    const normal = Object.freeze({
+        showProjectHubLabel: true,
+        showNodeLabels: true,
+        showNodeCards: true,
+        showClusterDots: false,
+    });
+    assert.deepEqual(resolveSemanticZoomVisibility('normal'), normal);
+    assert.deepEqual(resolveSemanticZoomVisibility('unknown'), normal);
+    assert.equal(Object.isFrozen(resolveSemanticZoomVisibility('far')), true);
 });
