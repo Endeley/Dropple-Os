@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { resolveSemanticZoomPresentation } from '@/runtime/canvas/zoomTiers.js';
 
 const MIN_SCALE = 0.1;
@@ -53,7 +53,18 @@ function clamp(value, min, max) {
 }
 
 export function ProjectUniverseCanvas({ perspectiveId = 'overview' }) {
-    const [camera, setCamera] = useState(() => Object.freeze({ x: 0, y: 0, scale: 1 }));
+export function ProjectUniverseCanvas({
+    perspectiveId = 'overview',
+    initialCamera = null,
+    onCameraChange = null,
+}) {
+    const [camera, setCamera] = useState(() =>
+        Object.freeze({
+            x: Number.isFinite(initialCamera?.x) ? initialCamera.x : 0,
+            y: Number.isFinite(initialCamera?.y) ? initialCamera.y : 0,
+            scale: Number.isFinite(initialCamera?.scale) ? clamp(initialCamera.scale, MIN_SCALE, MAX_SCALE) : 1,
+        }),
+    );
     const [dragState, setDragState] = useState(null);
 
     const presentation = useMemo(
@@ -75,6 +86,27 @@ export function ProjectUniverseCanvas({ perspectiveId = 'overview' }) {
             viewportSize,
         });
     }, [camera.x, camera.y, camera.scale]);
+
+    useEffect(() => {
+        if (typeof onCameraChange === 'function') {
+            onCameraChange(camera);
+        }
+    }, [camera, onCameraChange]);
+
+    useEffect(() => {
+        if (!initialCamera) return;
+        const next = Object.freeze({
+            x: Number.isFinite(initialCamera?.x) ? initialCamera.x : 0,
+            y: Number.isFinite(initialCamera?.y) ? initialCamera.y : 0,
+            scale: Number.isFinite(initialCamera?.scale) ? clamp(initialCamera.scale, MIN_SCALE, MAX_SCALE) : 1,
+        });
+        setCamera((current) => {
+            if (current.x === next.x && current.y === next.y && current.scale === next.scale) {
+                return current;
+            }
+            return next;
+        });
+    }, [initialCamera]);
 
     const onWheel = (event) => {
         event.preventDefault();

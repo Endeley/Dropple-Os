@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
     getProjectPerspectiveDefinition,
     listProjectPerspectiveIds,
@@ -19,6 +19,15 @@ function formatEntryLabel(entryId) {
         .join(' ');
 }
 
+function parseFiniteOr(value, fallback) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+}
+
 export function ProjectPerspectiveShell({
     projectPerspectiveContext = null,
     activeModeId = null,
@@ -27,6 +36,8 @@ export function ProjectPerspectiveShell({
     if (!projectPerspectiveContext) return children;
 
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const perspectiveId = projectPerspectiveContext.perspectiveId;
     const perspectiveLabel = projectPerspectiveContext.perspectiveLabel;
     const perspectiveIds = listProjectPerspectiveIds();
@@ -37,6 +48,13 @@ export function ProjectPerspectiveShell({
     const [recentRoutes, setRecentRoutes] = useState(() => []);
 
     const activeRoute = `/workspace/${perspectiveId}?entry=${projectPerspectiveContext.entryId}`;
+    const [cameraRouteState, setCameraRouteState] = useState(() =>
+        Object.freeze({
+            x: clamp(parseFiniteOr(searchParams?.get('x'), 0), -10000, 10000),
+            y: clamp(parseFiniteOr(searchParams?.get('y'), 0), -10000, 10000),
+            scale: clamp(parseFiniteOr(searchParams?.get('z'), 1), 0.1, 8),
+        }),
+    );
 
     useEffect(() => {
         setRecentRoutes((previous) => {
@@ -44,6 +62,27 @@ export function ProjectPerspectiveShell({
             return next.slice(0, 8);
         });
     }, [activeRoute]);
+
+    useEffect(() => {
+        const x = clamp(parseFiniteOr(searchParams?.get('x'), 0), -10000, 10000);
+        const y = clamp(parseFiniteOr(searchParams?.get('y'), 0), -10000, 10000);
+        const scale = clamp(parseFiniteOr(searchParams?.get('z'), 1), 0.1, 8);
+        setCameraRouteState(Object.freeze({ x, y, scale }));
+    }, [searchParams]);
+
+    const handleCameraChange = (camera) => {
+        const x = clamp(Number(camera?.x ?? 0), -10000, 10000);
+        const y = clamp(Number(camera?.y ?? 0), -10000, 10000);
+        const scale = clamp(Number(camera?.scale ?? 1), 0.1, 8);
+        const nextState = Object.freeze({ x, y, scale });
+        setCameraRouteState(nextState);
+
+        const next = new URLSearchParams(searchParams?.toString() ?? '');
+        next.set('x', x.toFixed(2));
+        next.set('y', y.toFixed(2));
+        next.set('z', scale.toFixed(3));
+        router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+    };
 
     const perspectiveCommands = useMemo(() => {
         const commands = [];
@@ -196,7 +235,11 @@ export function ProjectPerspectiveShell({
                 })}
             </nav>
             <div style={{ minHeight: 0, display: 'grid', gridTemplateRows: 'auto 1fr' }}>
-                <ProjectUniverseCanvas perspectiveId={perspectiveId} />
+                <ProjectUniverseCanvas
+                    perspectiveId={perspectiveId}
+                    initialCamera={cameraRouteState}
+                    onCameraChange={handleCameraChange}
+                />
                 <div style={{ minHeight: 0, display: 'grid', gridTemplateColumns: '280px minmax(0, 1fr)' }}>
                     <aside
                         style={{
