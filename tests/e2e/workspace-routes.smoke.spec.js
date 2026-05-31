@@ -201,3 +201,30 @@ test('viewer falls back to snapshot path for snapshot-backed artifacts', async (
     .poll(() => page.evaluate(() => window.__DROPPLE_VIEWER_ARTIFACT_KIND__ ?? null))
     .toBe('snapshot');
 });
+
+test('project perspective route bootstrap installs a single blueprint deterministically', async ({ page }) => {
+  const response = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'project bootstrap route should respond successfully').toBeTruthy();
+  await expect(page.locator('body')).toContainText('Project Bootstrap Provenance');
+  await expect(page.locator('body')).toContainText('defaultPerspective: create');
+  await expect(page.locator('body')).toContainText('blueprintId: bp.startup.v1');
+  await expect(page.locator('body')).toContainText('blueprintVersion: bp.startup.v1');
+  await expect(page.locator('body')).toContainText('Installed bp.startup.v1');
+});
+
+test('project perspective route bootstrap composes multiple blueprints deterministically', async ({ page }) => {
+  const response = await page.goto(
+    '/workspace/create?blueprints=bp.startup.v1,bp.logistics.v1&bootstrap=1',
+    { waitUntil: 'networkidle' },
+  );
+
+  expect(response?.ok(), 'composed bootstrap route should respond successfully').toBeTruthy();
+  await expect(page.locator('body')).toContainText('Project Bootstrap Provenance');
+  await expect(page.locator('body')).toContainText('defaultPerspective: create');
+  await expect(page.locator('body')).toContainText('Installed composed blueprint');
+  await expect(page.locator('body')).toContainText(/blueprintId:\s+bp\.compose\./);
+  await expect(page.locator('body')).toContainText(/blueprintVersion:\s+bp\.compose\./);
+});

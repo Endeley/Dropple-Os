@@ -734,6 +734,7 @@ function isWorkspaceAllowlistExempt(eventType) {
         case EventTypes.DRAG_START:
         case EventTypes.DRAG_UPDATE:
         case EventTypes.DRAG_END:
+        case EventTypes.PROJECT_BLUEPRINT_BOOTSTRAP:
             return true;
         default:
             return false;

@@ -216,6 +216,35 @@ test('runtime-local tool selection accepts canonical toolId payloads from the UI
     assert.equal(next?.tools?.activeTool, 'frame');
 });
 
+test('project bootstrap event is exempt from workspace authoring allowlists and persists canonical bootstrap provenance', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: createWorkspaceDef({
+                allowedEventTypes: [EventTypes.SELECTION_SET],
+                capabilities: ['select:basic'],
+            }),
+        },
+    });
+
+    const next = await dispatcher.dispatch({
+        type: EventTypes.PROJECT_BLUEPRINT_BOOTSTRAP,
+        payload: {
+            schemaVersion: 1,
+            projectId: 'project.allowlist.bootstrap',
+            projectName: 'Allowlist Bootstrap',
+            defaultPerspectiveId: 'create',
+            blueprintId: 'bp.startup.v1',
+            blueprintVersionId: 'bp.startup.v1',
+        },
+    });
+
+    assert.equal(next?.document?.meta?.projectBootstrap?.projectId, 'project.allowlist.bootstrap');
+    assert.equal(next?.document?.meta?.projectBootstrap?.defaultPerspectiveId, 'create');
+});
+
 test('shared synthesized tool ownership preserves active tool across workspace transition and partial source withdrawal', async () => {
     const dispatcher = createEventDispatcher({ headless: true });
 
