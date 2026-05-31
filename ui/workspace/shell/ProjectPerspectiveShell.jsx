@@ -17,6 +17,7 @@ import {
     previewBlueprintUpgradeFromCatalog,
     resolveProjectBlueprintRouteSelection,
 } from '@/ui/bridges/blueprintInstallBridge.js';
+import { readOsSurfaceSnapshot } from '@/ui/bridges/osSurfaceReadBridge.js';
 import { useWorkspaceProjectionState } from '@/runtime/projection';
 import { useCommandPalette } from '@/commands/useCommandPalette';
 import { CommandPalette } from '@/commands/CommandPalette';
@@ -116,6 +117,8 @@ export function ProjectPerspectiveShell({
     const [upgradeStatus, setUpgradeStatus] = useState('');
     const [upgradeError, setUpgradeError] = useState('');
     const [upgradeApplying, setUpgradeApplying] = useState(false);
+    const osSurfaceSnapshot = readOsSurfaceSnapshot();
+    const assistantSurface = osSurfaceSnapshot?.assistants ?? null;
     const persistedProjectBootstrap = useWorkspaceProjectionState(
         (state) => state?.document?.meta?.projectBootstrap ?? null,
     );
@@ -660,6 +663,34 @@ export function ProjectPerspectiveShell({
                                 {blueprintInstallError ? (
                                     <span style={{ fontSize: 11, color: '#b91c1c' }}>{blueprintInstallError}</span>
                                 ) : null}
+                            </div>
+                        </div>
+                        <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                                Assistants
+                            </div>
+                            <div
+                                data-testid='assistant-surface-panel'
+                                style={{
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: 6,
+                                    padding: '6px 8px',
+                                    background: '#f8fafc',
+                                    display: 'grid',
+                                    gap: 4,
+                                }}>
+                                <span style={{ fontSize: 10, color: '#334155' }}>
+                                    perspective: {assistantSurface?.perspectiveId ?? 'n/a'}
+                                </span>
+                                <span style={{ fontSize: 10, color: '#334155' }}>
+                                    adapter: {assistantSurface?.adapterLabel ?? 'none'}
+                                </span>
+                                <span style={{ fontSize: 10, color: '#334155' }}>
+                                    active: {assistantSurface?.activeAssistantId ?? 'none'}
+                                </span>
+                                <span style={{ fontSize: 10, color: '#334155' }}>
+                                    visible: {(assistantSurface?.assistantIds ?? []).join(', ') || 'none'}
+                                </span>
                             </div>
                         </div>
                         <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
