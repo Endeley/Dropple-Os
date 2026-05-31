@@ -21,6 +21,7 @@ import { TemplateMotionInspectorPanel } from './TemplateMotionInspectorPanel.jsx
 import { UIUXTransitionTimelinePanel } from './UIUXTransitionTimelinePanel.jsx';
 import { useKeyboardNudge } from '@/ui/keyboard/useKeyboardNudge';
 import { useAlignmentShortcuts } from '@/ui/keyboard/useAlignmentShortcuts';
+import { normalizeDesignModeId, DesignWorkspaceStrip } from '@/ui/workspace/design/DesignShellPrimitives.jsx';
 
 export function UIUXAuthoringShell({
     profile = 'uiux-authoring',
@@ -37,19 +38,11 @@ export function UIUXAuthoringShell({
     const [documentId, setDocumentId] = useState(null);
     const [documentName, setDocumentName] = useState('Untitled');
 
-    const resolvedModeId = String(modeId ?? workspaceContext?.modeId ?? 'uiux')
-        .trim()
-        .toLowerCase();
+    const resolvedModeId = normalizeDesignModeId(modeId ?? workspaceContext?.modeId ?? 'uiux');
     const resolvedWorkspaceId =
         String(workspaceContext?.workspaceId ?? workspaceContext?.definitionId ?? 'design')
             .trim()
             .toLowerCase() || 'design';
-    const modeLabelById = Object.freeze({
-        uiux: 'UIUX',
-        graphic: 'Graphic',
-        document: 'Document',
-    });
-    const modeLabel = modeLabelById[resolvedModeId] ?? 'Design';
 
     const { capabilities } = useWorkspaceCapabilities({
         workspace: resolvedWorkspaceId,
@@ -108,6 +101,7 @@ export function UIUXAuthoringShell({
                 {/* Primary authoring chrome */}
                 <header className='uiux-top-chrome'>
                     <UIUXTopBar
+                        modeId={resolvedModeId}
                         onPublish={() =>
                                     openTemplatePublishDialog({
                                         mode: {
@@ -120,11 +114,7 @@ export function UIUXAuthoringShell({
                 </header>
 
                 {/* Secondary workspace strip */}
-                <div className='uiux-workspace-strip'>
-                    <div className='uiux-breadcrumb'>Design / {modeLabel}</div>
-
-                    <div className='uiux-surface-controls'>Draft</div>
-                </div>
+                <DesignWorkspaceStrip modeId={resolvedModeId} status='Draft' />
 
                 {/* Main dock grid */}
                 <div className='uiux-main-grid'>

@@ -1,13 +1,14 @@
 'use client';
 
-export function UIUXTopBar({ templatesOpen = false, onToggleTemplates, onPublish = null }) {
+import { normalizeDesignModeId, DesignWorkspaceBrand } from '@/ui/workspace/design/DesignShellPrimitives.jsx';
+
+export function UIUXTopBar({ modeId = 'uiux', templatesOpen = false, onToggleTemplates, onPublish = null }) {
+    const resolvedModeId = normalizeDesignModeId(modeId);
     return (
         <header className='uiux-topbar'>
             {/* Left — file / workspace */}
             <div className='uiux-topbar-left'>
-                <div className='workspace-brand'>
-                    <span className='workspace-name'>UI/UX</span>
-                </div>
+                <DesignWorkspaceBrand modeId={resolvedModeId} />
 
                 <button type='button'>File</button>
 
