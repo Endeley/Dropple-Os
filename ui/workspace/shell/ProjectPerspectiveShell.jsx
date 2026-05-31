@@ -70,11 +70,42 @@ export function ProjectPerspectiveShell({
     const [shareFeedback, setShareFeedback] = useState('');
 
     useEffect(() => {
+        if (typeof window === 'undefined') return;
+        try {
+            const raw = window.localStorage.getItem('dropple.projectShell.recentViews.v1');
+            if (!raw) return;
+            const parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed)) return;
+            const cleaned = parsed
+                .map((entry) => (typeof entry === 'string' ? entry : null))
+                .filter(Boolean)
+                .slice(0, 8);
+            if (cleaned.length > 0) {
+                setRecentRoutes(cleaned);
+            }
+        } catch {
+            // fail-closed: keep runtime-only list
+        }
+    }, []);
+
+    useEffect(() => {
         setRecentRoutes((previous) => {
             const next = [activeRoute, ...previous.filter((entry) => entry !== activeRoute)];
             return next.slice(0, 8);
         });
     }, [activeRoute]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        try {
+            window.localStorage.setItem(
+                'dropple.projectShell.recentViews.v1',
+                JSON.stringify(recentRoutes.slice(0, 8)),
+            );
+        } catch {
+            // fail-closed: persistence is optional
+        }
+    }, [recentRoutes]);
 
     useEffect(() => {
         const x = clamp(parseFiniteOr(searchParams?.get('x'), 0), -10000, 10000);
