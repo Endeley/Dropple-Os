@@ -232,6 +232,12 @@ jobs:
       - name: Verify federation lineage ledger chain (main)
         run: npm run release:federation:lineage:ledger:verify
 
+      - name: Append blueprint lineage ledger entry (main)
+        run: npm run release:blueprint:lineage:ledger
+
+      - name: Verify blueprint lineage ledger chain (main)
+        run: npm run release:blueprint:lineage:ledger:verify
+
       - name: Upload release trust report (main)
         uses: actions/upload-artifact@v6
         with:
@@ -271,6 +277,13 @@ jobs:
         with:
           name: federation-audit-lineage-ledger-main
           path: .artifacts/federation-audit-lineage-ledger.jsonl
+          if-no-files-found: error
+
+      - name: Upload blueprint lineage ledger (main)
+        uses: actions/upload-artifact@v6
+        with:
+          name: blueprint-lineage-ledger-main
+          path: .artifacts/blueprint-lineage-ledger.jsonl
           if-no-files-found: error
 
   release-trust-gate-pr:
@@ -318,6 +331,7 @@ jobs:
           LEDGER_ARTIFACT_NAME="release-trust-ledger-main"
           FEDERATION_LINEAGE_ARTIFACT_NAME="federation-audit-lineage-main"
           FEDERATION_LINEAGE_LEDGER_ARTIFACT_NAME="federation-audit-lineage-ledger-main"
+          BLUEPRINT_LINEAGE_LEDGER_ARTIFACT_NAME="blueprint-lineage-ledger-main"
 
           set +e
           RUN_ID_QUERY="$(gh api \
@@ -438,6 +452,25 @@ jobs:
             echo "No ${FEDERATION_LINEAGE_LEDGER_ARTIFACT_NAME} artifact found in run ${RUN_ID}; starting a new federation lineage ledger chain for this PR run."
           fi
 
+          BLUEPRINT_LINEAGE_LEDGER_ARTIFACT_ID="$(gh api \
+            "repos/${{ github.repository }}/actions/runs/${RUN_ID}/artifacts" \
+            -q '.artifacts[] | select(.name=="'"${BLUEPRINT_LINEAGE_LEDGER_ARTIFACT_NAME}"'") | .id' | head -n 1 || true)"
+
+          if [ -n "${BLUEPRINT_LINEAGE_LEDGER_ARTIFACT_ID}" ]; then
+            if ! gh api \
+              "repos/${{ github.repository }}/actions/artifacts/${BLUEPRINT_LINEAGE_LEDGER_ARTIFACT_ID}/zip" \
+              > .artifacts/blueprint-lineage-ledger-baseline.zip; then
+              echo "Unable to download ${BLUEPRINT_LINEAGE_LEDGER_ARTIFACT_NAME} from run ${RUN_ID}; starting a new blueprint lineage ledger chain for this PR run."
+            else
+
+              unzip -o .artifacts/blueprint-lineage-ledger-baseline.zip -d .artifacts/blueprint-lineage-ledger-baseline-unpacked
+              cp .artifacts/blueprint-lineage-ledger-baseline-unpacked/blueprint-lineage-ledger.jsonl .artifacts/blueprint-lineage-ledger.jsonl
+              echo "Blueprint lineage ledger seeded at .artifacts/blueprint-lineage-ledger.jsonl"
+            fi
+          else
+            echo "No ${BLUEPRINT_LINEAGE_LEDGER_ARTIFACT_NAME} artifact found in run ${RUN_ID}; starting a new blueprint lineage ledger chain for this PR run."
+          fi
+
       - name: Append release trust ledger entry (pr)
         run: npm run release:trust:ledger
         env:
@@ -453,6 +486,14 @@ jobs:
 
       - name: Verify federation lineage ledger chain (pr)
         run: npm run release:federation:lineage:ledger:verify
+
+      - name: Append blueprint lineage ledger entry (pr)
+        run: npm run release:blueprint:lineage:ledger
+        env:
+          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+
+      - name: Verify blueprint lineage ledger chain (pr)
+        run: npm run release:blueprint:lineage:ledger:verify
 
       - name: Upload release trust report (pr)
         uses: actions/upload-artifact@v6
@@ -493,6 +534,13 @@ jobs:
         with:
           name: federation-audit-lineage-ledger-pr
           path: .artifacts/federation-audit-lineage-ledger.jsonl
+          if-no-files-found: error
+
+      - name: Upload blueprint lineage ledger (pr)
+        uses: actions/upload-artifact@v6
+        with:
+          name: blueprint-lineage-ledger-pr
+          path: .artifacts/blueprint-lineage-ledger.jsonl
           if-no-files-found: error
 
       - name: Release trust diff (blocking)
