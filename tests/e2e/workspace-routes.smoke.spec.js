@@ -76,6 +76,10 @@ const ROUTES = [
     expectedToolId: 'select',
   },
   {
+    path: '/workspace/overview',
+    expected: 'Project Space',
+  },
+  {
     path: '/workspace/versioning',
     expected: 'Token Version Graph',
   },
@@ -200,6 +204,16 @@ test('viewer falls back to snapshot path for snapshot-backed artifacts', async (
   await expect
     .poll(() => page.evaluate(() => window.__DROPPLE_VIEWER_ARTIFACT_KIND__ ?? null))
     .toBe('snapshot');
+});
+
+test('overview perspective renders project hub panel', async ({ page }) => {
+  const response = await page.goto('/workspace/overview', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'overview route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('project-hub-panel')).toBeVisible();
+  await expect(page.locator('body')).toContainText('perspectives: 6');
 });
 
 test('project perspective route bootstrap installs a single blueprint deterministically', async ({ page }) => {

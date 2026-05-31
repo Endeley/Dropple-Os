@@ -51,6 +51,22 @@ function summarizeWorkspaceProfiles(workspaceProfiles) {
         .join(' · ');
 }
 
+function buildPerspectiveEntrySummary(perspectiveIds) {
+    const summary = [];
+    for (const id of perspectiveIds) {
+        const definition = getProjectPerspectiveDefinition(id);
+        if (!definition) continue;
+        summary.push(
+            Object.freeze({
+                perspectiveId: id,
+                label: definition.label,
+                entryCount: Array.isArray(definition.entries) ? definition.entries.length : 0,
+            }),
+        );
+    }
+    return summary;
+}
+
 async function copyTextWithFallback(text) {
     if (navigator?.clipboard?.writeText) {
         try {
@@ -257,6 +273,14 @@ export function ProjectPerspectiveShell({
     const selectedBlueprintOptions = useMemo(
         () => blueprintOptions.filter((option) => selectedBlueprintIds.includes(option.id)),
         [blueprintOptions, selectedBlueprintIds],
+    );
+    const perspectiveEntrySummary = useMemo(
+        () => buildPerspectiveEntrySummary(perspectiveIds),
+        [perspectiveIds],
+    );
+    const totalPerspectiveEntries = useMemo(
+        () => perspectiveEntrySummary.reduce((sum, item) => sum + item.entryCount, 0),
+        [perspectiveEntrySummary],
     );
     const upgradeTargets = useMemo(
         () => listBlueprintUpgradeTargets({ projectBootstrap: persistedProjectBootstrap }),
@@ -518,6 +542,55 @@ export function ProjectPerspectiveShell({
                             />
                         </div>
                         <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
+                            {perspectiveId === 'overview' ? (
+                                <div
+                                    data-testid='project-hub-panel'
+                                    style={{
+                                        border: '1px solid #e2e8f0',
+                                        borderRadius: 8,
+                                        padding: 8,
+                                        background: '#f8fafc',
+                                        display: 'grid',
+                                        gap: 6,
+                                        marginBottom: 10,
+                                    }}>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: '#0f172a' }}>
+                                        Project Hub
+                                    </div>
+                                    <div style={{ fontSize: 10, color: '#334155' }}>
+                                        perspectives: {perspectiveEntrySummary.length}
+                                    </div>
+                                    <div style={{ fontSize: 10, color: '#334155' }}>
+                                        entries: {totalPerspectiveEntries}
+                                    </div>
+                                    <div style={{ fontSize: 10, color: '#334155' }}>
+                                        recent views: {recentRoutes.length}
+                                    </div>
+                                    <div style={{ fontSize: 10, color: '#334155' }}>
+                                        bootstrap:{' '}
+                                        {persistedProjectBootstrap?.blueprintVersionId
+                                            ? persistedProjectBootstrap.blueprintVersionId
+                                            : 'none'}
+                                    </div>
+                                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                        <Link
+                                            href='/workspace/create'
+                                            style={{ fontSize: 10, color: '#0f172a', textDecoration: 'none' }}>
+                                            Open Create
+                                        </Link>
+                                        <Link
+                                            href='/workspace/build'
+                                            style={{ fontSize: 10, color: '#0f172a', textDecoration: 'none' }}>
+                                            Open Build
+                                        </Link>
+                                        <Link
+                                            href='/workspace/publish'
+                                            style={{ fontSize: 10, color: '#0f172a', textDecoration: 'none' }}>
+                                            Open Publish
+                                        </Link>
+                                    </div>
+                                </div>
+                            ) : null}
                             <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
                                 Start from Blueprint
                             </div>
