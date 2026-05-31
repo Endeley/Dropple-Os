@@ -36,6 +36,10 @@ function createLineageFixture() {
 test('package scripts define blueprint lineage ledger append/verify commands', () => {
     const scripts = readPackageScripts();
     assert.equal(
+        scripts['release:blueprint:lineage'],
+        'node --import ./bench/register-alias-loader.mjs scripts/blueprintLineageReport.mjs',
+    );
+    assert.equal(
         scripts['release:blueprint:lineage:ledger'],
         'node --import ./bench/register-alias-loader.mjs scripts/blueprintLineageLedger.mjs append',
     );
@@ -45,7 +49,7 @@ test('package scripts define blueprint lineage ledger append/verify commands', (
     );
     assert.match(
         scripts['validate:release'],
-        /npm run release:blueprint:lineage:ledger && npm run release:blueprint:lineage:ledger:verify/,
+        /npm run release:blueprint:lineage && npm run release:blueprint:lineage:ledger && npm run release:blueprint:lineage:ledger:verify/,
     );
 });
 
