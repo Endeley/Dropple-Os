@@ -10,6 +10,7 @@ import {
 } from '@/platform/workspaces/projectPerspectiveRouter.js';
 import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
 import { installBlueprintFromCatalog, listBlueprintInstallOptions } from '@/ui/bridges/blueprintInstallBridge.js';
+import { useWorkspaceProjectionState } from '@/runtime/projection';
 import { useCommandPalette } from '@/commands/useCommandPalette';
 import { CommandPalette } from '@/commands/CommandPalette';
 import { ProjectUniverseCanvas } from './ProjectUniverseCanvas.jsx';
@@ -28,6 +29,19 @@ function parseFiniteOr(value, fallback) {
 
 function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
+}
+
+function formatShortHash(value) {
+    if (typeof value !== 'string' || value.length < 12) return 'n/a';
+    return `${value.slice(0, 12)}…`;
+}
+
+function summarizeWorkspaceProfiles(workspaceProfiles) {
+    const entries = Object.entries(workspaceProfiles ?? {}).filter(([, modes]) => Array.isArray(modes) && modes.length > 0);
+    if (entries.length === 0) return 'none';
+    return entries
+        .map(([profile, modes]) => `${profile}:${modes.join('|')}`)
+        .join(' · ');
 }
 
 async function copyTextWithFallback(text) {
@@ -76,6 +90,9 @@ export function ProjectPerspectiveShell({
     const [blueprintInstallStatus, setBlueprintInstallStatus] = useState('');
     const [blueprintInstallError, setBlueprintInstallError] = useState('');
     const [blueprintInstalling, setBlueprintInstalling] = useState(false);
+    const persistedProjectBootstrap = useWorkspaceProjectionState(
+        (state) => state?.document?.meta?.projectBootstrap ?? null,
+    );
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
@@ -189,6 +206,11 @@ export function ProjectPerspectiveShell({
             setBlueprintInstalling(false);
         }
     };
+
+    const selectedBlueprintOption = useMemo(
+        () => blueprintOptions.find((option) => option.id === selectedBlueprintId) ?? null,
+        [blueprintOptions, selectedBlueprintId],
+    );
 
     const perspectiveCommands = useMemo(() => {
         const commands = [];
@@ -408,12 +430,39 @@ export function ProjectPerspectiveShell({
                                         fontSize: 12,
                                         background: '#ffffff',
                                     }}>
-                                {blueprintOptions.map((option) => (
-                                    <option key={option.id} value={option.id}>
+                                    {blueprintOptions.map((option) => (
+                                        <option key={option.id} value={option.id}>
                                             {option.name} ({option.versionId})
-                                    </option>
-                                ))}
-                            </select>
+                                        </option>
+                                    ))}
+                                </select>
+                                {selectedBlueprintOption ? (
+                                    <div
+                                        style={{
+                                            border: '1px solid #e2e8f0',
+                                            borderRadius: 6,
+                                            padding: '6px 8px',
+                                            background: '#f8fafc',
+                                            display: 'grid',
+                                            gap: 4,
+                                        }}>
+                                        <span style={{ fontSize: 10, color: '#334155' }}>
+                                            id: {selectedBlueprintOption.id}
+                                        </span>
+                                        <span style={{ fontSize: 10, color: '#334155' }}>
+                                            version: {selectedBlueprintOption.versionId}
+                                        </span>
+                                        <span style={{ fontSize: 10, color: '#334155' }}>
+                                            cert: {formatShortHash(selectedBlueprintOption.certificationHash)}
+                                        </span>
+                                        <span style={{ fontSize: 10, color: '#334155' }}>
+                                            seed events: {selectedBlueprintOption.seedEventCount}
+                                        </span>
+                                        <span style={{ fontSize: 10, color: '#334155' }}>
+                                            profiles: {summarizeWorkspaceProfiles(selectedBlueprintOption.workspaceProfiles)}
+                                        </span>
+                                    </div>
+                                ) : null}
                                 <button
                                     type='button'
                                     onClick={installSelectedBlueprint}
@@ -436,6 +485,32 @@ export function ProjectPerspectiveShell({
                                     <span style={{ fontSize: 11, color: '#b91c1c' }}>{blueprintInstallError}</span>
                                 ) : null}
                             </div>
+                        </div>
+                        <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                                Project Bootstrap Provenance
+                            </div>
+                            {persistedProjectBootstrap ? (
+                                <div style={{ display: 'grid', gap: 4 }}>
+                                    <span style={{ fontSize: 10, color: '#334155' }}>
+                                        projectId: {persistedProjectBootstrap.projectId ?? 'n/a'}
+                                    </span>
+                                    <span style={{ fontSize: 10, color: '#334155' }}>
+                                        projectName: {persistedProjectBootstrap.projectName ?? 'n/a'}
+                                    </span>
+                                    <span style={{ fontSize: 10, color: '#334155' }}>
+                                        defaultPerspective: {persistedProjectBootstrap.defaultPerspectiveId ?? 'n/a'}
+                                    </span>
+                                    <span style={{ fontSize: 10, color: '#334155' }}>
+                                        blueprintId: {persistedProjectBootstrap.blueprintId ?? 'n/a'}
+                                    </span>
+                                    <span style={{ fontSize: 10, color: '#334155' }}>
+                                        blueprintVersion: {persistedProjectBootstrap.blueprintVersionId ?? 'n/a'}
+                                    </span>
+                                </div>
+                            ) : (
+                                <span style={{ fontSize: 11, color: '#64748b' }}>No bootstrap metadata yet</span>
+                            )}
                         </div>
                         <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
                             <div

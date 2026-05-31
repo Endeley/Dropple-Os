@@ -16,6 +16,8 @@ export function listBlueprintInstallOptions() {
             description: blueprint.description,
             versionId: blueprint?.lineage?.versionId ?? blueprint.id,
             certificationHash: blueprint?.certification?.hash ?? null,
+            workspaceProfiles: blueprint?.workspaceProfiles ?? Object.freeze({}),
+            seedEventCount: Array.isArray(blueprint?.seedEvents) ? blueprint.seedEvents.length : 0,
         }),
     );
 }
