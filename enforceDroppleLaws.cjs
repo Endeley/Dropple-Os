@@ -146,17 +146,35 @@ function hash(content) {
 }
 
 function walk(dir, result = []) {
-    const entries = fs.readdirSync(dir);
+    let entries;
+    try {
+        entries = fs.readdirSync(dir);
+    } catch (error) {
+        if (error && (error.code === 'ENOENT' || error.code === 'ENOTDIR')) return result;
+        throw error;
+    }
     for (const entry of entries) {
         const full = path.join(dir, entry);
         const rel = path.relative(ROOT, full);
         if (shouldIgnoreEntry(rel)) continue;
-        const stat = fs.statSync(full);
+        let stat;
+        try {
+            stat = fs.statSync(full);
+        } catch (error) {
+            if (error && error.code === 'ENOENT') continue;
+            throw error;
+        }
 
         if (stat.isDirectory()) {
             walk(full, result);
         } else if (/\.(js|jsx|ts|tsx)$/.test(entry)) {
-            const content = fs.readFileSync(full, 'utf8');
+            let content;
+            try {
+                content = fs.readFileSync(full, 'utf8');
+            } catch (error) {
+                if (error && error.code === 'ENOENT') continue;
+                throw error;
+            }
             result.push({
                 path: path.relative(ROOT, full),
                 content,

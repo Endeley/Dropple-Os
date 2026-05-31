@@ -28,6 +28,7 @@
         "implementation:navigator": "node scripts/implementationNavigator.mjs",
         "implementation:navigator:v2": "node scripts/implementationNavigatorV2.mjs",
         "implementation:navigator:project": "node scripts/implementationNavigatorProject.mjs",
+        "implementation:navigator:ui-workspaces": "node scripts/implementationNavigatorUiWorkspaces.mjs",
         "migration:legacy-scan": "node scripts/scanLegacyModeDependencies.mjs",
         "template:registry:migrate": "node scripts/migrateCertifiedTemplatesToLineage.mjs",
         "engine:test": "node engine/evaluation/evaluateScene.fixture.test.mjs",

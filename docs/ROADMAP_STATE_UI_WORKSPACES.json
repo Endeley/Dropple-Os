@@ -1,0 +1,84 @@
+{
+  "phases": [
+    {
+      "id": "U0",
+      "title": "UI Workspace Governance Lock",
+      "status": "active",
+      "depends_on": [],
+      "gates": [
+        { "name": "architecture gate", "command": "npm run arch" },
+        { "name": "law enforcement", "command": "npm run enforce:laws" },
+        { "name": "architecture tests", "command": "npm run test:architecture" }
+      ]
+    },
+    {
+      "id": "U1",
+      "title": "Workspace Shell Foundation",
+      "status": "not-started",
+      "depends_on": ["U0"],
+      "gates": [
+        { "name": "kernel tests", "command": "npm run test:kernel" },
+        { "name": "determinism gate", "command": "npm run determinism" }
+      ]
+    },
+    {
+      "id": "U2",
+      "title": "Design Workspace Experience",
+      "status": "not-started",
+      "depends_on": ["U1"],
+      "gates": [
+        { "name": "route smoke", "command": "npm run test:routes:smoke" },
+        { "name": "operator surfaces", "command": "npm run test:release:operator-surfaces" }
+      ]
+    },
+    {
+      "id": "U3",
+      "title": "Media Workspace Experience",
+      "status": "not-started",
+      "depends_on": ["U2"],
+      "gates": [
+        { "name": "system runtime", "command": "npm run test:system:runtime" },
+        { "name": "performance determinism", "command": "npm run performance:determinism" }
+      ]
+    },
+    {
+      "id": "U4",
+      "title": "Build Workspace Experience",
+      "status": "not-started",
+      "depends_on": ["U3"],
+      "gates": [
+        { "name": "federation release tests", "command": "npm run test:federation:release" },
+        { "name": "release trust report", "command": "npm run release:trust:report" }
+      ]
+    },
+    {
+      "id": "U5",
+      "title": "System Workspace Experience",
+      "status": "not-started",
+      "depends_on": ["U4"],
+      "gates": [
+        { "name": "release trust summary", "command": "npm run release:trust:summary" },
+        { "name": "runtime map", "command": "npm run runtime:map:test" }
+      ]
+    },
+    {
+      "id": "U6",
+      "title": "Collaborate Workspace Experience",
+      "status": "not-started",
+      "depends_on": ["U5"],
+      "gates": [
+        { "name": "validate app", "command": "npm run validate:app" },
+        { "name": "architecture ci", "command": "npm run architecture:ci" }
+      ]
+    },
+    {
+      "id": "U7",
+      "title": "Workspace Production Hardening",
+      "status": "not-started",
+      "depends_on": ["U6"],
+      "gates": [
+        { "name": "full release validation", "command": "npm run validate:release" }
+      ]
+    }
+  ]
+}
