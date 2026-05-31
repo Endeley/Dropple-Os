@@ -72,6 +72,35 @@ export function ProjectUniverseCanvas({ perspectiveId = 'overview' }) {
         );
     };
 
+    const centerView = () => {
+        setCamera((current) =>
+            Object.freeze({
+                ...current,
+                x: 0,
+                y: 0,
+            }),
+        );
+    };
+
+    const resetZoom = () => {
+        setCamera((current) =>
+            Object.freeze({
+                ...current,
+                scale: 1,
+            }),
+        );
+    };
+
+    const fitView = () => {
+        setCamera(() =>
+            Object.freeze({
+                x: 0,
+                y: 0,
+                scale: 0.72,
+            }),
+        );
+    };
+
     const onPointerDown = (event) => {
         setDragState(
             Object.freeze({
@@ -124,9 +153,53 @@ export function ProjectUniverseCanvas({ perspectiveId = 'overview' }) {
                     background: 'rgba(255,255,255,0.85)',
                 }}>
                 <strong style={{ fontSize: 12 }}>Project Hub</strong>
-                <span>
-                    zoom {Math.round(camera.scale * 100)}% · tier {presentation.tier} · {presentation.domain}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <button
+                        type='button'
+                        onClick={fitView}
+                        style={{
+                            border: '1px solid #cbd5e1',
+                            borderRadius: 6,
+                            background: '#ffffff',
+                            color: '#334155',
+                            fontSize: 11,
+                            padding: '2px 8px',
+                            cursor: 'pointer',
+                        }}>
+                        Fit
+                    </button>
+                    <button
+                        type='button'
+                        onClick={centerView}
+                        style={{
+                            border: '1px solid #cbd5e1',
+                            borderRadius: 6,
+                            background: '#ffffff',
+                            color: '#334155',
+                            fontSize: 11,
+                            padding: '2px 8px',
+                            cursor: 'pointer',
+                        }}>
+                        Center
+                    </button>
+                    <button
+                        type='button'
+                        onClick={resetZoom}
+                        style={{
+                            border: '1px solid #cbd5e1',
+                            borderRadius: 6,
+                            background: '#ffffff',
+                            color: '#334155',
+                            fontSize: 11,
+                            padding: '2px 8px',
+                            cursor: 'pointer',
+                        }}>
+                        Reset
+                    </button>
+                    <span>
+                        zoom {Math.round(camera.scale * 100)}% · tier {presentation.tier} · {presentation.domain}
+                    </span>
+                </div>
             </div>
             <div
                 onWheel={onWheel}
