@@ -24,6 +24,7 @@ import { useExportExecution } from '@/ui/export/useExportExecution.js';
 import { exportIntentTargetDelete, exportIntentTargetUpsert } from '@/ui/export/exportIntent.js';
 import { actionButtonStyle, actionRowStyle, sectionStyle, sectionTitleStyle } from './inspectorStyles.js';
 import { resolveSequenceClipKeyboardIntent } from './sequenceClipKeyboard.js';
+import { createUuid } from '@/core/utils/createUuid.js';
 
 function infoRow(label, value) {
     return (
@@ -186,7 +187,7 @@ export function SequencerInspectorPanel({
 
     function handleCreateSequence() {
         const nextSequence = createSequence({
-            id: crypto.randomUUID(),
+            id: createUuid(),
             label: `${
                 modeId === 'video'
                     ? 'Video'
@@ -205,7 +206,7 @@ export function SequencerInspectorPanel({
     function handleCreateTrack() {
         if (!sequence?.id) return;
         const nextTrack = createSequenceTrack({
-            id: crypto.randomUUID(),
+            id: createUuid(),
             type: inferTrackType(modeId, overlayId),
             label: inferTrackLabel(modeId, overlayId),
             order: Object.keys(sequence?.tracks || {}).length,
@@ -229,7 +230,7 @@ export function SequencerInspectorPanel({
         if (!targetTrackId || !targetTrack) return;
 
         const nextClip = createSequenceClip({
-            id: crypto.randomUUID(),
+            id: createUuid(),
             label: targetTrack.type === 'camera' ? 'Camera Clip' : 'Sequence Clip',
             start: currentFrame,
             end: currentFrame + 24,

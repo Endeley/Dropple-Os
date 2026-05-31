@@ -16,13 +16,14 @@ Progression is fail-closed:
 ## Phase Order
 
 1. `U0` UI Workspace Governance Lock
-2. `U1` Workspace Shell Foundation
-3. `U2` Design Workspace Experience
-4. `U3` Media Workspace Experience
-5. `U4` Build Workspace Experience
-6. `U5` System Workspace Experience
-7. `U6` Collaborate Workspace Experience
-8. `U7` Workspace Production Hardening
+2. `P0` Pre-UI Hardening Lock
+3. `U1` Workspace Shell Foundation
+4. `U2` Design Workspace Experience
+5. `U3` Media Workspace Experience
+6. `U4` Build Workspace Experience
+7. `U5` System Workspace Experience
+8. `U6` Collaborate Workspace Experience
+9. `U7` Workspace Production Hardening
 
 ## Runtime Control
 

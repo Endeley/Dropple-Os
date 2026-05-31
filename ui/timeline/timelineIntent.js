@@ -1,5 +1,6 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
 import { shotEditorIntentSetActive } from '@/ui/workspace/editor/shotEditorIntent.js';
+import { createUuid } from '@/core/utils/createUuid.js';
 
 export const TIMELINE_INTENTS = Object.freeze({
     TRACK_CREATE: 'intent.timeline.track.create',
@@ -235,6 +236,6 @@ export function timelineIntentSequenceClipSplit(payload) {
     if (!Number.isFinite(payload?.splitAt)) return;
     canvasBus.emit('intent.sequence.clip.split', {
         ...payload,
-        rightClipId: payload?.rightClipId ?? crypto.randomUUID(),
+        rightClipId: payload?.rightClipId ?? createUuid(),
     });
 }

@@ -13,6 +13,7 @@ import { ViewerTimelineBar } from '@/viewer/ViewerTimelineBar.jsx';
 import { ViewerToolbar } from '@/viewer/ViewerToolbar';
 import { ViewerStage } from '@/viewer/ViewerStage';
 import { parseViewerParams } from '@/viewer/parseViewerParams';
+import { createUuid } from '@/core/utils/createUuid.js';
 import { useGalleryIdentity } from '@/gallery/useGalleryIdentity';
 import { isEnvironmentArtifact } from '@/gallery/artifacts/types.js';
 import { openServerDocument } from '@/editor/openServerDocument';
@@ -94,10 +95,7 @@ export default function ViewerClient({
     try {
       let id = sessionStorage.getItem('dropple.analytics.session');
       if (!id) {
-        id =
-          typeof crypto !== 'undefined' && crypto.randomUUID
-            ? crypto.randomUUID()
-            : `session-${Math.random().toString(36).slice(2, 10)}`;
+        id = createUuid();
         sessionStorage.setItem('dropple.analytics.session', id);
       }
       sessionIdRef.current = id;

@@ -9,6 +9,7 @@
 
 import { useEffect, useRef } from 'react';
 import { canvasBus } from '@/ui/eventBus/canvasBus.js';
+import { createUuid } from '@/core/utils/createUuid.js';
 
 export function SessionGroupingBridge() {
     const groupIdRef = useRef(null);
@@ -16,10 +17,7 @@ export function SessionGroupingBridge() {
     useEffect(() => {
         function beginGroup() {
             if (!groupIdRef.current) {
-                groupIdRef.current =
-                    typeof crypto !== 'undefined' && crypto.randomUUID
-                        ? crypto.randomUUID()
-                        : `group-${Math.random().toString(36).slice(2, 10)}`;
+                groupIdRef.current = createUuid();
             }
         }
 

@@ -4,6 +4,7 @@ import { wrapSelection } from '@/runtime/commands/structure/wrapSelection.js';
 import { unwrapNodeCommand } from '@/runtime/commands/structure/unwrapNode.js';
 import { registerGraphIntentBridge } from './graphIntentBridge.js';
 import { getNodes } from '@/runtime/document/documentAdapter.js';
+import { createUuid } from '@/core/utils/createUuid.js';
 
 let registered = false;
 
@@ -48,7 +49,7 @@ function runCommand(commandId, dispatcher) {
             runtimeState: buildCommandRuntimeState(runtimeState, selectedIds),
             nodeIds: selectedIds,
             wrapperNode: {
-                id: `group_${crypto.randomUUID()}`,
+                id: `group_${createUuid()}`,
                 type: 'group',
             },
             parentId,

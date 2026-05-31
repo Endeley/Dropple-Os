@@ -4,13 +4,14 @@ import { resolveTemplateEnvironment } from '@/domain/templates/resolveTemplateEn
 import { mockLessons } from '@/marketplace/mockLessons';
 import { forkLessonToWorkspace } from '@/education/forkLessonToWorkspace';
 import { loadCertifiedTemplates } from '@/engine/templates/templateLoader.js';
+import { createUuid } from '@/core/utils/createUuid.js';
 import {
     resolveCanonicalWorkspaceOverlayContext,
 } from '@/platform/workspaces/index.js';
 
 export function createEmptyWorkspace(mode = 'design') {
     return {
-        id: crypto.randomUUID(),
+        id: createUuid(),
         mode,
         snapshot: null,
         events: [],

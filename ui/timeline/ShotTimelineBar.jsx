@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createUuid } from '@/core/utils/createUuid.js';
 import {
   selectShotTimelineView,
   useWorkspaceProjectionState as useRuntimeStore,
@@ -67,7 +68,7 @@ function buildNewShot({ timelineView, selectedTrack }) {
     timelineView.tracks.reduce((count, track) => count + track.shots.length, 0) + 1;
 
   return {
-    id: `shot-${crypto.randomUUID()}`,
+    id: `shot-${createUuid()}`,
     name: `Shot ${shotNumber}`,
     start,
     duration,
@@ -117,7 +118,7 @@ export default function ShotTimelineBar() {
   function handleCreateTrack() {
     const nextOrder =
       tracks.reduce((max, track) => Math.max(max, track.order), -1) + 1;
-    const nextTrackId = `track-${crypto.randomUUID()}`;
+    const nextTrackId = `track-${createUuid()}`;
 
     shotIntent.createTrack({
       track: {
