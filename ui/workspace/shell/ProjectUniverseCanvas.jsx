@@ -1,7 +1,11 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { resolveSemanticZoomPresentation, resolveSemanticZoomVisibility } from '@/runtime/canvas/zoomTiers.js';
+import {
+    resolveSemanticZoomNodeSelection,
+    resolveSemanticZoomPresentation,
+    resolveSemanticZoomVisibility,
+} from '@/runtime/canvas/zoomTiers.js';
 
 const MIN_SCALE = 0.1;
 const MAX_SCALE = 8;
@@ -38,6 +42,19 @@ export function ProjectUniverseCanvas({
         [camera.scale, perspectiveId],
     );
     const visibility = useMemo(() => resolveSemanticZoomVisibility(presentation.tier), [presentation.tier]);
+    const nodeSelection = useMemo(
+        () =>
+            resolveSemanticZoomNodeSelection({
+                tier: presentation.tier,
+                perspectiveId: presentation.perspectiveId,
+                nodeIds: ARTIFACT_NODES.map((node) => node.id),
+            }),
+        [presentation.tier, presentation.perspectiveId],
+    );
+    const visibleNodes = useMemo(() => {
+        const selected = new Set(nodeSelection.selectedNodeIds);
+        return ARTIFACT_NODES.filter((node) => selected.has(node.id));
+    }, [nodeSelection.selectedNodeIds]);
     const minimap = useMemo(() => {
         const worldSpan = 640;
         const miniSize = 86;
@@ -332,7 +349,7 @@ export function ProjectUniverseCanvas({
                         {visibility.showProjectHubLabel ? 'Project Hub' : 'Hub'}
                     </div>
                     {visibility.showClusterDots
-                        ? ARTIFACT_NODES.map((node) => (
+                        ? visibleNodes.map((node) => (
                               <div
                                   key={`cluster-${node.id}`}
                                   style={{
@@ -347,7 +364,7 @@ export function ProjectUniverseCanvas({
                               />
                           ))
                         : null}
-                    {ARTIFACT_NODES.map((node) => (
+                    {visibleNodes.map((node) => (
                         <div
                             key={node.id}
                             style={{
@@ -368,6 +385,26 @@ export function ProjectUniverseCanvas({
                             {visibility.showNodeLabels ? node.label : node.id}
                         </div>
                     ))}
+                    {visibility.showClusterDots && nodeSelection.hiddenCount > 0 ? (
+                        <div
+                            style={{
+                                position: 'absolute',
+                                left: 132,
+                                top: -8,
+                                minWidth: 22,
+                                height: 18,
+                                borderRadius: 999,
+                                background: '#0f172a',
+                                color: '#f8fafc',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: 10,
+                                padding: '0 6px',
+                            }}>
+                            +{nodeSelection.hiddenCount}
+                        </div>
+                    ) : null}
                 </div>
             </div>
         </section>

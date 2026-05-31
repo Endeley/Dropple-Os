@@ -6,6 +6,7 @@ import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 import { hashRuntimeState } from '@/core/persistence/hashDocument.js';
 import {
     getZoomTier,
+    resolveSemanticZoomNodeSelection,
     resolveSemanticZoomPresentation,
     resolveSemanticZoomVisibility,
 } from '@/runtime/canvas/zoomTiers.js';
@@ -273,4 +274,32 @@ test('semantic zoom visibility is deterministic and defaults to normal for unkno
     assert.deepEqual(resolveSemanticZoomVisibility('normal'), normal);
     assert.deepEqual(resolveSemanticZoomVisibility('unknown'), normal);
     assert.equal(Object.isFrozen(resolveSemanticZoomVisibility('far')), true);
+});
+
+test('semantic zoom node selection is perspective-aware, deterministic, and fail-closed', () => {
+    const nodeIds = Object.freeze(['brand', 'ui', 'app', 'workflow', 'knowledge', 'media']);
+    const buildSelection = resolveSemanticZoomNodeSelection({
+        tier: 'overview',
+        perspectiveId: 'build',
+        nodeIds,
+    });
+    const createSelection = resolveSemanticZoomNodeSelection({
+        tier: 'overview',
+        perspectiveId: 'create',
+        nodeIds,
+    });
+    const fallbackSelection = resolveSemanticZoomNodeSelection({
+        tier: 'unknown',
+        perspectiveId: 'unknown',
+        nodeIds,
+    });
+
+    assert.deepEqual(buildSelection.selectedNodeIds, Object.freeze(['app', 'workflow', 'ui', 'knowledge']));
+    assert.deepEqual(createSelection.selectedNodeIds, Object.freeze(['ui', 'brand', 'media', 'workflow']));
+    assert.equal(buildSelection.hiddenCount, 2);
+    assert.equal(createSelection.hiddenCount, 2);
+    assert.equal(fallbackSelection.perspectiveId, 'overview');
+    assert.equal(fallbackSelection.tier, 'unknown');
+    assert.equal(fallbackSelection.budget, 6);
+    assert.equal(Object.isFrozen(buildSelection.selectedNodeIds), true);
 });
