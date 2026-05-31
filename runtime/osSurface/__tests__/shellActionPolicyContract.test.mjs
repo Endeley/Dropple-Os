@@ -13,10 +13,11 @@ test('os workspace shell action policy snapshot is deterministic', () => {
         'mode.activate',
         'tool.activate',
         'viewport.set',
+        'assistant.request',
     ]);
 });
 
 test('os workspace shell action policy hash is stable', () => {
     const actionHash = hashRuntimeState(OS_WORKSPACE_SHELL_ALLOWED_ACTIONS);
-    assert.equal(actionHash, 'ba78c492a1322bb4e3972e7d2c1aaa77be2e52698814a6ac29671e5eac5f9e1e');
+    assert.equal(actionHash, 'fd2f8e5b0eeb121701cd7f21766821c47f0e0bba3136e8897a78c20b05cd9d5d');
 });

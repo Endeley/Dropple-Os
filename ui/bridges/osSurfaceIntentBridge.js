@@ -14,7 +14,9 @@ function resolveAssistantDispatcher(dispatcher) {
     if (dispatcher && typeof dispatcher.dispatch === 'function') return dispatcher;
     if (typeof dispatcher === 'function') {
         return Object.freeze({
-            dispatch: dispatcher,
+            dispatch(intent) {
+                return dispatcher(intent);
+            },
         });
     }
     return null;
@@ -100,16 +102,16 @@ export function dispatchOsWorkspaceShellIntent({
         if (!normalizedAssistantId || !normalizedAssistantAction) {
             return Promise.resolve(
                 Object.freeze({
-                ok: false,
-                reason: 'invalid-shell-action-payload',
+                    ok: false,
+                    reason: 'invalid-shell-action-payload',
                 }),
             );
         }
         if (assistantInput != null && typeof assistantInput !== 'object') {
             return Promise.resolve(
                 Object.freeze({
-                ok: false,
-                reason: 'invalid-shell-action-payload',
+                    ok: false,
+                    reason: 'invalid-shell-action-payload',
                 }),
             );
         }

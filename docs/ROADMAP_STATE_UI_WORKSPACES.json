@@ -273,7 +273,7 @@
     {
       "id": "U7",
       "title": "Workspace Production Hardening",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["U6"],
       "gates": [
         { "name": "full release validation", "command": "npm run validate:release" }
