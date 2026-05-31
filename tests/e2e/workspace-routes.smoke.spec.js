@@ -242,3 +242,17 @@ test('project perspective route bootstrap composes multiple blueprints determini
   await expect(page.locator('body')).toContainText(/blueprintId:\s+bp\.compose\./);
   await expect(page.locator('body')).toContainText(/blueprintVersion:\s+bp\.compose\./);
 });
+
+test('project shell assistant intent enqueues through canonical runtime bridge', async ({ page }) => {
+  const response = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'create bootstrap route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('assistant-surface-panel')).toBeVisible();
+  await expect(page.locator('body')).toContainText('perspective: create');
+  await expect(page.locator('body')).toContainText('active: assistant.design');
+
+  await page.getByRole('button', { name: 'Ask Assistant' }).click();
+  await expect(page.locator('body')).toContainText(/assistant intent:\s+enqueued:/);
+});

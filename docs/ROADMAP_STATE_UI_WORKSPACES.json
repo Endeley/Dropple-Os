@@ -27,7 +27,7 @@
     {
       "id": "U1",
       "title": "Workspace Shell Foundation",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["U0", "P0"],
       "milestones": [
         {
@@ -80,7 +80,7 @@
     {
       "id": "U2",
       "title": "Design Workspace Experience",
-      "status": "not-started",
+      "status": "active",
       "depends_on": ["U1"],
       "gates": [
         { "name": "route smoke", "command": "npm run test:routes:smoke" },
