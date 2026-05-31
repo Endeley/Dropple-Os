@@ -6,6 +6,7 @@ import { MediaWorkspaceShell } from '@/ui/workspace/media/MediaWorkspaceShell.js
 import { EditorWorkspaceShell } from '@/ui/workspace/editor/EditorWorkspaceShell.jsx';
 import { UIUXAuthoringShell } from '@/ui/workspace/uiux/UIUXAuthoringShell.jsx';
 import { UXWorkspaceShell } from '@/ui/workspace/ux/UXWorkspaceShell';
+import { ProjectPerspectiveShell } from './ProjectPerspectiveShell.jsx';
 
 /**
  * Authoritative workspace shell router.
@@ -22,7 +23,13 @@ import { UXWorkspaceShell } from '@/ui/workspace/ux/UXWorkspaceShell';
  * uiux mode         -> UIUXAuthoringShell
  * all other modes   -> EditorWorkspaceShell
  */
-export function WorkspaceShell({ workspace, modeId = null, workspaceContext = null, ...shellProps }) {
+export function WorkspaceShell({
+    workspace,
+    modeId = null,
+    workspaceContext = null,
+    projectPerspectiveContext = null,
+    ...shellProps
+}) {
     const activeMode = workspaceContext?.mode || modeId;
     const isUXValidation = workspace.profile === 'ux-validation';
     const isUIUX = activeMode === 'uiux';
@@ -52,5 +59,9 @@ export function WorkspaceShell({ workspace, modeId = null, workspaceContext = nu
         innerShell = <EditorWorkspaceShell workspace={workspace} modeId={activeMode} workspaceContext={workspaceContext} {...shellProps} />;
     }
 
-    return innerShell;
+    return (
+        <ProjectPerspectiveShell projectPerspectiveContext={projectPerspectiveContext} activeModeId={activeMode}>
+            {innerShell}
+        </ProjectPerspectiveShell>
+    );
 }
