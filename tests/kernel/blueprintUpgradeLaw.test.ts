@@ -36,6 +36,17 @@ function createBaseBlueprint() {
     });
 }
 
+function createInstallManifest(blueprintId = 'bp.base.v1', blueprintVersionId = 'bp.base.v1') {
+    return Object.freeze({
+        schemaVersion: 1,
+        projectId: 'project.blueprint.upgrade',
+        projectName: 'Blueprint Upgrade Project',
+        defaultPerspectiveId: 'build',
+        blueprintId,
+        blueprintVersionId,
+    });
+}
+
 function createUpgradedBlueprint() {
     const base = createBaseBlueprint();
     const upgrade = {
@@ -63,7 +74,7 @@ test('blueprint upgrade applies additive diff events only through dispatcher', a
 
     const base = createBaseBlueprint();
     const upgrade = createUpgradedBlueprint();
-    await installBlueprint({ dispatcher, blueprint: base });
+    await installBlueprint({ dispatcher, blueprint: base, manifest: createInstallManifest(base.id, base.lineage.versionId) });
     const before = dispatcher.getState();
 
     const result = await applyBlueprintUpgrade({
@@ -101,7 +112,7 @@ test('blueprint upgrade fails closed on lineage mismatch', async () => {
         },
     };
 
-    await installBlueprint({ dispatcher, blueprint: base });
+    await installBlueprint({ dispatcher, blueprint: base, manifest: createInstallManifest(base.id, base.lineage.versionId) });
     await assert.rejects(
         () =>
             applyBlueprintUpgrade({
@@ -122,10 +133,10 @@ test('blueprint upgrade is deterministic across equivalent installs', async () =
     a.hydrateRuntimeState(initialRuntimeState, { animate: false });
     b.hydrateRuntimeState(initialRuntimeState, { animate: false });
 
-    await installBlueprint({ dispatcher: a, blueprint: base });
+    await installBlueprint({ dispatcher: a, blueprint: base, manifest: createInstallManifest(base.id, base.lineage.versionId) });
     await applyBlueprintUpgrade({ dispatcher: a, fromBlueprint: base, toBlueprint: upgrade });
 
-    await installBlueprint({ dispatcher: b, blueprint: base });
+    await installBlueprint({ dispatcher: b, blueprint: base, manifest: createInstallManifest(base.id, base.lineage.versionId) });
     await applyBlueprintUpgrade({ dispatcher: b, fromBlueprint: base, toBlueprint: upgrade });
 
     assert.equal(
@@ -145,7 +156,7 @@ test('blueprint upgrade fails closed when toBlueprint certification is invalid',
         name: 'Tampered Upgrade Blueprint',
     };
 
-    await installBlueprint({ dispatcher, blueprint: base });
+    await installBlueprint({ dispatcher, blueprint: base, manifest: createInstallManifest(base.id, base.lineage.versionId) });
     const before = dispatcher.getState();
     await assert.rejects(
         () =>

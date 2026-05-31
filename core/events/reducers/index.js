@@ -27,6 +27,7 @@ import { collaborationReducers } from "./collaborationReducers.js";
 import { vectorReducers } from "./vectorReducers.js";
 import { aiReducers } from "./aiReducers.js";
 import { federationAuditReducers } from './federationAuditReducers.js';
+import { projectBootstrapReducers } from './projectBootstrapReducers.js';
 import { selectionReducer } from "./selectionReducers.js";
 import { viewportReducer } from "./viewportReducer.js";
 import { graphInteractionReducer } from './graphInteractionReducer.js';
@@ -106,6 +107,10 @@ export function rootReducer(state, event) {
   next = applyOwnedReducer(next, event, federationAuditReducers, 'federationAuditReducers', {
     allowedDocumentSlices: [],
     allowedRuntimeSlices: ['federationAudit'],
+  });
+  next = applyOwnedReducer(next, event, projectBootstrapReducers, 'projectBootstrapReducers', {
+    allowedDocumentSlices: ['meta'],
+    allowedRuntimeSlices: [],
   });
   next = applyOwnedReducer(next, event, vectorReducers, 'vectorReducers', {
     allowedDocumentSlices: ['vectors'],

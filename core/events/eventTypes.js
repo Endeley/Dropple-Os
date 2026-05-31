@@ -218,6 +218,7 @@ export const EventTypes = Object.freeze({
     OPS_PROCESS_DEFINE: 'ops/process/define',
     OPS_WORKFLOW_DEFINE: 'ops/workflow/define',
     OPS_AUTOMATION_RUN: 'ops/automation/run',
+    PROJECT_BLUEPRINT_BOOTSTRAP: 'project/blueprint/bootstrap',
 
     // ─────────────────────────────
     // Workspace

@@ -70,6 +70,17 @@ function createDisallowedUpgradeBlueprint() {
     return certifyBlueprint(disallowed);
 }
 
+function createInstallManifest(blueprintId = 'bp.policy.base.v1', blueprintVersionId = 'bp.policy.base.v1') {
+    return Object.freeze({
+        schemaVersion: 1,
+        projectId: 'project.blueprint.policy',
+        projectName: 'Blueprint Policy Project',
+        defaultPerspectiveId: 'build',
+        blueprintId,
+        blueprintVersionId,
+    });
+}
+
 test('blueprint merge policy evaluation is deterministic', () => {
     const base = createBaseBlueprint();
     const disallowed = createDisallowedUpgradeBlueprint();
@@ -93,7 +104,7 @@ test('blueprint upgrade accepts policy-allowed path changes and remains dispatch
 
     const base = createBaseBlueprint();
     const allowed = createAllowedUpgradeBlueprint();
-    await installBlueprint({ dispatcher, blueprint: base });
+    await installBlueprint({ dispatcher, blueprint: base, manifest: createInstallManifest(base.id, base.lineage.versionId) });
     const before = dispatcher.getState();
 
     const result = await applyBlueprintUpgrade({
@@ -114,7 +125,7 @@ test('blueprint upgrade rejects disallowed merge-policy path changes and preserv
 
     const base = createBaseBlueprint();
     const disallowed = createDisallowedUpgradeBlueprint();
-    await installBlueprint({ dispatcher, blueprint: base });
+    await installBlueprint({ dispatcher, blueprint: base, manifest: createInstallManifest(base.id, base.lineage.versionId) });
     const before = dispatcher.getState();
 
     await assert.rejects(

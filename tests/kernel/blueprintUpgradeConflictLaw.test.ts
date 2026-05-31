@@ -70,6 +70,17 @@ function createRemovalUpgradeBlueprint() {
     return certifyBlueprint(upgrade);
 }
 
+function createInstallManifest(blueprintId = 'bp.conflict.base.v1', blueprintVersionId = 'bp.conflict.base.v1') {
+    return Object.freeze({
+        schemaVersion: 1,
+        projectId: 'project.blueprint.conflict',
+        projectName: 'Blueprint Conflict Project',
+        defaultPerspectiveId: 'build',
+        blueprintId,
+        blueprintVersionId,
+    });
+}
+
 test('blueprint diff classifies reorder as conflict deterministically', () => {
     const base = createBaseBlueprint();
     const reorder = createReorderedUpgradeBlueprint();
@@ -105,7 +116,7 @@ test('blueprint upgrade fails closed on non-additive diff and preserves runtime 
 
     const base = createBaseBlueprint();
     const reorder = createReorderedUpgradeBlueprint();
-    await installBlueprint({ dispatcher, blueprint: base });
+    await installBlueprint({ dispatcher, blueprint: base, manifest: createInstallManifest(base.id, base.lineage.versionId) });
     const before = dispatcher.getState();
 
     await assert.rejects(

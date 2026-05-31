@@ -1,4 +1,6 @@
 import crypto from 'node:crypto';
+import { EventTypes } from '@/core/events/eventTypes.js';
+import { validateBlueprintInstallManifestV1 } from '@/core/contracts/blueprintInstallManifest.v1.js';
 
 function sha256(input) {
     return crypto.createHash('sha256').update(String(input)).digest('hex');
@@ -53,7 +55,7 @@ export function verifyBlueprintCertification(blueprint) {
     return String(blueprint?.certification?.hash ?? '') === expected;
 }
 
-function validateBlueprintInstallInput({ dispatcher, blueprint }) {
+function validateBlueprintInstallInput({ dispatcher, blueprint, manifest }) {
     if (!dispatcher || typeof dispatcher.dispatch !== 'function') {
         throw new Error('installBlueprint: dispatcher with dispatch(event) is required');
     }
@@ -63,12 +65,31 @@ function validateBlueprintInstallInput({ dispatcher, blueprint }) {
     if (!Array.isArray(blueprint.seedEvents)) {
         throw new Error('installBlueprint: blueprint.seedEvents must be an array');
     }
+
+    validateBlueprintInstallManifestV1({
+        ...manifest,
+        blueprintId: manifest?.blueprintId ?? blueprint?.id ?? '',
+        blueprintVersionId: manifest?.blueprintVersionId ?? blueprint?.lineage?.versionId ?? blueprint?.id ?? '',
+    });
 }
 
-export async function installBlueprint({ dispatcher, blueprint }) {
-    validateBlueprintInstallInput({ dispatcher, blueprint });
+export async function installBlueprint({ dispatcher, blueprint, manifest }) {
+    validateBlueprintInstallInput({ dispatcher, blueprint, manifest });
+    const normalizedManifest = validateBlueprintInstallManifestV1({
+        ...manifest,
+        blueprintId: manifest?.blueprintId ?? blueprint?.id ?? '',
+        blueprintVersionId: manifest?.blueprintVersionId ?? blueprint?.lineage?.versionId ?? blueprint?.id ?? '',
+    });
 
     const appliedEvents = [];
+    const bootstrapEvent = {
+        type: EventTypes.PROJECT_BLUEPRINT_BOOTSTRAP,
+        payload: normalizedManifest,
+    };
+
+    await dispatcher.dispatch(bootstrapEvent);
+    appliedEvents.push(bootstrapEvent);
+
     for (const rawEvent of blueprint.seedEvents) {
         if (!rawEvent || typeof rawEvent !== 'object') {
             throw new Error('installBlueprint: seed event must be an object');
@@ -89,6 +110,8 @@ export async function installBlueprint({ dispatcher, blueprint }) {
     const state = dispatcher.getState();
     return Object.freeze({
         blueprintId: blueprint.id,
+        projectId: normalizedManifest.projectId,
+        bootstrapEvent,
         appliedEvents: Object.freeze(appliedEvents),
         stateHash: sha256(stableStringify(state?.document ?? {})),
     });
