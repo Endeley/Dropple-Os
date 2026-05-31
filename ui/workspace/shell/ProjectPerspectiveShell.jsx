@@ -1,10 +1,14 @@
 'use client';
 
+import { useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
     getProjectPerspectiveDefinition,
     listProjectPerspectiveIds,
 } from '@/platform/workspaces/projectPerspectiveRouter.js';
+import { useCommandPalette } from '@/commands/useCommandPalette';
+import { CommandPalette } from '@/commands/CommandPalette';
 import { ProjectUniverseCanvas } from './ProjectUniverseCanvas.jsx';
 
 function formatEntryLabel(entryId) {
@@ -21,14 +25,55 @@ export function ProjectPerspectiveShell({
 }) {
     if (!projectPerspectiveContext) return children;
 
+    const router = useRouter();
     const perspectiveId = projectPerspectiveContext.perspectiveId;
     const perspectiveLabel = projectPerspectiveContext.perspectiveLabel;
     const perspectiveIds = listProjectPerspectiveIds();
     const perspectiveDefinition = getProjectPerspectiveDefinition(perspectiveId);
     const perspectiveEntries = perspectiveDefinition?.entries ?? [];
+    const { open: commandOpen, close: commandClose } = useCommandPalette({ enabled: true });
+
+    const perspectiveCommands = useMemo(() => {
+        const commands = [];
+
+        for (const id of perspectiveIds) {
+            const definition = getProjectPerspectiveDefinition(id);
+            if (!definition) continue;
+            commands.push({
+                id: `perspective:${id}`,
+                title: `Go to ${definition.label}`,
+                category: 'Perspective',
+                keywords: ['project', 'perspective', id, definition.label],
+                run: () => router.push(`/workspace/${id}`),
+            });
+            for (const entryId of definition.entries ?? []) {
+                commands.push({
+                    id: `entry:${id}:${entryId}`,
+                    title: `Open ${definition.label} / ${formatEntryLabel(entryId)}`,
+                    category: 'Entry',
+                    keywords: ['project', 'entry', id, entryId, definition.label],
+                    run: () => router.push(`/workspace/${id}?entry=${entryId}`),
+                });
+            }
+        }
+
+        return commands;
+    }, [router, perspectiveIds]);
 
     return (
         <div style={{ display: 'grid', gridTemplateRows: 'auto auto auto 1fr', height: '100%' }}>
+            {commandOpen && (
+                <CommandPalette
+                    commands={perspectiveCommands}
+                    context={{
+                        selected: [],
+                        mode: activeModeId ?? projectPerspectiveContext.modeId,
+                        readOnly: false,
+                        authenticated: true,
+                    }}
+                    onClose={commandClose}
+                />
+            )}
             <header
                 style={{
                     display: 'flex',
