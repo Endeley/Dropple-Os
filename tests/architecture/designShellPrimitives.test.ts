@@ -7,6 +7,7 @@ import {
     resolveDesignTopChrome,
     resolveDesignWorkspaceContext,
     buildDesignPublishModePayload,
+    resolveDesignModeCapabilitySurface,
 } from '@/ui/workspace/design/DesignShellPrimitivesCore.js';
 
 test('design shell mode normalization is deterministic and fail-closed', () => {
@@ -82,4 +83,19 @@ test('design publish mode payload is deterministic', () => {
             workspaceId: 'design',
         }),
     );
+});
+
+test('design mode capability surface resolves deterministically and fail-closed', () => {
+    assert.deepEqual(resolveDesignModeCapabilitySurface('uiux'), {
+        showMotionInspector: true,
+        showTransitionTimeline: true,
+    });
+    assert.deepEqual(resolveDesignModeCapabilitySurface('graphic'), {
+        showMotionInspector: true,
+        showTransitionTimeline: true,
+    });
+    assert.deepEqual(resolveDesignModeCapabilitySurface('unknown-mode'), {
+        showMotionInspector: true,
+        showTransitionTimeline: true,
+    });
 });

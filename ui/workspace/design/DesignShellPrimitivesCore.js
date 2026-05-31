@@ -25,6 +25,21 @@ const DESIGN_TOP_CHROME_BY_MODE = Object.freeze({
     }),
 });
 
+const DESIGN_MODE_CAPABILITY_SURFACE = Object.freeze({
+    uiux: Object.freeze({
+        showMotionInspector: true,
+        showTransitionTimeline: true,
+    }),
+    graphic: Object.freeze({
+        showMotionInspector: true,
+        showTransitionTimeline: true,
+    }),
+    document: Object.freeze({
+        showMotionInspector: true,
+        showTransitionTimeline: true,
+    }),
+});
+
 export function normalizeDesignModeId(value, fallback = 'uiux') {
     const normalized = String(value ?? '')
         .trim()
@@ -62,4 +77,9 @@ export function buildDesignPublishModePayload(context) {
                 .trim()
                 .toLowerCase() || 'design',
     });
+}
+
+export function resolveDesignModeCapabilitySurface(modeId) {
+    const normalizedModeId = normalizeDesignModeId(modeId);
+    return DESIGN_MODE_CAPABILITY_SURFACE[normalizedModeId] ?? DESIGN_MODE_CAPABILITY_SURFACE.uiux;
 }

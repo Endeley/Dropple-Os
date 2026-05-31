@@ -24,6 +24,7 @@ import { useAlignmentShortcuts } from '@/ui/keyboard/useAlignmentShortcuts';
 import {
     resolveDesignWorkspaceContext,
     buildDesignPublishModePayload,
+    resolveDesignModeCapabilitySurface,
     DesignWorkspaceStrip,
 } from '@/ui/workspace/design/DesignShellPrimitives.jsx';
 
@@ -46,6 +47,7 @@ export function UIUXAuthoringShell({
     const resolvedModeId = resolvedDesignContext.modeId;
     const resolvedWorkspaceId = resolvedDesignContext.workspaceId;
     const publishModePayload = buildDesignPublishModePayload(resolvedDesignContext);
+    const capabilitySurface = resolveDesignModeCapabilitySurface(resolvedModeId);
 
     const { capabilities } = useWorkspaceCapabilities({
         workspace: resolvedWorkspaceId,
@@ -131,23 +133,29 @@ export function UIUXAuthoringShell({
                             workspaceId={resolvedModeId}
                             node={node}
                             emit={emit}
-                            extraPanels={[
-                                {
-                                    key: 'uiux-motion-runtime',
-                                    component: TemplateMotionInspectorPanel,
-                                    props: {
-                                        nodeId: node?.id ?? null,
-                                    },
-                                },
-                            ]}
+                            extraPanels={
+                                capabilitySurface.showMotionInspector
+                                    ? [
+                                          {
+                                              key: 'uiux-motion-runtime',
+                                              component: TemplateMotionInspectorPanel,
+                                              props: {
+                                                  nodeId: node?.id ?? null,
+                                              },
+                                          },
+                                      ]
+                                    : []
+                            }
                         />
                     </aside>
                 </div>
 
                 {/* Reserved bottom dock for design timeline */}
-                <footer className='uiux-bottom-dock'>
-                    <UIUXTransitionTimelinePanel node={node} />
-                </footer>
+                {capabilitySurface.showTransitionTimeline ? (
+                    <footer className='uiux-bottom-dock'>
+                        <UIUXTransitionTimelinePanel node={node} />
+                    </footer>
+                ) : null}
 
                 <WorkspaceSessionsRoot modeId={resolvedModeId} />
             </div>

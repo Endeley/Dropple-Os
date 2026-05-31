@@ -6,6 +6,7 @@ export {
     resolveDesignTopChrome,
     resolveDesignWorkspaceContext,
     buildDesignPublishModePayload,
+    resolveDesignModeCapabilitySurface,
 } from './DesignShellPrimitivesCore.js';
 import { resolveDesignModeLabel } from './DesignShellPrimitivesCore.js';
 
