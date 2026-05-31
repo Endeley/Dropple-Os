@@ -4,6 +4,8 @@ export {
     normalizeDesignModeId,
     resolveDesignModeLabel,
     resolveDesignTopChrome,
+    resolveDesignWorkspaceContext,
+    buildDesignPublishModePayload,
 } from './DesignShellPrimitivesCore.js';
 import { resolveDesignModeLabel } from './DesignShellPrimitivesCore.js';
 

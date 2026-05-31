@@ -5,6 +5,8 @@ import {
     normalizeDesignModeId,
     resolveDesignModeLabel,
     resolveDesignTopChrome,
+    resolveDesignWorkspaceContext,
+    buildDesignPublishModePayload,
 } from '@/ui/workspace/design/DesignShellPrimitivesCore.js';
 
 test('design shell mode normalization is deterministic and fail-closed', () => {
@@ -40,4 +42,44 @@ test('design top chrome profile resolves deterministically', () => {
         zoomLabel: '100%',
         surfaceLabel: 'Draft Surface',
     });
+});
+
+test('design workspace context resolution is deterministic and fail-closed', () => {
+    assert.deepEqual(
+        resolveDesignWorkspaceContext({
+            modeId: ' Graphic ',
+            workspaceContext: {
+                workspaceId: 'Design',
+                definitionId: 'design',
+            },
+        }),
+        Object.freeze({
+            modeId: 'graphic',
+            workspaceId: 'design',
+        }),
+    );
+
+    assert.deepEqual(
+        resolveDesignWorkspaceContext({
+            modeId: null,
+            workspaceContext: null,
+        }),
+        Object.freeze({
+            modeId: 'uiux',
+            workspaceId: 'design',
+        }),
+    );
+});
+
+test('design publish mode payload is deterministic', () => {
+    assert.deepEqual(
+        buildDesignPublishModePayload({
+            modeId: ' document ',
+            workspaceId: ' DESIGN ',
+        }),
+        Object.freeze({
+            id: 'document',
+            workspaceId: 'design',
+        }),
+    );
 });

@@ -40,3 +40,26 @@ export function resolveDesignTopChrome(modeId) {
     const normalizedModeId = normalizeDesignModeId(modeId);
     return DESIGN_TOP_CHROME_BY_MODE[normalizedModeId] ?? DESIGN_TOP_CHROME_BY_MODE.uiux;
 }
+
+export function resolveDesignWorkspaceContext({ modeId, workspaceContext } = {}) {
+    const resolvedModeId = normalizeDesignModeId(modeId ?? workspaceContext?.modeId ?? 'uiux');
+    const resolvedWorkspaceId =
+        String(workspaceContext?.workspaceId ?? workspaceContext?.definitionId ?? 'design')
+            .trim()
+            .toLowerCase() || 'design';
+
+    return Object.freeze({
+        modeId: resolvedModeId,
+        workspaceId: resolvedWorkspaceId,
+    });
+}
+
+export function buildDesignPublishModePayload(context) {
+    return Object.freeze({
+        id: normalizeDesignModeId(context?.modeId ?? 'uiux'),
+        workspaceId:
+            String(context?.workspaceId ?? 'design')
+                .trim()
+                .toLowerCase() || 'design',
+    });
+}
