@@ -52,7 +52,6 @@ function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
 }
 
-export function ProjectUniverseCanvas({ perspectiveId = 'overview' }) {
 export function ProjectUniverseCanvas({
     perspectiveId = 'overview',
     initialCamera = null,

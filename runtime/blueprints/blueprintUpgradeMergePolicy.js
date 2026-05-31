@@ -1,4 +1,4 @@
-import crypto from 'node:crypto';
+import { stableSha256LikeHex } from './stableHash.js';
 
 function stableStringify(value) {
     if (value === null || value === undefined) return 'null';
@@ -11,7 +11,7 @@ function stableStringify(value) {
 }
 
 export function computeBlueprintUpgradeMergePolicyHash(mergePolicy) {
-    return crypto.createHash('sha256').update(stableStringify(mergePolicy)).digest('hex');
+    return stableSha256LikeHex(stableStringify(mergePolicy));
 }
 
 function isObjectLike(value) {

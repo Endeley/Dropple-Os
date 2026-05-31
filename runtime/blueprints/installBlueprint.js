@@ -1,10 +1,10 @@
-import crypto from 'node:crypto';
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { validateBlueprintInstallManifestV1 } from '@/core/contracts/blueprintInstallManifest.v1.js';
 import { createBlueprintInstallManifest } from './createBlueprintInstallManifest.js';
+import { stableSha256LikeHex } from './stableHash.js';
 
 function sha256(input) {
-    return crypto.createHash('sha256').update(String(input)).digest('hex');
+    return stableSha256LikeHex(input);
 }
 
 function stableStringify(value) {
