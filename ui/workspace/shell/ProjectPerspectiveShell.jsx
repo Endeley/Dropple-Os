@@ -28,6 +28,18 @@ function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
 }
 
+async function copyTextWithFallback(text) {
+    if (navigator?.clipboard?.writeText) {
+        try {
+            await navigator.clipboard.writeText(text);
+            return;
+        } catch {
+            // Fallback handled below.
+        }
+    }
+    window.prompt('Copy project view URL', text);
+}
+
 export function ProjectPerspectiveShell({
     projectPerspectiveContext = null,
     activeModeId = null,
@@ -55,6 +67,7 @@ export function ProjectPerspectiveShell({
             scale: clamp(parseFiniteOr(searchParams?.get('z'), 1), 0.1, 8),
         }),
     );
+    const [shareFeedback, setShareFeedback] = useState('');
 
     useEffect(() => {
         setRecentRoutes((previous) => {
@@ -82,6 +95,16 @@ export function ProjectPerspectiveShell({
         next.set('y', y.toFixed(2));
         next.set('z', scale.toFixed(3));
         router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+    };
+
+    const shareCurrentView = async () => {
+        const params = new URLSearchParams(searchParams?.toString() ?? '');
+        const href = `${pathname}?${params.toString()}`;
+        const absolute =
+            typeof window !== 'undefined' ? `${window.location.origin}${href}` : href;
+        await copyTextWithFallback(absolute);
+        setShareFeedback('Copied');
+        window.setTimeout(() => setShareFeedback(''), 1400);
     };
 
     const perspectiveCommands = useMemo(() => {
@@ -169,10 +192,29 @@ export function ProjectPerspectiveShell({
                         {perspectiveLabel} · {projectPerspectiveContext.entryId}
                     </span>
                 </div>
-                <span style={{ fontSize: 11, color: '#64748b' }}>
-                    workspace: {projectPerspectiveContext.workspaceId}/
-                    {activeModeId ?? projectPerspectiveContext.modeId}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 11, color: '#64748b' }}>
+                        workspace: {projectPerspectiveContext.workspaceId}/
+                        {activeModeId ?? projectPerspectiveContext.modeId}
+                    </span>
+                    <button
+                        type='button'
+                        onClick={shareCurrentView}
+                        style={{
+                            border: '1px solid #cbd5e1',
+                            borderRadius: 7,
+                            background: '#ffffff',
+                            color: '#334155',
+                            fontSize: 11,
+                            padding: '3px 9px',
+                            cursor: 'pointer',
+                        }}>
+                        Share View
+                    </button>
+                    {shareFeedback ? (
+                        <span style={{ fontSize: 11, color: '#0f766e' }}>{shareFeedback}</span>
+                    ) : null}
+                </div>
             </header>
             <nav
                 aria-label='Project perspectives'
