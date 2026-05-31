@@ -17,6 +17,7 @@ import {
     previewBlueprintUpgradeFromCatalog,
     resolveProjectBlueprintRouteSelection,
 } from '@/ui/bridges/blueprintInstallBridge.js';
+import { dispatchOsWorkspaceShellIntent } from '@/ui/bridges/osSurfaceIntentBridge.js';
 import { readOsSurfaceSnapshot } from '@/ui/bridges/osSurfaceReadBridge.js';
 import { useWorkspaceProjectionState } from '@/runtime/projection';
 import { useCommandPalette } from '@/commands/useCommandPalette';
@@ -117,6 +118,7 @@ export function ProjectPerspectiveShell({
     const [upgradeStatus, setUpgradeStatus] = useState('');
     const [upgradeError, setUpgradeError] = useState('');
     const [upgradeApplying, setUpgradeApplying] = useState(false);
+    const [assistantIntentStatus, setAssistantIntentStatus] = useState('');
     const osSurfaceSnapshot = readOsSurfaceSnapshot();
     const assistantSurface = osSurfaceSnapshot?.assistants ?? null;
     const persistedProjectBootstrap = useWorkspaceProjectionState(
@@ -376,6 +378,23 @@ export function ProjectPerspectiveShell({
                 item.entryId.includes(normalizedQuery),
         );
     }, [navigatorQuery, perspectiveIds]);
+
+    const requestAssistantPlaceholder = (assistantAction) => {
+        const result = dispatchOsWorkspaceShellIntent(
+            {
+                action: 'assistant.request',
+                assistantId: assistantSurface?.activeAssistantId,
+                assistantAction,
+                assistantInput: {
+                    perspectiveId,
+                    entryId: projectPerspectiveContext.entryId,
+                },
+            },
+            dispatcher,
+        );
+        setAssistantIntentStatus(result.reason ?? 'unknown');
+        window.setTimeout(() => setAssistantIntentStatus(''), 1400);
+    };
 
     return (
         <div style={{ display: 'grid', gridTemplateRows: 'auto auto auto 1fr', height: '100%' }}>
@@ -691,6 +710,58 @@ export function ProjectPerspectiveShell({
                                 <span style={{ fontSize: 10, color: '#334155' }}>
                                     visible: {(assistantSurface?.assistantIds ?? []).join(', ') || 'none'}
                                 </span>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                    <button
+                                        type='button'
+                                        onClick={() => requestAssistantPlaceholder('recommend')}
+                                        disabled={!assistantSurface?.activeAssistantId}
+                                        style={{
+                                            border: '1px solid #cbd5e1',
+                                            borderRadius: 6,
+                                            background: '#ffffff',
+                                            color: '#334155',
+                                            fontSize: 10,
+                                            padding: '4px 6px',
+                                            cursor: assistantSurface?.activeAssistantId ? 'pointer' : 'not-allowed',
+                                        }}>
+                                        Ask Assistant
+                                    </button>
+                                    <button
+                                        type='button'
+                                        onClick={() => requestAssistantPlaceholder('generate')}
+                                        disabled={!assistantSurface?.activeAssistantId}
+                                        style={{
+                                            border: '1px solid #cbd5e1',
+                                            borderRadius: 6,
+                                            background: '#ffffff',
+                                            color: '#334155',
+                                            fontSize: 10,
+                                            padding: '4px 6px',
+                                            cursor: assistantSurface?.activeAssistantId ? 'pointer' : 'not-allowed',
+                                        }}>
+                                        Generate Options
+                                    </button>
+                                    <button
+                                        type='button'
+                                        onClick={() => requestAssistantPlaceholder('explain')}
+                                        disabled={!assistantSurface?.activeAssistantId}
+                                        style={{
+                                            border: '1px solid #cbd5e1',
+                                            borderRadius: 6,
+                                            background: '#ffffff',
+                                            color: '#334155',
+                                            fontSize: 10,
+                                            padding: '4px 6px',
+                                            cursor: assistantSurface?.activeAssistantId ? 'pointer' : 'not-allowed',
+                                        }}>
+                                        Improve This
+                                    </button>
+                                </div>
+                                {assistantIntentStatus ? (
+                                    <span style={{ fontSize: 10, color: '#64748b' }}>
+                                        assistant intent: {assistantIntentStatus}
+                                    </span>
+                                ) : null}
                             </div>
                         </div>
                         <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>

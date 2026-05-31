@@ -5,4 +5,5 @@ export const OS_WORKSPACE_SHELL_ALLOWED_ACTIONS = Object.freeze([
     'mode.activate',
     'tool.activate',
     'viewport.set',
+    'assistant.request',
 ]);

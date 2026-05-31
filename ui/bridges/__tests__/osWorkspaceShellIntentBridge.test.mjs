@@ -12,6 +12,7 @@ test('os workspace shell action allowlist is explicit and stable', () => {
         'mode.activate',
         'tool.activate',
         'viewport.set',
+        'assistant.request',
     ]);
 });
 
@@ -81,6 +82,41 @@ test('os workspace shell intent bridge fails closed for invalid mode/workspace p
             action: 'mode.activate',
             workspaceId: 'design',
             modeId: 'animation',
+        },
+        (event) => events.push(event),
+    );
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'invalid-shell-action-payload');
+    assert.deepEqual(events, []);
+});
+
+test('os workspace shell assistant request placeholder is allowlisted and fail-closed', () => {
+    const events = [];
+    const result = dispatchOsWorkspaceShellIntent(
+        {
+            action: 'assistant.request',
+            assistantId: 'assistant.design',
+            assistantAction: 'recommend',
+            assistantInput: { prompt: 'Suggest three directions.' },
+        },
+        (event) => events.push(event),
+    );
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'not-yet-enabled');
+    assert.equal(result.assistantId, 'assistant.design');
+    assert.equal(result.assistantAction, 'recommend');
+    assert.deepEqual(events, []);
+});
+
+test('os workspace shell assistant request placeholder validates payload fail-closed', () => {
+    const events = [];
+    const result = dispatchOsWorkspaceShellIntent(
+        {
+            action: 'assistant.request',
+            assistantId: '',
+            assistantAction: 'recommend',
         },
         (event) => events.push(event),
     );

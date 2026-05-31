@@ -15,6 +15,9 @@ export function dispatchOsWorkspaceShellIntent({
     modeId = null,
     toolId = null,
     viewport = null,
+    assistantId = null,
+    assistantAction = null,
+    assistantInput = null,
 } = {}, dispatcher) {
     if (!OS_WORKSPACE_SHELL_ALLOWED_ACTIONS.includes(action)) {
         return Object.freeze({
@@ -67,5 +70,30 @@ export function dispatchOsWorkspaceShellIntent({
             type: INTENTS.VIEWPORT_SET,
             payload: viewport && typeof viewport === 'object' ? { viewport } : {},
         }, dispatcher);
+    }
+
+    if (action === 'assistant.request') {
+        const normalizedAssistantId = typeof assistantId === 'string' ? assistantId.trim() : '';
+        const normalizedAssistantAction =
+            typeof assistantAction === 'string' ? assistantAction.trim() : '';
+        if (!normalizedAssistantId || !normalizedAssistantAction) {
+            return Object.freeze({
+                ok: false,
+                reason: 'invalid-shell-action-payload',
+            });
+        }
+        if (assistantInput != null && typeof assistantInput !== 'object') {
+            return Object.freeze({
+                ok: false,
+                reason: 'invalid-shell-action-payload',
+            });
+        }
+        return Object.freeze({
+            ok: false,
+            reason: 'not-yet-enabled',
+            action,
+            assistantId: normalizedAssistantId,
+            assistantAction: normalizedAssistantAction,
+        });
     }
 }
