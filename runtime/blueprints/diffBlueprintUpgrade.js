@@ -16,6 +16,10 @@ function normalizeSeedEvents(blueprint) {
     }));
 }
 
+export function isBlueprintUpgradeAdditive(diff) {
+    return (diff?.removed?.length ?? 0) === 0 && (diff?.changed?.length ?? 0) === 0;
+}
+
 export function diffBlueprintUpgrade({ fromBlueprint, toBlueprint }) {
     const fromEvents = normalizeSeedEvents(fromBlueprint);
     const toEvents = normalizeSeedEvents(toBlueprint);
@@ -44,12 +48,17 @@ export function diffBlueprintUpgrade({ fromBlueprint, toBlueprint }) {
         }
     }
 
+    const hasChanges = added.length > 0 || removed.length > 0 || changed.length > 0;
+    const hasConflicts = removed.length > 0 || changed.length > 0;
     return Object.freeze({
         fromVersionId: fromBlueprint?.lineage?.versionId ?? null,
         toVersionId: toBlueprint?.lineage?.versionId ?? null,
         added: Object.freeze(added),
         removed: Object.freeze(removed),
         changed: Object.freeze(changed),
-        hasChanges: added.length > 0 || removed.length > 0 || changed.length > 0,
+        hasChanges,
+        hasConflicts,
+        additiveOnly: !hasConflicts,
+        conflictCount: removed.length + changed.length,
     });
 }

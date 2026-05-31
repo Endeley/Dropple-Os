@@ -1,4 +1,4 @@
-import { diffBlueprintUpgrade } from './diffBlueprintUpgrade.js';
+import { diffBlueprintUpgrade, isBlueprintUpgradeAdditive } from './diffBlueprintUpgrade.js';
 
 function validateUpgradeInput({ dispatcher, fromBlueprint, toBlueprint }) {
     if (!dispatcher || typeof dispatcher.dispatch !== 'function') {
@@ -23,8 +23,12 @@ function assertLineageUpgradePath(fromBlueprint, toBlueprint) {
 }
 
 function assertNoOverwrite(diff) {
-    if ((diff.removed?.length ?? 0) > 0 || (diff.changed?.length ?? 0) > 0) {
-        throw new Error('applyBlueprintUpgrade: upgrade must be additive (diff/merge only, no overwrite)');
+    if (!isBlueprintUpgradeAdditive(diff)) {
+        const removedCount = diff?.removed?.length ?? 0;
+        const changedCount = diff?.changed?.length ?? 0;
+        throw new Error(
+            `applyBlueprintUpgrade: upgrade must be additive (diff/merge only, no overwrite). removed=${removedCount} changed=${changedCount}`,
+        );
     }
 }
 
