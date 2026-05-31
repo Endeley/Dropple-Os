@@ -72,6 +72,8 @@
         "release:federation:lineage": "node --import ./bench/register-alias-loader.mjs scripts/federationAuditLineageReport.mjs",
         "release:federation:lineage:ledger": "node --import ./bench/register-alias-loader.mjs scripts/federationAuditLineageLedger.mjs append",
         "release:federation:lineage:ledger:verify": "node --import ./bench/register-alias-loader.mjs scripts/federationAuditLineageLedger.mjs verify",
+        "release:blueprint:lineage:ledger": "node --import ./bench/register-alias-loader.mjs scripts/blueprintLineageLedger.mjs append",
+        "release:blueprint:lineage:ledger:verify": "node --import ./bench/register-alias-loader.mjs scripts/blueprintLineageLedger.mjs verify",
         "test:federation:release": "node --import ./tests/register-test-loaders.mjs --test tests/kernel/createSessionFederationContract.test.ts tests/kernel/sessionFederationOrchestrationContract.test.ts tests/kernel/federationAuditRuntime.test.ts && node --import ./bench/register-alias-loader.mjs --test tests/release/releaseFederationAttestationGate.test.mjs",
         "release:trust:diff": "node --import ./bench/register-alias-loader.mjs scripts/releaseTrustDiff.mjs",
         "release:trust:diff:enforced": "RELEASE_TRUST_BASELINE_REQUIRED_AFTER=2026-07-01T00:00:00.000Z npm run release:trust:diff",
@@ -92,7 +94,7 @@
         "ci:release-trust:locked": "npm run test:release:attestation && npm run test:release:operator-surfaces && npm run release:trust:report && npm run release:trust:diff:enforced && npm run release:trust:summary:enforced",
         "ci:full": "npm run validate:release",
         "validate:all": "npm run test:all && npm run test:system:all && npm run determinism && npm run architecture:ci",
-        "validate:release": "npm run validate:all && npm run performance:determinism && npm run template:verify-all && npm run test:federation:release && npm run test:release:attestation && npm run release:trust:report && npm run release:federation:lineage",
+        "validate:release": "npm run validate:all && npm run performance:determinism && npm run template:verify-all && npm run test:federation:release && npm run test:release:attestation && npm run release:trust:report && npm run release:federation:lineage && npm run release:blueprint:lineage:ledger && npm run release:blueprint:lineage:ledger:verify",
         "validate:app": "npm run build:smoke && npm run test:routes:smoke",
         "validate:fullstack": "node scripts/validateFullStack.mjs"
     },
