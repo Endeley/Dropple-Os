@@ -3,6 +3,7 @@ import {
     DEFAULT_BLUEPRINT_UPGRADE_MERGE_POLICY,
     evaluateBlueprintUpgradeMergePolicy,
 } from './blueprintUpgradeMergePolicy.js';
+import { verifyBlueprintCertification } from './installBlueprint.js';
 
 function validateUpgradeInput({ dispatcher, fromBlueprint, toBlueprint }) {
     if (!dispatcher || typeof dispatcher.dispatch !== 'function') {
@@ -36,9 +37,16 @@ function assertNoOverwrite(diff) {
     }
 }
 
+function assertCertifiedUpgradeBlueprint(toBlueprint) {
+    if (!verifyBlueprintCertification(toBlueprint)) {
+        throw new Error('applyBlueprintUpgrade: toBlueprint certification is invalid');
+    }
+}
+
 export async function applyBlueprintUpgrade({ dispatcher, fromBlueprint, toBlueprint }) {
     validateUpgradeInput({ dispatcher, fromBlueprint, toBlueprint });
     assertLineageUpgradePath(fromBlueprint, toBlueprint);
+    assertCertifiedUpgradeBlueprint(toBlueprint);
 
     const diff = diffBlueprintUpgrade({ fromBlueprint, toBlueprint });
     assertNoOverwrite(diff);

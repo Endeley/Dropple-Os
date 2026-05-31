@@ -7,6 +7,7 @@ import { EventTypes } from '@/core/events/eventTypes.js';
 import { installBlueprint } from '@/runtime/blueprints/installBlueprint.js';
 import { applyBlueprintUpgrade } from '@/runtime/blueprints/applyBlueprintUpgrade.js';
 import { evaluateBlueprintUpgradeMergePolicy } from '@/runtime/blueprints/blueprintUpgradeMergePolicy.js';
+import { certifyBlueprint } from '@/runtime/blueprints/installBlueprint.js';
 
 function createBaseBlueprint() {
     return Object.freeze({
@@ -37,7 +38,7 @@ function createBaseBlueprint() {
 
 function createAllowedUpgradeBlueprint() {
     const base = createBaseBlueprint();
-    return Object.freeze({
+    const upgrade = {
         ...base,
         id: 'bp.policy.base.v2',
         seedEvents: Object.freeze([
@@ -56,15 +57,17 @@ function createAllowedUpgradeBlueprint() {
             versionId: 'bp.policy.base.v2',
             parentVersionId: base.lineage.versionId,
         }),
-    });
+    };
+    return certifyBlueprint(upgrade);
 }
 
 function createDisallowedUpgradeBlueprint() {
     const allowed = createAllowedUpgradeBlueprint();
-    return Object.freeze({
+    const disallowed = {
         ...allowed,
         workspaceProfiles: Object.freeze({ create: ['uiux', 'graphic'] }),
-    });
+    };
+    return certifyBlueprint(disallowed);
 }
 
 test('blueprint merge policy evaluation is deterministic', () => {

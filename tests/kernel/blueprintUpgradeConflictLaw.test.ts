@@ -7,6 +7,7 @@ import { EventTypes } from '@/core/events/eventTypes.js';
 import { installBlueprint } from '@/runtime/blueprints/installBlueprint.js';
 import { applyBlueprintUpgrade } from '@/runtime/blueprints/applyBlueprintUpgrade.js';
 import { diffBlueprintUpgrade } from '@/runtime/blueprints/diffBlueprintUpgrade.js';
+import { certifyBlueprint } from '@/runtime/blueprints/installBlueprint.js';
 
 function createBaseBlueprint() {
     return Object.freeze({
@@ -41,7 +42,7 @@ function createBaseBlueprint() {
 
 function createReorderedUpgradeBlueprint() {
     const base = createBaseBlueprint();
-    return Object.freeze({
+    const upgrade = {
         ...base,
         id: 'bp.conflict.base.v2',
         seedEvents: Object.freeze([base.seedEvents[1], base.seedEvents[0]]),
@@ -50,12 +51,13 @@ function createReorderedUpgradeBlueprint() {
             versionId: 'bp.conflict.base.v2',
             parentVersionId: base.lineage.versionId,
         }),
-    });
+    };
+    return certifyBlueprint(upgrade);
 }
 
 function createRemovalUpgradeBlueprint() {
     const base = createBaseBlueprint();
-    return Object.freeze({
+    const upgrade = {
         ...base,
         id: 'bp.conflict.base.v3',
         seedEvents: Object.freeze([base.seedEvents[0]]),
@@ -64,7 +66,8 @@ function createRemovalUpgradeBlueprint() {
             versionId: 'bp.conflict.base.v3',
             parentVersionId: base.lineage.versionId,
         }),
-    });
+    };
+    return certifyBlueprint(upgrade);
 }
 
 test('blueprint diff classifies reorder as conflict deterministically', () => {

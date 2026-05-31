@@ -7,6 +7,7 @@ import { EventTypes } from '@/core/events/eventTypes.js';
 import { installBlueprint } from '@/runtime/blueprints/installBlueprint.js';
 import { applyBlueprintUpgrade } from '@/runtime/blueprints/applyBlueprintUpgrade.js';
 import { hashCanonicalDocument } from '@/core/persistence/hashDocument.js';
+import { certifyBlueprint } from '@/runtime/blueprints/installBlueprint.js';
 
 function createBaseBlueprint() {
     return Object.freeze({
@@ -37,7 +38,7 @@ function createBaseBlueprint() {
 
 function createUpgradedBlueprint() {
     const base = createBaseBlueprint();
-    return Object.freeze({
+    const upgrade = {
         ...base,
         id: 'bp.base.v2',
         seedEvents: Object.freeze([
@@ -52,7 +53,8 @@ function createUpgradedBlueprint() {
             versionId: 'bp.base.v2',
             parentVersionId: base.lineage.versionId,
         }),
-    });
+    };
+    return certifyBlueprint(upgrade);
 }
 
 test('blueprint upgrade applies additive diff events only through dispatcher', async () => {
@@ -123,4 +125,31 @@ test('blueprint upgrade is deterministic across equivalent installs', async () =
         hashCanonicalDocument(a.getState().document),
         hashCanonicalDocument(b.getState().document),
     );
+});
+
+test('blueprint upgrade fails closed when toBlueprint certification is invalid', async () => {
+    const dispatcher = createEventDispatcher({ headless: true });
+    dispatcher.hydrateRuntimeState(initialRuntimeState, { animate: false });
+
+    const base = createBaseBlueprint();
+    const certifiedUpgrade = createUpgradedBlueprint();
+    const tamperedUpgrade = {
+        ...certifiedUpgrade,
+        name: 'Tampered Upgrade Blueprint',
+    };
+
+    await installBlueprint({ dispatcher, blueprint: base });
+    const before = dispatcher.getState();
+    await assert.rejects(
+        () =>
+            applyBlueprintUpgrade({
+                dispatcher,
+                fromBlueprint: base,
+                toBlueprint: tamperedUpgrade,
+            }),
+        /toBlueprint certification is invalid/,
+    );
+
+    const after = dispatcher.getState();
+    assert.equal(after.events.length, before.events.length);
 });
