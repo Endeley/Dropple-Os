@@ -1,4 +1,8 @@
 import { diffBlueprintUpgrade, isBlueprintUpgradeAdditive } from './diffBlueprintUpgrade.js';
+import {
+    DEFAULT_BLUEPRINT_UPGRADE_MERGE_POLICY,
+    evaluateBlueprintUpgradeMergePolicy,
+} from './blueprintUpgradeMergePolicy.js';
 
 function validateUpgradeInput({ dispatcher, fromBlueprint, toBlueprint }) {
     if (!dispatcher || typeof dispatcher.dispatch !== 'function') {
@@ -38,6 +42,16 @@ export async function applyBlueprintUpgrade({ dispatcher, fromBlueprint, toBluep
 
     const diff = diffBlueprintUpgrade({ fromBlueprint, toBlueprint });
     assertNoOverwrite(diff);
+    const mergePolicyCheck = evaluateBlueprintUpgradeMergePolicy({
+        fromBlueprint,
+        toBlueprint,
+        mergePolicy: DEFAULT_BLUEPRINT_UPGRADE_MERGE_POLICY,
+    });
+    if (!mergePolicyCheck.ok) {
+        throw new Error(
+            `applyBlueprintUpgrade: merge policy rejected disallowed changed paths: ${mergePolicyCheck.disallowedPaths.join(', ')}`,
+        );
+    }
 
     const appliedEvents = [];
     for (const entry of diff.added) {
