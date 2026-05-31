@@ -1,4 +1,4 @@
-import { resolveProjectPerspectiveContext } from '@/platform/workspaces/projectPerspectiveRouter.js';
+import { resolveRuntimeProjectPerspectiveContext } from '@/runtime/assistants/projectPerspectiveContext.js';
 
 const ADAPTERS_BY_PERSPECTIVE = Object.freeze({
     overview: Object.freeze({
@@ -46,7 +46,7 @@ export function getPerspectiveAssistantAdapter(perspectiveId) {
 }
 
 export function resolvePerspectiveAssistantAdapter({ perspectiveId, entryId } = {}) {
-    const context = resolveProjectPerspectiveContext({ perspectiveId, entryId });
+    const context = resolveRuntimeProjectPerspectiveContext({ perspectiveId, entryId });
     const adapter = getPerspectiveAssistantAdapter(context.perspectiveId) ?? ADAPTERS_BY_PERSPECTIVE.overview;
     return Object.freeze({
         ...adapter,

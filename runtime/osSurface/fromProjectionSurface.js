@@ -4,7 +4,7 @@ import {
     selectSequencerPreview,
     selectViewport,
 } from '@/runtime/projection/index.js';
-import { resolveInitialProjectPerspectiveContext } from '@/platform/workspaces/projectPerspectiveRouter.js';
+import { resolveInitialRuntimeProjectPerspectiveContext } from '@/runtime/assistants/projectPerspectiveContext.js';
 import { resolvePerspectiveAssistants } from '@/runtime/assistants/resolvePerspectiveAssistants.js';
 import { buildAssistantSurfaceModel } from './buildAssistantSurfaceModel.js';
 import { buildEnvironmentSurfaceModel } from './buildEnvironmentSurfaceModel.js';
@@ -99,7 +99,7 @@ export function buildSynthesizedToolSurfaceModelFromProjection(projected = null)
 
 export function buildAssistantSurfaceModelFromProjection(projected = null, options = {}) {
     const renderState = projected ?? selectRenderState() ?? {};
-    const perspectiveContext = resolveInitialProjectPerspectiveContext({
+    const perspectiveContext = resolveInitialRuntimeProjectPerspectiveContext({
         document: renderState?.document,
         perspectiveId: options?.perspectiveId ?? null,
         entryId: options?.entryId ?? null,

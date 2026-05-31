@@ -1,4 +1,4 @@
-import { resolveProjectPerspectiveContext } from '@/platform/workspaces/projectPerspectiveRouter.js';
+import { resolveRuntimeProjectPerspectiveContext } from '@/runtime/assistants/projectPerspectiveContext.js';
 import {
     getAssistantCapabilityById,
     listAssistantCapabilitiesForPerspective,
@@ -23,7 +23,7 @@ function inferDefaultAssistantForContext(perspectiveContext) {
 }
 
 export function resolvePerspectiveAssistants({ perspectiveId, entryId, preferredAssistantId = null } = {}) {
-    const perspectiveContext = resolveProjectPerspectiveContext({ perspectiveId, entryId });
+    const perspectiveContext = resolveRuntimeProjectPerspectiveContext({ perspectiveId, entryId });
     const adapter = resolvePerspectiveAssistantAdapter({
         perspectiveId: perspectiveContext.perspectiveId,
         entryId: perspectiveContext.entryId,
