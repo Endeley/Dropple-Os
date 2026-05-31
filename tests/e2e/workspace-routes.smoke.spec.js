@@ -256,3 +256,33 @@ test('project shell assistant intent enqueues through canonical runtime bridge',
   await page.getByRole('button', { name: 'Ask Assistant' }).click();
   await expect(page.locator('body')).toContainText(/assistant intent:\s+enqueued:/);
 });
+
+test('design modes expose parity-stable shell chrome and strip signals', async ({ page }) => {
+  const designModes = [
+    { modeId: 'uiux', modeLabel: 'UI / UX', routeMarker: 'Design / UIUX', uiuxShell: true },
+    { modeId: 'graphic', modeLabel: 'Graphic', routeMarker: '· Graphic', uiuxShell: false },
+    { modeId: 'document', modeLabel: 'Document', routeMarker: '· Document', uiuxShell: false },
+  ];
+
+  for (const mode of designModes) {
+    const response = await page.goto(`/workspace/${mode.modeId}`, {
+      waitUntil: 'networkidle',
+    });
+
+    expect(response?.ok(), `${mode.modeId} route should respond successfully`).toBeTruthy();
+    if (mode.uiuxShell) {
+      await expect(page.locator('.workspace-name')).toContainText('UIUX');
+      await expect(page.locator('.uiux-workspace-strip')).toContainText('Design / UIUX');
+      await expect(page.locator('.frame-indicator')).toContainText('Draft Surface');
+      await expect(page.getByRole('button', { name: 'Templates' })).toBeVisible();
+    } else {
+      await expect(page.getByRole('button', { name: 'Design' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'UI / UX' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Graphic' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Document' })).toBeVisible();
+      await expect(page.getByRole('button', { name: mode.modeLabel })).toBeVisible();
+    }
+    await expect(page.locator('body')).toContainText(mode.routeMarker);
+    await expect(page.getByRole('button', { name: 'Publish' })).toBeVisible();
+  }
+});

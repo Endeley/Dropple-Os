@@ -96,17 +96,18 @@
         {
           "id": "U2.D2",
           "title": "Design Mode Shell Parity (uiux/graphic/document)",
-          "status": "active",
+          "status": "complete",
           "evidence": [
             "ui/workspace/shell/WorkspaceShell.jsx",
             "ui/workspace/uiux/UIUXAuthoringShell.jsx",
-            "tests/e2e/workspace-workflows.smoke.spec.js"
+            "tests/e2e/workspace-workflows.smoke.spec.js",
+            "tests/e2e/workspace-routes.smoke.spec.js"
           ]
         },
         {
           "id": "U2.D3",
           "title": "Design Overlay Compatibility (branding/icons aliases)",
-          "status": "not-started",
+          "status": "active",
           "evidence": [
             "platform/workspaces/overlayRegistry.js",
             "tests/architecture/platformSystemClassification.test.ts",
