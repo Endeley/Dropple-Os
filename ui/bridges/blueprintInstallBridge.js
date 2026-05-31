@@ -1,5 +1,6 @@
 import { installBlueprint } from '@/runtime/blueprints/installBlueprint.js';
-import { listBlueprintCatalog, resolveBlueprintFromCatalog } from '@/runtime/blueprints/blueprintCatalog.js';
+import { listBlueprintCatalog } from '@/runtime/blueprints/blueprintCatalog.js';
+import { resolveBlueprintCatalogEntry } from '@/runtime/blueprints/resolveBlueprintCatalogEntry.js';
 
 function normalizeId(value) {
     if (typeof value !== 'string') return null;
@@ -14,6 +15,7 @@ export function listBlueprintInstallOptions() {
             name: blueprint.name,
             description: blueprint.description,
             versionId: blueprint?.lineage?.versionId ?? blueprint.id,
+            certificationHash: blueprint?.certification?.hash ?? null,
         }),
     );
 }
@@ -21,6 +23,8 @@ export function listBlueprintInstallOptions() {
 export async function installBlueprintFromCatalog({
     dispatcher,
     blueprintId,
+    blueprintVersionId = null,
+    certificationHash = null,
     projectId,
     projectName,
     defaultPerspectiveId = 'create',
@@ -30,18 +34,20 @@ export async function installBlueprintFromCatalog({
         throw new Error('Blueprint id is required.');
     }
 
-    const blueprint = resolveBlueprintFromCatalog(resolvedBlueprintId);
-    if (!blueprint) {
-        throw new Error(`Unknown blueprint: ${resolvedBlueprintId}`);
-    }
+    const resolvedCatalogEntry = resolveBlueprintCatalogEntry({
+        blueprintId: resolvedBlueprintId,
+        blueprintVersionId,
+        certificationHash,
+    });
+    const { blueprint } = resolvedCatalogEntry;
 
     const manifest = Object.freeze({
         schemaVersion: 1,
         projectId: normalizeId(projectId) ?? blueprint.id,
         projectName: normalizeId(projectName) ?? blueprint.name,
         defaultPerspectiveId: normalizeId(defaultPerspectiveId) ?? 'create',
-        blueprintId: blueprint.id,
-        blueprintVersionId: blueprint?.lineage?.versionId ?? blueprint.id,
+        blueprintId: resolvedCatalogEntry.blueprintId,
+        blueprintVersionId: resolvedCatalogEntry.blueprintVersionId,
     });
 
     return installBlueprint({
@@ -50,4 +56,3 @@ export async function installBlueprintFromCatalog({
         manifest,
     });
 }
-

@@ -163,6 +163,8 @@ export function ProjectPerspectiveShell({
         setBlueprintInstallStatus('');
         setBlueprintInstalling(true);
         try {
+            const selectedBlueprintOption =
+                blueprintOptions.find((option) => option.id === selectedBlueprintId) ?? null;
             const projectId = `project.${selectedBlueprintId}`;
             const projectName = selectedBlueprintId
                 .split('.')
@@ -171,6 +173,8 @@ export function ProjectPerspectiveShell({
             const result = await installBlueprintFromCatalog({
                 dispatcher,
                 blueprintId: selectedBlueprintId,
+                blueprintVersionId: selectedBlueprintOption?.versionId ?? null,
+                certificationHash: selectedBlueprintOption?.certificationHash ?? null,
                 projectId,
                 projectName,
                 defaultPerspectiveId: perspectiveId,
@@ -404,12 +408,12 @@ export function ProjectPerspectiveShell({
                                         fontSize: 12,
                                         background: '#ffffff',
                                     }}>
-                                    {blueprintOptions.map((option) => (
-                                        <option key={option.id} value={option.id}>
-                                            {option.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                {blueprintOptions.map((option) => (
+                                    <option key={option.id} value={option.id}>
+                                            {option.name} ({option.versionId})
+                                    </option>
+                                ))}
+                            </select>
                                 <button
                                     type='button'
                                     onClick={installSelectedBlueprint}
