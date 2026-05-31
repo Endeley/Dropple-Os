@@ -20,6 +20,11 @@ import {
 import { useWorkspaceProjectionState } from '@/runtime/projection';
 import { useCommandPalette } from '@/commands/useCommandPalette';
 import { CommandPalette } from '@/commands/CommandPalette';
+import {
+    normalizeProjectCameraState,
+    resolveProjectCameraFromSearchParams,
+    withProjectCameraSearchParams,
+} from '@/runtime/workspaces/projectViewRouteState.js';
 import { ProjectUniverseCanvas } from './ProjectUniverseCanvas.jsx';
 
 function formatEntryLabel(entryId) {
@@ -27,15 +32,6 @@ function formatEntryLabel(entryId) {
         .split('-')
         .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
         .join(' ');
-}
-
-function parseFiniteOr(value, fallback) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-function clamp(value, min, max) {
-    return Math.min(max, Math.max(min, value));
 }
 
 function formatShortHash(value) {
@@ -100,13 +96,7 @@ export function ProjectPerspectiveShell({
     const [recentRoutes, setRecentRoutes] = useState(() => []);
 
     const activeRoute = `/workspace/${perspectiveId}?entry=${projectPerspectiveContext.entryId}`;
-    const [cameraRouteState, setCameraRouteState] = useState(() =>
-        Object.freeze({
-            x: clamp(parseFiniteOr(searchParams?.get('x'), 0), -10000, 10000),
-            y: clamp(parseFiniteOr(searchParams?.get('y'), 0), -10000, 10000),
-            scale: clamp(parseFiniteOr(searchParams?.get('z'), 1), 0.1, 8),
-        }),
-    );
+    const [cameraRouteState, setCameraRouteState] = useState(() => resolveProjectCameraFromSearchParams(searchParams));
     const [shareFeedback, setShareFeedback] = useState('');
     const [blueprintOptions] = useState(() => listBlueprintInstallOptions());
     const [selectedBlueprintIds, setSelectedBlueprintIds] = useState(() =>
@@ -177,23 +167,17 @@ export function ProjectPerspectiveShell({
     }, [recentRoutes]);
 
     useEffect(() => {
-        const x = clamp(parseFiniteOr(searchParams?.get('x'), 0), -10000, 10000);
-        const y = clamp(parseFiniteOr(searchParams?.get('y'), 0), -10000, 10000);
-        const scale = clamp(parseFiniteOr(searchParams?.get('z'), 1), 0.1, 8);
-        setCameraRouteState(Object.freeze({ x, y, scale }));
+        setCameraRouteState(resolveProjectCameraFromSearchParams(searchParams));
     }, [searchParams]);
 
     const handleCameraChange = (camera) => {
-        const x = clamp(Number(camera?.x ?? 0), -10000, 10000);
-        const y = clamp(Number(camera?.y ?? 0), -10000, 10000);
-        const scale = clamp(Number(camera?.scale ?? 1), 0.1, 8);
-        const nextState = Object.freeze({ x, y, scale });
+        const nextState = normalizeProjectCameraState(camera);
         setCameraRouteState(nextState);
 
-        const next = new URLSearchParams(searchParams?.toString() ?? '');
-        next.set('x', x.toFixed(2));
-        next.set('y', y.toFixed(2));
-        next.set('z', scale.toFixed(3));
+        const next = withProjectCameraSearchParams({
+            searchParams,
+            camera: nextState,
+        });
         router.replace(`${pathname}?${next.toString()}`, { scroll: false });
     };
 
