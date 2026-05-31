@@ -15,6 +15,39 @@ const ARTIFACT_NODES = Object.freeze([
     Object.freeze({ id: 'media', label: 'Media Assets', x: 40, y: -230 }),
 ]);
 
+function resolveTierVisibility(tier) {
+    if (tier === 'far') {
+        return Object.freeze({
+            showProjectHubLabel: true,
+            showNodeLabels: false,
+            showNodeCards: false,
+            showClusterDots: true,
+        });
+    }
+    if (tier === 'overview') {
+        return Object.freeze({
+            showProjectHubLabel: true,
+            showNodeLabels: true,
+            showNodeCards: false,
+            showClusterDots: true,
+        });
+    }
+    if (tier === 'normal') {
+        return Object.freeze({
+            showProjectHubLabel: true,
+            showNodeLabels: true,
+            showNodeCards: true,
+            showClusterDots: false,
+        });
+    }
+    return Object.freeze({
+        showProjectHubLabel: true,
+        showNodeLabels: true,
+        showNodeCards: true,
+        showClusterDots: false,
+    });
+}
+
 function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
 }
@@ -27,6 +60,7 @@ export function ProjectUniverseCanvas({ perspectiveId = 'overview' }) {
         () => resolveSemanticZoomPresentation({ scale: camera.scale, perspectiveId }),
         [camera.scale, perspectiveId],
     );
+    const visibility = useMemo(() => resolveTierVisibility(presentation.tier), [presentation.tier]);
 
     const onWheel = (event) => {
         event.preventDefault();
@@ -130,8 +164,24 @@ export function ProjectUniverseCanvas({ perspectiveId = 'overview' }) {
                             fontWeight: 700,
                             letterSpacing: 0.2,
                         }}>
-                        Project Hub
+                        {visibility.showProjectHubLabel ? 'Project Hub' : 'Hub'}
                     </div>
+                    {visibility.showClusterDots
+                        ? ARTIFACT_NODES.map((node) => (
+                              <div
+                                  key={`cluster-${node.id}`}
+                                  style={{
+                                      position: 'absolute',
+                                      left: node.x + 54,
+                                      top: node.y + 14,
+                                      width: 10,
+                                      height: 10,
+                                      borderRadius: 999,
+                                      background: '#334155',
+                                  }}
+                              />
+                          ))
+                        : null}
                     {ARTIFACT_NODES.map((node) => (
                         <div
                             key={node.id}
@@ -139,16 +189,18 @@ export function ProjectUniverseCanvas({ perspectiveId = 'overview' }) {
                                 position: 'absolute',
                                 left: node.x,
                                 top: node.y,
-                                width: 116,
-                                padding: '6px 8px',
+                                width: visibility.showNodeCards ? 116 : 108,
+                                minHeight: 26,
+                                padding: visibility.showNodeCards ? '6px 8px' : '5px 7px',
                                 borderRadius: 8,
-                                background: 'rgba(255,255,255,0.92)',
-                                border: '1px solid #cbd5e1',
+                                background: visibility.showNodeCards ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.7)',
+                                border: `1px solid ${visibility.showNodeCards ? '#cbd5e1' : '#dbe4ee'}`,
                                 fontSize: 11,
                                 color: '#0f172a',
                                 textAlign: 'center',
+                                display: visibility.showNodeCards || visibility.showNodeLabels ? 'block' : 'none',
                             }}>
-                            {node.label}
+                            {visibility.showNodeLabels ? node.label : node.id}
                         </div>
                     ))}
                 </div>
@@ -156,4 +208,3 @@ export function ProjectUniverseCanvas({ perspectiveId = 'overview' }) {
         </section>
     );
 }
-
