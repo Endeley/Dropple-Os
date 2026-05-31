@@ -33,6 +33,92 @@ export function listBlueprintInstallOptions() {
     );
 }
 
+function createProjectManifest({
+    blueprint,
+    projectId,
+    projectName,
+    defaultPerspectiveId = 'create',
+} = {}) {
+    return Object.freeze({
+        schemaVersion: 1,
+        projectId: normalizeId(projectId) ?? blueprint.id,
+        projectName: normalizeId(projectName) ?? blueprint.name,
+        defaultPerspectiveId: normalizeId(defaultPerspectiveId) ?? 'create',
+        blueprintId: blueprint.id,
+        blueprintVersionId: blueprint?.lineage?.versionId ?? blueprint.id,
+    });
+}
+
+export async function createProjectFromBlueprintCatalog({
+    dispatcher,
+    blueprintEntries,
+    projectId,
+    projectName,
+    defaultPerspectiveId = 'create',
+} = {}) {
+    if (!Array.isArray(blueprintEntries) || blueprintEntries.length === 0) {
+        throw new Error('At least one blueprint entry is required.');
+    }
+    const normalizedEntries = blueprintEntries.map((entry) => {
+        if (typeof entry === 'string') return Object.freeze({ blueprintId: entry });
+        if (!entry || typeof entry !== 'object') {
+            throw new Error('Each blueprint entry must be a string id or object.');
+        }
+        return Object.freeze({
+            blueprintId: entry.blueprintId,
+            blueprintVersionId: entry.blueprintVersionId ?? null,
+            certificationHash: entry.certificationHash ?? null,
+        });
+    });
+
+    const isComposite = normalizedEntries.length > 1;
+    let blueprint;
+    let sourceBlueprints;
+    let compositionHash = null;
+
+    if (isComposite) {
+        const resolvedComposition = resolveBlueprintCompositionFromCatalog({
+            entries: normalizedEntries,
+            compositeId: normalizedEntries.map((entry) => String(entry.blueprintId)).join('.'),
+            compositeName: `Composed ${normalizedEntries.length} blueprints`,
+            compositeDescription: 'Composed blueprint package',
+            kind: 'project',
+        });
+        blueprint = resolvedComposition.blueprint;
+        compositionHash = resolvedComposition.compositionHash;
+        sourceBlueprints = resolvedComposition.entries.map((entry) =>
+            Object.freeze({
+                blueprintId: entry.blueprintId,
+                blueprintVersionId: entry.blueprintVersionId,
+                certificationHash: entry.certificationHash,
+            }),
+        );
+    } else {
+        const resolved = resolveBlueprintCatalogEntry(normalizedEntries[0]);
+        blueprint = resolved.blueprint;
+        sourceBlueprints = [
+            Object.freeze({
+                blueprintId: resolved.blueprintId,
+                blueprintVersionId: resolved.blueprintVersionId,
+                certificationHash: resolved.certificationHash,
+            }),
+        ];
+    }
+    const manifest = createProjectManifest({ blueprint, projectId, projectName, defaultPerspectiveId });
+
+    const result = await installBlueprint({
+        dispatcher,
+        blueprint,
+        manifest,
+    });
+    return Object.freeze({
+        ...result,
+        composed: isComposite,
+        compositionHash,
+        sourceBlueprints: Object.freeze(sourceBlueprints),
+    });
+}
+
 export async function installBlueprintFromCatalog({
     dispatcher,
     blueprintId,
@@ -46,74 +132,34 @@ export async function installBlueprintFromCatalog({
     if (!resolvedBlueprintId) {
         throw new Error('Blueprint id is required.');
     }
-
-    const resolvedCatalogEntry = resolveBlueprintCatalogEntry({
-        blueprintId: resolvedBlueprintId,
-        blueprintVersionId,
-        certificationHash,
-    });
-    const { blueprint } = resolvedCatalogEntry;
-
-    const manifest = Object.freeze({
-        schemaVersion: 1,
-        projectId: normalizeId(projectId) ?? blueprint.id,
-        projectName: normalizeId(projectName) ?? blueprint.name,
-        defaultPerspectiveId: normalizeId(defaultPerspectiveId) ?? 'create',
-        blueprintId: resolvedCatalogEntry.blueprintId,
-        blueprintVersionId: resolvedCatalogEntry.blueprintVersionId,
-    });
-
-    return installBlueprint({
+    return createProjectFromBlueprintCatalog({
         dispatcher,
-        blueprint,
-        manifest,
+        blueprintEntries: [
+            Object.freeze({
+                blueprintId: resolvedBlueprintId,
+                blueprintVersionId,
+                certificationHash,
+            }),
+        ],
+        projectId,
+        projectName,
+        defaultPerspectiveId,
     });
 }
 
 export async function installComposedBlueprintFromCatalog({
     dispatcher,
     blueprintEntries,
-    compositeId = null,
-    compositeName = null,
-    compositeDescription = 'Composed blueprint package',
     projectId,
     projectName,
     defaultPerspectiveId = 'create',
 } = {}) {
-    const resolvedComposition = resolveBlueprintCompositionFromCatalog({
-        entries: blueprintEntries,
-        compositeId,
-        compositeName,
-        compositeDescription,
-        kind: 'project',
-    });
-    const { blueprint } = resolvedComposition;
-    const manifest = Object.freeze({
-        schemaVersion: 1,
-        projectId: normalizeId(projectId) ?? blueprint.id,
-        projectName: normalizeId(projectName) ?? blueprint.name,
-        defaultPerspectiveId: normalizeId(defaultPerspectiveId) ?? 'create',
-        blueprintId: blueprint.id,
-        blueprintVersionId: blueprint?.lineage?.versionId ?? blueprint.id,
-    });
-
-    const result = await installBlueprint({
+    return createProjectFromBlueprintCatalog({
         dispatcher,
-        blueprint,
-        manifest,
-    });
-
-    return Object.freeze({
-        ...result,
-        composed: true,
-        compositionHash: resolvedComposition.compositionHash,
-        sourceBlueprints: resolvedComposition.entries.map((entry) =>
-            Object.freeze({
-                blueprintId: entry.blueprintId,
-                blueprintVersionId: entry.blueprintVersionId,
-                certificationHash: entry.certificationHash,
-            }),
-        ),
+        blueprintEntries,
+        projectId,
+        projectName,
+        defaultPerspectiveId,
     });
 }
 

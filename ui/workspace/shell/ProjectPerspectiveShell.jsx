@@ -11,8 +11,7 @@ import {
 import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
 import {
     applyBlueprintUpgradeFromCatalog,
-    installComposedBlueprintFromCatalog,
-    installBlueprintFromCatalog,
+    createProjectFromBlueprintCatalog,
     listBlueprintInstallOptions,
     listBlueprintUpgradeTargets,
     previewBlueprintUpgradeFromCatalog,
@@ -201,40 +200,24 @@ export function ProjectPerspectiveShell({
                 .split('.')
                 .map((part) => formatEntryLabel(part))
                 .join(' ');
-            if (selectedBlueprintIds.length === 1) {
-                const selectedBlueprintOption = selectedOptions[0] ?? null;
-                const result = await installBlueprintFromCatalog({
-                    dispatcher,
-                    blueprintId: primaryBlueprintId,
-                    blueprintVersionId: selectedBlueprintOption?.versionId ?? null,
-                    certificationHash: selectedBlueprintOption?.certificationHash ?? null,
-                    projectId,
-                    projectName,
-                    defaultPerspectiveId: perspectiveId,
-                });
-                setBlueprintInstallStatus(
-                    `Installed ${result.blueprintId} (${result.appliedEvents.length} events)`,
-                );
-            } else {
-                const result = await installComposedBlueprintFromCatalog({
-                    dispatcher,
-                    blueprintEntries: selectedOptions.map((option) =>
-                        Object.freeze({
-                            blueprintId: option.id,
-                            blueprintVersionId: option.versionId,
-                            certificationHash: option.certificationHash,
-                        }),
-                    ),
-                    compositeId: selectedBlueprintIds.join('.'),
-                    compositeName: `Composed ${selectedBlueprintIds.length} blueprints`,
-                    projectId,
-                    projectName,
-                    defaultPerspectiveId: perspectiveId,
-                });
-                setBlueprintInstallStatus(
-                    `Installed composed blueprint (${result.appliedEvents.length} events)`,
-                );
-            }
+            const result = await createProjectFromBlueprintCatalog({
+                dispatcher,
+                blueprintEntries: selectedOptions.map((option) =>
+                    Object.freeze({
+                        blueprintId: option.id,
+                        blueprintVersionId: option.versionId,
+                        certificationHash: option.certificationHash,
+                    }),
+                ),
+                projectId,
+                projectName,
+                defaultPerspectiveId: perspectiveId,
+            });
+            setBlueprintInstallStatus(
+                result.composed
+                    ? `Installed composed blueprint (${result.appliedEvents.length} events)`
+                    : `Installed ${primaryBlueprintId} (${result.appliedEvents.length} events)`,
+            );
             router.refresh();
         } catch (error) {
             setBlueprintInstallError(error instanceof Error ? error.message : String(error));
