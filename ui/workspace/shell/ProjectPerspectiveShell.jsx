@@ -11,6 +11,7 @@ import {
 import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
 import {
     applyBlueprintUpgradeFromCatalog,
+    installComposedBlueprintFromCatalog,
     installBlueprintFromCatalog,
     listBlueprintInstallOptions,
     listBlueprintUpgradeTargets,
@@ -92,7 +93,9 @@ export function ProjectPerspectiveShell({
     );
     const [shareFeedback, setShareFeedback] = useState('');
     const [blueprintOptions] = useState(() => listBlueprintInstallOptions());
-    const [selectedBlueprintId, setSelectedBlueprintId] = useState(() => blueprintOptions[0]?.id ?? '');
+    const [selectedBlueprintIds, setSelectedBlueprintIds] = useState(() =>
+        blueprintOptions[0]?.id ? [blueprintOptions[0].id] : [],
+    );
     const [blueprintInstallStatus, setBlueprintInstallStatus] = useState('');
     const [blueprintInstallError, setBlueprintInstallError] = useState('');
     const [blueprintInstalling, setBlueprintInstalling] = useState(false);
@@ -186,30 +189,52 @@ export function ProjectPerspectiveShell({
     };
 
     const installSelectedBlueprint = async () => {
-        if (!selectedBlueprintId || blueprintInstalling) return;
+        if (selectedBlueprintIds.length === 0 || blueprintInstalling) return;
         setBlueprintInstallError('');
         setBlueprintInstallStatus('');
         setBlueprintInstalling(true);
         try {
-            const selectedBlueprintOption =
-                blueprintOptions.find((option) => option.id === selectedBlueprintId) ?? null;
-            const projectId = `project.${selectedBlueprintId}`;
-            const projectName = selectedBlueprintId
+            const selectedOptions = blueprintOptions.filter((option) => selectedBlueprintIds.includes(option.id));
+            const primaryBlueprintId = selectedBlueprintIds[0];
+            const projectId = `project.${selectedBlueprintIds.join('-')}`;
+            const projectName = selectedBlueprintIds.join(' + ')
                 .split('.')
                 .map((part) => formatEntryLabel(part))
                 .join(' ');
-            const result = await installBlueprintFromCatalog({
-                dispatcher,
-                blueprintId: selectedBlueprintId,
-                blueprintVersionId: selectedBlueprintOption?.versionId ?? null,
-                certificationHash: selectedBlueprintOption?.certificationHash ?? null,
-                projectId,
-                projectName,
-                defaultPerspectiveId: perspectiveId,
-            });
-            setBlueprintInstallStatus(
-                `Installed ${result.blueprintId} (${result.appliedEvents.length} events)`,
-            );
+            if (selectedBlueprintIds.length === 1) {
+                const selectedBlueprintOption = selectedOptions[0] ?? null;
+                const result = await installBlueprintFromCatalog({
+                    dispatcher,
+                    blueprintId: primaryBlueprintId,
+                    blueprintVersionId: selectedBlueprintOption?.versionId ?? null,
+                    certificationHash: selectedBlueprintOption?.certificationHash ?? null,
+                    projectId,
+                    projectName,
+                    defaultPerspectiveId: perspectiveId,
+                });
+                setBlueprintInstallStatus(
+                    `Installed ${result.blueprintId} (${result.appliedEvents.length} events)`,
+                );
+            } else {
+                const result = await installComposedBlueprintFromCatalog({
+                    dispatcher,
+                    blueprintEntries: selectedOptions.map((option) =>
+                        Object.freeze({
+                            blueprintId: option.id,
+                            blueprintVersionId: option.versionId,
+                            certificationHash: option.certificationHash,
+                        }),
+                    ),
+                    compositeId: selectedBlueprintIds.join('.'),
+                    compositeName: `Composed ${selectedBlueprintIds.length} blueprints`,
+                    projectId,
+                    projectName,
+                    defaultPerspectiveId: perspectiveId,
+                });
+                setBlueprintInstallStatus(
+                    `Installed composed blueprint (${result.appliedEvents.length} events)`,
+                );
+            }
             router.refresh();
         } catch (error) {
             setBlueprintInstallError(error instanceof Error ? error.message : String(error));
@@ -218,9 +243,9 @@ export function ProjectPerspectiveShell({
         }
     };
 
-    const selectedBlueprintOption = useMemo(
-        () => blueprintOptions.find((option) => option.id === selectedBlueprintId) ?? null,
-        [blueprintOptions, selectedBlueprintId],
+    const selectedBlueprintOptions = useMemo(
+        () => blueprintOptions.filter((option) => selectedBlueprintIds.includes(option.id)),
+        [blueprintOptions, selectedBlueprintIds],
     );
     const upgradeTargets = useMemo(
         () => listBlueprintUpgradeTargets({ projectBootstrap: persistedProjectBootstrap }),
@@ -488,8 +513,14 @@ export function ProjectPerspectiveShell({
                             <div style={{ display: 'grid', gap: 6 }}>
                                 <select
                                     aria-label='Blueprint chooser'
-                                    value={selectedBlueprintId}
-                                    onChange={(event) => setSelectedBlueprintId(event.target.value)}
+                                    multiple
+                                    value={selectedBlueprintIds}
+                                    onChange={(event) => {
+                                        const next = Array.from(event.target.selectedOptions).map(
+                                            (option) => option.value,
+                                        );
+                                        setSelectedBlueprintIds(next);
+                                    }}
                                     style={{
                                         width: '100%',
                                         border: '1px solid #cbd5e1',
@@ -497,6 +528,7 @@ export function ProjectPerspectiveShell({
                                         padding: '6px 8px',
                                         fontSize: 12,
                                         background: '#ffffff',
+                                        minHeight: 94,
                                     }}>
                                     {blueprintOptions.map((option) => (
                                         <option key={option.id} value={option.id}>
@@ -504,7 +536,7 @@ export function ProjectPerspectiveShell({
                                         </option>
                                     ))}
                                 </select>
-                                {selectedBlueprintOption ? (
+                                {selectedBlueprintOptions.length > 0 ? (
                                     <div
                                         style={{
                                             border: '1px solid #e2e8f0',
@@ -515,26 +547,35 @@ export function ProjectPerspectiveShell({
                                             gap: 4,
                                         }}>
                                         <span style={{ fontSize: 10, color: '#334155' }}>
-                                            id: {selectedBlueprintOption.id}
+                                            selected: {selectedBlueprintOptions.length}
                                         </span>
                                         <span style={{ fontSize: 10, color: '#334155' }}>
-                                            version: {selectedBlueprintOption.versionId}
+                                            ids: {selectedBlueprintOptions.map((option) => option.id).join(', ')}
                                         </span>
                                         <span style={{ fontSize: 10, color: '#334155' }}>
-                                            cert: {formatShortHash(selectedBlueprintOption.certificationHash)}
+                                            cert: {formatShortHash(selectedBlueprintOptions[0]?.certificationHash)}
                                         </span>
                                         <span style={{ fontSize: 10, color: '#334155' }}>
-                                            seed events: {selectedBlueprintOption.seedEventCount}
+                                            seed events:{' '}
+                                            {selectedBlueprintOptions.reduce(
+                                                (sum, option) => sum + option.seedEventCount,
+                                                0,
+                                            )}
                                         </span>
                                         <span style={{ fontSize: 10, color: '#334155' }}>
-                                            profiles: {summarizeWorkspaceProfiles(selectedBlueprintOption.workspaceProfiles)}
+                                            profiles:{' '}
+                                            {selectedBlueprintOptions
+                                                .map((option) =>
+                                                    summarizeWorkspaceProfiles(option.workspaceProfiles),
+                                                )
+                                                .join(' + ')}
                                         </span>
                                     </div>
                                 ) : null}
                                 <button
                                     type='button'
                                     onClick={installSelectedBlueprint}
-                                    disabled={blueprintInstalling || !selectedBlueprintId}
+                                    disabled={blueprintInstalling || selectedBlueprintIds.length === 0}
                                     style={{
                                         border: '1px solid #334155',
                                         borderRadius: 6,
@@ -544,7 +585,11 @@ export function ProjectPerspectiveShell({
                                         padding: '6px 8px',
                                         cursor: blueprintInstalling ? 'not-allowed' : 'pointer',
                                     }}>
-                                    {blueprintInstalling ? 'Installing…' : 'Install Blueprint'}
+                                    {blueprintInstalling
+                                        ? 'Installing…'
+                                        : selectedBlueprintIds.length > 1
+                                          ? 'Install Composed Blueprint'
+                                          : 'Install Blueprint'}
                                 </button>
                                 {blueprintInstallStatus ? (
                                     <span style={{ fontSize: 11, color: '#0f766e' }}>{blueprintInstallStatus}</span>

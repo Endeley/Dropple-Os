@@ -4,6 +4,7 @@ import {
     resolveBlueprintFromCatalogByVersionId,
 } from '@/runtime/blueprints/blueprintCatalog.js';
 import { resolveBlueprintCatalogEntry } from '@/runtime/blueprints/resolveBlueprintCatalogEntry.js';
+import { resolveBlueprintCompositionFromCatalog } from '@/runtime/blueprints/resolveBlueprintCompositionFromCatalog.js';
 import { applyBlueprintUpgrade } from '@/runtime/blueprints/applyBlueprintUpgrade.js';
 import { diffBlueprintUpgrade, isBlueprintUpgradeAdditive } from '@/runtime/blueprints/diffBlueprintUpgrade.js';
 import {
@@ -66,6 +67,53 @@ export async function installBlueprintFromCatalog({
         dispatcher,
         blueprint,
         manifest,
+    });
+}
+
+export async function installComposedBlueprintFromCatalog({
+    dispatcher,
+    blueprintEntries,
+    compositeId = null,
+    compositeName = null,
+    compositeDescription = 'Composed blueprint package',
+    projectId,
+    projectName,
+    defaultPerspectiveId = 'create',
+} = {}) {
+    const resolvedComposition = resolveBlueprintCompositionFromCatalog({
+        entries: blueprintEntries,
+        compositeId,
+        compositeName,
+        compositeDescription,
+        kind: 'project',
+    });
+    const { blueprint } = resolvedComposition;
+    const manifest = Object.freeze({
+        schemaVersion: 1,
+        projectId: normalizeId(projectId) ?? blueprint.id,
+        projectName: normalizeId(projectName) ?? blueprint.name,
+        defaultPerspectiveId: normalizeId(defaultPerspectiveId) ?? 'create',
+        blueprintId: blueprint.id,
+        blueprintVersionId: blueprint?.lineage?.versionId ?? blueprint.id,
+    });
+
+    const result = await installBlueprint({
+        dispatcher,
+        blueprint,
+        manifest,
+    });
+
+    return Object.freeze({
+        ...result,
+        composed: true,
+        compositionHash: resolvedComposition.compositionHash,
+        sourceBlueprints: resolvedComposition.entries.map((entry) =>
+            Object.freeze({
+                blueprintId: entry.blueprintId,
+                blueprintVersionId: entry.blueprintVersionId,
+                certificationHash: entry.certificationHash,
+            }),
+        ),
     });
 }
 
