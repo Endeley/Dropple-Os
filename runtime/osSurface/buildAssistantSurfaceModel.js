@@ -20,6 +20,8 @@ function normalizeStringArray(values) {
 export function buildAssistantSurfaceModel(input = {}) {
     return Object.freeze({
         perspectiveId: normalizeString(input.perspectiveId),
+        adapterId: normalizeString(input.adapterId),
+        adapterLabel: normalizeString(input.adapterLabel),
         activeAssistantId: normalizeString(input.activeAssistantId),
         assistantIds: normalizeStringArray(input.assistantIds),
     });

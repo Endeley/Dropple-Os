@@ -109,6 +109,8 @@ export function buildAssistantSurfaceModelFromProjection(projected = null) {
 
     return buildAssistantSurfaceModel({
         perspectiveId: resolved?.perspectiveId ?? null,
+        adapterId: resolved?.adapter?.id ?? null,
+        adapterLabel: resolved?.adapter?.label ?? null,
         activeAssistantId: resolved?.activeAssistantId ?? null,
         assistantIds: Array.isArray(resolved?.assistants)
             ? resolved.assistants.map((entry) => entry?.id)

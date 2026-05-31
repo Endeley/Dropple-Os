@@ -5,6 +5,8 @@ import { buildAssistantSurfaceModel } from '@/runtime/osSurface/buildAssistantSu
 test('assistant surface model is deterministic and mutation-free', () => {
     const input = {
         perspectiveId: 'create',
+        adapterId: 'adapter.create',
+        adapterLabel: 'Create Assistant Adapter',
         activeAssistantId: 'assistant.design',
         assistantIds: ['assistant.media', 'assistant.design', 'assistant.media'],
     };
@@ -15,5 +17,7 @@ test('assistant surface model is deterministic and mutation-free', () => {
 
     assert.deepEqual(input, before);
     assert.deepEqual(left, right);
+    assert.equal(left.adapterId, 'adapter.create');
+    assert.equal(left.adapterLabel, 'Create Assistant Adapter');
     assert.deepEqual(left.assistantIds, ['assistant.design', 'assistant.media']);
 });

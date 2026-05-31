@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { createEventDispatcher } from '@/runtime/dispatcher/dispatch.js';
 import { initialRuntimeState } from '@/runtime/state/runtimeState.internal.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
+import { replayEvents } from '@/core/persistence/replayEngine.js';
 import { requestAssistantAction } from '@/runtime/assistants/requestAssistantAction.js';
 
 async function createAssistantEnabledDispatcher() {
@@ -95,4 +96,61 @@ test('assistant request routing fails closed for unknown assistants and unsuppor
             }),
         /assistant action is not allowed/,
     );
+});
+
+test('assistant-assisted workflow replay is equivalent for deterministic enqueue streams', () => {
+    const events = [
+        {
+            id: 'assistant:1',
+            type: EventTypes.AI_REQUEST_ENQUEUE,
+            payload: {
+                request: {
+                    id: 'assistant-replay-1',
+                    kind: 'assistant-action',
+                    status: 'running',
+                    input: { prompt: 'Draft brand directions.' },
+                    metadata: {
+                        assistantId: 'assistant.design',
+                        assistantLabel: 'Design Assistant',
+                        perspectiveId: 'create',
+                        action: 'generate',
+                        schemaVersion: 1,
+                    },
+                    result: null,
+                    error: null,
+                    startedAt: 1000,
+                    completedAt: null,
+                },
+            },
+        },
+        {
+            id: 'assistant:2',
+            type: EventTypes.AI_REQUEST_ENQUEUE,
+            payload: {
+                request: {
+                    id: 'assistant-replay-2',
+                    kind: 'assistant-action',
+                    status: 'running',
+                    input: { prompt: 'Summarize launch checklist.' },
+                    metadata: {
+                        assistantId: 'assistant.publish',
+                        assistantLabel: 'Publishing Assistant',
+                        perspectiveId: 'publish',
+                        action: 'recommend',
+                        schemaVersion: 1,
+                    },
+                    result: null,
+                    error: null,
+                    startedAt: 2000,
+                    completedAt: null,
+                },
+            },
+        },
+    ];
+
+    const first = replayEvents({ events });
+    const second = replayEvents({ events });
+
+    assert.deepEqual(first.ai, second.ai);
+    assert.deepEqual(first.document, second.document);
 });

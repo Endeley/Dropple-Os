@@ -3,6 +3,7 @@ import {
     getAssistantCapabilityById,
     listAssistantCapabilitiesForPerspective,
 } from '@/runtime/assistants/registry.js';
+import { resolvePerspectiveAssistantAdapter } from '@/runtime/assistants/perspectiveAdapters.js';
 
 function normalizeString(value) {
     if (typeof value !== 'string') return null;
@@ -12,6 +13,10 @@ function normalizeString(value) {
 
 export function resolvePerspectiveAssistants({ perspectiveId, entryId, preferredAssistantId = null } = {}) {
     const perspectiveContext = resolveProjectPerspectiveContext({ perspectiveId, entryId });
+    const adapter = resolvePerspectiveAssistantAdapter({
+        perspectiveId: perspectiveContext.perspectiveId,
+        entryId: perspectiveContext.entryId,
+    });
     const assistants = listAssistantCapabilitiesForPerspective(perspectiveContext.perspectiveId);
 
     const preferred = normalizeString(preferredAssistantId);
@@ -29,6 +34,7 @@ export function resolvePerspectiveAssistants({ perspectiveId, entryId, preferred
         workspaceId: perspectiveContext.workspaceId,
         modeId: perspectiveContext.modeId,
         overlayId: perspectiveContext.overlayId,
+        adapter,
         assistants,
         activeAssistantId: activeAssistant?.id ?? null,
     });

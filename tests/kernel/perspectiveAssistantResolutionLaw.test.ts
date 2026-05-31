@@ -15,6 +15,7 @@ test('perspective assistant resolution is deterministic for direct perspective r
 
     assert.deepEqual(left, right);
     assert.equal(left.perspectiveId, 'create');
+    assert.equal(left.adapter?.id, 'adapter.create');
     assert.ok(left.assistants.length >= 2);
     assert.ok(left.assistants.some((entry) => entry.id === 'assistant.design'));
     assert.ok(left.assistants.some((entry) => entry.id === 'assistant.media'));
@@ -27,6 +28,7 @@ test('perspective assistant resolution follows perspective fallback and remains 
     });
 
     assert.equal(result.perspectiveId, 'overview');
+    assert.equal(result.adapter?.id, 'adapter.overview');
     assert.equal(result.activeAssistantId, null);
     assert.deepEqual(result.assistants, []);
 });
@@ -54,6 +56,7 @@ test('perspective assistant resolution preserves overlay-backed operate routing'
     });
 
     assert.equal(result.perspectiveId, 'operate');
+    assert.equal(result.adapter?.id, 'adapter.operate');
     assert.equal(result.overlayId, 'systems-engineering');
     assert.equal(result.activeAssistantId, 'assistant.operations');
     assert.deepEqual(
