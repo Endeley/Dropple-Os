@@ -202,16 +202,20 @@ export function ProjectPerspectiveShell({
         }
     };
 
-    const installSelectedBlueprint = async () => {
-        if (selectedBlueprintIds.length === 0 || blueprintInstalling) return;
+    const installSelectedBlueprint = async (overrideBlueprintIds = null) => {
+        const installIds =
+            Array.isArray(overrideBlueprintIds) && overrideBlueprintIds.length > 0
+                ? overrideBlueprintIds
+                : selectedBlueprintIds;
+        if (installIds.length === 0 || blueprintInstalling) return;
         setBlueprintInstallError('');
         setBlueprintInstallStatus('');
         setBlueprintInstalling(true);
         try {
-            const selectedOptions = blueprintOptions.filter((option) => selectedBlueprintIds.includes(option.id));
-            const primaryBlueprintId = selectedBlueprintIds[0];
-            const projectId = `project.${selectedBlueprintIds.join('-')}`;
-            const projectName = selectedBlueprintIds.join(' + ')
+            const selectedOptions = blueprintOptions.filter((option) => installIds.includes(option.id));
+            const primaryBlueprintId = installIds[0];
+            const projectId = `project.${installIds.join('-')}`;
+            const projectName = installIds.join(' + ')
                 .split('.')
                 .map((part) => formatEntryLabel(part))
                 .join(' ');
@@ -247,7 +251,7 @@ export function ProjectPerspectiveShell({
         if (!routeBlueprintSelection.blueprintIds.length) return;
         if (persistedProjectBootstrap) return;
         routeBootstrapAttemptedRef.current = true;
-        void installSelectedBlueprint();
+        void installSelectedBlueprint(routeBlueprintSelection.blueprintIds);
     }, [routeBlueprintSelection, persistedProjectBootstrap]);
 
     const selectedBlueprintOptions = useMemo(
