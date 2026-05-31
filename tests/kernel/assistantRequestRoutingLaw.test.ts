@@ -32,6 +32,7 @@ test('assistant request routing dispatches canonical AI request enqueue through 
         dispatcher,
         assistantId: 'assistant.build',
         action: 'recommend',
+        perspectiveId: 'build',
         requestId: 'assistant-request-1',
         input: {
             prompt: 'Recommend workflow architecture for fleet dispatch.',
@@ -57,6 +58,7 @@ test('assistant request routing is deterministic for equivalent request streams'
         dispatcher: left,
         assistantId: 'assistant.design',
         action: 'generate',
+        perspectiveId: 'create',
         requestId: 'assistant-request-det-1',
         input: { prompt: 'Generate 3 branding directions.' },
     });
@@ -64,6 +66,7 @@ test('assistant request routing is deterministic for equivalent request streams'
         dispatcher: right,
         assistantId: 'assistant.design',
         action: 'generate',
+        perspectiveId: 'create',
         requestId: 'assistant-request-det-1',
         input: { prompt: 'Generate 3 branding directions.' },
     });
@@ -92,9 +95,22 @@ test('assistant request routing fails closed for unknown assistants and unsuppor
                 dispatcher,
                 assistantId: 'assistant.design',
                 action: 'execute-approved-workflow',
+                perspectiveId: 'create',
                 requestId: 'assistant-request-fail-2',
             }),
         /assistant action is not allowed/,
+    );
+
+    await assert.rejects(
+        () =>
+            requestAssistantAction({
+                dispatcher,
+                assistantId: 'assistant.publish',
+                action: 'recommend',
+                perspectiveId: 'build',
+                requestId: 'assistant-request-fail-3',
+            }),
+        /assistant perspective mismatch/,
     );
 });
 

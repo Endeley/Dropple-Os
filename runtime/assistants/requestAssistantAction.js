@@ -1,6 +1,7 @@
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { createUuid } from '@/core/utils/createUuid.js';
 import { getAssistantCapabilityById } from '@/runtime/assistants/registry.js';
+import { evaluateAssistantActionPolicy } from '@/runtime/assistants/evaluateAssistantActionPolicy.js';
 
 function assertDispatcher(dispatcher) {
     if (!dispatcher || typeof dispatcher.dispatch !== 'function') {
@@ -8,12 +9,19 @@ function assertDispatcher(dispatcher) {
     }
 }
 
-function normalizeAssistantActionEnvelope({ assistantCapability, action, input = null, metadata = null, requestId = null }) {
-    const normalizedAction = String(action ?? '').trim();
-    if (!assistantCapability.actions.includes(normalizedAction)) {
-        throw new Error(`assistant action is not allowed for ${assistantCapability.id}: ${normalizedAction || 'unknown'}`);
-    }
-
+function normalizeAssistantActionEnvelope({
+    assistantCapability,
+    action,
+    input = null,
+    metadata = null,
+    requestId = null,
+    requestedPerspectiveId = null,
+}) {
+    const policy = evaluateAssistantActionPolicy({
+        assistantCapability,
+        action,
+        requestedPerspectiveId,
+    });
     return {
         id: requestId ?? createUuid(),
         kind: 'assistant-action',
@@ -24,7 +32,7 @@ function normalizeAssistantActionEnvelope({ assistantCapability, action, input =
             assistantId: assistantCapability.id,
             assistantLabel: assistantCapability.label,
             perspectiveId: assistantCapability.perspectiveId,
-            action: normalizedAction,
+            action: policy.action,
             schemaVersion: assistantCapability.schemaVersion,
         },
         result: null,
@@ -38,6 +46,7 @@ export async function requestAssistantAction({
     dispatcher,
     assistantId,
     action,
+    perspectiveId = null,
     input = null,
     metadata = null,
     requestId = null,
@@ -56,6 +65,7 @@ export async function requestAssistantAction({
     const request = normalizeAssistantActionEnvelope({
         assistantCapability,
         action,
+        requestedPerspectiveId: perspectiveId,
         input,
         metadata,
         requestId,
