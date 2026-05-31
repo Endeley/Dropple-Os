@@ -28,6 +28,34 @@ function toBoolFlag(value) {
     return ['1', 'true', 'yes', 'on'].includes(String(value ?? '').trim().toLowerCase());
 }
 
+function validateBlueprintLineageProvenance(lineage) {
+    if (!lineage || typeof lineage !== 'object') {
+        throw new Error('blueprint lineage payload is required');
+    }
+    const boolFields = [
+        'replayEquivalent',
+        'additiveOnly',
+        'dispatcherOnly',
+        'upgradeCertificationRequired',
+        'upgradeCertificationValid',
+        'mergePolicyPassed',
+    ];
+    for (const field of boolFields) {
+        if (typeof lineage[field] !== 'boolean') {
+            throw new Error(`blueprint lineage payload missing boolean field: ${field}`);
+        }
+    }
+    if (!Number.isInteger(lineage?.mergePolicyVersion) || lineage.mergePolicyVersion < 1) {
+        throw new Error('blueprint lineage payload has invalid mergePolicyVersion');
+    }
+    if (typeof lineage?.mergePolicyHash !== 'string' || lineage.mergePolicyHash.length === 0) {
+        throw new Error('blueprint lineage payload has invalid mergePolicyHash');
+    }
+    if (!Number.isInteger(lineage?.mergePolicyDisallowedPathCount) || lineage.mergePolicyDisallowedPathCount < 0) {
+        throw new Error('blueprint lineage payload has invalid mergePolicyDisallowedPathCount');
+    }
+}
+
 export function computeBlueprintLineageLedgerEntryHash(payload) {
     return sha256(stableStringify(payload));
 }
@@ -70,6 +98,8 @@ export function createBlueprintLineageLedgerEntry({
     prNumber = process.env.GITHUB_PR_NUMBER || process.env.RELEASE_TRUST_PR_NUMBER || null,
     strict = toBoolFlag(process.env.RELEASE_TRUST_DIFF_STRICT || 'false'),
 } = {}) {
+    validateBlueprintLineageProvenance(lineage);
+
     const payload = Object.freeze({
         timestamp,
         commitSha,
@@ -85,6 +115,12 @@ export function createBlueprintLineageLedgerEntry({
         replayEquivalent: lineage?.replayEquivalent === true,
         additiveOnly: lineage?.additiveOnly === true,
         dispatcherOnly: lineage?.dispatcherOnly === true,
+        upgradeCertificationRequired: lineage?.upgradeCertificationRequired === true,
+        upgradeCertificationValid: lineage?.upgradeCertificationValid === true,
+        mergePolicyVersion: Number(lineage?.mergePolicyVersion ?? 0),
+        mergePolicyHash: String(lineage?.mergePolicyHash ?? ''),
+        mergePolicyPassed: lineage?.mergePolicyPassed === true,
+        mergePolicyDisallowedPathCount: Number(lineage?.mergePolicyDisallowedPathCount ?? -1),
         previousEntryHash,
     });
 

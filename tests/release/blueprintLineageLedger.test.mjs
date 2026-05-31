@@ -20,6 +20,12 @@ function createLineage({
     replayEquivalent = true,
     additiveOnly = true,
     dispatcherOnly = true,
+    upgradeCertificationRequired = true,
+    upgradeCertificationValid = true,
+    mergePolicyVersion = 1,
+    mergePolicyHash = 'merge-policy-hash-a',
+    mergePolicyPassed = true,
+    mergePolicyDisallowedPathCount = 0,
 } = {}) {
     return {
         schemaVersion: '1.0.0',
@@ -32,6 +38,12 @@ function createLineage({
         replayEquivalent,
         additiveOnly,
         dispatcherOnly,
+        upgradeCertificationRequired,
+        upgradeCertificationValid,
+        mergePolicyVersion,
+        mergePolicyHash,
+        mergePolicyPassed,
+        mergePolicyDisallowedPathCount,
     };
 }
 
@@ -85,4 +97,21 @@ test('blueprint lineage ledger verification fails closed when historical entry i
     assert.equal(verification.ok, false);
     assert.equal(verification.index, 0);
     assert.equal(verification.reason, 'entry-hash-mismatch');
+});
+
+test('blueprint lineage ledger fails closed when upgrade provenance fields are missing', () => {
+    const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'dropple-blueprint-lineage-ledger-invalid-'));
+    const lineagePath = path.join(tmpRoot, 'blueprint-lineage.json');
+    const ledgerPath = path.join(tmpRoot, 'blueprint-lineage-ledger.jsonl');
+
+    const missingProvenance = {
+        ...createLineage(),
+        mergePolicyHash: '',
+    };
+    fs.writeFileSync(lineagePath, JSON.stringify(missingProvenance), 'utf8');
+
+    assert.throws(
+        () => appendBlueprintLineageLedger({ lineagePath, ledgerPath }),
+        /invalid mergePolicyHash/,
+    );
 });

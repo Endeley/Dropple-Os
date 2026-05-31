@@ -75,6 +75,13 @@ test('blueprint upgrade applies additive diff events only through dispatcher', a
 
     assert.equal(result.addedCount, 1);
     assert.equal(result.appliedEvents.length, 1);
+    assert.equal(result.upgradeProvenance?.certificationRequired, true);
+    assert.equal(result.upgradeProvenance?.certificationValid, true);
+    assert.equal(result.upgradeProvenance?.mergePolicyVersion, 1);
+    assert.equal(typeof result.upgradeProvenance?.mergePolicyHash, 'string');
+    assert.equal(result.upgradeProvenance?.mergePolicyHash.length > 0, true);
+    assert.equal(result.upgradeProvenance?.mergePolicyPassed, true);
+    assert.equal(result.upgradeProvenance?.mergePolicyDisallowedPathCount, 0);
     assert.equal(after.events.length, before.events.length + 1);
     assert.equal(after.nodes.a?.id, 'a');
     assert.equal(after.nodes.b?.parentId, 'a');

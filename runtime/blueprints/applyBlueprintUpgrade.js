@@ -1,6 +1,7 @@
 import { diffBlueprintUpgrade, isBlueprintUpgradeAdditive } from './diffBlueprintUpgrade.js';
 import {
     DEFAULT_BLUEPRINT_UPGRADE_MERGE_POLICY,
+    computeBlueprintUpgradeMergePolicyHash,
     evaluateBlueprintUpgradeMergePolicy,
 } from './blueprintUpgradeMergePolicy.js';
 import { verifyBlueprintCertification } from './installBlueprint.js';
@@ -41,19 +42,21 @@ function assertCertifiedUpgradeBlueprint(toBlueprint) {
     if (!verifyBlueprintCertification(toBlueprint)) {
         throw new Error('applyBlueprintUpgrade: toBlueprint certification is invalid');
     }
+    return true;
 }
 
 export async function applyBlueprintUpgrade({ dispatcher, fromBlueprint, toBlueprint }) {
     validateUpgradeInput({ dispatcher, fromBlueprint, toBlueprint });
     assertLineageUpgradePath(fromBlueprint, toBlueprint);
-    assertCertifiedUpgradeBlueprint(toBlueprint);
+    const certificationValid = assertCertifiedUpgradeBlueprint(toBlueprint);
 
     const diff = diffBlueprintUpgrade({ fromBlueprint, toBlueprint });
     assertNoOverwrite(diff);
+    const mergePolicy = DEFAULT_BLUEPRINT_UPGRADE_MERGE_POLICY;
     const mergePolicyCheck = evaluateBlueprintUpgradeMergePolicy({
         fromBlueprint,
         toBlueprint,
-        mergePolicy: DEFAULT_BLUEPRINT_UPGRADE_MERGE_POLICY,
+        mergePolicy,
     });
     if (!mergePolicyCheck.ok) {
         throw new Error(
@@ -77,5 +80,13 @@ export async function applyBlueprintUpgrade({ dispatcher, fromBlueprint, toBluep
         hasChanges: diff.hasChanges,
         appliedEvents: Object.freeze(appliedEvents),
         addedCount: diff.added.length,
+        upgradeProvenance: Object.freeze({
+            certificationRequired: true,
+            certificationValid,
+            mergePolicyVersion: mergePolicyCheck.policyVersion,
+            mergePolicyHash: computeBlueprintUpgradeMergePolicyHash(mergePolicy),
+            mergePolicyPassed: mergePolicyCheck.ok === true,
+            mergePolicyDisallowedPathCount: mergePolicyCheck.disallowedPaths.length,
+        }),
     });
 }

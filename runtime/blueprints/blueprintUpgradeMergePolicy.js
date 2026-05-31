@@ -1,3 +1,5 @@
+import crypto from 'node:crypto';
+
 function stableStringify(value) {
     if (value === null || value === undefined) return 'null';
     if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
@@ -6,6 +8,10 @@ function stableStringify(value) {
         return `{${keys.map((key) => `"${key}":${stableStringify(value[key])}`).join(',')}}`;
     }
     return JSON.stringify(value);
+}
+
+export function computeBlueprintUpgradeMergePolicyHash(mergePolicy) {
+    return crypto.createHash('sha256').update(stableStringify(mergePolicy)).digest('hex');
 }
 
 function isObjectLike(value) {
