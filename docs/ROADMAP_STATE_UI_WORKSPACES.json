@@ -140,8 +140,32 @@
     {
       "id": "U3",
       "title": "Media Workspace Experience",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["U2"],
+      "milestones": [
+        {
+          "id": "U3.M1",
+          "title": "Media Overlay Compatibility in Create Perspective (podcast alias)",
+          "status": "complete",
+          "evidence": [
+            "platform/workspaces/projectPerspectiveRouter.js",
+            "tests/architecture/projectPerspectiveRouter.test.ts",
+            "tests/kernel/perspectiveAssistantResolutionLaw.test.ts",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U3.M2",
+          "title": "Media Assistant UX Consistency Across Animation/Video/Audio/Podcast",
+          "status": "complete",
+          "evidence": [
+            "runtime/assistants/resolvePerspectiveAssistants.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/kernel/perspectiveAssistantResolutionLaw.test.ts",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        }
+      ],
       "gates": [
         { "name": "system runtime", "command": "npm run test:system:runtime" },
         { "name": "performance determinism", "command": "npm run performance:determinism" }
@@ -150,7 +174,7 @@
     {
       "id": "U4",
       "title": "Build Workspace Experience",
-      "status": "not-started",
+      "status": "active",
       "depends_on": ["U3"],
       "gates": [
         { "name": "federation release tests", "command": "npm run test:federation:release" },

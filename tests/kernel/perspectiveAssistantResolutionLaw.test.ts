@@ -31,11 +31,18 @@ test('create perspective assistant defaults stay entry-consistent across design 
         perspectiveId: 'create',
         entryId: 'animation',
     });
+    const podcastEntry = resolvePerspectiveAssistants({
+        perspectiveId: 'create',
+        entryId: 'podcast',
+    });
 
     assert.equal(designEntry.workspaceId, 'design');
     assert.equal(designEntry.activeAssistantId, 'assistant.design');
     assert.equal(mediaEntry.workspaceId, 'media');
     assert.equal(mediaEntry.activeAssistantId, 'assistant.media');
+    assert.equal(podcastEntry.workspaceId, 'media');
+    assert.equal(podcastEntry.overlayId, 'podcast');
+    assert.equal(podcastEntry.activeAssistantId, 'assistant.media');
 });
 
 test('perspective assistant resolution follows perspective fallback and remains fail-closed', () => {

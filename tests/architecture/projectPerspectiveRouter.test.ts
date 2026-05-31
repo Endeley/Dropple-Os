@@ -20,7 +20,7 @@ test('project perspective registry exposes immutable definitions', () => {
     assert.ok(create);
     assert.equal(Object.isFrozen(create), true);
     assert.equal(create?.defaultEntryId, 'uiux');
-    assert.deepEqual(create?.entries, ['uiux', 'graphic', 'branding', 'icons', 'document', 'animation', 'video', 'audio']);
+    assert.deepEqual(create?.entries, ['uiux', 'graphic', 'branding', 'icons', 'document', 'animation', 'video', 'audio', 'podcast']);
     assert.equal(Object.isFrozen(PROJECT_PERSPECTIVES), true);
 });
 
@@ -81,6 +81,25 @@ test('project perspective resolves design overlay aliases inside create perspect
             overlayId: 'icon-systems',
             overlayClass: 'capability',
             canonicalModeId: 'graphic',
+        }),
+    );
+});
+
+test('project perspective resolves media overlay aliases inside create perspective without losing canonical ownership', () => {
+    assert.deepEqual(
+        resolveProjectPerspectiveContext({ perspectiveId: 'create', entryId: 'podcast' }),
+        Object.freeze({
+            perspectiveId: 'create',
+            perspectiveLabel: 'Create',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'podcast',
+            entrySource: 'entry-direct',
+            workspaceId: 'media',
+            modeId: 'podcast',
+            definitionId: 'podcast',
+            overlayId: 'podcast',
+            overlayClass: 'payload',
+            canonicalModeId: 'audio',
         }),
     );
 });

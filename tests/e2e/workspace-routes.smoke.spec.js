@@ -273,6 +273,14 @@ test('create perspective assistant surface stays entry-consistent for design and
   await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: create');
   await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.media');
   await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.design, assistant.media');
+
+  const podcastResponse = await page.goto('/workspace/create?entry=podcast', {
+    waitUntil: 'networkidle',
+  });
+  expect(podcastResponse?.ok(), 'create podcast route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: create');
+  await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.media');
+  await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.design, assistant.media');
 });
 
 test('design modes expose parity-stable shell chrome and strip signals', async ({ page }) => {
@@ -318,4 +326,15 @@ test('create perspective preserves branding and icons overlay compatibility entr
     await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('Icons');
     await expect(page.getByRole('button', { name: 'Publish' })).toBeVisible();
   }
+});
+
+test('create perspective preserves podcast media overlay compatibility entry', async ({ page }) => {
+  const response = await page.goto('/workspace/create?entry=podcast', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'create perspective podcast entry should respond successfully').toBeTruthy();
+  await expect(page.locator('body')).toContainText('Create · podcast');
+  await expect(page.locator('body')).toContainText('workspace: media/podcast');
+  await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('Podcast');
 });
