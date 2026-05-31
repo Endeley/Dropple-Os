@@ -82,6 +82,48 @@
       "title": "Design Workspace Experience",
       "status": "active",
       "depends_on": ["U1"],
+      "milestones": [
+        {
+          "id": "U2.D1",
+          "title": "Design Perspective Navigation and Entry Cohesion",
+          "status": "active",
+          "evidence": [
+            "platform/workspaces/projectPerspectiveRouter.js",
+            "tests/architecture/projectPerspectiveRouter.test.ts",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U2.D2",
+          "title": "Design Mode Shell Parity (uiux/graphic/document)",
+          "status": "not-started",
+          "evidence": [
+            "ui/workspace/shell/WorkspaceShell.jsx",
+            "ui/workspace/uiux/UIUXAuthoringShell.jsx",
+            "tests/e2e/workspace-workflows.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U2.D3",
+          "title": "Design Overlay Compatibility (branding/icons aliases)",
+          "status": "not-started",
+          "evidence": [
+            "platform/workspaces/overlayRegistry.js",
+            "tests/architecture/platformSystemClassification.test.ts",
+            "tests/architecture/workspaceModeResolution.test.ts"
+          ]
+        },
+        {
+          "id": "U2.D4",
+          "title": "Design Assistant UX Consistency in Create Perspective",
+          "status": "not-started",
+          "evidence": [
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "runtime/osSurface/requestAssistantFromShellIntent.js",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        }
+      ],
       "gates": [
         { "name": "route smoke", "command": "npm run test:routes:smoke" },
         { "name": "operator surfaces", "command": "npm run test:release:operator-surfaces" }

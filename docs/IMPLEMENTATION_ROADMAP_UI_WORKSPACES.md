@@ -40,6 +40,21 @@ All `U1.A*` milestones are backend-only and non-sovereign:
 - dispatcher remains the only mutation authority
 - assistant availability in UI must route through OS surface read bridge
 
+## U2 Design Milestones
+
+Tracked inside `docs/ROADMAP_STATE_UI_WORKSPACES.json` under `U2.milestones`:
+
+1. `U2.D1` Design Perspective Navigation and Entry Cohesion
+2. `U2.D2` Design Mode Shell Parity (`uiux`, `graphic`, `document`)
+3. `U2.D3` Design Overlay Compatibility (`branding`, `icons` aliases)
+4. `U2.D4` Design Assistant UX Consistency in Create Perspective
+
+All `U2.D*` milestones must preserve constitutional boundaries:
+
+- no workspace UI may mutate canonical truth directly
+- all authoring mutations remain dispatcher/event owned
+- overlay compatibility remains routing/capability policy, not new authority
+
 ## Runtime Control
 
 Use:
