@@ -25,6 +25,12 @@ import {
     resolveProjectCameraFromSearchParams,
     withProjectCameraSearchParams,
 } from '@/runtime/workspaces/projectViewRouteState.js';
+import {
+    buildProjectViewShareHref,
+    getProjectShellRecentViewsStorageKey,
+    mergeRecentProjectRoutes,
+    normalizeRecentProjectRoutes,
+} from '@/runtime/workspaces/projectShellRouteState.js';
 import { ProjectUniverseCanvas } from './ProjectUniverseCanvas.jsx';
 
 function formatEntryLabel(entryId) {
@@ -131,14 +137,9 @@ export function ProjectPerspectiveShell({
     useEffect(() => {
         if (typeof window === 'undefined') return;
         try {
-            const raw = window.localStorage.getItem('dropple.projectShell.recentViews.v1');
+            const raw = window.localStorage.getItem(getProjectShellRecentViewsStorageKey());
             if (!raw) return;
-            const parsed = JSON.parse(raw);
-            if (!Array.isArray(parsed)) return;
-            const cleaned = parsed
-                .map((entry) => (typeof entry === 'string' ? entry : null))
-                .filter(Boolean)
-                .slice(0, 8);
+            const cleaned = normalizeRecentProjectRoutes(JSON.parse(raw));
             if (cleaned.length > 0) {
                 setRecentRoutes(cleaned);
             }
@@ -148,19 +149,14 @@ export function ProjectPerspectiveShell({
     }, []);
 
     useEffect(() => {
-        setRecentRoutes((previous) => {
-            const next = [activeRoute, ...previous.filter((entry) => entry !== activeRoute)];
-            return next.slice(0, 8);
-        });
+        setRecentRoutes((previous) => mergeRecentProjectRoutes({ activeRoute, previousRoutes: previous }));
     }, [activeRoute]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
         try {
-            window.localStorage.setItem(
-                'dropple.projectShell.recentViews.v1',
-                JSON.stringify(recentRoutes.slice(0, 8)),
-            );
+            const normalized = normalizeRecentProjectRoutes(recentRoutes);
+            window.localStorage.setItem(getProjectShellRecentViewsStorageKey(), JSON.stringify(normalized));
         } catch {
             // fail-closed: persistence is optional
         }
@@ -182,8 +178,7 @@ export function ProjectPerspectiveShell({
     };
 
     const shareCurrentView = async () => {
-        const params = new URLSearchParams(searchParams?.toString() ?? '');
-        const href = `${pathname}?${params.toString()}`;
+        const href = buildProjectViewShareHref({ pathname, searchParams });
         const absolute =
             typeof window !== 'undefined' ? `${window.location.origin}${href}` : href;
         await copyTextWithFallback(absolute);
@@ -195,7 +190,7 @@ export function ProjectPerspectiveShell({
         setRecentRoutes([]);
         if (typeof window !== 'undefined') {
             try {
-                window.localStorage.removeItem('dropple.projectShell.recentViews.v1');
+                window.localStorage.removeItem(getProjectShellRecentViewsStorageKey());
             } catch {
                 // fail-closed: local persistence is optional
             }
