@@ -86,7 +86,7 @@
         {
           "id": "U2.D1",
           "title": "Design Perspective Navigation and Entry Cohesion",
-          "status": "active",
+          "status": "complete",
           "evidence": [
             "platform/workspaces/projectPerspectiveRouter.js",
             "tests/architecture/projectPerspectiveRouter.test.ts",
@@ -96,7 +96,7 @@
         {
           "id": "U2.D2",
           "title": "Design Mode Shell Parity (uiux/graphic/document)",
-          "status": "not-started",
+          "status": "active",
           "evidence": [
             "ui/workspace/shell/WorkspaceShell.jsx",
             "ui/workspace/uiux/UIUXAuthoringShell.jsx",

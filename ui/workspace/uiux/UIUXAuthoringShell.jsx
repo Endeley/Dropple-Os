@@ -25,6 +25,7 @@ import { useAlignmentShortcuts } from '@/ui/keyboard/useAlignmentShortcuts';
 export function UIUXAuthoringShell({
     profile = 'uiux-authoring',
     modeId = 'uiux',
+    workspaceContext = null,
     initialEnvironmentDescriptor = null,
     initialResolvedTemplateEnvironment = null,
     initialRuntimeSnapshot = null,
@@ -36,16 +37,30 @@ export function UIUXAuthoringShell({
     const [documentId, setDocumentId] = useState(null);
     const [documentName, setDocumentName] = useState('Untitled');
 
+    const resolvedModeId = String(modeId ?? workspaceContext?.modeId ?? 'uiux')
+        .trim()
+        .toLowerCase();
+    const resolvedWorkspaceId =
+        String(workspaceContext?.workspaceId ?? workspaceContext?.definitionId ?? 'design')
+            .trim()
+            .toLowerCase() || 'design';
+    const modeLabelById = Object.freeze({
+        uiux: 'UIUX',
+        graphic: 'Graphic',
+        document: 'Document',
+    });
+    const modeLabel = modeLabelById[resolvedModeId] ?? 'Design';
+
     const { capabilities } = useWorkspaceCapabilities({
-        workspace: 'design',
-        mode: 'uiux',
+        workspace: resolvedWorkspaceId,
+        mode: resolvedModeId,
     });
 
     useCapabilityLifecycle({
         capabilities,
         emit,
-        workspace: 'design',
-        mode: 'uiux',
+        workspace: resolvedWorkspaceId,
+        mode: resolvedModeId,
     });
 
     const nodes = useWorkspaceVisualState((s) => s.nodes || {});
@@ -86,27 +101,27 @@ export function UIUXAuthoringShell({
                 onDocumentIdChange={setDocumentId}
                 onDocumentNameChange={setDocumentName}
                 workspace='design'
-                mode={modeId}
+                mode={resolvedModeId}
             />
 
-            <div className='uiux-root' data-workspace='uiux'>
+            <div className='uiux-root' data-workspace={resolvedModeId}>
                 {/* Primary authoring chrome */}
                 <header className='uiux-top-chrome'>
                     <UIUXTopBar
                         onPublish={() =>
-                            openTemplatePublishDialog({
-                                mode: {
-                                    id: modeId,
-                                    workspaceId: 'design',
-                                },
-                            })
-                        }
+                                    openTemplatePublishDialog({
+                                        mode: {
+                                            id: resolvedModeId,
+                                            workspaceId: resolvedWorkspaceId,
+                                        },
+                                    })
+                                }
                     />
                 </header>
 
                 {/* Secondary workspace strip */}
                 <div className='uiux-workspace-strip'>
-                    <div className='uiux-breadcrumb'>Design / UIUX</div>
+                    <div className='uiux-breadcrumb'>Design / {modeLabel}</div>
 
                     <div className='uiux-surface-controls'>Draft</div>
                 </div>
@@ -114,16 +129,16 @@ export function UIUXAuthoringShell({
                 {/* Main dock grid */}
                 <div className='uiux-main-grid'>
                     <aside className='uiux-left-dock'>
-                        <UIUXToolRail />
+                        <UIUXToolRail modeId={resolvedModeId} />
                     </aside>
 
                     <main className='uiux-canvas-dock'>
-                        <UIUXCanvasStage profile={profile} workspaceId='uiux' />
+                        <UIUXCanvasStage profile={profile} workspaceId={resolvedModeId} />
                     </main>
 
                     <aside className='uiux-right-dock'>
                         <PanelRenderer
-                            workspaceId='uiux'
+                            workspaceId={resolvedModeId}
                             node={node}
                             emit={emit}
                             extraPanels={[
@@ -144,7 +159,7 @@ export function UIUXAuthoringShell({
                     <UIUXTransitionTimelinePanel node={node} />
                 </footer>
 
-                <WorkspaceSessionsRoot modeId={modeId} />
+                <WorkspaceSessionsRoot modeId={resolvedModeId} />
             </div>
         </>
     );
