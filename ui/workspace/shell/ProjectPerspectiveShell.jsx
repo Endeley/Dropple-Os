@@ -119,7 +119,10 @@ export function ProjectPerspectiveShell({
     const [upgradeError, setUpgradeError] = useState('');
     const [upgradeApplying, setUpgradeApplying] = useState(false);
     const [assistantIntentStatus, setAssistantIntentStatus] = useState('');
-    const osSurfaceSnapshot = readOsSurfaceSnapshot();
+    const osSurfaceSnapshot = readOsSurfaceSnapshot({
+        perspectiveId: projectPerspectiveContext.perspectiveId,
+        entryId: projectPerspectiveContext.entryId,
+    });
     const assistantSurface = osSurfaceSnapshot?.assistants ?? null;
     const persistedProjectBootstrap = useWorkspaceProjectionState(
         (state) => state?.document?.meta?.projectBootstrap ?? null,

@@ -97,10 +97,12 @@ export function buildSynthesizedToolSurfaceModelFromProjection(projected = null)
     });
 }
 
-export function buildAssistantSurfaceModelFromProjection(projected = null) {
+export function buildAssistantSurfaceModelFromProjection(projected = null, options = {}) {
     const renderState = projected ?? selectRenderState() ?? {};
     const perspectiveContext = resolveInitialProjectPerspectiveContext({
         document: renderState?.document,
+        perspectiveId: options?.perspectiveId ?? null,
+        entryId: options?.entryId ?? null,
     });
     const resolved = resolvePerspectiveAssistants({
         perspectiveId: perspectiveContext?.perspectiveId,

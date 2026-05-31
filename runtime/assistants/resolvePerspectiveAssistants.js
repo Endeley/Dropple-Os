@@ -11,6 +11,17 @@ function normalizeString(value) {
     return trimmed.length > 0 ? trimmed : null;
 }
 
+function inferDefaultAssistantForContext(perspectiveContext) {
+    if (!perspectiveContext || typeof perspectiveContext !== 'object') return null;
+
+    if (perspectiveContext.perspectiveId === 'create') {
+        if (perspectiveContext.workspaceId === 'media') return 'assistant.media';
+        return 'assistant.design';
+    }
+
+    return null;
+}
+
 export function resolvePerspectiveAssistants({ perspectiveId, entryId, preferredAssistantId = null } = {}) {
     const perspectiveContext = resolveProjectPerspectiveContext({ perspectiveId, entryId });
     const adapter = resolvePerspectiveAssistantAdapter({
@@ -20,9 +31,12 @@ export function resolvePerspectiveAssistants({ perspectiveId, entryId, preferred
     const assistants = listAssistantCapabilitiesForPerspective(perspectiveContext.perspectiveId);
 
     const preferred = normalizeString(preferredAssistantId);
+    const defaultAssistantId = inferDefaultAssistantForContext(perspectiveContext);
+    const requestedAssistantId = preferred ?? defaultAssistantId;
     const preferredAssistant =
-        preferred && getAssistantCapabilityById(preferred)?.perspectiveId === perspectiveContext.perspectiveId
-            ? getAssistantCapabilityById(preferred)
+        requestedAssistantId &&
+        getAssistantCapabilityById(requestedAssistantId)?.perspectiveId === perspectiveContext.perspectiveId
+            ? getAssistantCapabilityById(requestedAssistantId)
             : null;
 
     const activeAssistant = preferredAssistant ?? assistants[0] ?? null;

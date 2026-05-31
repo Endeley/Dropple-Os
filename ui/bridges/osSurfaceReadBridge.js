@@ -5,10 +5,13 @@ import {
     buildWorkspaceShellSurfaceModel,
 } from '@/runtime/osSurface/index.js';
 
-export function readOsSurfaceSnapshot() {
+export function readOsSurfaceSnapshot({ perspectiveId = null, entryId = null } = {}) {
     return Object.freeze({
         environment: buildEnvironmentSurfaceModelFromProjection(),
-        assistants: buildAssistantSurfaceModelFromProjection(),
+        assistants: buildAssistantSurfaceModelFromProjection(null, {
+            perspectiveId,
+            entryId,
+        }),
         synthesizedTools: buildSynthesizedToolSurfaceModelFromProjection(),
     });
 }

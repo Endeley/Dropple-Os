@@ -80,7 +80,7 @@
     {
       "id": "U2",
       "title": "Design Workspace Experience",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["U1"],
       "milestones": [
         {
@@ -120,10 +120,14 @@
         {
           "id": "U2.D4",
           "title": "Design Assistant UX Consistency in Create Perspective",
-          "status": "active",
+          "status": "complete",
           "evidence": [
             "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "ui/bridges/osSurfaceReadBridge.js",
+            "runtime/osSurface/fromProjectionSurface.js",
+            "runtime/assistants/resolvePerspectiveAssistants.js",
             "runtime/osSurface/requestAssistantFromShellIntent.js",
+            "tests/kernel/perspectiveAssistantResolutionLaw.test.ts",
             "tests/e2e/workspace-routes.smoke.spec.js"
           ]
         }
@@ -136,7 +140,7 @@
     {
       "id": "U3",
       "title": "Media Workspace Experience",
-      "status": "not-started",
+      "status": "active",
       "depends_on": ["U2"],
       "gates": [
         { "name": "system runtime", "command": "npm run test:system:runtime" },

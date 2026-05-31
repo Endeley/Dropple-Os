@@ -257,6 +257,24 @@ test('project shell assistant intent enqueues through canonical runtime bridge',
   await expect(page.locator('body')).toContainText(/assistant intent:\s+enqueued:/);
 });
 
+test('create perspective assistant surface stays entry-consistent for design and media routes', async ({ page }) => {
+  const designResponse = await page.goto('/workspace/create?entry=branding', {
+    waitUntil: 'networkidle',
+  });
+  expect(designResponse?.ok(), 'create branding route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: create');
+  await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.design');
+  await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.design, assistant.media');
+
+  const mediaResponse = await page.goto('/workspace/create?entry=animation', {
+    waitUntil: 'networkidle',
+  });
+  expect(mediaResponse?.ok(), 'create animation route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: create');
+  await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.media');
+  await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.design, assistant.media');
+});
+
 test('design modes expose parity-stable shell chrome and strip signals', async ({ page }) => {
   const designModes = [
     { modeId: 'uiux', modeLabel: 'UI / UX', routeMarker: 'Design / UIUX', uiuxShell: true },
