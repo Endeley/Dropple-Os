@@ -10,6 +10,11 @@ import {
 } from '../runtime/export/exportArtifact.js';
 import { verifyExportArtifact } from '../runtime/export/verify/verifyExportArtifact.js';
 import { replayEvents } from '../runtime/dispatcher/replayEvents.js';
+import { createEventDispatcher } from '../runtime/dispatcher/dispatch.js';
+import { initialRuntimeState } from '../runtime/state/runtimeState.internal.js';
+import { installBlueprint, certifyBlueprint } from '../runtime/blueprints/installBlueprint.js';
+import { createBlueprintInstallManifest } from '../runtime/blueprints/createBlueprintInstallManifest.js';
+import { EventTypes } from '../core/events/eventTypes.js';
 import {
     beginFederationSessionAction,
     closeFederationSessionAction,
@@ -383,6 +388,96 @@ function evaluateOsSurfaceActivationProvenanceGate() {
     });
 }
 
+async function evaluateBlueprintBootstrapProvenanceGate() {
+    const blueprint = certifyBlueprint({
+        id: 'bp.release.bootstrap.v1',
+        version: 1,
+        name: 'Release Bootstrap Blueprint',
+        description: 'release trust bootstrap provenance fixture',
+        kind: 'project',
+        workspaceProfiles: { create: ['uiux'] },
+        capabilityProfiles: { create: ['node:create'] },
+        seedGraph: { nodes: {}, rootIds: [] },
+        seedEvents: [
+            {
+                type: EventTypes.NODE_CREATE,
+                payload: {
+                    node: {
+                        id: 'bootstrap.frame',
+                        type: 'frame',
+                    },
+                },
+            },
+        ],
+        workflowPresets: {},
+        publishPresets: {},
+        lineage: {
+            rootId: 'bp.release.bootstrap.root',
+            versionId: 'bp.release.bootstrap.v1',
+            parentVersionId: null,
+        },
+    });
+
+    const manifestA = createBlueprintInstallManifest({
+        projectId: 'project.release.bootstrap',
+        projectName: 'Release Bootstrap Project',
+        defaultPerspectiveId: 'create',
+        blueprint,
+    });
+    const manifestB = createBlueprintInstallManifest({
+        projectId: 'project.release.bootstrap',
+        projectName: 'Release Bootstrap Project',
+        defaultPerspectiveId: 'create',
+        blueprint,
+    });
+
+    const dispatcherA = createEventDispatcher({ headless: true });
+    const dispatcherB = createEventDispatcher({ headless: true });
+    dispatcherA.hydrateRuntimeState(initialRuntimeState, { animate: false });
+    dispatcherB.hydrateRuntimeState(initialRuntimeState, { animate: false });
+
+    await installBlueprint({ dispatcher: dispatcherA, blueprint, manifest: manifestA });
+    await installBlueprint({ dispatcher: dispatcherB, blueprint, manifest: manifestB });
+
+    const stateA = dispatcherA.getState();
+    const stateB = dispatcherB.getState();
+    const persistedA = stateA?.document?.meta?.projectBootstrap ?? null;
+    const persistedB = stateB?.document?.meta?.projectBootstrap ?? null;
+    const deterministicManifest = JSON.stringify(manifestA) === JSON.stringify(manifestB);
+    const replayEquivalent = hashRuntimeState(stateA?.document ?? {}) === hashRuntimeState(stateB?.document ?? {});
+    const bootstrapEventPersisted = stateA?.events?.[0]?.type === EventTypes.PROJECT_BLUEPRINT_BOOTSTRAP;
+
+    const persisted = Boolean(
+        persistedA &&
+            persistedA.projectId === manifestA.projectId &&
+            persistedA.projectName === manifestA.projectName &&
+            persistedA.defaultPerspectiveId === manifestA.defaultPerspectiveId &&
+            persistedA.blueprintId === manifestA.blueprintId &&
+            persistedA.blueprintVersionId === manifestA.blueprintVersionId,
+    );
+
+    const perspectiveRoutable = ['overview', 'create', 'build', 'operate', 'collaborate', 'publish'].includes(
+        String(persistedA?.defaultPerspectiveId ?? ''),
+    );
+
+    return Object.freeze({
+        ok: deterministicManifest && persisted && replayEquivalent && bootstrapEventPersisted && perspectiveRoutable,
+        deterministicManifest,
+        persisted,
+        replayEquivalent,
+        bootstrapEventPersisted,
+        perspectiveRoutable,
+        defaultPerspectiveId: String(persistedA?.defaultPerspectiveId ?? ''),
+        blueprintId: String(persistedA?.blueprintId ?? ''),
+        blueprintVersionId: String(persistedA?.blueprintVersionId ?? ''),
+        projectIdHash: hashRuntimeState(String(persistedA?.projectId ?? '')),
+        replayParityHash: hashRuntimeState({
+            a: persistedA,
+            b: persistedB,
+        }),
+    });
+}
+
 export async function generateReleaseTrustReport({ write = true } = {}) {
     const artifact = createSnapshotArtifact({
         snapshot: createReleaseSnapshot(),
@@ -456,6 +551,7 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
     const osSurfaceActivationProvenance = evaluateOsSurfaceActivationProvenanceGate();
     const osSurfaceShellClickability = evaluateOsSurfaceShellClickabilityGate();
     const osSurfaceShellRuntimeProbe = evaluateOsSurfaceShellRuntimeProbeGate();
+    const blueprintBootstrapProvenance = await evaluateBlueprintBootstrapProvenanceGate();
     const workspaceIdentityModel = buildWorkspaceShellSurfaceModel({
         environment: {
             workspaceId: 'design',
@@ -599,6 +695,19 @@ export async function generateReleaseTrustReport({ write = true } = {}) {
             stderrTail: typeof osSurfaceShellRuntimeProbe.stderrTail === 'string'
                 ? osSurfaceShellRuntimeProbe.stderrTail
                 : null,
+        }),
+        blueprintBootstrapProvenance: Object.freeze({
+            ok: blueprintBootstrapProvenance.ok === true,
+            deterministicManifest: blueprintBootstrapProvenance.deterministicManifest === true,
+            persisted: blueprintBootstrapProvenance.persisted === true,
+            replayEquivalent: blueprintBootstrapProvenance.replayEquivalent === true,
+            bootstrapEventPersisted: blueprintBootstrapProvenance.bootstrapEventPersisted === true,
+            perspectiveRoutable: blueprintBootstrapProvenance.perspectiveRoutable === true,
+            defaultPerspectiveId: String(blueprintBootstrapProvenance.defaultPerspectiveId ?? ''),
+            blueprintId: String(blueprintBootstrapProvenance.blueprintId ?? ''),
+            blueprintVersionId: String(blueprintBootstrapProvenance.blueprintVersionId ?? ''),
+            projectIdHash: String(blueprintBootstrapProvenance.projectIdHash ?? ''),
+            replayParityHash: String(blueprintBootstrapProvenance.replayParityHash ?? ''),
         }),
     });
 

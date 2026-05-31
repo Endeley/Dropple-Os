@@ -163,3 +163,22 @@ export function resolveProjectPerspectiveFocus({ perspectiveId, entryId } = {}) 
         secondaryArtifactKinds: focus.secondaryArtifactKinds,
     });
 }
+
+export function resolveInitialProjectPerspectiveContext({ document, perspectiveId, entryId } = {}) {
+    const bootstrapPerspectiveId = normalizeId(document?.meta?.projectBootstrap?.defaultPerspectiveId);
+    const preferredPerspectiveId = normalizeId(perspectiveId) ?? bootstrapPerspectiveId ?? FALLBACK_PERSPECTIVE_ID;
+    const context = resolveProjectPerspectiveContext({
+        perspectiveId: preferredPerspectiveId,
+        entryId,
+    });
+
+    return Object.freeze({
+        ...context,
+        bootstrapPerspectiveId,
+        bootstrapApplied: Boolean(
+            bootstrapPerspectiveId &&
+                context.perspectiveId === bootstrapPerspectiveId &&
+                normalizeId(perspectiveId) === null,
+        ),
+    });
+}

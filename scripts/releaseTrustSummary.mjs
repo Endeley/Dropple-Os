@@ -39,6 +39,8 @@ export function formatReleaseTrustSummary({
     osSurfaceActivationProvenanceBaseline = null,
     osSurfaceProbeCurrent = null,
     osSurfaceProbeBaseline = null,
+    blueprintBootstrapProvenanceCurrent = null,
+    blueprintBootstrapProvenanceBaseline = null,
 } = {}) {
     const safeResult = result ?? { ok: false, errors: ['release trust diff result unavailable.'], warnings: [], deltas: [], outcomes: [] };
     const grouped = groupOutcomes(safeResult.outcomes ?? []);
@@ -174,6 +176,23 @@ export function formatReleaseTrustSummary({
             lines.push(`- Duration status: \`WARN\` (${durationOutcome.message})`);
         } else {
             lines.push('- Duration status: `OK`');
+        }
+        lines.push('');
+    }
+    if (blueprintBootstrapProvenanceCurrent) {
+        lines.push('### Blueprint Bootstrap Provenance');
+        lines.push(`- Provenance ok: \`${blueprintBootstrapProvenanceCurrent.ok ? 'true' : 'false'}\``);
+        lines.push(`- Manifest deterministic: \`${blueprintBootstrapProvenanceCurrent.deterministicManifest ? 'true' : 'false'}\``);
+        lines.push(`- Persisted: \`${blueprintBootstrapProvenanceCurrent.persisted ? 'true' : 'false'}\``);
+        lines.push(`- Replay equivalent: \`${blueprintBootstrapProvenanceCurrent.replayEquivalent ? 'true' : 'false'}\``);
+        lines.push(`- Bootstrap event persisted: \`${blueprintBootstrapProvenanceCurrent.bootstrapEventPersisted ? 'true' : 'false'}\``);
+        lines.push(`- Perspective routable: \`${blueprintBootstrapProvenanceCurrent.perspectiveRoutable ? 'true' : 'false'}\``);
+        lines.push(`- Default perspective: \`${String(blueprintBootstrapProvenanceCurrent.defaultPerspectiveId ?? 'missing')}\``);
+        lines.push(`- Blueprint id: \`${String(blueprintBootstrapProvenanceCurrent.blueprintId ?? 'missing')}\``);
+        lines.push(`- Blueprint version id: \`${String(blueprintBootstrapProvenanceCurrent.blueprintVersionId ?? 'missing')}\``);
+        lines.push(`- Project id hash: \`${String(blueprintBootstrapProvenanceCurrent.projectIdHash ?? 'missing')}\``);
+        if (blueprintBootstrapProvenanceBaseline) {
+            lines.push(`- Baseline project id hash: \`${String(blueprintBootstrapProvenanceBaseline.projectIdHash ?? 'missing')}\``);
         }
         lines.push('');
     }
@@ -326,6 +345,8 @@ export function buildReleaseTrustSummary({
         osSurfaceActivationProvenanceBaseline: baselineReport?.checks?.osSurfaceActivationProvenance ?? null,
         osSurfaceProbeCurrent: currentReport?.checks?.osSurfaceShellRuntimeProbe ?? null,
         osSurfaceProbeBaseline: baselineReport?.checks?.osSurfaceShellRuntimeProbe ?? null,
+        blueprintBootstrapProvenanceCurrent: currentReport?.checks?.blueprintBootstrapProvenance ?? null,
+        blueprintBootstrapProvenanceBaseline: baselineReport?.checks?.blueprintBootstrapProvenance ?? null,
     });
 }
 

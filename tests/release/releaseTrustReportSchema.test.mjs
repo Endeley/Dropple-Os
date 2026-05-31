@@ -22,6 +22,7 @@ test('release trust report schema is stable and required checks are present', as
         Object.keys(report.checks).sort((left, right) => left.localeCompare(right)),
         [
             'architectureGate',
+            'blueprintBootstrapProvenance',
             'exportVerification',
             'federationAttestation',
             'federationLifecycle',
@@ -105,4 +106,16 @@ test('release trust report schema is stable and required checks are present', as
     assert.equal(typeof report.checks.osSurfaceShellRuntimeProbe.keyframeClickable, 'boolean');
     assert.equal(typeof report.checks.osSurfaceShellRuntimeProbe.interceptErrors, 'number');
     assert.equal(typeof report.checks.osSurfaceShellRuntimeProbe.durationMs, 'number');
+
+    assert.equal(typeof report.checks.blueprintBootstrapProvenance.ok, 'boolean');
+    assert.equal(typeof report.checks.blueprintBootstrapProvenance.deterministicManifest, 'boolean');
+    assert.equal(typeof report.checks.blueprintBootstrapProvenance.persisted, 'boolean');
+    assert.equal(typeof report.checks.blueprintBootstrapProvenance.replayEquivalent, 'boolean');
+    assert.equal(typeof report.checks.blueprintBootstrapProvenance.bootstrapEventPersisted, 'boolean');
+    assert.equal(typeof report.checks.blueprintBootstrapProvenance.perspectiveRoutable, 'boolean');
+    assert.equal(typeof report.checks.blueprintBootstrapProvenance.defaultPerspectiveId, 'string');
+    assert.equal(typeof report.checks.blueprintBootstrapProvenance.blueprintId, 'string');
+    assert.equal(typeof report.checks.blueprintBootstrapProvenance.blueprintVersionId, 'string');
+    assert.equal(typeof report.checks.blueprintBootstrapProvenance.projectIdHash, 'string');
+    assert.equal(typeof report.checks.blueprintBootstrapProvenance.replayParityHash, 'string');
 });

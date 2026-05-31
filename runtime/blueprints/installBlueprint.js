@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { validateBlueprintInstallManifestV1 } from '@/core/contracts/blueprintInstallManifest.v1.js';
+import { createBlueprintInstallManifest } from './createBlueprintInstallManifest.js';
 
 function sha256(input) {
     return crypto.createHash('sha256').update(String(input)).digest('hex');
@@ -75,10 +76,9 @@ function validateBlueprintInstallInput({ dispatcher, blueprint, manifest }) {
 
 export async function installBlueprint({ dispatcher, blueprint, manifest }) {
     validateBlueprintInstallInput({ dispatcher, blueprint, manifest });
-    const normalizedManifest = validateBlueprintInstallManifestV1({
+    const normalizedManifest = createBlueprintInstallManifest({
         ...manifest,
-        blueprintId: manifest?.blueprintId ?? blueprint?.id ?? '',
-        blueprintVersionId: manifest?.blueprintVersionId ?? blueprint?.lineage?.versionId ?? blueprint?.id ?? '',
+        blueprint,
     });
 
     const appliedEvents = [];

@@ -36,4 +36,5 @@ test('releaseTrustSummary CLI prints explicit OS surface shell sections from rep
     assert.match(stdout, /OS Surface Shell Contract/);
     assert.match(stdout, /OS Surface Workspace Identity/);
     assert.match(stdout, /OS Surface Activation Provenance/);
+    assert.match(stdout, /Blueprint Bootstrap Provenance/);
 });

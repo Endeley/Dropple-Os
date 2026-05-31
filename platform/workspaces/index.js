@@ -50,6 +50,7 @@ export {
     getProjectPerspectiveDefinition,
     hasProjectPerspective,
     listProjectPerspectiveIds,
+    resolveInitialProjectPerspectiveContext,
     resolveProjectPerspectiveFocus,
     resolveProjectPerspectiveContext,
 } from './projectPerspectiveRouter.js';

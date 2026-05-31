@@ -6,6 +6,7 @@ import {
     getProjectPerspectiveDefinition,
     hasProjectPerspective,
     listProjectPerspectiveIds,
+    resolveInitialProjectPerspectiveContext,
     resolveProjectPerspectiveFocus,
     resolveProjectPerspectiveContext,
 } from '@/platform/workspaces/projectPerspectiveRouter.js';
@@ -139,6 +140,35 @@ test('project perspective focus mapping is deterministic and fail-closed', () =>
             canonicalModeId: 'uiux',
             primaryArtifactKind: 'project-hub',
             secondaryArtifactKinds: Object.freeze(['document', 'workflow', 'knowledge-page']),
+        }),
+    );
+});
+
+test('project perspective bootstrap resolver prefers document bootstrap default perspective', () => {
+    assert.deepEqual(
+        resolveInitialProjectPerspectiveContext({
+            document: {
+                meta: {
+                    projectBootstrap: {
+                        defaultPerspectiveId: 'build',
+                    },
+                },
+            },
+        }),
+        Object.freeze({
+            perspectiveId: 'build',
+            perspectiveLabel: 'Build',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'application',
+            entrySource: 'entry-default',
+            workspaceId: 'build',
+            modeId: 'application',
+            definitionId: 'dev',
+            overlayId: null,
+            overlayClass: null,
+            canonicalModeId: 'application',
+            bootstrapPerspectiveId: 'build',
+            bootstrapApplied: true,
         }),
     );
 });

@@ -9,6 +9,7 @@ import { compareOsSurfaceWorkspaceIdentity } from './osSurfaceWorkspaceIdentityC
 import { compareOsSurfaceActivationProvenance } from './osSurfaceActivationProvenanceComparator.mjs';
 import { compareOsSurfaceShellClickability } from './osSurfaceShellClickabilityComparator.mjs';
 import { compareOsSurfaceShellRuntimeProbe } from './osSurfaceShellRuntimeProbeComparator.mjs';
+import { compareBlueprintBootstrapProvenance } from './blueprintBootstrapProvenanceComparator.mjs';
 
 export const RELEASE_TRUST_REQUIRED_CHECK_IDS = Object.freeze([
     'architectureGate',
@@ -22,6 +23,7 @@ export const RELEASE_TRUST_REQUIRED_CHECK_IDS = Object.freeze([
     'osSurfaceActivationProvenance',
     'osSurfaceShellClickability',
     'osSurfaceShellRuntimeProbe',
+    'blueprintBootstrapProvenance',
 ]);
 
 export function compareReleaseTrustChecks({
@@ -82,6 +84,11 @@ export function compareReleaseTrustChecks({
         ...compareOsSurfaceShellRuntimeProbe({
             baseline: baselineChecks.osSurfaceShellRuntimeProbe,
             current: currentChecks.osSurfaceShellRuntimeProbe,
+            strict,
+        }),
+        ...compareBlueprintBootstrapProvenance({
+            baseline: baselineChecks.blueprintBootstrapProvenance,
+            current: currentChecks.blueprintBootstrapProvenance,
             strict,
         }),
     ]);
