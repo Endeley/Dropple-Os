@@ -8,6 +8,8 @@ import {
     getProjectPerspectiveDefinition,
     listProjectPerspectiveIds,
 } from '@/platform/workspaces/projectPerspectiveRouter.js';
+import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
+import { installBlueprintFromCatalog, listBlueprintInstallOptions } from '@/ui/bridges/blueprintInstallBridge.js';
 import { useCommandPalette } from '@/commands/useCommandPalette';
 import { CommandPalette } from '@/commands/CommandPalette';
 import { ProjectUniverseCanvas } from './ProjectUniverseCanvas.jsx';
@@ -48,6 +50,7 @@ export function ProjectPerspectiveShell({
     if (!projectPerspectiveContext) return children;
 
     const router = useRouter();
+    const dispatcher = useDispatcher();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const perspectiveId = projectPerspectiveContext.perspectiveId;
@@ -68,6 +71,11 @@ export function ProjectPerspectiveShell({
         }),
     );
     const [shareFeedback, setShareFeedback] = useState('');
+    const [blueprintOptions] = useState(() => listBlueprintInstallOptions());
+    const [selectedBlueprintId, setSelectedBlueprintId] = useState(() => blueprintOptions[0]?.id ?? '');
+    const [blueprintInstallStatus, setBlueprintInstallStatus] = useState('');
+    const [blueprintInstallError, setBlueprintInstallError] = useState('');
+    const [blueprintInstalling, setBlueprintInstalling] = useState(false);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
@@ -146,6 +154,35 @@ export function ProjectPerspectiveShell({
             } catch {
                 // fail-closed: local persistence is optional
             }
+        }
+    };
+
+    const installSelectedBlueprint = async () => {
+        if (!selectedBlueprintId || blueprintInstalling) return;
+        setBlueprintInstallError('');
+        setBlueprintInstallStatus('');
+        setBlueprintInstalling(true);
+        try {
+            const projectId = `project.${selectedBlueprintId}`;
+            const projectName = selectedBlueprintId
+                .split('.')
+                .map((part) => formatEntryLabel(part))
+                .join(' ');
+            const result = await installBlueprintFromCatalog({
+                dispatcher,
+                blueprintId: selectedBlueprintId,
+                projectId,
+                projectName,
+                defaultPerspectiveId: perspectiveId,
+            });
+            setBlueprintInstallStatus(
+                `Installed ${result.blueprintId} (${result.appliedEvents.length} events)`,
+            );
+            router.refresh();
+        } catch (error) {
+            setBlueprintInstallError(error instanceof Error ? error.message : String(error));
+        } finally {
+            setBlueprintInstalling(false);
         }
     };
 
@@ -349,6 +386,52 @@ export function ProjectPerspectiveShell({
                                     fontSize: 12,
                                 }}
                             />
+                        </div>
+                        <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                                Start from Blueprint
+                            </div>
+                            <div style={{ display: 'grid', gap: 6 }}>
+                                <select
+                                    aria-label='Blueprint chooser'
+                                    value={selectedBlueprintId}
+                                    onChange={(event) => setSelectedBlueprintId(event.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        border: '1px solid #cbd5e1',
+                                        borderRadius: 6,
+                                        padding: '6px 8px',
+                                        fontSize: 12,
+                                        background: '#ffffff',
+                                    }}>
+                                    {blueprintOptions.map((option) => (
+                                        <option key={option.id} value={option.id}>
+                                            {option.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <button
+                                    type='button'
+                                    onClick={installSelectedBlueprint}
+                                    disabled={blueprintInstalling || !selectedBlueprintId}
+                                    style={{
+                                        border: '1px solid #334155',
+                                        borderRadius: 6,
+                                        background: blueprintInstalling ? '#cbd5e1' : '#0f172a',
+                                        color: '#ffffff',
+                                        fontSize: 11,
+                                        padding: '6px 8px',
+                                        cursor: blueprintInstalling ? 'not-allowed' : 'pointer',
+                                    }}>
+                                    {blueprintInstalling ? 'Installing…' : 'Install Blueprint'}
+                                </button>
+                                {blueprintInstallStatus ? (
+                                    <span style={{ fontSize: 11, color: '#0f766e' }}>{blueprintInstallStatus}</span>
+                                ) : null}
+                                {blueprintInstallError ? (
+                                    <span style={{ fontSize: 11, color: '#b91c1c' }}>{blueprintInstallError}</span>
+                                ) : null}
+                            </div>
                         </div>
                         <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
                             <div
