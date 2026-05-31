@@ -91,28 +91,32 @@ test('os workspace shell intent bridge fails closed for invalid mode/workspace p
     assert.deepEqual(events, []);
 });
 
-test('os workspace shell assistant request placeholder is allowlisted and fail-closed', () => {
+test('os workspace shell assistant request routes through canonical assistant enqueue', async () => {
     const events = [];
-    const result = dispatchOsWorkspaceShellIntent(
+    const result = await dispatchOsWorkspaceShellIntent(
         {
             action: 'assistant.request',
             assistantId: 'assistant.design',
             assistantAction: 'recommend',
+            perspectiveId: 'create',
             assistantInput: { prompt: 'Suggest three directions.' },
         },
         (event) => events.push(event),
     );
 
-    assert.equal(result.ok, false);
-    assert.equal(result.reason, 'not-yet-enabled');
+    assert.equal(result.ok, true);
     assert.equal(result.assistantId, 'assistant.design');
     assert.equal(result.assistantAction, 'recommend');
-    assert.deepEqual(events, []);
+    assert.equal(result.eventType, EventTypes.AI_REQUEST_ENQUEUE);
+    assert.equal(typeof result.requestId, 'string');
+    assert.equal(events.length, 1);
+    assert.equal(events[0]?.type, EventTypes.AI_REQUEST_ENQUEUE);
+    assert.equal(events[0]?.payload?.request?.metadata?.assistantId, 'assistant.design');
 });
 
-test('os workspace shell assistant request placeholder validates payload fail-closed', () => {
+test('os workspace shell assistant request validates payload fail-closed', async () => {
     const events = [];
-    const result = dispatchOsWorkspaceShellIntent(
+    const result = await dispatchOsWorkspaceShellIntent(
         {
             action: 'assistant.request',
             assistantId: '',
@@ -123,5 +127,23 @@ test('os workspace shell assistant request placeholder validates payload fail-cl
 
     assert.equal(result.ok, false);
     assert.equal(result.reason, 'invalid-shell-action-payload');
+    assert.deepEqual(events, []);
+});
+
+test('os workspace shell assistant request fails closed on perspective mismatch', async () => {
+    const events = [];
+    const result = await dispatchOsWorkspaceShellIntent(
+        {
+            action: 'assistant.request',
+            assistantId: 'assistant.publish',
+            assistantAction: 'recommend',
+            perspectiveId: 'build',
+            assistantInput: { prompt: 'publish checklist' },
+        },
+        (event) => events.push(event),
+    );
+
+    assert.equal(result.ok, false);
+    assert.match(result.reason, /assistant perspective mismatch/);
     assert.deepEqual(events, []);
 });

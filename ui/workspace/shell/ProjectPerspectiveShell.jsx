@@ -379,12 +379,13 @@ export function ProjectPerspectiveShell({
         );
     }, [navigatorQuery, perspectiveIds]);
 
-    const requestAssistantPlaceholder = (assistantAction) => {
-        const result = dispatchOsWorkspaceShellIntent(
+    const requestAssistantPlaceholder = async (assistantAction) => {
+        const result = await dispatchOsWorkspaceShellIntent(
             {
                 action: 'assistant.request',
                 assistantId: assistantSurface?.activeAssistantId,
                 assistantAction,
+                perspectiveId,
                 assistantInput: {
                     perspectiveId,
                     entryId: projectPerspectiveContext.entryId,
@@ -392,7 +393,7 @@ export function ProjectPerspectiveShell({
             },
             dispatcher,
         );
-        setAssistantIntentStatus(result.reason ?? 'unknown');
+        setAssistantIntentStatus(result.ok ? `enqueued:${result.requestId}` : result.reason ?? 'unknown');
         window.setTimeout(() => setAssistantIntentStatus(''), 1400);
     };
 
