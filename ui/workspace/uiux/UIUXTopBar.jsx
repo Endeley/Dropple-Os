@@ -1,9 +1,14 @@
 'use client';
 
-import { normalizeDesignModeId, DesignWorkspaceBrand } from '@/ui/workspace/design/DesignShellPrimitives.jsx';
+import {
+    normalizeDesignModeId,
+    DesignWorkspaceBrand,
+    resolveDesignTopChrome,
+} from '@/ui/workspace/design/DesignShellPrimitives.jsx';
 
 export function UIUXTopBar({ modeId = 'uiux', templatesOpen = false, onToggleTemplates, onPublish = null }) {
     const resolvedModeId = normalizeDesignModeId(modeId);
+    const topChrome = resolveDesignTopChrome(resolvedModeId);
     return (
         <header className='uiux-topbar'>
             {/* Left — file / workspace */}
@@ -21,13 +26,13 @@ export function UIUXTopBar({ modeId = 'uiux', templatesOpen = false, onToggleTem
 
             {/* Center — canvas controls */}
             <div className='uiux-topbar-center'>
-                <button type='button'>Frame</button>
+                <button type='button'>{topChrome.primaryActionLabel}</button>
 
-                <button type='button'>Auto Layout</button>
+                <button type='button'>{topChrome.secondaryActionLabel}</button>
 
-                <button type='button'>100%</button>
+                <button type='button'>{topChrome.zoomLabel}</button>
 
-                <span className='frame-indicator'>Draft Surface</span>
+                <span className='frame-indicator'>{topChrome.surfaceLabel}</span>
             </div>
 
             {/* Right — publish + templates */}
