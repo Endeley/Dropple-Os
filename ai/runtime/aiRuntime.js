@@ -1,6 +1,7 @@
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { generateTemplateArtifact } from '@/ai/generation/generateTemplateArtifact.js';
 import { generateVariants } from '@/ai/generation/generateVariants.js';
+import { createUuid } from '@/core/utils/createUuid.js';
 
 function assertDispatcher(dispatcher) {
     if (!dispatcher?.dispatch || typeof dispatcher.dispatch !== 'function') {
@@ -25,7 +26,7 @@ function nextRequestRecord({ id, kind, input, metadata }) {
 export async function generateTemplateFromPrompt(
     userPrompt,
     llm,
-    { dispatcher, requestId = crypto.randomUUID(), options = {}, metadata = {} } = {},
+    { dispatcher, requestId = createUuid(), options = {}, metadata = {} } = {},
 ) {
     assertDispatcher(dispatcher);
 
@@ -69,7 +70,7 @@ export async function generateVariantsFromIntent(
     template,
     variantIntent,
     llm,
-    { dispatcher, requestId = crypto.randomUUID(), options = {}, metadata = {} } = {},
+    { dispatcher, requestId = createUuid(), options = {}, metadata = {} } = {},
 ) {
     assertDispatcher(dispatcher);
 
