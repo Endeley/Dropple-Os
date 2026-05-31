@@ -286,3 +286,18 @@ test('design modes expose parity-stable shell chrome and strip signals', async (
     await expect(page.getByRole('button', { name: 'Publish' })).toBeVisible();
   }
 });
+
+test('create perspective preserves branding and icons overlay compatibility entries', async ({ page }) => {
+  for (const entryId of ['branding', 'icons']) {
+    const response = await page.goto(`/workspace/create?entry=${entryId}`, {
+      waitUntil: 'networkidle',
+    });
+
+    expect(response?.ok(), `create perspective entry ${entryId} should respond successfully`).toBeTruthy();
+    await expect(page.locator('body')).toContainText(`Create · ${entryId}`);
+    await expect(page.locator('body')).toContainText(`workspace: design/${entryId}`);
+    await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('Branding');
+    await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('Icons');
+    await expect(page.getByRole('button', { name: 'Publish' })).toBeVisible();
+  }
+});

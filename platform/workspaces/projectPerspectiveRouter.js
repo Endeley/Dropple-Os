@@ -24,7 +24,7 @@ export const PROJECT_PERSPECTIVES = Object.freeze({
         id: 'create',
         label: 'Create',
         defaultEntryId: 'uiux',
-        entries: ['uiux', 'graphic', 'document', 'animation', 'video', 'audio'],
+        entries: ['uiux', 'graphic', 'branding', 'icons', 'document', 'animation', 'video', 'audio'],
     }),
     build: freezePerspective({
         id: 'build',

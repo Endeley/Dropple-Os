@@ -20,7 +20,7 @@ test('project perspective registry exposes immutable definitions', () => {
     assert.ok(create);
     assert.equal(Object.isFrozen(create), true);
     assert.equal(create?.defaultEntryId, 'uiux');
-    assert.deepEqual(create?.entries, ['uiux', 'graphic', 'document', 'animation', 'video', 'audio']);
+    assert.deepEqual(create?.entries, ['uiux', 'graphic', 'branding', 'icons', 'document', 'animation', 'video', 'audio']);
     assert.equal(Object.isFrozen(PROJECT_PERSPECTIVES), true);
 });
 
@@ -45,6 +45,42 @@ test('project perspective resolves create entry to canonical workspace context',
             overlayId: null,
             overlayClass: null,
             canonicalModeId: 'video',
+        }),
+    );
+});
+
+test('project perspective resolves design overlay aliases inside create perspective without losing canonical ownership', () => {
+    assert.deepEqual(
+        resolveProjectPerspectiveContext({ perspectiveId: 'create', entryId: 'branding' }),
+        Object.freeze({
+            perspectiveId: 'create',
+            perspectiveLabel: 'Create',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'branding',
+            entrySource: 'entry-direct',
+            workspaceId: 'design',
+            modeId: 'branding',
+            definitionId: 'branding',
+            overlayId: 'brand-systems',
+            overlayClass: 'capability',
+            canonicalModeId: 'graphic',
+        }),
+    );
+
+    assert.deepEqual(
+        resolveProjectPerspectiveContext({ perspectiveId: 'create', entryId: 'icons' }),
+        Object.freeze({
+            perspectiveId: 'create',
+            perspectiveLabel: 'Create',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'icons',
+            entrySource: 'entry-direct',
+            workspaceId: 'design',
+            modeId: 'icons',
+            definitionId: 'icons',
+            overlayId: 'icon-systems',
+            overlayClass: 'capability',
+            canonicalModeId: 'graphic',
         }),
     );
 });

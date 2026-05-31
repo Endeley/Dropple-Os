@@ -107,9 +107,12 @@
         {
           "id": "U2.D3",
           "title": "Design Overlay Compatibility (branding/icons aliases)",
-          "status": "active",
+          "status": "complete",
           "evidence": [
             "platform/workspaces/overlayRegistry.js",
+            "platform/workspaces/projectPerspectiveRouter.js",
+            "tests/architecture/projectPerspectiveRouter.test.ts",
+            "tests/e2e/workspace-routes.smoke.spec.js",
             "tests/architecture/platformSystemClassification.test.ts",
             "tests/architecture/workspaceModeResolution.test.ts"
           ]
@@ -117,7 +120,7 @@
         {
           "id": "U2.D4",
           "title": "Design Assistant UX Consistency in Create Perspective",
-          "status": "not-started",
+          "status": "active",
           "evidence": [
             "ui/workspace/shell/ProjectPerspectiveShell.jsx",
             "runtime/osSurface/requestAssistantFromShellIntent.js",
