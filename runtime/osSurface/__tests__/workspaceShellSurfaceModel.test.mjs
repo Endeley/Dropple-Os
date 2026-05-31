@@ -22,6 +22,11 @@ test('workspace shell surface model is deterministic and source-order stable', (
                 releaseTrustHash: 'trust-a',
             },
         },
+        assistants: {
+            perspectiveId: 'create',
+            activeAssistantId: 'assistant.design',
+            assistantIds: ['assistant.media', 'assistant.design', 'assistant.design'],
+        },
         synthesizedTools: {
             activeToolId: 'select',
             tools: [{ toolId: 'move' }, { toolId: 'select' }, { toolId: 'move' }],
@@ -42,6 +47,11 @@ test('workspace shell surface model is deterministic and source-order stable', (
             trustEnvelope: {
                 releaseTrustHash: 'trust-a',
             },
+        },
+        assistants: {
+            perspectiveId: 'create',
+            activeAssistantId: 'assistant.design',
+            assistantIds: ['assistant.design', 'assistant.media'],
         },
         synthesizedTools: {
             activeToolId: 'select',
@@ -66,6 +76,11 @@ test('workspace shell surface model is mutation-free for the input snapshot', ()
             activeToolId: 'select',
             tools: [{ toolId: 'select' }],
         },
+        assistants: {
+            perspectiveId: 'create',
+            activeAssistantId: 'assistant.design',
+            assistantIds: ['assistant.design', 'assistant.media'],
+        },
     };
     const before = deepClone(input);
     buildWorkspaceShellSurfaceModel(input);
@@ -88,6 +103,11 @@ test('workspace shell surface model exposes canonical projection shape and order
                 releaseTrustHash: 'trust-a',
             },
         },
+        assistants: {
+            perspectiveId: 'create',
+            activeAssistantId: 'assistant.design',
+            assistantIds: ['assistant.media', 'assistant.design', 'assistant.design'],
+        },
         synthesizedTools: {
             activeToolId: 'select',
             tools: [{ toolId: 'move' }, { toolId: 'select' }, { toolId: 'move' }],
@@ -103,11 +123,17 @@ test('workspace shell surface model exposes canonical projection shape and order
         'participantIds',
         'federationPhase',
         'releaseTrustHash',
+        'perspectiveId',
+        'activeAssistantId',
+        'visibleAssistantIds',
         'activeToolId',
         'visibleToolIds',
     ]);
     assert.deepEqual(model.overlays, ['ai', 'conversion']);
     assert.deepEqual(model.participantIds, ['peer-a', 'peer-z']);
+    assert.equal(model.perspectiveId, 'create');
+    assert.equal(model.activeAssistantId, 'assistant.design');
+    assert.deepEqual(model.visibleAssistantIds, ['assistant.design', 'assistant.media']);
     assert.deepEqual(model.visibleToolIds, ['move', 'select']);
     assert.equal(model.workspaceId, 'design');
     assert.equal(model.modeId, 'graphic');

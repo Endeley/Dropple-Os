@@ -4,6 +4,9 @@ import {
     selectSequencerPreview,
     selectViewport,
 } from '@/runtime/projection/index.js';
+import { resolveInitialProjectPerspectiveContext } from '@/platform/workspaces/projectPerspectiveRouter.js';
+import { resolvePerspectiveAssistants } from '@/runtime/assistants/resolvePerspectiveAssistants.js';
+import { buildAssistantSurfaceModel } from './buildAssistantSurfaceModel.js';
 import { buildEnvironmentSurfaceModel } from './buildEnvironmentSurfaceModel.js';
 import { buildSynthesizedToolSurfaceModel } from './buildSynthesizedToolSurfaceModel.js';
 
@@ -91,5 +94,24 @@ export function buildSynthesizedToolSurfaceModelFromProjection(projected = null)
     return buildSynthesizedToolSurfaceModel({
         activeToolId: renderState?.tools?.activeTool ?? null,
         tools: toToolEntries(renderState?.tools?.visibleToolDefinitions ?? {}),
+    });
+}
+
+export function buildAssistantSurfaceModelFromProjection(projected = null) {
+    const renderState = projected ?? selectRenderState() ?? {};
+    const perspectiveContext = resolveInitialProjectPerspectiveContext({
+        document: renderState?.document,
+    });
+    const resolved = resolvePerspectiveAssistants({
+        perspectiveId: perspectiveContext?.perspectiveId,
+        entryId: perspectiveContext?.entryId,
+    });
+
+    return buildAssistantSurfaceModel({
+        perspectiveId: resolved?.perspectiveId ?? null,
+        activeAssistantId: resolved?.activeAssistantId ?? null,
+        assistantIds: Array.isArray(resolved?.assistants)
+            ? resolved.assistants.map((entry) => entry?.id)
+            : [],
     });
 }

@@ -83,6 +83,9 @@ test('os workspace shell surface model read is deterministic', () => {
     assert.equal(left.modeId, 'graphic');
     assert.equal(left.sessionId, 'session-a');
     assert.deepEqual(left.participantIds, ['amy', 'zed']);
+    assert.equal(left.perspectiveId, 'overview');
+    assert.equal(left.activeAssistantId, null);
+    assert.deepEqual(left.visibleAssistantIds, []);
 });
 
 test('os surface bridge roundtrip is coordination-only and does not mutate projected truth', () => {
@@ -97,6 +100,7 @@ test('os surface bridge roundtrip is coordination-only and does not mutate proje
     const after = useRuntimeStore.getState();
 
     assert.ok(snapshot.environment);
+    assert.ok(snapshot.assistants);
     assert.ok(snapshot.synthesizedTools);
     assert.equal(routed.ok, true);
     assert.deepEqual(after, before);

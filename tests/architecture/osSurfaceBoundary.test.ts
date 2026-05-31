@@ -112,3 +112,35 @@ test('ui-side os surface modules route only through the os surface bridge', () =
 
     assert.deepEqual(violations, []);
 });
+
+test('ui modules consume assistant availability only through os surface read bridge', () => {
+    const uiRoot = path.join(ROOT, 'ui');
+    if (!fs.existsSync(uiRoot)) {
+        assert.ok(true);
+        return;
+    }
+
+    const files = walk(uiRoot, 'ui');
+    const violations = [];
+
+    for (const relPath of files) {
+        if (relPath.includes('/__tests__/')) continue;
+        const content = fs.readFileSync(path.join(ROOT, relPath), 'utf8');
+        const lines = content.split('\n');
+
+        for (let index = 0; index < lines.length; index += 1) {
+            const line = lines[index];
+            if (!line.includes('import')) continue;
+            if (!/runtime\/assistants\//.test(line)) continue;
+
+            const isAllowedBridge = relPath.endsWith('ui/bridges/osSurfaceReadBridge.js');
+            if (!isAllowedBridge) {
+                violations.push(
+                    `${relPath}:${index + 1}: ui assistant reads must route through ui/bridges/osSurfaceReadBridge.js`,
+                );
+            }
+        }
+    }
+
+    assert.deepEqual(violations, []);
+});

@@ -19,6 +19,7 @@ function normalizeStringArray(values) {
 
 export function buildWorkspaceShellSurfaceModel(snapshot = {}) {
     const environment = snapshot?.environment ?? {};
+    const assistants = snapshot?.assistants ?? {};
     const synthesizedTools = snapshot?.synthesizedTools ?? {};
     const toolList = Array.isArray(synthesizedTools.tools) ? synthesizedTools.tools : [];
 
@@ -31,6 +32,9 @@ export function buildWorkspaceShellSurfaceModel(snapshot = {}) {
         participantIds: normalizeStringArray(environment?.federation?.participantIds),
         federationPhase: normalizeString(environment?.federation?.sessionPhase),
         releaseTrustHash: normalizeString(environment?.trustEnvelope?.releaseTrustHash),
+        perspectiveId: normalizeString(assistants?.perspectiveId),
+        activeAssistantId: normalizeString(assistants?.activeAssistantId),
+        visibleAssistantIds: normalizeStringArray(assistants?.assistantIds),
         activeToolId: normalizeString(synthesizedTools.activeToolId),
         visibleToolIds: normalizeStringArray(toolList.map((tool) => tool?.toolId)),
     });

@@ -1,4 +1,5 @@
 import {
+    buildAssistantSurfaceModelFromProjection,
     buildEnvironmentSurfaceModelFromProjection,
     buildSynthesizedToolSurfaceModelFromProjection,
     buildWorkspaceShellSurfaceModel,
@@ -7,6 +8,7 @@ import {
 export function readOsSurfaceSnapshot() {
     return Object.freeze({
         environment: buildEnvironmentSurfaceModelFromProjection(),
+        assistants: buildAssistantSurfaceModelFromProjection(),
         synthesizedTools: buildSynthesizedToolSurfaceModelFromProjection(),
     });
 }
