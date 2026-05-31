@@ -117,6 +117,28 @@ test('publish perspective assistant defaults stay entry-consistent across govern
     assert.equal(themesEntry.activeAssistantId, 'assistant.publish');
 });
 
+test('collaborate perspective assistant defaults stay entry-consistent across review and knowledge surfaces', () => {
+    const reviewEntry = resolvePerspectiveAssistants({
+        perspectiveId: 'collaborate',
+        entryId: 'review',
+    });
+    const productionEntry = resolvePerspectiveAssistants({
+        perspectiveId: 'collaborate',
+        entryId: 'production',
+    });
+    const educationEntry = resolvePerspectiveAssistants({
+        perspectiveId: 'collaborate',
+        entryId: 'education',
+    });
+
+    assert.equal(reviewEntry.workspaceId, 'collaborate');
+    assert.equal(reviewEntry.activeAssistantId, 'assistant.knowledge');
+    assert.equal(productionEntry.workspaceId, 'collaborate');
+    assert.equal(productionEntry.activeAssistantId, 'assistant.knowledge');
+    assert.equal(educationEntry.overlayId, 'learning');
+    assert.equal(educationEntry.activeAssistantId, 'assistant.knowledge');
+});
+
 test('perspective assistant resolution preserves overlay-backed operate routing', () => {
     const result = resolvePerspectiveAssistants({
         perspectiveId: 'operate',

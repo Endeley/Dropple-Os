@@ -210,6 +210,59 @@ test('project perspective resolves system entries in publish perspective without
     );
 });
 
+test('project perspective resolves collaborate entries without creating new truth models', () => {
+    assert.deepEqual(
+        resolveProjectPerspectiveContext({ perspectiveId: 'collaborate', entryId: 'review' }),
+        Object.freeze({
+            perspectiveId: 'collaborate',
+            perspectiveLabel: 'Collaborate',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'review',
+            entrySource: 'entry-direct',
+            workspaceId: 'collaborate',
+            modeId: 'review',
+            definitionId: 'review',
+            overlayId: null,
+            overlayClass: null,
+            canonicalModeId: 'review',
+        }),
+    );
+
+    assert.deepEqual(
+        resolveProjectPerspectiveContext({ perspectiveId: 'collaborate', entryId: 'production' }),
+        Object.freeze({
+            perspectiveId: 'collaborate',
+            perspectiveLabel: 'Collaborate',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'production',
+            entrySource: 'entry-direct',
+            workspaceId: 'collaborate',
+            modeId: 'production',
+            definitionId: 'review',
+            overlayId: null,
+            overlayClass: null,
+            canonicalModeId: 'production',
+        }),
+    );
+
+    assert.deepEqual(
+        resolveProjectPerspectiveContext({ perspectiveId: 'collaborate', entryId: 'education' }),
+        Object.freeze({
+            perspectiveId: 'collaborate',
+            perspectiveLabel: 'Collaborate',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'education',
+            entrySource: 'entry-direct',
+            workspaceId: 'collaborate',
+            modeId: 'education',
+            definitionId: 'education',
+            overlayId: 'learning',
+            overlayClass: 'payload',
+            canonicalModeId: 'knowledge',
+        }),
+    );
+});
+
 test('project perspective fails closed to defaults for unknown perspective or disallowed entry', () => {
     assert.deepEqual(
         resolveProjectPerspectiveContext({ perspectiveId: 'unknown-perspective', entryId: 'video' }),

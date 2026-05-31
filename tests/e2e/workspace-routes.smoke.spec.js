@@ -367,3 +367,17 @@ test('publish perspective assistant surface stays entry-consistent for governanc
     await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.publish');
   }
 });
+
+test('collaborate perspective assistant surface stays entry-consistent across review and knowledge routes', async ({ page }) => {
+  for (const entryId of ['review', 'production', 'knowledge', 'education']) {
+    const response = await page.goto(`/workspace/collaborate?entry=${entryId}`, {
+      waitUntil: 'networkidle',
+    });
+
+    expect(response?.ok(), `collaborate ${entryId} route should respond successfully`).toBeTruthy();
+    await expect(page.locator('body')).toContainText(`Collaborate · ${entryId}`);
+    await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: collaborate');
+    await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.knowledge');
+    await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.knowledge');
+  }
+});

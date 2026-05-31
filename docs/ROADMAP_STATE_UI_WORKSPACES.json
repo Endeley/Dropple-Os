@@ -240,8 +240,31 @@
     {
       "id": "U6",
       "title": "Collaborate Workspace Experience",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["U5"],
+      "milestones": [
+        {
+          "id": "U6.C1",
+          "title": "Collaborate Perspective Entry Parity (review/production/knowledge/education)",
+          "status": "complete",
+          "evidence": [
+            "platform/workspaces/projectPerspectiveRouter.js",
+            "tests/architecture/projectPerspectiveRouter.test.ts",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U6.C2",
+          "title": "Collaborate Assistant UX Consistency",
+          "status": "complete",
+          "evidence": [
+            "runtime/assistants/resolvePerspectiveAssistants.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/kernel/perspectiveAssistantResolutionLaw.test.ts",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        }
+      ],
       "gates": [
         { "name": "validate app", "command": "npm run validate:app" },
         { "name": "architecture ci", "command": "npm run architecture:ci" }
@@ -250,7 +273,7 @@
     {
       "id": "U7",
       "title": "Workspace Production Hardening",
-      "status": "not-started",
+      "status": "active",
       "depends_on": ["U6"],
       "gates": [
         { "name": "full release validation", "command": "npm run validate:release" }
