@@ -61,6 +61,20 @@ export function ProjectUniverseCanvas({ perspectiveId = 'overview' }) {
         [camera.scale, perspectiveId],
     );
     const visibility = useMemo(() => resolveTierVisibility(presentation.tier), [presentation.tier]);
+    const minimap = useMemo(() => {
+        const worldSpan = 640;
+        const miniSize = 86;
+        const worldToMini = miniSize / worldSpan;
+        const centerX = miniSize / 2 + camera.x * worldToMini;
+        const centerY = miniSize / 2 + camera.y * worldToMini;
+        const viewportSize = clamp(34 / Math.max(camera.scale, 0.01), 8, 40);
+        return Object.freeze({
+            miniSize,
+            centerX: clamp(centerX, 0, miniSize),
+            centerY: clamp(centerY, 0, miniSize),
+            viewportSize,
+        });
+    }, [camera.x, camera.y, camera.scale]);
 
     const onWheel = (event) => {
         event.preventDefault();
@@ -212,6 +226,54 @@ export function ProjectUniverseCanvas({ perspectiveId = 'overview' }) {
                     touchAction: 'none',
                     position: 'relative',
                 }}>
+                <aside
+                    aria-label='Project universe mini-map'
+                    style={{
+                        position: 'absolute',
+                        right: 10,
+                        bottom: 10,
+                        zIndex: 5,
+                        width: minimap.miniSize + 10,
+                        border: '1px solid #cbd5e1',
+                        borderRadius: 8,
+                        background: 'rgba(255,255,255,0.9)',
+                        padding: 5,
+                    }}>
+                    <div
+                        style={{
+                            position: 'relative',
+                            width: minimap.miniSize,
+                            height: minimap.miniSize,
+                            border: '1px solid #dbe4ee',
+                            borderRadius: 6,
+                            background: '#f8fafc',
+                            overflow: 'hidden',
+                        }}>
+                        <div
+                            style={{
+                                position: 'absolute',
+                                left: minimap.miniSize / 2 - 3,
+                                top: minimap.miniSize / 2 - 3,
+                                width: 6,
+                                height: 6,
+                                borderRadius: 999,
+                                background: '#0f172a',
+                            }}
+                        />
+                        <div
+                            style={{
+                                position: 'absolute',
+                                left: minimap.centerX - minimap.viewportSize / 2,
+                                top: minimap.centerY - minimap.viewportSize / 2,
+                                width: minimap.viewportSize,
+                                height: minimap.viewportSize,
+                                borderRadius: 3,
+                                border: '1px solid #0f172a',
+                                background: 'rgba(148,163,184,0.14)',
+                            }}
+                        />
+                    </div>
+                </aside>
                 <div
                     style={{
                         position: 'absolute',
