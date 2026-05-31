@@ -95,6 +95,28 @@ test('build perspective assistant defaults stay entry-consistent across canonica
     assert.equal(conversionEntry.activeAssistantId, 'assistant.build');
 });
 
+test('publish perspective assistant defaults stay entry-consistent across governance and system entries', () => {
+    const governanceEntry = resolvePerspectiveAssistants({
+        perspectiveId: 'publish',
+        entryId: 'governance',
+    });
+    const tokensEntry = resolvePerspectiveAssistants({
+        perspectiveId: 'publish',
+        entryId: 'tokens',
+    });
+    const themesEntry = resolvePerspectiveAssistants({
+        perspectiveId: 'publish',
+        entryId: 'themes',
+    });
+
+    assert.equal(governanceEntry.workspaceId, 'system');
+    assert.equal(governanceEntry.activeAssistantId, 'assistant.publish');
+    assert.equal(tokensEntry.workspaceId, 'system');
+    assert.equal(tokensEntry.activeAssistantId, 'assistant.publish');
+    assert.equal(themesEntry.overlayId, 'themes');
+    assert.equal(themesEntry.activeAssistantId, 'assistant.publish');
+});
+
 test('perspective assistant resolution preserves overlay-backed operate routing', () => {
     const result = resolvePerspectiveAssistants({
         perspectiveId: 'operate',

@@ -48,7 +48,7 @@ export const PROJECT_PERSPECTIVES = Object.freeze({
         id: 'publish',
         label: 'Publish',
         defaultEntryId: 'governance',
-        entries: ['governance', 'versioning', 'conversion', 'review'],
+        entries: ['governance', 'versioning', 'tokens', 'components', 'themes', 'variants', 'conversion', 'review'],
     }),
 });
 

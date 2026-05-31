@@ -353,3 +353,17 @@ test('build perspective assistant surface stays entry-consistent for canonical a
     await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.build');
   }
 });
+
+test('publish perspective assistant surface stays entry-consistent for governance and system entries', async ({ page }) => {
+  for (const entryId of ['governance', 'versioning', 'tokens', 'components', 'themes', 'variants']) {
+    const response = await page.goto(`/workspace/publish?entry=${entryId}`, {
+      waitUntil: 'networkidle',
+    });
+
+    expect(response?.ok(), `publish ${entryId} route should respond successfully`).toBeTruthy();
+    await expect(page.locator('body')).toContainText(`Publish · ${entryId}`);
+    await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: publish');
+    await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.publish');
+    await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.publish');
+  }
+});

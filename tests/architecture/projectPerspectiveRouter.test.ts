@@ -157,6 +157,59 @@ test('project perspective resolves build/operate overlays without creating new t
     );
 });
 
+test('project perspective resolves system entries in publish perspective without creating new truth models', () => {
+    assert.deepEqual(
+        resolveProjectPerspectiveContext({ perspectiveId: 'publish', entryId: 'tokens' }),
+        Object.freeze({
+            perspectiveId: 'publish',
+            perspectiveLabel: 'Publish',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'tokens',
+            entrySource: 'entry-direct',
+            workspaceId: 'system',
+            modeId: 'tokens',
+            definitionId: 'material',
+            overlayId: null,
+            overlayClass: null,
+            canonicalModeId: 'tokens',
+        }),
+    );
+
+    assert.deepEqual(
+        resolveProjectPerspectiveContext({ perspectiveId: 'publish', entryId: 'themes' }),
+        Object.freeze({
+            perspectiveId: 'publish',
+            perspectiveLabel: 'Publish',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'themes',
+            entrySource: 'entry-direct',
+            workspaceId: 'system',
+            modeId: 'themes',
+            definitionId: 'material',
+            overlayId: 'themes',
+            overlayClass: 'capability',
+            canonicalModeId: 'tokens',
+        }),
+    );
+
+    assert.deepEqual(
+        resolveProjectPerspectiveContext({ perspectiveId: 'publish', entryId: 'variants' }),
+        Object.freeze({
+            perspectiveId: 'publish',
+            perspectiveLabel: 'Publish',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'variants',
+            entrySource: 'entry-direct',
+            workspaceId: 'system',
+            modeId: 'variants',
+            definitionId: 'material',
+            overlayId: 'variants',
+            overlayClass: 'capability',
+            canonicalModeId: 'components',
+        }),
+    );
+});
+
 test('project perspective fails closed to defaults for unknown perspective or disallowed entry', () => {
     assert.deepEqual(
         resolveProjectPerspectiveContext({ perspectiveId: 'unknown-perspective', entryId: 'video' }),

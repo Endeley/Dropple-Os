@@ -207,8 +207,31 @@
     {
       "id": "U5",
       "title": "System Workspace Experience",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["U4"],
+      "milestones": [
+        {
+          "id": "U5.S1",
+          "title": "System Mode Exposure in Publish Perspective (tokens/components/themes/variants)",
+          "status": "complete",
+          "evidence": [
+            "platform/workspaces/projectPerspectiveRouter.js",
+            "tests/architecture/projectPerspectiveRouter.test.ts",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U5.S2",
+          "title": "Publish Assistant UX Consistency Across Governance and System Entries",
+          "status": "complete",
+          "evidence": [
+            "runtime/assistants/resolvePerspectiveAssistants.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/kernel/perspectiveAssistantResolutionLaw.test.ts",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        }
+      ],
       "gates": [
         { "name": "release trust summary", "command": "npm run release:trust:summary" },
         { "name": "runtime map", "command": "npm run runtime:map:test" }
@@ -217,7 +240,7 @@
     {
       "id": "U6",
       "title": "Collaborate Workspace Experience",
-      "status": "not-started",
+      "status": "active",
       "depends_on": ["U5"],
       "gates": [
         { "name": "validate app", "command": "npm run validate:app" },
