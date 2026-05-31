@@ -115,6 +115,25 @@ export function ProjectUniverseCanvas({ perspectiveId = 'overview' }) {
         );
     };
 
+    const moveCameraFromMinimapPointer = (event) => {
+        const element = event.currentTarget;
+        if (!element) return;
+        const rect = element.getBoundingClientRect();
+        const miniX = clamp(event.clientX - rect.left, 0, minimap.miniSize);
+        const miniY = clamp(event.clientY - rect.top, 0, minimap.miniSize);
+        const worldSpan = 640;
+        const worldToMini = minimap.miniSize / worldSpan;
+        const x = (miniX - minimap.miniSize / 2) / worldToMini;
+        const y = (miniY - minimap.miniSize / 2) / worldToMini;
+        setCamera((current) =>
+            Object.freeze({
+                ...current,
+                x,
+                y,
+            }),
+        );
+    };
+
     const onPointerDown = (event) => {
         setDragState(
             Object.freeze({
@@ -240,6 +259,17 @@ export function ProjectUniverseCanvas({ perspectiveId = 'overview' }) {
                         padding: 5,
                     }}>
                     <div
+                        onPointerDown={(event) => {
+                            event.currentTarget.setPointerCapture?.(event.pointerId);
+                            moveCameraFromMinimapPointer(event);
+                        }}
+                        onPointerMove={(event) => {
+                            if ((event.buttons & 1) !== 1) return;
+                            moveCameraFromMinimapPointer(event);
+                        }}
+                        onPointerUp={(event) => {
+                            event.currentTarget.releasePointerCapture?.(event.pointerId);
+                        }}
                         style={{
                             position: 'relative',
                             width: minimap.miniSize,
@@ -248,6 +278,8 @@ export function ProjectUniverseCanvas({ perspectiveId = 'overview' }) {
                             borderRadius: 6,
                             background: '#f8fafc',
                             overflow: 'hidden',
+                            cursor: 'crosshair',
+                            touchAction: 'none',
                         }}>
                         <div
                             style={{
