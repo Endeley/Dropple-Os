@@ -138,6 +138,17 @@ export function ProjectPerspectiveShell({
         window.setTimeout(() => setShareFeedback(''), 1400);
     };
 
+    const clearRecentViews = () => {
+        setRecentRoutes([]);
+        if (typeof window !== 'undefined') {
+            try {
+                window.localStorage.removeItem('dropple.projectShell.recentViews.v1');
+            } catch {
+                // fail-closed: local persistence is optional
+            }
+        }
+    };
+
     const perspectiveCommands = useMemo(() => {
         const commands = [];
 
@@ -340,8 +351,29 @@ export function ProjectPerspectiveShell({
                             />
                         </div>
                         <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
-                                Recent
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    gap: 8,
+                                    marginBottom: 6,
+                                }}>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: '#334155' }}>Recent</div>
+                                <button
+                                    type='button'
+                                    onClick={clearRecentViews}
+                                    style={{
+                                        border: '1px solid #d1d5db',
+                                        borderRadius: 6,
+                                        background: '#ffffff',
+                                        color: '#475569',
+                                        fontSize: 10,
+                                        padding: '2px 6px',
+                                        cursor: 'pointer',
+                                    }}>
+                                    Clear
+                                </button>
                             </div>
                             <div style={{ display: 'grid', gap: 4 }}>
                                 {recentRoutes.length === 0 ? (
