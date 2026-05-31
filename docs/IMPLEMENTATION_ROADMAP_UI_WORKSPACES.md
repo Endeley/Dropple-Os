@@ -25,6 +25,21 @@ Progression is fail-closed:
 8. `U6` Collaborate Workspace Experience
 9. `U7` Workspace Production Hardening
 
+## U1 Assistant Milestones
+
+Tracked inside `docs/ROADMAP_STATE_UI_WORKSPACES.json` under `U1.milestones`:
+
+1. `U1.A1` Assistant Runtime Contract and Registry
+2. `U1.A2` Dispatcher-Only Assistant Request Routing
+3. `U1.A3` Perspective Adapters and OS Surface Projection
+4. `U1.A4` Perspective-Scoped Assistant Action Policy
+
+All `U1.A*` milestones are backend-only and non-sovereign:
+
+- no direct document/runtime truth mutation
+- dispatcher remains the only mutation authority
+- assistant availability in UI must route through OS surface read bridge
+
 ## Runtime Control
 
 Use:

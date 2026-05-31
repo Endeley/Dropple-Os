@@ -29,6 +29,49 @@
       "title": "Workspace Shell Foundation",
       "status": "active",
       "depends_on": ["U0", "P0"],
+      "milestones": [
+        {
+          "id": "U1.A1",
+          "title": "Assistant Runtime Contract and Registry",
+          "status": "complete",
+          "evidence": [
+            "tests/kernel/assistantCapabilityContractLaw.test.ts",
+            "tests/kernel/assistantRegistryLaw.test.ts",
+            "tests/architecture/assistantNonSovereigntyLaw.test.ts"
+          ]
+        },
+        {
+          "id": "U1.A2",
+          "title": "Dispatcher-Only Assistant Request Routing",
+          "status": "complete",
+          "evidence": [
+            "tests/kernel/assistantRequestRoutingLaw.test.ts",
+            "runtime/assistants/requestAssistantAction.js"
+          ]
+        },
+        {
+          "id": "U1.A3",
+          "title": "Perspective Adapters and OS Surface Projection",
+          "status": "complete",
+          "evidence": [
+            "runtime/assistants/perspectiveAdapters.js",
+            "runtime/osSurface/buildAssistantSurfaceModel.js",
+            "tests/kernel/perspectiveAssistantAdapterLaw.test.ts",
+            "tests/kernel/perspectiveAssistantResolutionLaw.test.ts",
+            "tests/architecture/osSurfaceBoundary.test.ts"
+          ]
+        },
+        {
+          "id": "U1.A4",
+          "title": "Perspective-Scoped Assistant Action Policy",
+          "status": "complete",
+          "evidence": [
+            "runtime/assistants/evaluateAssistantActionPolicy.js",
+            "tests/kernel/assistantPolicyEvaluationLaw.test.ts",
+            "tests/kernel/assistantRequestRoutingLaw.test.ts"
+          ]
+        }
+      ],
       "gates": [
         { "name": "kernel tests", "command": "npm run test:kernel" },
         { "name": "determinism gate", "command": "npm run determinism" }
