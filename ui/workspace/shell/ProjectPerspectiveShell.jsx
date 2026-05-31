@@ -9,7 +9,13 @@ import {
     listProjectPerspectiveIds,
 } from '@/platform/workspaces/projectPerspectiveRouter.js';
 import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
-import { installBlueprintFromCatalog, listBlueprintInstallOptions } from '@/ui/bridges/blueprintInstallBridge.js';
+import {
+    applyBlueprintUpgradeFromCatalog,
+    installBlueprintFromCatalog,
+    listBlueprintInstallOptions,
+    listBlueprintUpgradeTargets,
+    previewBlueprintUpgradeFromCatalog,
+} from '@/ui/bridges/blueprintInstallBridge.js';
 import { useWorkspaceProjectionState } from '@/runtime/projection';
 import { useCommandPalette } from '@/commands/useCommandPalette';
 import { CommandPalette } from '@/commands/CommandPalette';
@@ -90,6 +96,11 @@ export function ProjectPerspectiveShell({
     const [blueprintInstallStatus, setBlueprintInstallStatus] = useState('');
     const [blueprintInstallError, setBlueprintInstallError] = useState('');
     const [blueprintInstalling, setBlueprintInstalling] = useState(false);
+    const [selectedUpgradeVersionId, setSelectedUpgradeVersionId] = useState('');
+    const [upgradePreview, setUpgradePreview] = useState(null);
+    const [upgradeStatus, setUpgradeStatus] = useState('');
+    const [upgradeError, setUpgradeError] = useState('');
+    const [upgradeApplying, setUpgradeApplying] = useState(false);
     const persistedProjectBootstrap = useWorkspaceProjectionState(
         (state) => state?.document?.meta?.projectBootstrap ?? null,
     );
@@ -211,6 +222,63 @@ export function ProjectPerspectiveShell({
         () => blueprintOptions.find((option) => option.id === selectedBlueprintId) ?? null,
         [blueprintOptions, selectedBlueprintId],
     );
+    const upgradeTargets = useMemo(
+        () => listBlueprintUpgradeTargets({ projectBootstrap: persistedProjectBootstrap }),
+        [persistedProjectBootstrap],
+    );
+
+    useEffect(() => {
+        if (upgradeTargets.length === 0) {
+            setSelectedUpgradeVersionId('');
+            setUpgradePreview(null);
+            return;
+        }
+        setSelectedUpgradeVersionId((previous) =>
+            upgradeTargets.some((target) => target.versionId === previous)
+                ? previous
+                : upgradeTargets[0].versionId,
+        );
+    }, [upgradeTargets]);
+
+    useEffect(() => {
+        if (!selectedUpgradeVersionId) {
+            setUpgradePreview(null);
+            return;
+        }
+        try {
+            const preview = previewBlueprintUpgradeFromCatalog({
+                projectBootstrap: persistedProjectBootstrap,
+                targetBlueprintVersionId: selectedUpgradeVersionId,
+            });
+            setUpgradePreview(preview);
+            setUpgradeError('');
+        } catch (error) {
+            setUpgradePreview(null);
+            setUpgradeError(error instanceof Error ? error.message : String(error));
+        }
+    }, [persistedProjectBootstrap, selectedUpgradeVersionId]);
+
+    const applyUpgrade = async () => {
+        if (!selectedUpgradeVersionId || upgradeApplying) return;
+        setUpgradeApplying(true);
+        setUpgradeStatus('');
+        setUpgradeError('');
+        try {
+            const result = await applyBlueprintUpgradeFromCatalog({
+                dispatcher,
+                projectBootstrap: persistedProjectBootstrap,
+                targetBlueprintVersionId: selectedUpgradeVersionId,
+            });
+            setUpgradeStatus(
+                `Upgraded ${result.fromVersionId} → ${result.toVersionId} (${result.addedCount} events)`,
+            );
+            router.refresh();
+        } catch (error) {
+            setUpgradeError(error instanceof Error ? error.message : String(error));
+        } finally {
+            setUpgradeApplying(false);
+        }
+    };
 
     const perspectiveCommands = useMemo(() => {
         const commands = [];
@@ -510,6 +578,83 @@ export function ProjectPerspectiveShell({
                                 </div>
                             ) : (
                                 <span style={{ fontSize: 11, color: '#64748b' }}>No bootstrap metadata yet</span>
+                            )}
+                        </div>
+                        <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                                Upgrade Blueprint
+                            </div>
+                            {upgradeTargets.length === 0 ? (
+                                <span style={{ fontSize: 11, color: '#64748b' }}>No upgrade target available</span>
+                            ) : (
+                                <div style={{ display: 'grid', gap: 6 }}>
+                                    <select
+                                        aria-label='Blueprint upgrade target'
+                                        value={selectedUpgradeVersionId}
+                                        onChange={(event) => setSelectedUpgradeVersionId(event.target.value)}
+                                        style={{
+                                            width: '100%',
+                                            border: '1px solid #cbd5e1',
+                                            borderRadius: 6,
+                                            padding: '6px 8px',
+                                            fontSize: 12,
+                                            background: '#ffffff',
+                                        }}>
+                                        {upgradeTargets.map((target) => (
+                                            <option key={target.versionId} value={target.versionId}>
+                                                {target.name} ({target.versionId})
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {upgradePreview ? (
+                                        <div
+                                            style={{
+                                                border: '1px solid #e2e8f0',
+                                                borderRadius: 6,
+                                                padding: '6px 8px',
+                                                background: '#f8fafc',
+                                                display: 'grid',
+                                                gap: 4,
+                                            }}>
+                                            <span style={{ fontSize: 10, color: '#334155' }}>
+                                                diff: +{upgradePreview.addedCount} / ~{upgradePreview.changedCount} / -{upgradePreview.removedCount}
+                                            </span>
+                                            <span style={{ fontSize: 10, color: '#334155' }}>
+                                                additive: {String(upgradePreview.additive)}
+                                            </span>
+                                            <span style={{ fontSize: 10, color: '#334155' }}>
+                                                merge policy: {String(upgradePreview.mergePolicyPassed)}
+                                            </span>
+                                            <span style={{ fontSize: 10, color: '#334155' }}>
+                                                certification: {String(upgradePreview.certificationValid)}
+                                            </span>
+                                            <span style={{ fontSize: 10, color: '#334155' }}>
+                                                can apply: {String(upgradePreview.canApply)}
+                                            </span>
+                                        </div>
+                                    ) : null}
+                                    <button
+                                        type='button'
+                                        onClick={applyUpgrade}
+                                        disabled={upgradeApplying || !upgradePreview?.canApply}
+                                        style={{
+                                            border: '1px solid #334155',
+                                            borderRadius: 6,
+                                            background: upgradeApplying ? '#cbd5e1' : '#0f172a',
+                                            color: '#ffffff',
+                                            fontSize: 11,
+                                            padding: '6px 8px',
+                                            cursor: upgradeApplying || !upgradePreview?.canApply ? 'not-allowed' : 'pointer',
+                                        }}>
+                                        {upgradeApplying ? 'Applying…' : 'Apply Upgrade'}
+                                    </button>
+                                    {upgradeStatus ? (
+                                        <span style={{ fontSize: 11, color: '#0f766e' }}>{upgradeStatus}</span>
+                                    ) : null}
+                                    {upgradeError ? (
+                                        <span style={{ fontSize: 11, color: '#b91c1c' }}>{upgradeError}</span>
+                                    ) : null}
+                                </div>
                             )}
                         </div>
                         <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>

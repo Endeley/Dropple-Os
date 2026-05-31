@@ -59,6 +59,72 @@ const BLUEPRINT_CATALOG = Object.freeze([
     ),
     certifyBlueprint(
         Object.freeze({
+            id: 'bp.startup.v2',
+            version: 1,
+            name: 'Startup Blueprint',
+            description: 'Seed a startup project universe with initial design and build structure.',
+            kind: 'project',
+            workspaceProfiles: Object.freeze({
+                create: Object.freeze(['uiux', 'graphic', 'document']),
+                build: Object.freeze(['application', 'automation']),
+                collaborate: Object.freeze(['review']),
+            }),
+            capabilityProfiles: Object.freeze({
+                create: Object.freeze(['node:create', 'node:update']),
+                build: Object.freeze(['workflow:define']),
+                collaborate: Object.freeze(['review:submit']),
+            }),
+            seedGraph: Object.freeze({
+                nodes: Object.freeze({
+                    'frame.root': Object.freeze({ id: 'frame.root', type: 'frame' }),
+                }),
+                rootIds: Object.freeze(['frame.root']),
+            }),
+            seedEvents: Object.freeze([
+                Object.freeze({
+                    type: EventTypes.NODE_CREATE,
+                    payload: Object.freeze({
+                        node: Object.freeze({
+                            id: 'frame.root',
+                            type: 'frame',
+                            layout: Object.freeze({ x: 0, y: 0, width: 1280, height: 720 }),
+                        }),
+                    }),
+                }),
+                Object.freeze({
+                    type: EventTypes.NODE_CREATE,
+                    payload: Object.freeze({
+                        node: Object.freeze({
+                            id: 'frame.product',
+                            type: 'frame',
+                            parentId: 'frame.root',
+                            layout: Object.freeze({ x: 80, y: 72, width: 540, height: 320 }),
+                        }),
+                    }),
+                }),
+                Object.freeze({
+                    type: EventTypes.NODE_CREATE,
+                    payload: Object.freeze({
+                        node: Object.freeze({
+                            id: 'frame.review',
+                            type: 'frame',
+                            parentId: 'frame.root',
+                            layout: Object.freeze({ x: 700, y: 72, width: 420, height: 240 }),
+                        }),
+                    }),
+                }),
+            ]),
+            workflowPresets: Object.freeze({}),
+            publishPresets: Object.freeze({}),
+            lineage: Object.freeze({
+                rootId: 'bp.startup.root',
+                versionId: 'bp.startup.v2',
+                parentVersionId: 'bp.startup.v1',
+            }),
+        }),
+    ),
+    certifyBlueprint(
+        Object.freeze({
             id: 'bp.logistics.v1',
             version: 1,
             name: 'Logistics Blueprint',
@@ -123,3 +189,12 @@ export function resolveBlueprintFromCatalog(blueprintId) {
     return BLUEPRINT_CATALOG.find((blueprint) => blueprint.id.toLowerCase() === normalized) ?? null;
 }
 
+export function resolveBlueprintFromCatalogByVersionId(versionId) {
+    if (typeof versionId !== 'string' || versionId.trim().length === 0) return null;
+    const normalized = versionId.trim().toLowerCase();
+    return (
+        BLUEPRINT_CATALOG.find(
+            (blueprint) => String(blueprint?.lineage?.versionId ?? '').toLowerCase() === normalized,
+        ) ?? null
+    );
+}
