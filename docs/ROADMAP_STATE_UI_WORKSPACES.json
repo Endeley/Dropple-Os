@@ -3,7 +3,7 @@
     {
       "id": "U0",
       "title": "UI Workspace Governance Lock",
-      "status": "active",
+      "status": "complete",
       "depends_on": [],
       "gates": [
         { "name": "architecture gate", "command": "npm run arch" },
@@ -14,7 +14,7 @@
     {
       "id": "U1",
       "title": "Workspace Shell Foundation",
-      "status": "not-started",
+      "status": "active",
       "depends_on": ["U0"],
       "gates": [
         { "name": "kernel tests", "command": "npm run test:kernel" },
