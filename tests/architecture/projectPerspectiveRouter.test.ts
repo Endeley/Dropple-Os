@@ -106,6 +106,40 @@ test('project perspective resolves media overlay aliases inside create perspecti
 
 test('project perspective resolves build/operate overlays without creating new truth models', () => {
     assert.deepEqual(
+        resolveProjectPerspectiveContext({ perspectiveId: 'build', entryId: 'ai' }),
+        Object.freeze({
+            perspectiveId: 'build',
+            perspectiveLabel: 'Build',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'ai',
+            entrySource: 'entry-direct',
+            workspaceId: 'build',
+            modeId: 'ai-build',
+            definitionId: 'ai',
+            overlayId: 'ai-systems',
+            overlayClass: 'payload',
+            canonicalModeId: 'automation',
+        }),
+    );
+
+    assert.deepEqual(
+        resolveProjectPerspectiveContext({ perspectiveId: 'build', entryId: 'conversion' }),
+        Object.freeze({
+            perspectiveId: 'build',
+            perspectiveLabel: 'Build',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'conversion',
+            entrySource: 'entry-direct',
+            workspaceId: 'build',
+            modeId: 'conversion',
+            definitionId: 'conversion',
+            overlayId: 'conversion',
+            overlayClass: 'payload',
+            canonicalModeId: 'automation',
+        }),
+    );
+
+    assert.deepEqual(
         resolveProjectPerspectiveContext({ perspectiveId: 'operate', entryId: 'systems-engineering' }),
         Object.freeze({
             perspectiveId: 'operate',

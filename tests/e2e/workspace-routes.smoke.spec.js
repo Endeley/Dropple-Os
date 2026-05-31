@@ -338,3 +338,18 @@ test('create perspective preserves podcast media overlay compatibility entry', a
   await expect(page.locator('body')).toContainText('workspace: media/podcast');
   await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('Podcast');
 });
+
+test('build perspective assistant surface stays entry-consistent for canonical and overlay routes', async ({ page }) => {
+  for (const entryId of ['application', 'logic', 'ai', 'conversion']) {
+    const response = await page.goto(`/workspace/build?entry=${entryId}`, {
+      waitUntil: 'networkidle',
+    });
+
+    expect(response?.ok(), `build ${entryId} route should respond successfully`).toBeTruthy();
+    await expect(page.locator('body')).toContainText(`Build · ${entryId}`);
+    await expect(page.locator('body')).toContainText(`workspace: build/${entryId}`);
+    await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: build');
+    await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.build');
+    await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.build');
+  }
+});

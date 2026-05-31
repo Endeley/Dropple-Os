@@ -174,8 +174,31 @@
     {
       "id": "U4",
       "title": "Build Workspace Experience",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["U3"],
+      "milestones": [
+        {
+          "id": "U4.B1",
+          "title": "Build Overlay Compatibility in Build Perspective (ai/conversion aliases)",
+          "status": "complete",
+          "evidence": [
+            "platform/workspaces/projectPerspectiveRouter.js",
+            "tests/architecture/projectPerspectiveRouter.test.ts",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U4.B2",
+          "title": "Build Assistant UX Consistency Across Canonical and Overlay Entries",
+          "status": "complete",
+          "evidence": [
+            "runtime/assistants/resolvePerspectiveAssistants.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/kernel/perspectiveAssistantResolutionLaw.test.ts",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        }
+      ],
       "gates": [
         { "name": "federation release tests", "command": "npm run test:federation:release" },
         { "name": "release trust report", "command": "npm run release:trust:report" }
@@ -184,7 +207,7 @@
     {
       "id": "U5",
       "title": "System Workspace Experience",
-      "status": "not-started",
+      "status": "active",
       "depends_on": ["U4"],
       "gates": [
         { "name": "release trust summary", "command": "npm run release:trust:summary" },

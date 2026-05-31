@@ -73,6 +73,28 @@ test('perspective assistant resolution honors preferred assistant only within ma
     assert.equal(invalid.activeAssistantId, 'assistant.build');
 });
 
+test('build perspective assistant defaults stay entry-consistent across canonical and overlay entries', () => {
+    const applicationEntry = resolvePerspectiveAssistants({
+        perspectiveId: 'build',
+        entryId: 'application',
+    });
+    const aiEntry = resolvePerspectiveAssistants({
+        perspectiveId: 'build',
+        entryId: 'ai',
+    });
+    const conversionEntry = resolvePerspectiveAssistants({
+        perspectiveId: 'build',
+        entryId: 'conversion',
+    });
+
+    assert.equal(applicationEntry.workspaceId, 'build');
+    assert.equal(applicationEntry.activeAssistantId, 'assistant.build');
+    assert.equal(aiEntry.overlayId, 'ai-systems');
+    assert.equal(aiEntry.activeAssistantId, 'assistant.build');
+    assert.equal(conversionEntry.overlayId, 'conversion');
+    assert.equal(conversionEntry.activeAssistantId, 'assistant.build');
+});
+
 test('perspective assistant resolution preserves overlay-backed operate routing', () => {
     const result = resolvePerspectiveAssistants({
         perspectiveId: 'operate',

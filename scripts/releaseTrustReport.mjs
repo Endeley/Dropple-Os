@@ -278,6 +278,11 @@ function evaluateOsSurfaceShellContractGate(osSurfaceIntentRouting) {
             activeToolId: 'select',
             tools: [{ toolId: 'move' }, { toolId: 'select' }, { toolId: 'move' }],
         },
+        assistants: {
+            perspectiveId: 'build',
+            activeAssistantId: 'assistant.build',
+            assistantIds: ['assistant.build'],
+        },
     });
     const expectedKeys = [
         'workspaceId',
@@ -288,6 +293,9 @@ function evaluateOsSurfaceShellContractGate(osSurfaceIntentRouting) {
         'participantIds',
         'federationPhase',
         'releaseTrustHash',
+        'perspectiveId',
+        'activeAssistantId',
+        'visibleAssistantIds',
         'activeToolId',
         'visibleToolIds',
     ];
@@ -311,6 +319,11 @@ function evaluateOsSurfaceShellContractGate(osSurfaceIntentRouting) {
         synthesizedTools: {
             activeToolId: 'select',
             tools: [{ toolId: 'select' }, { toolId: 'move' }],
+        },
+        assistants: {
+            perspectiveId: 'build',
+            activeAssistantId: 'assistant.build',
+            assistantIds: ['assistant.build'],
         },
     });
     const projectionDeterministic = JSON.stringify(sample) === JSON.stringify(sampleRoundtrip);
