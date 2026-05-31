@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -15,6 +15,7 @@ import {
     listBlueprintInstallOptions,
     listBlueprintUpgradeTargets,
     previewBlueprintUpgradeFromCatalog,
+    resolveProjectBlueprintRouteSelection,
 } from '@/ui/bridges/blueprintInstallBridge.js';
 import { useWorkspaceProjectionState } from '@/runtime/projection';
 import { useCommandPalette } from '@/commands/useCommandPalette';
@@ -106,6 +107,20 @@ export function ProjectPerspectiveShell({
     const persistedProjectBootstrap = useWorkspaceProjectionState(
         (state) => state?.document?.meta?.projectBootstrap ?? null,
     );
+    const routeBootstrapAttemptedRef = useRef(false);
+    const routeBlueprintSelection = useMemo(
+        () =>
+            resolveProjectBlueprintRouteSelection({
+                searchParams,
+                installOptions: blueprintOptions,
+            }),
+        [searchParams, blueprintOptions],
+    );
+
+    useEffect(() => {
+        if (!routeBlueprintSelection || routeBlueprintSelection.blueprintIds.length === 0) return;
+        setSelectedBlueprintIds(routeBlueprintSelection.blueprintIds);
+    }, [routeBlueprintSelection]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
@@ -225,6 +240,15 @@ export function ProjectPerspectiveShell({
             setBlueprintInstalling(false);
         }
     };
+
+    useEffect(() => {
+        if (routeBootstrapAttemptedRef.current) return;
+        if (!routeBlueprintSelection?.autoBootstrap) return;
+        if (!routeBlueprintSelection.blueprintIds.length) return;
+        if (persistedProjectBootstrap) return;
+        routeBootstrapAttemptedRef.current = true;
+        void installSelectedBlueprint();
+    }, [routeBlueprintSelection, persistedProjectBootstrap]);
 
     const selectedBlueprintOptions = useMemo(
         () => blueprintOptions.filter((option) => selectedBlueprintIds.includes(option.id)),

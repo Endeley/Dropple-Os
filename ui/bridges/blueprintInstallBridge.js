@@ -19,6 +19,22 @@ function normalizeId(value) {
     return trimmed.length > 0 ? trimmed : null;
 }
 
+function parseBooleanFlag(value) {
+    if (typeof value !== 'string') return false;
+    const normalized = value.trim().toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
+}
+
+function readQueryField(searchParams, key) {
+    if (!searchParams) return null;
+    if (typeof searchParams.get === 'function') {
+        return searchParams.get(key);
+    }
+    const raw = searchParams?.[key];
+    if (Array.isArray(raw)) return raw[0] ?? null;
+    return raw ?? null;
+}
+
 export function listBlueprintInstallOptions() {
     return listBlueprintCatalog().map((blueprint) =>
         Object.freeze({
@@ -31,6 +47,39 @@ export function listBlueprintInstallOptions() {
             seedEventCount: Array.isArray(blueprint?.seedEvents) ? blueprint.seedEvents.length : 0,
         }),
     );
+}
+
+export function resolveProjectBlueprintRouteSelection({
+    searchParams = null,
+    installOptions = listBlueprintInstallOptions(),
+} = {}) {
+    const optionsById = new Map(installOptions.map((option) => [String(option.id), option]));
+    const blueprintToken = readQueryField(searchParams, 'blueprint');
+    const blueprintsToken = readQueryField(searchParams, 'blueprints');
+    const requestedIds = [];
+    if (typeof blueprintsToken === 'string' && blueprintsToken.trim().length > 0) {
+        for (const id of blueprintsToken.split(',')) {
+            const normalized = normalizeId(id);
+            if (normalized) requestedIds.push(normalized);
+        }
+    } else {
+        const normalized = normalizeId(blueprintToken);
+        if (normalized) requestedIds.push(normalized);
+    }
+    const dedupedIds = [];
+    const seen = new Set();
+    for (const id of requestedIds) {
+        if (!optionsById.has(id)) continue;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        dedupedIds.push(id);
+    }
+    const autoBootstrap = parseBooleanFlag(readQueryField(searchParams, 'bootstrap'));
+
+    return Object.freeze({
+        blueprintIds: Object.freeze(dedupedIds),
+        autoBootstrap,
+    });
 }
 
 function createProjectManifest({
