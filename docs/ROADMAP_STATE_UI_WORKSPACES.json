@@ -331,13 +331,25 @@
     {
       "id": "U12",
       "title": "Ambient Assistant UX and Policy Surface",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["U11"],
       "gates": [
         { "name": "kernel tests", "command": "npm run test:kernel" },
         { "name": "architecture tests", "command": "npm run test:architecture" },
         { "name": "operator surfaces", "command": "npm run test:release:operator-surfaces" },
         { "name": "architecture ci", "command": "npm run architecture:ci" }
+      ]
+    },
+    {
+      "id": "U13",
+      "title": "Blueprint Marketplace and Certification Surface",
+      "status": "active",
+      "depends_on": ["U12"],
+      "gates": [
+        { "name": "template verify", "command": "npm run template:verify-all" },
+        { "name": "release validation", "command": "npm run validate:release" },
+        { "name": "federation lineage", "command": "npm run release:federation:lineage" },
+        { "name": "system all", "command": "npm run test:system:all" }
       ]
     }
   ]
