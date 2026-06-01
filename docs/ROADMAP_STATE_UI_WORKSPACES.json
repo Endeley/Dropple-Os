@@ -343,7 +343,7 @@
     {
       "id": "U13",
       "title": "Blueprint Marketplace and Certification Surface",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["U12"],
       "gates": [
         { "name": "template verify", "command": "npm run template:verify-all" },
