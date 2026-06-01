@@ -3,7 +3,7 @@
     {
       "id": "P14",
       "title": "Project UX Hardening",
-      "status": "active",
+      "status": "complete",
       "depends_on": [],
       "gates": [
         { "name": "architecture gate", "command": "npm run arch" },
@@ -15,7 +15,7 @@
     {
       "id": "P15",
       "title": "Assistant Quality Layer",
-      "status": "not-started",
+      "status": "active",
       "depends_on": ["P14"],
       "gates": [
         { "name": "kernel tests", "command": "npm run test:kernel" },
