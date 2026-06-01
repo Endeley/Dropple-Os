@@ -1,0 +1,51 @@
+{
+  "phases": [
+    {
+      "id": "P14",
+      "title": "Project UX Hardening",
+      "status": "active",
+      "depends_on": [],
+      "gates": [
+        { "name": "architecture gate", "command": "npm run arch" },
+        { "name": "law enforcement", "command": "npm run enforce:laws" },
+        { "name": "architecture tests", "command": "npm run test:architecture" },
+        { "name": "route smoke", "command": "npm run test:routes:smoke" }
+      ]
+    },
+    {
+      "id": "P15",
+      "title": "Assistant Quality Layer",
+      "status": "not-started",
+      "depends_on": ["P14"],
+      "gates": [
+        { "name": "kernel tests", "command": "npm run test:kernel" },
+        { "name": "operator surfaces", "command": "npm run test:release:operator-surfaces" },
+        { "name": "architecture ci", "command": "npm run architecture:ci" }
+      ]
+    },
+    {
+      "id": "P16",
+      "title": "Blueprint Marketplace UX",
+      "status": "not-started",
+      "depends_on": ["P15"],
+      "gates": [
+        { "name": "template verify", "command": "npm run template:verify-all" },
+        { "name": "release trust report", "command": "npm run release:trust:report" },
+        { "name": "release trust summary", "command": "npm run release:trust:summary" },
+        { "name": "validate app", "command": "npm run validate:app" }
+      ]
+    },
+    {
+      "id": "P17",
+      "title": "Real User Readiness",
+      "status": "not-started",
+      "depends_on": ["P16"],
+      "gates": [
+        { "name": "validate release", "command": "npm run validate:release" },
+        { "name": "system all", "command": "npm run test:system:all" },
+        { "name": "determinism gate", "command": "npm run determinism" },
+        { "name": "performance determinism", "command": "npm run performance:determinism" }
+      ]
+    }
+  ]
+}
