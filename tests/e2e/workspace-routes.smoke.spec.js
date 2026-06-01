@@ -214,6 +214,11 @@ test('overview perspective renders project hub panel', async ({ page }) => {
   expect(response?.ok(), 'overview route should respond successfully').toBeTruthy();
   await expect(page.getByTestId('project-hub-panel')).toBeVisible();
   await expect(page.locator('body')).toContainText('perspectives: 6');
+  await expect(page.locator('body')).toContainText('projectId:');
+  await expect(page.locator('body')).toContainText('project name:');
+  await expect(page.locator('body')).toContainText('blueprintId:');
+  await expect(page.locator('body')).toContainText('owner:');
+  await expect(page.locator('body')).toContainText('updatedAt:');
 });
 
 test('project perspective route bootstrap installs a single blueprint deterministically', async ({ page }) => {

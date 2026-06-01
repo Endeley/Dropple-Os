@@ -19,6 +19,7 @@ import {
 } from '@/ui/bridges/blueprintInstallBridge.js';
 import { dispatchOsWorkspaceShellIntent } from '@/ui/bridges/osSurfaceIntentBridge.js';
 import { readOsSurfaceSnapshot } from '@/ui/bridges/osSurfaceReadBridge.js';
+import { resolveProjectIdentityFromProjection } from '@/ui/bridges/projectIdentityReadBridge.js';
 import { useWorkspaceProjectionState } from '@/runtime/projection';
 import { useCommandPalette } from '@/commands/useCommandPalette';
 import { CommandPalette } from '@/commands/CommandPalette';
@@ -126,6 +127,16 @@ export function ProjectPerspectiveShell({
     const assistantSurface = osSurfaceSnapshot?.assistants ?? null;
     const persistedProjectBootstrap = useWorkspaceProjectionState(
         (state) => state?.document?.meta?.projectBootstrap ?? null,
+    );
+    const projectedDocument = useWorkspaceProjectionState((state) => state?.document ?? null);
+    const projectedEvents = useWorkspaceProjectionState((state) => state?.events ?? []);
+    const projectIdentity = useMemo(
+        () =>
+            resolveProjectIdentityFromProjection({
+                document: projectedDocument,
+                events: projectedEvents,
+            }),
+        [projectedDocument, projectedEvents],
     );
     const routeBootstrapAttemptedRef = useRef(false);
     const routeBlueprintSelection = useMemo(
@@ -570,6 +581,21 @@ export function ProjectPerspectiveShell({
                                     </div>
                                     <div style={{ fontSize: 10, color: '#334155' }}>
                                         recent views: {recentRoutes.length}
+                                    </div>
+                                    <div style={{ fontSize: 10, color: '#334155' }}>
+                                        projectId: {projectIdentity.projectId ?? 'none'}
+                                    </div>
+                                    <div style={{ fontSize: 10, color: '#334155' }}>
+                                        project name: {projectIdentity.name}
+                                    </div>
+                                    <div style={{ fontSize: 10, color: '#334155' }}>
+                                        blueprintId: {projectIdentity.blueprintId ?? 'none'}
+                                    </div>
+                                    <div style={{ fontSize: 10, color: '#334155' }}>
+                                        owner: {projectIdentity.owner ?? 'none'}
+                                    </div>
+                                    <div style={{ fontSize: 10, color: '#334155' }}>
+                                        updatedAt: {projectIdentity.updatedAt ?? 'none'}
                                     </div>
                                     <div style={{ fontSize: 10, color: '#334155' }}>
                                         bootstrap:{' '}
