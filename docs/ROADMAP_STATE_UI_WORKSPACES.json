@@ -319,13 +319,25 @@
     {
       "id": "U11",
       "title": "Perspective Navigation and Cross-Route Cohesion",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["U10"],
       "gates": [
         { "name": "legacy migration scan", "command": "npm run migration:legacy-scan" },
         { "name": "implementation navigator", "command": "npm run implementation:navigator" },
         { "name": "ui-workspaces navigator dry-run", "command": "npm run implementation:navigator:ui-workspaces -- --phase U11 --dry-run" },
         { "name": "route smoke", "command": "npm run test:routes:smoke" }
+      ]
+    },
+    {
+      "id": "U12",
+      "title": "Ambient Assistant UX and Policy Surface",
+      "status": "active",
+      "depends_on": ["U11"],
+      "gates": [
+        { "name": "kernel tests", "command": "npm run test:kernel" },
+        { "name": "architecture tests", "command": "npm run test:architecture" },
+        { "name": "operator surfaces", "command": "npm run test:release:operator-surfaces" },
+        { "name": "architecture ci", "command": "npm run architecture:ci" }
       ]
     }
   ]
