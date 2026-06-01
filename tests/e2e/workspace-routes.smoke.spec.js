@@ -4,7 +4,7 @@ import { expectSingleVisibleCanvasHost } from './helpers/canvasHost.js';
 const ROUTES = [
   {
     path: '/',
-    expected: 'Dropple OS',
+    expected: 'Recent Projects',
   },
   {
     path: '/marketplace',
@@ -124,6 +124,20 @@ for (const route of ROUTES) {
     ).toEqual([]);
   });
 }
+
+test('home route exposes project-first entry sections', async ({ page }) => {
+  const response = await page.goto('/', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
+  await expect(page.getByRole('heading', { name: 'Recent Projects' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Continue Working' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Recommended Blueprints' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Marketplace' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Open Project Space' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Browse Marketplace' })).toBeVisible();
+});
 
 test('viewer smoke mounts canonical canvas without runtime errors', async ({ page }) => {
   const errors = [];
