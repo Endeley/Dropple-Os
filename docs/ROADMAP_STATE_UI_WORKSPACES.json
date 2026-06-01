@@ -278,6 +278,30 @@
       "gates": [
         { "name": "full release validation", "command": "npm run validate:release" }
       ]
+    },
+    {
+      "id": "U8",
+      "title": "UI-Facing Workspace Shell Progression",
+      "status": "complete",
+      "depends_on": ["U7"],
+      "gates": [
+        { "name": "architecture gate", "command": "npm run arch" },
+        { "name": "law enforcement", "command": "npm run enforce:laws" },
+        { "name": "architecture tests", "command": "npm run test:architecture" },
+        { "name": "validate app", "command": "npm run validate:app" }
+      ]
+    },
+    {
+      "id": "U9",
+      "title": "Project Blueprint Home and Install Flow",
+      "status": "active",
+      "depends_on": ["U8"],
+      "gates": [
+        { "name": "kernel tests", "command": "npm run test:kernel" },
+        { "name": "release attestation", "command": "npm run test:release:attestation" },
+        { "name": "release trust report", "command": "npm run release:trust:report" },
+        { "name": "release trust summary", "command": "npm run release:trust:summary" }
+      ]
     }
   ]
 }
