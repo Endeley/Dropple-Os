@@ -306,7 +306,7 @@
     {
       "id": "U10",
       "title": "Project Universe Canvas and Semantic Zoom",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["U9"],
       "gates": [
         { "name": "runtime map", "command": "npm run runtime:map:test" },
@@ -314,6 +314,18 @@
         { "name": "runtime statehash", "command": "npm run runtime:statehash:test" },
         { "name": "performance determinism", "command": "npm run performance:determinism" },
         { "name": "determinism gate", "command": "npm run determinism" }
+      ]
+    },
+    {
+      "id": "U11",
+      "title": "Perspective Navigation and Cross-Route Cohesion",
+      "status": "active",
+      "depends_on": ["U10"],
+      "gates": [
+        { "name": "legacy migration scan", "command": "npm run migration:legacy-scan" },
+        { "name": "implementation navigator", "command": "npm run implementation:navigator" },
+        { "name": "ui-workspaces navigator dry-run", "command": "npm run implementation:navigator:ui-workspaces -- --phase U11 --dry-run" },
+        { "name": "route smoke", "command": "npm run test:routes:smoke" }
       ]
     }
   ]
