@@ -294,13 +294,26 @@
     {
       "id": "U9",
       "title": "Project Blueprint Home and Install Flow",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["U8"],
       "gates": [
         { "name": "kernel tests", "command": "npm run test:kernel" },
         { "name": "release attestation", "command": "npm run test:release:attestation" },
         { "name": "release trust report", "command": "npm run release:trust:report" },
         { "name": "release trust summary", "command": "npm run release:trust:summary" }
+      ]
+    },
+    {
+      "id": "U10",
+      "title": "Project Universe Canvas and Semantic Zoom",
+      "status": "active",
+      "depends_on": ["U9"],
+      "gates": [
+        { "name": "runtime map", "command": "npm run runtime:map:test" },
+        { "name": "runtime replay", "command": "npm run runtime:replay:test" },
+        { "name": "runtime statehash", "command": "npm run runtime:statehash:test" },
+        { "name": "performance determinism", "command": "npm run performance:determinism" },
+        { "name": "determinism gate", "command": "npm run determinism" }
       ]
     }
   ]
