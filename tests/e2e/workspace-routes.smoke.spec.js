@@ -324,6 +324,7 @@ test('project perspective route bootstrap installs a single blueprint determinis
   await expect(page.locator('body')).toContainText('blueprintId: bp.startup.v1');
   await expect(page.locator('body')).toContainText('blueprintVersion: bp.startup.v1');
   await expect(page.locator('body')).toContainText('Installed bp.startup.v1');
+  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('artifacts');
 });
 
 test('project perspective route bootstrap composes multiple blueprints deterministically', async ({ page }) => {
@@ -338,6 +339,7 @@ test('project perspective route bootstrap composes multiple blueprints determini
   await expect(page.locator('body')).toContainText('Installed composed blueprint');
   await expect(page.locator('body')).toContainText(/blueprintId:\s+bp\.compose\./);
   await expect(page.locator('body')).toContainText(/blueprintVersion:\s+bp\.compose\./);
+  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('artifacts');
 });
 
 test('project shell assistant intent enqueues through canonical runtime bridge', async ({ page }) => {

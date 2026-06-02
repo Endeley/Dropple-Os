@@ -10,21 +10,58 @@ import {
 const MIN_SCALE = 0.1;
 const MAX_SCALE = 8;
 
-const ARTIFACT_NODES = Object.freeze([
-    Object.freeze({ id: 'brand', label: 'Brand System', x: -240, y: -120 }),
-    Object.freeze({ id: 'ui', label: 'UI Design', x: 220, y: -110 }),
-    Object.freeze({ id: 'app', label: 'App Architecture', x: 260, y: 120 }),
-    Object.freeze({ id: 'workflow', label: 'Workflow Maps', x: -220, y: 130 }),
-    Object.freeze({ id: 'knowledge', label: 'Knowledge', x: -40, y: 230 }),
-    Object.freeze({ id: 'media', label: 'Media Assets', x: 40, y: -230 }),
-]);
-
 function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
 }
 
+function resolveUniverseNodes(universe) {
+    const nodes = universe?.nodes && typeof universe.nodes === 'object' ? Object.values(universe.nodes) : [];
+    return nodes.filter(Boolean);
+}
+
+function resolveBounds(nodes) {
+    if (!Array.isArray(nodes) || nodes.length === 0) {
+        return Object.freeze({
+            minX: -320,
+            maxX: 320,
+            minY: -260,
+            maxY: 260,
+            spanX: 640,
+            spanY: 520,
+            span: 640,
+        });
+    }
+
+    const xs = nodes.map((node) => Number.isFinite(node?.x) ? Number(node.x) : 0);
+    const ys = nodes.map((node) => Number.isFinite(node?.y) ? Number(node.y) : 0);
+    const minX = Math.min(...xs, -52);
+    const maxX = Math.max(...xs, 52);
+    const minY = Math.min(...ys, -20);
+    const maxY = Math.max(...ys, 20);
+    const spanX = Math.max(maxX - minX + 180, 320);
+    const spanY = Math.max(maxY - minY + 180, 320);
+    return Object.freeze({
+        minX,
+        maxX,
+        minY,
+        maxY,
+        spanX,
+        spanY,
+        span: Math.max(spanX, spanY),
+    });
+}
+
+function formatNodeKind(kind) {
+    if (typeof kind !== 'string' || kind.length === 0) return 'artifact';
+    return kind
+        .split('-')
+        .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
+        .join(' ');
+}
+
 export function ProjectUniverseCanvas({
     perspectiveId = 'overview',
+    universe = null,
     initialCamera = null,
     onCameraChange = null,
 }) {
@@ -42,23 +79,28 @@ export function ProjectUniverseCanvas({
         [camera.scale, perspectiveId],
     );
     const visibility = useMemo(() => resolveSemanticZoomVisibility(presentation.tier), [presentation.tier]);
+    const artifactNodes = useMemo(() => resolveUniverseNodes(universe), [universe]);
     const nodeSelection = useMemo(
         () =>
             resolveSemanticZoomNodeSelection({
                 tier: presentation.tier,
                 perspectiveId: presentation.perspectiveId,
-                nodeIds: ARTIFACT_NODES.map((node) => node.id),
+                nodeIds: artifactNodes.map((node) => node.id),
             }),
-        [presentation.tier, presentation.perspectiveId],
+        [artifactNodes, presentation.tier, presentation.perspectiveId],
     );
     const visibleNodes = useMemo(() => {
         const selected = new Set(nodeSelection.selectedNodeIds);
-        return ARTIFACT_NODES.filter((node) => selected.has(node.id));
-    }, [nodeSelection.selectedNodeIds]);
+        return artifactNodes.filter((node) => selected.has(node.id));
+    }, [artifactNodes, nodeSelection.selectedNodeIds]);
+    const renderNodes = useMemo(
+        () => visibleNodes.filter((node) => node.id !== universe?.hubId),
+        [universe?.hubId, visibleNodes],
+    );
+    const bounds = useMemo(() => resolveBounds(artifactNodes), [artifactNodes]);
     const minimap = useMemo(() => {
-        const worldSpan = 640;
         const miniSize = 86;
-        const worldToMini = miniSize / worldSpan;
+        const worldToMini = miniSize / bounds.span;
         const centerX = miniSize / 2 + camera.x * worldToMini;
         const centerY = miniSize / 2 + camera.y * worldToMini;
         const viewportSize = clamp(34 / Math.max(camera.scale, 0.01), 8, 40);
@@ -68,7 +110,7 @@ export function ProjectUniverseCanvas({
             centerY: clamp(centerY, 0, miniSize),
             viewportSize,
         });
-    }, [camera.x, camera.y, camera.scale]);
+    }, [bounds.span, camera.x, camera.y, camera.scale]);
 
     useEffect(() => {
         if (typeof onCameraChange === 'function') {
@@ -125,7 +167,7 @@ export function ProjectUniverseCanvas({
             Object.freeze({
                 x: 0,
                 y: 0,
-                scale: 0.72,
+                scale: clamp(440 / Math.max(bounds.span, 440), MIN_SCALE, MAX_SCALE),
             }),
         );
     };
@@ -136,8 +178,7 @@ export function ProjectUniverseCanvas({
         const rect = element.getBoundingClientRect();
         const miniX = clamp(event.clientX - rect.left, 0, minimap.miniSize);
         const miniY = clamp(event.clientY - rect.top, 0, minimap.miniSize);
-        const worldSpan = 640;
-        const worldToMini = minimap.miniSize / worldSpan;
+        const worldToMini = minimap.miniSize / bounds.span;
         const x = (miniX - minimap.miniSize / 2) / worldToMini;
         const y = (miniY - minimap.miniSize / 2) / worldToMini;
         setCamera((current) =>
@@ -176,6 +217,11 @@ export function ProjectUniverseCanvas({
         setDragState(null);
         event.currentTarget.releasePointerCapture?.(event.pointerId);
     };
+
+    const hubLabel =
+        universe?.hubId && universe?.nodes?.[universe.hubId]?.label
+            ? universe.nodes[universe.hubId].label
+            : 'Project Hub';
 
     return (
         <section
@@ -245,7 +291,7 @@ export function ProjectUniverseCanvas({
                         Reset
                     </button>
                     <span>
-                        zoom {Math.round(camera.scale * 100)}% · tier {presentation.tier} · {presentation.domain}
+                        {artifactNodes.length} artifacts · zoom {Math.round(camera.scale * 100)}% · tier {presentation.tier} · {presentation.domain}
                     </span>
                 </div>
             </div>
@@ -346,10 +392,10 @@ export function ProjectUniverseCanvas({
                             fontWeight: 700,
                             letterSpacing: 0.2,
                         }}>
-                        {visibility.showProjectHubLabel ? 'Project Hub' : 'Hub'}
+                        {visibility.showProjectHubLabel ? hubLabel : 'Hub'}
                     </div>
                     {visibility.showClusterDots
-                        ? visibleNodes.map((node) => (
+                        ? renderNodes.map((node) => (
                               <div
                                   key={`cluster-${node.id}`}
                                   style={{
@@ -364,9 +410,10 @@ export function ProjectUniverseCanvas({
                               />
                           ))
                         : null}
-                    {visibleNodes.map((node) => (
+                    {renderNodes.map((node) => (
                         <div
                             key={node.id}
+                            data-testid={`project-universe-node-${node.id}`}
                             style={{
                                 position: 'absolute',
                                 left: node.x,
@@ -382,7 +429,18 @@ export function ProjectUniverseCanvas({
                                 textAlign: 'center',
                                 display: visibility.showNodeCards || visibility.showNodeLabels ? 'block' : 'none',
                             }}>
-                            {visibility.showNodeLabels ? node.label : node.id}
+                            {visibility.showNodeLabels ? (
+                                <>
+                                    <div>{node.label}</div>
+                                    {visibility.showNodeCards ? (
+                                        <div style={{ fontSize: 9, color: '#64748b', marginTop: 3 }}>
+                                            {formatNodeKind(node.kind)}
+                                        </div>
+                                    ) : null}
+                                </>
+                            ) : (
+                                node.id
+                            )}
                         </div>
                     ))}
                     {visibility.showClusterDots && nodeSelection.hiddenCount > 0 ? (

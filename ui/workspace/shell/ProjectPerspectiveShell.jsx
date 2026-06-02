@@ -34,6 +34,7 @@ import {
     mergeRecentProjectRoutes,
     normalizeRecentProjectRoutes,
 } from '@/runtime/workspaces/projectShellRouteState.js';
+import { buildProjectUniverseProjection } from '@/runtime/workspaces/projectUniverseProjection.js';
 import { ProjectUniverseCanvas } from './ProjectUniverseCanvas.jsx';
 
 function formatEntryLabel(entryId) {
@@ -143,6 +144,14 @@ export function ProjectPerspectiveShell({
                 events: projectedEvents,
             }),
         [projectedDocument, projectedEvents],
+    );
+    const projectUniverse = useMemo(
+        () =>
+            buildProjectUniverseProjection({
+                document: projectedDocument,
+                projectIdentity,
+            }),
+        [projectIdentity, projectedDocument],
     );
     const routeBootstrapAttemptedRef = useRef(false);
     const routeBlueprintSelection = useMemo(
@@ -554,6 +563,7 @@ export function ProjectPerspectiveShell({
             <div style={{ minHeight: 0, display: 'grid', gridTemplateRows: 'auto 1fr' }}>
                 <ProjectUniverseCanvas
                     perspectiveId={perspectiveId}
+                    universe={projectUniverse}
                     initialCamera={cameraRouteState}
                     onCameraChange={handleCameraChange}
                 />
