@@ -103827,6 +103827,229 @@
       "versionId": "9f6be9687a439d01884072a83e17f79512bee37f05bd70eb1ea101bf8c72ec19",
       "lineageRootId": "9f6be9687a439d01884072a83e17f79512bee37f05bd70eb1ea101bf8c72ec19",
       "parentVersionIds": []
+    },
+    {
+      "id": "tpl.uiux.marketplace-flow-1780419204418",
+      "version": "1.0.0",
+      "snapshotHash": "217355c168cc995ceac1aa65fa9e7ed863308464a3f9945ac6fab77893358b17",
+      "contentHash": "73b8373f023258eb45b0e8f75968318191cb531135084755be75938960c3d8b3",
+      "contentHashInputs": {
+        "baseSceneGraph": {
+          "layout": {},
+          "nodes": [
+            {
+              "channels": {},
+              "id": "headline",
+              "opacity": 1,
+              "transform": {
+                "scale": 1,
+                "x": 0,
+                "y": 0
+              },
+              "type": "text"
+            },
+            {
+              "channels": {},
+              "id": "root",
+              "opacity": 1,
+              "transform": {
+                "scale": 1,
+                "x": 0,
+                "y": 0
+              },
+              "type": "frame"
+            }
+          ],
+          "rootId": "root",
+          "tree": {
+            "headline": [],
+            "root": [
+              "headline"
+            ]
+          }
+        },
+        "defaultState": "default",
+        "engineVersion": "dropple-motion@1.x",
+        "params": {
+          "content": {},
+          "motion": {},
+          "style": {}
+        },
+        "states": {
+          "default": {
+            "channels": [
+              {
+                "id": "opacity",
+                "keyframes": [
+                  {
+                    "easing": "linear",
+                    "time": 0,
+                    "value": 0
+                  },
+                  {
+                    "easing": "easeInOut",
+                    "time": 300,
+                    "value": 1
+                  }
+                ],
+                "property": "opacity",
+                "target": "headline"
+              }
+            ],
+            "duration": 300,
+            "groups": [],
+            "tracks": [
+              {
+                "channelIds": [
+                  "opacity"
+                ],
+                "id": "track:opacity",
+                "meta": {
+                  "blendMode": "add",
+                  "locked": false,
+                  "name": "headline.opacity"
+                },
+                "order": 0,
+                "type": "standard"
+              }
+            ]
+          }
+        },
+        "templateId": "tpl.uiux.marketplace-flow-1780419204418",
+        "templateVersion": "1.0.0"
+      },
+      "lineage": {
+        "rootId": "d617666911c756b75701722d92b0f8cf0a8d000a4f643347a1c96d23b8426dbc",
+        "nodeId": "d617666911c756b75701722d92b0f8cf0a8d000a4f643347a1c96d23b8426dbc",
+        "type": "seed",
+        "parentIds": []
+      },
+      "baseSceneGraph": {
+        "rootId": "root",
+        "nodes": [
+          {
+            "id": "headline",
+            "type": "text",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "scale": 1
+            },
+            "opacity": 1,
+            "channels": {}
+          },
+          {
+            "id": "root",
+            "type": "frame",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "scale": 1
+            },
+            "opacity": 1,
+            "channels": {}
+          }
+        ],
+        "tree": {
+          "headline": [],
+          "root": [
+            "headline"
+          ]
+        },
+        "layout": {}
+      },
+      "states": {
+        "default": {
+          "duration": 300,
+          "tracks": [
+            {
+              "id": "track:opacity",
+              "type": "standard",
+              "order": 0,
+              "channelIds": [
+                "opacity"
+              ],
+              "meta": {
+                "name": "headline.opacity",
+                "locked": false,
+                "blendMode": "add"
+              }
+            }
+          ],
+          "groups": [],
+          "channels": [
+            {
+              "id": "opacity",
+              "target": "headline",
+              "property": "opacity",
+              "keyframes": [
+                {
+                  "time": 0,
+                  "value": 0,
+                  "easing": "linear"
+                },
+                {
+                  "time": 300,
+                  "value": 1,
+                  "easing": "easeInOut"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "defaultState": "default",
+      "capabilityProfile": {
+        "complexity": {
+          "trackCount": 1,
+          "groupCount": 0,
+          "channelCount": 1,
+          "channelDensity": 1
+        },
+        "performance": {
+          "evalP95Ms": null,
+          "withinBudget": null
+        },
+        "readiness": {
+          "withinTrackLimit": true,
+          "withinChannelDensity": true,
+          "withinEvalBudget": null,
+          "ok": true
+        },
+        "warnings": [
+          "Evaluation p95 unavailable"
+        ]
+      },
+      "metadata": {
+        "name": "Marketplace Flow 1780419204418",
+        "description": "Marketplace-certified template flow",
+        "author": "Marketplace QA",
+        "license": "dropple-marketplace-standard",
+        "createdAt": "2026-06-02T16:53:24.433Z",
+        "engine": "dropple-motion@1.x"
+      },
+      "params": {
+        "content": {},
+        "style": {},
+        "motion": {}
+      },
+      "certification": {
+        "certified": true,
+        "fingerprint": "bbf9bc1c04d969a9c684dc908a61ae1f993f72cb86871f71ef3a6094db5cab9e",
+        "snapshotHash": "217355c168cc995ceac1aa65fa9e7ed863308464a3f9945ac6fab77893358b17",
+        "contentHash": "73b8373f023258eb45b0e8f75968318191cb531135084755be75938960c3d8b3",
+        "lineageRootId": "d617666911c756b75701722d92b0f8cf0a8d000a4f643347a1c96d23b8426dbc",
+        "lineageNodeId": "d617666911c756b75701722d92b0f8cf0a8d000a4f643347a1c96d23b8426dbc",
+        "capabilityHash": "44ffe1dac90073c8063cf8bacc1321d7872267c8da4d114bd47e0d3d8a2d0d3b",
+        "certificationHash": "b88318cb8c6f90562dac8e2ae94b0cd65eb0d4f6d79f9a69f4de39fac1058c15",
+        "engineVersion": "dropple-motion@1.x",
+        "certifiedAt": "derived:d617666911c7:217355c168cc",
+        "engineHash": "dd3425bd740d26c0c2cb071a4338c5c16a6d98f8ca313494cd3c1e6d89b8ea81"
+      },
+      "mode": "uiux",
+      "versionId": "d617666911c756b75701722d92b0f8cf0a8d000a4f643347a1c96d23b8426dbc",
+      "lineageRootId": "d617666911c756b75701722d92b0f8cf0a8d000a4f643347a1c96d23b8426dbc",
+      "parentVersionIds": []
     }
   ],
   "lineageRoots": {
@@ -105215,6 +105438,9 @@
     ],
     "d60e56b1238dfd3cbeefc0242b78b6d066eeafd0b8bd53dd0d96104b43258632": [
       "d60e56b1238dfd3cbeefc0242b78b6d066eeafd0b8bd53dd0d96104b43258632"
+    ],
+    "d617666911c756b75701722d92b0f8cf0a8d000a4f643347a1c96d23b8426dbc": [
+      "d617666911c756b75701722d92b0f8cf0a8d000a4f643347a1c96d23b8426dbc"
     ],
     "d6c2c99dc23c3842b614ed4385febfb9a76b154b09ccda061d1e64a17dc2aea1": [
       "d6c2c99dc23c3842b614ed4385febfb9a76b154b09ccda061d1e64a17dc2aea1"
