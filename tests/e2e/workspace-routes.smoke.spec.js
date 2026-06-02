@@ -131,6 +131,7 @@ test('home route exposes project-first entry sections', async ({ page }) => {
   });
 
   expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
+  await expect(page.getByRole('heading', { name: 'Start from Intent' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Recent Projects' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Continue Working' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Recommended Blueprints' })).toBeVisible();
@@ -161,6 +162,19 @@ test('home route reads recent projects and continue route from persisted local s
   await expect(page.getByRole('link', { name: 'Open Project Space' })).toHaveAttribute(
     'href',
     '/workspace/new?doc=doc-recent-1',
+  );
+});
+
+test('home route resolves intent into a certified blueprint recommendation', async ({ page }) => {
+  const response = await page.goto('/', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
+  await page.getByLabel('Describe what you want to build').fill('Build a trucking company');
+  await expect(page.getByRole('link', { name: 'Start with Logistics Blueprint' })).toHaveAttribute(
+    'href',
+    '/workspace/create?blueprint=bp.logistics.v1&bootstrap=1',
   );
 });
 

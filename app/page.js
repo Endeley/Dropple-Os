@@ -2,5 +2,11 @@ import { listBlueprintCatalog } from '@/runtime/blueprints/blueprintCatalog.js';
 import ProjectHomeClient from './ProjectHomeClient.jsx';
 
 export default function HomePage() {
-  return <ProjectHomeClient recommendedBlueprints={listBlueprintCatalog().slice(0, 3)} />;
+  const blueprintCatalog = listBlueprintCatalog();
+  return (
+    <ProjectHomeClient
+      blueprintCatalog={blueprintCatalog}
+      recommendedBlueprints={blueprintCatalog.slice(0, 3)}
+    />
+  );
 }
