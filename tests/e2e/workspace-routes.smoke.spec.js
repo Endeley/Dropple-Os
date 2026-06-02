@@ -136,6 +136,7 @@ test('home route exposes project-first entry sections', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Continue Working' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Recommended Blueprints' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Marketplace' })).toBeVisible();
+  await expect(page.locator('body')).toContainText('Operations');
   await expect(page.getByRole('link', { name: 'Open Project Space' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Browse Marketplace' })).toBeVisible();
 });
@@ -163,6 +164,22 @@ test('home route reads recent projects and continue route from persisted local s
     'href',
     '/workspace/new?doc=doc-recent-1',
   );
+});
+
+test('marketplace route exposes blueprint categories and category filter', async ({ page }) => {
+  const response = await page.goto('/marketplace', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'marketplace route should respond successfully').toBeTruthy();
+  await expect(page.getByRole('heading', { name: 'Blueprint Categories' })).toBeVisible();
+  await expect(page.locator('body')).toContainText('Business');
+  await expect(page.locator('body')).toContainText('Creative');
+  await expect(page.locator('body')).toContainText('Technology');
+  await expect(page.locator('body')).toContainText('Engineering');
+  await expect(page.locator('body')).toContainText('Education');
+  await expect(page.locator('body')).toContainText('Operations');
+  await expect(page.getByRole('combobox').first()).toContainText('All blueprint categories');
 });
 
 test('home route resolves intent into a certified blueprint recommendation', async ({ page }) => {

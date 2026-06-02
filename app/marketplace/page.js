@@ -7,6 +7,7 @@ import { useMarketplaceFilters } from '@/marketplace/useMarketplaceFilters';
 import MarketplaceFilterBar from '@/marketplace/MarketplaceFilterBar';
 import { filterTemplates } from '@/marketplace/filterTemplates';
 import { collections } from '@/marketplace/collections';
+import { BLUEPRINT_CATEGORIES } from '@/marketplace/blueprintCategories.js';
 
 export default function MarketplacePage() {
   const router = useRouter();
@@ -52,6 +53,10 @@ export default function MarketplacePage() {
   }, []);
 
   const visibleTemplates = filterTemplates(templates, filters);
+  const categoryCards = BLUEPRINT_CATEGORIES.map((category) => ({
+    ...category,
+    count: templates.filter((template) => template?.blueprintCategory === category.id).length,
+  }));
 
   function openTemplate(template) {
     router.push(`/marketplace/template/${template.id}`);
@@ -62,6 +67,34 @@ export default function MarketplacePage() {
       <h2>Blueprints</h2>
 
       <MarketplaceFilterBar {...filters} />
+
+      <h3 style={{ marginTop: 'var(--space-4)' }}>Blueprint Categories</h3>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+          gap: 'var(--space-3)',
+          marginTop: 'var(--space-2)',
+        }}
+      >
+        {categoryCards.map((category) => (
+          <div
+            key={category.id}
+            style={{
+              border: '1px solid var(--border-default)',
+              borderRadius: 'var(--radius-md)',
+              padding: 'var(--space-3)',
+              background: 'var(--surface-1)',
+              fontSize: 13,
+            }}
+          >
+            <div style={{ fontWeight: 600 }}>{category.label}</div>
+            <div style={{ marginTop: 'var(--space-xs)', color: 'var(--text-muted)' }}>
+              {category.count} blueprints
+            </div>
+          </div>
+        ))}
+      </div>
 
       <h3 style={{ marginTop: 'var(--space-4)' }}>Featured Collections</h3>
       <div

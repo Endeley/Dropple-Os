@@ -39,6 +39,8 @@ function normalizeBlueprintRecommendations(blueprints) {
                 id,
                 name,
                 description: asNonEmptyString(blueprint?.description) ?? '',
+                blueprintCategory: asNonEmptyString(blueprint?.blueprintCategory) ?? null,
+                blueprintCategoryLabel: asNonEmptyString(blueprint?.blueprintCategoryLabel) ?? null,
             });
         })
         .filter(Boolean)

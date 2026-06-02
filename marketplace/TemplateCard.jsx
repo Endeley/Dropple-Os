@@ -43,6 +43,9 @@ export default function TemplateCard({ template, onOpen }) {
         <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{priceLabel}</div>
       </div>
       <div style={{ fontSize: 14, fontWeight: 600 }}>{metadata.title}</div>
+      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+        {template?.blueprintCategoryLabel ?? 'Business'} Blueprint
+      </div>
       <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
         {metadata.description}
       </div>

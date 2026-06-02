@@ -3,6 +3,8 @@
 export default function MarketplaceFilterBar({
   query,
   setQuery,
+  category,
+  setCategory,
   level,
   setLevel,
   tag,
@@ -35,6 +37,20 @@ export default function MarketplaceFilterBar({
         onChange={(e) => setQuery(e.target.value)}
         style={{ ...inputStyle, flex: '1 1 220px' }}
       />
+
+      <select
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        style={inputStyle}
+      >
+        <option value="all">All blueprint categories</option>
+        <option value="business">Business</option>
+        <option value="creative">Creative</option>
+        <option value="technology">Technology</option>
+        <option value="engineering">Engineering</option>
+        <option value="education">Education</option>
+        <option value="operations">Operations</option>
+      </select>
 
       <select
         value={level}

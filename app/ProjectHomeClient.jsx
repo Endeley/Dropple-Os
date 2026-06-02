@@ -109,7 +109,11 @@ export default function ProjectHomeClient({ recommendedBlueprints = [], blueprin
                 <ul>
                     {snapshot.recommendedBlueprints.map((blueprint) => (
                         <li key={blueprint.id}>
-                            <strong>{blueprint.name}</strong>: {blueprint.description}
+                            <strong>{blueprint.name}</strong>{' '}
+                            <span style={{ color: '#475569' }}>
+                                ({blueprint.blueprintCategoryLabel ?? 'Business'})
+                            </span>
+                            : {blueprint.description}
                         </li>
                     ))}
                 </ul>

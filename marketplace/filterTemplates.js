@@ -10,6 +10,10 @@ export function filterTemplates(templates, filters) {
       return false;
     }
 
+    if (filters.category !== 'all' && tpl?.blueprintCategory !== filters.category) {
+      return false;
+    }
+
     if (filters.level !== 'all' && metadata.level !== filters.level) {
       return false;
     }

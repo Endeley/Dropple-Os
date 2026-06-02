@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { loadCertifiedTemplates } from '@/engine/templates/templateLoader.js';
 import { ArtifactKind } from '@/gallery/artifacts/types.js';
+import { decorateBlueprintCategory } from '@/marketplace/blueprintCategories.js';
 
 function normalizeMarketplaceTemplate(template) {
     const metadata = template?.metadata ?? {};
@@ -15,7 +16,7 @@ function normalizeMarketplaceTemplate(template) {
         String(creatorName).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-') ||
         'unknown';
 
-    return {
+    return decorateBlueprintCategory({
         ...template,
         artifact: {
             kind: ArtifactKind.ENVIRONMENT,
@@ -35,7 +36,7 @@ function normalizeMarketplaceTemplate(template) {
             level: metadata?.level ?? 'beginner',
             thumbnail: metadata?.thumbnail ?? null,
         },
-    };
+    });
 }
 
 function loadMarketplaceTemplates() {
