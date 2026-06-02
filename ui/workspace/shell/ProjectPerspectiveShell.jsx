@@ -37,6 +37,11 @@ import {
 import { ProjectUniverseCanvas } from './ProjectUniverseCanvas.jsx';
 
 function formatEntryLabel(entryId) {
+    const override = {
+        uiux: 'UI / UX',
+        ai: 'AI',
+    }[String(entryId).toLowerCase()];
+    if (override) return override;
     return String(entryId)
         .split('-')
         .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
@@ -97,6 +102,7 @@ export function ProjectPerspectiveShell({
     const searchParams = useSearchParams();
     const perspectiveId = projectPerspectiveContext.perspectiveId;
     const perspectiveLabel = projectPerspectiveContext.perspectiveLabel;
+    const activeContextLabel = `${perspectiveLabel} > ${formatEntryLabel(projectPerspectiveContext.entryId)}`;
     const perspectiveIds = listProjectPerspectiveIds();
     const perspectiveDefinition = getProjectPerspectiveDefinition(perspectiveId);
     const perspectiveEntries = perspectiveDefinition?.entries ?? [];
@@ -453,10 +459,10 @@ export function ProjectPerspectiveShell({
                             }}>
                             Project
                         </span>
-                        <strong style={{ fontSize: 18, color: '#0f172a' }}>{perspectiveLabel}</strong>
+                        <strong style={{ fontSize: 18, color: '#0f172a' }}>{activeContextLabel}</strong>
                     </div>
                     <span style={{ fontSize: 12, color: '#475569' }}>
-                        Specialization: {formatEntryLabel(projectPerspectiveContext.entryId)}
+                        Active context: {activeContextLabel}
                     </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

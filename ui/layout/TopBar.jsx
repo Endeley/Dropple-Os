@@ -32,7 +32,7 @@ export default function TopBar({
                     {workspaceLabel}
                     {modeLabel && (
                         <span className='topbar-mode'>
-                            {' · '}
+                            {' > '}
                             {modeLabel}
                         </span>
                     )}

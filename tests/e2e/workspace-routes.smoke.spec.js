@@ -366,9 +366,9 @@ test('create perspective assistant surface stays entry-consistent for design and
 
 test('design modes expose parity-stable shell chrome and strip signals', async ({ page }) => {
   const designModes = [
-    { modeId: 'uiux', modeLabel: 'UI / UX', routeMarker: 'Design / UIUX', uiuxShell: true },
-    { modeId: 'graphic', modeLabel: 'Graphic', routeMarker: '· Graphic', uiuxShell: false },
-    { modeId: 'document', modeLabel: 'Document', routeMarker: '· Document', uiuxShell: false },
+    { modeId: 'uiux', modeLabel: 'UI / UX', routeMarker: 'Create > UI / UX', uiuxShell: true },
+    { modeId: 'graphic', modeLabel: 'Graphic', routeMarker: 'Create > Graphic', uiuxShell: false },
+    { modeId: 'document', modeLabel: 'Document', routeMarker: 'Create > Document', uiuxShell: false },
   ];
 
   for (const mode of designModes) {
@@ -402,7 +402,7 @@ test('create perspective preserves branding and icons overlay compatibility entr
 
     expect(response?.ok(), `create perspective entry ${entryId} should respond successfully`).toBeTruthy();
     await expect(page.locator('body')).toContainText('Create');
-    await expect(page.locator('body')).toContainText(`Specialization: ${entryId === 'branding' ? 'Branding' : 'Icons'}`);
+    await expect(page.locator('body')).toContainText(`Active context: Create > ${entryId === 'branding' ? 'Branding' : 'Icons'}`);
     await expect(page.locator('body')).toContainText(`runtime: design/${entryId}`);
     await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('Branding');
     await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('Icons');
@@ -417,7 +417,7 @@ test('create perspective preserves podcast media overlay compatibility entry', a
 
   expect(response?.ok(), 'create perspective podcast entry should respond successfully').toBeTruthy();
   await expect(page.locator('body')).toContainText('Create');
-  await expect(page.locator('body')).toContainText('Specialization: Podcast');
+  await expect(page.locator('body')).toContainText('Active context: Create > Podcast');
   await expect(page.locator('body')).toContainText('runtime: media/podcast');
   await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('Podcast');
 });
@@ -426,7 +426,7 @@ test('build perspective assistant surface stays entry-consistent for canonical a
   const expectedBuildEntries = {
     application: { specialization: 'Application', runtimeMode: 'application' },
     logic: { specialization: 'Logic', runtimeMode: 'logic' },
-    ai: { specialization: 'Ai', runtimeMode: 'ai-build' },
+    ai: { specialization: 'AI', runtimeMode: 'ai-build' },
     conversion: { specialization: 'Conversion', runtimeMode: 'conversion' },
   };
 
@@ -437,7 +437,7 @@ test('build perspective assistant surface stays entry-consistent for canonical a
 
     expect(response?.ok(), `build ${entryId} route should respond successfully`).toBeTruthy();
     await expect(page.locator('body')).toContainText('Build');
-    await expect(page.locator('body')).toContainText(`Specialization: ${expectedBuildEntries[entryId].specialization}`);
+    await expect(page.locator('body')).toContainText(`Active context: Build > ${expectedBuildEntries[entryId].specialization}`);
     await expect(page.locator('body')).toContainText(`runtime: build/${expectedBuildEntries[entryId].runtimeMode}`);
     await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: build');
     await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.build');
@@ -453,7 +453,7 @@ test('publish perspective assistant surface stays entry-consistent for governanc
 
     expect(response?.ok(), `publish ${entryId} route should respond successfully`).toBeTruthy();
     await expect(page.locator('body')).toContainText('Publish');
-    await expect(page.locator('body')).toContainText(`Specialization: ${entryId[0].toUpperCase()}${entryId.slice(1)}`);
+    await expect(page.locator('body')).toContainText(`Active context: Publish > ${entryId[0].toUpperCase()}${entryId.slice(1)}`);
     await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: publish');
     await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.publish');
     await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.publish');
@@ -468,7 +468,7 @@ test('collaborate perspective assistant surface stays entry-consistent across re
 
     expect(response?.ok(), `collaborate ${entryId} route should respond successfully`).toBeTruthy();
     await expect(page.locator('body')).toContainText('Collaborate');
-    await expect(page.locator('body')).toContainText(`Specialization: ${entryId[0].toUpperCase()}${entryId.slice(1)}`);
+    await expect(page.locator('body')).toContainText(`Active context: Collaborate > ${entryId[0].toUpperCase()}${entryId.slice(1)}`);
     await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: collaborate');
     await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.knowledge');
     await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.knowledge');

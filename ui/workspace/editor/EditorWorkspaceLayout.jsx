@@ -46,6 +46,11 @@ import { readOsWorkspaceShellSurfaceModel } from '@/ui/bridges/osSurfaceReadBrid
 
 function formatShellLabel(value) {
     if (typeof value !== 'string') return value;
+    const override = {
+        uiux: 'UI / UX',
+        ai: 'AI',
+    }[value.toLowerCase()];
+    if (override) return override;
     return value
         .split('-')
         .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
