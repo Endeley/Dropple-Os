@@ -10,7 +10,14 @@ import {
 } from '@/platform/workspaces';
 import { WorkspaceRoot } from '@/ui/workspace/root/WorkspaceRoot.jsx';
 
-export function ModeLoader({ mode, queryMode = null, queryPerspective = null, queryEntry = null }) {
+export function ModeLoader({
+    mode,
+    queryMode = null,
+    queryPerspective = null,
+    queryEntry = null,
+    initialEnvironmentDescriptor = null,
+    initialResolvedTemplateEnvironment = null,
+}) {
     const requestedPerspectiveId = (queryPerspective || mode || '').toLowerCase();
     const requestedEntryId = (queryEntry || queryMode || '').toLowerCase();
     const projectPerspectiveContext = hasProjectPerspective(requestedPerspectiveId)
@@ -73,6 +80,8 @@ export function ModeLoader({ mode, queryMode = null, queryPerspective = null, qu
             workspaceContext={context}
             shellProps={{
                 projectPerspectiveContext,
+                initialEnvironmentDescriptor,
+                initialResolvedTemplateEnvironment,
             }}
         />
     );

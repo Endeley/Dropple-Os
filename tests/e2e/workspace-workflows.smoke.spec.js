@@ -93,7 +93,7 @@ function resolveTemplateLineageIdentity(template) {
   };
 }
 
-test('marketplace blueprint workflow opens certified blueprint details and enters workspace', async ({ page, request }) => {
+test('marketplace blueprint workflow opens certified blueprint details and enters project create flow', async ({ page, request }) => {
   const template = await publishMarketplaceFixture(request, {
     title: `Marketplace Flow ${Date.now()}`,
     description: 'Marketplace-certified template flow',
@@ -112,13 +112,16 @@ test('marketplace blueprint workflow opens certified blueprint details and enter
   await expect(page).toHaveURL(new RegExp(`/marketplace/template/${template.id}$`));
   await expect(page.locator('body')).toContainText(template.metadata.name);
   await expect(page.locator('[data-capability="Reproducible"]').first()).toContainText('Reproducible');
-  await expect(page.getByRole('button', { name: 'Use Blueprint' })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Start Project' })).toBeEnabled();
 
-  await page.getByRole('button', { name: 'Use Blueprint' }).click();
-  await expect(page).toHaveURL(/\/workspace\/new\?/);
+  await page.getByRole('button', { name: 'Start Project' }).click();
+  await expect(page).toHaveURL(/\/workspace\/create\?/);
   const workspaceUrl = new URL(page.url());
   const lineage = resolveTemplateLineageIdentity(template);
-  expect(workspaceUrl.pathname).toBe('/workspace/new');
+  expect(workspaceUrl.pathname).toBe('/workspace/create');
+  expect(workspaceUrl.searchParams.get('entry')).toBe('uiux');
+  expect(workspaceUrl.searchParams.get('workspaceId')).toBe('design');
+  expect(workspaceUrl.searchParams.get('modeId')).toBe('uiux');
   expect(workspaceUrl.searchParams.get('lineageRootId')).toBe(lineage.lineageRootId);
   expect(workspaceUrl.searchParams.get('versionId')).toBe(lineage.versionId);
   await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();

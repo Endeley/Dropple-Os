@@ -9,6 +9,7 @@ import {
     buildProjectIntentRecommendationRoute,
     resolveProjectIntentBlueprintRecommendations,
 } from '@/runtime/workspaces/projectIntentBlueprintRecommendation.js';
+import { buildProjectBlueprintStartRoute } from '@/platform/workspaces/projectStartRoute.js';
 import { loadRegistry } from '@/infrastructure/persistence/documentRegistry.js';
 import { getActiveDocument } from '@/infrastructure/persistence/activeDocument.js';
 
@@ -113,7 +114,10 @@ export default function ProjectHomeClient({ recommendedBlueprints = [], blueprin
                             <span style={{ color: '#475569' }}>
                                 ({blueprint.blueprintCategoryLabel ?? 'Business'})
                             </span>
-                            : {blueprint.description}
+                            : {blueprint.description}{' '}
+                            <Link href={buildProjectBlueprintStartRoute({ perspectiveId: 'create', blueprintId: blueprint.id })}>
+                                Start Project
+                            </Link>
                         </li>
                     ))}
                 </ul>

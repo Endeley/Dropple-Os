@@ -7,6 +7,7 @@ import { Badge } from '@/ui/controls/ui/badge.jsx';
 import { getArtifactPresentation } from '@/marketplace/artifactPresentation.js';
 import { resolveCanonicalWorkspaceOverlayContext } from '@/platform/workspaces/index.js';
 import { getExportCapabilities } from '@/runtime/export/getExportCapabilities.js';
+import { buildProjectEnvironmentStartRoute } from '@/platform/workspaces/projectStartRoute.js';
 import {
   ArtifactExportKinds,
   exportArtifact as exportArtifactFacade,
@@ -142,18 +143,16 @@ export default function TemplateDetailPage({ params }) {
       throw new Error('Blueprint is missing lineage identity.');
     }
 
-    const params = new URLSearchParams({
-      lineageRootId,
-      versionId,
-      workspaceId: overlayContext.workspaceId,
-      modeId: overlayContext.canonicalModeId ?? overlayContext.modeId,
-    });
-
-    if (overlayContext.overlayId) {
-      params.set('overlayId', overlayContext.overlayId);
-    }
-
-    router.push(`/workspace/new?${params.toString()}`);
+    router.push(
+      buildProjectEnvironmentStartRoute({
+        perspectiveId: 'create',
+        workspaceId: overlayContext.workspaceId,
+        modeId: overlayContext.canonicalModeId ?? overlayContext.modeId,
+        overlayId: overlayContext.overlayId,
+        lineageRootId,
+        versionId,
+      }),
+    );
   }
 
   function buySelectedLicense() {
@@ -317,7 +316,7 @@ export default function TemplateDetailPage({ params }) {
           onClick={useTemplate}
           disabled={!owned}
         >
-          Use Blueprint
+          Start Project
         </button>
       ) : (
         <div style={{ marginTop: 'var(--space-lg)', fontSize: 12, color: 'var(--text-muted)' }}>

@@ -54,3 +54,7 @@ export {
     resolveProjectPerspectiveFocus,
     resolveProjectPerspectiveContext,
 } from './projectPerspectiveRouter.js';
+export {
+    buildProjectBlueprintStartRoute,
+    buildProjectEnvironmentStartRoute,
+} from './projectStartRoute.js';
