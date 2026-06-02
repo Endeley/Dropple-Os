@@ -107345,6 +107345,1220 @@
       "versionId": "a6e005a7520ebeb8da5a9eed83c731426da25ace5f814a6f4aa79fd21d360b9b",
       "lineageRootId": "a6e005a7520ebeb8da5a9eed83c731426da25ace5f814a6f4aa79fd21d360b9b",
       "parentVersionIds": []
+    },
+    {
+      "id": "tpl.uiux.marketplace-flow-1780422498948",
+      "version": "1.0.0",
+      "snapshotHash": "217355c168cc995ceac1aa65fa9e7ed863308464a3f9945ac6fab77893358b17",
+      "contentHash": "4c0c239661e102ce0e0fd7f931f8923d0ccb0d8d42099812389ddaf6bad44b5d",
+      "contentHashInputs": {
+        "baseSceneGraph": {
+          "layout": {},
+          "nodes": [
+            {
+              "channels": {},
+              "id": "headline",
+              "opacity": 1,
+              "transform": {
+                "scale": 1,
+                "x": 0,
+                "y": 0
+              },
+              "type": "text"
+            },
+            {
+              "channels": {},
+              "id": "root",
+              "opacity": 1,
+              "transform": {
+                "scale": 1,
+                "x": 0,
+                "y": 0
+              },
+              "type": "frame"
+            }
+          ],
+          "rootId": "root",
+          "tree": {
+            "headline": [],
+            "root": [
+              "headline"
+            ]
+          }
+        },
+        "defaultState": "default",
+        "engineVersion": "dropple-motion@1.x",
+        "params": {
+          "content": {},
+          "motion": {},
+          "style": {}
+        },
+        "states": {
+          "default": {
+            "channels": [
+              {
+                "id": "opacity",
+                "keyframes": [
+                  {
+                    "easing": "linear",
+                    "time": 0,
+                    "value": 0
+                  },
+                  {
+                    "easing": "easeInOut",
+                    "time": 300,
+                    "value": 1
+                  }
+                ],
+                "property": "opacity",
+                "target": "headline"
+              }
+            ],
+            "duration": 300,
+            "groups": [],
+            "tracks": [
+              {
+                "channelIds": [
+                  "opacity"
+                ],
+                "id": "track:opacity",
+                "meta": {
+                  "blendMode": "add",
+                  "locked": false,
+                  "name": "headline.opacity"
+                },
+                "order": 0,
+                "type": "standard"
+              }
+            ]
+          }
+        },
+        "templateId": "tpl.uiux.marketplace-flow-1780422498948",
+        "templateVersion": "1.0.0"
+      },
+      "lineage": {
+        "rootId": "91f4b2a17576554fbe741aadde42ef8de152d8c9b8742189461a7630471eb970",
+        "nodeId": "91f4b2a17576554fbe741aadde42ef8de152d8c9b8742189461a7630471eb970",
+        "type": "seed",
+        "parentIds": []
+      },
+      "baseSceneGraph": {
+        "rootId": "root",
+        "nodes": [
+          {
+            "id": "headline",
+            "type": "text",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "scale": 1
+            },
+            "opacity": 1,
+            "channels": {}
+          },
+          {
+            "id": "root",
+            "type": "frame",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "scale": 1
+            },
+            "opacity": 1,
+            "channels": {}
+          }
+        ],
+        "tree": {
+          "headline": [],
+          "root": [
+            "headline"
+          ]
+        },
+        "layout": {}
+      },
+      "states": {
+        "default": {
+          "duration": 300,
+          "tracks": [
+            {
+              "id": "track:opacity",
+              "type": "standard",
+              "order": 0,
+              "channelIds": [
+                "opacity"
+              ],
+              "meta": {
+                "name": "headline.opacity",
+                "locked": false,
+                "blendMode": "add"
+              }
+            }
+          ],
+          "groups": [],
+          "channels": [
+            {
+              "id": "opacity",
+              "target": "headline",
+              "property": "opacity",
+              "keyframes": [
+                {
+                  "time": 0,
+                  "value": 0,
+                  "easing": "linear"
+                },
+                {
+                  "time": 300,
+                  "value": 1,
+                  "easing": "easeInOut"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "defaultState": "default",
+      "capabilityProfile": {
+        "complexity": {
+          "trackCount": 1,
+          "groupCount": 0,
+          "channelCount": 1,
+          "channelDensity": 1
+        },
+        "performance": {
+          "evalP95Ms": null,
+          "withinBudget": null
+        },
+        "readiness": {
+          "withinTrackLimit": true,
+          "withinChannelDensity": true,
+          "withinEvalBudget": null,
+          "ok": true
+        },
+        "warnings": [
+          "Evaluation p95 unavailable"
+        ]
+      },
+      "metadata": {
+        "name": "Marketplace Flow 1780422498948",
+        "description": "Marketplace-certified template flow",
+        "author": "Marketplace QA",
+        "license": "dropple-marketplace-standard",
+        "createdAt": "2026-06-02T17:48:18.970Z",
+        "engine": "dropple-motion@1.x"
+      },
+      "params": {
+        "content": {},
+        "style": {},
+        "motion": {}
+      },
+      "certification": {
+        "certified": true,
+        "fingerprint": "bbf9bc1c04d969a9c684dc908a61ae1f993f72cb86871f71ef3a6094db5cab9e",
+        "snapshotHash": "217355c168cc995ceac1aa65fa9e7ed863308464a3f9945ac6fab77893358b17",
+        "contentHash": "4c0c239661e102ce0e0fd7f931f8923d0ccb0d8d42099812389ddaf6bad44b5d",
+        "lineageRootId": "91f4b2a17576554fbe741aadde42ef8de152d8c9b8742189461a7630471eb970",
+        "lineageNodeId": "91f4b2a17576554fbe741aadde42ef8de152d8c9b8742189461a7630471eb970",
+        "capabilityHash": "44ffe1dac90073c8063cf8bacc1321d7872267c8da4d114bd47e0d3d8a2d0d3b",
+        "certificationHash": "d96eeea7ae7f9224ad09dd96dfa72bf06ec759e3f965f1d4ae505bd745de4c85",
+        "engineVersion": "dropple-motion@1.x",
+        "certifiedAt": "derived:91f4b2a17576:217355c168cc",
+        "engineHash": "dd3425bd740d26c0c2cb071a4338c5c16a6d98f8ca313494cd3c1e6d89b8ea81"
+      },
+      "mode": "uiux",
+      "versionId": "91f4b2a17576554fbe741aadde42ef8de152d8c9b8742189461a7630471eb970",
+      "lineageRootId": "91f4b2a17576554fbe741aadde42ef8de152d8c9b8742189461a7630471eb970",
+      "parentVersionIds": []
+    },
+    {
+      "id": "tpl.uiux.marketplace-flow-1780422624068",
+      "version": "1.0.0",
+      "snapshotHash": "217355c168cc995ceac1aa65fa9e7ed863308464a3f9945ac6fab77893358b17",
+      "contentHash": "1042a602dfe6d10a73b32cbf44f71ef15f5faa451aa21278fbac5155d62ea267",
+      "contentHashInputs": {
+        "baseSceneGraph": {
+          "layout": {},
+          "nodes": [
+            {
+              "channels": {},
+              "id": "headline",
+              "opacity": 1,
+              "transform": {
+                "scale": 1,
+                "x": 0,
+                "y": 0
+              },
+              "type": "text"
+            },
+            {
+              "channels": {},
+              "id": "root",
+              "opacity": 1,
+              "transform": {
+                "scale": 1,
+                "x": 0,
+                "y": 0
+              },
+              "type": "frame"
+            }
+          ],
+          "rootId": "root",
+          "tree": {
+            "headline": [],
+            "root": [
+              "headline"
+            ]
+          }
+        },
+        "defaultState": "default",
+        "engineVersion": "dropple-motion@1.x",
+        "params": {
+          "content": {},
+          "motion": {},
+          "style": {}
+        },
+        "states": {
+          "default": {
+            "channels": [
+              {
+                "id": "opacity",
+                "keyframes": [
+                  {
+                    "easing": "linear",
+                    "time": 0,
+                    "value": 0
+                  },
+                  {
+                    "easing": "easeInOut",
+                    "time": 300,
+                    "value": 1
+                  }
+                ],
+                "property": "opacity",
+                "target": "headline"
+              }
+            ],
+            "duration": 300,
+            "groups": [],
+            "tracks": [
+              {
+                "channelIds": [
+                  "opacity"
+                ],
+                "id": "track:opacity",
+                "meta": {
+                  "blendMode": "add",
+                  "locked": false,
+                  "name": "headline.opacity"
+                },
+                "order": 0,
+                "type": "standard"
+              }
+            ]
+          }
+        },
+        "templateId": "tpl.uiux.marketplace-flow-1780422624068",
+        "templateVersion": "1.0.0"
+      },
+      "lineage": {
+        "rootId": "a6546374270b753c03f075f3e9e662b366162506b39294da4f66e8037e984c00",
+        "nodeId": "a6546374270b753c03f075f3e9e662b366162506b39294da4f66e8037e984c00",
+        "type": "seed",
+        "parentIds": []
+      },
+      "baseSceneGraph": {
+        "rootId": "root",
+        "nodes": [
+          {
+            "id": "headline",
+            "type": "text",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "scale": 1
+            },
+            "opacity": 1,
+            "channels": {}
+          },
+          {
+            "id": "root",
+            "type": "frame",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "scale": 1
+            },
+            "opacity": 1,
+            "channels": {}
+          }
+        ],
+        "tree": {
+          "headline": [],
+          "root": [
+            "headline"
+          ]
+        },
+        "layout": {}
+      },
+      "states": {
+        "default": {
+          "duration": 300,
+          "tracks": [
+            {
+              "id": "track:opacity",
+              "type": "standard",
+              "order": 0,
+              "channelIds": [
+                "opacity"
+              ],
+              "meta": {
+                "name": "headline.opacity",
+                "locked": false,
+                "blendMode": "add"
+              }
+            }
+          ],
+          "groups": [],
+          "channels": [
+            {
+              "id": "opacity",
+              "target": "headline",
+              "property": "opacity",
+              "keyframes": [
+                {
+                  "time": 0,
+                  "value": 0,
+                  "easing": "linear"
+                },
+                {
+                  "time": 300,
+                  "value": 1,
+                  "easing": "easeInOut"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "defaultState": "default",
+      "capabilityProfile": {
+        "complexity": {
+          "trackCount": 1,
+          "groupCount": 0,
+          "channelCount": 1,
+          "channelDensity": 1
+        },
+        "performance": {
+          "evalP95Ms": null,
+          "withinBudget": null
+        },
+        "readiness": {
+          "withinTrackLimit": true,
+          "withinChannelDensity": true,
+          "withinEvalBudget": null,
+          "ok": true
+        },
+        "warnings": [
+          "Evaluation p95 unavailable"
+        ]
+      },
+      "metadata": {
+        "name": "Marketplace Flow 1780422624068",
+        "description": "Marketplace-certified template flow",
+        "author": "Marketplace QA",
+        "license": "dropple-marketplace-standard",
+        "createdAt": "2026-06-02T17:50:24.087Z",
+        "engine": "dropple-motion@1.x"
+      },
+      "params": {
+        "content": {},
+        "style": {},
+        "motion": {}
+      },
+      "certification": {
+        "certified": true,
+        "fingerprint": "bbf9bc1c04d969a9c684dc908a61ae1f993f72cb86871f71ef3a6094db5cab9e",
+        "snapshotHash": "217355c168cc995ceac1aa65fa9e7ed863308464a3f9945ac6fab77893358b17",
+        "contentHash": "1042a602dfe6d10a73b32cbf44f71ef15f5faa451aa21278fbac5155d62ea267",
+        "lineageRootId": "a6546374270b753c03f075f3e9e662b366162506b39294da4f66e8037e984c00",
+        "lineageNodeId": "a6546374270b753c03f075f3e9e662b366162506b39294da4f66e8037e984c00",
+        "capabilityHash": "44ffe1dac90073c8063cf8bacc1321d7872267c8da4d114bd47e0d3d8a2d0d3b",
+        "certificationHash": "92491550e3750707bcab19f6aea8ce987a9cba6f4cdf0a7ece5d757619be0975",
+        "engineVersion": "dropple-motion@1.x",
+        "certifiedAt": "derived:a6546374270b:217355c168cc",
+        "engineHash": "dd3425bd740d26c0c2cb071a4338c5c16a6d98f8ca313494cd3c1e6d89b8ea81"
+      },
+      "mode": "uiux",
+      "versionId": "a6546374270b753c03f075f3e9e662b366162506b39294da4f66e8037e984c00",
+      "lineageRootId": "a6546374270b753c03f075f3e9e662b366162506b39294da4f66e8037e984c00",
+      "parentVersionIds": []
+    },
+    {
+      "id": "tpl.uiux.marketplace-flow-1780422729941",
+      "version": "1.0.0",
+      "snapshotHash": "217355c168cc995ceac1aa65fa9e7ed863308464a3f9945ac6fab77893358b17",
+      "contentHash": "466cb4a2755b6216270cc1d734d98fa900727bfa9438e8f43e266167551b33eb",
+      "contentHashInputs": {
+        "baseSceneGraph": {
+          "layout": {},
+          "nodes": [
+            {
+              "channels": {},
+              "id": "headline",
+              "opacity": 1,
+              "transform": {
+                "scale": 1,
+                "x": 0,
+                "y": 0
+              },
+              "type": "text"
+            },
+            {
+              "channels": {},
+              "id": "root",
+              "opacity": 1,
+              "transform": {
+                "scale": 1,
+                "x": 0,
+                "y": 0
+              },
+              "type": "frame"
+            }
+          ],
+          "rootId": "root",
+          "tree": {
+            "headline": [],
+            "root": [
+              "headline"
+            ]
+          }
+        },
+        "defaultState": "default",
+        "engineVersion": "dropple-motion@1.x",
+        "params": {
+          "content": {},
+          "motion": {},
+          "style": {}
+        },
+        "states": {
+          "default": {
+            "channels": [
+              {
+                "id": "opacity",
+                "keyframes": [
+                  {
+                    "easing": "linear",
+                    "time": 0,
+                    "value": 0
+                  },
+                  {
+                    "easing": "easeInOut",
+                    "time": 300,
+                    "value": 1
+                  }
+                ],
+                "property": "opacity",
+                "target": "headline"
+              }
+            ],
+            "duration": 300,
+            "groups": [],
+            "tracks": [
+              {
+                "channelIds": [
+                  "opacity"
+                ],
+                "id": "track:opacity",
+                "meta": {
+                  "blendMode": "add",
+                  "locked": false,
+                  "name": "headline.opacity"
+                },
+                "order": 0,
+                "type": "standard"
+              }
+            ]
+          }
+        },
+        "templateId": "tpl.uiux.marketplace-flow-1780422729941",
+        "templateVersion": "1.0.0"
+      },
+      "lineage": {
+        "rootId": "e29790cd23c8c77372983dbf3505e3b7dd4f750aff81c51a7e93d866cc978425",
+        "nodeId": "e29790cd23c8c77372983dbf3505e3b7dd4f750aff81c51a7e93d866cc978425",
+        "type": "seed",
+        "parentIds": []
+      },
+      "baseSceneGraph": {
+        "rootId": "root",
+        "nodes": [
+          {
+            "id": "headline",
+            "type": "text",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "scale": 1
+            },
+            "opacity": 1,
+            "channels": {}
+          },
+          {
+            "id": "root",
+            "type": "frame",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "scale": 1
+            },
+            "opacity": 1,
+            "channels": {}
+          }
+        ],
+        "tree": {
+          "headline": [],
+          "root": [
+            "headline"
+          ]
+        },
+        "layout": {}
+      },
+      "states": {
+        "default": {
+          "duration": 300,
+          "tracks": [
+            {
+              "id": "track:opacity",
+              "type": "standard",
+              "order": 0,
+              "channelIds": [
+                "opacity"
+              ],
+              "meta": {
+                "name": "headline.opacity",
+                "locked": false,
+                "blendMode": "add"
+              }
+            }
+          ],
+          "groups": [],
+          "channels": [
+            {
+              "id": "opacity",
+              "target": "headline",
+              "property": "opacity",
+              "keyframes": [
+                {
+                  "time": 0,
+                  "value": 0,
+                  "easing": "linear"
+                },
+                {
+                  "time": 300,
+                  "value": 1,
+                  "easing": "easeInOut"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "defaultState": "default",
+      "capabilityProfile": {
+        "complexity": {
+          "trackCount": 1,
+          "groupCount": 0,
+          "channelCount": 1,
+          "channelDensity": 1
+        },
+        "performance": {
+          "evalP95Ms": null,
+          "withinBudget": null
+        },
+        "readiness": {
+          "withinTrackLimit": true,
+          "withinChannelDensity": true,
+          "withinEvalBudget": null,
+          "ok": true
+        },
+        "warnings": [
+          "Evaluation p95 unavailable"
+        ]
+      },
+      "metadata": {
+        "name": "Marketplace Flow 1780422729941",
+        "description": "Marketplace-certified template flow",
+        "author": "Marketplace QA",
+        "license": "dropple-marketplace-standard",
+        "createdAt": "2026-06-02T17:52:09.950Z",
+        "engine": "dropple-motion@1.x"
+      },
+      "params": {
+        "content": {},
+        "style": {},
+        "motion": {}
+      },
+      "certification": {
+        "certified": true,
+        "fingerprint": "bbf9bc1c04d969a9c684dc908a61ae1f993f72cb86871f71ef3a6094db5cab9e",
+        "snapshotHash": "217355c168cc995ceac1aa65fa9e7ed863308464a3f9945ac6fab77893358b17",
+        "contentHash": "466cb4a2755b6216270cc1d734d98fa900727bfa9438e8f43e266167551b33eb",
+        "lineageRootId": "e29790cd23c8c77372983dbf3505e3b7dd4f750aff81c51a7e93d866cc978425",
+        "lineageNodeId": "e29790cd23c8c77372983dbf3505e3b7dd4f750aff81c51a7e93d866cc978425",
+        "capabilityHash": "44ffe1dac90073c8063cf8bacc1321d7872267c8da4d114bd47e0d3d8a2d0d3b",
+        "certificationHash": "17fe5b9ba11e1a3092a8d746e6f18c54d8454e46b288cbaf2dcc984b0ba98142",
+        "engineVersion": "dropple-motion@1.x",
+        "certifiedAt": "derived:e29790cd23c8:217355c168cc",
+        "engineHash": "dd3425bd740d26c0c2cb071a4338c5c16a6d98f8ca313494cd3c1e6d89b8ea81"
+      },
+      "mode": "uiux",
+      "versionId": "e29790cd23c8c77372983dbf3505e3b7dd4f750aff81c51a7e93d866cc978425",
+      "lineageRootId": "e29790cd23c8c77372983dbf3505e3b7dd4f750aff81c51a7e93d866cc978425",
+      "parentVersionIds": []
+    },
+    {
+      "id": "tpl.uiux.phase-2-roundtrip-1780422727964",
+      "version": "1.0.0",
+      "snapshotHash": "8713fb3375c19df70bd9c6181b7b207c32f82a01077df567d6cb4c9bb63992ae",
+      "contentHash": "3b2d97a075fdbaf2bed72dbd5d58a4214d2abf8f1ded47d65724571f9caa4011",
+      "contentHashInputs": {
+        "baseSceneGraph": {
+          "layout": {},
+          "nodes": [
+            {
+              "channels": {},
+              "id": "node-C5-7QIWNspbvLkl9EPUnU",
+              "opacity": 1,
+              "transform": {
+                "scale": 1,
+                "x": 0,
+                "y": 0
+              },
+              "type": "frame"
+            }
+          ],
+          "rootId": "node-C5-7QIWNspbvLkl9EPUnU",
+          "tree": {
+            "node-C5-7QIWNspbvLkl9EPUnU": []
+          }
+        },
+        "defaultState": "default",
+        "engineVersion": "dropple-motion@1.x",
+        "params": {
+          "content": {},
+          "motion": {},
+          "style": {}
+        },
+        "states": {
+          "default": {
+            "channels": [],
+            "duration": 1,
+            "groups": [],
+            "tracks": []
+          }
+        },
+        "templateId": "tpl.uiux.phase-2-roundtrip-1780422727964",
+        "templateVersion": "1.0.0"
+      },
+      "lineage": {
+        "rootId": "bef71e4b1fcc78805ad113dc5376e513e66038a6610cabf82e57082306c4eee3",
+        "nodeId": "bef71e4b1fcc78805ad113dc5376e513e66038a6610cabf82e57082306c4eee3",
+        "type": "seed",
+        "parentIds": []
+      },
+      "baseSceneGraph": {
+        "rootId": "node-C5-7QIWNspbvLkl9EPUnU",
+        "nodes": [
+          {
+            "id": "node-C5-7QIWNspbvLkl9EPUnU",
+            "type": "frame",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "scale": 1
+            },
+            "opacity": 1,
+            "channels": {}
+          }
+        ],
+        "tree": {
+          "node-C5-7QIWNspbvLkl9EPUnU": []
+        },
+        "layout": {}
+      },
+      "states": {
+        "default": {
+          "duration": 1,
+          "tracks": [],
+          "groups": [],
+          "channels": []
+        }
+      },
+      "defaultState": "default",
+      "capabilityProfile": {
+        "complexity": {
+          "trackCount": 0,
+          "groupCount": 0,
+          "channelCount": 0,
+          "channelDensity": 0
+        },
+        "performance": {
+          "evalP95Ms": null,
+          "withinBudget": null
+        },
+        "readiness": {
+          "withinTrackLimit": true,
+          "withinChannelDensity": true,
+          "withinEvalBudget": null,
+          "ok": true
+        },
+        "warnings": [
+          "Evaluation p95 unavailable"
+        ]
+      },
+      "metadata": {
+        "name": "Phase 2 Roundtrip 1780422727964",
+        "description": "Phase 2 authoring roundtrip",
+        "author": "",
+        "license": "dropple-marketplace-standard",
+        "createdAt": "2026-06-02T17:52:11.267Z",
+        "engine": "dropple-motion@1.x"
+      },
+      "params": {
+        "content": {},
+        "style": {},
+        "motion": {}
+      },
+      "certification": {
+        "certified": true,
+        "fingerprint": "6e62fb9ff209a4e03c2fbfb71f79db2eb54b5bb9d3507eb254bb168251e40090",
+        "snapshotHash": "8713fb3375c19df70bd9c6181b7b207c32f82a01077df567d6cb4c9bb63992ae",
+        "contentHash": "3b2d97a075fdbaf2bed72dbd5d58a4214d2abf8f1ded47d65724571f9caa4011",
+        "lineageRootId": "bef71e4b1fcc78805ad113dc5376e513e66038a6610cabf82e57082306c4eee3",
+        "lineageNodeId": "bef71e4b1fcc78805ad113dc5376e513e66038a6610cabf82e57082306c4eee3",
+        "capabilityHash": "7db7d3741d94f97589f030444a4e8b1a107409dc4f5a5a9b3495fc61e2f26524",
+        "certificationHash": "7a6a56a770d37e496400ccc8ce48f53d602f8fd5e2de3cbf0e2ae5c2462ad3ef",
+        "engineVersion": "dropple-motion@1.x",
+        "certifiedAt": "derived:bef71e4b1fcc:8713fb3375c1",
+        "engineHash": "dd3425bd740d26c0c2cb071a4338c5c16a6d98f8ca313494cd3c1e6d89b8ea81"
+      },
+      "mode": "uiux",
+      "versionId": "bef71e4b1fcc78805ad113dc5376e513e66038a6610cabf82e57082306c4eee3",
+      "lineageRootId": "bef71e4b1fcc78805ad113dc5376e513e66038a6610cabf82e57082306c4eee3",
+      "parentVersionIds": []
+    },
+    {
+      "id": "tpl.uiux.phase-2-roundtrip-1780422727964-2",
+      "version": "1.0.0",
+      "snapshotHash": "8713fb3375c19df70bd9c6181b7b207c32f82a01077df567d6cb4c9bb63992ae",
+      "contentHash": "1521aa058ab824e0ad45191eab532f6909c994bbd2cd0528208d9505fb87448c",
+      "contentHashInputs": {
+        "baseSceneGraph": {
+          "layout": {},
+          "nodes": [
+            {
+              "channels": {},
+              "id": "node-C5-7QIWNspbvLkl9EPUnU",
+              "opacity": 1,
+              "transform": {
+                "scale": 1,
+                "x": 0,
+                "y": 0
+              },
+              "type": "frame"
+            }
+          ],
+          "rootId": "node-C5-7QIWNspbvLkl9EPUnU",
+          "tree": {
+            "node-C5-7QIWNspbvLkl9EPUnU": []
+          }
+        },
+        "defaultState": "default",
+        "engineVersion": "dropple-motion@1.x",
+        "params": {
+          "content": {},
+          "motion": {},
+          "style": {}
+        },
+        "states": {
+          "default": {
+            "channels": [],
+            "duration": 1,
+            "groups": [],
+            "tracks": []
+          }
+        },
+        "templateId": "tpl.uiux.phase-2-roundtrip-1780422727964-2",
+        "templateVersion": "1.0.0"
+      },
+      "lineage": {
+        "rootId": "dd833dce68f48cdcb51362495a4717a5fe3684b464941f2564a586b13231aa5e",
+        "nodeId": "dd833dce68f48cdcb51362495a4717a5fe3684b464941f2564a586b13231aa5e",
+        "type": "seed",
+        "parentIds": []
+      },
+      "baseSceneGraph": {
+        "rootId": "node-C5-7QIWNspbvLkl9EPUnU",
+        "nodes": [
+          {
+            "id": "node-C5-7QIWNspbvLkl9EPUnU",
+            "type": "frame",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "scale": 1
+            },
+            "opacity": 1,
+            "channels": {}
+          }
+        ],
+        "tree": {
+          "node-C5-7QIWNspbvLkl9EPUnU": []
+        },
+        "layout": {}
+      },
+      "states": {
+        "default": {
+          "duration": 1,
+          "tracks": [],
+          "groups": [],
+          "channels": []
+        }
+      },
+      "defaultState": "default",
+      "capabilityProfile": {
+        "complexity": {
+          "trackCount": 0,
+          "groupCount": 0,
+          "channelCount": 0,
+          "channelDensity": 0
+        },
+        "performance": {
+          "evalP95Ms": null,
+          "withinBudget": null
+        },
+        "readiness": {
+          "withinTrackLimit": true,
+          "withinChannelDensity": true,
+          "withinEvalBudget": null,
+          "ok": true
+        },
+        "warnings": [
+          "Evaluation p95 unavailable"
+        ]
+      },
+      "metadata": {
+        "name": "Phase 2 Roundtrip 1780422727964 2",
+        "description": "Phase 2 second publish for trust history",
+        "author": "",
+        "license": "dropple-marketplace-standard",
+        "createdAt": "2026-06-02T17:52:12.063Z",
+        "engine": "dropple-motion@1.x"
+      },
+      "params": {
+        "content": {},
+        "style": {},
+        "motion": {}
+      },
+      "certification": {
+        "certified": true,
+        "fingerprint": "6e62fb9ff209a4e03c2fbfb71f79db2eb54b5bb9d3507eb254bb168251e40090",
+        "snapshotHash": "8713fb3375c19df70bd9c6181b7b207c32f82a01077df567d6cb4c9bb63992ae",
+        "contentHash": "1521aa058ab824e0ad45191eab532f6909c994bbd2cd0528208d9505fb87448c",
+        "lineageRootId": "dd833dce68f48cdcb51362495a4717a5fe3684b464941f2564a586b13231aa5e",
+        "lineageNodeId": "dd833dce68f48cdcb51362495a4717a5fe3684b464941f2564a586b13231aa5e",
+        "capabilityHash": "7db7d3741d94f97589f030444a4e8b1a107409dc4f5a5a9b3495fc61e2f26524",
+        "certificationHash": "9eba08da98daf73091b8ac6fde2c0f583799cdbf981289b6defb50bc9bdb2c72",
+        "engineVersion": "dropple-motion@1.x",
+        "certifiedAt": "derived:dd833dce68f4:8713fb3375c1",
+        "engineHash": "dd3425bd740d26c0c2cb071a4338c5c16a6d98f8ca313494cd3c1e6d89b8ea81"
+      },
+      "mode": "uiux",
+      "versionId": "dd833dce68f48cdcb51362495a4717a5fe3684b464941f2564a586b13231aa5e",
+      "lineageRootId": "dd833dce68f48cdcb51362495a4717a5fe3684b464941f2564a586b13231aa5e",
+      "parentVersionIds": []
+    },
+    {
+      "id": "tpl.uiux.motion-template-1780422735566",
+      "version": "1.0.0",
+      "snapshotHash": "4586fbd59d95516940cfc34485686b0a35efd812327c765dd56b9f4fbc3b176d",
+      "contentHash": "8ce583329a28583441031a71bcc5e9ffa5adfd2df845cce21eb10546e9be60b2",
+      "contentHashInputs": {
+        "baseSceneGraph": {
+          "layout": {},
+          "nodes": [
+            {
+              "channels": {},
+              "id": "headline",
+              "opacity": 1,
+              "transform": {
+                "scale": 1,
+                "x": 0,
+                "y": 0
+              },
+              "type": "text"
+            },
+            {
+              "channels": {},
+              "id": "root",
+              "opacity": 1,
+              "transform": {
+                "scale": 1,
+                "x": 0,
+                "y": 0
+              },
+              "type": "frame"
+            }
+          ],
+          "rootId": "root",
+          "tree": {
+            "headline": [],
+            "root": [
+              "headline"
+            ]
+          }
+        },
+        "defaultState": "default",
+        "engineVersion": "dropple-motion@1.x",
+        "params": {
+          "content": {},
+          "motion": {},
+          "style": {}
+        },
+        "states": {
+          "default": {
+            "channels": [
+              {
+                "id": "opacity",
+                "keyframes": [
+                  {
+                    "easing": "linear",
+                    "time": 0,
+                    "value": 0
+                  },
+                  {
+                    "easing": "easeInOut",
+                    "time": 300,
+                    "value": 1
+                  }
+                ],
+                "property": "opacity",
+                "target": "headline"
+              },
+              {
+                "id": "transform.y",
+                "keyframes": [
+                  {
+                    "easing": "linear",
+                    "time": 0,
+                    "value": 18
+                  },
+                  {
+                    "easing": "easeInOut",
+                    "time": 300,
+                    "value": 0
+                  }
+                ],
+                "property": "translateY",
+                "target": "headline"
+              }
+            ],
+            "duration": 300,
+            "groups": [],
+            "tracks": [
+              {
+                "channelIds": [
+                  "opacity"
+                ],
+                "id": "track:opacity",
+                "meta": {
+                  "blendMode": "add",
+                  "locked": false,
+                  "name": "headline.opacity"
+                },
+                "order": 0,
+                "type": "standard"
+              },
+              {
+                "channelIds": [
+                  "transform.y"
+                ],
+                "id": "track:transform.y",
+                "meta": {
+                  "blendMode": "add",
+                  "locked": false,
+                  "name": "headline.translateY"
+                },
+                "order": 1,
+                "type": "standard"
+              }
+            ]
+          }
+        },
+        "templateId": "tpl.uiux.motion-template-1780422735566",
+        "templateVersion": "1.0.0"
+      },
+      "lineage": {
+        "rootId": "b0d18a5f19920d5f09298d069df684485c59578b997bba7df519444df670590a",
+        "nodeId": "b0d18a5f19920d5f09298d069df684485c59578b997bba7df519444df670590a",
+        "type": "seed",
+        "parentIds": []
+      },
+      "baseSceneGraph": {
+        "rootId": "root",
+        "nodes": [
+          {
+            "id": "headline",
+            "type": "text",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "scale": 1
+            },
+            "opacity": 1,
+            "channels": {}
+          },
+          {
+            "id": "root",
+            "type": "frame",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "scale": 1
+            },
+            "opacity": 1,
+            "channels": {}
+          }
+        ],
+        "tree": {
+          "headline": [],
+          "root": [
+            "headline"
+          ]
+        },
+        "layout": {}
+      },
+      "states": {
+        "default": {
+          "duration": 300,
+          "tracks": [
+            {
+              "id": "track:opacity",
+              "type": "standard",
+              "order": 0,
+              "channelIds": [
+                "opacity"
+              ],
+              "meta": {
+                "name": "headline.opacity",
+                "locked": false,
+                "blendMode": "add"
+              }
+            },
+            {
+              "id": "track:transform.y",
+              "type": "standard",
+              "order": 1,
+              "channelIds": [
+                "transform.y"
+              ],
+              "meta": {
+                "name": "headline.translateY",
+                "locked": false,
+                "blendMode": "add"
+              }
+            }
+          ],
+          "groups": [],
+          "channels": [
+            {
+              "id": "opacity",
+              "target": "headline",
+              "property": "opacity",
+              "keyframes": [
+                {
+                  "time": 0,
+                  "value": 0,
+                  "easing": "linear"
+                },
+                {
+                  "time": 300,
+                  "value": 1,
+                  "easing": "easeInOut"
+                }
+              ]
+            },
+            {
+              "id": "transform.y",
+              "target": "headline",
+              "property": "translateY",
+              "keyframes": [
+                {
+                  "time": 0,
+                  "value": 18,
+                  "easing": "linear"
+                },
+                {
+                  "time": 300,
+                  "value": 0,
+                  "easing": "easeInOut"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "defaultState": "default",
+      "capabilityProfile": {
+        "complexity": {
+          "trackCount": 2,
+          "groupCount": 0,
+          "channelCount": 2,
+          "channelDensity": 1
+        },
+        "performance": {
+          "evalP95Ms": null,
+          "withinBudget": null
+        },
+        "readiness": {
+          "withinTrackLimit": true,
+          "withinChannelDensity": true,
+          "withinEvalBudget": null,
+          "ok": true
+        },
+        "warnings": [
+          "Evaluation p95 unavailable"
+        ]
+      },
+      "metadata": {
+        "name": "Motion Template 1780422735566",
+        "description": "Motion-preserving certified template fixture",
+        "author": "UIUX Motion QA",
+        "license": "dropple-marketplace-standard",
+        "createdAt": "2026-06-02T17:52:15.593Z",
+        "engine": "dropple-motion@1.x"
+      },
+      "params": {
+        "content": {},
+        "style": {},
+        "motion": {}
+      },
+      "certification": {
+        "certified": true,
+        "fingerprint": "bbf9bc1c04d969a9c684dc908a61ae1f993f72cb86871f71ef3a6094db5cab9e",
+        "snapshotHash": "4586fbd59d95516940cfc34485686b0a35efd812327c765dd56b9f4fbc3b176d",
+        "contentHash": "8ce583329a28583441031a71bcc5e9ffa5adfd2df845cce21eb10546e9be60b2",
+        "lineageRootId": "b0d18a5f19920d5f09298d069df684485c59578b997bba7df519444df670590a",
+        "lineageNodeId": "b0d18a5f19920d5f09298d069df684485c59578b997bba7df519444df670590a",
+        "capabilityHash": "56ad81ca3c128289afcbb5f1e08ec04a5ffcac54d4d417aa5eb7e29fac12c5af",
+        "certificationHash": "61d52a017af3485242853c60767883dbc52745256a322168d1bd5cf59a59d050",
+        "engineVersion": "dropple-motion@1.x",
+        "certifiedAt": "derived:b0d18a5f1992:4586fbd59d95",
+        "engineHash": "dd3425bd740d26c0c2cb071a4338c5c16a6d98f8ca313494cd3c1e6d89b8ea81"
+      },
+      "mode": "uiux",
+      "versionId": "b0d18a5f19920d5f09298d069df684485c59578b997bba7df519444df670590a",
+      "lineageRootId": "b0d18a5f19920d5f09298d069df684485c59578b997bba7df519444df670590a",
+      "parentVersionIds": []
     }
   ],
   "lineageRoots": {
@@ -108350,6 +109564,9 @@
     "91f1b27d456e28f3fb11df42988c5a3859bc9aa5dd8c0dabfe20f93681850803": [
       "91f1b27d456e28f3fb11df42988c5a3859bc9aa5dd8c0dabfe20f93681850803"
     ],
+    "91f4b2a17576554fbe741aadde42ef8de152d8c9b8742189461a7630471eb970": [
+      "91f4b2a17576554fbe741aadde42ef8de152d8c9b8742189461a7630471eb970"
+    ],
     "92bb8735afbae3eb24268e84947ae2a4aa402d9dc50719d700c20c2812fd633e": [
       "92bb8735afbae3eb24268e84947ae2a4aa402d9dc50719d700c20c2812fd633e"
     ],
@@ -108467,6 +109684,9 @@
     "a5e9fce5e55368d2cecd8228d36dcf87680cbe32802c84df3b8e23c351b7b7f9": [
       "a5e9fce5e55368d2cecd8228d36dcf87680cbe32802c84df3b8e23c351b7b7f9"
     ],
+    "a6546374270b753c03f075f3e9e662b366162506b39294da4f66e8037e984c00": [
+      "a6546374270b753c03f075f3e9e662b366162506b39294da4f66e8037e984c00"
+    ],
     "a66db74d9846dd96a4c0c3aba6427be04ff1c22ae4375db2158a3e02e7ce3f71": [
       "a66db74d9846dd96a4c0c3aba6427be04ff1c22ae4375db2158a3e02e7ce3f71"
     ],
@@ -108544,6 +109764,9 @@
     ],
     "b00fe081fcd3c83adc34fa7634191e5fc4da2599dd8e7b4275d02425a218b731": [
       "b00fe081fcd3c83adc34fa7634191e5fc4da2599dd8e7b4275d02425a218b731"
+    ],
+    "b0d18a5f19920d5f09298d069df684485c59578b997bba7df519444df670590a": [
+      "b0d18a5f19920d5f09298d069df684485c59578b997bba7df519444df670590a"
     ],
     "b0d1af7ce59dc5f1fdca8113d304e8c02d8bf5d3e5d52e1e5f7cb747773f3d4a": [
       "b0d1af7ce59dc5f1fdca8113d304e8c02d8bf5d3e5d52e1e5f7cb747773f3d4a"
@@ -108628,6 +109851,9 @@
     ],
     "bec3d7b5dbf9503b286b5d296807046af744a36862d96519ea2279055dbc4fdc": [
       "bec3d7b5dbf9503b286b5d296807046af744a36862d96519ea2279055dbc4fdc"
+    ],
+    "bef71e4b1fcc78805ad113dc5376e513e66038a6610cabf82e57082306c4eee3": [
+      "bef71e4b1fcc78805ad113dc5376e513e66038a6610cabf82e57082306c4eee3"
     ],
     "bf1caafc8ab954b33b1136f990a665448e1eb60ff20032b7fb96723d0e6d0fb6": [
       "bf1caafc8ab954b33b1136f990a665448e1eb60ff20032b7fb96723d0e6d0fb6"
@@ -108845,6 +110071,9 @@
     "dce1e92c383bb90520ce29e1149d743e067f2fcb02352f74d05ca6a1b5c0e376": [
       "dce1e92c383bb90520ce29e1149d743e067f2fcb02352f74d05ca6a1b5c0e376"
     ],
+    "dd833dce68f48cdcb51362495a4717a5fe3684b464941f2564a586b13231aa5e": [
+      "dd833dce68f48cdcb51362495a4717a5fe3684b464941f2564a586b13231aa5e"
+    ],
     "de241a5998c64e4b49d7dbbd017e2413205ef8fe203f8f6f08ae53deaa092e15": [
       "de241a5998c64e4b49d7dbbd017e2413205ef8fe203f8f6f08ae53deaa092e15"
     ],
@@ -108865,6 +110094,9 @@
     ],
     "e261000cc3992581b18f2a51a129663f75d725dfaa0fabcc6d8f09420869286c": [
       "e261000cc3992581b18f2a51a129663f75d725dfaa0fabcc6d8f09420869286c"
+    ],
+    "e29790cd23c8c77372983dbf3505e3b7dd4f750aff81c51a7e93d866cc978425": [
+      "e29790cd23c8c77372983dbf3505e3b7dd4f750aff81c51a7e93d866cc978425"
     ],
     "e2a02a5cdcd2164b0737c7afbb581fc95d90d2203a02a5d23a43db5689451219": [
       "e2a02a5cdcd2164b0737c7afbb581fc95d90d2203a02a5d23a43db5689451219"
