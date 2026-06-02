@@ -342,6 +342,49 @@ test('project perspective route bootstrap composes multiple blueprints determini
   await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('artifacts');
 });
 
+test('project universe semantic zoom tiers expose deterministic focus and detail levels', async ({ page }) => {
+  const farResponse = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1&z=0.3', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(farResponse?.ok(), 'far zoom bootstrap route should respond successfully').toBeTruthy();
+  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('tier far');
+  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('domains');
+  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('hidden');
+  await expect(page.getByTestId('project-universe-group-create')).toContainText('Create');
+  await expect(page.getByTestId('project-universe-group-create')).toContainText('3 artifacts');
+  await expect(page.getByTestId('project-universe-node-document:primary')).toHaveCount(0);
+
+  const logisticsFarResponse = await page.goto('/workspace/create?blueprint=bp.logistics.v1&bootstrap=1&z=0.3', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(logisticsFarResponse?.ok(), 'far zoom logistics bootstrap route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('project-universe-group-create')).toContainText('Create');
+  await expect(page.getByTestId('project-universe-group-operate')).toContainText('Operate');
+
+  const normalResponse = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1&z=1', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(normalResponse?.ok(), 'normal zoom bootstrap route should respond successfully').toBeTruthy();
+  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('tier normal');
+  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('artifacts');
+  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('label-kind');
+  await expect(page.getByTestId('project-universe-node-document:primary')).toContainText('Document');
+  await expect(page.getByTestId('project-universe-group-create')).toHaveCount(0);
+
+  const microResponse = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1&z=3', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(microResponse?.ok(), 'micro zoom bootstrap route should respond successfully').toBeTruthy();
+  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('tier micro');
+  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('inspect');
+  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('metadata');
+  await expect(page.getByTestId('project-universe-node-document:primary')).toContainText(/[0-9a-f]{8}-/i);
+});
+
 test('project shell assistant intent enqueues through canonical runtime bridge', async ({ page }) => {
   const response = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1', {
     waitUntil: 'networkidle',

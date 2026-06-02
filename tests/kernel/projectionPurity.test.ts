@@ -243,6 +243,9 @@ test('semantic zoom presentation mapping is deterministic and mutation-free', ()
         detail: 'domain',
         cluster: 'artifact-group',
         labels: true,
+        focus: 'groups',
+        nodeDetailLevel: 'label',
+        groupDetailLevel: 'artifact-group',
         domain: 'creative',
     }));
     assert.deepEqual(left, right);
@@ -270,10 +273,94 @@ test('semantic zoom visibility is deterministic and defaults to normal for unkno
         showNodeLabels: true,
         showNodeCards: true,
         showClusterDots: false,
+        showNodeKindBadges: true,
+        showNodeMetadata: false,
+        showGroups: false,
+        showGroupCounts: false,
+        showGroupPreviews: false,
+        showGroupHalos: false,
     });
     assert.deepEqual(resolveSemanticZoomVisibility('normal'), normal);
     assert.deepEqual(resolveSemanticZoomVisibility('unknown'), normal);
     assert.equal(Object.isFrozen(resolveSemanticZoomVisibility('far')), true);
+});
+
+test('semantic zoom visibility layers are deterministic across far and overview tiers', () => {
+    assert.deepEqual(
+        resolveSemanticZoomVisibility('far'),
+        Object.freeze({
+            showProjectHubLabel: true,
+            showNodeLabels: false,
+            showNodeCards: false,
+            showClusterDots: false,
+            showNodeKindBadges: false,
+            showNodeMetadata: false,
+            showGroups: true,
+            showGroupCounts: true,
+            showGroupPreviews: false,
+            showGroupHalos: true,
+        }),
+    );
+    assert.deepEqual(
+        resolveSemanticZoomVisibility('overview'),
+        Object.freeze({
+            showProjectHubLabel: true,
+            showNodeLabels: true,
+            showNodeCards: false,
+            showClusterDots: true,
+            showNodeKindBadges: false,
+            showNodeMetadata: false,
+            showGroups: true,
+            showGroupCounts: true,
+            showGroupPreviews: true,
+            showGroupHalos: true,
+        }),
+    );
+});
+
+test('semantic zoom detail levels are deterministic across tier boundaries', () => {
+    assert.deepEqual(
+        resolveSemanticZoomPresentation({ scale: 0.2, perspectiveId: 'overview' }),
+        Object.freeze({
+            tier: 'far',
+            perspectiveId: 'overview',
+            detail: 'systems',
+            cluster: 'project-domain',
+            labels: false,
+            focus: 'domains',
+            nodeDetailLevel: 'hidden',
+            groupDetailLevel: 'domain-chip',
+            domain: 'project',
+        }),
+    );
+    assert.deepEqual(
+        resolveSemanticZoomPresentation({ scale: 1, perspectiveId: 'build' }),
+        Object.freeze({
+            tier: 'normal',
+            perspectiveId: 'build',
+            detail: 'artifact',
+            cluster: 'artifact-node',
+            labels: true,
+            focus: 'artifacts',
+            nodeDetailLevel: 'label-kind',
+            groupDetailLevel: 'artifact-group',
+            domain: 'execution',
+        }),
+    );
+    assert.deepEqual(
+        resolveSemanticZoomPresentation({ scale: 3, perspectiveId: 'publish' }),
+        Object.freeze({
+            tier: 'micro',
+            perspectiveId: 'publish',
+            detail: 'node-precision',
+            cluster: 'none',
+            labels: true,
+            focus: 'inspect',
+            nodeDetailLevel: 'metadata',
+            groupDetailLevel: 'artifact-group',
+            domain: 'release',
+        }),
+    );
 });
 
 test('semantic zoom node selection is perspective-aware, deterministic, and fail-closed', () => {

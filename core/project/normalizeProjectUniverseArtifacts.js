@@ -45,6 +45,29 @@ function normalizeNode(id, node) {
     });
 }
 
+function normalizeGroup(id, group, nodes) {
+    const nodeIds = Array.isArray(group?.nodeIds)
+        ? [...new Set(group.nodeIds.filter((nodeId) => typeof nodeId === 'string' && Object.prototype.hasOwnProperty.call(nodes, nodeId)))]
+              .sort()
+        : [];
+
+    return Object.freeze({
+        id,
+        perspectiveId:
+            typeof group?.perspectiveId === 'string' && group.perspectiveId.trim().length > 0
+                ? group.perspectiveId.trim()
+                : 'overview',
+        label: typeof group?.label === 'string' && group.label.trim().length > 0 ? group.label.trim() : id,
+        x: isFiniteNumber(group?.x) ? Number(group.x) : 0,
+        y: isFiniteNumber(group?.y) ? Number(group.y) : 0,
+        nodeIds: Object.freeze(nodeIds),
+        metadata:
+            group?.metadata && typeof group.metadata === 'object' && !Array.isArray(group.metadata)
+                ? Object.freeze({ ...group.metadata })
+                : Object.freeze({}),
+    });
+}
+
 export function normalizeProjectUniverseArtifacts(universe) {
     if (!universe || typeof universe !== 'object') return null;
 
@@ -52,6 +75,9 @@ export function normalizeProjectUniverseArtifacts(universe) {
     const rawNodes = universe.nodes && typeof universe.nodes === 'object' ? universe.nodes : {};
     const nodeIds = Object.keys(rawNodes).filter((id) => typeof id === 'string' && id.trim().length > 0).sort();
     const nodes = Object.fromEntries(nodeIds.map((id) => [id, normalizeNode(id, rawNodes[id])]));
+    const rawGroups = universe.groups && typeof universe.groups === 'object' ? universe.groups : {};
+    const groupIds = Object.keys(rawGroups).filter((id) => typeof id === 'string' && id.trim().length > 0).sort();
+    const groups = Object.fromEntries(groupIds.map((id) => [id, normalizeGroup(id, rawGroups[id], nodes)]));
 
     const hubId =
         typeof universe.hubId === 'string' && Object.prototype.hasOwnProperty.call(nodes, universe.hubId)
@@ -62,5 +88,6 @@ export function normalizeProjectUniverseArtifacts(universe) {
         version,
         hubId,
         nodes: Object.freeze(nodes),
+        groups: Object.freeze(groups),
     });
 }

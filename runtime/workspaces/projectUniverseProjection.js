@@ -44,6 +44,16 @@ function createNode(id, kind, label, metadata = {}) {
     });
 }
 
+function createGroup(id, perspectiveId, label, nodeIds, metadata = {}) {
+    return Object.freeze({
+        id,
+        perspectiveId,
+        label,
+        nodeIds: Object.freeze([...nodeIds].sort()),
+        metadata: Object.freeze(metadata),
+    });
+}
+
 function resolveBlueprintFromBootstrap(bootstrap) {
     const versionId = asNonEmptyString(bootstrap?.blueprintVersionId);
     if (versionId) {
@@ -249,6 +259,68 @@ function layoutNodes(rawNodes) {
     );
 }
 
+function resolveGroupPerspectiveId(node) {
+    if (!node || node.kind === ArtifactKind.PROJECT_HUB) return null;
+    if (node.id === 'workflow:publish') return 'publish';
+
+    switch (node.kind) {
+        case ArtifactKind.FRAME:
+        case ArtifactKind.DOCUMENT:
+        case ArtifactKind.VIDEO:
+        case ArtifactKind.ANIMATION:
+        case ArtifactKind.COMPONENT_LIBRARY:
+            return 'create';
+        case ArtifactKind.SYSTEM_MODEL:
+            return 'operate';
+        case ArtifactKind.KNOWLEDGE_PAGE:
+            return 'collaborate';
+        case ArtifactKind.WORKFLOW:
+        case ArtifactKind.STATE_MACHINE:
+        case ArtifactKind.AI_AGENT:
+            return 'build';
+        default:
+            return 'overview';
+    }
+}
+
+function buildUniverseGroups(nodes) {
+    const definitions = Object.freeze({
+        create: Object.freeze({ label: 'Create', x: -260, y: -260 }),
+        build: Object.freeze({ label: 'Build', x: 250, y: -260 }),
+        operate: Object.freeze({ label: 'Operate', x: 250, y: 220 }),
+        collaborate: Object.freeze({ label: 'Collaborate', x: -260, y: 220 }),
+        publish: Object.freeze({ label: 'Publish', x: 0, y: 290 }),
+    });
+
+    const buckets = new Map(
+        Object.keys(definitions).map((perspectiveId) => [perspectiveId, []]),
+    );
+
+    for (const node of Object.values(nodes ?? {})) {
+        const perspectiveId = resolveGroupPerspectiveId(node);
+        if (!perspectiveId || !buckets.has(perspectiveId)) continue;
+        buckets.get(perspectiveId).push(node.id);
+    }
+
+    return Object.fromEntries(
+        [...buckets.entries()]
+            .filter(([, nodeIds]) => nodeIds.length > 0)
+            .map(([perspectiveId, nodeIds]) => {
+                const definition = definitions[perspectiveId];
+                return [
+                    `group:${perspectiveId}`,
+                    Object.freeze({
+                        ...createGroup(`group:${perspectiveId}`, perspectiveId, definition.label, nodeIds, {
+                            artifactCount: nodeIds.length,
+                        }),
+                        x: definition.x,
+                        y: definition.y,
+                    }),
+                ];
+            }),
+    );
+}
+
 export function buildProjectUniverseProjection({ document = null, projectIdentity = null } = {}) {
     const bootstrap = asObject(document?.meta)?.projectBootstrap ?? null;
     const blueprint = resolveBlueprintFromBootstrap(bootstrap);
@@ -280,10 +352,13 @@ export function buildProjectUniverseProjection({ document = null, projectIdentit
 
     const deduped = Object.fromEntries(rawNodes.map((node) => [node.id, node]));
     const withRefs = withHubRefs(hubId, deduped);
+    const laidOutNodes = layoutNodes(withRefs);
+    const groups = buildUniverseGroups(laidOutNodes);
 
     return normalizeProjectUniverseArtifacts({
         version: 1,
         hubId,
-        nodes: layoutNodes(withRefs),
+        nodes: laidOutNodes,
+        groups,
     });
 }

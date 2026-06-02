@@ -19,6 +19,11 @@ function resolveUniverseNodes(universe) {
     return nodes.filter(Boolean);
 }
 
+function resolveUniverseGroups(universe) {
+    const groups = universe?.groups && typeof universe.groups === 'object' ? Object.values(universe.groups) : [];
+    return groups.filter(Boolean);
+}
+
 function resolveBounds(nodes) {
     if (!Array.isArray(nodes) || nodes.length === 0) {
         return Object.freeze({
@@ -59,6 +64,35 @@ function formatNodeKind(kind) {
         .join(' ');
 }
 
+function summarizeNodeMetadata(node) {
+    const metadata = node?.metadata && typeof node.metadata === 'object' ? node.metadata : null;
+    if (!metadata) return 'Projection';
+
+    const sourceId = typeof metadata.sourceId === 'string' && metadata.sourceId.trim().length > 0 ? metadata.sourceId : null;
+    if (sourceId) return sourceId;
+    const documentId =
+        typeof metadata.documentId === 'string' && metadata.documentId.trim().length > 0 ? metadata.documentId : null;
+    if (documentId) return documentId;
+    const blueprintId =
+        typeof metadata.blueprintId === 'string' && metadata.blueprintId.trim().length > 0 ? metadata.blueprintId : null;
+    if (blueprintId) return blueprintId;
+
+    const count = Object.keys(metadata).length;
+    if (count > 0) {
+        return `${count} signal${count === 1 ? '' : 's'}`;
+    }
+
+    return 'Projection';
+}
+
+function resolveGroupPreviewLabels(group, visibleNodeById) {
+    if (!group || !Array.isArray(group.nodeIds)) return [];
+    return group.nodeIds
+        .map((nodeId) => visibleNodeById.get(nodeId)?.label)
+        .filter((label) => typeof label === 'string' && label.trim().length > 0)
+        .slice(0, 2);
+}
+
 export function ProjectUniverseCanvas({
     perspectiveId = 'overview',
     universe = null,
@@ -80,6 +114,7 @@ export function ProjectUniverseCanvas({
     );
     const visibility = useMemo(() => resolveSemanticZoomVisibility(presentation.tier), [presentation.tier]);
     const artifactNodes = useMemo(() => resolveUniverseNodes(universe), [universe]);
+    const artifactGroups = useMemo(() => resolveUniverseGroups(universe), [universe]);
     const nodeSelection = useMemo(
         () =>
             resolveSemanticZoomNodeSelection({
@@ -96,6 +131,22 @@ export function ProjectUniverseCanvas({
     const renderNodes = useMemo(
         () => visibleNodes.filter((node) => node.id !== universe?.hubId),
         [universe?.hubId, visibleNodes],
+    );
+    const visibleGroups = useMemo(() => {
+        if (presentation.groupDetailLevel === 'domain-chip') {
+            return artifactGroups;
+        }
+
+        if (presentation.groupDetailLevel === 'artifact-group') {
+            const visibleNodeIds = new Set(visibleNodes.map((node) => node.id));
+            return artifactGroups.filter((group) => group.nodeIds.some((nodeId) => visibleNodeIds.has(nodeId)));
+        }
+
+        return [];
+    }, [artifactGroups, presentation.groupDetailLevel, visibleNodes]);
+    const visibleNodeById = useMemo(
+        () => new Map(visibleNodes.map((node) => [node.id, node])),
+        [visibleNodes],
     );
     const bounds = useMemo(() => resolveBounds(artifactNodes), [artifactNodes]);
     const minimap = useMemo(() => {
@@ -291,7 +342,7 @@ export function ProjectUniverseCanvas({
                         Reset
                     </button>
                     <span>
-                        {artifactNodes.length} artifacts · zoom {Math.round(camera.scale * 100)}% · tier {presentation.tier} · {presentation.domain}
+                        {artifactNodes.length} artifacts · zoom {Math.round(camera.scale * 100)}% · tier {presentation.tier} · {presentation.focus} · {presentation.nodeDetailLevel}
                     </span>
                 </div>
             </div>
@@ -394,6 +445,32 @@ export function ProjectUniverseCanvas({
                         }}>
                         {visibility.showProjectHubLabel ? hubLabel : 'Hub'}
                     </div>
+                    {visibility.showGroupHalos
+                        ? visibleGroups.map((group) => (
+                              <div
+                                  key={`halo-${group.id}`}
+                                  style={{
+                                      position: 'absolute',
+                                      left: group.x - 28,
+                                      top: group.y - 18,
+                                      width: presentation.groupDetailLevel === 'domain-chip' ? 170 : 210,
+                                      height: presentation.groupDetailLevel === 'domain-chip' ? 68 : 96,
+                                      borderRadius: 999,
+                                      background:
+                                          group.perspectiveId === 'create'
+                                              ? 'radial-gradient(circle, rgba(34,197,94,0.16) 0%, rgba(34,197,94,0) 72%)'
+                                              : group.perspectiveId === 'build'
+                                                ? 'radial-gradient(circle, rgba(59,130,246,0.16) 0%, rgba(59,130,246,0) 72%)'
+                                                : group.perspectiveId === 'operate'
+                                                  ? 'radial-gradient(circle, rgba(249,115,22,0.16) 0%, rgba(249,115,22,0) 72%)'
+                                                  : group.perspectiveId === 'collaborate'
+                                                    ? 'radial-gradient(circle, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0) 72%)'
+                                                    : 'radial-gradient(circle, rgba(15,23,42,0.14) 0%, rgba(15,23,42,0) 72%)',
+                                      pointerEvents: 'none',
+                                  }}
+                              />
+                          ))
+                        : null}
                     {visibility.showClusterDots
                         ? renderNodes.map((node) => (
                               <div
@@ -410,7 +487,74 @@ export function ProjectUniverseCanvas({
                               />
                           ))
                         : null}
-                    {renderNodes.map((node) => (
+                    {visibility.showGroups ? visibleGroups.map((group) => {
+                        const previewLabels = resolveGroupPreviewLabels(group, visibleNodeById);
+                        return (
+                        <div
+                            key={group.id}
+                            data-testid={`project-universe-group-${group.perspectiveId}`}
+                            style={{
+                                position: 'absolute',
+                                left: group.x,
+                                top: group.y,
+                                minWidth: presentation.groupDetailLevel === 'domain-chip' ? 112 : 148,
+                                minHeight: presentation.groupDetailLevel === 'domain-chip' ? 30 : 64,
+                                padding: presentation.groupDetailLevel === 'domain-chip' ? '7px 12px' : '10px 12px',
+                                borderRadius: presentation.groupDetailLevel === 'domain-chip' ? 999 : 16,
+                                background:
+                                    presentation.groupDetailLevel === 'domain-chip'
+                                        ? 'rgba(15,23,42,0.9)'
+                                        : 'linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(241,245,249,0.94) 100%)',
+                                color:
+                                    presentation.groupDetailLevel === 'domain-chip'
+                                        ? '#f8fafc'
+                                        : '#0f172a',
+                                border:
+                                    presentation.groupDetailLevel === 'domain-chip'
+                                        ? '1px solid rgba(15,23,42,0.95)'
+                                        : '1px solid #cbd5e1',
+                                fontSize: presentation.groupDetailLevel === 'domain-chip' ? 11 : 12,
+                                textAlign: 'center',
+                                boxShadow:
+                                    presentation.groupDetailLevel === 'domain-chip'
+                                        ? 'none'
+                                        : '0 6px 18px rgba(148,163,184,0.16)',
+                            }}>
+                            <div style={{ fontWeight: 700 }}>{group.label}</div>
+                            {visibility.showGroupCounts ? (
+                                <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
+                                    {group.nodeIds.length} artifact{group.nodeIds.length === 1 ? '' : 's'}
+                                </div>
+                            ) : null}
+                            {visibility.showGroupPreviews && previewLabels.length > 0 ? (
+                                <div
+                                    style={{
+                                        marginTop: 6,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: 4,
+                                        flexWrap: 'wrap',
+                                    }}>
+                                    {previewLabels.map((label) => (
+                                        <span
+                                            key={`${group.id}-${label}`}
+                                            style={{
+                                                borderRadius: 999,
+                                                background: 'rgba(148,163,184,0.18)',
+                                                color: '#334155',
+                                                fontSize: 9,
+                                                padding: '2px 6px',
+                                            }}>
+                                            {label}
+                                        </span>
+                                    ))}
+                                </div>
+                            ) : null}
+                        </div>
+                    )}) : null}
+                    {visibility.showNodeLabels || visibility.showNodeCards
+                        ? renderNodes.map((node) => (
                         <div
                             key={node.id}
                             data-testid={`project-universe-node-${node.id}`}
@@ -418,23 +562,28 @@ export function ProjectUniverseCanvas({
                                 position: 'absolute',
                                 left: node.x,
                                 top: node.y,
-                                width: visibility.showNodeCards ? 116 : 108,
+                                width: visibility.showNodeCards ? 116 : 96,
                                 minHeight: 26,
                                 padding: visibility.showNodeCards ? '6px 8px' : '5px 7px',
-                                borderRadius: 8,
-                                background: visibility.showNodeCards ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.7)',
+                                borderRadius: visibility.showNodeCards ? 8 : 999,
+                                background: visibility.showNodeCards ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.78)',
                                 border: `1px solid ${visibility.showNodeCards ? '#cbd5e1' : '#dbe4ee'}`,
-                                fontSize: 11,
+                                fontSize: visibility.showNodeCards ? 11 : 10,
                                 color: '#0f172a',
                                 textAlign: 'center',
-                                display: visibility.showNodeCards || visibility.showNodeLabels ? 'block' : 'none',
+                                boxShadow: visibility.showNodeCards ? '0 6px 18px rgba(148,163,184,0.14)' : 'none',
                             }}>
                             {visibility.showNodeLabels ? (
                                 <>
                                     <div>{node.label}</div>
-                                    {visibility.showNodeCards ? (
+                                    {visibility.showNodeKindBadges ? (
                                         <div style={{ fontSize: 9, color: '#64748b', marginTop: 3 }}>
                                             {formatNodeKind(node.kind)}
+                                        </div>
+                                    ) : null}
+                                    {visibility.showNodeMetadata ? (
+                                        <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 2 }}>
+                                            {summarizeNodeMetadata(node)}
                                         </div>
                                     ) : null}
                                 </>
@@ -442,7 +591,7 @@ export function ProjectUniverseCanvas({
                                 node.id
                             )}
                         </div>
-                    ))}
+                    )) : null}
                     {visibility.showClusterDots && nodeSelection.hiddenCount > 0 ? (
                         <div
                             style={{

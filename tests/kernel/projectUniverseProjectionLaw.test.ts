@@ -86,5 +86,24 @@ test('project universe projection derives deterministic artifact nodes from docu
     assert.equal(left?.nodes['components:library']?.kind, 'component-library');
     assert.equal(left?.nodes['animation:motion']?.kind, 'animation');
     assert.equal(left?.nodes['system:model']?.kind, 'system-model');
+    assert.equal(left?.groups['group:create']?.label, 'Create');
+    assert.deepEqual(left?.groups['group:create']?.nodeIds, Object.freeze([
+        'animation:motion',
+        'components:library',
+        'document:primary',
+        'frame:frame.dispatch',
+        'frame:frame.ops.root',
+        'sequence:timelineA',
+    ]));
+    assert.equal(left?.groups['group:build']?.label, 'Build');
+    assert.deepEqual(left?.groups['group:build']?.nodeIds, Object.freeze([
+        'state-machine:fulfillment',
+        'workflow:flow:dispatchApproval',
+        'workflow:graph:routing',
+    ]));
+    assert.equal(left?.groups['group:operate']?.label, 'Operate');
+    assert.deepEqual(left?.groups['group:operate']?.nodeIds, Object.freeze(['system:model']));
+    assert.equal(left?.groups['group:publish']?.label, 'Publish');
+    assert.deepEqual(left?.groups['group:publish']?.nodeIds, Object.freeze(['workflow:publish']));
     assert.deepEqual(left, right);
 });
