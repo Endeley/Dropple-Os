@@ -371,6 +371,23 @@ test('project perspective bootstrap resolver prefers document bootstrap default 
 
 test('project perspective inference for direct workspace entries is deterministic and perspective-first', () => {
     assert.deepEqual(
+        resolveProjectPerspectiveForEntry({ entryId: 'design' }),
+        Object.freeze({
+            perspectiveId: 'create',
+            perspectiveLabel: 'Create',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'uiux',
+            entrySource: 'entry-direct',
+            workspaceId: 'design',
+            modeId: 'uiux',
+            definitionId: 'uiux',
+            overlayId: null,
+            overlayClass: null,
+            canonicalModeId: 'uiux',
+        }),
+    );
+
+    assert.deepEqual(
         resolveProjectPerspectiveForEntry({ entryId: 'media' }),
         Object.freeze({
             perspectiveId: 'create',
@@ -388,6 +405,23 @@ test('project perspective inference for direct workspace entries is deterministi
     );
 
     assert.deepEqual(
+        resolveProjectPerspectiveForEntry({ entryId: 'build' }),
+        Object.freeze({
+            perspectiveId: 'build',
+            perspectiveLabel: 'Build',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'application',
+            entrySource: 'entry-direct',
+            workspaceId: 'build',
+            modeId: 'application',
+            definitionId: 'dev',
+            overlayId: null,
+            overlayClass: null,
+            canonicalModeId: 'application',
+        }),
+    );
+
+    assert.deepEqual(
         resolveProjectPerspectiveForEntry({ entryId: 'systems-engineering' }),
         Object.freeze({
             perspectiveId: 'operate',
@@ -401,6 +435,40 @@ test('project perspective inference for direct workspace entries is deterministi
             overlayId: 'systems-engineering',
             overlayClass: 'payload',
             canonicalModeId: 'automation',
+        }),
+    );
+
+    assert.deepEqual(
+        resolveProjectPerspectiveForEntry({ entryId: 'collaborate' }),
+        Object.freeze({
+            perspectiveId: 'collaborate',
+            perspectiveLabel: 'Collaborate',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'review',
+            entrySource: 'entry-direct',
+            workspaceId: 'collaborate',
+            modeId: 'review',
+            definitionId: 'review',
+            overlayId: null,
+            overlayClass: null,
+            canonicalModeId: 'review',
+        }),
+    );
+
+    assert.deepEqual(
+        resolveProjectPerspectiveForEntry({ entryId: 'system' }),
+        Object.freeze({
+            perspectiveId: 'publish',
+            perspectiveLabel: 'Publish',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'governance',
+            entrySource: 'entry-direct',
+            workspaceId: 'system',
+            modeId: 'governance',
+            definitionId: 'material',
+            overlayId: null,
+            overlayClass: null,
+            canonicalModeId: 'governance',
         }),
     );
 

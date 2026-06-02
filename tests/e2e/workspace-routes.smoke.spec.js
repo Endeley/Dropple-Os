@@ -15,6 +15,10 @@ const ROUTES = [
     expectedToolId: 'select',
   },
   {
+    path: '/workspace/design',
+    expected: 'Create',
+  },
+  {
     path: '/workspace/branding',
     expected: 'Branding',
     expectedButton: 'Export',
