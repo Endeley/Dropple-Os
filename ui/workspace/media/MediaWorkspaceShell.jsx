@@ -51,44 +51,48 @@ export function MediaWorkspaceShell(props) {
         mode: activeMode,
     });
 
+    const showStructureNavigation = !projectPerspectiveContext;
+
     return (
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-            <div
-                style={{
-                    position: 'absolute',
-                    top: 12,
-                    right: 12,
-                    zIndex: 1100,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-end',
-                    gap: 8,
-                }}>
+            {showStructureNavigation ? (
                 <div
                     style={{
-                        padding: '6px 10px',
-                        borderRadius: 999,
-                        border: '1px solid rgba(148, 163, 184, 0.35)',
-                        background: 'rgba(15, 23, 42, 0.84)',
-                        color: '#e2e8f0',
-                        fontSize: 11,
-                        fontWeight: 700,
-                        letterSpacing: '0.04em',
-                        textTransform: 'uppercase',
-                        backdropFilter: 'blur(10px)',
+                        position: 'absolute',
+                        top: 12,
+                        right: 12,
+                        zIndex: 1100,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-end',
+                        gap: 8,
                     }}>
-                    {projectPerspectiveContext?.perspectiveLabel ?? formatShellLabel(workspaceContext?.label ?? 'media')}
+                    <div
+                        style={{
+                            padding: '6px 10px',
+                            borderRadius: 999,
+                            border: '1px solid rgba(148, 163, 184, 0.35)',
+                            background: 'rgba(15, 23, 42, 0.84)',
+                            color: '#e2e8f0',
+                            fontSize: 11,
+                            fontWeight: 700,
+                            letterSpacing: '0.04em',
+                            textTransform: 'uppercase',
+                            backdropFilter: 'blur(10px)',
+                        }}>
+                        {formatShellLabel(workspaceContext?.label ?? 'media')}
+                    </div>
+                    <WorkspaceSwitcher
+                        activeWorkspace={activeWorkspace}
+                        onChange={goToWorkspace}
+                    />
+                    <ModeSwitcher
+                        workspace={activeWorkspace}
+                        activeMode={activeMode}
+                        onChange={(nextMode) => goToMode(activeWorkspace, nextMode)}
+                    />
                 </div>
-                <WorkspaceSwitcher
-                    activeWorkspace={activeWorkspace}
-                    onChange={goToWorkspace}
-                />
-                <ModeSwitcher
-                    workspace={activeWorkspace}
-                    activeMode={activeMode}
-                    onChange={(nextMode) => goToMode(activeWorkspace, nextMode)}
-                />
-            </div>
+            ) : null}
             <div
                 style={{
                     position: 'absolute',

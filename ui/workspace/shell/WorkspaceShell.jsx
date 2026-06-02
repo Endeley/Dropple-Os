@@ -40,7 +40,15 @@ export function WorkspaceShell({
      * Media workspaces own their own shell authority.
      */
     if (isMediaWorkspaceId(workspace.id)) {
-        innerShell = <MediaWorkspaceShell workspace={workspace} modeId={activeMode} workspaceContext={workspaceContext} {...shellProps} />;
+        innerShell = (
+            <MediaWorkspaceShell
+                workspace={workspace}
+                modeId={activeMode}
+                workspaceContext={workspaceContext}
+                projectPerspectiveContext={projectPerspectiveContext}
+                {...shellProps}
+            />
+        );
     } else if (isUXValidation) {
         /**
          * UX validation is a distinct read-only shell.
@@ -57,7 +65,16 @@ export function WorkspaceShell({
          * Generic fallback for remaining non-media,
          * non-uiux authoring modes.
          */
-        innerShell = <EditorWorkspaceShell workspace={workspace} modeId={activeMode} workspaceContext={workspaceContext} {...shellProps} />;
+        innerShell = (
+            <EditorWorkspaceShell
+                workspace={workspace}
+                modeId={activeMode}
+                workspaceContext={workspaceContext}
+                projectPerspectiveContext={projectPerspectiveContext}
+                showWorkspaceNavigation={!projectPerspectiveContext}
+                {...shellProps}
+            />
+        );
     }
 
     const shellWithPerspective =

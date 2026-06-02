@@ -384,14 +384,28 @@ test('design modes expose parity-stable shell chrome and strip signals', async (
       await expect(page.locator('.frame-indicator')).toContainText('Draft Surface');
       await expect(page.getByRole('button', { name: 'Templates' })).toBeVisible();
     } else {
-      await expect(page.getByRole('button', { name: 'Design' })).toBeVisible();
-      await expect(page.getByRole('button', { name: 'UI / UX' })).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Graphic' })).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Document' })).toBeVisible();
-      await expect(page.getByRole('button', { name: mode.modeLabel })).toBeVisible();
+      await expect(page.getByRole('navigation', { name: 'Project perspectives' })).toContainText('Create');
+      await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('UI / UX');
+      await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('Graphic');
+      await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('Document');
     }
     await expect(page.locator('body')).toContainText(mode.routeMarker);
     await expect(page.getByRole('button', { name: 'Publish' })).toBeVisible();
+    await expect(page.getByLabel('Workspace switcher')).toHaveCount(0);
+    await expect(page.getByLabel('Mode switcher')).toHaveCount(0);
+  }
+});
+
+test('project perspective routes hide nested workspace and mode switchers', async ({ page }) => {
+  for (const path of ['/workspace/graphic', '/workspace/media', '/workspace/automation']) {
+    const response = await page.goto(path, {
+      waitUntil: 'networkidle',
+    });
+
+    expect(response?.ok(), `${path} should respond successfully`).toBeTruthy();
+    await expect(page.getByRole('navigation', { name: 'Project perspectives' })).toBeVisible();
+    await expect(page.getByLabel('Workspace switcher')).toHaveCount(0);
+    await expect(page.getByLabel('Mode switcher')).toHaveCount(0);
   }
 });
 
