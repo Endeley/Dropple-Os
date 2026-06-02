@@ -17,9 +17,18 @@ import { WorkspaceSwitcher } from '@/ui/workspace/shared/WorkspaceSwitcher.jsx';
 import { useWorkspaceNavigation } from '@/ui/workspace/shared/useWorkspaceNavigation.js';
 import { useWorkspaceCapabilities } from '@/ui/workspace/useWorkspaceCapabilities.js';
 
+function formatShellLabel(value) {
+    if (typeof value !== 'string') return value;
+    return value
+        .split('-')
+        .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
+        .join(' ');
+}
+
 export function MediaWorkspaceShell(props) {
     const requestedMode = props.modeId ?? props.workspace?.id ?? MEDIA_WORKSPACE_ID;
     const workspaceContext = props.workspaceContext ?? null;
+    const projectPerspectiveContext = props.projectPerspectiveContext ?? null;
     const activeWorkspace = workspaceContext?.workspace ?? MEDIA_WORKSPACE_ID;
     const overlayContext = resolveCanonicalWorkspaceOverlayContext({
         workspace: activeWorkspace,
@@ -63,7 +72,7 @@ export function MediaWorkspaceShell(props) {
                         textTransform: 'uppercase',
                         backdropFilter: 'blur(10px)',
                     }}>
-                    {`${workspaceContext?.label ?? 'Media'} Workspace`}
+                    {projectPerspectiveContext?.perspectiveLabel ?? formatShellLabel(workspaceContext?.label ?? 'media')}
                 </div>
                 <WorkspaceSwitcher
                     activeWorkspace={activeWorkspace}
@@ -140,6 +149,7 @@ export function MediaWorkspaceShell(props) {
                 {...props}
                 modeId={activeMode}
                 workspaceContext={workspaceContext}
+                projectPerspectiveContext={projectPerspectiveContext}
                 showWorkspaceNavigation={false}
             />
         </div>

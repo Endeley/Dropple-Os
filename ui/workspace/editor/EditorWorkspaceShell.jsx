@@ -39,6 +39,7 @@ const AUTO_LAYOUT_EVENTS = new Set(['node.layout.setAutoLayout', 'node.layout.cl
 export function EditorWorkspaceShell({
     modeId,
     workspaceContext: providedWorkspaceContext = null,
+    projectPerspectiveContext = null,
     showWorkspaceNavigation = true,
     educationRole = 'teacher',
     educationInitialLocked = true,
@@ -232,6 +233,7 @@ export function EditorWorkspaceShell({
         <EditorWorkspaceLayout
             adapter={adapter}
             workspaceContext={workspaceContext}
+            projectPerspectiveContext={projectPerspectiveContext}
             showWorkspaceNavigation={showWorkspaceNavigation}
             onGoToWorkspace={goToWorkspace}
             onGoToMode={goToMode}

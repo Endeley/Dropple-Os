@@ -44,9 +44,18 @@ import { useDispatcher } from '@/ui/workspace/DispatcherContext.jsx';
 import { dispatchOsWorkspaceShellIntent } from '@/ui/bridges/osSurfaceIntentBridge.js';
 import { readOsWorkspaceShellSurfaceModel } from '@/ui/bridges/osSurfaceReadBridge.js';
 
+function formatShellLabel(value) {
+    if (typeof value !== 'string') return value;
+    return value
+        .split('-')
+        .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
+        .join(' ');
+}
+
 function EditorWorkspaceLayoutInner({
     adapter,
     workspaceContext,
+    projectPerspectiveContext,
     showWorkspaceNavigation,
     onGoToWorkspace,
     onGoToMode,
@@ -280,8 +289,8 @@ function EditorWorkspaceLayoutInner({
 
             {/* Top bar */}
             <TopBar
-                workspaceLabel={workspaceContext?.workspaceId}
-                modeLabel={adapter.label}
+                workspaceLabel={projectPerspectiveContext?.perspectiveLabel ?? workspaceContext?.workspaceId}
+                modeLabel={projectPerspectiveContext?.entryId ? formatShellLabel(projectPerspectiveContext.entryId) : adapter.label}
                 documentName={documentName}
                 onSave={onSave}
                 readOnly={readOnly}

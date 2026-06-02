@@ -9,6 +9,7 @@ import {
     resolveInitialProjectPerspectiveContext,
     resolveProjectPerspectiveFocus,
     resolveProjectPerspectiveContext,
+    resolveProjectPerspectiveForEntry,
 } from '@/platform/workspaces/projectPerspectiveRouter.js';
 
 test('project perspective ids are deterministic and complete', () => {
@@ -364,6 +365,59 @@ test('project perspective bootstrap resolver prefers document bootstrap default 
             canonicalModeId: 'application',
             bootstrapPerspectiveId: 'build',
             bootstrapApplied: true,
+        }),
+    );
+});
+
+test('project perspective inference for direct workspace entries is deterministic and perspective-first', () => {
+    assert.deepEqual(
+        resolveProjectPerspectiveForEntry({ entryId: 'media' }),
+        Object.freeze({
+            perspectiveId: 'create',
+            perspectiveLabel: 'Create',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'animation',
+            entrySource: 'entry-direct',
+            workspaceId: 'media',
+            modeId: 'animation',
+            definitionId: 'animation',
+            overlayId: null,
+            overlayClass: null,
+            canonicalModeId: 'animation',
+        }),
+    );
+
+    assert.deepEqual(
+        resolveProjectPerspectiveForEntry({ entryId: 'systems-engineering' }),
+        Object.freeze({
+            perspectiveId: 'operate',
+            perspectiveLabel: 'Operate',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'systems-engineering',
+            entrySource: 'entry-direct',
+            workspaceId: 'build',
+            modeId: 'systems-engineering',
+            definitionId: 'dev',
+            overlayId: 'systems-engineering',
+            overlayClass: 'payload',
+            canonicalModeId: 'automation',
+        }),
+    );
+
+    assert.deepEqual(
+        resolveProjectPerspectiveForEntry({ entryId: 'versioning' }),
+        Object.freeze({
+            perspectiveId: 'publish',
+            perspectiveLabel: 'Publish',
+            perspectiveSource: 'perspective-direct',
+            entryId: 'versioning',
+            entrySource: 'entry-direct',
+            workspaceId: 'system',
+            modeId: 'versioning',
+            definitionId: 'material',
+            overlayId: 'versioning',
+            overlayClass: 'payload',
+            canonicalModeId: 'governance',
         }),
     );
 });

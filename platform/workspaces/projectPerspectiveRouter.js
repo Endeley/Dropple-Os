@@ -52,6 +52,35 @@ export const PROJECT_PERSPECTIVES = Object.freeze({
     }),
 });
 
+const PRIMARY_PERSPECTIVE_BY_ENTRY = Object.freeze({
+    uiux: 'create',
+    graphic: 'create',
+    branding: 'create',
+    icons: 'create',
+    document: 'create',
+    animation: 'create',
+    video: 'create',
+    audio: 'create',
+    podcast: 'create',
+    application: 'build',
+    logic: 'build',
+    automation: 'build',
+    ai: 'build',
+    conversion: 'build',
+    'systems-engineering': 'operate',
+    'enterprise-operations': 'operate',
+    governance: 'publish',
+    review: 'collaborate',
+    production: 'collaborate',
+    knowledge: 'collaborate',
+    education: 'collaborate',
+    versioning: 'publish',
+    tokens: 'publish',
+    components: 'publish',
+    themes: 'publish',
+    variants: 'publish',
+});
+
 const FALLBACK_PERSPECTIVE_ID = 'overview';
 
 const PROJECT_PERSPECTIVE_FOCUS = Object.freeze({
@@ -150,6 +179,35 @@ export function resolveProjectPerspectiveContext({ perspectiveId, entryId } = {}
         overlayId: resolved.overlayId,
         overlayClass: resolved.overlayClass,
         canonicalModeId: resolved.canonicalModeId,
+    });
+}
+
+export function resolveProjectPerspectiveForEntry({ entryId } = {}) {
+    const normalizedEntryId = normalizeId(entryId);
+    if (!normalizedEntryId) return null;
+
+    const resolved = resolveCanonicalWorkspaceOverlayContext({ modeId: normalizedEntryId });
+    const candidates = [
+        normalizedEntryId,
+        resolved?.overlayId ?? null,
+        resolved?.modeId ?? null,
+        resolved?.canonicalModeId ?? null,
+        resolved?.definitionId ?? null,
+    ].filter(Boolean);
+
+    const mappedPerspectiveId = candidates
+        .map((candidate) => PRIMARY_PERSPECTIVE_BY_ENTRY[candidate] ?? null)
+        .find(Boolean);
+
+    if (!mappedPerspectiveId) return null;
+
+    const perspective = PROJECT_PERSPECTIVES[mappedPerspectiveId];
+    const preferredEntryId =
+        candidates.find((candidate) => perspective.entries.includes(candidate)) ?? perspective.defaultEntryId;
+
+    return resolveProjectPerspectiveContext({
+        perspectiveId: mappedPerspectiveId,
+        entryId: preferredEntryId,
     });
 }
 

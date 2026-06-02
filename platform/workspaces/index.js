@@ -53,6 +53,7 @@ export {
     resolveInitialProjectPerspectiveContext,
     resolveProjectPerspectiveFocus,
     resolveProjectPerspectiveContext,
+    resolveProjectPerspectiveForEntry,
 } from './projectPerspectiveRouter.js';
 export {
     buildProjectBlueprintStartRoute,

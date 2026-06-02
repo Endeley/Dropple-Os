@@ -143,7 +143,7 @@ test('workspace mode flow can move between graphic and media routes without fata
     waitUntil: 'networkidle',
   });
   expect(response?.ok(), 'media workspace should respond successfully').toBeTruthy();
-  await expect(page.locator('body')).toContainText('Media Workspace');
+  await expect(page.locator('body')).toContainText('Create');
   await expect(page.locator('body')).not.toContainText('Application error');
   await expect(page.locator('body')).not.toContainText('Module not found');
 

@@ -6,6 +6,7 @@ import {
     getWorkspaceRegistry,
     resolveWorkspaceContext,
     resolveProjectPerspectiveContext,
+    resolveProjectPerspectiveForEntry,
     hasProjectPerspective,
 } from '@/platform/workspaces';
 import { WorkspaceRoot } from '@/ui/workspace/root/WorkspaceRoot.jsx';
@@ -19,12 +20,16 @@ export function ModeLoader({
     initialResolvedTemplateEnvironment = null,
 }) {
     const requestedPerspectiveId = (queryPerspective || mode || '').toLowerCase();
-    const requestedEntryId = (queryEntry || queryMode || '').toLowerCase();
+    const requestedEntryId = (queryEntry || queryMode || mode || '').toLowerCase();
     const projectPerspectiveContext = hasProjectPerspective(requestedPerspectiveId)
         ? resolveProjectPerspectiveContext({
               perspectiveId: requestedPerspectiveId,
               entryId: requestedEntryId,
           })
+        : requestedEntryId
+          ? resolveProjectPerspectiveForEntry({
+                entryId: requestedEntryId,
+            })
         : null;
     const context = projectPerspectiveContext
         ? resolveWorkspaceContext({

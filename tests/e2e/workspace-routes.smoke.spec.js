@@ -25,51 +25,51 @@ const ROUTES = [
   },
   {
     path: '/workspace/media',
-    expected: 'Media Workspace',
+    expected: 'Create',
   },
   {
     path: '/workspace/animation',
-    expected: 'Media Workspace',
+    expected: 'Create',
   },
   {
     path: '/workspace/video',
-    expected: 'Media Workspace',
+    expected: 'Create',
   },
   {
     path: '/workspace/podcast',
-    expected: 'Media Workspace',
+    expected: 'Create',
   },
   {
     path: '/workspace/audio',
-    expected: 'Media Workspace',
+    expected: 'Create',
   },
   {
     path: '/workspace/automation',
-    expected: 'Automation',
+    expected: 'Build',
     expectedButton: 'Export',
   },
   {
     path: '/workspace/conversion',
-    expected: 'Conversion',
+    expected: 'Build',
     expectedButton: 'Export',
   },
   {
     path: '/workspace/ai',
-    expected: 'AI Build',
+    expected: 'Build',
   },
   {
     path: '/workspace/systems-engineering',
-    expected: 'Systems Engineering',
+    expected: 'Operate',
     expectedPanelText: 'Canonical build overlay for architecture graph',
   },
   {
     path: '/workspace/enterprise-operations',
-    expected: 'Enterprise Operations',
+    expected: 'Operate',
     expectedPanelText: 'Canonical build overlay for process modeling',
   },
   {
     path: '/workspace/education',
-    expected: 'Education Mode',
+    expected: 'Collaborate',
   },
   {
     path: '/workspace/new',
@@ -81,7 +81,7 @@ const ROUTES = [
   },
   {
     path: '/workspace/versioning',
-    expected: 'Token Version Graph',
+    expected: 'Publish',
   },
 ];
 
@@ -137,7 +137,7 @@ test('home route exposes project-first entry sections', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Recommended Blueprints' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Marketplace' })).toBeVisible();
   await expect(page.locator('body')).toContainText('Operations');
-  await expect(page.getByRole('link', { name: 'Open Project Space' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Open Project' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Browse Marketplace' })).toBeVisible();
 });
 
@@ -160,7 +160,7 @@ test('home route reads recent projects and continue route from persisted local s
   expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
   await expect(page.getByRole('link', { name: 'Newest Project' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Older Project' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Open Project Space' })).toHaveAttribute(
+  await expect(page.getByRole('link', { name: 'Open Project' })).toHaveAttribute(
     'href',
     '/workspace/new?doc=doc-recent-1',
   );

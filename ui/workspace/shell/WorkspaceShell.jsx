@@ -1,5 +1,6 @@
 'use client';
 
+import { cloneElement, isValidElement } from 'react';
 import { isMediaWorkspaceId } from '@/platform/workspaces/mediaWorkspace.js';
 
 import { MediaWorkspaceShell } from '@/ui/workspace/media/MediaWorkspaceShell.jsx';
@@ -59,9 +60,16 @@ export function WorkspaceShell({
         innerShell = <EditorWorkspaceShell workspace={workspace} modeId={activeMode} workspaceContext={workspaceContext} {...shellProps} />;
     }
 
+    const shellWithPerspective =
+        isValidElement(innerShell)
+            ? cloneElement(innerShell, {
+                  projectPerspectiveContext,
+              })
+            : innerShell;
+
     return (
         <ProjectPerspectiveShell projectPerspectiveContext={projectPerspectiveContext} activeModeId={activeMode}>
-            {innerShell}
+            {shellWithPerspective}
         </ProjectPerspectiveShell>
     );
 }

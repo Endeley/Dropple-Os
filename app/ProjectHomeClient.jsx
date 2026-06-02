@@ -102,7 +102,7 @@ export default function ProjectHomeClient({ recommendedBlueprints = [], blueprin
 
             <section aria-label='Continue Working'>
                 <h2 style={{ fontSize: 18, marginBottom: 8 }}>Continue Working</h2>
-                <Link href={snapshot.continueRoute}>Open Project Space</Link>
+                <Link href={snapshot.continueRoute}>Open Project</Link>
             </section>
 
             <section aria-label='Recommended Blueprints'>
