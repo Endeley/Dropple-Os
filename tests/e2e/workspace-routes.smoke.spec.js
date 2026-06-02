@@ -8,7 +8,7 @@ const ROUTES = [
   },
   {
     path: '/marketplace',
-    expected: 'Templates',
+    expected: 'Blueprints',
   },
   {
     path: '/workspace/graphic',

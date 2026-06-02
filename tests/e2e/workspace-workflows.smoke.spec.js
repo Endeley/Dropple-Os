@@ -93,7 +93,7 @@ function resolveTemplateLineageIdentity(template) {
   };
 }
 
-test('marketplace template workflow opens certified template details and enters workspace', async ({ page, request }) => {
+test('marketplace blueprint workflow opens certified blueprint details and enters workspace', async ({ page, request }) => {
   const template = await publishMarketplaceFixture(request, {
     title: `Marketplace Flow ${Date.now()}`,
     description: 'Marketplace-certified template flow',
@@ -105,16 +105,16 @@ test('marketplace template workflow opens certified template details and enters 
   });
 
   expect(response?.ok(), 'marketplace route should respond successfully').toBeTruthy();
-  await expect(page.locator('body')).toContainText('Templates');
+  await expect(page.locator('body')).toContainText('Blueprints');
   await expect(page.locator('[data-capability="Reproducible"]').first()).toContainText('Reproducible');
   await page.getByText(template.metadata.name).click();
 
   await expect(page).toHaveURL(new RegExp(`/marketplace/template/${template.id}$`));
   await expect(page.locator('body')).toContainText(template.metadata.name);
   await expect(page.locator('[data-capability="Reproducible"]').first()).toContainText('Reproducible');
-  await expect(page.getByRole('button', { name: 'Use Template' })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Use Blueprint' })).toBeEnabled();
 
-  await page.getByRole('button', { name: 'Use Template' }).click();
+  await page.getByRole('button', { name: 'Use Blueprint' }).click();
   await expect(page).toHaveURL(/\/workspace\/new\?/);
   const workspaceUrl = new URL(page.url());
   const lineage = resolveTemplateLineageIdentity(template);
@@ -124,7 +124,7 @@ test('marketplace template workflow opens certified template details and enters 
   await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();
   await expect(page.locator('[data-node-id]')).toHaveCount(2);
 
-  assertNoFatalErrors(tracked, 'marketplace template workflow');
+  assertNoFatalErrors(tracked, 'marketplace blueprint workflow');
 });
 
 test('workspace mode flow can move between graphic and media routes without fatal errors', async ({ page }) => {

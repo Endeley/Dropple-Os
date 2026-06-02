@@ -23,7 +23,7 @@ export default function CreatorPage({ params }) {
         const payload = await response.json();
 
         if (!response.ok) {
-          throw new Error(payload?.error ?? 'Failed to load creator templates.');
+          throw new Error(payload?.error ?? 'Failed to load creator blueprints.');
         }
 
         if (!cancelled) {
@@ -65,11 +65,11 @@ export default function CreatorPage({ params }) {
       >
         {loading ? (
           <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-            Loading templates...
+            Loading blueprints...
           </div>
         ) : error ? (
           <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-            Failed to load templates.
+            Failed to load blueprints.
           </div>
         ) : templates.length ? (
           templates.map((tpl) => (
@@ -77,7 +77,7 @@ export default function CreatorPage({ params }) {
           ))
         ) : (
           <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-            No templates from this creator yet.
+            No blueprints from this creator yet.
           </div>
         )}
       </div>

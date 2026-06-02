@@ -35,7 +35,7 @@ export default function TemplateDetailPage({ params }) {
         const payload = await response.json();
 
         if (!response.ok) {
-          throw new Error(payload?.error ?? 'Failed to load template.');
+          throw new Error(payload?.error ?? 'Failed to load blueprint.');
         }
 
         if (!cancelled) {
@@ -110,8 +110,8 @@ export default function TemplateDetailPage({ params }) {
     };
   }, [template]);
 
-  if (loading) return <div style={{ padding: 'var(--space-6)' }}>Loading template...</div>;
-  if (error) return <div style={{ padding: 'var(--space-6)' }}>Failed to load template.</div>;
+  if (loading) return <div style={{ padding: 'var(--space-6)' }}>Loading blueprint...</div>;
+  if (error) return <div style={{ padding: 'var(--space-6)' }}>Failed to load blueprint.</div>;
   if (!template) return <div style={{ padding: 'var(--space-6)' }}>Not found</div>;
 
   const creator = template.metadata.creator || {};
@@ -139,7 +139,7 @@ export default function TemplateDetailPage({ params }) {
     });
 
     if (!lineageRootId || !versionId) {
-      throw new Error('Template is missing lineage identity.');
+      throw new Error('Blueprint is missing lineage identity.');
     }
 
     const params = new URLSearchParams({
@@ -278,7 +278,7 @@ export default function TemplateDetailPage({ params }) {
 
       <div style={{ marginTop: 'var(--space-lg)', fontSize: 12, color: 'var(--text-muted)' }}>
         {presentation.capabilities.canRemix
-          ? '✔ Fork & edit · ✔ Use in projects · ✖ Resell template'
+          ? '✔ Fork & edit · ✔ Use in projects · ✖ Resell blueprint'
           : '✔ Preview final output · ✖ Remix or install into workspace'}
       </div>
 
@@ -317,7 +317,7 @@ export default function TemplateDetailPage({ params }) {
           onClick={useTemplate}
           disabled={!owned}
         >
-          Use Template
+          Use Blueprint
         </button>
       ) : (
         <div style={{ marginTop: 'var(--space-lg)', fontSize: 12, color: 'var(--text-muted)' }}>

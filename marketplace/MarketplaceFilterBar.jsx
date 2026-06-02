@@ -30,7 +30,7 @@ export default function MarketplaceFilterBar({
       }}
     >
       <input
-        placeholder="Search templates"
+        placeholder="Search blueprints"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         style={{ ...inputStyle, flex: '1 1 220px' }}

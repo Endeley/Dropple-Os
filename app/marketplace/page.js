@@ -59,7 +59,7 @@ export default function MarketplacePage() {
 
   return (
     <div style={{ padding: 'var(--space-6)' }}>
-      <h2>Templates</h2>
+      <h2>Blueprints</h2>
 
       <MarketplaceFilterBar {...filters} />
 
@@ -85,7 +85,7 @@ export default function MarketplacePage() {
           >
             <div style={{ fontWeight: 600 }}>{collection.title}</div>
             <div style={{ marginTop: 'var(--space-xs)', color: 'var(--text-muted)' }}>
-              {collection.templateIds.length} templates
+              {collection.templateIds.length} blueprints
             </div>
           </div>
         ))}
@@ -100,10 +100,10 @@ export default function MarketplacePage() {
         }}
       >
         {loading ? (
-          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Loading templates...</div>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Loading blueprints...</div>
         ) : error ? (
           <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-            Failed to load templates.
+            Failed to load blueprints.
           </div>
         ) : visibleTemplates.length ? (
           visibleTemplates.map((tpl) => (
@@ -111,7 +111,7 @@ export default function MarketplacePage() {
           ))
         ) : (
           <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-            No templates found.
+            No blueprints found.
           </div>
         )}
       </div>
