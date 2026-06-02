@@ -431,20 +431,37 @@ export function ProjectPerspectiveShell({
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     gap: 10,
-                    padding: '10px 14px',
+                    padding: '12px 16px',
                     borderBottom: '1px solid #e2e8f0',
-                    background: '#ffffff',
+                    background: 'linear-gradient(135deg, #fff7ed 0%, #ffffff 52%, #ecfeff 100%)',
                 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <strong style={{ fontSize: 14, color: '#0f172a' }}>Project Space</strong>
+                <div style={{ display: 'grid', gap: 2 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                padding: '4px 8px',
+                                borderRadius: 999,
+                                fontSize: 10,
+                                fontWeight: 700,
+                                letterSpacing: '0.08em',
+                                textTransform: 'uppercase',
+                                color: '#9a3412',
+                                background: '#ffedd5',
+                                border: '1px solid #fdba74',
+                            }}>
+                            Project
+                        </span>
+                        <strong style={{ fontSize: 18, color: '#0f172a' }}>{perspectiveLabel}</strong>
+                    </div>
                     <span style={{ fontSize: 12, color: '#475569' }}>
-                        {perspectiveLabel} · {projectPerspectiveContext.entryId}
+                        Specialization: {formatEntryLabel(projectPerspectiveContext.entryId)}
                     </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ fontSize: 11, color: '#64748b' }}>
-                        workspace: {projectPerspectiveContext.workspaceId}/
-                        {activeModeId ?? projectPerspectiveContext.modeId}
+                        runtime: {projectPerspectiveContext.workspaceId}/{activeModeId ?? projectPerspectiveContext.modeId}
                     </span>
                     <button
                         type='button'
@@ -471,26 +488,29 @@ export function ProjectPerspectiveShell({
                     display: 'flex',
                     flexWrap: 'wrap',
                     gap: 6,
-                    padding: '8px 12px',
+                    padding: '10px 14px',
                     borderBottom: '1px solid #e2e8f0',
-                    background: '#f8fafc',
+                    background: '#fffaf5',
                 }}>
                 {perspectiveIds.map((id) => {
                     const active = id === perspectiveId;
+                    const definition = getProjectPerspectiveDefinition(id);
                     return (
                         <Link
                             key={id}
                             href={`/workspace/${id}`}
                             style={{
-                                padding: '6px 10px',
+                                padding: '8px 12px',
                                 borderRadius: 999,
                                 fontSize: 12,
+                                fontWeight: 600,
                                 textDecoration: 'none',
-                                border: `1px solid ${active ? '#0f172a' : '#cbd5e1'}`,
-                                color: active ? '#ffffff' : '#334155',
+                                border: `1px solid ${active ? '#0f172a' : '#fed7aa'}`,
+                                color: active ? '#ffffff' : '#7c2d12',
                                 background: active ? '#0f172a' : '#ffffff',
+                                boxShadow: active ? '0 8px 24px rgba(15, 23, 42, 0.16)' : 'none',
                             }}>
-                            {id}
+                            {definition?.label ?? formatEntryLabel(id)}
                         </Link>
                     );
                 })}
@@ -501,7 +521,7 @@ export function ProjectPerspectiveShell({
                     display: 'flex',
                     flexWrap: 'wrap',
                     gap: 6,
-                    padding: '8px 12px',
+                    padding: '8px 14px',
                     borderBottom: '1px solid #e2e8f0',
                     background: '#ffffff',
                 }}>
