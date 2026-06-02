@@ -139,6 +139,31 @@ test('home route exposes project-first entry sections', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Browse Marketplace' })).toBeVisible();
 });
 
+test('home route reads recent projects and continue route from persisted local state', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      'dropple.documents',
+      JSON.stringify([
+        { id: 'doc-recent-2', name: 'Older Project', updatedAt: 10 },
+        { id: 'doc-recent-1', name: 'Newest Project', updatedAt: 20 },
+      ]),
+    );
+    window.localStorage.setItem('dropple.activeDocument', 'doc-recent-1');
+  });
+
+  const response = await page.goto('/', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
+  await expect(page.getByRole('link', { name: 'Newest Project' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Older Project' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Open Project Space' })).toHaveAttribute(
+    'href',
+    '/workspace/new?doc=doc-recent-1',
+  );
+});
+
 test('viewer smoke mounts canonical canvas without runtime errors', async ({ page }) => {
   const errors = [];
   const consoleErrors = [];

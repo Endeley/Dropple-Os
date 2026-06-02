@@ -12,6 +12,7 @@ import {
 export default async function WorkspaceNewPage({ searchParams = {} }) {
   const resolvedSearchParams = await searchParams;
   const initialEnvironmentDescriptor = buildInitialEnvironmentDescriptorFromQuery(resolvedSearchParams);
+  const initialDocumentId = getSearchParam(resolvedSearchParams, 'doc');
   const fromTemplate = getSearchParam(resolvedSearchParams, 'fromTemplate');
   const fromLesson = getSearchParam(resolvedSearchParams, 'fromLesson');
   const {
@@ -46,6 +47,7 @@ export default async function WorkspaceNewPage({ searchParams = {} }) {
       workspace={workspaceDefinition}
       workspaceContext={workspaceContext}
       shellProps={{
+        initialDocumentId,
         initialEnvironmentDescriptor: resolvedInitialEnvironmentDescriptor,
         initialResolvedTemplateEnvironment,
         initialRuntimeSnapshot,
