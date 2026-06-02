@@ -378,8 +378,9 @@ test('design modes expose parity-stable shell chrome and strip signals', async (
 
     expect(response?.ok(), `${mode.modeId} route should respond successfully`).toBeTruthy();
     if (mode.uiuxShell) {
-      await expect(page.locator('.workspace-name')).toContainText('UIUX');
-      await expect(page.locator('.uiux-workspace-strip')).toContainText('Design / UIUX');
+      await expect(page.locator('.workspace-name')).toContainText('Create');
+      await expect(page.locator('.workspace-mode')).toContainText('UI / UX');
+      await expect(page.locator('.uiux-workspace-strip')).toContainText('Create > UI / UX');
       await expect(page.locator('.frame-indicator')).toContainText('Draft Surface');
       await expect(page.getByRole('button', { name: 'Templates' })).toBeVisible();
     } else {

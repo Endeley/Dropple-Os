@@ -1,5 +1,5 @@
 const DESIGN_MODE_LABEL_BY_ID = Object.freeze({
-    uiux: 'UIUX',
+    uiux: 'UI / UX',
     graphic: 'Graphic',
     document: 'Document',
 });

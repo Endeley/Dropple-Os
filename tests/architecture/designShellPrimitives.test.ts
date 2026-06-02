@@ -18,7 +18,7 @@ test('design shell mode normalization is deterministic and fail-closed', () => {
 });
 
 test('design shell mode labels are deterministic', () => {
-    assert.equal(resolveDesignModeLabel('uiux'), 'UIUX');
+    assert.equal(resolveDesignModeLabel('uiux'), 'UI / UX');
     assert.equal(resolveDesignModeLabel('graphic'), 'Graphic');
     assert.equal(resolveDesignModeLabel('document'), 'Document');
     assert.equal(resolveDesignModeLabel('unknown-mode'), 'Design');
