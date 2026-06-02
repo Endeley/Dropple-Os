@@ -53,6 +53,10 @@ const ROUTES = [
     expectedButton: 'Export',
   },
   {
+    path: '/workspace/build',
+    expected: 'Build',
+  },
+  {
     path: '/workspace/conversion',
     expected: 'Build',
     expectedButton: 'Export',
@@ -76,12 +80,20 @@ const ROUTES = [
     expected: 'Collaborate',
   },
   {
+    path: '/workspace/collaborate',
+    expected: 'Collaborate',
+  },
+  {
     path: '/workspace/new',
     expectedToolId: 'select',
   },
   {
     path: '/workspace/overview',
     expected: 'Project Hub',
+  },
+  {
+    path: '/workspace/system',
+    expected: 'Publish',
   },
   {
     path: '/workspace/versioning',
@@ -401,7 +413,7 @@ test('design modes expose parity-stable shell chrome and strip signals', async (
 });
 
 test('project perspective routes hide nested workspace and mode switchers', async ({ page }) => {
-  for (const path of ['/workspace/graphic', '/workspace/media', '/workspace/automation']) {
+  for (const path of ['/workspace/graphic', '/workspace/media', '/workspace/build', '/workspace/collaborate', '/workspace/system', '/workspace/automation']) {
     const response = await page.goto(path, {
       waitUntil: 'networkidle',
     });
