@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -105,6 +105,14 @@ function navigateProjectWorkflowHref(router, href) {
         return;
     }
     router.push(href);
+}
+
+function isSameCameraState(left, right) {
+    return (
+        Number(left?.x ?? 0) === Number(right?.x ?? 0) &&
+        Number(left?.y ?? 0) === Number(right?.y ?? 0) &&
+        Number(left?.scale ?? 1) === Number(right?.scale ?? 1)
+    );
 }
 
 export function ProjectPerspectiveShell({
@@ -227,23 +235,28 @@ export function ProjectPerspectiveShell({
         setNavigatorQuery(nextQuery);
     }, [navigatorQuery, universeFocusState.query]);
 
-    const replaceShellSearchParams = (nextSearchParams) => {
+    const replaceShellSearchParams = useCallback((nextSearchParams) => {
         const href = `${pathname}?${nextSearchParams.toString()}`;
         if (typeof window !== 'undefined') {
             window.history.replaceState(window.history.state, '', href);
             return;
         }
         router.replace(href, { scroll: false });
-    };
+    }, [pathname, router]);
 
-    const getLiveShellSearchParams = () =>
+    const getLiveShellSearchParams = useCallback(() =>
         typeof window !== 'undefined'
             ? new URLSearchParams(window.location.search)
-            : new URLSearchParams(searchParams?.toString?.() ?? '');
+            : new URLSearchParams(searchParams?.toString?.() ?? ''),
+    [searchParams]);
 
-    const handleCameraChange = (camera) => {
+    const handleCameraChange = useCallback((camera) => {
         const nextState = normalizeProjectCameraState(camera);
-        setCameraRouteState(nextState);
+        setCameraRouteState((current) => (isSameCameraState(current, nextState) ? current : nextState));
+
+        if (isSameCameraState(cameraRouteState, nextState)) {
+            return;
+        }
 
         const withCamera = withProjectCameraSearchParams({
             searchParams: getLiveShellSearchParams(),
@@ -254,9 +267,9 @@ export function ProjectPerspectiveShell({
             focus: universeFocusState,
         });
         replaceShellSearchParams(next);
-    };
+    }, [cameraRouteState, getLiveShellSearchParams, replaceShellSearchParams, universeFocusState]);
 
-    const replaceUniverseRouteState = ({ camera = cameraRouteState, focus = universeFocusState } = {}) => {
+    const replaceUniverseRouteState = useCallback(({ camera = cameraRouteState, focus = universeFocusState } = {}) => {
         const baseSearchParams = getLiveShellSearchParams();
         const withCamera = withProjectCameraSearchParams({
             searchParams: baseSearchParams,
@@ -267,7 +280,7 @@ export function ProjectPerspectiveShell({
             focus,
         });
         replaceShellSearchParams(next);
-    };
+    }, [cameraRouteState, getLiveShellSearchParams, replaceShellSearchParams, universeFocusState]);
 
     const handleUniverseFocusTarget = (targetId) => {
         const focusTarget = resolveProjectUniverseFocusTarget({
