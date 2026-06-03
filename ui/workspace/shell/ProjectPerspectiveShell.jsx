@@ -41,6 +41,7 @@ import {
     buildProjectUniverseNavigatorItems,
     resolveProjectUniverseFocusTarget,
 } from '@/runtime/workspaces/projectUniverseNavigation.js';
+import { buildCreatePerspectiveWorkflow } from '@/runtime/workspaces/createPerspectiveWorkflow.js';
 import { ProjectUniverseCanvas } from './ProjectUniverseCanvas.jsx';
 
 function formatEntryLabel(entryId) {
@@ -94,6 +95,14 @@ async function copyTextWithFallback(text) {
         }
     }
     window.prompt('Copy project view URL', text);
+}
+
+function navigateProjectWorkflowHref(router, href) {
+    if (typeof window !== 'undefined') {
+        window.location.assign(href);
+        return;
+    }
+    router.push(href);
 }
 
 export function ProjectPerspectiveShell({
@@ -225,12 +234,17 @@ export function ProjectPerspectiveShell({
         router.replace(href, { scroll: false });
     };
 
+    const getLiveShellSearchParams = () =>
+        typeof window !== 'undefined'
+            ? new URLSearchParams(window.location.search)
+            : new URLSearchParams(searchParams?.toString?.() ?? '');
+
     const handleCameraChange = (camera) => {
         const nextState = normalizeProjectCameraState(camera);
         setCameraRouteState(nextState);
 
         const withCamera = withProjectCameraSearchParams({
-            searchParams,
+            searchParams: getLiveShellSearchParams(),
             camera: nextState,
         });
         const next = withProjectUniverseFocusSearchParams({
@@ -241,8 +255,9 @@ export function ProjectPerspectiveShell({
     };
 
     const replaceUniverseRouteState = ({ camera = cameraRouteState, focus = universeFocusState } = {}) => {
+        const baseSearchParams = getLiveShellSearchParams();
         const withCamera = withProjectCameraSearchParams({
-            searchParams,
+            searchParams: baseSearchParams,
             camera,
         });
         const next = withProjectUniverseFocusSearchParams({
@@ -475,6 +490,14 @@ export function ProjectPerspectiveShell({
                 query: navigatorQuery,
             }),
         [navigatorQuery, projectUniverse],
+    );
+    const createWorkflow = useMemo(
+        () =>
+            buildCreatePerspectiveWorkflow({
+                universe: projectUniverse,
+                activeEntryId: projectPerspectiveContext.entryId,
+            }),
+        [projectPerspectiveContext.entryId, projectUniverse],
     );
 
     const requestAssistantPlaceholder = async (assistantAction) => {
@@ -830,6 +853,74 @@ export function ProjectPerspectiveShell({
                                 ) : null}
                             </div>
                         </div>
+                        {perspectiveId === 'create' ? (
+                            <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                                    Create Workflow
+                                </div>
+                                <div
+                                    data-testid='create-workflow-panel'
+                                    style={{
+                                        border: '1px solid #e2e8f0',
+                                        borderRadius: 8,
+                                        padding: 8,
+                                        background: '#f8fafc',
+                                        display: 'grid',
+                                        gap: 8,
+                                    }}>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                        {createWorkflow.entrySummaries.map((summary) => (
+                                            <span
+                                                key={summary.entryId}
+                                                style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: 4,
+                                                    border: '1px solid #cbd5e1',
+                                                    borderRadius: 999,
+                                                    background: '#ffffff',
+                                                    color: '#334155',
+                                                    fontSize: 10,
+                                                    padding: '3px 7px',
+                                                }}>
+                                                {summary.entryLabel}
+                                                <strong style={{ color: '#0f172a' }}>{summary.count}</strong>
+                                            </span>
+                                        ))}
+                                    </div>
+                                    <div style={{ display: 'grid', gap: 4 }}>
+                                        {createWorkflow.linkedArtifacts.map((item) => (
+                                            <button
+                                                key={item.targetId}
+                                                type='button'
+                                                onClick={() => navigateProjectWorkflowHref(router, item.href)}
+                                                data-testid={`create-workflow-link-${item.targetId}`}
+                                                style={{
+                                                    display: 'grid',
+                                                    gap: 2,
+                                                    textAlign: 'left',
+                                                    border: `1px solid ${item.active ? '#0f172a' : '#e2e8f0'}`,
+                                                    borderRadius: 6,
+                                                    background: '#ffffff',
+                                                    color: '#334155',
+                                                    padding: '6px 8px',
+                                                    cursor: 'pointer',
+                                                }}>
+                                                <strong style={{ fontSize: 11, color: '#0f172a' }}>{item.label}</strong>
+                                                <span style={{ fontSize: 10, color: '#64748b' }}>
+                                                    {item.entryLabel} · {item.kind}
+                                                </span>
+                                            </button>
+                                        ))}
+                                        {createWorkflow.linkedArtifacts.length === 0 ? (
+                                            <span style={{ fontSize: 11, color: '#64748b' }}>
+                                                No linked create artifacts
+                                            </span>
+                                        ) : null}
+                                    </div>
+                                </div>
+                            </div>
+                        ) : null}
                         <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
                             <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
                                 Assistants

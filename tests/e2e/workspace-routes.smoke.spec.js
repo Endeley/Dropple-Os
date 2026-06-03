@@ -400,6 +400,20 @@ test('project universe navigator search and jump stay route-driven and determini
   await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('tier far');
 });
 
+test('create perspective exposes linked artifact workflow routes', async ({ page }) => {
+  const response = await page.goto('/workspace/create?blueprint=bp.logistics.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'create workflow route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('create-workflow-panel')).toBeVisible();
+  await expect(page.getByTestId('create-workflow-link-document:primary')).toBeVisible();
+  await page.getByTestId('create-workflow-link-document:primary').click();
+  await expect(page).toHaveURL(/[\?&]entry=document/);
+  await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
+  await expect(page.locator('body')).toContainText('Active context: Create > Document');
+});
+
 test('project shell assistant intent enqueues through canonical runtime bridge', async ({ page }) => {
   const response = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1', {
     waitUntil: 'networkidle',
