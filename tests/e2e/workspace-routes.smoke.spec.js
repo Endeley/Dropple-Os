@@ -407,6 +407,9 @@ test('create perspective exposes linked artifact workflow routes', async ({ page
 
   expect(response?.ok(), 'create workflow route should respond successfully').toBeTruthy();
   await expect(page.getByTestId('create-workflow-panel')).toBeVisible();
+  await expect(page.getByTestId('create-workflow-suggested-next')).toContainText('Continue Creating');
+  await expect(page.getByTestId('create-workflow-cluster-interface')).toContainText('Interface');
+  await expect(page.getByTestId('create-workflow-cluster-document')).toContainText('Document');
   await expect(page.getByTestId('create-workflow-link-document:primary')).toBeVisible();
   await page.getByTestId('create-workflow-link-document:primary').click();
   await expect(page).toHaveURL(/[\?&]entry=document/);

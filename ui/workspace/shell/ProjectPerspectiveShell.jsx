@@ -868,6 +868,38 @@ export function ProjectPerspectiveShell({
                                         display: 'grid',
                                         gap: 8,
                                     }}>
+                                    {createWorkflow.suggestedNextArtifact ? (
+                                        <button
+                                            type='button'
+                                            onClick={() =>
+                                                navigateProjectWorkflowHref(
+                                                    router,
+                                                    createWorkflow.suggestedNextArtifact.href,
+                                                )
+                                            }
+                                            data-testid='create-workflow-suggested-next'
+                                            style={{
+                                                textAlign: 'left',
+                                                border: '1px solid #fdba74',
+                                                borderRadius: 8,
+                                                background: '#fff7ed',
+                                                color: '#7c2d12',
+                                                padding: '8px 10px',
+                                                cursor: 'pointer',
+                                                display: 'grid',
+                                                gap: 2,
+                                            }}>
+                                            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                                                Continue Creating
+                                            </span>
+                                            <strong style={{ fontSize: 12, color: '#9a3412' }}>
+                                                {createWorkflow.suggestedNextArtifact.label}
+                                            </strong>
+                                            <span style={{ fontSize: 10 }}>
+                                                {createWorkflow.suggestedNextArtifact.clusterLabel} · {createWorkflow.suggestedNextArtifact.entryLabel}
+                                            </span>
+                                        </button>
+                                    ) : null}
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                                         {createWorkflow.entrySummaries.map((summary) => (
                                             <span
@@ -888,29 +920,46 @@ export function ProjectPerspectiveShell({
                                             </span>
                                         ))}
                                     </div>
-                                    <div style={{ display: 'grid', gap: 4 }}>
-                                        {createWorkflow.linkedArtifacts.map((item) => (
-                                            <button
-                                                key={item.targetId}
-                                                type='button'
-                                                onClick={() => navigateProjectWorkflowHref(router, item.href)}
-                                                data-testid={`create-workflow-link-${item.targetId}`}
-                                                style={{
-                                                    display: 'grid',
-                                                    gap: 2,
-                                                    textAlign: 'left',
-                                                    border: `1px solid ${item.active ? '#0f172a' : '#e2e8f0'}`,
-                                                    borderRadius: 6,
-                                                    background: '#ffffff',
-                                                    color: '#334155',
-                                                    padding: '6px 8px',
-                                                    cursor: 'pointer',
-                                                }}>
-                                                <strong style={{ fontSize: 11, color: '#0f172a' }}>{item.label}</strong>
-                                                <span style={{ fontSize: 10, color: '#64748b' }}>
-                                                    {item.entryLabel} · {item.kind}
-                                                </span>
-                                            </button>
+                                    <div style={{ display: 'grid', gap: 8 }}>
+                                        {createWorkflow.artifactClusters.map((cluster) => (
+                                            <div key={cluster.clusterId} data-testid={`create-workflow-cluster-${cluster.clusterId}`}>
+                                                <div
+                                                    style={{
+                                                        fontSize: 10,
+                                                        fontWeight: 700,
+                                                        color: '#475569',
+                                                        marginBottom: 4,
+                                                        letterSpacing: '0.04em',
+                                                        textTransform: 'uppercase',
+                                                    }}>
+                                                    {cluster.clusterLabel}
+                                                </div>
+                                                <div style={{ display: 'grid', gap: 4 }}>
+                                                    {cluster.items.map((item) => (
+                                                        <button
+                                                            key={item.targetId}
+                                                            type='button'
+                                                            onClick={() => navigateProjectWorkflowHref(router, item.href)}
+                                                            data-testid={`create-workflow-link-${item.targetId}`}
+                                                            style={{
+                                                                display: 'grid',
+                                                                gap: 2,
+                                                                textAlign: 'left',
+                                                                border: `1px solid ${item.active ? '#0f172a' : '#e2e8f0'}`,
+                                                                borderRadius: 6,
+                                                                background: '#ffffff',
+                                                                color: '#334155',
+                                                                padding: '6px 8px',
+                                                                cursor: 'pointer',
+                                                            }}>
+                                                            <strong style={{ fontSize: 11, color: '#0f172a' }}>{item.label}</strong>
+                                                            <span style={{ fontSize: 10, color: '#64748b' }}>
+                                                                {item.entryLabel} · {item.kind}
+                                                            </span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
                                         ))}
                                         {createWorkflow.linkedArtifacts.length === 0 ? (
                                             <span style={{ fontSize: 11, color: '#64748b' }}>

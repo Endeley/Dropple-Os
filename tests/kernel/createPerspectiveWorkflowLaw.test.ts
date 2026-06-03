@@ -50,19 +50,46 @@ test('create perspective workflow derives deterministic linked artifact routes f
 
     assert.deepEqual(left, right);
     assert.equal(left.linkedArtifacts[0]?.targetId, 'frame:dispatch');
+    assert.equal(left.linkedArtifacts[0]?.clusterId, 'interface');
     assert.equal(left.linkedArtifacts[0]?.href, '/workspace/create?entry=uiux&u=frame%3Adispatch');
     assert.equal(left.linkedArtifacts[1]?.targetId, 'components:library');
     assert.equal(left.linkedArtifacts[1]?.entryId, 'graphic');
+    assert.equal(left.linkedArtifacts[1]?.clusterId, 'brand');
     assert.equal(left.linkedArtifacts[2]?.targetId, 'document:primary');
     assert.equal(left.linkedArtifacts[2]?.entryId, 'document');
+    assert.equal(left.linkedArtifacts[2]?.clusterId, 'document');
     assert.equal(left.linkedArtifacts[3]?.targetId, 'animation:motion');
     assert.equal(left.linkedArtifacts[3]?.entryId, 'animation');
+    assert.equal(left.linkedArtifacts[3]?.clusterId, 'motion');
     assert.deepEqual(left.entrySummaries, Object.freeze([
         Object.freeze({ entryId: 'uiux', entryLabel: 'UI / UX', count: 1 }),
         Object.freeze({ entryId: 'graphic', entryLabel: 'Graphic', count: 1 }),
         Object.freeze({ entryId: 'document', entryLabel: 'Document', count: 1 }),
         Object.freeze({ entryId: 'animation', entryLabel: 'Animation', count: 1 }),
     ]));
+    assert.deepEqual(left.artifactClusters, Object.freeze([
+        Object.freeze({
+            clusterId: 'interface',
+            clusterLabel: 'Interface',
+            items: Object.freeze([left.linkedArtifacts[0]]),
+        }),
+        Object.freeze({
+            clusterId: 'brand',
+            clusterLabel: 'Brand',
+            items: Object.freeze([left.linkedArtifacts[1]]),
+        }),
+        Object.freeze({
+            clusterId: 'document',
+            clusterLabel: 'Document',
+            items: Object.freeze([left.linkedArtifacts[2]]),
+        }),
+        Object.freeze({
+            clusterId: 'motion',
+            clusterLabel: 'Motion',
+            items: Object.freeze([left.linkedArtifacts[3]]),
+        }),
+    ]));
+    assert.equal(left.suggestedNextArtifact?.targetId, 'components:library');
 });
 
 test('create perspective workflow fails closed when create group or nodes are absent', () => {
@@ -72,6 +99,8 @@ test('create perspective workflow fails closed when create group or nodes are ab
             activeEntryId: 'document',
             linkedArtifacts: Object.freeze([]),
             entrySummaries: Object.freeze([]),
+            artifactClusters: Object.freeze([]),
+            suggestedNextArtifact: null,
         }),
     );
 });

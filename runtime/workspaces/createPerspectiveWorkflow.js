@@ -42,6 +42,42 @@ const KIND_TO_CREATE_ENTRY = Object.freeze({
     [ArtifactKind.COMPONENT_LIBRARY]: 'graphic',
 });
 
+const CLUSTER_DEFINITIONS = Object.freeze({
+    interface: Object.freeze({
+        id: 'interface',
+        label: 'Interface',
+        entryIds: Object.freeze(['uiux']),
+    }),
+    brand: Object.freeze({
+        id: 'brand',
+        label: 'Brand',
+        entryIds: Object.freeze(['graphic', 'branding', 'icons']),
+    }),
+    document: Object.freeze({
+        id: 'document',
+        label: 'Document',
+        entryIds: Object.freeze(['document']),
+    }),
+    motion: Object.freeze({
+        id: 'motion',
+        label: 'Motion',
+        entryIds: Object.freeze(['animation']),
+    }),
+    media: Object.freeze({
+        id: 'media',
+        label: 'Media',
+        entryIds: Object.freeze(['video', 'audio', 'podcast']),
+    }),
+});
+
+const ENTRY_TO_CLUSTER_ID = Object.freeze(
+    Object.fromEntries(
+        Object.values(CLUSTER_DEFINITIONS).flatMap((cluster) =>
+            cluster.entryIds.map((entryId) => [entryId, cluster.id]),
+        ),
+    ),
+);
+
 function resolveCreateEntryForNode(node) {
     if (!node || typeof node !== 'object') return null;
     const preferred = KIND_TO_CREATE_ENTRY[node.kind] ?? null;
@@ -56,6 +92,10 @@ function buildCreateWorkflowHref({ entryId, targetId }) {
     return `/workspace/create?${searchParams.toString()}`;
 }
 
+function resolveCreateClusterId(entryId) {
+    return ENTRY_TO_CLUSTER_ID[entryId] ?? 'document';
+}
+
 export function buildCreatePerspectiveWorkflow({ universe = null, activeEntryId = 'uiux' } = {}) {
     const groups = asObject(universe?.groups);
     const nodes = asObject(universe?.nodes);
@@ -66,6 +106,8 @@ export function buildCreatePerspectiveWorkflow({ universe = null, activeEntryId 
             activeEntryId: activeId,
             linkedArtifacts: Object.freeze([]),
             entrySummaries: Object.freeze([]),
+            artifactClusters: Object.freeze([]),
+            suggestedNextArtifact: null,
         });
     }
 
@@ -79,6 +121,8 @@ export function buildCreatePerspectiveWorkflow({ universe = null, activeEntryId 
                 targetId: node.id,
                 entryId,
                 entryLabel: ENTRY_LABELS[entryId] ?? entryId,
+                clusterId: resolveCreateClusterId(entryId),
+                clusterLabel: CLUSTER_DEFINITIONS[resolveCreateClusterId(entryId)]?.label ?? 'Document',
                 kind: node.kind,
                 label: asNonEmptyString(node.label) ?? node.id,
                 href: buildCreateWorkflowHref({ entryId, targetId: node.id }),
@@ -109,9 +153,40 @@ export function buildCreatePerspectiveWorkflow({ universe = null, activeEntryId 
         )
         .sort((left, right) => (ENTRY_PRIORITIES[left.entryId] ?? 999) - (ENTRY_PRIORITIES[right.entryId] ?? 999));
 
+    const clusterBuckets = new Map();
+    for (const item of linkedArtifacts) {
+        const current = clusterBuckets.get(item.clusterId) ?? {
+            clusterId: item.clusterId,
+            clusterLabel: item.clusterLabel,
+            items: [],
+        };
+        clusterBuckets.set(
+            item.clusterId,
+            Object.freeze({
+                ...current,
+                items: [...current.items, item],
+            }),
+        );
+    }
+
+    const artifactClusters = Object.values(CLUSTER_DEFINITIONS)
+        .map((cluster) => clusterBuckets.get(cluster.id) ?? null)
+        .filter(Boolean)
+        .map((cluster) =>
+            Object.freeze({
+                clusterId: cluster.clusterId,
+                clusterLabel: cluster.clusterLabel,
+                items: Object.freeze([...cluster.items]),
+            }),
+        );
+
+    const suggestedNextArtifact = linkedArtifacts.find((item) => item.entryId !== activeId) ?? linkedArtifacts[0] ?? null;
+
     return Object.freeze({
         activeEntryId: activeId,
         linkedArtifacts: Object.freeze(linkedArtifacts),
         entrySummaries: Object.freeze(entrySummaries),
+        artifactClusters: Object.freeze(artifactClusters),
+        suggestedNextArtifact,
     });
 }
