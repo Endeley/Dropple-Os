@@ -543,10 +543,41 @@ test('create perspective preserves podcast media overlay compatibility entry', a
 
 test('build perspective assistant surface stays entry-consistent for canonical and overlay routes', async ({ page }) => {
   const expectedBuildEntries = {
-    application: { specialization: 'Application', runtimeMode: 'application' },
-    logic: { specialization: 'Logic', runtimeMode: 'logic' },
-    ai: { specialization: 'AI', runtimeMode: 'ai-build' },
-    conversion: { specialization: 'Conversion', runtimeMode: 'conversion' },
+    application: {
+      specialization: 'Application',
+      runtimeMode: 'application',
+      recommendLabel: 'Ask Build Assistant',
+      generateLabel: 'Generate App Options',
+      explainLabel: 'Improve This App',
+    },
+    automation: {
+      specialization: 'Automation',
+      runtimeMode: 'automation',
+      recommendLabel: 'Ask Build Assistant',
+      generateLabel: 'Generate Workflow Options',
+      explainLabel: 'Improve This Workflow',
+    },
+    logic: {
+      specialization: 'Logic',
+      runtimeMode: 'logic',
+      recommendLabel: 'Ask Build Assistant',
+      generateLabel: 'Generate Logic Options',
+      explainLabel: 'Improve This Logic',
+    },
+    ai: {
+      specialization: 'AI',
+      runtimeMode: 'ai-build',
+      recommendLabel: 'Ask Build Assistant',
+      generateLabel: 'Generate AI Options',
+      explainLabel: 'Improve This Agent',
+    },
+    conversion: {
+      specialization: 'Conversion',
+      runtimeMode: 'conversion',
+      recommendLabel: 'Ask Build Assistant',
+      generateLabel: 'Generate Conversion Options',
+      explainLabel: 'Improve This Pipeline',
+    },
   };
 
   for (const entryId of Object.keys(expectedBuildEntries)) {
@@ -561,6 +592,12 @@ test('build perspective assistant surface stays entry-consistent for canonical a
     await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: build');
     await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.build');
     await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.build');
+    await expect(page.getByTestId('assistant-surface-focus')).toContainText(
+      `focus: Build Assistant for ${expectedBuildEntries[entryId].specialization}`,
+    );
+    await expect(page.getByTestId('assistant-action-recommend')).toContainText(expectedBuildEntries[entryId].recommendLabel);
+    await expect(page.getByTestId('assistant-action-generate')).toContainText(expectedBuildEntries[entryId].generateLabel);
+    await expect(page.getByTestId('assistant-action-explain')).toContainText(expectedBuildEntries[entryId].explainLabel);
   }
 });
 

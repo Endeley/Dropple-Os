@@ -45,6 +45,7 @@ import { buildCreatePerspectiveWorkflow } from '@/runtime/workspaces/createPersp
 import { buildBuildPerspectiveWorkflow } from '@/runtime/workspaces/buildPerspectiveWorkflow.js';
 import { buildCollaboratePerspectiveWorkflow } from '@/runtime/workspaces/collaboratePerspectiveWorkflow.js';
 import { resolveCreateAssistantActionLabels } from '@/runtime/workspaces/createAssistantActionLabels.js';
+import { resolveBuildAssistantActionLabels } from '@/runtime/workspaces/buildAssistantActionLabels.js';
 import { ProjectUniverseCanvas } from './ProjectUniverseCanvas.jsx';
 
 function formatEntryLabel(entryId) {
@@ -535,6 +536,13 @@ export function ProjectPerspectiveShell({
         () =>
             perspectiveId === 'create'
                 ? resolveCreateAssistantActionLabels(projectPerspectiveContext.entryId)
+                : null,
+        [perspectiveId, projectPerspectiveContext.entryId],
+    );
+    const buildAssistantLabels = useMemo(
+        () =>
+            perspectiveId === 'build'
+                ? resolveBuildAssistantActionLabels(projectPerspectiveContext.entryId)
                 : null,
         [perspectiveId, projectPerspectiveContext.entryId],
     );
@@ -1320,11 +1328,11 @@ export function ProjectPerspectiveShell({
                                 <span style={{ fontSize: 10, color: '#334155' }}>
                                     active: {assistantSurface?.activeAssistantId ?? 'none'}
                                 </span>
-                                {createAssistantLabels ? (
+                                {createAssistantLabels || buildAssistantLabels ? (
                                     <span
                                         data-testid='assistant-surface-focus'
                                         style={{ fontSize: 10, color: '#334155' }}>
-                                        focus: {createAssistantLabels.assistantLabel} for {formatEntryLabel(projectPerspectiveContext.entryId)}
+                                        focus: {(createAssistantLabels ?? buildAssistantLabels).assistantLabel} for {formatEntryLabel(projectPerspectiveContext.entryId)}
                                     </span>
                                 ) : null}
                                 <span style={{ fontSize: 10, color: '#334155' }}>
@@ -1345,7 +1353,7 @@ export function ProjectPerspectiveShell({
                                             padding: '4px 6px',
                                             cursor: assistantSurface?.activeAssistantId ? 'pointer' : 'not-allowed',
                                         }}>
-                                        {createAssistantLabels?.recommendLabel ?? 'Ask Assistant'}
+                                        {createAssistantLabels?.recommendLabel ?? buildAssistantLabels?.recommendLabel ?? 'Ask Assistant'}
                                     </button>
                                     <button
                                         type='button'
@@ -1361,7 +1369,7 @@ export function ProjectPerspectiveShell({
                                             padding: '4px 6px',
                                             cursor: assistantSurface?.activeAssistantId ? 'pointer' : 'not-allowed',
                                         }}>
-                                        {createAssistantLabels?.generateLabel ?? 'Generate Options'}
+                                        {createAssistantLabels?.generateLabel ?? buildAssistantLabels?.generateLabel ?? 'Generate Options'}
                                     </button>
                                     <button
                                         type='button'
@@ -1377,7 +1385,7 @@ export function ProjectPerspectiveShell({
                                             padding: '4px 6px',
                                             cursor: assistantSurface?.activeAssistantId ? 'pointer' : 'not-allowed',
                                         }}>
-                                        {createAssistantLabels?.explainLabel ?? 'Improve This'}
+                                        {createAssistantLabels?.explainLabel ?? buildAssistantLabels?.explainLabel ?? 'Improve This'}
                                     </button>
                                 </div>
                                 {assistantIntentStatus ? (
