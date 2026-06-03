@@ -709,17 +709,62 @@ test('operate perspective assistant surface stays entry-consistent across workfl
 });
 
 test('publish perspective assistant surface stays entry-consistent for governance and system entries', async ({ page }) => {
-  for (const entryId of ['governance', 'versioning', 'tokens', 'components', 'themes', 'variants']) {
+  const expectedPublishEntries = {
+    governance: {
+      specialization: 'Governance',
+      recommendLabel: 'Ask Publishing Assistant',
+      generateLabel: 'Generate Governance Options',
+      explainLabel: 'Improve This Policy',
+    },
+    versioning: {
+      specialization: 'Versioning',
+      recommendLabel: 'Ask Publishing Assistant',
+      generateLabel: 'Generate Release Options',
+      explainLabel: 'Improve This Version Plan',
+    },
+    tokens: {
+      specialization: 'Tokens',
+      recommendLabel: 'Ask Publishing Assistant',
+      generateLabel: 'Generate Token Options',
+      explainLabel: 'Improve This Token Set',
+    },
+    components: {
+      specialization: 'Components',
+      recommendLabel: 'Ask Publishing Assistant',
+      generateLabel: 'Generate Component Options',
+      explainLabel: 'Improve This Component Library',
+    },
+    themes: {
+      specialization: 'Themes',
+      recommendLabel: 'Ask Publishing Assistant',
+      generateLabel: 'Generate Theme Options',
+      explainLabel: 'Improve This Theme',
+    },
+    variants: {
+      specialization: 'Variants',
+      recommendLabel: 'Ask Publishing Assistant',
+      generateLabel: 'Generate Variant Options',
+      explainLabel: 'Improve This Variant Set',
+    },
+  };
+
+  for (const entryId of Object.keys(expectedPublishEntries)) {
     const response = await page.goto(`/workspace/publish?entry=${entryId}`, {
       waitUntil: 'networkidle',
     });
 
     expect(response?.ok(), `publish ${entryId} route should respond successfully`).toBeTruthy();
     await expect(page.locator('body')).toContainText('Publish');
-    await expect(page.locator('body')).toContainText(`Active context: Publish > ${entryId[0].toUpperCase()}${entryId.slice(1)}`);
+    await expect(page.locator('body')).toContainText(`Active context: Publish > ${expectedPublishEntries[entryId].specialization}`);
     await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: publish');
     await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.publish');
     await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.publish');
+    await expect(page.getByTestId('assistant-surface-focus')).toContainText(
+      `focus: Publishing Assistant for ${expectedPublishEntries[entryId].specialization}`,
+    );
+    await expect(page.getByTestId('assistant-action-recommend')).toContainText(expectedPublishEntries[entryId].recommendLabel);
+    await expect(page.getByTestId('assistant-action-generate')).toContainText(expectedPublishEntries[entryId].generateLabel);
+    await expect(page.getByTestId('assistant-action-explain')).toContainText(expectedPublishEntries[entryId].explainLabel);
   }
 });
 
