@@ -43,6 +43,7 @@ import {
 } from '@/runtime/workspaces/projectUniverseNavigation.js';
 import { buildCreatePerspectiveWorkflow } from '@/runtime/workspaces/createPerspectiveWorkflow.js';
 import { buildBuildPerspectiveWorkflow } from '@/runtime/workspaces/buildPerspectiveWorkflow.js';
+import { buildCollaboratePerspectiveWorkflow } from '@/runtime/workspaces/collaboratePerspectiveWorkflow.js';
 import { ProjectUniverseCanvas } from './ProjectUniverseCanvas.jsx';
 
 function formatEntryLabel(entryId) {
@@ -503,6 +504,14 @@ export function ProjectPerspectiveShell({
     const buildWorkflow = useMemo(
         () =>
             buildBuildPerspectiveWorkflow({
+                universe: projectUniverse,
+                activeEntryId: projectPerspectiveContext.entryId,
+            }),
+        [projectPerspectiveContext.entryId, projectUniverse],
+    );
+    const collaborateWorkflow = useMemo(
+        () =>
+            buildCollaboratePerspectiveWorkflow({
                 universe: projectUniverse,
                 activeEntryId: projectPerspectiveContext.entryId,
             }),
@@ -1117,6 +1126,150 @@ export function ProjectPerspectiveShell({
                                         {buildWorkflow.linkedArtifacts.length === 0 ? (
                                             <span style={{ fontSize: 11, color: '#64748b' }}>
                                                 No linked build artifacts
+                                            </span>
+                                        ) : null}
+                                    </div>
+                                </div>
+                            </div>
+                        ) : null}
+                        {perspectiveId === 'collaborate' ? (
+                            <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                                    Collaborate Workflow
+                                </div>
+                                <div
+                                    data-testid='collaborate-workflow-panel'
+                                    style={{
+                                        border: '1px solid #e2e8f0',
+                                        borderRadius: 8,
+                                        padding: 8,
+                                        background: '#f8fafc',
+                                        display: 'grid',
+                                        gap: 8,
+                                    }}>
+                                    {collaborateWorkflow.suggestedNextArtifact ? (
+                                        <button
+                                            type='button'
+                                            onClick={() =>
+                                                navigateProjectWorkflowHref(
+                                                    router,
+                                                    collaborateWorkflow.suggestedNextArtifact.href,
+                                                )
+                                            }
+                                            data-testid='collaborate-workflow-suggested-next'
+                                            style={{
+                                                textAlign: 'left',
+                                                border: '1px solid #c4b5fd',
+                                                borderRadius: 8,
+                                                background: '#f5f3ff',
+                                                color: '#6d28d9',
+                                                padding: '8px 10px',
+                                                cursor: 'pointer',
+                                                display: 'grid',
+                                                gap: 2,
+                                            }}>
+                                            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                                                Continue Collaborating
+                                            </span>
+                                            <strong style={{ fontSize: 12, color: '#6d28d9' }}>
+                                                {collaborateWorkflow.suggestedNextArtifact.label}
+                                            </strong>
+                                            <span style={{ fontSize: 10 }}>
+                                                {collaborateWorkflow.suggestedNextArtifact.clusterLabel} · {collaborateWorkflow.suggestedNextArtifact.entryLabel}
+                                            </span>
+                                        </button>
+                                    ) : null}
+                                    {collaborateWorkflow.publishHandoff ? (
+                                        <button
+                                            type='button'
+                                            onClick={() => navigateProjectWorkflowHref(router, collaborateWorkflow.publishHandoff.href)}
+                                            data-testid='collaborate-workflow-publish-handoff'
+                                            style={{
+                                                textAlign: 'left',
+                                                border: '1px solid #fcd34d',
+                                                borderRadius: 8,
+                                                background: '#fefce8',
+                                                color: '#a16207',
+                                                padding: '8px 10px',
+                                                cursor: 'pointer',
+                                                display: 'grid',
+                                                gap: 2,
+                                            }}>
+                                            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                                                Hand Off To Publish
+                                            </span>
+                                            <strong style={{ fontSize: 12, color: '#a16207' }}>
+                                                {collaborateWorkflow.publishHandoff.label}
+                                            </strong>
+                                            <span style={{ fontSize: 10 }}>
+                                                {collaborateWorkflow.publishHandoff.entryLabel}
+                                            </span>
+                                        </button>
+                                    ) : null}
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                        {collaborateWorkflow.entrySummaries.map((summary) => (
+                                            <span
+                                                key={summary.entryId}
+                                                style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: 4,
+                                                    border: '1px solid #cbd5e1',
+                                                    borderRadius: 999,
+                                                    background: '#ffffff',
+                                                    color: '#334155',
+                                                    fontSize: 10,
+                                                    padding: '3px 7px',
+                                                }}>
+                                                {summary.entryLabel}
+                                                <strong style={{ color: '#0f172a' }}>{summary.count}</strong>
+                                            </span>
+                                        ))}
+                                    </div>
+                                    <div style={{ display: 'grid', gap: 8 }}>
+                                        {collaborateWorkflow.artifactClusters.map((cluster) => (
+                                            <div key={cluster.clusterId} data-testid={`collaborate-workflow-cluster-${cluster.clusterId}`}>
+                                                <div
+                                                    style={{
+                                                        fontSize: 10,
+                                                        fontWeight: 700,
+                                                        color: '#475569',
+                                                        marginBottom: 4,
+                                                        letterSpacing: '0.04em',
+                                                        textTransform: 'uppercase',
+                                                    }}>
+                                                    {cluster.clusterLabel}
+                                                </div>
+                                                <div style={{ display: 'grid', gap: 4 }}>
+                                                    {cluster.items.map((item) => (
+                                                        <button
+                                                            key={`${item.targetId}:${item.entryId}`}
+                                                            type='button'
+                                                            onClick={() => navigateProjectWorkflowHref(router, item.href)}
+                                                            data-testid={`collaborate-workflow-link-${item.targetId}-${item.entryId}`}
+                                                            style={{
+                                                                display: 'grid',
+                                                                gap: 2,
+                                                                textAlign: 'left',
+                                                                border: `1px solid ${item.active ? '#0f172a' : '#e2e8f0'}`,
+                                                                borderRadius: 6,
+                                                                background: '#ffffff',
+                                                                color: '#334155',
+                                                                padding: '6px 8px',
+                                                                cursor: 'pointer',
+                                                            }}>
+                                                            <strong style={{ fontSize: 11, color: '#0f172a' }}>{item.label}</strong>
+                                                            <span style={{ fontSize: 10, color: '#64748b' }}>
+                                                                {item.entryLabel} · {item.kind}
+                                                            </span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {collaborateWorkflow.linkedArtifacts.length === 0 ? (
+                                            <span style={{ fontSize: 11, color: '#64748b' }}>
+                                                No linked collaborate artifacts
                                             </span>
                                         ) : null}
                                     </div>

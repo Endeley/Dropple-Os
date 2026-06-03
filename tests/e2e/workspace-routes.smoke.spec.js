@@ -627,3 +627,26 @@ test('collaborate perspective assistant surface stays entry-consistent across re
     await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.knowledge');
   }
 });
+
+test('collaborate perspective exposes linked workflow guidance and publish handoff routes', async ({ page }) => {
+  const response = await page.goto('/workspace/collaborate?blueprint=bp.logistics.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'collaborate workflow route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('collaborate-workflow-panel')).toBeVisible();
+  await expect(page.getByTestId('collaborate-workflow-suggested-next')).toContainText('Continue Collaborating');
+  await expect(page.getByTestId('collaborate-workflow-cluster-knowledge')).toContainText('Knowledge');
+  await page.getByTestId('collaborate-workflow-link-document:primary-knowledge').click();
+  await expect(page).toHaveURL(/[\?&]entry=knowledge/);
+  await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
+  await expect(page.locator('body')).toContainText('Active context: Collaborate > Knowledge');
+
+  await page.goto('/workspace/collaborate?blueprint=bp.logistics.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
+  await page.getByTestId('collaborate-workflow-publish-handoff').click();
+  await expect(page).toHaveURL(/\/workspace\/publish\?/);
+  await expect(page).toHaveURL(/[\?&]entry=review/);
+  await expect(page.locator('body')).toContainText('Active context: Publish > Review');
+});
