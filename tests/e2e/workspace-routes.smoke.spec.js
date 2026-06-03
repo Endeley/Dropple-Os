@@ -646,6 +646,68 @@ test('operate overlays expose deterministic systems and operations panels', asyn
   await expect(page.getByTestId('enterprise-operations-panel')).toContainText('Continue in Enterprise Operations');
 });
 
+test('operate perspective assistant surface stays entry-consistent across workflow and operations routes', async ({ page }) => {
+  const expectedOperateEntries = {
+    automation: {
+      specialization: 'Automation',
+      runtime: 'build/automation',
+      recommendLabel: 'Ask Operations Assistant',
+      generateLabel: 'Generate Workflow Options',
+      explainLabel: 'Improve This Workflow',
+    },
+    'systems-engineering': {
+      specialization: 'Systems Engineering',
+      runtime: 'build/systems-engineering',
+      recommendLabel: 'Ask Operations Assistant',
+      generateLabel: 'Generate System Options',
+      explainLabel: 'Improve This System Model',
+    },
+    'enterprise-operations': {
+      specialization: 'Enterprise Operations',
+      runtime: 'build/enterprise-operations',
+      recommendLabel: 'Ask Operations Assistant',
+      generateLabel: 'Generate Operations Options',
+      explainLabel: 'Improve This Process',
+    },
+    production: {
+      specialization: 'Production',
+      runtime: 'collaborate/production',
+      recommendLabel: 'Ask Operations Assistant',
+      generateLabel: 'Generate Production Options',
+      explainLabel: 'Improve This Runbook',
+    },
+    governance: {
+      specialization: 'Governance',
+      runtime: 'system/governance',
+      recommendLabel: 'Ask Operations Assistant',
+      generateLabel: 'Generate Governance Options',
+      explainLabel: 'Improve This Policy',
+    },
+  };
+
+  for (const entryId of Object.keys(expectedOperateEntries)) {
+    const response = await page.goto(`/workspace/operate?entry=${entryId}`, {
+      waitUntil: 'networkidle',
+    });
+
+    expect(response?.ok(), `operate ${entryId} route should respond successfully`).toBeTruthy();
+    await expect(page.locator('body')).toContainText('Operate');
+    await expect(page.locator('body')).toContainText(
+      `Active context: Operate > ${expectedOperateEntries[entryId].specialization}`,
+    );
+    await expect(page.locator('body')).toContainText(`runtime: ${expectedOperateEntries[entryId].runtime}`);
+    await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: operate');
+    await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.operations');
+    await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.operations');
+    await expect(page.getByTestId('assistant-surface-focus')).toContainText(
+      `focus: Operations Assistant for ${expectedOperateEntries[entryId].specialization}`,
+    );
+    await expect(page.getByTestId('assistant-action-recommend')).toContainText(expectedOperateEntries[entryId].recommendLabel);
+    await expect(page.getByTestId('assistant-action-generate')).toContainText(expectedOperateEntries[entryId].generateLabel);
+    await expect(page.getByTestId('assistant-action-explain')).toContainText(expectedOperateEntries[entryId].explainLabel);
+  }
+});
+
 test('publish perspective assistant surface stays entry-consistent for governance and system entries', async ({ page }) => {
   for (const entryId of ['governance', 'versioning', 'tokens', 'components', 'themes', 'variants']) {
     const response = await page.goto(`/workspace/publish?entry=${entryId}`, {
