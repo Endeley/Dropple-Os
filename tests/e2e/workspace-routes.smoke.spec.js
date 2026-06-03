@@ -427,7 +427,7 @@ test('project shell assistant intent enqueues through canonical runtime bridge',
   await expect(page.locator('body')).toContainText('perspective: create');
   await expect(page.locator('body')).toContainText('active: assistant.design');
 
-  await page.getByRole('button', { name: 'Ask Assistant' }).click();
+  await page.getByTestId('assistant-action-recommend').click();
   await expect(page.locator('body')).toContainText(/assistant intent:\s+enqueued:/);
 });
 
@@ -439,6 +439,10 @@ test('create perspective assistant surface stays entry-consistent for design and
   await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: create');
   await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.design');
   await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.design, assistant.media');
+  await expect(page.getByTestId('assistant-surface-focus')).toContainText('Design Assistant for Branding');
+  await expect(page.getByTestId('assistant-action-recommend')).toContainText('Ask Design Assistant');
+  await expect(page.getByTestId('assistant-action-generate')).toContainText('Generate Brand Options');
+  await expect(page.getByTestId('assistant-action-explain')).toContainText('Improve This Brand');
 
   const mediaResponse = await page.goto('/workspace/create?entry=animation', {
     waitUntil: 'networkidle',
@@ -447,6 +451,10 @@ test('create perspective assistant surface stays entry-consistent for design and
   await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: create');
   await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.media');
   await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.design, assistant.media');
+  await expect(page.getByTestId('assistant-surface-focus')).toContainText('Media Assistant for Animation');
+  await expect(page.getByTestId('assistant-action-recommend')).toContainText('Ask Media Assistant');
+  await expect(page.getByTestId('assistant-action-generate')).toContainText('Generate Motion Options');
+  await expect(page.getByTestId('assistant-action-explain')).toContainText('Improve This Sequence');
 
   const podcastResponse = await page.goto('/workspace/create?entry=podcast', {
     waitUntil: 'networkidle',
@@ -455,6 +463,9 @@ test('create perspective assistant surface stays entry-consistent for design and
   await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: create');
   await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.media');
   await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.design, assistant.media');
+  await expect(page.getByTestId('assistant-surface-focus')).toContainText('Media Assistant for Podcast');
+  await expect(page.getByTestId('assistant-action-generate')).toContainText('Generate Podcast Options');
+  await expect(page.getByTestId('assistant-action-explain')).toContainText('Improve This Episode');
 });
 
 test('design modes expose parity-stable shell chrome and strip signals', async ({ page }) => {

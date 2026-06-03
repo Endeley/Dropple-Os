@@ -44,6 +44,7 @@ import {
 import { buildCreatePerspectiveWorkflow } from '@/runtime/workspaces/createPerspectiveWorkflow.js';
 import { buildBuildPerspectiveWorkflow } from '@/runtime/workspaces/buildPerspectiveWorkflow.js';
 import { buildCollaboratePerspectiveWorkflow } from '@/runtime/workspaces/collaboratePerspectiveWorkflow.js';
+import { resolveCreateAssistantActionLabels } from '@/runtime/workspaces/createAssistantActionLabels.js';
 import { ProjectUniverseCanvas } from './ProjectUniverseCanvas.jsx';
 
 function formatEntryLabel(entryId) {
@@ -529,6 +530,13 @@ export function ProjectPerspectiveShell({
                 activeEntryId: projectPerspectiveContext.entryId,
             }),
         [projectPerspectiveContext.entryId, projectUniverse],
+    );
+    const createAssistantLabels = useMemo(
+        () =>
+            perspectiveId === 'create'
+                ? resolveCreateAssistantActionLabels(projectPerspectiveContext.entryId)
+                : null,
+        [perspectiveId, projectPerspectiveContext.entryId],
     );
 
     const requestAssistantPlaceholder = async (assistantAction) => {
@@ -1312,6 +1320,13 @@ export function ProjectPerspectiveShell({
                                 <span style={{ fontSize: 10, color: '#334155' }}>
                                     active: {assistantSurface?.activeAssistantId ?? 'none'}
                                 </span>
+                                {createAssistantLabels ? (
+                                    <span
+                                        data-testid='assistant-surface-focus'
+                                        style={{ fontSize: 10, color: '#334155' }}>
+                                        focus: {createAssistantLabels.assistantLabel} for {formatEntryLabel(projectPerspectiveContext.entryId)}
+                                    </span>
+                                ) : null}
                                 <span style={{ fontSize: 10, color: '#334155' }}>
                                     visible: {(assistantSurface?.assistantIds ?? []).join(', ') || 'none'}
                                 </span>
@@ -1319,6 +1334,7 @@ export function ProjectPerspectiveShell({
                                     <button
                                         type='button'
                                         onClick={() => requestAssistantPlaceholder('recommend')}
+                                        data-testid='assistant-action-recommend'
                                         disabled={!assistantSurface?.activeAssistantId}
                                         style={{
                                             border: '1px solid #cbd5e1',
@@ -1329,11 +1345,12 @@ export function ProjectPerspectiveShell({
                                             padding: '4px 6px',
                                             cursor: assistantSurface?.activeAssistantId ? 'pointer' : 'not-allowed',
                                         }}>
-                                        Ask Assistant
+                                        {createAssistantLabels?.recommendLabel ?? 'Ask Assistant'}
                                     </button>
                                     <button
                                         type='button'
                                         onClick={() => requestAssistantPlaceholder('generate')}
+                                        data-testid='assistant-action-generate'
                                         disabled={!assistantSurface?.activeAssistantId}
                                         style={{
                                             border: '1px solid #cbd5e1',
@@ -1344,11 +1361,12 @@ export function ProjectPerspectiveShell({
                                             padding: '4px 6px',
                                             cursor: assistantSurface?.activeAssistantId ? 'pointer' : 'not-allowed',
                                         }}>
-                                        Generate Options
+                                        {createAssistantLabels?.generateLabel ?? 'Generate Options'}
                                     </button>
                                     <button
                                         type='button'
                                         onClick={() => requestAssistantPlaceholder('explain')}
+                                        data-testid='assistant-action-explain'
                                         disabled={!assistantSurface?.activeAssistantId}
                                         style={{
                                             border: '1px solid #cbd5e1',
@@ -1359,7 +1377,7 @@ export function ProjectPerspectiveShell({
                                             padding: '4px 6px',
                                             cursor: assistantSurface?.activeAssistantId ? 'pointer' : 'not-allowed',
                                         }}>
-                                        Improve This
+                                        {createAssistantLabels?.explainLabel ?? 'Improve This'}
                                     </button>
                                 </div>
                                 {assistantIntentStatus ? (
