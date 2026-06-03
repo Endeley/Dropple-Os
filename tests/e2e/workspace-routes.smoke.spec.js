@@ -553,6 +553,26 @@ test('build perspective assistant surface stays entry-consistent for canonical a
   }
 });
 
+test('operate overlays expose deterministic systems and operations panels', async ({ page }) => {
+  let response = await page.goto('/workspace/systems-engineering?blueprint=bp.logistics.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'systems engineering route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('systems-engineering-panel')).toContainText('Systems Engineering');
+  await expect(page.getByTestId('systems-engineering-panel')).toContainText('Architecture graphs:');
+  await expect(page.getByTestId('systems-engineering-panel')).toContainText('Continue in Systems Engineering');
+
+  response = await page.goto('/workspace/enterprise-operations?blueprint=bp.logistics.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'enterprise operations route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('enterprise-operations-panel')).toContainText('Enterprise Operations');
+  await expect(page.getByTestId('enterprise-operations-panel')).toContainText('Processes:');
+  await expect(page.getByTestId('enterprise-operations-panel')).toContainText('Continue in Enterprise Operations');
+});
+
 test('publish perspective assistant surface stays entry-consistent for governance and system entries', async ({ page }) => {
   for (const entryId of ['governance', 'versioning', 'tokens', 'components', 'themes', 'variants']) {
     const response = await page.goto(`/workspace/publish?entry=${entryId}`, {

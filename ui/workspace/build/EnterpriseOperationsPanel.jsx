@@ -1,9 +1,18 @@
 'use client';
 
+import { useWorkspaceProjectionState } from '@/runtime/projection';
+import { buildProjectUniverseProjection } from '@/runtime/workspaces/projectUniverseProjection.js';
+import { buildEnterpriseOperationsOverlayModel } from '@/runtime/workspaces/buildOverlayWorkflow.js';
+
 export function EnterpriseOperationsPanel() {
+    const document = useWorkspaceProjectionState((state) => state?.document ?? null);
+    const universe = buildProjectUniverseProjection({ document });
+    const model = buildEnterpriseOperationsOverlayModel({ document, universe });
+
     return (
         <section
             aria-label="Enterprise Operations"
+            data-testid="enterprise-operations-panel"
             style={{
                 border: '1px solid rgba(148, 163, 184, 0.24)',
                 borderRadius: 10,
@@ -15,7 +24,30 @@ export function EnterpriseOperationsPanel() {
             }}
         >
             <div style={{ fontWeight: 700, marginBottom: 6 }}>Enterprise Operations</div>
-            <div>Canonical build overlay for process modeling, automation orchestration, and operational data flow.</div>
+            <div style={{ marginBottom: 8 }}>Canonical build overlay for process modeling, automation orchestration, and operational data flow.</div>
+            <div style={{ display: 'grid', gap: 6 }}>
+                <div>Processes: <strong>{model.processCount}</strong></div>
+                <div>Automation paths: <strong>{model.automationCount}</strong></div>
+                <div>Data sources: <strong>{model.datasourceCount}</strong></div>
+                <div>Roles: <strong>{model.roleCount}</strong></div>
+            </div>
+            <div style={{ marginTop: 10, display: 'grid', gap: 6 }}>
+                <a
+                    href={model.suggestedHref}
+                    style={{ color: '#f8fafc', fontSize: 11, textDecoration: 'none', border: '1px solid rgba(226,232,240,0.24)', borderRadius: 8, padding: '6px 8px' }}
+                >
+                    Continue in Enterprise Operations
+                </a>
+                {model.processNodes.slice(0, 3).map((item) => (
+                    <a
+                        key={item.id}
+                        href={item.href}
+                        style={{ color: '#cbd5e1', fontSize: 11, textDecoration: 'none' }}
+                    >
+                        {item.label} · {item.kind}
+                    </a>
+                ))}
+            </div>
         </section>
     );
 }
