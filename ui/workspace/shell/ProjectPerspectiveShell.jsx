@@ -42,6 +42,7 @@ import {
     resolveProjectUniverseFocusTarget,
 } from '@/runtime/workspaces/projectUniverseNavigation.js';
 import { buildCreatePerspectiveWorkflow } from '@/runtime/workspaces/createPerspectiveWorkflow.js';
+import { buildBuildPerspectiveWorkflow } from '@/runtime/workspaces/buildPerspectiveWorkflow.js';
 import { ProjectUniverseCanvas } from './ProjectUniverseCanvas.jsx';
 
 function formatEntryLabel(entryId) {
@@ -494,6 +495,14 @@ export function ProjectPerspectiveShell({
     const createWorkflow = useMemo(
         () =>
             buildCreatePerspectiveWorkflow({
+                universe: projectUniverse,
+                activeEntryId: projectPerspectiveContext.entryId,
+            }),
+        [projectPerspectiveContext.entryId, projectUniverse],
+    );
+    const buildWorkflow = useMemo(
+        () =>
+            buildBuildPerspectiveWorkflow({
                 universe: projectUniverse,
                 activeEntryId: projectPerspectiveContext.entryId,
             }),
@@ -964,6 +973,150 @@ export function ProjectPerspectiveShell({
                                         {createWorkflow.linkedArtifacts.length === 0 ? (
                                             <span style={{ fontSize: 11, color: '#64748b' }}>
                                                 No linked create artifacts
+                                            </span>
+                                        ) : null}
+                                    </div>
+                                </div>
+                            </div>
+                        ) : null}
+                        {perspectiveId === 'build' ? (
+                            <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                                    Build Workflow
+                                </div>
+                                <div
+                                    data-testid='build-workflow-panel'
+                                    style={{
+                                        border: '1px solid #e2e8f0',
+                                        borderRadius: 8,
+                                        padding: 8,
+                                        background: '#f8fafc',
+                                        display: 'grid',
+                                        gap: 8,
+                                    }}>
+                                    {buildWorkflow.suggestedNextArtifact ? (
+                                        <button
+                                            type='button'
+                                            onClick={() =>
+                                                navigateProjectWorkflowHref(
+                                                    router,
+                                                    buildWorkflow.suggestedNextArtifact.href,
+                                                )
+                                            }
+                                            data-testid='build-workflow-suggested-next'
+                                            style={{
+                                                textAlign: 'left',
+                                                border: '1px solid #93c5fd',
+                                                borderRadius: 8,
+                                                background: '#eff6ff',
+                                                color: '#1d4ed8',
+                                                padding: '8px 10px',
+                                                cursor: 'pointer',
+                                                display: 'grid',
+                                                gap: 2,
+                                            }}>
+                                            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                                                Continue Building
+                                            </span>
+                                            <strong style={{ fontSize: 12, color: '#1d4ed8' }}>
+                                                {buildWorkflow.suggestedNextArtifact.label}
+                                            </strong>
+                                            <span style={{ fontSize: 10 }}>
+                                                {buildWorkflow.suggestedNextArtifact.clusterLabel} · {buildWorkflow.suggestedNextArtifact.entryLabel}
+                                            </span>
+                                        </button>
+                                    ) : null}
+                                    {buildWorkflow.operateHandoff ? (
+                                        <button
+                                            type='button'
+                                            onClick={() => navigateProjectWorkflowHref(router, buildWorkflow.operateHandoff.href)}
+                                            data-testid='build-workflow-operate-handoff'
+                                            style={{
+                                                textAlign: 'left',
+                                                border: '1px solid #86efac',
+                                                borderRadius: 8,
+                                                background: '#f0fdf4',
+                                                color: '#166534',
+                                                padding: '8px 10px',
+                                                cursor: 'pointer',
+                                                display: 'grid',
+                                                gap: 2,
+                                            }}>
+                                            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                                                Hand Off To Operate
+                                            </span>
+                                            <strong style={{ fontSize: 12, color: '#166534' }}>
+                                                {buildWorkflow.operateHandoff.label}
+                                            </strong>
+                                            <span style={{ fontSize: 10 }}>
+                                                {buildWorkflow.operateHandoff.entryLabel}
+                                            </span>
+                                        </button>
+                                    ) : null}
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                        {buildWorkflow.entrySummaries.map((summary) => (
+                                            <span
+                                                key={summary.entryId}
+                                                style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: 4,
+                                                    border: '1px solid #cbd5e1',
+                                                    borderRadius: 999,
+                                                    background: '#ffffff',
+                                                    color: '#334155',
+                                                    fontSize: 10,
+                                                    padding: '3px 7px',
+                                                }}>
+                                                {summary.entryLabel}
+                                                <strong style={{ color: '#0f172a' }}>{summary.count}</strong>
+                                            </span>
+                                        ))}
+                                    </div>
+                                    <div style={{ display: 'grid', gap: 8 }}>
+                                        {buildWorkflow.artifactClusters.map((cluster) => (
+                                            <div key={cluster.clusterId} data-testid={`build-workflow-cluster-${cluster.clusterId}`}>
+                                                <div
+                                                    style={{
+                                                        fontSize: 10,
+                                                        fontWeight: 700,
+                                                        color: '#475569',
+                                                        marginBottom: 4,
+                                                        letterSpacing: '0.04em',
+                                                        textTransform: 'uppercase',
+                                                    }}>
+                                                    {cluster.clusterLabel}
+                                                </div>
+                                                <div style={{ display: 'grid', gap: 4 }}>
+                                                    {cluster.items.map((item) => (
+                                                        <button
+                                                            key={item.targetId}
+                                                            type='button'
+                                                            onClick={() => navigateProjectWorkflowHref(router, item.href)}
+                                                            data-testid={`build-workflow-link-${item.targetId}`}
+                                                            style={{
+                                                                display: 'grid',
+                                                                gap: 2,
+                                                                textAlign: 'left',
+                                                                border: `1px solid ${item.active ? '#0f172a' : '#e2e8f0'}`,
+                                                                borderRadius: 6,
+                                                                background: '#ffffff',
+                                                                color: '#334155',
+                                                                padding: '6px 8px',
+                                                                cursor: 'pointer',
+                                                            }}>
+                                                            <strong style={{ fontSize: 11, color: '#0f172a' }}>{item.label}</strong>
+                                                            <span style={{ fontSize: 10, color: '#64748b' }}>
+                                                                {item.entryLabel} · {item.kind}
+                                                            </span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {buildWorkflow.linkedArtifacts.length === 0 ? (
+                                            <span style={{ fontSize: 11, color: '#64748b' }}>
+                                                No linked build artifacts
                                             </span>
                                         ) : null}
                                     </div>

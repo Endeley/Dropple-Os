@@ -553,6 +553,31 @@ test('build perspective assistant surface stays entry-consistent for canonical a
   }
 });
 
+test('build perspective exposes linked workflow guidance and operate handoff routes', async ({ page }) => {
+  const response = await page.goto('/workspace/build?blueprint=bp.logistics.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'build workflow route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('build-workflow-panel')).toBeVisible();
+  await expect(page.getByTestId('build-workflow-suggested-next')).toContainText('Continue Building');
+  await expect(page.getByTestId('build-workflow-cluster-application')).toContainText('Application');
+  const applicationLink = page.getByTestId('build-workflow-cluster-application').getByRole('button').first();
+  await expect(applicationLink).toBeVisible();
+  await applicationLink.click();
+  await expect(page).toHaveURL(/[\?&]entry=application/);
+  await expect(page).toHaveURL(/[\?&]u=system%3Amodel/);
+  await expect(page.locator('body')).toContainText('Active context: Build > Application');
+
+  await page.goto('/workspace/build?blueprint=bp.logistics.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
+  await page.getByTestId('build-workflow-operate-handoff').click();
+  await expect(page).toHaveURL(/\/workspace\/operate\?/);
+  await expect(page).toHaveURL(/[\?&]entry=systems-engineering/);
+  await expect(page.locator('body')).toContainText('Active context: Operate > Systems Engineering');
+});
+
 test('operate overlays expose deterministic systems and operations panels', async ({ page }) => {
   let response = await page.goto('/workspace/systems-engineering?blueprint=bp.logistics.v1&bootstrap=1', {
     waitUntil: 'networkidle',
