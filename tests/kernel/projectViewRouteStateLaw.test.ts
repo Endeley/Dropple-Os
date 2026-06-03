@@ -4,7 +4,9 @@ import assert from 'node:assert/strict';
 import {
     normalizeProjectCameraState,
     resolveProjectCameraFromSearchParams,
+    resolveProjectUniverseFocusFromSearchParams,
     withProjectCameraSearchParams,
+    withProjectUniverseFocusSearchParams,
 } from '@/runtime/workspaces/projectViewRouteState.js';
 
 test('project camera normalization is deterministic and fail-closed', () => {
@@ -41,4 +43,22 @@ test('project camera search-param serialization preserves existing query fields'
     assert.equal(next.get('x'), '12.35');
     assert.equal(next.get('y'), '-9.40');
     assert.equal(next.get('z'), '1.235');
+});
+
+test('project universe focus search-param resolution is deterministic and fail-closed', () => {
+    const params = new URLSearchParams('entry=uiux&u=node-1&uq= project ');
+    const focus = resolveProjectUniverseFocusFromSearchParams(params);
+    assert.deepEqual(focus, Object.freeze({ targetId: 'node-1', query: 'project' }));
+});
+
+test('project universe focus search-param serialization preserves existing query fields', () => {
+    const params = new URLSearchParams('entry=uiux&x=1.00&y=2.00&z=0.500');
+    const next = withProjectUniverseFocusSearchParams({
+        searchParams: params,
+        focus: { targetId: 'group:create', query: 'dispatch' },
+    });
+    assert.equal(next.get('entry'), 'uiux');
+    assert.equal(next.get('x'), '1.00');
+    assert.equal(next.get('u'), 'group:create');
+    assert.equal(next.get('uq'), 'dispatch');
 });

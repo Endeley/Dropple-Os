@@ -385,6 +385,21 @@ test('project universe semantic zoom tiers expose deterministic focus and detail
   await expect(page.getByTestId('project-universe-node-document:primary')).toContainText(/[0-9a-f]{8}-/i);
 });
 
+test('project universe navigator search and jump stay route-driven and deterministic', async ({ page }) => {
+  const response = await page.goto('/workspace/create?blueprint=bp.logistics.v1&bootstrap=1&z=0.3', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'universe navigator route should respond successfully').toBeTruthy();
+  await page.getByLabel('Navigator search').fill('operate');
+  await expect(page.getByTestId('project-universe-nav-group:operate')).toContainText('Operate');
+  await page.getByTestId('project-universe-nav-group:operate').click();
+
+  await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
+  await expect(page).toHaveURL(/[\?&]uq=operate/);
+  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('tier far');
+});
+
 test('project shell assistant intent enqueues through canonical runtime bridge', async ({ page }) => {
   const response = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1', {
     waitUntil: 'networkidle',

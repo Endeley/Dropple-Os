@@ -98,6 +98,8 @@ export function ProjectUniverseCanvas({
     universe = null,
     initialCamera = null,
     onCameraChange = null,
+    focusedTargetId = null,
+    onFocusTarget = null,
 }) {
     const [camera, setCamera] = useState(() =>
         Object.freeze({
@@ -183,6 +185,34 @@ export function ProjectUniverseCanvas({
             return next;
         });
     }, [initialCamera]);
+
+    useEffect(() => {
+        if (!focusedTargetId) return;
+        const focusedGroup = artifactGroups.find((group) => group.id === focusedTargetId) ?? null;
+        if (focusedGroup) {
+            setCamera((current) =>
+                Object.freeze({
+                    ...current,
+                    x: -focusedGroup.x,
+                    y: -focusedGroup.y,
+                    scale: 0.6,
+                }),
+            );
+            return;
+        }
+
+        const focusedNode = artifactNodes.find((node) => node.id === focusedTargetId) ?? null;
+        if (focusedNode) {
+            setCamera((current) =>
+                Object.freeze({
+                    ...current,
+                    x: -focusedNode.x,
+                    y: -focusedNode.y,
+                    scale: Math.max(current.scale, 1.25),
+                }),
+            );
+        }
+    }, [artifactGroups, artifactNodes, focusedTargetId]);
 
     const onWheel = (event) => {
         event.preventDefault();
@@ -493,6 +523,7 @@ export function ProjectUniverseCanvas({
                         <div
                             key={group.id}
                             data-testid={`project-universe-group-${group.perspectiveId}`}
+                            onClick={() => onFocusTarget?.(group.id)}
                             style={{
                                 position: 'absolute',
                                 left: group.x,
@@ -519,6 +550,7 @@ export function ProjectUniverseCanvas({
                                     presentation.groupDetailLevel === 'domain-chip'
                                         ? 'none'
                                         : '0 6px 18px rgba(148,163,184,0.16)',
+                                cursor: onFocusTarget ? 'pointer' : 'default',
                             }}>
                             <div style={{ fontWeight: 700 }}>{group.label}</div>
                             {visibility.showGroupCounts ? (
@@ -558,6 +590,7 @@ export function ProjectUniverseCanvas({
                         <div
                             key={node.id}
                             data-testid={`project-universe-node-${node.id}`}
+                            onClick={() => onFocusTarget?.(node.id)}
                             style={{
                                 position: 'absolute',
                                 left: node.x,
@@ -572,6 +605,7 @@ export function ProjectUniverseCanvas({
                                 color: '#0f172a',
                                 textAlign: 'center',
                                 boxShadow: visibility.showNodeCards ? '0 6px 18px rgba(148,163,184,0.14)' : 'none',
+                                cursor: onFocusTarget ? 'pointer' : 'default',
                             }}>
                             {visibility.showNodeLabels ? (
                                 <>

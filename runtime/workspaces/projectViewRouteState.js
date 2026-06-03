@@ -5,6 +5,12 @@ const CAMERA_LIMITS = Object.freeze({
     maxScale: 8,
 });
 
+function asNonEmptyString(value) {
+    if (typeof value !== 'string') return null;
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+}
+
 function parseFiniteOr(value, fallback) {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : fallback;
@@ -36,5 +42,26 @@ export function withProjectCameraSearchParams({ searchParams, camera }) {
     next.set('x', normalized.x.toFixed(2));
     next.set('y', normalized.y.toFixed(2));
     next.set('z', normalized.scale.toFixed(3));
+    return next;
+}
+
+export function resolveProjectUniverseFocusFromSearchParams(searchParams) {
+    return Object.freeze({
+        targetId: asNonEmptyString(searchParams?.get?.('u')),
+        query: asNonEmptyString(searchParams?.get?.('uq')) ?? '',
+    });
+}
+
+export function withProjectUniverseFocusSearchParams({ searchParams, focus } = {}) {
+    const next = new URLSearchParams(searchParams?.toString?.() ?? '');
+    const targetId = asNonEmptyString(focus?.targetId);
+    const query = asNonEmptyString(focus?.query) ?? '';
+
+    if (targetId) next.set('u', targetId);
+    else next.delete('u');
+
+    if (query.length > 0) next.set('uq', query);
+    else next.delete('uq');
+
     return next;
 }

@@ -26,7 +26,9 @@ import { CommandPalette } from '@/commands/CommandPalette';
 import {
     normalizeProjectCameraState,
     resolveProjectCameraFromSearchParams,
+    resolveProjectUniverseFocusFromSearchParams,
     withProjectCameraSearchParams,
+    withProjectUniverseFocusSearchParams,
 } from '@/runtime/workspaces/projectViewRouteState.js';
 import {
     buildProjectViewShareHref,
@@ -35,6 +37,10 @@ import {
     normalizeRecentProjectRoutes,
 } from '@/runtime/workspaces/projectShellRouteState.js';
 import { buildProjectUniverseProjection } from '@/runtime/workspaces/projectUniverseProjection.js';
+import {
+    buildProjectUniverseNavigatorItems,
+    resolveProjectUniverseFocusTarget,
+} from '@/runtime/workspaces/projectUniverseNavigation.js';
 import { ProjectUniverseCanvas } from './ProjectUniverseCanvas.jsx';
 
 function formatEntryLabel(entryId) {
@@ -113,6 +119,9 @@ export function ProjectPerspectiveShell({
 
     const activeRoute = `/workspace/${perspectiveId}?entry=${projectPerspectiveContext.entryId}`;
     const [cameraRouteState, setCameraRouteState] = useState(() => resolveProjectCameraFromSearchParams(searchParams));
+    const [universeFocusState, setUniverseFocusState] = useState(() =>
+        resolveProjectUniverseFocusFromSearchParams(searchParams),
+    );
     const [shareFeedback, setShareFeedback] = useState('');
     const [blueprintOptions] = useState(() => listBlueprintInstallOptions());
     const [selectedBlueprintIds, setSelectedBlueprintIds] = useState(() =>
@@ -198,17 +207,69 @@ export function ProjectPerspectiveShell({
 
     useEffect(() => {
         setCameraRouteState(resolveProjectCameraFromSearchParams(searchParams));
+        setUniverseFocusState(resolveProjectUniverseFocusFromSearchParams(searchParams));
     }, [searchParams]);
+
+    useEffect(() => {
+        const nextQuery = universeFocusState.query ?? '';
+        if (nextQuery === navigatorQuery) return;
+        setNavigatorQuery(nextQuery);
+    }, [navigatorQuery, universeFocusState.query]);
+
+    const replaceShellSearchParams = (nextSearchParams) => {
+        const href = `${pathname}?${nextSearchParams.toString()}`;
+        if (typeof window !== 'undefined') {
+            window.history.replaceState(window.history.state, '', href);
+            return;
+        }
+        router.replace(href, { scroll: false });
+    };
 
     const handleCameraChange = (camera) => {
         const nextState = normalizeProjectCameraState(camera);
         setCameraRouteState(nextState);
 
-        const next = withProjectCameraSearchParams({
+        const withCamera = withProjectCameraSearchParams({
             searchParams,
             camera: nextState,
         });
-        router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+        const next = withProjectUniverseFocusSearchParams({
+            searchParams: withCamera,
+            focus: universeFocusState,
+        });
+        replaceShellSearchParams(next);
+    };
+
+    const replaceUniverseRouteState = ({ camera = cameraRouteState, focus = universeFocusState } = {}) => {
+        const withCamera = withProjectCameraSearchParams({
+            searchParams,
+            camera,
+        });
+        const next = withProjectUniverseFocusSearchParams({
+            searchParams: withCamera,
+            focus,
+        });
+        replaceShellSearchParams(next);
+    };
+
+    const handleUniverseFocusTarget = (targetId) => {
+        const focusTarget = resolveProjectUniverseFocusTarget({
+            universe: projectUniverse,
+            targetId,
+        });
+        if (!focusTarget) return;
+        const nextCamera = normalizeProjectCameraState({
+            x: -focusTarget.x,
+            y: -focusTarget.y,
+            scale: focusTarget.scale,
+        });
+        const nextFocus = Object.freeze({
+            targetId: focusTarget.id,
+            query: navigatorQuery,
+        });
+        setCameraRouteState(nextCamera);
+        setUniverseFocusState(nextFocus);
+        replaceUniverseRouteState({ camera: nextCamera, focus: nextFocus });
     };
 
     const shareCurrentView = async () => {
@@ -407,6 +468,14 @@ export function ProjectPerspectiveShell({
                 item.entryId.includes(normalizedQuery),
         );
     }, [navigatorQuery, perspectiveIds]);
+    const universeNavigatorItems = useMemo(
+        () =>
+            buildProjectUniverseNavigatorItems({
+                universe: projectUniverse,
+                query: navigatorQuery,
+            }),
+        [navigatorQuery, projectUniverse],
+    );
 
     const requestAssistantPlaceholder = async (assistantAction) => {
         const result = await dispatchOsWorkspaceShellIntent(
@@ -566,6 +635,8 @@ export function ProjectPerspectiveShell({
                     universe={projectUniverse}
                     initialCamera={cameraRouteState}
                     onCameraChange={handleCameraChange}
+                    focusedTargetId={universeFocusState.targetId}
+                    onFocusTarget={handleUniverseFocusTarget}
                 />
                 <div style={{ minHeight: 0, display: 'grid', gridTemplateColumns: '280px minmax(0, 1fr)' }}>
                     <aside
@@ -582,8 +653,17 @@ export function ProjectPerspectiveShell({
                             <input
                                 aria-label='Navigator search'
                                 value={navigatorQuery}
-                                onChange={(event) => setNavigatorQuery(event.target.value)}
-                                placeholder='Search perspectives or entries'
+                                onChange={(event) => {
+                                    const query = event.target.value;
+                                    setNavigatorQuery(query);
+                                    const nextFocus = Object.freeze({
+                                        targetId: universeFocusState.targetId,
+                                        query,
+                                    });
+                                    setUniverseFocusState(nextFocus);
+                                    replaceUniverseRouteState({ focus: nextFocus });
+                                }}
+                                placeholder='Search entries, groups, or artifacts'
                                 style={{
                                     width: '100%',
                                     border: '1px solid #cbd5e1',
@@ -981,6 +1061,38 @@ export function ProjectPerspectiveShell({
                             </div>
                         </div>
                         <div style={{ padding: 10 }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                                Universe
+                            </div>
+                            <div style={{ display: 'grid', gap: 4, marginBottom: 10 }}>
+                                {universeNavigatorItems.map((item) => {
+                                    const active = item.targetId === universeFocusState.targetId;
+                                    return (
+                                        <button
+                                            key={item.id}
+                                            type='button'
+                                            data-testid={`project-universe-nav-${item.targetId}`}
+                                            onClick={() => handleUniverseFocusTarget(item.targetId)}
+                                            style={{
+                                                textAlign: 'left',
+                                                border: `1px solid ${active ? '#0f172a' : '#e2e8f0'}`,
+                                                borderRadius: 6,
+                                                background: active ? '#f8fafc' : '#ffffff',
+                                                color: '#334155',
+                                                padding: '6px 8px',
+                                                cursor: 'pointer',
+                                            }}>
+                                            <div style={{ fontSize: 11, fontWeight: 600 }}>{item.label}</div>
+                                            <div style={{ fontSize: 10, color: '#64748b' }}>
+                                                {item.targetType} · {item.subtitle}
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                                {universeNavigatorItems.length === 0 ? (
+                                    <span style={{ fontSize: 11, color: '#64748b' }}>No universe matches</span>
+                                ) : null}
+                            </div>
                             <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
                                 All Entries
                             </div>
