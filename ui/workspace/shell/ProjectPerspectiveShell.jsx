@@ -145,6 +145,7 @@ export function ProjectPerspectiveShell({
     const [universeFocusState, setUniverseFocusState] = useState(() =>
         resolveProjectUniverseFocusFromSearchParams(searchParams),
     );
+    const [createUtilityPanel, setCreateUtilityPanel] = useState('project');
     const [shareFeedback, setShareFeedback] = useState('');
     const [blueprintOptions] = useState(() => listBlueprintInstallOptions());
     const [selectedBlueprintIds, setSelectedBlueprintIds] = useState(() =>
@@ -562,6 +563,7 @@ export function ProjectPerspectiveShell({
                 : null,
         [perspectiveId, projectPerspectiveContext.entryId],
     );
+    const isCreatePerspective = perspectiveId === 'create';
 
     const requestAssistantPlaceholder = async (assistantAction) => {
         const result = await dispatchOsWorkspaceShellIntent(
@@ -724,7 +726,12 @@ export function ProjectPerspectiveShell({
                     focusedTargetId={universeFocusState.targetId}
                     onFocusTarget={handleUniverseFocusTarget}
                 />
-                <div style={{ minHeight: 0, display: 'grid', gridTemplateColumns: '280px minmax(0, 1fr)' }}>
+                <div
+                    style={{
+                        minHeight: 0,
+                        display: 'grid',
+                        gridTemplateColumns: isCreatePerspective ? '248px minmax(0, 1fr)' : '280px minmax(0, 1fr)',
+                    }}>
                     <aside
                         style={{
                             borderRight: '1px solid #e2e8f0',
@@ -732,6 +739,8 @@ export function ProjectPerspectiveShell({
                             minHeight: 0,
                             overflow: 'auto',
                         }}>
+                        {isCreatePerspective ? null : (
+                        <>
                         <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
                             <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a', marginBottom: 6 }}>
                                 Navigator
@@ -759,6 +768,10 @@ export function ProjectPerspectiveShell({
                                 }}
                             />
                         </div>
+                        </>
+                        )}
+                        {isCreatePerspective ? null : (
+                        <>
                         <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
                             {perspectiveId === 'overview' ? (
                                 <div
@@ -916,6 +929,8 @@ export function ProjectPerspectiveShell({
                                 ) : null}
                             </div>
                         </div>
+                        </>
+                        )}
                         {perspectiveId === 'create' ? (
                             <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
                                 <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
@@ -1411,6 +1426,287 @@ export function ProjectPerspectiveShell({
                                 ) : null}
                             </div>
                         </div>
+                        {isCreatePerspective ? (
+                            <div
+                                data-testid='create-shell-utility-panel'
+                                style={{ padding: 10, borderBottom: '1px solid #e2e8f0', display: 'grid', gap: 8 }}>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: '#334155' }}>Create Studio</div>
+                                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                    {[
+                                        { id: 'project', label: 'Project' },
+                                        { id: 'navigate', label: 'Navigate' },
+                                        { id: 'blueprints', label: 'Blueprints' },
+                                    ].map((tab) => {
+                                        const active = createUtilityPanel === tab.id;
+                                        return (
+                                            <button
+                                                key={tab.id}
+                                                type='button'
+                                                data-testid={`create-shell-utility-tab-${tab.id}`}
+                                                onClick={() => setCreateUtilityPanel(tab.id)}
+                                                style={{
+                                                    border: `1px solid ${active ? '#0f172a' : '#cbd5e1'}`,
+                                                    borderRadius: 999,
+                                                    background: active ? '#0f172a' : '#ffffff',
+                                                    color: active ? '#ffffff' : '#334155',
+                                                    fontSize: 10,
+                                                    padding: '4px 8px',
+                                                    cursor: 'pointer',
+                                                }}>
+                                                {tab.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                {createUtilityPanel === 'project' ? (
+                                    <div style={{ display: 'grid', gap: 8 }}>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                gap: 8,
+                                                marginBottom: 6,
+                                            }}>
+                                            <div style={{ fontSize: 11, fontWeight: 700, color: '#334155' }}>Recent</div>
+                                            <button
+                                                type='button'
+                                                onClick={clearRecentViews}
+                                                style={{
+                                                    border: '1px solid #d1d5db',
+                                                    borderRadius: 6,
+                                                    background: '#ffffff',
+                                                    color: '#475569',
+                                                    fontSize: 10,
+                                                    padding: '2px 6px',
+                                                    cursor: 'pointer',
+                                                }}>
+                                                Clear
+                                            </button>
+                                        </div>
+                                        <div style={{ display: 'grid', gap: 4 }}>
+                                            {recentRoutes.length === 0 ? (
+                                                <span style={{ fontSize: 11, color: '#64748b' }}>No recent routes</span>
+                                            ) : (
+                                                recentRoutes.map((href) => (
+                                                    <Link
+                                                        key={href}
+                                                        href={href}
+                                                        style={{
+                                                            fontSize: 11,
+                                                            color: href === activeRoute ? '#0f172a' : '#334155',
+                                                            textDecoration: 'none',
+                                                            padding: '4px 6px',
+                                                            borderRadius: 6,
+                                                            background: href === activeRoute ? '#e2e8f0' : 'transparent',
+                                                        }}>
+                                                        {href.replace('/workspace/', '')}
+                                                    </Link>
+                                                ))
+                                            )}
+                                        </div>
+                                        <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginTop: 4 }}>
+                                            Universe
+                                        </div>
+                                        <div style={{ display: 'grid', gap: 4 }}>
+                                            {universeNavigatorItems.map((item) => {
+                                                const active = item.targetId === universeFocusState.targetId;
+                                                return (
+                                                    <button
+                                                        key={item.id}
+                                                        type='button'
+                                                        data-testid={`project-universe-nav-${item.targetId}`}
+                                                        onClick={() => handleUniverseFocusTarget(item.targetId)}
+                                                        style={{
+                                                            textAlign: 'left',
+                                                            border: `1px solid ${active ? '#0f172a' : '#e2e8f0'}`,
+                                                            borderRadius: 6,
+                                                            background: active ? '#f8fafc' : '#ffffff',
+                                                            color: '#334155',
+                                                            padding: '6px 8px',
+                                                            cursor: 'pointer',
+                                                        }}>
+                                                        <div style={{ fontSize: 11, fontWeight: 600 }}>{item.label}</div>
+                                                        <div style={{ fontSize: 10, color: '#64748b' }}>
+                                                            {item.targetType} · {item.subtitle}
+                                                        </div>
+                                                    </button>
+                                                );
+                                            })}
+                                            {universeNavigatorItems.length === 0 ? (
+                                                <span style={{ fontSize: 11, color: '#64748b' }}>No universe matches</span>
+                                            ) : null}
+                                        </div>
+                                    </div>
+                                ) : null}
+                                {createUtilityPanel === 'navigate' ? (
+                                    <div style={{ display: 'grid', gap: 8 }}>
+                                        <input
+                                            aria-label='Navigator search'
+                                            value={navigatorQuery}
+                                            onChange={(event) => {
+                                                const query = event.target.value;
+                                                setNavigatorQuery(query);
+                                                const nextFocus = Object.freeze({
+                                                    targetId: universeFocusState.targetId,
+                                                    query,
+                                                });
+                                                setUniverseFocusState(nextFocus);
+                                                replaceUniverseRouteState({ focus: nextFocus });
+                                            }}
+                                            placeholder='Search entries, groups, or artifacts'
+                                            style={{
+                                                width: '100%',
+                                                border: '1px solid #cbd5e1',
+                                                borderRadius: 6,
+                                                padding: '6px 8px',
+                                                fontSize: 12,
+                                            }}
+                                        />
+                                        <div style={{ fontSize: 11, fontWeight: 700, color: '#334155' }}>
+                                            All Entries
+                                        </div>
+                                        <div style={{ display: 'grid', gap: 4 }}>
+                                            {navigatorItems.map((item) => {
+                                                const active = item.href === activeRoute;
+                                                return (
+                                                    <Link
+                                                        key={item.id}
+                                                        href={item.href}
+                                                        style={{
+                                                            fontSize: 11,
+                                                            color: active ? '#0f172a' : '#334155',
+                                                            textDecoration: 'none',
+                                                            padding: '4px 6px',
+                                                            borderRadius: 6,
+                                                            border: `1px solid ${active ? '#0f172a' : '#e2e8f0'}`,
+                                                            background: active ? '#f8fafc' : '#ffffff',
+                                                        }}>
+                                                        {item.label}
+                                                    </Link>
+                                                );
+                                            })}
+                                            {navigatorItems.length === 0 ? (
+                                                <span style={{ fontSize: 11, color: '#64748b' }}>No matches</span>
+                                            ) : null}
+                                        </div>
+                                    </div>
+                                ) : null}
+                                {createUtilityPanel === 'blueprints' ? (
+                                    <div style={{ display: 'grid', gap: 8 }}>
+                                        <div style={{ fontSize: 11, fontWeight: 700, color: '#334155' }}>
+                                            Start from Blueprint
+                                        </div>
+                                        <select
+                                            aria-label='Blueprint chooser'
+                                            multiple
+                                            value={selectedBlueprintIds}
+                                            onChange={(event) => {
+                                                const next = Array.from(event.target.selectedOptions).map(
+                                                    (option) => option.value,
+                                                );
+                                                setSelectedBlueprintIds(next);
+                                            }}
+                                            style={{
+                                                width: '100%',
+                                                border: '1px solid #cbd5e1',
+                                                borderRadius: 6,
+                                                padding: '6px 8px',
+                                                fontSize: 12,
+                                                background: '#ffffff',
+                                                minHeight: 94,
+                                            }}>
+                                            {blueprintOptions.map((option) => (
+                                                <option key={option.id} value={option.id}>
+                                                    {option.name} ({option.versionId})
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <button
+                                            type='button'
+                                            onClick={installSelectedBlueprint}
+                                            disabled={blueprintInstalling || selectedBlueprintIds.length === 0}
+                                            style={{
+                                                border: '1px solid #334155',
+                                                borderRadius: 6,
+                                                background: blueprintInstalling ? '#cbd5e1' : '#0f172a',
+                                                color: '#ffffff',
+                                                fontSize: 11,
+                                                padding: '6px 8px',
+                                                cursor: blueprintInstalling ? 'not-allowed' : 'pointer',
+                                            }}>
+                                            {blueprintInstalling
+                                                ? 'Installing…'
+                                                : selectedBlueprintIds.length > 1
+                                                  ? 'Install Composed Blueprint'
+                                                  : 'Install Blueprint'}
+                                        </button>
+                                        <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginTop: 4 }}>
+                                            Bootstrap
+                                        </div>
+                                        {persistedProjectBootstrap ? (
+                                            <div style={{ display: 'grid', gap: 4 }}>
+                                                <span style={{ fontSize: 10, color: '#334155' }}>
+                                                    projectId: {persistedProjectBootstrap.projectId ?? 'n/a'}
+                                                </span>
+                                                <span style={{ fontSize: 10, color: '#334155' }}>
+                                                    blueprintId: {persistedProjectBootstrap.blueprintId ?? 'n/a'}
+                                                </span>
+                                                <span style={{ fontSize: 10, color: '#334155' }}>
+                                                    blueprintVersion: {persistedProjectBootstrap.blueprintVersionId ?? 'n/a'}
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <span style={{ fontSize: 11, color: '#64748b' }}>No bootstrap metadata yet</span>
+                                        )}
+                                        <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginTop: 4 }}>
+                                            Upgrade Blueprint
+                                        </div>
+                                        {upgradeTargets.length === 0 ? (
+                                            <span style={{ fontSize: 11, color: '#64748b' }}>No upgrade target available</span>
+                                        ) : (
+                                            <div style={{ display: 'grid', gap: 6 }}>
+                                                <select
+                                                    aria-label='Blueprint upgrade target'
+                                                    value={selectedUpgradeVersionId}
+                                                    onChange={(event) => setSelectedUpgradeVersionId(event.target.value)}
+                                                    style={{
+                                                        width: '100%',
+                                                        border: '1px solid #cbd5e1',
+                                                        borderRadius: 6,
+                                                        padding: '6px 8px',
+                                                        fontSize: 12,
+                                                        background: '#ffffff',
+                                                    }}>
+                                                    {upgradeTargets.map((target) => (
+                                                        <option key={target.versionId} value={target.versionId}>
+                                                            {target.name} ({target.versionId})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <button
+                                                    type='button'
+                                                    onClick={applyUpgrade}
+                                                    disabled={upgradeApplying || !upgradePreview?.canApply}
+                                                    style={{
+                                                        border: '1px solid #334155',
+                                                        borderRadius: 6,
+                                                        background: upgradeApplying ? '#cbd5e1' : '#0f172a',
+                                                        color: '#ffffff',
+                                                        fontSize: 11,
+                                                        padding: '6px 8px',
+                                                        cursor: upgradeApplying || !upgradePreview?.canApply ? 'not-allowed' : 'pointer',
+                                                    }}>
+                                                    {upgradeApplying ? 'Applying…' : 'Apply Upgrade'}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : null}
+                            </div>
+                        ) : null}
+                        {isCreatePerspective ? null : (
+                        <>
                         <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
                             <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
                                 Project Bootstrap Provenance
@@ -1622,6 +1918,8 @@ export function ProjectPerspectiveShell({
                                 ) : null}
                             </div>
                         </div>
+                        </>
+                        )}
                     </aside>
                     <div style={{ minHeight: 0 }}>{children}</div>
                 </div>

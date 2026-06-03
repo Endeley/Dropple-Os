@@ -319,11 +319,11 @@ test('project perspective route bootstrap installs a single blueprint determinis
   });
 
   expect(response?.ok(), 'project bootstrap route should respond successfully').toBeTruthy();
-  await expect(page.locator('body')).toContainText('Project Bootstrap Provenance');
-  await expect(page.locator('body')).toContainText('defaultPerspective: create');
+  await page.getByTestId('create-shell-utility-tab-blueprints').click();
+  await expect(page.locator('body')).toContainText('Bootstrap');
+  await expect(page.locator('body')).toContainText('projectId: project.bp.startup.v1');
   await expect(page.locator('body')).toContainText('blueprintId: bp.startup.v1');
   await expect(page.locator('body')).toContainText('blueprintVersion: bp.startup.v1');
-  await expect(page.locator('body')).toContainText('Installed bp.startup.v1');
   await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('artifacts');
 });
 
@@ -334,9 +334,8 @@ test('project perspective route bootstrap composes multiple blueprints determini
   );
 
   expect(response?.ok(), 'composed bootstrap route should respond successfully').toBeTruthy();
-  await expect(page.locator('body')).toContainText('Project Bootstrap Provenance');
-  await expect(page.locator('body')).toContainText('defaultPerspective: create');
-  await expect(page.locator('body')).toContainText('Installed composed blueprint');
+  await page.getByTestId('create-shell-utility-tab-blueprints').click();
+  await expect(page.locator('body')).toContainText('Bootstrap');
   await expect(page.locator('body')).toContainText(/blueprintId:\s+bp\.compose\./);
   await expect(page.locator('body')).toContainText(/blueprintVersion:\s+bp\.compose\./);
   await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('artifacts');
@@ -391,7 +390,9 @@ test('project universe navigator search and jump stay route-driven and determini
   });
 
   expect(response?.ok(), 'universe navigator route should respond successfully').toBeTruthy();
+  await page.getByTestId('create-shell-utility-tab-navigate').click();
   await page.getByLabel('Navigator search').fill('operate');
+  await page.getByTestId('create-shell-utility-tab-project').click();
   await expect(page.getByTestId('project-universe-nav-group:operate')).toContainText('Operate');
   await page.getByTestId('project-universe-nav-group:operate').click();
 
@@ -415,6 +416,27 @@ test('create perspective exposes linked artifact workflow routes', async ({ page
   await expect(page).toHaveURL(/[\?&]entry=document/);
   await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
   await expect(page.locator('body')).toContainText('Active context: Create > Document');
+});
+
+test('create shell consolidates project utilities behind a single tabbed panel', async ({ page }) => {
+  const response = await page.goto('/workspace/create?blueprint=bp.logistics.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'create cleanup route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('create-shell-utility-panel')).toBeVisible();
+  await expect(page.getByTestId('create-shell-utility-panel')).toContainText('Create Studio');
+  await expect(page.getByTestId('create-shell-utility-panel')).toContainText('Recent');
+  await expect(page.getByTestId('create-shell-utility-panel')).toContainText('Universe');
+  await expect(page.getByLabel('Navigator search')).toHaveCount(0);
+
+  await page.getByTestId('create-shell-utility-tab-navigate').click();
+  await expect(page.getByLabel('Navigator search')).toBeVisible();
+  await expect(page.getByTestId('create-shell-utility-panel')).toContainText('All Entries');
+
+  await page.getByTestId('create-shell-utility-tab-blueprints').click();
+  await expect(page.getByLabel('Blueprint chooser')).toBeVisible();
+  await expect(page.getByTestId('create-shell-utility-panel')).toContainText('Upgrade Blueprint');
 });
 
 test('project shell assistant intent enqueues through canonical runtime bridge', async ({ page }) => {
