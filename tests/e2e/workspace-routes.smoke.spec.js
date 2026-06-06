@@ -439,6 +439,29 @@ test('create shell consolidates project utilities behind a single tabbed panel',
   await expect(page.getByTestId('create-shell-utility-panel')).toContainText('Upgrade Blueprint');
 });
 
+test('create shell consolidates inspector hierarchy behind focused dock tabs', async ({ page }) => {
+  const response = await page.goto('/workspace/create?blueprint=bp.logistics.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'create inspector cleanup route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('inspector-tab-inspect')).toBeVisible();
+  await expect(page.getByTestId('inspector-tab-surface')).toBeVisible();
+  await expect(page.getByTestId('inspector-tab-library')).toBeVisible();
+
+  await expect(page.locator('.panel-content')).toContainText('Selection');
+  await expect(page.locator('.panel-content')).toContainText('Motion & Export');
+  await expect(page.locator('.panel-content')).not.toContainText('Certified Templates');
+
+  await page.getByTestId('inspector-tab-surface').click();
+  await expect(page.locator('.panel-content')).toContainText('Canvas Surface');
+  await expect(page.locator('.panel-content')).toContainText('Signals');
+
+  await page.getByTestId('inspector-tab-library').click();
+  await expect(page.locator('.panel-content')).toContainText('Blueprint Library');
+  await expect(page.locator('.panel-content')).toContainText('Certified Templates');
+});
+
 test('project shell assistant intent enqueues through canonical runtime bridge', async ({ page }) => {
   const response = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1', {
     waitUntil: 'networkidle',
