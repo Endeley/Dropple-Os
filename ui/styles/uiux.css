@@ -296,6 +296,21 @@
   color: #c7cdd8;
 }
 
+.inspector-empty-state {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, .06);
+  background: rgba(255, 255, 255, .02);
+  color: #c7cdd8;
+}
+
+.inspector-empty-state span {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
 
 
 /* =========================
@@ -326,6 +341,11 @@
   padding: 12px 0 0;
   font-size: 12px;
   border-top: 1px solid rgba(255, 255, 255, .04);
+}
+
+.uiux-transition-timeline.is-inactive {
+  grid-template-columns: minmax(220px, 320px) minmax(240px, 1fr);
+  padding-top: 8px;
 }
 
 .uiux-transition-timeline__summary,
@@ -385,6 +405,12 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.uiux-transition-timeline__inactive {
+  justify-self: end;
+  color: #94a3b8;
+  font-size: 11px;
 }
 
 .uiux-transition-timeline__keyframe {

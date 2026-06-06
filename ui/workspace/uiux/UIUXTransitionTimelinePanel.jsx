@@ -69,6 +69,7 @@ export function UIUXTransitionTimelinePanel({ node = null }) {
             null,
         [property, selectedMotionClips],
     );
+    const timelineActive = Boolean(activeNode?.id);
     const [activeKeyframeId, setActiveKeyframeId] = useState(null);
     const activeKeyframe = useMemo(
         () =>
@@ -131,7 +132,10 @@ export function UIUXTransitionTimelinePanel({ node = null }) {
     }
 
     return (
-        <div className='uiux-transition-timeline' data-testid='uiux-transition-timeline'>
+        <div
+            className={`uiux-transition-timeline ${timelineActive ? 'is-active' : 'is-inactive'}`}
+            data-testid='uiux-transition-timeline'
+            data-state={timelineActive ? 'active' : 'inactive'}>
             <div className='uiux-transition-timeline__summary'>
                 <strong>Transition Timeline</strong>
                 <span className='inspector-subtle'>
@@ -139,143 +143,151 @@ export function UIUXTransitionTimelinePanel({ node = null }) {
                 </span>
             </div>
 
-            <div className='uiux-transition-timeline__transport'>
-                <button
-                    type='button'
-                    onClick={() => (playback?.isPlaying ? timelineIntentClockPause() : timelineIntentClockPlay())}
-                >
-                    {playback?.isPlaying ? 'Pause' : 'Play'}
-                </button>
-
-                <label className='uiux-transition-timeline__time'>
-                    <span className='inspector-subtle'>Time</span>
-                    <input
-                        type='range'
-                        min='0'
-                        max={duration}
-                        step='1'
-                        value={Math.max(0, Math.min(duration, frameTime))}
-                        onChange={(event) => handleSeek(event.target.value)}
-                    />
-                    <input
-                        type='number'
-                        min='0'
-                        max={duration}
-                        step='1'
-                        value={targetTime}
-                        onChange={(event) => setTargetTime(event.target.value)}
-                        data-testid='uiux-transition-time-input'
-                    />
-                    <span data-testid='uiux-transition-frame-time'>{frameTime}ms</span>
-                </label>
-            </div>
-
-            <div className='uiux-transition-timeline__authoring'>
-                <label>
-                    <span className='inspector-subtle'>Property</span>
-                    <select
-                        value={property}
-                        onChange={(event) => {
-                            const nextProperty = event.target.value;
-                            setProperty(nextProperty);
-                            setValue(String(getDefaultValue(nextProperty, activeNode)));
-                        }}
-                    >
-                        <option value='opacity'>Opacity</option>
-                        <option value='translateY'>Translate Y</option>
-                    </select>
-                </label>
-
-                <label>
-                    <span className='inspector-subtle'>Value</span>
-                    <input
-                        type='number'
-                        step='0.1'
-                        value={value}
-                        onChange={(event) => setValue(event.target.value)}
-                    />
-                </label>
-
-                <label>
-                    <span className='inspector-subtle'>Easing</span>
-                    <select value={easing} onChange={(event) => setEasing(event.target.value)}>
-                        <option value='linear'>Linear</option>
-                        <option value='ease-in-out'>Ease In Out</option>
-                    </select>
-                </label>
-
-                <button
-                    type='button'
-                    data-testid='uiux-transition-add-keyframe'
-                    onClick={handleCreateKeyframe}
-                    disabled={!activeNode?.id}
-                >
-                    Add Keyframe
-                </button>
-
-                <button
-                    type='button'
-                    data-testid='uiux-transition-update-keyframe'
-                    onClick={() =>
-                        handleUpdateKeyframe({
-                            value: Number(value),
-                            easing,
-                        })
-                    }
-                    disabled={!activeKeyframe?.id}
-                >
-                    Update Keyframe
-                </button>
-
-                <button
-                    type='button'
-                    data-testid='uiux-transition-move-keyframe'
-                    onClick={() =>
-                        handleUpdateKeyframe({
-                            time: Number(targetTime),
-                        })
-                    }
-                    disabled={!activeKeyframe?.id}
-                >
-                    Move To Time
-                </button>
-
-                <button
-                    type='button'
-                    data-testid='uiux-transition-delete-keyframe'
-                    onClick={handleDeleteKeyframe}
-                    disabled={!activeKeyframe?.id}
-                >
-                    Delete Keyframe
-                </button>
-            </div>
-
-            <div className='uiux-transition-timeline__clips' data-testid='uiux-transition-clip-count'>
-                {selectedMotionClips.length} selected clips
-            </div>
-
-            <div className='uiux-transition-timeline__keyframes' data-testid='uiux-transition-keyframe-count'>
-                {(activeClip?.keyframes ?? []).map((keyframe) => {
-                    const isActive = keyframe?.id === activeKeyframe?.id;
-                    return (
+            {timelineActive ? (
+                <>
+                    <div className='uiux-transition-timeline__transport'>
                         <button
-                            key={keyframe.id}
                             type='button'
-                            className={`uiux-transition-timeline__keyframe ${isActive ? 'is-active' : ''}`}
-                            data-testid={`uiux-keyframe-${keyframe.id}`}
-                            onClick={() => {
-                                setActiveKeyframeId(keyframe.id);
-                                setValue(String(keyframe?.v ?? 0));
-                                setEasing(keyframe?.easing ?? 'linear');
-                                setTargetTime(String(keyframe?.t ?? 0));
-                            }}
+                            onClick={() => (playback?.isPlaying ? timelineIntentClockPause() : timelineIntentClockPlay())}
                         >
-                            <strong>{keyframe.t}ms</strong>
-                            <span>{keyframe.v}</span>
+                            {playback?.isPlaying ? 'Pause' : 'Play'}
                         </button>
-                    );
-                })}
-            </div>
+
+                        <label className='uiux-transition-timeline__time'>
+                            <span className='inspector-subtle'>Time</span>
+                            <input
+                                type='range'
+                                min='0'
+                                max={duration}
+                                step='1'
+                                value={Math.max(0, Math.min(duration, frameTime))}
+                                onChange={(event) => handleSeek(event.target.value)}
+                            />
+                            <input
+                                type='number'
+                                min='0'
+                                max={duration}
+                                step='1'
+                                value={targetTime}
+                                onChange={(event) => setTargetTime(event.target.value)}
+                                data-testid='uiux-transition-time-input'
+                            />
+                            <span data-testid='uiux-transition-frame-time'>{frameTime}ms</span>
+                        </label>
+                    </div>
+
+                    <div className='uiux-transition-timeline__authoring'>
+                        <label>
+                            <span className='inspector-subtle'>Property</span>
+                            <select
+                                value={property}
+                                onChange={(event) => {
+                                    const nextProperty = event.target.value;
+                                    setProperty(nextProperty);
+                                    setValue(String(getDefaultValue(nextProperty, activeNode)));
+                                }}
+                            >
+                                <option value='opacity'>Opacity</option>
+                                <option value='translateY'>Translate Y</option>
+                            </select>
+                        </label>
+
+                        <label>
+                            <span className='inspector-subtle'>Value</span>
+                            <input
+                                type='number'
+                                step='0.1'
+                                value={value}
+                                onChange={(event) => setValue(event.target.value)}
+                            />
+                        </label>
+
+                        <label>
+                            <span className='inspector-subtle'>Easing</span>
+                            <select value={easing} onChange={(event) => setEasing(event.target.value)}>
+                                <option value='linear'>Linear</option>
+                                <option value='ease-in-out'>Ease In Out</option>
+                            </select>
+                        </label>
+
+                        <button
+                            type='button'
+                            data-testid='uiux-transition-add-keyframe'
+                            onClick={handleCreateKeyframe}
+                            disabled={!activeNode?.id}
+                        >
+                            Add Keyframe
+                        </button>
+
+                        <button
+                            type='button'
+                            data-testid='uiux-transition-update-keyframe'
+                            onClick={() =>
+                                handleUpdateKeyframe({
+                                    value: Number(value),
+                                    easing,
+                                })
+                            }
+                            disabled={!activeKeyframe?.id}
+                        >
+                            Update Keyframe
+                        </button>
+
+                        <button
+                            type='button'
+                            data-testid='uiux-transition-move-keyframe'
+                            onClick={() =>
+                                handleUpdateKeyframe({
+                                    time: Number(targetTime),
+                                })
+                            }
+                            disabled={!activeKeyframe?.id}
+                        >
+                            Move To Time
+                        </button>
+
+                        <button
+                            type='button'
+                            data-testid='uiux-transition-delete-keyframe'
+                            onClick={handleDeleteKeyframe}
+                            disabled={!activeKeyframe?.id}
+                        >
+                            Delete Keyframe
+                        </button>
+                    </div>
+
+                    <div className='uiux-transition-timeline__clips' data-testid='uiux-transition-clip-count'>
+                        {selectedMotionClips.length} selected clips
+                    </div>
+
+                    <div className='uiux-transition-timeline__keyframes' data-testid='uiux-transition-keyframe-count'>
+                        {(activeClip?.keyframes ?? []).map((keyframe) => {
+                            const isActive = keyframe?.id === activeKeyframe?.id;
+                            return (
+                                <button
+                                    key={keyframe.id}
+                                    type='button'
+                                    className={`uiux-transition-timeline__keyframe ${isActive ? 'is-active' : ''}`}
+                                    data-testid={`uiux-keyframe-${keyframe.id}`}
+                                    onClick={() => {
+                                        setActiveKeyframeId(keyframe.id);
+                                        setValue(String(keyframe?.v ?? 0));
+                                        setEasing(keyframe?.easing ?? 'linear');
+                                        setTargetTime(String(keyframe?.t ?? 0));
+                                    }}
+                                >
+                                    <strong>{keyframe.t}ms</strong>
+                                    <span>{keyframe.v}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </>
+            ) : (
+                <div className='uiux-transition-timeline__inactive' data-testid='uiux-transition-timeline-inactive'>
+                    Motion tools appear when a motion-capable node is active.
+                </div>
+            )}
         </div>
     );
 }

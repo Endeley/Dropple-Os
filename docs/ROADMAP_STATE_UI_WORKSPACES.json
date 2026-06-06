@@ -361,7 +361,7 @@
         {
           "id": "U14.S1",
           "title": "Collapse Left Rail Density",
-          "status": "active",
+          "status": "complete",
           "evidence": [
             "ui/workspace/shell/ProjectPerspectiveShell.jsx",
             "tests/e2e/workspace-routes.smoke.spec.js"
@@ -370,7 +370,7 @@
         {
           "id": "U14.S2",
           "title": "Assistant Contextualization",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
             "ui/workspace/shell/ProjectPerspectiveShell.jsx",
             "tests/e2e/workspace-routes.smoke.spec.js"
@@ -379,7 +379,7 @@
         {
           "id": "U14.S3",
           "title": "Inspector Auto-Collapse",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
             "ui/workspace/shell/PanelRenderer.jsx",
             "tests/e2e/workspace-routes.smoke.spec.js"
@@ -388,7 +388,7 @@
         {
           "id": "U14.S4",
           "title": "Timeline Contextual Visibility",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
             "ui/workspace/uiux/UIUXAuthoringShell.jsx",
             "ui/workspace/uiux/UIUXTransitionTimelinePanel.jsx",
@@ -398,7 +398,7 @@
         {
           "id": "U14.S5",
           "title": "Project Diagnostics Demotion",
-          "status": "not-started",
+          "status": "active",
           "evidence": [
             "ui/workspace/shell/ProjectPerspectiveShell.jsx",
             "ui/workspace/shell/ProjectUniverseCanvas.jsx",

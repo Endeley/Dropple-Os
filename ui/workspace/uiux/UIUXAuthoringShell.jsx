@@ -11,7 +11,7 @@ import { PanelRenderer } from '@/ui/workspace/shell/PanelRenderer.jsx';
 import { WorkspaceSessionsRoot } from '@/ui/workspace/root/DispatcherProvider/Sessions/WorkspaceSessionsRoot.jsx';
 
 import { nodeUpdateIntent } from '@/ui/inspector/nodeUpdateIntent.js';
-import { useWorkspaceVisualState } from '@/runtime/projection';
+import { useWorkspaceProjectionState, useWorkspaceVisualState } from '@/runtime/projection';
 import { useWorkspaceCapabilities } from '@/ui/workspace/useWorkspaceCapabilities.js';
 import { useCapabilityLifecycle } from '@/ui/workspace/useCapabilityLifecycle.js';
 import { openTemplatePublishDialog } from '@/ui/bridges/templatePublishRuntimeFacade.js';
@@ -63,6 +63,7 @@ export function UIUXAuthoringShell({
 
     const nodes = useWorkspaceVisualState((s) => s.nodes || {});
     const selectedIds = useWorkspaceVisualState((s) => s.selection?.ids || []);
+    const motionClipCount = useWorkspaceProjectionState((s) => Object.keys(s?.document?.motion?.clips || {}).length);
 
     const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
 
@@ -134,7 +135,7 @@ export function UIUXAuthoringShell({
                             node={node}
                             emit={emit}
                             extraPanels={
-                                capabilitySurface.showMotionInspector
+                                capabilitySurface.showMotionInspector && (Boolean(node?.id) || motionClipCount > 0)
                                     ? [
                                           {
                                               key: 'uiux-motion-runtime',

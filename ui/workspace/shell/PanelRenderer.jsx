@@ -41,18 +41,20 @@ function resolvePanelTab(panelId) {
     return 'inspect';
 }
 
-function resolveInspectSections({ panelIds = [], extras = [] }) {
+function resolveInspectSections({ panelIds = [], extras = [], hasSelection = false }) {
     const selection = panelIds.filter((panelId) =>
         ['NodeHeaderPanel', 'LayoutInspector', 'AutoLayoutPanel', 'ContentPanel', 'SemanticsPanel'].includes(panelId),
     );
-    const motion = panelIds.filter((panelId) => ['MotionPanel', 'ExportPreviewPanel'].includes(panelId));
+    const motion = hasSelection
+        ? panelIds.filter((panelId) => ['MotionPanel', 'ExportPreviewPanel'].includes(panelId))
+        : [];
 
     if (extras.length > 0) {
         motion.push('__extras__');
     }
 
     return [
-        Object.freeze({ id: 'selection', title: 'Selection', panelIds: selection }),
+        Object.freeze({ id: 'selection', title: 'Selection', panelIds: hasSelection ? selection : [] }),
         Object.freeze({ id: 'motion', title: 'Motion & Export', panelIds: motion }),
     ].filter((section) => section.panelIds.length > 0);
 }
@@ -120,8 +122,13 @@ export function PanelRenderer({ workspaceId, node, emit, extraPanels = [] }) {
     }, [activeTab, tabs]);
 
     const inspectSections = useMemo(
-        () => resolveInspectSections({ panelIds: normalizedPanels.filter((panelId) => resolvePanelTab(panelId) === 'inspect'), extras }),
-        [normalizedPanels, extras],
+        () =>
+            resolveInspectSections({
+                panelIds: normalizedPanels.filter((panelId) => resolvePanelTab(panelId) === 'inspect'),
+                extras,
+                hasSelection: Boolean(node),
+            }),
+        [normalizedPanels, extras, node],
     );
     const surfaceSections = useMemo(
         () => resolveSurfaceSections(normalizedPanels.filter((panelId) => resolvePanelTab(panelId) === 'surface')),
@@ -175,32 +182,39 @@ export function PanelRenderer({ workspaceId, node, emit, extraPanels = [] }) {
 
                 <div className='panel-content'>
                     {activeTab === 'inspect'
-                        ? inspectSections.map((section) => (
-                              <PanelSection key={section.id} title={section.title}>
-                                  {section.panelIds.map((panelId) => {
-                                      if (panelId === '__extras__') {
-                                          return extras.map((panel) => {
-                                              if (!panel?.component) {
-                                                  if (process.env.NODE_ENV !== 'production') {
-                                                      console.warn('[PanelRenderer] Invalid extra panel configuration', panel);
+                        ? inspectSections.length > 0 ? (
+                              inspectSections.map((section) => (
+                                  <PanelSection key={section.id} title={section.title}>
+                                      {section.panelIds.map((panelId) => {
+                                          if (panelId === '__extras__') {
+                                              return extras.map((panel) => {
+                                                  if (!panel?.component) {
+                                                      if (process.env.NODE_ENV !== 'production') {
+                                                          console.warn('[PanelRenderer] Invalid extra panel configuration', panel);
+                                                      }
+                                                      return null;
                                                   }
-                                                  return null;
-                                              }
 
-                                              const ExtraPanel = panel.component;
+                                                  const ExtraPanel = panel.component;
 
-                                              return (
-                                                  <div className='inspector-panel-card' key={panel.key || panel.id}>
-                                                      <ExtraPanel {...(panel.props || {})} />
-                                                  </div>
-                                              );
-                                          });
-                                      }
+                                                  return (
+                                                      <div className='inspector-panel-card' key={panel.key || panel.id}>
+                                                          <ExtraPanel {...(panel.props || {})} />
+                                                      </div>
+                                                  );
+                                              });
+                                          }
 
-                                      return renderPanel(panelId);
-                                  })}
-                              </PanelSection>
-                          ))
+                                          return renderPanel(panelId);
+                                      })}
+                                  </PanelSection>
+                              ))
+                          ) : (
+                              <div className='inspector-empty-state' data-testid='inspector-empty-state'>
+                                  <strong>No active selection</strong>
+                                  <span>Choose a node to inspect structure, layout, and motion-aware properties.</span>
+                              </div>
+                          )
                         : null}
 
                     {activeTab === 'surface'

@@ -441,7 +441,7 @@ test('create shell consolidates project utilities behind a single tabbed panel',
 });
 
 test('create shell consolidates inspector hierarchy behind focused dock tabs', async ({ page }) => {
-  const response = await page.goto('/workspace/create?blueprint=bp.logistics.v1&bootstrap=1', {
+  const response = await page.goto('/workspace/create', {
     waitUntil: 'networkidle',
   });
 
@@ -450,8 +450,9 @@ test('create shell consolidates inspector hierarchy behind focused dock tabs', a
   await expect(page.getByTestId('inspector-tab-surface')).toBeVisible();
   await expect(page.getByTestId('inspector-tab-library')).toBeVisible();
 
-  await expect(page.locator('.panel-content')).toContainText('Selection');
-  await expect(page.locator('.panel-content')).toContainText('Motion & Export');
+  await expect(page.getByTestId('inspector-empty-state')).toContainText('No active selection');
+  await expect(page.locator('.panel-content')).not.toContainText('Selection');
+  await expect(page.locator('.panel-content')).not.toContainText('Motion & Export');
   await expect(page.locator('.panel-content')).not.toContainText('Certified Templates');
 
   await page.getByTestId('inspector-tab-surface').click();
@@ -461,6 +462,19 @@ test('create shell consolidates inspector hierarchy behind focused dock tabs', a
   await page.getByTestId('inspector-tab-library').click();
   await expect(page.locator('.panel-content')).toContainText('Blueprint Library');
   await expect(page.locator('.panel-content')).toContainText('Certified Templates');
+});
+
+test('create shell keeps timeline compact until a motion-capable node is active', async ({ page }) => {
+  const response = await page.goto('/workspace/create', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'create timeline compact route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('uiux-transition-timeline')).toHaveAttribute('data-state', 'inactive');
+  await expect(page.getByTestId('uiux-transition-timeline-inactive')).toContainText(
+    'Motion tools appear when a motion-capable node is active',
+  );
+  await expect(page.getByTestId('uiux-transition-timeline')).not.toContainText('Add Keyframe');
 });
 
 test('create shell keeps the canvas as the dominant layout surface', async ({ page }) => {
