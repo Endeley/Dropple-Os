@@ -564,7 +564,16 @@ test('design modes expose parity-stable shell chrome and strip signals', async (
       await expect(page.locator('.workspace-mode')).toContainText('UI / UX');
       await expect(page.locator('.uiux-workspace-strip')).toContainText('Create > UI / UX');
       await expect(page.locator('.frame-indicator')).toContainText('Draft Surface');
+      await expect(page.getByTestId('uiux-topbar-editor-group')).toContainText('Editor');
+      await expect(page.getByTestId('uiux-topbar-editor-group')).toContainText('File');
+      await expect(page.getByTestId('uiux-topbar-editor-group')).toContainText('Prototype');
+      await expect(page.getByTestId('uiux-topbar-authoring-group')).toContainText('Authoring');
+      await expect(page.getByTestId('uiux-topbar-authoring-group')).toContainText('Frame');
+      await expect(page.getByTestId('uiux-topbar-authoring-group')).toContainText('Auto Layout');
+      await expect(page.getByTestId('uiux-topbar-project-group')).toContainText('Project');
       await expect(page.getByRole('button', { name: 'Templates' })).toBeVisible();
+      await expect(page.getByTestId('uiux-topbar-project-group')).toContainText('Share');
+      await expect(page.getByTestId('uiux-topbar-project-group')).toContainText('Publish');
     } else {
       await expect(page.getByRole('navigation', { name: 'Project perspectives' })).toContainText('Create');
       await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('UI / UX');

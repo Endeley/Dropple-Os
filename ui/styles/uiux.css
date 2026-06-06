@@ -57,6 +57,13 @@
   opacity: .65;
 }
 
+.uiux-topbar-group-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  opacity: .52;
+}
+
 .uiux-topbar button,
 .uiux-rightpanel button {
   height: 28px;

@@ -355,7 +355,7 @@
     {
       "id": "U14",
       "title": "Creative OS Shell Consolidation",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["U13"],
       "milestones": [
         {
@@ -408,7 +408,7 @@
         {
           "id": "U14.S6",
           "title": "Editor Bar Ownership Cleanup",
-          "status": "active",
+          "status": "complete",
           "evidence": [
             "ui/workspace/uiux/UIUXTopBar.jsx",
             "ui/workspace/design/DesignShellPrimitives.jsx",

@@ -11,9 +11,10 @@ export function UIUXTopBar({ modeId = 'uiux', templatesOpen = false, onToggleTem
     const topChrome = resolveDesignTopChrome(resolvedModeId);
     return (
         <header className='uiux-topbar'>
-            {/* Left — file / workspace */}
-            <div className='uiux-topbar-left'>
+            {/* Left — editor controls */}
+            <div className='uiux-topbar-left' data-testid='uiux-topbar-editor-group' aria-label='Editor controls'>
                 <DesignWorkspaceBrand modeId={resolvedModeId} />
+                <span className='uiux-topbar-group-label'>Editor</span>
 
                 <button type='button'>File</button>
 
@@ -24,8 +25,9 @@ export function UIUXTopBar({ modeId = 'uiux', templatesOpen = false, onToggleTem
                 <button type='button'>Prototype</button>
             </div>
 
-            {/* Center — canvas controls */}
-            <div className='uiux-topbar-center'>
+            {/* Center — authoring controls */}
+            <div className='uiux-topbar-center' data-testid='uiux-topbar-authoring-group' aria-label='Authoring controls'>
+                <span className='uiux-topbar-group-label'>Authoring</span>
                 <button type='button'>{topChrome.primaryActionLabel}</button>
 
                 <button type='button'>{topChrome.secondaryActionLabel}</button>
@@ -35,8 +37,9 @@ export function UIUXTopBar({ modeId = 'uiux', templatesOpen = false, onToggleTem
                 <span className='frame-indicator'>{topChrome.surfaceLabel}</span>
             </div>
 
-            {/* Right — publish + templates */}
-            <div className='uiux-topbar-right'>
+            {/* Right — project actions */}
+            <div className='uiux-topbar-right' data-testid='uiux-topbar-project-group' aria-label='Project actions'>
+                <span className='uiux-topbar-group-label'>Project</span>
                 <button type='button' onClick={onToggleTemplates} aria-pressed={templatesOpen}>
                     Templates
                 </button>
