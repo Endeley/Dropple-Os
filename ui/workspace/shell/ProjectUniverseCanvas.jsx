@@ -97,6 +97,7 @@ export function ProjectUniverseCanvas({
     perspectiveId = 'overview',
     universe = null,
     initialCamera = null,
+    preserveExplicitCameraOnFocus = false,
     onCameraChange = null,
     focusedTargetId = null,
     onFocusTarget = null,
@@ -188,6 +189,7 @@ export function ProjectUniverseCanvas({
 
     useEffect(() => {
         if (!focusedTargetId) return;
+        if (preserveExplicitCameraOnFocus) return;
         const focusedGroup = artifactGroups.find((group) => group.id === focusedTargetId) ?? null;
         if (focusedGroup) {
             setCamera((current) =>
@@ -212,7 +214,7 @@ export function ProjectUniverseCanvas({
                 }),
             );
         }
-    }, [artifactGroups, artifactNodes, focusedTargetId]);
+    }, [artifactGroups, artifactNodes, focusedTargetId, preserveExplicitCameraOnFocus]);
 
     const onWheel = (event) => {
         event.preventDefault();

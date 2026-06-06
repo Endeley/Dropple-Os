@@ -65,3 +65,29 @@ export function withProjectUniverseFocusSearchParams({ searchParams, focus } = {
 
     return next;
 }
+
+export function resolveProjectPerspectiveContinuityFromSearchParams(searchParams) {
+    return Object.freeze({
+        fromPerspectiveId: asNonEmptyString(searchParams?.get?.('pf')),
+        toPerspectiveId: asNonEmptyString(searchParams?.get?.('pt')),
+        sourceTargetId: asNonEmptyString(searchParams?.get?.('pu')),
+    });
+}
+
+export function withProjectPerspectiveContinuitySearchParams({ searchParams, continuity } = {}) {
+    const next = new URLSearchParams(searchParams?.toString?.() ?? '');
+    const fromPerspectiveId = asNonEmptyString(continuity?.fromPerspectiveId);
+    const toPerspectiveId = asNonEmptyString(continuity?.toPerspectiveId);
+    const sourceTargetId = asNonEmptyString(continuity?.sourceTargetId);
+
+    if (fromPerspectiveId) next.set('pf', fromPerspectiveId);
+    else next.delete('pf');
+
+    if (toPerspectiveId) next.set('pt', toPerspectiveId);
+    else next.delete('pt');
+
+    if (sourceTargetId) next.set('pu', sourceTargetId);
+    else next.delete('pu');
+
+    return next;
+}

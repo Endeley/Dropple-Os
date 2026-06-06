@@ -26,8 +26,10 @@ import { CommandPalette } from '@/commands/CommandPalette';
 import {
     normalizeProjectCameraState,
     resolveProjectCameraFromSearchParams,
+    resolveProjectPerspectiveContinuityFromSearchParams,
     resolveProjectUniverseFocusFromSearchParams,
     withProjectCameraSearchParams,
+    withProjectPerspectiveContinuitySearchParams,
     withProjectUniverseFocusSearchParams,
 } from '@/runtime/workspaces/projectViewRouteState.js';
 import {
@@ -158,6 +160,9 @@ export function ProjectPerspectiveShell({
     const [universeFocusState, setUniverseFocusState] = useState(() =>
         resolveProjectUniverseFocusFromSearchParams(searchParams),
     );
+    const [perspectiveContinuityState, setPerspectiveContinuityState] = useState(() =>
+        resolveProjectPerspectiveContinuityFromSearchParams(searchParams),
+    );
     const [createUtilityPanel, setCreateUtilityPanel] = useState('project');
     const [shareFeedback, setShareFeedback] = useState('');
     const [blueprintOptions] = useState(() => listBlueprintInstallOptions());
@@ -245,7 +250,13 @@ export function ProjectPerspectiveShell({
     useEffect(() => {
         setCameraRouteState(resolveProjectCameraFromSearchParams(searchParams));
         setUniverseFocusState(resolveProjectUniverseFocusFromSearchParams(searchParams));
+        setPerspectiveContinuityState(resolveProjectPerspectiveContinuityFromSearchParams(searchParams));
     }, [searchParams]);
+
+    const preserveExplicitCameraOnFocus = useMemo(
+        () => Boolean(searchParams?.get?.('x') || searchParams?.get?.('y') || searchParams?.get?.('z')),
+        [searchParams],
+    );
 
     useEffect(() => {
         const nextQuery = universeFocusState.query ?? '';
@@ -293,12 +304,42 @@ export function ProjectPerspectiveShell({
             searchParams: baseSearchParams,
             camera,
         });
-        const next = withProjectUniverseFocusSearchParams({
+        const withFocus = withProjectUniverseFocusSearchParams({
             searchParams: withCamera,
             focus,
         });
+        const next = withProjectPerspectiveContinuitySearchParams({
+            searchParams: withFocus,
+            continuity: perspectiveContinuityState,
+        });
         replaceShellSearchParams(next);
-    }, [cameraRouteState, getLiveShellSearchParams, replaceShellSearchParams, universeFocusState]);
+    }, [cameraRouteState, getLiveShellSearchParams, perspectiveContinuityState, replaceShellSearchParams, universeFocusState]);
+
+    const buildPerspectiveHref = useCallback((nextPerspectiveId) => {
+        const withCamera = withProjectCameraSearchParams({
+            searchParams: new URLSearchParams(),
+            camera: cameraRouteState,
+        });
+        const withFocus = withProjectUniverseFocusSearchParams({
+            searchParams: withCamera,
+            focus: universeFocusState,
+        });
+        const next = withProjectPerspectiveContinuitySearchParams({
+            searchParams: withFocus,
+            continuity: {
+                fromPerspectiveId: perspectiveId,
+                toPerspectiveId: nextPerspectiveId,
+                sourceTargetId: universeFocusState.targetId ?? `perspective:${projectPerspectiveContext.entryId}`,
+            },
+        });
+        return `/workspace/${nextPerspectiveId}?${next.toString()}`;
+    }, [cameraRouteState, perspectiveId, projectPerspectiveContext.entryId, universeFocusState]);
+
+    const transitionDescriptor =
+        perspectiveContinuityState.fromPerspectiveId &&
+        perspectiveContinuityState.toPerspectiveId === perspectiveId
+            ? `${formatEntryLabel(perspectiveContinuityState.fromPerspectiveId)} -> ${perspectiveLabel}`
+            : null;
 
     const handleUniverseFocusTarget = (targetId) => {
         const focusTarget = resolveProjectUniverseFocusTarget({
@@ -639,6 +680,25 @@ export function ProjectPerspectiveShell({
                             Project
                         </span>
                         <strong style={{ fontSize: 18, color: '#0f172a' }}>{activeContextLabel}</strong>
+                        {transitionDescriptor ? (
+                            <span
+                                data-testid='project-shell-transition-context'
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    padding: '4px 8px',
+                                    borderRadius: 999,
+                                    fontSize: 10,
+                                    fontWeight: 700,
+                                    letterSpacing: '0.06em',
+                                    textTransform: 'uppercase',
+                                    color: '#0f766e',
+                                    background: '#ecfeff',
+                                    border: '1px solid #99f6e4',
+                                }}>
+                                continuity: {transitionDescriptor}
+                            </span>
+                        ) : null}
                     </div>
                     <span style={{ fontSize: 12, color: '#475569' }}>
                         Active context: {activeContextLabel}
@@ -709,7 +769,7 @@ export function ProjectPerspectiveShell({
                     return (
                         <Link
                             key={id}
-                            href={`/workspace/${id}`}
+                            href={buildPerspectiveHref(id)}
                             style={{
                                 padding: '8px 12px',
                                 borderRadius: 999,
@@ -761,6 +821,7 @@ export function ProjectPerspectiveShell({
                     perspectiveId={perspectiveId}
                     universe={projectUniverse}
                     initialCamera={cameraRouteState}
+                    preserveExplicitCameraOnFocus={preserveExplicitCameraOnFocus}
                     onCameraChange={handleCameraChange}
                     focusedTargetId={universeFocusState.targetId}
                     onFocusTarget={handleUniverseFocusTarget}

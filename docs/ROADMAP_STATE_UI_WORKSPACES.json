@@ -427,15 +427,16 @@
     {
       "id": "U15",
       "title": "Motion-First Creative Environment",
-      "status": "not-started",
+      "status": "active",
       "depends_on": ["U14"],
       "milestones": [
         {
           "id": "U15.M1",
           "title": "Perspective Transition Continuity",
-          "status": "not-started",
+          "status": "active",
           "evidence": [
             "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "runtime/workspaces/projectViewRouteState.js",
             "ui/workspace/shell/WorkspaceShell.jsx",
             "tests/e2e/workspace-routes.smoke.spec.js"
           ]

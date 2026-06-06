@@ -313,6 +313,25 @@ test('overview perspective renders project hub panel', async ({ page }) => {
   await expect(page.locator('body')).toContainText('updatedAt:');
 });
 
+test('project perspective links preserve universe continuity state across hops', async ({ page }) => {
+  const response = await page.goto('/workspace/create?blueprint=bp.logistics.v1&bootstrap=1&z=0.3&u=group%3Aoperate&uq=operate', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'perspective continuity route should respond successfully').toBeTruthy();
+  await page.getByRole('link', { name: 'Build' }).click();
+
+  await expect(page).toHaveURL(/\/workspace\/build\?/);
+  await expect(page).toHaveURL(/[\?&]z=0\.300/);
+  await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
+  await expect(page).toHaveURL(/[\?&]uq=operate/);
+  await expect(page).toHaveURL(/[\?&]pf=create/);
+  await expect(page).toHaveURL(/[\?&]pt=build/);
+  await expect(page).toHaveURL(/[\?&]pu=group%3Aoperate/);
+  await expect(page.getByTestId('project-shell-transition-context')).toContainText('continuity: Create -> Build');
+  await expect(page.getByTestId('project-universe-status-summary')).toContainText('artifacts');
+});
+
 test('project perspective route bootstrap installs a single blueprint deterministically', async ({ page }) => {
   const response = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1', {
     waitUntil: 'networkidle',
