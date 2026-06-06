@@ -71,6 +71,8 @@ export function resolveProjectPerspectiveContinuityFromSearchParams(searchParams
         fromPerspectiveId: asNonEmptyString(searchParams?.get?.('pf')),
         toPerspectiveId: asNonEmptyString(searchParams?.get?.('pt')),
         sourceTargetId: asNonEmptyString(searchParams?.get?.('pu')),
+        sourceLabel: asNonEmptyString(searchParams?.get?.('pl')),
+        targetEntryId: asNonEmptyString(searchParams?.get?.('pe')),
     });
 }
 
@@ -79,6 +81,8 @@ export function withProjectPerspectiveContinuitySearchParams({ searchParams, con
     const fromPerspectiveId = asNonEmptyString(continuity?.fromPerspectiveId);
     const toPerspectiveId = asNonEmptyString(continuity?.toPerspectiveId);
     const sourceTargetId = asNonEmptyString(continuity?.sourceTargetId);
+    const sourceLabel = asNonEmptyString(continuity?.sourceLabel);
+    const targetEntryId = asNonEmptyString(continuity?.targetEntryId);
 
     if (fromPerspectiveId) next.set('pf', fromPerspectiveId);
     else next.delete('pf');
@@ -88,6 +92,12 @@ export function withProjectPerspectiveContinuitySearchParams({ searchParams, con
 
     if (sourceTargetId) next.set('pu', sourceTargetId);
     else next.delete('pu');
+
+    if (sourceLabel) next.set('pl', sourceLabel);
+    else next.delete('pl');
+
+    if (targetEntryId) next.set('pe', targetEntryId);
+    else next.delete('pe');
 
     return next;
 }

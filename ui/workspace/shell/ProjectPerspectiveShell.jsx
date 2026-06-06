@@ -43,6 +43,7 @@ import {
     buildProjectUniverseNavigatorItems,
     resolveProjectUniverseFocusTarget,
 } from '@/runtime/workspaces/projectUniverseNavigation.js';
+import { resolveProjectUniverseEditorHandoff } from '@/runtime/workspaces/projectUniverseEditorHandoff.js';
 import { buildCreatePerspectiveWorkflow } from '@/runtime/workspaces/createPerspectiveWorkflow.js';
 import { buildBuildPerspectiveWorkflow } from '@/runtime/workspaces/buildPerspectiveWorkflow.js';
 import { buildCollaboratePerspectiveWorkflow } from '@/runtime/workspaces/collaboratePerspectiveWorkflow.js';
@@ -330,15 +331,29 @@ export function ProjectPerspectiveShell({
                 fromPerspectiveId: perspectiveId,
                 toPerspectiveId: nextPerspectiveId,
                 sourceTargetId: universeFocusState.targetId ?? `perspective:${projectPerspectiveContext.entryId}`,
+                sourceLabel: activeContextLabel,
+                targetEntryId:
+                    nextPerspectiveId === perspectiveId
+                        ? projectPerspectiveContext.entryId
+                        : null,
             },
         });
         return `/workspace/${nextPerspectiveId}?${next.toString()}`;
-    }, [cameraRouteState, perspectiveId, projectPerspectiveContext.entryId, universeFocusState]);
+    }, [
+        activeContextLabel,
+        cameraRouteState,
+        perspectiveId,
+        projectPerspectiveContext.entryId,
+        universeFocusState,
+    ]);
 
     const transitionDescriptor =
         perspectiveContinuityState.fromPerspectiveId &&
         perspectiveContinuityState.toPerspectiveId === perspectiveId
-            ? `${formatEntryLabel(perspectiveContinuityState.fromPerspectiveId)} -> ${perspectiveLabel}`
+            ? perspectiveContinuityState.sourceLabel &&
+              perspectiveContinuityState.targetEntryId === projectPerspectiveContext.entryId
+                ? `dive: ${perspectiveContinuityState.sourceLabel}`
+                : `${formatEntryLabel(perspectiveContinuityState.fromPerspectiveId)} -> ${perspectiveLabel}`
             : null;
 
     const handleUniverseFocusTarget = (targetId) => {
@@ -360,6 +375,50 @@ export function ProjectPerspectiveShell({
         setUniverseFocusState(nextFocus);
         replaceUniverseRouteState({ camera: nextCamera, focus: nextFocus });
     };
+
+    const handleUniverseOpenTarget = useCallback((targetId) => {
+        const handoff = resolveProjectUniverseEditorHandoff({
+            universe: projectUniverse,
+            targetId,
+            currentPerspectiveId: perspectiveId,
+            currentEntryId: projectPerspectiveContext.entryId,
+        });
+        if (!handoff) {
+            handleUniverseFocusTarget(targetId);
+            return;
+        }
+
+        const withCamera = withProjectCameraSearchParams({
+            searchParams: new URLSearchParams(),
+            camera: cameraRouteState,
+        });
+        const withFocus = withProjectUniverseFocusSearchParams({
+            searchParams: withCamera,
+            focus: Object.freeze({
+                targetId: handoff.targetId,
+                query: universeFocusState.query,
+            }),
+        });
+        const next = withProjectPerspectiveContinuitySearchParams({
+            searchParams: withFocus,
+            continuity: {
+                fromPerspectiveId: perspectiveId,
+                toPerspectiveId: handoff.perspectiveId,
+                sourceTargetId: handoff.targetId,
+                sourceLabel: handoff.label,
+                targetEntryId: handoff.entryId,
+            },
+        });
+        next.set('entry', handoff.entryId);
+        router.push(`/workspace/${handoff.perspectiveId}?${next.toString()}`, { scroll: false });
+    }, [
+        cameraRouteState,
+        perspectiveId,
+        projectPerspectiveContext.entryId,
+        projectUniverse,
+        router,
+        universeFocusState.query,
+    ]);
 
     const shareCurrentView = async () => {
         const href = buildProjectViewShareHref({ pathname, searchParams });
@@ -696,7 +755,7 @@ export function ProjectPerspectiveShell({
                                     background: '#ecfeff',
                                     border: '1px solid #99f6e4',
                                 }}>
-                                continuity: {transitionDescriptor}
+                                {transitionDescriptor}
                             </span>
                         ) : null}
                     </div>
@@ -825,6 +884,7 @@ export function ProjectPerspectiveShell({
                     onCameraChange={handleCameraChange}
                     focusedTargetId={universeFocusState.targetId}
                     onFocusTarget={handleUniverseFocusTarget}
+                    onOpenTarget={handleUniverseOpenTarget}
                 />
                 <div
                     style={{

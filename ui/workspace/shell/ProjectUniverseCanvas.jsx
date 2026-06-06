@@ -101,6 +101,7 @@ export function ProjectUniverseCanvas({
     onCameraChange = null,
     focusedTargetId = null,
     onFocusTarget = null,
+    onOpenTarget = null,
 }) {
     const [camera, setCamera] = useState(() =>
         Object.freeze({
@@ -551,7 +552,13 @@ export function ProjectUniverseCanvas({
                         <div
                             key={group.id}
                             data-testid={`project-universe-group-${group.perspectiveId}`}
-                            onClick={() => onFocusTarget?.(group.id)}
+                            onPointerDown={(event) => {
+                                event.stopPropagation();
+                            }}
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                onFocusTarget?.(group.id);
+                            }}
                             style={{
                                 position: 'absolute',
                                 left: group.x,
@@ -618,7 +625,17 @@ export function ProjectUniverseCanvas({
                         <div
                             key={node.id}
                             data-testid={`project-universe-node-${node.id}`}
-                            onClick={() => onFocusTarget?.(node.id)}
+                            onPointerDown={(event) => {
+                                event.stopPropagation();
+                            }}
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                if (typeof onOpenTarget === 'function') {
+                                    onOpenTarget(node.id);
+                                    return;
+                                }
+                                onFocusTarget?.(node.id);
+                            }}
                             style={{
                                 position: 'absolute',
                                 left: node.x,
@@ -633,7 +650,7 @@ export function ProjectUniverseCanvas({
                                 color: '#0f172a',
                                 textAlign: 'center',
                                 boxShadow: visibility.showNodeCards ? '0 6px 18px rgba(148,163,184,0.14)' : 'none',
-                                cursor: onFocusTarget ? 'pointer' : 'default',
+                                cursor: onOpenTarget || onFocusTarget ? 'pointer' : 'default',
                             }}>
                             {visibility.showNodeLabels ? (
                                 <>

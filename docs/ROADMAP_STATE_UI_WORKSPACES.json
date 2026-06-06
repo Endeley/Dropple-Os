@@ -433,7 +433,7 @@
         {
           "id": "U15.M1",
           "title": "Perspective Transition Continuity",
-          "status": "active",
+          "status": "complete",
           "evidence": [
             "ui/workspace/shell/ProjectPerspectiveShell.jsx",
             "runtime/workspaces/projectViewRouteState.js",
@@ -444,10 +444,12 @@
         {
           "id": "U15.M2",
           "title": "Universe-to-Editor Camera Handoff",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
             "ui/workspace/shell/ProjectUniverseCanvas.jsx",
+            "runtime/workspaces/projectUniverseEditorHandoff.js",
             "runtime/workspaces/projectViewRouteState.js",
+            "tests/kernel/projectUniverseEditorHandoffLaw.test.ts",
             "tests/kernel/projectViewRouteStateLaw.test.ts",
             "tests/e2e/workspace-routes.smoke.spec.js"
           ]

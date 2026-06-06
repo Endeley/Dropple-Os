@@ -328,8 +328,31 @@ test('project perspective links preserve universe continuity state across hops',
   await expect(page).toHaveURL(/[\?&]pf=create/);
   await expect(page).toHaveURL(/[\?&]pt=build/);
   await expect(page).toHaveURL(/[\?&]pu=group%3Aoperate/);
-  await expect(page.getByTestId('project-shell-transition-context')).toContainText('continuity: Create -> Build');
+  await expect(page.getByTestId('project-shell-transition-context')).toContainText('Create -> Build');
   await expect(page.getByTestId('project-universe-status-summary')).toContainText('artifacts');
+});
+
+test('project universe node handoff preserves world state while diving into the editor', async ({ page }) => {
+  const response = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1&z=1.000&x=8.37&y=4.20', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'universe handoff route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('project-universe-node-document:primary')).toContainText('Document');
+  await page.getByTestId('project-universe-node-document:primary').click();
+
+  await expect(page).toHaveURL(/\/workspace\/create\?/);
+  await expect(page).toHaveURL(/[\?&]entry=document/);
+  await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
+  await expect(page).toHaveURL(/[\?&]pf=create/);
+  await expect(page).toHaveURL(/[\?&]pt=create/);
+  await expect(page).toHaveURL(/[\?&]pl=Untitled/);
+  await expect(page).toHaveURL(/[\?&]pe=document/);
+  await expect(page).toHaveURL(/[\?&]x=8\.37/);
+  await expect(page).toHaveURL(/[\?&]y=4\.20/);
+  await expect(page).toHaveURL(/[\?&]z=1\.000/);
+  await expect(page.locator('body')).toContainText('Active context: Create > Document');
+  await expect(page.getByTestId('project-shell-transition-context')).toContainText('dive: Untitled');
 });
 
 test('project perspective route bootstrap installs a single blueprint deterministically', async ({ page }) => {

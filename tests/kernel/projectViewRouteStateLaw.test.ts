@@ -4,8 +4,10 @@ import assert from 'node:assert/strict';
 import {
     normalizeProjectCameraState,
     resolveProjectCameraFromSearchParams,
+    resolveProjectPerspectiveContinuityFromSearchParams,
     resolveProjectUniverseFocusFromSearchParams,
     withProjectCameraSearchParams,
+    withProjectPerspectiveContinuitySearchParams,
     withProjectUniverseFocusSearchParams,
 } from '@/runtime/workspaces/projectViewRouteState.js';
 
@@ -61,4 +63,39 @@ test('project universe focus search-param serialization preserves existing query
     assert.equal(next.get('x'), '1.00');
     assert.equal(next.get('u'), 'group:create');
     assert.equal(next.get('uq'), 'dispatch');
+});
+
+test('project perspective continuity search-param resolution is deterministic and fail-closed', () => {
+    const params = new URLSearchParams('pf=create&pt=build&pu=document:primary&pl=Document&pe=document');
+    const continuity = resolveProjectPerspectiveContinuityFromSearchParams(params);
+    assert.deepEqual(
+        continuity,
+        Object.freeze({
+            fromPerspectiveId: 'create',
+            toPerspectiveId: 'build',
+            sourceTargetId: 'document:primary',
+            sourceLabel: 'Document',
+            targetEntryId: 'document',
+        }),
+    );
+});
+
+test('project perspective continuity search-param serialization preserves existing query fields', () => {
+    const params = new URLSearchParams('entry=uiux&x=1.00&y=2.00&z=0.500');
+    const next = withProjectPerspectiveContinuitySearchParams({
+        searchParams: params,
+        continuity: {
+            fromPerspectiveId: 'create',
+            toPerspectiveId: 'build',
+            sourceTargetId: 'document:primary',
+            sourceLabel: 'Document',
+            targetEntryId: 'document',
+        },
+    });
+    assert.equal(next.get('entry'), 'uiux');
+    assert.equal(next.get('pf'), 'create');
+    assert.equal(next.get('pt'), 'build');
+    assert.equal(next.get('pu'), 'document:primary');
+    assert.equal(next.get('pl'), 'Document');
+    assert.equal(next.get('pe'), 'document');
 });
