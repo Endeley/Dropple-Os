@@ -462,6 +462,28 @@ test('create shell consolidates inspector hierarchy behind focused dock tabs', a
   await expect(page.locator('.panel-content')).toContainText('Certified Templates');
 });
 
+test('create shell keeps the canvas as the dominant layout surface', async ({ page }) => {
+  const response = await page.goto('/workspace/create?blueprint=bp.logistics.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'create canvas layout route should respond successfully').toBeTruthy();
+
+  const leftDock = await page.getByTestId('uiux-left-dock').boundingBox();
+  const canvasDock = await page.getByTestId('uiux-canvas-dock').boundingBox();
+  const rightDock = await page.getByTestId('uiux-right-dock').boundingBox();
+  const bottomDock = await page.getByTestId('uiux-bottom-dock').boundingBox();
+
+  expect(leftDock).toBeTruthy();
+  expect(canvasDock).toBeTruthy();
+  expect(rightDock).toBeTruthy();
+  expect(bottomDock).toBeTruthy();
+
+  expect(canvasDock.width).toBeGreaterThan(rightDock.width * 2);
+  expect(canvasDock.width).toBeGreaterThan(leftDock.width * 8);
+  expect(bottomDock.height).toBeLessThan(canvasDock.height / 3);
+});
+
 test('project shell assistant intent enqueues through canonical runtime bridge', async ({ page }) => {
   const response = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1', {
     waitUntil: 'networkidle',

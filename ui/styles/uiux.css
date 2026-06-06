@@ -117,8 +117,14 @@
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr) 320px;
+  grid-template-columns: 56px minmax(0, 1fr) clamp(264px, 18vw, 288px);
+  gap: 0;
   overflow: hidden;
+  background:
+    radial-gradient(circle at top,
+      rgba(255, 255, 255, .04) 0%,
+      rgba(17, 19, 24, 0) 38%),
+    #101217;
 }
 
 
@@ -128,18 +134,19 @@
 ========================= */
 
 .uiux-left-dock {
-  background: #171a20;
-  border-right: 1px solid rgba(255, 255, 255, .05);
+  background: linear-gradient(180deg, #15181e 0%, #101217 100%);
+  border-right: 1px solid rgba(255, 255, 255, .04);
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, .02);
 }
 
 .uiux-toolrail {
-  width: 64px;
+  width: 56px;
   height: 100%;
-  padding: 14px 0;
+  padding: 18px 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 18px;
 }
 
 .uiux-toolrail .tool-group {
@@ -215,10 +222,13 @@
 
 .uiux-canvas-dock {
   position: relative;
+  min-width: 0;
+  padding: 14px 16px 10px;
   background:
-    radial-gradient(circle at center,
-      #20252d 0%,
-      #16191f 100%);
+    radial-gradient(circle at 50% 12%,
+      rgba(255, 255, 255, .06) 0%,
+      rgba(255, 255, 255, 0) 42%),
+    linear-gradient(180deg, #171a20 0%, #111318 100%);
 }
 
 .uiux-canvas-stage {
@@ -227,6 +237,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .05);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, .28),
+    inset 0 1px 0 rgba(255, 255, 255, .03);
+  background:
+    radial-gradient(circle at top,
+      rgba(255, 255, 255, .03) 0%,
+      rgba(255, 255, 255, 0) 36%),
+    #1a1f27;
 }
 
 .uiux-canvas-stage .canvas-placeholder {
@@ -241,8 +264,9 @@
 ========================= */
 
 .uiux-right-dock {
-  background: #171a20;
-  border-left: 1px solid rgba(255, 255, 255, .05);
+  background: linear-gradient(180deg, #14181f 0%, #101318 100%);
+  border-left: 1px solid rgba(255, 255, 255, .04);
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, .02);
 }
 
 .uiux-rightpanel {
@@ -256,7 +280,7 @@
 .uiux-rightpanel .panel-tabs {
   display: flex;
   gap: 6px;
-  padding: 10px;
+  padding: 12px 12px 0;
   border-bottom: 1px solid rgba(255, 255, 255, .05);
 }
 
@@ -267,7 +291,7 @@
 .uiux-rightpanel .panel-content {
   flex: 1;
   overflow: auto;
-  padding: 14px;
+  padding: 12px;
   font-size: 12px;
   color: #c7cdd8;
 }
@@ -279,12 +303,13 @@
 ========================= */
 
 .uiux-bottom-dock {
-  min-height: 72px;
+  min-height: 80px;
   display: flex;
   align-items: stretch;
-  padding: 0 14px;
-  background: #15181e;
-  border-top: 1px solid rgba(255, 255, 255, .05);
+  padding: 0 16px 14px 72px;
+  background:
+    linear-gradient(180deg, rgba(21, 24, 30, .92) 0%, rgba(15, 18, 24, .98) 100%);
+  border-top: 1px solid rgba(255, 255, 255, .04);
 }
 
 .uiux-bottom-placeholder {
@@ -298,8 +323,9 @@
   grid-template-columns: minmax(180px, 220px) minmax(240px, 1fr) minmax(320px, 420px) 120px;
   gap: 12px;
   align-items: center;
-  padding: 10px 0;
+  padding: 12px 0 0;
   font-size: 12px;
+  border-top: 1px solid rgba(255, 255, 255, .04);
 }
 
 .uiux-transition-timeline__summary,

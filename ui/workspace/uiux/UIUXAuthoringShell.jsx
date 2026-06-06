@@ -119,16 +119,16 @@ export function UIUXAuthoringShell({
                 <DesignWorkspaceStrip modeId={resolvedModeId} status='Draft' />
 
                 {/* Main dock grid */}
-                <div className='uiux-main-grid'>
-                    <aside className='uiux-left-dock'>
+                <div className='uiux-main-grid' data-testid='uiux-main-grid'>
+                    <aside className='uiux-left-dock' data-testid='uiux-left-dock'>
                         <UIUXToolRail modeId={resolvedModeId} />
                     </aside>
 
-                    <main className='uiux-canvas-dock'>
+                    <main className='uiux-canvas-dock' data-testid='uiux-canvas-dock'>
                         <UIUXCanvasStage profile={profile} workspaceId={resolvedModeId} />
                     </main>
 
-                    <aside className='uiux-right-dock'>
+                    <aside className='uiux-right-dock' data-testid='uiux-right-dock'>
                         <PanelRenderer
                             workspaceId={resolvedModeId}
                             node={node}
@@ -152,7 +152,7 @@ export function UIUXAuthoringShell({
 
                 {/* Reserved bottom dock for design timeline */}
                 {capabilitySurface.showTransitionTimeline ? (
-                    <footer className='uiux-bottom-dock'>
+                    <footer className='uiux-bottom-dock' data-testid='uiux-bottom-dock'>
                         <UIUXTransitionTimelinePanel node={node} />
                     </footer>
                 ) : null}
