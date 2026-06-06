@@ -67,6 +67,19 @@ function formatShortHash(value) {
     return `${value.slice(0, 12)}…`;
 }
 
+function formatOptionalDate(value) {
+    if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return 'n/a';
+    try {
+        return new Date(value).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        });
+    } catch {
+        return 'n/a';
+    }
+}
+
 function summarizeWorkspaceProfiles(workspaceProfiles) {
     const entries = Object.entries(workspaceProfiles ?? {}).filter(([, modes]) => Array.isArray(modes) && modes.length > 0);
     if (entries.length === 0) return 'none';
@@ -1350,25 +1363,13 @@ export function ProjectPerspectiveShell({
                                     display: 'grid',
                                     gap: 4,
                                 }}>
-                                <span style={{ fontSize: 10, color: '#334155' }}>
-                                    perspective: {assistantSurface?.perspectiveId ?? 'n/a'}
-                                </span>
-                                <span style={{ fontSize: 10, color: '#334155' }}>
-                                    adapter: {assistantSurface?.adapterLabel ?? 'none'}
-                                </span>
-                                <span style={{ fontSize: 10, color: '#334155' }}>
-                                    active: {assistantSurface?.activeAssistantId ?? 'none'}
-                                </span>
                                 {createAssistantLabels || buildAssistantLabels || operateAssistantLabels || publishAssistantLabels ? (
                                     <span
                                         data-testid='assistant-surface-focus'
                                         style={{ fontSize: 10, color: '#334155' }}>
-                                        focus: {(createAssistantLabels ?? buildAssistantLabels ?? operateAssistantLabels ?? publishAssistantLabels).assistantLabel} for {formatEntryLabel(projectPerspectiveContext.entryId)}
+                                        {(createAssistantLabels ?? buildAssistantLabels ?? operateAssistantLabels ?? publishAssistantLabels).assistantLabel} for {formatEntryLabel(projectPerspectiveContext.entryId)}
                                     </span>
                                 ) : null}
-                                <span style={{ fontSize: 10, color: '#334155' }}>
-                                    visible: {(assistantSurface?.assistantIds ?? []).join(', ') || 'none'}
-                                </span>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                                     <button
                                         type='button'
@@ -1419,6 +1420,25 @@ export function ProjectPerspectiveShell({
                                         {createAssistantLabels?.explainLabel ?? buildAssistantLabels?.explainLabel ?? operateAssistantLabels?.explainLabel ?? publishAssistantLabels?.explainLabel ?? 'Improve This'}
                                     </button>
                                 </div>
+                                <details data-testid='assistant-surface-details'>
+                                    <summary style={{ fontSize: 10, color: '#64748b', cursor: 'pointer' }}>
+                                        Assistant details
+                                    </summary>
+                                    <div style={{ display: 'grid', gap: 4, marginTop: 6 }}>
+                                        <span style={{ fontSize: 10, color: '#334155' }}>
+                                            perspective: {assistantSurface?.perspectiveId ?? 'n/a'}
+                                        </span>
+                                        <span style={{ fontSize: 10, color: '#334155' }}>
+                                            adapter: {assistantSurface?.adapterLabel ?? 'none'}
+                                        </span>
+                                        <span style={{ fontSize: 10, color: '#334155' }}>
+                                            active: {assistantSurface?.activeAssistantId ?? 'none'}
+                                        </span>
+                                        <span style={{ fontSize: 10, color: '#334155' }}>
+                                            visible: {(assistantSurface?.assistantIds ?? []).join(', ') || 'none'}
+                                        </span>
+                                    </div>
+                                </details>
                                 {assistantIntentStatus ? (
                                     <span style={{ fontSize: 10, color: '#64748b' }}>
                                         assistant intent: {assistantIntentStatus}
@@ -1462,11 +1482,110 @@ export function ProjectPerspectiveShell({
                                     <div style={{ display: 'grid', gap: 8 }}>
                                         <div
                                             style={{
+                                                border: '1px solid #e2e8f0',
+                                                borderRadius: 8,
+                                                padding: '8px 10px',
+                                                background: '#f8fafc',
+                                                display: 'grid',
+                                                gap: 6,
+                                            }}>
+                                            <div style={{ fontSize: 11, fontWeight: 700, color: '#334155' }}>
+                                                Project Context
+                                            </div>
+                                            <div style={{ fontSize: 11, color: '#0f172a', fontWeight: 600 }}>
+                                                {projectIdentity.name}
+                                            </div>
+                                            <div style={{ display: 'grid', gap: 3 }}>
+                                                <span style={{ fontSize: 10, color: '#334155' }}>
+                                                    projectId: {projectIdentity.projectId ?? 'none'}
+                                                </span>
+                                                <span style={{ fontSize: 10, color: '#334155' }}>
+                                                    blueprint: {projectIdentity.blueprintId ?? 'none'}
+                                                </span>
+                                                <span style={{ fontSize: 10, color: '#334155' }}>
+                                                    updated: {formatOptionalDate(projectIdentity.updatedAt)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div
+                                            style={{
+                                                border: '1px solid #e2e8f0',
+                                                borderRadius: 8,
+                                                padding: '8px 10px',
+                                                background: '#ffffff',
+                                                display: 'grid',
+                                                gap: 6,
+                                            }}>
+                                            <div style={{ fontSize: 11, fontWeight: 700, color: '#334155' }}>
+                                                Active Create Entry
+                                            </div>
+                                            <div style={{ fontSize: 11, color: '#0f172a', fontWeight: 600 }}>
+                                                {formatEntryLabel(projectPerspectiveContext.entryId)}
+                                            </div>
+                                            <span style={{ fontSize: 10, color: '#64748b' }}>
+                                                Use Navigate for recent routes and universe targets.
+                                            </span>
+                                        </div>
+                                    </div>
+                                ) : null}
+                                {createUtilityPanel === 'navigate' ? (
+                                    <div style={{ display: 'grid', gap: 8 }}>
+                                        <input
+                                            aria-label='Navigator search'
+                                            value={navigatorQuery}
+                                            onChange={(event) => {
+                                                const query = event.target.value;
+                                                setNavigatorQuery(query);
+                                                const nextFocus = Object.freeze({
+                                                    targetId: universeFocusState.targetId,
+                                                    query,
+                                                });
+                                                setUniverseFocusState(nextFocus);
+                                                replaceUniverseRouteState({ focus: nextFocus });
+                                            }}
+                                            placeholder='Search entries, groups, or artifacts'
+                                            style={{
+                                                width: '100%',
+                                                border: '1px solid #cbd5e1',
+                                                borderRadius: 6,
+                                                padding: '6px 8px',
+                                                fontSize: 12,
+                                            }}
+                                        />
+                                        <div style={{ fontSize: 11, fontWeight: 700, color: '#334155' }}>
+                                            All Entries
+                                        </div>
+                                        <div style={{ display: 'grid', gap: 4 }}>
+                                            {navigatorItems.map((item) => {
+                                                const active = item.href === activeRoute;
+                                                return (
+                                                    <Link
+                                                        key={item.id}
+                                                        href={item.href}
+                                                        style={{
+                                                            fontSize: 11,
+                                                            color: active ? '#0f172a' : '#334155',
+                                                            textDecoration: 'none',
+                                                            padding: '4px 6px',
+                                                            borderRadius: 6,
+                                                            border: `1px solid ${active ? '#0f172a' : '#e2e8f0'}`,
+                                                            background: active ? '#f8fafc' : '#ffffff',
+                                                        }}>
+                                                        {item.label}
+                                                    </Link>
+                                                );
+                                            })}
+                                            {navigatorItems.length === 0 ? (
+                                                <span style={{ fontSize: 11, color: '#64748b' }}>No matches</span>
+                                            ) : null}
+                                        </div>
+                                        <div
+                                            style={{
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'space-between',
                                                 gap: 8,
-                                                marginBottom: 6,
+                                                marginTop: 4,
                                             }}>
                                             <div style={{ fontSize: 11, fontWeight: 700, color: '#334155' }}>Recent</div>
                                             <button
@@ -1539,59 +1658,6 @@ export function ProjectPerspectiveShell({
                                         </div>
                                     </div>
                                 ) : null}
-                                {createUtilityPanel === 'navigate' ? (
-                                    <div style={{ display: 'grid', gap: 8 }}>
-                                        <input
-                                            aria-label='Navigator search'
-                                            value={navigatorQuery}
-                                            onChange={(event) => {
-                                                const query = event.target.value;
-                                                setNavigatorQuery(query);
-                                                const nextFocus = Object.freeze({
-                                                    targetId: universeFocusState.targetId,
-                                                    query,
-                                                });
-                                                setUniverseFocusState(nextFocus);
-                                                replaceUniverseRouteState({ focus: nextFocus });
-                                            }}
-                                            placeholder='Search entries, groups, or artifacts'
-                                            style={{
-                                                width: '100%',
-                                                border: '1px solid #cbd5e1',
-                                                borderRadius: 6,
-                                                padding: '6px 8px',
-                                                fontSize: 12,
-                                            }}
-                                        />
-                                        <div style={{ fontSize: 11, fontWeight: 700, color: '#334155' }}>
-                                            All Entries
-                                        </div>
-                                        <div style={{ display: 'grid', gap: 4 }}>
-                                            {navigatorItems.map((item) => {
-                                                const active = item.href === activeRoute;
-                                                return (
-                                                    <Link
-                                                        key={item.id}
-                                                        href={item.href}
-                                                        style={{
-                                                            fontSize: 11,
-                                                            color: active ? '#0f172a' : '#334155',
-                                                            textDecoration: 'none',
-                                                            padding: '4px 6px',
-                                                            borderRadius: 6,
-                                                            border: `1px solid ${active ? '#0f172a' : '#e2e8f0'}`,
-                                                            background: active ? '#f8fafc' : '#ffffff',
-                                                        }}>
-                                                        {item.label}
-                                                    </Link>
-                                                );
-                                            })}
-                                            {navigatorItems.length === 0 ? (
-                                                <span style={{ fontSize: 11, color: '#64748b' }}>No matches</span>
-                                            ) : null}
-                                        </div>
-                                    </div>
-                                ) : null}
                                 {createUtilityPanel === 'blueprints' ? (
                                     <div style={{ display: 'grid', gap: 8 }}>
                                         <div style={{ fontSize: 11, fontWeight: 700, color: '#334155' }}>
@@ -1645,15 +1711,20 @@ export function ProjectPerspectiveShell({
                                             Bootstrap
                                         </div>
                                         {persistedProjectBootstrap ? (
-                                            <div style={{ display: 'grid', gap: 4 }}>
+                                            <div
+                                                style={{
+                                                    border: '1px solid #e2e8f0',
+                                                    borderRadius: 6,
+                                                    padding: '6px 8px',
+                                                    background: '#f8fafc',
+                                                    display: 'grid',
+                                                    gap: 4,
+                                                }}>
                                                 <span style={{ fontSize: 10, color: '#334155' }}>
-                                                    projectId: {persistedProjectBootstrap.projectId ?? 'n/a'}
+                                                    Active blueprint: {persistedProjectBootstrap.blueprintId ?? 'n/a'}
                                                 </span>
                                                 <span style={{ fontSize: 10, color: '#334155' }}>
-                                                    blueprintId: {persistedProjectBootstrap.blueprintId ?? 'n/a'}
-                                                </span>
-                                                <span style={{ fontSize: 10, color: '#334155' }}>
-                                                    blueprintVersion: {persistedProjectBootstrap.blueprintVersionId ?? 'n/a'}
+                                                    Version: {persistedProjectBootstrap.blueprintVersionId ?? 'n/a'}
                                                 </span>
                                             </div>
                                         ) : (

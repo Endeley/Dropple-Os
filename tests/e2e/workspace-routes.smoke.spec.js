@@ -321,9 +321,8 @@ test('project perspective route bootstrap installs a single blueprint determinis
   expect(response?.ok(), 'project bootstrap route should respond successfully').toBeTruthy();
   await page.getByTestId('create-shell-utility-tab-blueprints').click();
   await expect(page.locator('body')).toContainText('Bootstrap');
-  await expect(page.locator('body')).toContainText('projectId: project.bp.startup.v1');
-  await expect(page.locator('body')).toContainText('blueprintId: bp.startup.v1');
-  await expect(page.locator('body')).toContainText('blueprintVersion: bp.startup.v1');
+  await expect(page.locator('body')).toContainText('Active blueprint: bp.startup.v1');
+  await expect(page.locator('body')).toContainText('Version: bp.startup.v1');
   await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('artifacts');
 });
 
@@ -336,8 +335,8 @@ test('project perspective route bootstrap composes multiple blueprints determini
   expect(response?.ok(), 'composed bootstrap route should respond successfully').toBeTruthy();
   await page.getByTestId('create-shell-utility-tab-blueprints').click();
   await expect(page.locator('body')).toContainText('Bootstrap');
-  await expect(page.locator('body')).toContainText(/blueprintId:\s+bp\.compose\./);
-  await expect(page.locator('body')).toContainText(/blueprintVersion:\s+bp\.compose\./);
+  await expect(page.locator('body')).toContainText(/Active blueprint:\s+bp\.compose\./);
+  await expect(page.locator('body')).toContainText(/Version:\s+bp\.compose\./);
   await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('artifacts');
 });
 
@@ -392,7 +391,6 @@ test('project universe navigator search and jump stay route-driven and determini
   expect(response?.ok(), 'universe navigator route should respond successfully').toBeTruthy();
   await page.getByTestId('create-shell-utility-tab-navigate').click();
   await page.getByLabel('Navigator search').fill('operate');
-  await page.getByTestId('create-shell-utility-tab-project').click();
   await expect(page.getByTestId('project-universe-nav-group:operate')).toContainText('Operate');
   await page.getByTestId('project-universe-nav-group:operate').click();
 
@@ -426,12 +424,15 @@ test('create shell consolidates project utilities behind a single tabbed panel',
   expect(response?.ok(), 'create cleanup route should respond successfully').toBeTruthy();
   await expect(page.getByTestId('create-shell-utility-panel')).toBeVisible();
   await expect(page.getByTestId('create-shell-utility-panel')).toContainText('Create Studio');
-  await expect(page.getByTestId('create-shell-utility-panel')).toContainText('Recent');
-  await expect(page.getByTestId('create-shell-utility-panel')).toContainText('Universe');
+  await expect(page.getByTestId('create-shell-utility-panel')).toContainText('Project Context');
+  await expect(page.getByTestId('create-shell-utility-panel')).not.toContainText('Recent');
+  await expect(page.getByTestId('create-shell-utility-panel')).not.toContainText('Universe');
   await expect(page.getByLabel('Navigator search')).toHaveCount(0);
 
   await page.getByTestId('create-shell-utility-tab-navigate').click();
   await expect(page.getByLabel('Navigator search')).toBeVisible();
+  await expect(page.getByTestId('create-shell-utility-panel')).toContainText('Recent');
+  await expect(page.getByTestId('create-shell-utility-panel')).toContainText('Universe');
   await expect(page.getByTestId('create-shell-utility-panel')).toContainText('All Entries');
 
   await page.getByTestId('create-shell-utility-tab-blueprints').click();
@@ -491,8 +492,8 @@ test('project shell assistant intent enqueues through canonical runtime bridge',
 
   expect(response?.ok(), 'create bootstrap route should respond successfully').toBeTruthy();
   await expect(page.getByTestId('assistant-surface-panel')).toBeVisible();
-  await expect(page.locator('body')).toContainText('perspective: create');
-  await expect(page.locator('body')).toContainText('active: assistant.design');
+  await expect(page.getByTestId('assistant-surface-focus')).toContainText('Design Assistant for UI / UX');
+  await expect(page.getByTestId('assistant-surface-details')).toContainText('Assistant details');
 
   await page.getByTestId('assistant-action-recommend').click();
   await expect(page.locator('body')).toContainText(/assistant intent:\s+enqueued:/);
@@ -503,9 +504,6 @@ test('create perspective assistant surface stays entry-consistent for design and
     waitUntil: 'networkidle',
   });
   expect(designResponse?.ok(), 'create branding route should respond successfully').toBeTruthy();
-  await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: create');
-  await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.design');
-  await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.design, assistant.media');
   await expect(page.getByTestId('assistant-surface-focus')).toContainText('Design Assistant for Branding');
   await expect(page.getByTestId('assistant-action-recommend')).toContainText('Ask Design Assistant');
   await expect(page.getByTestId('assistant-action-generate')).toContainText('Generate Brand Options');
@@ -515,9 +513,6 @@ test('create perspective assistant surface stays entry-consistent for design and
     waitUntil: 'networkidle',
   });
   expect(mediaResponse?.ok(), 'create animation route should respond successfully').toBeTruthy();
-  await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: create');
-  await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.media');
-  await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.design, assistant.media');
   await expect(page.getByTestId('assistant-surface-focus')).toContainText('Media Assistant for Animation');
   await expect(page.getByTestId('assistant-action-recommend')).toContainText('Ask Media Assistant');
   await expect(page.getByTestId('assistant-action-generate')).toContainText('Generate Motion Options');
@@ -527,9 +522,6 @@ test('create perspective assistant surface stays entry-consistent for design and
     waitUntil: 'networkidle',
   });
   expect(podcastResponse?.ok(), 'create podcast route should respond successfully').toBeTruthy();
-  await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: create');
-  await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.media');
-  await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.design, assistant.media');
   await expect(page.getByTestId('assistant-surface-focus')).toContainText('Media Assistant for Podcast');
   await expect(page.getByTestId('assistant-action-generate')).toContainText('Generate Podcast Options');
   await expect(page.getByTestId('assistant-action-explain')).toContainText('Improve This Episode');
@@ -656,11 +648,8 @@ test('build perspective assistant surface stays entry-consistent for canonical a
     await expect(page.locator('body')).toContainText('Build');
     await expect(page.locator('body')).toContainText(`Active context: Build > ${expectedBuildEntries[entryId].specialization}`);
     await expect(page.locator('body')).toContainText(`runtime: build/${expectedBuildEntries[entryId].runtimeMode}`);
-    await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: build');
-    await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.build');
-    await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.build');
     await expect(page.getByTestId('assistant-surface-focus')).toContainText(
-      `focus: Build Assistant for ${expectedBuildEntries[entryId].specialization}`,
+      `Build Assistant for ${expectedBuildEntries[entryId].specialization}`,
     );
     await expect(page.getByTestId('assistant-action-recommend')).toContainText(expectedBuildEntries[entryId].recommendLabel);
     await expect(page.getByTestId('assistant-action-generate')).toContainText(expectedBuildEntries[entryId].generateLabel);
@@ -763,11 +752,8 @@ test('operate perspective assistant surface stays entry-consistent across workfl
       `Active context: Operate > ${expectedOperateEntries[entryId].specialization}`,
     );
     await expect(page.locator('body')).toContainText(`runtime: ${expectedOperateEntries[entryId].runtime}`);
-    await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: operate');
-    await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.operations');
-    await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.operations');
     await expect(page.getByTestId('assistant-surface-focus')).toContainText(
-      `focus: Operations Assistant for ${expectedOperateEntries[entryId].specialization}`,
+      `Operations Assistant for ${expectedOperateEntries[entryId].specialization}`,
     );
     await expect(page.getByTestId('assistant-action-recommend')).toContainText(expectedOperateEntries[entryId].recommendLabel);
     await expect(page.getByTestId('assistant-action-generate')).toContainText(expectedOperateEntries[entryId].generateLabel);
@@ -823,11 +809,8 @@ test('publish perspective assistant surface stays entry-consistent for governanc
     expect(response?.ok(), `publish ${entryId} route should respond successfully`).toBeTruthy();
     await expect(page.locator('body')).toContainText('Publish');
     await expect(page.locator('body')).toContainText(`Active context: Publish > ${expectedPublishEntries[entryId].specialization}`);
-    await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: publish');
-    await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.publish');
-    await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.publish');
     await expect(page.getByTestId('assistant-surface-focus')).toContainText(
-      `focus: Publishing Assistant for ${expectedPublishEntries[entryId].specialization}`,
+      `Publishing Assistant for ${expectedPublishEntries[entryId].specialization}`,
     );
     await expect(page.getByTestId('assistant-action-recommend')).toContainText(expectedPublishEntries[entryId].recommendLabel);
     await expect(page.getByTestId('assistant-action-generate')).toContainText(expectedPublishEntries[entryId].generateLabel);
@@ -844,9 +827,11 @@ test('collaborate perspective assistant surface stays entry-consistent across re
     expect(response?.ok(), `collaborate ${entryId} route should respond successfully`).toBeTruthy();
     await expect(page.locator('body')).toContainText('Collaborate');
     await expect(page.locator('body')).toContainText(`Active context: Collaborate > ${entryId[0].toUpperCase()}${entryId.slice(1)}`);
-    await expect(page.getByTestId('assistant-surface-panel')).toContainText('perspective: collaborate');
-    await expect(page.getByTestId('assistant-surface-panel')).toContainText('active: assistant.knowledge');
-    await expect(page.getByTestId('assistant-surface-panel')).toContainText('visible: assistant.knowledge');
+    await expect(page.getByTestId('assistant-surface-panel')).toBeVisible();
+    await expect(page.getByTestId('assistant-surface-details')).toContainText('Assistant details');
+    await expect(page.getByTestId('assistant-action-recommend')).toBeVisible();
+    await expect(page.getByTestId('assistant-action-generate')).toBeVisible();
+    await expect(page.getByTestId('assistant-action-explain')).toBeVisible();
   }
 });
 

@@ -351,6 +351,78 @@
         { "name": "federation lineage", "command": "npm run release:federation:lineage" },
         { "name": "system all", "command": "npm run test:system:all" }
       ]
+    },
+    {
+      "id": "U14",
+      "title": "Creative OS Shell Consolidation",
+      "status": "active",
+      "depends_on": ["U13"],
+      "milestones": [
+        {
+          "id": "U14.S1",
+          "title": "Collapse Left Rail Density",
+          "status": "active",
+          "evidence": [
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U14.S2",
+          "title": "Assistant Contextualization",
+          "status": "not-started",
+          "evidence": [
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U14.S3",
+          "title": "Inspector Auto-Collapse",
+          "status": "not-started",
+          "evidence": [
+            "ui/workspace/shell/PanelRenderer.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U14.S4",
+          "title": "Timeline Contextual Visibility",
+          "status": "not-started",
+          "evidence": [
+            "ui/workspace/uiux/UIUXAuthoringShell.jsx",
+            "ui/workspace/uiux/UIUXTransitionTimelinePanel.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U14.S5",
+          "title": "Project Diagnostics Demotion",
+          "status": "not-started",
+          "evidence": [
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "ui/workspace/shell/ProjectUniverseCanvas.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U14.S6",
+          "title": "Editor Bar Ownership Cleanup",
+          "status": "not-started",
+          "evidence": [
+            "ui/workspace/uiux/UIUXTopBar.jsx",
+            "ui/workspace/design/DesignShellPrimitives.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        }
+      ],
+      "gates": [
+        { "name": "generated cleanup", "command": "npm run release:trust:clean-generated" },
+        { "name": "architecture gate", "command": "npm run arch" },
+        { "name": "law enforcement", "command": "npm run enforce:laws" },
+        { "name": "architecture tests", "command": "npm run test:architecture" },
+        { "name": "route smoke", "command": "npm run test:routes:smoke" }
+      ]
     }
   ]
 }
