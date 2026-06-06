@@ -398,7 +398,7 @@
         {
           "id": "U14.S5",
           "title": "Project Diagnostics Demotion",
-          "status": "active",
+          "status": "complete",
           "evidence": [
             "ui/workspace/shell/ProjectPerspectiveShell.jsx",
             "ui/workspace/shell/ProjectUniverseCanvas.jsx",
@@ -408,7 +408,7 @@
         {
           "id": "U14.S6",
           "title": "Editor Bar Ownership Cleanup",
-          "status": "not-started",
+          "status": "active",
           "evidence": [
             "ui/workspace/uiux/UIUXTopBar.jsx",
             "ui/workspace/design/DesignShellPrimitives.jsx",

@@ -645,9 +645,35 @@ export function ProjectPerspectiveShell({
                     </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 11, color: '#64748b' }}>
-                        runtime: {projectPerspectiveContext.workspaceId}/{activeModeId ?? projectPerspectiveContext.modeId}
-                    </span>
+                    <details data-testid='project-shell-runtime-details'>
+                        <summary
+                            style={{
+                                cursor: 'pointer',
+                                listStyle: 'none',
+                                fontSize: 11,
+                                color: '#64748b',
+                            }}>
+                            Shell details
+                        </summary>
+                        <div
+                            style={{
+                                marginTop: 6,
+                                padding: '8px 10px',
+                                borderRadius: 8,
+                                border: '1px solid #cbd5e1',
+                                background: '#ffffff',
+                                color: '#475569',
+                                fontSize: 11,
+                                display: 'grid',
+                                gap: 4,
+                            }}>
+                            <span data-testid='project-shell-runtime-label'>
+                                runtime: {projectPerspectiveContext.workspaceId}/{activeModeId ?? projectPerspectiveContext.modeId}
+                            </span>
+                            <span>mode: {activeModeId ?? projectPerspectiveContext.modeId}</span>
+                            <span>perspective: {projectPerspectiveContext.perspectiveId}</span>
+                        </div>
+                    </details>
                     <button
                         type='button'
                         onClick={shareCurrentView}

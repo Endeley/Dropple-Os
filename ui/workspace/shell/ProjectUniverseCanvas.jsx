@@ -371,9 +371,35 @@ export function ProjectUniverseCanvas({
                         }}>
                         Reset
                     </button>
-                    <span>
-                        {artifactNodes.length} artifacts · zoom {Math.round(camera.scale * 100)}% · tier {presentation.tier} · {presentation.focus} · {presentation.nodeDetailLevel}
-                    </span>
+                    <span data-testid='project-universe-status-summary'>{artifactNodes.length} artifacts</span>
+                    <details data-testid='project-universe-status-details'>
+                        <summary
+                            style={{
+                                cursor: 'pointer',
+                                listStyle: 'none',
+                                fontSize: 11,
+                                color: '#64748b',
+                            }}>
+                            View status
+                        </summary>
+                        <div
+                            style={{
+                                marginTop: 6,
+                                padding: '8px 10px',
+                                borderRadius: 8,
+                                border: '1px solid #cbd5e1',
+                                background: '#ffffff',
+                                color: '#475569',
+                                fontSize: 11,
+                                display: 'grid',
+                                gap: 4,
+                            }}>
+                            <span data-testid='project-universe-status-zoom'>zoom {Math.round(camera.scale * 100)}%</span>
+                            <span data-testid='project-universe-status-tier'>tier {presentation.tier}</span>
+                            <span>{presentation.focus}</span>
+                            <span>{presentation.nodeDetailLevel}</span>
+                        </div>
+                    </details>
                 </div>
             </div>
             <div

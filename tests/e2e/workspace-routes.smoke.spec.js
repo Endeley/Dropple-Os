@@ -323,7 +323,7 @@ test('project perspective route bootstrap installs a single blueprint determinis
   await expect(page.locator('body')).toContainText('Bootstrap');
   await expect(page.locator('body')).toContainText('Active blueprint: bp.startup.v1');
   await expect(page.locator('body')).toContainText('Version: bp.startup.v1');
-  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('artifacts');
+  await expect(page.getByTestId('project-universe-status-summary')).toContainText('artifacts');
 });
 
 test('project perspective route bootstrap composes multiple blueprints deterministically', async ({ page }) => {
@@ -337,7 +337,7 @@ test('project perspective route bootstrap composes multiple blueprints determini
   await expect(page.locator('body')).toContainText('Bootstrap');
   await expect(page.locator('body')).toContainText(/Active blueprint:\s+bp\.compose\./);
   await expect(page.locator('body')).toContainText(/Version:\s+bp\.compose\./);
-  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('artifacts');
+  await expect(page.getByTestId('project-universe-status-summary')).toContainText('artifacts');
 });
 
 test('project universe semantic zoom tiers expose deterministic focus and detail levels', async ({ page }) => {
@@ -346,9 +346,11 @@ test('project universe semantic zoom tiers expose deterministic focus and detail
   });
 
   expect(farResponse?.ok(), 'far zoom bootstrap route should respond successfully').toBeTruthy();
-  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('tier far');
-  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('domains');
-  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('hidden');
+  await expect(page.getByTestId('project-universe-status-summary')).toContainText('artifacts');
+  await page.getByTestId('project-universe-status-details').getByText('View status').click();
+  await expect(page.getByTestId('project-universe-status-tier')).toContainText('tier far');
+  await expect(page.getByTestId('project-universe-status-details')).toContainText('domains');
+  await expect(page.getByTestId('project-universe-status-details')).toContainText('hidden');
   await expect(page.getByTestId('project-universe-group-create')).toContainText('Create');
   await expect(page.getByTestId('project-universe-group-create')).toContainText('3 artifacts');
   await expect(page.getByTestId('project-universe-node-document:primary')).toHaveCount(0);
@@ -366,9 +368,10 @@ test('project universe semantic zoom tiers expose deterministic focus and detail
   });
 
   expect(normalResponse?.ok(), 'normal zoom bootstrap route should respond successfully').toBeTruthy();
-  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('tier normal');
-  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('artifacts');
-  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('label-kind');
+  await expect(page.getByTestId('project-universe-status-summary')).toContainText('artifacts');
+  await page.getByTestId('project-universe-status-details').getByText('View status').click();
+  await expect(page.getByTestId('project-universe-status-tier')).toContainText('tier normal');
+  await expect(page.getByTestId('project-universe-status-details')).toContainText('label-kind');
   await expect(page.getByTestId('project-universe-node-document:primary')).toContainText('Document');
   await expect(page.getByTestId('project-universe-group-create')).toHaveCount(0);
 
@@ -377,9 +380,10 @@ test('project universe semantic zoom tiers expose deterministic focus and detail
   });
 
   expect(microResponse?.ok(), 'micro zoom bootstrap route should respond successfully').toBeTruthy();
-  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('tier micro');
-  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('inspect');
-  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('metadata');
+  await page.getByTestId('project-universe-status-details').getByText('View status').click();
+  await expect(page.getByTestId('project-universe-status-tier')).toContainText('tier micro');
+  await expect(page.getByTestId('project-universe-status-details')).toContainText('inspect');
+  await expect(page.getByTestId('project-universe-status-details')).toContainText('metadata');
   await expect(page.getByTestId('project-universe-node-document:primary')).toContainText(/[0-9a-f]{8}-/i);
 });
 
@@ -396,7 +400,8 @@ test('project universe navigator search and jump stay route-driven and determini
 
   await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
   await expect(page).toHaveURL(/[\?&]uq=operate/);
-  await expect(page.getByRole('region', { name: 'Project Universe' })).toContainText('tier far');
+  await page.getByTestId('project-universe-status-details').getByText('View status').click();
+  await expect(page.getByTestId('project-universe-status-tier')).toContainText('tier far');
 });
 
 test('create perspective exposes linked artifact workflow routes', async ({ page }) => {
@@ -595,7 +600,8 @@ test('create perspective preserves branding and icons overlay compatibility entr
     expect(response?.ok(), `create perspective entry ${entryId} should respond successfully`).toBeTruthy();
     await expect(page.locator('body')).toContainText('Create');
     await expect(page.locator('body')).toContainText(`Active context: Create > ${entryId === 'branding' ? 'Branding' : 'Icons'}`);
-    await expect(page.locator('body')).toContainText(`runtime: design/${entryId}`);
+    await page.getByTestId('project-shell-runtime-details').getByText('Shell details').click();
+    await expect(page.getByTestId('project-shell-runtime-label')).toContainText(`runtime: design/${entryId}`);
     await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('Branding');
     await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('Icons');
     await expect(page.getByRole('button', { name: 'Publish' })).toBeVisible();
@@ -610,7 +616,8 @@ test('create perspective preserves podcast media overlay compatibility entry', a
   expect(response?.ok(), 'create perspective podcast entry should respond successfully').toBeTruthy();
   await expect(page.locator('body')).toContainText('Create');
   await expect(page.locator('body')).toContainText('Active context: Create > Podcast');
-  await expect(page.locator('body')).toContainText('runtime: media/podcast');
+  await page.getByTestId('project-shell-runtime-details').getByText('Shell details').click();
+  await expect(page.getByTestId('project-shell-runtime-label')).toContainText('runtime: media/podcast');
   await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('Podcast');
 });
 
@@ -661,7 +668,10 @@ test('build perspective assistant surface stays entry-consistent for canonical a
     expect(response?.ok(), `build ${entryId} route should respond successfully`).toBeTruthy();
     await expect(page.locator('body')).toContainText('Build');
     await expect(page.locator('body')).toContainText(`Active context: Build > ${expectedBuildEntries[entryId].specialization}`);
-    await expect(page.locator('body')).toContainText(`runtime: build/${expectedBuildEntries[entryId].runtimeMode}`);
+    await page.getByTestId('project-shell-runtime-details').getByText('Shell details').click();
+    await expect(page.getByTestId('project-shell-runtime-label')).toContainText(
+      `runtime: build/${expectedBuildEntries[entryId].runtimeMode}`,
+    );
     await expect(page.getByTestId('assistant-surface-focus')).toContainText(
       `Build Assistant for ${expectedBuildEntries[entryId].specialization}`,
     );
@@ -765,7 +775,10 @@ test('operate perspective assistant surface stays entry-consistent across workfl
     await expect(page.locator('body')).toContainText(
       `Active context: Operate > ${expectedOperateEntries[entryId].specialization}`,
     );
-    await expect(page.locator('body')).toContainText(`runtime: ${expectedOperateEntries[entryId].runtime}`);
+    await page.getByTestId('project-shell-runtime-details').getByText('Shell details').click();
+    await expect(page.getByTestId('project-shell-runtime-label')).toContainText(
+      `runtime: ${expectedOperateEntries[entryId].runtime}`,
+    );
     await expect(page.getByTestId('assistant-surface-focus')).toContainText(
       `Operations Assistant for ${expectedOperateEntries[entryId].specialization}`,
     );
