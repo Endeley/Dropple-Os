@@ -423,6 +423,86 @@
         { "name": "architecture tests", "command": "npm run test:architecture" },
         { "name": "route smoke", "command": "npm run test:routes:smoke" }
       ]
+    },
+    {
+      "id": "U15",
+      "title": "Motion-First Creative Environment",
+      "status": "not-started",
+      "depends_on": ["U14"],
+      "milestones": [
+        {
+          "id": "U15.M1",
+          "title": "Perspective Transition Continuity",
+          "status": "not-started",
+          "evidence": [
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "ui/workspace/shell/WorkspaceShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U15.M2",
+          "title": "Universe-to-Editor Camera Handoff",
+          "status": "not-started",
+          "evidence": [
+            "ui/workspace/shell/ProjectUniverseCanvas.jsx",
+            "runtime/workspaces/projectViewRouteState.js",
+            "tests/kernel/projectViewRouteStateLaw.test.ts",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U15.M3",
+          "title": "Contextual Surface Emergence",
+          "status": "not-started",
+          "evidence": [
+            "ui/workspace/shell/PanelRenderer.jsx",
+            "ui/workspace/uiux/UIUXAuthoringShell.jsx",
+            "ui/workspace/uiux/UIUXTransitionTimelinePanel.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U15.M4",
+          "title": "Motion Meaning and Reduced-Motion Fallbacks",
+          "status": "not-started",
+          "evidence": [
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "ui/workspace/shell/ProjectUniverseCanvas.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/architecture/osSurfaceBoundary.test.ts"
+          ]
+        },
+        {
+          "id": "U15.M5",
+          "title": "Spatial Pointer and Camera Readability",
+          "status": "not-started",
+          "evidence": [
+            "ui/workspace/shell/ProjectUniverseCanvas.jsx",
+            "ui/workspace/uiux/UIUXCanvasStage.jsx",
+            "tests/e2e/workspace-interactions.spec.js",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U15.M6",
+          "title": "World-Continuity Route Contracts",
+          "status": "not-started",
+          "evidence": [
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js",
+            "tests/kernel/projectionPurity.test.ts"
+          ]
+        }
+      ],
+      "gates": [
+        { "name": "generated cleanup", "command": "npm run release:trust:clean-generated" },
+        { "name": "architecture gate", "command": "npm run arch" },
+        { "name": "law enforcement", "command": "npm run enforce:laws" },
+        { "name": "architecture tests", "command": "npm run test:architecture" },
+        { "name": "route smoke", "command": "npm run test:routes:smoke" },
+        { "name": "interaction smoke", "command": "npm run ui:interactions:test" }
+      ]
     }
   ]
 }
