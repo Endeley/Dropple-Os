@@ -383,6 +383,21 @@ export function ProjectUniverseCanvas({
                         }}>
                         Reset
                     </button>
+                    <button
+                        type='button'
+                        data-testid='project-universe-return-to-hub'
+                        onClick={() => onFocusTarget?.(universe?.hubId ?? 'project:hub')}
+                        style={{
+                            border: '1px solid #cbd5e1',
+                            borderRadius: 6,
+                            background: '#ffffff',
+                            color: '#334155',
+                            fontSize: 11,
+                            padding: '2px 8px',
+                            cursor: onFocusTarget ? 'pointer' : 'default',
+                        }}>
+                        Surface
+                    </button>
                     <span data-testid='project-universe-status-summary'>{artifactNodes.length} artifacts</span>
                     <details data-testid='project-universe-status-details'>
                         <summary
@@ -568,6 +583,7 @@ export function ProjectUniverseCanvas({
                             key={group.id}
                             data-testid={`project-universe-group-${group.perspectiveId}`}
                             data-pointer-role='focus-group'
+                            data-focus-state={focusedTargetId === group.id ? 'active' : 'inactive'}
                             onPointerDown={(event) => {
                                 event.stopPropagation();
                             }}
@@ -642,6 +658,7 @@ export function ProjectUniverseCanvas({
                             key={node.id}
                             data-testid={`project-universe-node-${node.id}`}
                             data-pointer-role='open-artifact'
+                            data-focus-state={focusedTargetId === node.id ? 'active' : 'inactive'}
                             onPointerDown={(event) => {
                                 event.stopPropagation();
                             }}

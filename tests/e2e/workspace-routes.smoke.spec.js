@@ -490,6 +490,28 @@ test('project universe semantic zoom tiers expose deterministic focus and detail
   await expect(page.getByTestId('project-universe-node-document:primary')).toContainText(/[0-9a-f]{8}-/i);
 });
 
+test('project universe deepens domain focus and supports return-to-project navigation', async ({ page }) => {
+  const response = await page.goto('/workspace/create?blueprint=bp.logistics.v1&bootstrap=1&z=0.300', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'project universe depth route should respond successfully').toBeTruthy();
+  await page.getByTestId('create-shell-utility-tab-navigate').click();
+  await expect(page.getByTestId('project-universe-focus-summary')).toContainText('Project Hub');
+  await expect(page.getByTestId('project-universe-nav-project:hub')).toContainText('project universe anchor');
+
+  await page.getByTestId('project-universe-group-operate').click();
+  await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
+  await expect(page.getByTestId('project-universe-group-operate')).toHaveAttribute('data-focus-state', 'active');
+  await expect(page.getByTestId('project-universe-focus-summary')).toContainText('Operate');
+  await expect(page.getByTestId('project-universe-focus-summary')).toContainText('artifact');
+
+  await page.getByTestId('project-universe-return-to-hub').click();
+  await expect(page).toHaveURL(/[\?&]u=project%3Ahub/);
+  await expect(page.getByTestId('project-universe-focus-summary')).toContainText('project universe anchor');
+  await expect(page.getByTestId('project-universe-focus-summary')).not.toContainText('Operate');
+});
+
 test('project universe navigator search and jump stay route-driven and deterministic', async ({ page }) => {
   const response = await page.goto('/workspace/create?blueprint=bp.logistics.v1&bootstrap=1&z=0.3', {
     waitUntil: 'networkidle',

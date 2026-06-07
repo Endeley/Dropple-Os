@@ -87,6 +87,16 @@ test('project universe projection derives deterministic artifact nodes from docu
     assert.equal(left?.nodes['animation:motion']?.kind, 'animation');
     assert.equal(left?.nodes['system:model']?.kind, 'system-model');
     assert.equal(left?.groups['group:create']?.label, 'Create');
+    assert.equal(left?.groups['group:create']?.metadata?.artifactCount, 6);
+    assert.equal(left?.groups['group:create']?.metadata?.primaryNodeId, 'document:primary');
+    assert.equal(left?.groups['group:create']?.metadata?.primaryNodeLabel, 'Logistics Control');
+    assert.deepEqual(left?.groups['group:create']?.metadata?.kindCounts, Object.freeze({
+        animation: 1,
+        'component-library': 1,
+        document: 1,
+        frame: 2,
+        video: 1,
+    }));
     assert.deepEqual(left?.groups['group:create']?.nodeIds, Object.freeze([
         'animation:motion',
         'components:library',
@@ -96,6 +106,7 @@ test('project universe projection derives deterministic artifact nodes from docu
         'sequence:timelineA',
     ]));
     assert.equal(left?.groups['group:build']?.label, 'Build');
+    assert.equal(left?.groups['group:build']?.metadata?.primaryNodeId, 'workflow:flow:dispatchApproval');
     assert.deepEqual(left?.groups['group:build']?.nodeIds, Object.freeze([
         'state-machine:fulfillment',
         'workflow:flow:dispatchApproval',

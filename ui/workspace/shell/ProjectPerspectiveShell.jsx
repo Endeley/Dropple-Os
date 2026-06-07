@@ -672,6 +672,13 @@ export function ProjectPerspectiveShell({
         [perspectiveId, projectPerspectiveContext.entryId],
     );
     const isCreatePerspective = perspectiveId === 'create';
+    const focusedUniverseItem = useMemo(
+        () =>
+            universeFocusState.targetId
+                ? universeNavigatorItems.find((item) => item.targetId === universeFocusState.targetId) ?? null
+                : null,
+        [universeFocusState.targetId, universeNavigatorItems],
+    );
     const assistantSurfaceState = assistantIntentStatus
         ? 'engaged'
         : assistantSurface?.activeAssistantId
@@ -1785,6 +1792,35 @@ export function ProjectPerspectiveShell({
                                         <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginTop: 4 }}>
                                             Universe
                                         </div>
+                                        <div
+                                            data-testid='project-universe-focus-summary'
+                                            style={{
+                                                border: '1px solid #e2e8f0',
+                                                borderRadius: 8,
+                                                background: '#f8fafc',
+                                                padding: '8px 10px',
+                                                display: 'grid',
+                                                gap: 2,
+                                                marginTop: 6,
+                                                marginBottom: 8,
+                                            }}>
+                                            <div
+                                                style={{
+                                                    fontSize: 10,
+                                                    fontWeight: 700,
+                                                    color: '#64748b',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.04em',
+                                                }}>
+                                                World Focus
+                                            </div>
+                                            <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>
+                                                {focusedUniverseItem?.label ?? 'Project Hub'}
+                                            </div>
+                                            <div style={{ fontSize: 10, color: '#64748b' }}>
+                                                {focusedUniverseItem?.subtitle ?? 'project universe anchor'}
+                                            </div>
+                                        </div>
                                         <div style={{ display: 'grid', gap: 4 }}>
                                             {universeNavigatorItems.map((item) => {
                                                 const active = item.targetId === universeFocusState.targetId;
@@ -2089,6 +2125,34 @@ export function ProjectPerspectiveShell({
                         <div style={{ padding: 10 }}>
                             <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
                                 Universe
+                            </div>
+                            <div
+                                data-testid='project-universe-focus-summary'
+                                style={{
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: 8,
+                                    background: '#f8fafc',
+                                    padding: '8px 10px',
+                                    display: 'grid',
+                                    gap: 2,
+                                    marginBottom: 8,
+                                }}>
+                                <div
+                                    style={{
+                                        fontSize: 10,
+                                        fontWeight: 700,
+                                        color: '#64748b',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.04em',
+                                    }}>
+                                    World Focus
+                                </div>
+                                <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>
+                                    {focusedUniverseItem?.label ?? 'Project Hub'}
+                                </div>
+                                <div style={{ fontSize: 10, color: '#64748b' }}>
+                                    {focusedUniverseItem?.subtitle ?? 'project universe anchor'}
+                                </div>
                             </div>
                             <div style={{ display: 'grid', gap: 4, marginBottom: 10 }}>
                                 {universeNavigatorItems.map((item) => {

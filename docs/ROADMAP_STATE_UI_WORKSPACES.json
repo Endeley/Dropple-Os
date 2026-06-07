@@ -508,6 +508,83 @@
         { "name": "route smoke", "command": "npm run test:routes:smoke" },
         { "name": "interaction smoke", "command": "npm run ui:interactions:test" }
       ]
+    },
+    {
+      "id": "U16",
+      "title": "World-Based Creative OS Experience",
+      "status": "active",
+      "depends_on": ["U15"],
+      "milestones": [
+        {
+          "id": "U16.1",
+          "title": "Project Universe Depth",
+          "status": "complete",
+          "evidence": [
+            "runtime/workspaces/projectUniverseProjection.js",
+            "runtime/workspaces/projectUniverseNavigation.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "ui/workspace/shell/ProjectUniverseCanvas.jsx",
+            "tests/kernel/projectUniverseProjectionLaw.test.ts",
+            "tests/kernel/projectUniverseNavigationLaw.test.ts",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U16.2",
+          "title": "Editor Emergence Refinement",
+          "status": "not-started",
+          "evidence": [
+            "runtime/workspaces/projectUniverseEditorHandoff.js",
+            "runtime/workspaces/projectViewRouteState.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/kernel/projectUniverseEditorHandoffLaw.test.ts",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U16.3",
+          "title": "Contextual Panel Choreography",
+          "status": "not-started",
+          "evidence": [
+            "ui/workspace/shell/PanelRenderer.jsx",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "ui/workspace/uiux/UIUXAuthoringShell.jsx",
+            "ui/workspace/uiux/UIUXTransitionTimelinePanel.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U16.4",
+          "title": "Universe-First Project UX",
+          "status": "not-started",
+          "evidence": [
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "ui/workspace/shell/ProjectUniverseCanvas.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js"
+          ]
+        },
+        {
+          "id": "U16.5",
+          "title": "Create Workspace Product Polish",
+          "status": "not-started",
+          "evidence": [
+            "ui/workspace/uiux/UIUXAuthoringShell.jsx",
+            "ui/workspace/uiux/UIUXTopBar.jsx",
+            "ui/styles/uiux.css",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js"
+          ]
+        }
+      ],
+      "gates": [
+        { "name": "generated cleanup", "command": "npm run release:trust:clean-generated" },
+        { "name": "architecture gate", "command": "npm run arch" },
+        { "name": "law enforcement", "command": "npm run enforce:laws" },
+        { "name": "architecture tests", "command": "npm run test:architecture" },
+        { "name": "route smoke", "command": "npm run test:routes:smoke" },
+        { "name": "interaction smoke", "command": "npm run ui:interactions:test" }
+      ]
     }
   ]
 }

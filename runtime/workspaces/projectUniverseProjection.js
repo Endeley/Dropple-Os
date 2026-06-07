@@ -54,6 +54,38 @@ function createGroup(id, perspectiveId, label, nodeIds, metadata = {}) {
     });
 }
 
+function summarizeKinds(nodeIds, nodes) {
+    const counts = {};
+    for (const nodeId of nodeIds) {
+        const kind = asNonEmptyString(nodes?.[nodeId]?.kind) ?? ArtifactKind.DOCUMENT;
+        counts[kind] = (counts[kind] ?? 0) + 1;
+    }
+    return Object.freeze(
+        Object.fromEntries(
+            Object.entries(counts).sort(([left], [right]) => left.localeCompare(right)),
+        ),
+    );
+}
+
+function resolvePrimaryNodeId(nodeIds, nodes) {
+    if (!Array.isArray(nodeIds) || nodeIds.length === 0) return null;
+    const preferredKinds = [
+        ArtifactKind.DOCUMENT,
+        ArtifactKind.FRAME,
+        ArtifactKind.WORKFLOW,
+        ArtifactKind.SYSTEM_MODEL,
+        ArtifactKind.VIDEO,
+        ArtifactKind.ANIMATION,
+    ];
+
+    for (const kind of preferredKinds) {
+        const match = nodeIds.find((nodeId) => nodes?.[nodeId]?.kind === kind);
+        if (match) return match;
+    }
+
+    return nodeIds[0] ?? null;
+}
+
 function resolveBlueprintFromBootstrap(bootstrap) {
     const versionId = asNonEmptyString(bootstrap?.blueprintVersionId);
     if (versionId) {
@@ -307,11 +339,20 @@ function buildUniverseGroups(nodes) {
             .filter(([, nodeIds]) => nodeIds.length > 0)
             .map(([perspectiveId, nodeIds]) => {
                 const definition = definitions[perspectiveId];
+                const kindCounts = summarizeKinds(nodeIds, nodes);
+                const primaryNodeId = resolvePrimaryNodeId(nodeIds, nodes);
+                const primaryNodeLabel =
+                    primaryNodeId && nodes?.[primaryNodeId]?.label
+                        ? nodes[primaryNodeId].label
+                        : null;
                 return [
                     `group:${perspectiveId}`,
                     Object.freeze({
                         ...createGroup(`group:${perspectiveId}`, perspectiveId, definition.label, nodeIds, {
                             artifactCount: nodeIds.length,
+                            kindCounts,
+                            primaryNodeId,
+                            primaryNodeLabel,
                         }),
                         x: definition.x,
                         y: definition.y,

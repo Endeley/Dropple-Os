@@ -15,6 +15,21 @@ export function normalizeProjectUniverseNavigatorQuery(value) {
 
 export function buildProjectUniverseNavigatorItems({ universe = null, query = '' } = {}) {
     const normalizedQuery = normalizeProjectUniverseNavigatorQuery(query).toLowerCase();
+    const hubNode = asObject(universe?.nodes)?.[universe?.hubId] ?? null;
+    const hub = hubNode
+        ? [
+              Object.freeze({
+                  id: hubNode.id,
+                  targetId: hubNode.id,
+                  targetType: 'hub',
+                  perspectiveId: 'project',
+                  label: hubNode.label,
+                  subtitle: 'project universe anchor',
+                  x: Number.isFinite(hubNode.x) ? Number(hubNode.x) : 0,
+                  y: Number.isFinite(hubNode.y) ? Number(hubNode.y) : 0,
+              }),
+          ]
+        : [];
     const groups = Object.values(asObject(universe?.groups) ?? {})
         .filter(Boolean)
         .map((group) =>
@@ -24,7 +39,10 @@ export function buildProjectUniverseNavigatorItems({ universe = null, query = ''
                 targetType: 'group',
                 perspectiveId: group.perspectiveId,
                 label: group.label,
-                subtitle: `${group.nodeIds.length} artifact${group.nodeIds.length === 1 ? '' : 's'}`,
+                subtitle:
+                    typeof group?.metadata?.primaryNodeLabel === 'string' && group.metadata.primaryNodeLabel.trim().length > 0
+                        ? `${group.nodeIds.length} artifact${group.nodeIds.length === 1 ? '' : 's'} · ${group.metadata.primaryNodeLabel}`
+                        : `${group.nodeIds.length} artifact${group.nodeIds.length === 1 ? '' : 's'}`,
                 x: Number.isFinite(group.x) ? Number(group.x) : 0,
                 y: Number.isFinite(group.y) ? Number(group.y) : 0,
             }),
@@ -44,8 +62,11 @@ export function buildProjectUniverseNavigatorItems({ universe = null, query = ''
             }),
         );
 
-    const all = [...groups, ...nodes].sort((left, right) => {
-        if (left.targetType !== right.targetType) return left.targetType.localeCompare(right.targetType);
+    const all = [...hub, ...groups, ...nodes].sort((left, right) => {
+        if (left.targetType !== right.targetType) {
+            const priority = { hub: 0, group: 1, node: 2 };
+            return (priority[left.targetType] ?? 99) - (priority[right.targetType] ?? 99);
+        }
         if (left.perspectiveId !== right.perspectiveId) return left.perspectiveId.localeCompare(right.perspectiveId);
         return left.label.localeCompare(right.label);
     });
@@ -63,6 +84,18 @@ export function buildProjectUniverseNavigatorItems({ universe = null, query = ''
 export function resolveProjectUniverseFocusTarget({ universe = null, targetId = null } = {}) {
     const normalizedTargetId = asNonEmptyString(targetId);
     if (!normalizedTargetId) return null;
+
+    const hubId = asNonEmptyString(universe?.hubId);
+    const hubNode = hubId ? asObject(universe?.nodes)?.[hubId] ?? null : null;
+    if (hubNode && normalizedTargetId === hubId) {
+        return Object.freeze({
+            id: normalizedTargetId,
+            targetType: 'hub',
+            x: Number.isFinite(hubNode.x) ? Number(hubNode.x) : 0,
+            y: Number.isFinite(hubNode.y) ? Number(hubNode.y) : 0,
+            scale: 1,
+        });
+    }
 
     const group = asObject(universe?.groups)?.[normalizedTargetId] ?? null;
     if (group) {
