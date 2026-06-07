@@ -52,6 +52,7 @@ import { resolveCreateAssistantActionLabels } from '@/runtime/workspaces/createA
 import { resolveBuildAssistantActionLabels } from '@/runtime/workspaces/buildAssistantActionLabels.js';
 import { resolveOperateAssistantActionLabels } from '@/runtime/workspaces/operateAssistantActionLabels.js';
 import { resolvePublishAssistantActionLabels } from '@/runtime/workspaces/publishAssistantActionLabels.js';
+import { buildPublishPerspectiveWorldSummary } from '@/runtime/workspaces/publishPerspectiveWorkflow.js';
 import { resolveCreateShellChoreography } from '@/runtime/workspaces/createShellChoreography.js';
 import { ProjectUniverseCanvas } from './ProjectUniverseCanvas.jsx';
 
@@ -718,6 +719,17 @@ export function ProjectPerspectiveShell({
         () =>
             perspectiveId === 'operate'
                 ? buildOperatePerspectiveWorldSummary({
+                      entryId: projectPerspectiveContext.entryId,
+                      document: projectedDocument,
+                      universe: projectUniverse,
+                  })
+                : null,
+        [perspectiveId, projectPerspectiveContext.entryId, projectedDocument, projectUniverse],
+    );
+    const publishWorldSummary = useMemo(
+        () =>
+            perspectiveId === 'publish'
+                ? buildPublishPerspectiveWorldSummary({
                       entryId: projectPerspectiveContext.entryId,
                       document: projectedDocument,
                       universe: projectUniverse,
@@ -1903,6 +1915,66 @@ export function ProjectPerspectiveShell({
                                                 No linked collaborate artifacts
                                             </span>
                                         ) : null}
+                                    </div>
+                                </div>
+                            </div>
+                        ) : null}
+                        {perspectiveId === 'publish' ? (
+                            <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                                    Publish World
+                                </div>
+                                <div
+                                    data-testid='publish-world-panel'
+                                    style={{
+                                        border: '1px solid #fde68a',
+                                        borderRadius: 8,
+                                        padding: 8,
+                                        background: '#fffbeb',
+                                        display: 'grid',
+                                        gap: 8,
+                                    }}>
+                                    <div
+                                        style={{
+                                            fontSize: 10,
+                                            fontWeight: 700,
+                                            letterSpacing: '0.04em',
+                                            textTransform: 'uppercase',
+                                            color: '#b45309',
+                                        }}>
+                                        Publish World
+                                    </div>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: '#92400e' }}>
+                                        {publishWorldSummary?.activityLabel ?? 'Publish'}
+                                    </div>
+                                    <div
+                                        data-testid='publish-world-summary'
+                                        style={{ display: 'grid', gap: 3, fontSize: 10, color: '#a16207' }}>
+                                        <span>
+                                            Current task:{' '}
+                                            <strong style={{ color: '#78350f' }}>
+                                                {publishWorldSummary?.currentTaskLabel ?? 'Awaiting publish context'}
+                                            </strong>
+                                        </span>
+                                        <span>
+                                            Assistant:{' '}
+                                            <strong style={{ color: '#78350f' }}>
+                                                {publishAssistantLabels?.assistantLabel ?? 'Publishing Assistant'}
+                                            </strong>
+                                        </span>
+                                        <span>
+                                            Context:{' '}
+                                            <strong style={{ color: '#78350f' }}>
+                                                {publishWorldSummary?.linkedContextCount ?? 0}
+                                            </strong>{' '}
+                                            linked publish targets
+                                        </span>
+                                        <span>
+                                            Signals:{' '}
+                                            <strong style={{ color: '#78350f' }}>
+                                                {publishWorldSummary?.summaryLabel ?? 'No publish signals'}
+                                            </strong>
+                                        </span>
                                     </div>
                                 </div>
                             </div>

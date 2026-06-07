@@ -637,9 +637,11 @@
         {
           "id": "U17.4",
           "title": "Publish Workspace Product Polish",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
             "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "runtime/workspaces/publishPerspectiveWorkflow.js",
+            "tests/kernel/publishPerspectiveWorkflowLaw.test.ts",
             "tests/e2e/workspace-routes.smoke.spec.js"
           ]
         },

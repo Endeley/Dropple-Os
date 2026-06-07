@@ -1014,36 +1014,54 @@ test('publish perspective assistant surface stays entry-consistent for governanc
   const expectedPublishEntries = {
     governance: {
       specialization: 'Governance',
+      currentTask: 'Untitled',
+      context: '1 linked publish targets',
+      signals: '0 export targets · 0 components · 0 themes',
       recommendLabel: 'Ask Publishing Assistant',
       generateLabel: 'Generate Governance Options',
       explainLabel: 'Improve This Policy',
     },
     versioning: {
       specialization: 'Versioning',
+      currentTask: 'Untitled',
+      context: '1 linked publish targets',
+      signals: '0 export targets · 0 components · 0 themes',
       recommendLabel: 'Ask Publishing Assistant',
       generateLabel: 'Generate Release Options',
       explainLabel: 'Improve This Version Plan',
     },
     tokens: {
       specialization: 'Tokens',
+      currentTask: 'Awaiting token set',
+      context: '0 linked publish targets',
+      signals: '0 token groups · 0 themes · 0 variants',
       recommendLabel: 'Ask Publishing Assistant',
       generateLabel: 'Generate Token Options',
       explainLabel: 'Improve This Token Set',
     },
     components: {
       specialization: 'Components',
+      currentTask: 'Awaiting component library',
+      context: '0 linked publish targets',
+      signals: '0 components · 0 themes · 0 variants',
       recommendLabel: 'Ask Publishing Assistant',
       generateLabel: 'Generate Component Options',
       explainLabel: 'Improve This Component Library',
     },
     themes: {
       specialization: 'Themes',
+      currentTask: 'Awaiting theme surface',
+      context: '0 linked publish targets',
+      signals: '0 themes · 0 variants · 0 token groups',
       recommendLabel: 'Ask Publishing Assistant',
       generateLabel: 'Generate Theme Options',
       explainLabel: 'Improve This Theme',
     },
     variants: {
       specialization: 'Variants',
+      currentTask: 'Awaiting variant set',
+      context: '0 linked publish targets',
+      signals: '0 variants · 0 themes · 0 components',
       recommendLabel: 'Ask Publishing Assistant',
       generateLabel: 'Generate Variant Options',
       explainLabel: 'Improve This Variant Set',
@@ -1058,6 +1076,12 @@ test('publish perspective assistant surface stays entry-consistent for governanc
     expect(response?.ok(), `publish ${entryId} route should respond successfully`).toBeTruthy();
     await expect(page.locator('body')).toContainText('Publish');
     await expect(page.locator('body')).toContainText(`Active context: Publish > ${expectedPublishEntries[entryId].specialization}`);
+    await expect(page.getByTestId('publish-world-panel')).toContainText('Publish World');
+    await expect(page.getByTestId('publish-world-panel')).toContainText(expectedPublishEntries[entryId].specialization);
+    await expect(page.getByTestId('publish-world-summary')).toContainText(`Current task: ${expectedPublishEntries[entryId].currentTask}`);
+    await expect(page.getByTestId('publish-world-summary')).toContainText('Assistant: Publishing Assistant');
+    await expect(page.getByTestId('publish-world-summary')).toContainText(`Context: ${expectedPublishEntries[entryId].context}`);
+    await expect(page.getByTestId('publish-world-summary')).toContainText(`Signals: ${expectedPublishEntries[entryId].signals}`);
     await expect(page.getByTestId('assistant-surface-focus')).toContainText(
       `Publishing Assistant for ${expectedPublishEntries[entryId].specialization}`,
     );
