@@ -21,6 +21,7 @@ import { dispatchOsWorkspaceShellIntent } from '@/ui/bridges/osSurfaceIntentBrid
 import { readOsSurfaceSnapshot } from '@/ui/bridges/osSurfaceReadBridge.js';
 import { resolveProjectIdentityFromProjection } from '@/ui/bridges/projectIdentityReadBridge.js';
 import { useWorkspaceProjectionState } from '@/runtime/projection';
+import { useWorkspaceVisualState } from '@/runtime/projection';
 import { useCommandPalette } from '@/commands/useCommandPalette';
 import { CommandPalette } from '@/commands/CommandPalette';
 import {
@@ -49,6 +50,7 @@ import { resolveCreateAssistantActionLabels } from '@/runtime/workspaces/createA
 import { resolveBuildAssistantActionLabels } from '@/runtime/workspaces/buildAssistantActionLabels.js';
 import { resolveOperateAssistantActionLabels } from '@/runtime/workspaces/operateAssistantActionLabels.js';
 import { resolvePublishAssistantActionLabels } from '@/runtime/workspaces/publishAssistantActionLabels.js';
+import { resolveCreateShellChoreography } from '@/runtime/workspaces/createShellChoreography.js';
 import { ProjectUniverseCanvas } from './ProjectUniverseCanvas.jsx';
 
 function formatEntryLabel(entryId) {
@@ -196,6 +198,7 @@ export function ProjectPerspectiveShell({
     );
     const projectedDocument = useWorkspaceProjectionState((state) => state?.document ?? null);
     const projectedEvents = useWorkspaceProjectionState((state) => state?.events ?? []);
+    const selectedIds = useWorkspaceVisualState((state) => state?.selection?.ids ?? []);
     const projectIdentity = useMemo(
         () =>
             resolveProjectIdentityFromProjection({
@@ -750,6 +753,17 @@ export function ProjectPerspectiveShell({
         : assistantSurface?.activeAssistantId
           ? 'ready'
           : 'idle';
+    const createShellChoreography = useMemo(
+        () =>
+            resolveCreateShellChoreography({
+                utilityPanel: createUtilityPanel,
+                hasSelection: isCreatePerspective && selectedIds.length > 0,
+                hasMotionContext: false,
+                assistantState: assistantSurfaceState,
+                hasEditorEmergence: Boolean(editorEmergenceState),
+            }),
+        [assistantSurfaceState, createUtilityPanel, editorEmergenceState, isCreatePerspective, selectedIds.length],
+    );
 
     const requestAssistantPlaceholder = async (assistantAction) => {
         const result = await dispatchOsWorkspaceShellIntent(
@@ -1628,6 +1642,7 @@ export function ProjectPerspectiveShell({
                             <div
                                 data-testid='assistant-surface-panel'
                                 data-state={assistantSurfaceState}
+                                data-choreography-state={createShellChoreography.assistantState}
                                 data-emergence-source='assistant'
                                 data-motion-meaning='context'
                                 data-motion-mode={motionMode}
@@ -1646,6 +1661,11 @@ export function ProjectPerspectiveShell({
                                         {(createAssistantLabels ?? buildAssistantLabels ?? operateAssistantLabels ?? publishAssistantLabels).assistantLabel} for {formatEntryLabel(projectPerspectiveContext.entryId)}
                                     </span>
                                 ) : null}
+                                <span
+                                    data-testid='assistant-surface-context'
+                                    style={{ fontSize: 10, color: '#64748b' }}>
+                                    {createShellChoreography.assistantSummary}
+                                </span>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                                     <button
                                         type='button'
@@ -1725,8 +1745,15 @@ export function ProjectPerspectiveShell({
                         {isCreatePerspective ? (
                             <div
                                 data-testid='create-shell-utility-panel'
+                                data-state={createShellChoreography.utilityState}
+                                data-dominant-context={createShellChoreography.dominantContext}
                                 style={{ padding: 10, borderBottom: '1px solid #e2e8f0', display: 'grid', gap: 8 }}>
                                 <div style={{ fontSize: 11, fontWeight: 700, color: '#334155' }}>Create Studio</div>
+                                <div
+                                    data-testid='create-shell-utility-context'
+                                    style={{ fontSize: 10, color: '#64748b' }}>
+                                    {createShellChoreography.utilitySummary}
+                                </div>
                                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                                     {[
                                         { id: 'project', label: 'Project' },
@@ -1755,8 +1782,58 @@ export function ProjectPerspectiveShell({
                                     })}
                                 </div>
                                 {createUtilityPanel === 'project' ? (
-                                    <div style={{ display: 'grid', gap: 8 }}>
+                                    createShellChoreography.utilityState === 'guiding' ? (
+                                        <div style={{ display: 'grid', gap: 8 }}>
+                                            <div
+                                                style={{
+                                                    border: '1px solid #e2e8f0',
+                                                    borderRadius: 8,
+                                                    padding: '8px 10px',
+                                                    background: '#f8fafc',
+                                                    display: 'grid',
+                                                    gap: 6,
+                                                }}>
+                                                <div style={{ fontSize: 11, fontWeight: 700, color: '#334155' }}>
+                                                    Project Context
+                                                </div>
+                                                <div style={{ fontSize: 11, color: '#0f172a', fontWeight: 600 }}>
+                                                    {projectIdentity.name}
+                                                </div>
+                                                <div style={{ display: 'grid', gap: 3 }}>
+                                                    <span style={{ fontSize: 10, color: '#334155' }}>
+                                                        projectId: {projectIdentity.projectId ?? 'none'}
+                                                    </span>
+                                                    <span style={{ fontSize: 10, color: '#334155' }}>
+                                                        blueprint: {projectIdentity.blueprintId ?? 'none'}
+                                                    </span>
+                                                    <span style={{ fontSize: 10, color: '#334155' }}>
+                                                        updated: {formatOptionalDate(projectIdentity.updatedAt)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div
+                                                style={{
+                                                    border: '1px solid #e2e8f0',
+                                                    borderRadius: 8,
+                                                    padding: '8px 10px',
+                                                    background: '#ffffff',
+                                                    display: 'grid',
+                                                    gap: 6,
+                                                }}>
+                                                <div style={{ fontSize: 11, fontWeight: 700, color: '#334155' }}>
+                                                    Active Create Entry
+                                                </div>
+                                                <div style={{ fontSize: 11, color: '#0f172a', fontWeight: 600 }}>
+                                                    {formatEntryLabel(projectPerspectiveContext.entryId)}
+                                                </div>
+                                                <span style={{ fontSize: 10, color: '#64748b' }}>
+                                                    Use Navigate for recent routes and universe targets.
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ) : (
                                         <div
+                                            data-testid='create-shell-utility-receded'
                                             style={{
                                                 border: '1px solid #e2e8f0',
                                                 borderRadius: 8,
@@ -1766,43 +1843,16 @@ export function ProjectPerspectiveShell({
                                                 gap: 6,
                                             }}>
                                             <div style={{ fontSize: 11, fontWeight: 700, color: '#334155' }}>
-                                                Project Context
+                                                Create Studio is yielding
                                             </div>
                                             <div style={{ fontSize: 11, color: '#0f172a', fontWeight: 600 }}>
-                                                {projectIdentity.name}
-                                            </div>
-                                            <div style={{ display: 'grid', gap: 3 }}>
-                                                <span style={{ fontSize: 10, color: '#334155' }}>
-                                                    projectId: {projectIdentity.projectId ?? 'none'}
-                                                </span>
-                                                <span style={{ fontSize: 10, color: '#334155' }}>
-                                                    blueprint: {projectIdentity.blueprintId ?? 'none'}
-                                                </span>
-                                                <span style={{ fontSize: 10, color: '#334155' }}>
-                                                    updated: {formatOptionalDate(projectIdentity.updatedAt)}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div
-                                            style={{
-                                                border: '1px solid #e2e8f0',
-                                                borderRadius: 8,
-                                                padding: '8px 10px',
-                                                background: '#ffffff',
-                                                display: 'grid',
-                                                gap: 6,
-                                            }}>
-                                            <div style={{ fontSize: 11, fontWeight: 700, color: '#334155' }}>
-                                                Active Create Entry
-                                            </div>
-                                            <div style={{ fontSize: 11, color: '#0f172a', fontWeight: 600 }}>
-                                                {formatEntryLabel(projectPerspectiveContext.entryId)}
+                                                {projectIdentity.name} · {formatEntryLabel(projectPerspectiveContext.entryId)}
                                             </div>
                                             <span style={{ fontSize: 10, color: '#64748b' }}>
-                                                Use Navigate for recent routes and universe targets.
+                                                {createShellChoreography.utilitySummary}
                                             </span>
                                         </div>
-                                    </div>
+                                    )
                                 ) : null}
                                 {createUtilityPanel === 'navigate' ? (
                                     <div style={{ display: 'grid', gap: 8 }}>

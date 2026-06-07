@@ -419,6 +419,9 @@ test('project universe node handoff preserves world state while diving into the 
   await expect(page.getByTestId('project-shell-transition-context')).toContainText('dive: Untitled');
   await expect(page.getByTestId('project-shell-editor-emergence')).toContainText('Entered from Untitled');
   await expect(page.getByTestId('project-shell-editor-emergence')).toContainText('Return to Create / UI / UX');
+  await expect(page.getByTestId('create-shell-utility-panel')).toHaveAttribute('data-state', 'receded');
+  await expect(page.getByTestId('create-shell-utility-context')).toContainText('editor emerges');
+  await expect(page.getByTestId('create-shell-utility-receded')).toContainText('Create Studio is yielding');
 
   await page.getByTestId('project-shell-surface-return').click();
   await expect(page).toHaveURL(/\/workspace\/create\?/);
@@ -569,6 +572,8 @@ test('create shell consolidates project utilities behind a single tabbed panel',
   expect(response?.ok(), 'create cleanup route should respond successfully').toBeTruthy();
   await expect(page.getByTestId('create-shell-utility-panel')).toBeVisible();
   await expect(page.getByTestId('create-shell-utility-panel')).toContainText('Create Studio');
+  await expect(page.getByTestId('create-shell-utility-panel')).toHaveAttribute('data-state', 'guiding');
+  await expect(page.getByTestId('create-shell-utility-context')).toContainText('Project context is leading this Create session.');
   await expect(page.getByTestId('create-shell-utility-panel')).toContainText('Project Context');
   await expect(page.getByTestId('create-shell-utility-panel')).not.toContainText('Recent');
   await expect(page.getByTestId('create-shell-utility-panel')).not.toContainText('Universe');
@@ -617,10 +622,14 @@ test('create shell keeps timeline compact until a motion-capable node is active'
   expect(response?.ok(), 'create timeline compact route should respond successfully').toBeTruthy();
   await expect(page.getByTestId('inspector-shell')).toHaveAttribute('data-state', 'idle');
   await expect(page.getByTestId('inspector-shell')).toHaveAttribute('data-emergence-source', 'context');
+  await expect(page.getByTestId('inspector-shell')).toHaveAttribute('data-context-visibility', 'minimal');
   await expect(page.getByTestId('inspector-context-summary')).toContainText('waiting for selection');
+  await expect(page.getByTestId('uiux-bottom-dock')).toHaveAttribute('data-context-visibility', 'compact');
   await expect(page.getByTestId('uiux-transition-timeline')).toHaveAttribute('data-state', 'inactive');
   await expect(page.getByTestId('uiux-transition-timeline')).toHaveAttribute('data-emergence', 'dormant');
   await expect(page.getByTestId('uiux-transition-timeline')).toHaveAttribute('data-emergence-source', 'context');
+  await expect(page.getByTestId('uiux-transition-timeline')).toHaveAttribute('data-context-visibility', 'compact');
+  await expect(page.getByTestId('uiux-transition-timeline-context')).toContainText('Context: waiting for motion');
   await expect(page.getByTestId('uiux-transition-timeline-inactive')).toContainText(
     'Motion tools appear when a motion-capable node is active',
   );
@@ -657,12 +666,16 @@ test('project shell assistant intent enqueues through canonical runtime bridge',
   expect(response?.ok(), 'create bootstrap route should respond successfully').toBeTruthy();
   await expect(page.getByTestId('assistant-surface-panel')).toBeVisible();
   await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-state', 'ready');
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'ready');
   await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-emergence-source', 'assistant');
   await expect(page.getByTestId('assistant-surface-focus')).toContainText('Design Assistant for UI / UX');
+  await expect(page.getByTestId('assistant-surface-context')).toContainText('Assistant is ready to help');
   await expect(page.getByTestId('assistant-surface-details')).toContainText('Assistant details');
 
   await page.getByTestId('assistant-action-recommend').click();
   await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-state', 'engaged');
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'engaged');
+  await expect(page.getByTestId('assistant-surface-context')).toContainText('Assistant is engaged');
   await expect(page.locator('body')).toContainText(/assistant intent:\s+enqueued:/);
 });
 

@@ -545,12 +545,14 @@
         {
           "id": "U16.3",
           "title": "Contextual Panel Choreography",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
+            "runtime/workspaces/createShellChoreography.js",
             "ui/workspace/shell/PanelRenderer.jsx",
             "ui/workspace/shell/ProjectPerspectiveShell.jsx",
             "ui/workspace/uiux/UIUXAuthoringShell.jsx",
             "ui/workspace/uiux/UIUXTransitionTimelinePanel.jsx",
+            "tests/kernel/createShellChoreographyLaw.test.ts",
             "tests/e2e/workspace-routes.smoke.spec.js"
           ]
         },

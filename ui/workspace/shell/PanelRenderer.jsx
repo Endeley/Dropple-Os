@@ -140,6 +140,7 @@ export function PanelRenderer({ workspaceId, node, emit, extraPanels = [] }) {
     );
     const inspectorSurfaceState = node ? 'focused' : activeTab === 'library' ? 'library' : activeTab === 'surface' ? 'surface' : 'idle';
     const inspectorSurfaceSource = node ? 'selection' : activeTab === 'library' ? 'library' : activeTab === 'surface' ? 'canvas' : 'context';
+    const inspectorContextVisibility = node ? 'expanded' : activeTab === 'inspect' ? 'minimal' : 'supporting';
 
     function renderPanel(panelId) {
         const entry = PanelRegistry[panelId];
@@ -160,6 +161,7 @@ export function PanelRenderer({ workspaceId, node, emit, extraPanels = [] }) {
                 data-testid='inspector-shell'
                 data-state={inspectorSurfaceState}
                 data-emergence-source={inspectorSurfaceSource}
+                data-context-visibility={inspectorContextVisibility}
                 data-motion-meaning='focus'>
                 <div className='inspector-header'>
                     <div className='inspector-title'>Inspector</div>

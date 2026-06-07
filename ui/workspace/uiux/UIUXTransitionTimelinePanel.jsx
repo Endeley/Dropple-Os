@@ -139,11 +139,15 @@ export function UIUXTransitionTimelinePanel({ node = null }) {
             data-state={timelineActive ? 'active' : 'inactive'}
             data-emergence={timelineEmergence}
             data-emergence-source={timelineActive ? 'selection' : 'context'}
+            data-context-visibility={timelineActive ? 'expanded' : 'compact'}
             data-motion-meaning='context'>
             <div className='uiux-transition-timeline__summary'>
                 <strong>Transition Timeline</strong>
                 <span className='inspector-subtle'>
                     {activeNode?.id ? `Target: ${activeNode.id}` : 'Select a node to author motion'}
+                </span>
+                <span className='inspector-subtle' data-testid='uiux-transition-timeline-context'>
+                    {timelineActive ? 'Context: motion authoring active' : 'Context: waiting for motion'}
                 </span>
             </div>
 

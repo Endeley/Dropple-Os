@@ -156,7 +156,8 @@ export function UIUXAuthoringShell({
                     <footer
                         className='uiux-bottom-dock'
                         data-testid='uiux-bottom-dock'
-                        data-surface='timeline'>
+                        data-surface='timeline'
+                        data-context-visibility={node?.id ? 'expanded' : 'compact'}>
                         <UIUXTransitionTimelinePanel node={node} />
                     </footer>
                 ) : null}
