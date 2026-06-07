@@ -319,6 +319,9 @@ test('project perspective links preserve universe continuity state across hops',
   });
 
   expect(response?.ok(), 'perspective continuity route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('project-world-anchor-project')).toContainText('Bp Logistics V1');
+  await expect(page.getByTestId('project-world-anchor-activity')).toContainText('Create / UI / UX');
+  await expect(page.getByTestId('project-world-anchor-focus')).toContainText('Operate');
   await page.getByRole('link', { name: 'Build' }).click();
 
   await expect(page).toHaveURL(/\/workspace\/build\?/);
@@ -330,6 +333,8 @@ test('project perspective links preserve universe continuity state across hops',
   await expect(page).toHaveURL(/[\?&]pu=group%3Aoperate/);
   await expect(page.getByTestId('project-shell-transition-context')).toContainText('Create -> Build');
   await expect(page.getByTestId('project-universe-status-summary')).toContainText('artifacts');
+  await expect(page.getByTestId('project-world-anchor-activity')).toContainText('Build / Application');
+  await expect(page.getByTestId('project-world-anchor-focus')).toContainText('Operate');
 });
 
 test('project world continuity route envelope survives local camera mutations', async ({ page }) => {
@@ -528,6 +533,25 @@ test('project universe deepens domain focus and supports return-to-project navig
   await expect(page).toHaveURL(/[\?&]u=project%3Ahub/);
   await expect(page.getByTestId('project-universe-focus-summary')).toContainText('project universe anchor');
   await expect(page.getByTestId('project-universe-focus-summary')).not.toContainText('Operate');
+});
+
+test('project world anchor keeps the universe legible across perspectives and can recenter on the hub', async ({ page }) => {
+  const response = await page.goto('/workspace/build?blueprint=bp.logistics.v1&bootstrap=1&u=group%3Aoperate&uq=operate&z=0.300', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'project world anchor route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('project-world-anchor')).toBeVisible();
+  await expect(page.getByTestId('project-world-anchor-project')).toContainText('Bp Logistics V1');
+  await expect(page.getByTestId('project-world-anchor-activity')).toContainText('Build / Application');
+  await expect(page.getByTestId('project-world-anchor-focus')).toContainText('Operate');
+  await expect(page.getByTestId('project-world-anchor-subtitle')).toContainText('artifact');
+
+  await page.getByTestId('project-world-anchor-hub').click();
+  await expect(page).toHaveURL(/\/workspace\/build\?/);
+  await expect(page).toHaveURL(/[\?&]u=project%3Ahub/);
+  await expect(page.getByTestId('project-world-anchor-focus')).toContainText('Project Hub');
+  await expect(page.getByTestId('project-world-anchor-subtitle')).toContainText('project world');
 });
 
 test('project universe navigator search and jump stay route-driven and deterministic', async ({ page }) => {

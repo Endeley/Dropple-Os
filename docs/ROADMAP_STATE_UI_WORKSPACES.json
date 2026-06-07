@@ -559,10 +559,12 @@
         {
           "id": "U16.4",
           "title": "Universe-First Project UX",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
+            "runtime/workspaces/projectWorldAnchor.js",
             "ui/workspace/shell/ProjectPerspectiveShell.jsx",
             "ui/workspace/shell/ProjectUniverseCanvas.jsx",
+            "tests/kernel/projectWorldAnchorLaw.test.ts",
             "tests/e2e/workspace-routes.smoke.spec.js",
             "tests/e2e/workspace-interactions.spec.js"
           ]

@@ -43,6 +43,7 @@ import {
     resolveProjectUniverseFocusTarget,
 } from '@/runtime/workspaces/projectUniverseNavigation.js';
 import { resolveProjectUniverseEditorHandoff } from '@/runtime/workspaces/projectUniverseEditorHandoff.js';
+import { resolveProjectWorldAnchor } from '@/runtime/workspaces/projectWorldAnchor.js';
 import { buildCreatePerspectiveWorkflow } from '@/runtime/workspaces/createPerspectiveWorkflow.js';
 import { buildBuildPerspectiveWorkflow } from '@/runtime/workspaces/buildPerspectiveWorkflow.js';
 import { buildCollaboratePerspectiveWorkflow } from '@/runtime/workspaces/collaboratePerspectiveWorkflow.js';
@@ -753,6 +754,24 @@ export function ProjectPerspectiveShell({
         : assistantSurface?.activeAssistantId
           ? 'ready'
           : 'idle';
+    const projectWorldAnchor = useMemo(
+        () =>
+            resolveProjectWorldAnchor({
+                projectName: projectIdentity.name,
+                perspectiveLabel,
+                entryLabel: formatEntryLabel(projectPerspectiveContext.entryId),
+                focusedUniverseItem,
+                artifactCount: Object.keys(projectUniverse?.nodes ?? {}).filter((id) => id !== projectUniverse?.hubId).length,
+            }),
+        [
+            focusedUniverseItem,
+            perspectiveLabel,
+            projectIdentity.name,
+            projectPerspectiveContext.entryId,
+            projectUniverse?.hubId,
+            projectUniverse?.nodes,
+        ],
+    );
     const createShellChoreography = useMemo(
         () =>
             resolveCreateShellChoreography({
@@ -788,7 +807,7 @@ export function ProjectPerspectiveShell({
             data-testid='project-shell-root'
             data-motion-mode={motionMode}
             data-motion-meaning='world-continuity'
-            style={{ display: 'grid', gridTemplateRows: 'auto auto auto auto 1fr', height: '100%' }}>
+            style={{ display: 'grid', gridTemplateRows: 'auto auto auto auto auto 1fr', height: '100%' }}>
             {commandOpen && (
                 <CommandPalette
                     commands={perspectiveCommands}
@@ -905,6 +924,69 @@ export function ProjectPerspectiveShell({
                     ) : null}
                 </div>
             </header>
+            <section
+                data-testid='project-world-anchor'
+                data-motion-meaning='hierarchy'
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                    padding: '8px 16px',
+                    borderBottom: '1px solid #e2e8f0',
+                    background: '#f8fafc',
+                }}>
+                <div style={{ display: 'grid', gap: 2 }}>
+                    <strong
+                        style={{
+                            fontSize: 11,
+                            color: '#0f172a',
+                            letterSpacing: '0.04em',
+                            textTransform: 'uppercase',
+                        }}>
+                        Project Universe
+                    </strong>
+                    <span data-testid='project-world-anchor-project' style={{ fontSize: 12, color: '#334155' }}>
+                        {projectWorldAnchor.projectLabel}
+                    </span>
+                    <span style={{ fontSize: 11, color: '#64748b' }}>
+                        Activity: <span data-testid='project-world-anchor-activity'>{projectWorldAnchor.activityLabel}</span>
+                    </span>
+                </div>
+                <div style={{ display: 'grid', gap: 2, justifyItems: 'end' }}>
+                    <span
+                        style={{
+                            fontSize: 10,
+                            color: '#64748b',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.04em',
+                        }}>
+                        World Focus
+                    </span>
+                    <strong data-testid='project-world-anchor-focus' style={{ fontSize: 12, color: '#0f172a' }}>
+                        {projectWorldAnchor.focusLabel}
+                    </strong>
+                    <span data-testid='project-world-anchor-subtitle' style={{ fontSize: 10, color: '#64748b' }}>
+                        {projectWorldAnchor.focusSubtitle}
+                    </span>
+                </div>
+                <button
+                    type='button'
+                    data-testid='project-world-anchor-hub'
+                    onClick={() => handleUniverseFocusTarget(projectUniverse?.hubId ?? 'project:hub')}
+                    style={{
+                        border: '1px solid #cbd5e1',
+                        borderRadius: 999,
+                        background: '#ffffff',
+                        color: '#0f172a',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        padding: '6px 10px',
+                        cursor: 'pointer',
+                    }}>
+                    Return to Project Hub
+                </button>
+            </section>
             {editorEmergenceState ? (
                 <section
                     data-testid='project-shell-editor-emergence'
