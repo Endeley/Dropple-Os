@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
     buildProjectUniverseNavigatorItems,
+    buildProjectUniverseOrientation,
     normalizeProjectUniverseNavigatorQuery,
     resolveProjectUniverseFocusTarget,
 } from '@/runtime/workspaces/projectUniverseNavigation.js';
@@ -87,6 +88,120 @@ test('project universe navigator includes a hub anchor and domain summaries dete
     assert.equal(items[0].subtitle, 'project universe anchor');
     assert.equal(items[1].targetType, 'group');
     assert.equal(items[1].subtitle, '1 artifact · Dispatch Board');
+});
+
+test('project universe orientation derives deterministic current, return, related, and sibling targets', () => {
+    const universe = Object.freeze({
+        hubId: 'project:hub',
+        nodes: Object.freeze({
+            'project:hub': Object.freeze({ id: 'project:hub', label: 'Logistics Control', x: 0, y: 0, kind: 'project-hub' }),
+            'document:primary': Object.freeze({
+                id: 'document:primary',
+                label: 'Primary Document',
+                x: -10,
+                y: 5,
+                kind: 'document',
+                refs: Object.freeze(['group:build', 'project:hub', 'workflow:publish']),
+            }),
+            'components:library': Object.freeze({
+                id: 'components:library',
+                label: 'Component Library',
+                x: -20,
+                y: 10,
+                kind: 'component-library',
+                refs: Object.freeze(['project:hub']),
+            }),
+            'workflow:publish': Object.freeze({
+                id: 'workflow:publish',
+                label: 'Publish Targets',
+                x: 20,
+                y: 24,
+                kind: 'workflow',
+                refs: Object.freeze(['document:primary', 'project:hub']),
+            }),
+        }),
+        groups: Object.freeze({
+            'group:create': Object.freeze({
+                id: 'group:create',
+                perspectiveId: 'create',
+                label: 'Create',
+                x: -100,
+                y: -80,
+                nodeIds: Object.freeze(['components:library', 'document:primary']),
+                metadata: Object.freeze({
+                    primaryNodeLabel: 'Primary Document',
+                    relatedGroupIds: Object.freeze(['group:build', 'group:publish']),
+                }),
+            }),
+            'group:build': Object.freeze({
+                id: 'group:build',
+                perspectiveId: 'build',
+                label: 'Build',
+                x: 100,
+                y: -80,
+                nodeIds: Object.freeze(['workflow:publish']),
+                metadata: Object.freeze({
+                    primaryNodeLabel: 'Publish Targets',
+                    relatedGroupIds: Object.freeze(['group:create']),
+                }),
+            }),
+            'group:publish': Object.freeze({
+                id: 'group:publish',
+                perspectiveId: 'publish',
+                label: 'Publish',
+                x: 100,
+                y: 80,
+                nodeIds: Object.freeze([]),
+                metadata: Object.freeze({
+                    relatedGroupIds: Object.freeze(['group:create']),
+                }),
+            }),
+        }),
+    });
+
+    const nodeOrientation = buildProjectUniverseOrientation({
+        universe,
+        targetId: 'document:primary',
+        query: 'publish',
+    });
+    assert.equal(nodeOrientation?.current.targetId, 'document:primary');
+    assert.equal(nodeOrientation?.returnTarget?.targetId, 'group:create');
+    assert.deepEqual(
+        nodeOrientation?.relatedTargets.map((item) => item.targetId),
+        ['group:build', 'workflow:publish'],
+    );
+    assert.deepEqual(
+        nodeOrientation?.siblingTargets.map((item) => item.targetId),
+        ['components:library'],
+    );
+    assert.deepEqual(
+        nodeOrientation?.matchedTargets.map((item) => item.targetId),
+        ['group:build', 'group:publish', 'workflow:publish'],
+    );
+    assert.deepEqual(
+        nodeOrientation?.nextTargets.map((item) => item.targetId),
+        ['group:build', 'group:publish', 'workflow:publish'],
+    );
+
+    const groupOrientation = buildProjectUniverseOrientation({
+        universe,
+        targetId: 'group:create',
+        query: '',
+    });
+    assert.equal(groupOrientation?.current.targetId, 'group:create');
+    assert.equal(groupOrientation?.returnTarget?.targetId, 'project:hub');
+    assert.deepEqual(
+        groupOrientation?.relatedTargets.map((item) => item.targetId),
+        ['group:build', 'group:publish'],
+    );
+    assert.deepEqual(
+        groupOrientation?.siblingTargets.map((item) => item.targetId),
+        ['group:build', 'group:publish'],
+    );
+    assert.deepEqual(
+        groupOrientation?.nextTargets.map((item) => item.targetId),
+        ['group:build', 'group:publish'],
+    );
 });
 
 test('project universe focus target resolves deterministic camera targets for groups and nodes', () => {

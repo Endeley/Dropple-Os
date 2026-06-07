@@ -13,6 +13,40 @@ export function normalizeProjectUniverseNavigatorQuery(value) {
     return normalized ?? '';
 }
 
+function buildUniverseItemMaps(universe = null) {
+    const items = buildProjectUniverseNavigatorItems({ universe, query: '' });
+    const byTargetId = new Map(items.map((item) => [item.targetId, item]));
+    return Object.freeze({
+        items,
+        byTargetId,
+    });
+}
+
+function dedupeTargets(items) {
+    const seen = new Set();
+    const next = [];
+    for (const item of items) {
+        if (!item || typeof item.targetId !== 'string' || seen.has(item.targetId)) continue;
+        seen.add(item.targetId);
+        next.push(item);
+    }
+    return Object.freeze(next);
+}
+
+function asNavigatorItem(item) {
+    if (!item) return null;
+    return Object.freeze({
+        id: item.id,
+        targetId: item.targetId,
+        targetType: item.targetType,
+        perspectiveId: item.perspectiveId,
+        label: item.label,
+        subtitle: item.subtitle,
+        x: Number.isFinite(item.x) ? Number(item.x) : 0,
+        y: Number.isFinite(item.y) ? Number(item.y) : 0,
+    });
+}
+
 export function buildProjectUniverseNavigatorItems({ universe = null, query = '' } = {}) {
     const normalizedQuery = normalizeProjectUniverseNavigatorQuery(query).toLowerCase();
     const hubNode = asObject(universe?.nodes)?.[universe?.hubId] ?? null;
@@ -79,6 +113,80 @@ export function buildProjectUniverseNavigatorItems({ universe = null, query = ''
             return haystack.includes(normalizedQuery);
         }),
     );
+}
+
+export function buildProjectUniverseOrientation({ universe = null, targetId = null, query = '' } = {}) {
+    const { items, byTargetId } = buildUniverseItemMaps(universe);
+    const normalizedTargetId = asNonEmptyString(targetId) ?? asNonEmptyString(universe?.hubId);
+    const current = asNavigatorItem(normalizedTargetId ? byTargetId.get(normalizedTargetId) ?? null : null);
+    if (!current) return null;
+
+    const hubId = asNonEmptyString(universe?.hubId);
+    const group = asObject(universe?.groups)?.[current.targetId] ?? null;
+    const node = asObject(universe?.nodes)?.[current.targetId] ?? null;
+    const ownerGroup = current.targetType === 'node'
+        ? Object.values(asObject(universe?.groups) ?? {}).find((candidate) => Array.isArray(candidate?.nodeIds) && candidate.nodeIds.includes(current.targetId)) ?? null
+        : null;
+
+    const returnTarget =
+        current.targetType === 'node'
+            ? asNavigatorItem(ownerGroup ? byTargetId.get(ownerGroup.id) ?? null : hubId ? byTargetId.get(hubId) ?? null : null)
+            : current.targetType === 'group'
+                ? asNavigatorItem(hubId ? byTargetId.get(hubId) ?? null : null)
+                : null;
+
+    const relatedTargetIds =
+        current.targetType === 'group'
+            ? Array.isArray(group?.metadata?.relatedGroupIds)
+                ? group.metadata.relatedGroupIds
+                : []
+            : current.targetType === 'node'
+                ? Array.isArray(node?.refs)
+                    ? node.refs.filter((ref) => ref !== hubId)
+                    : []
+                : [];
+
+    const relatedTargets = dedupeTargets(
+        relatedTargetIds
+            .map((id) => asNavigatorItem(byTargetId.get(id) ?? null))
+            .filter(Boolean),
+    );
+
+    const siblingTargets = dedupeTargets(
+        current.targetType === 'node' && ownerGroup
+            ? (ownerGroup.nodeIds ?? [])
+                  .filter((id) => id !== current.targetId)
+                  .map((id) => asNavigatorItem(byTargetId.get(id) ?? null))
+                  .filter(Boolean)
+            : current.targetType === 'group'
+                ? items
+                      .filter((item) => item.targetType === 'group' && item.targetId !== current.targetId)
+                      .map((item) => asNavigatorItem(item))
+                : [],
+    );
+
+    const normalizedQuery = normalizeProjectUniverseNavigatorQuery(query).toLowerCase();
+    const matchedTargets =
+        normalizedQuery.length > 0
+            ? dedupeTargets(
+                  items
+                      .filter((item) => {
+                          const haystack = `${item.label} ${item.subtitle} ${item.perspectiveId}`.toLowerCase();
+                          return haystack.includes(normalizedQuery) && item.targetId !== current.targetId;
+                      })
+                      .map((item) => asNavigatorItem(item)),
+              )
+            : Object.freeze([]);
+    const nextTargets = matchedTargets.length > 0 ? matchedTargets : siblingTargets;
+
+    return Object.freeze({
+        current,
+        returnTarget,
+        relatedTargets,
+        siblingTargets,
+        matchedTargets,
+        nextTargets,
+    });
 }
 
 export function resolveProjectUniverseFocusTarget({ universe = null, targetId = null } = {}) {

@@ -40,6 +40,7 @@ import {
 import { buildProjectUniverseProjection } from '@/runtime/workspaces/projectUniverseProjection.js';
 import {
     buildProjectUniverseNavigatorItems,
+    buildProjectUniverseOrientation,
     resolveProjectUniverseFocusTarget,
 } from '@/runtime/workspaces/projectUniverseNavigation.js';
 import { resolveProjectUniverseEditorHandoff } from '@/runtime/workspaces/projectUniverseEditorHandoff.js';
@@ -773,6 +774,15 @@ export function ProjectPerspectiveShell({
                 : null,
         [universeFocusState.targetId, universeNavigatorItems],
     );
+    const universeOrientation = useMemo(
+        () =>
+            buildProjectUniverseOrientation({
+                universe: projectUniverse,
+                targetId: universeFocusState.targetId ?? projectUniverse?.hubId,
+                query: navigatorQuery,
+            }),
+        [navigatorQuery, projectUniverse, universeFocusState.targetId],
+    );
     const assistantSurfaceState = assistantIntentStatus
         ? 'engaged'
         : assistantSurface?.activeAssistantId
@@ -807,6 +817,108 @@ export function ProjectPerspectiveShell({
             }),
         [assistantSurfaceState, createUtilityPanel, editorEmergenceState, isCreatePerspective, selectedIds.length],
     );
+
+    const renderUniverseOrientation = () => {
+        if (!universeOrientation) return null;
+        const relatedTargets = universeOrientation.relatedTargets.slice(0, 3);
+        const nextTargets = universeOrientation.nextTargets
+            .filter((item) => item.targetId !== universeOrientation.returnTarget?.targetId)
+            .slice(0, 3);
+
+        return (
+            <div
+                data-testid='project-universe-orientation-summary'
+                style={{
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 8,
+                    background: '#ffffff',
+                    padding: '8px 10px',
+                    display: 'grid',
+                    gap: 6,
+                    marginBottom: 8,
+                }}>
+                <div
+                    style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: '#64748b',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                    }}>
+                    Orientation
+                </div>
+                {universeOrientation.returnTarget ? (
+                    <div style={{ display: 'grid', gap: 4 }}>
+                        <div style={{ fontSize: 10, color: '#64748b' }}>Return</div>
+                        <button
+                            type='button'
+                            data-testid={`project-universe-orientation-return-${universeOrientation.returnTarget.targetId}`}
+                            onClick={() => handleUniverseFocusTarget(universeOrientation.returnTarget.targetId)}
+                            style={{
+                                textAlign: 'left',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: 6,
+                                background: '#f8fafc',
+                                color: '#0f172a',
+                                padding: '6px 8px',
+                                cursor: 'pointer',
+                            }}>
+                            <div style={{ fontSize: 11, fontWeight: 600 }}>{universeOrientation.returnTarget.label}</div>
+                            <div style={{ fontSize: 10, color: '#64748b' }}>{universeOrientation.returnTarget.subtitle}</div>
+                        </button>
+                    </div>
+                ) : null}
+                {relatedTargets.length > 0 ? (
+                    <div style={{ display: 'grid', gap: 4 }}>
+                        <div style={{ fontSize: 10, color: '#64748b' }}>Related</div>
+                        {relatedTargets.map((item) => (
+                            <button
+                                key={`related-${item.targetId}`}
+                                type='button'
+                                data-testid={`project-universe-orientation-related-${item.targetId}`}
+                                onClick={() => handleUniverseFocusTarget(item.targetId)}
+                                style={{
+                                    textAlign: 'left',
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: 6,
+                                    background: '#ffffff',
+                                    color: '#334155',
+                                    padding: '6px 8px',
+                                    cursor: 'pointer',
+                                }}>
+                                <div style={{ fontSize: 11, fontWeight: 600 }}>{item.label}</div>
+                                <div style={{ fontSize: 10, color: '#64748b' }}>{item.subtitle}</div>
+                            </button>
+                        ))}
+                    </div>
+                ) : null}
+                {nextTargets.length > 0 ? (
+                    <div style={{ display: 'grid', gap: 4 }}>
+                        <div style={{ fontSize: 10, color: '#64748b' }}>Next likely</div>
+                        {nextTargets.map((item) => (
+                            <button
+                                key={`next-${item.targetId}`}
+                                type='button'
+                                data-testid={`project-universe-orientation-next-${item.targetId}`}
+                                onClick={() => handleUniverseFocusTarget(item.targetId)}
+                                style={{
+                                    textAlign: 'left',
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: 6,
+                                    background: '#ffffff',
+                                    color: '#334155',
+                                    padding: '6px 8px',
+                                    cursor: 'pointer',
+                                }}>
+                                <div style={{ fontSize: 11, fontWeight: 600 }}>{item.label}</div>
+                                <div style={{ fontSize: 10, color: '#64748b' }}>{item.subtitle}</div>
+                            </button>
+                        ))}
+                    </div>
+                ) : null}
+            </div>
+        );
+    };
 
     const requestAssistantPlaceholder = async (assistantAction) => {
         const result = await dispatchOsWorkspaceShellIntent(
@@ -2383,13 +2495,14 @@ export function ProjectPerspectiveShell({
                                             <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>
                                                 {focusedUniverseItem?.label ?? 'Project Hub'}
                                             </div>
-                                            <div style={{ fontSize: 10, color: '#64748b' }}>
-                                                {focusedUniverseItem?.subtitle ?? 'project universe anchor'}
-                                            </div>
+                                        <div style={{ fontSize: 10, color: '#64748b' }}>
+                                            {focusedUniverseItem?.subtitle ?? 'project universe anchor'}
                                         </div>
-                                        <div style={{ display: 'grid', gap: 4 }}>
-                                            {universeNavigatorItems.map((item) => {
-                                                const active = item.targetId === universeFocusState.targetId;
+                                    </div>
+                                    {renderUniverseOrientation()}
+                                    <div style={{ display: 'grid', gap: 4 }}>
+                                        {universeNavigatorItems.map((item) => {
+                                            const active = item.targetId === universeFocusState.targetId;
                                                 return (
                                                     <button
                                                         key={item.id}
@@ -2720,6 +2833,7 @@ export function ProjectPerspectiveShell({
                                     {focusedUniverseItem?.subtitle ?? 'project universe anchor'}
                                 </div>
                             </div>
+                            {renderUniverseOrientation()}
                             <div style={{ display: 'grid', gap: 4, marginBottom: 10 }}>
                                 {universeNavigatorItems.map((item) => {
                                     const active = item.targetId === universeFocusState.targetId;

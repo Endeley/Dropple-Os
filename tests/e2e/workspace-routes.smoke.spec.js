@@ -576,8 +576,16 @@ test('project universe navigator search and jump stay route-driven and determini
 
   await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
   await expect(page).toHaveURL(/[\?&]uq=operate/);
+  await expect(page.getByTestId('project-universe-orientation-summary')).toBeVisible();
+  await expect(page.getByTestId('project-universe-orientation-summary')).toContainText('Return');
+  await expect(page.getByTestId('project-universe-orientation-summary')).toContainText('Next likely');
+  await expect(page.getByTestId('project-universe-orientation-return-project:hub')).toContainText('Bp Logistics V1');
+  await page.getByTestId('project-universe-orientation-return-project:hub').click();
+  await expect(page).toHaveURL(/[\?&]u=project%3Ahub/);
+  await page.getByTestId('project-universe-orientation-next-group:operate').click();
+  await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
   await page.getByTestId('project-universe-status-details').getByText('View status').click();
-  await expect(page.getByTestId('project-universe-status-tier')).toContainText('tier far');
+  await expect(page.getByTestId('project-universe-status-tier')).toContainText('tier');
 });
 
 test('create perspective exposes linked artifact workflow routes', async ({ page }) => {

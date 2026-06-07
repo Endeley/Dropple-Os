@@ -699,7 +699,7 @@
         {
           "id": "U18.3",
           "title": "Project-Scale Navigation",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
             "runtime/workspaces/projectUniverseNavigation.js",
             "runtime/workspaces/projectViewRouteState.js",
