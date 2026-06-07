@@ -1090,6 +1090,12 @@ test('collaborate perspective exposes linked workflow guidance and publish hando
   });
 
   expect(response?.ok(), 'collaborate workflow route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('collaborate-world-panel')).toContainText('Collaborate World');
+  await expect(page.getByTestId('collaborate-world-panel')).toContainText('Review');
+  await expect(page.getByTestId('collaborate-world-summary')).toContainText('Current task: Untitled');
+  await expect(page.getByTestId('collaborate-world-summary')).toContainText('Assistant: Collaborate Assistant');
+  await expect(page.getByTestId('collaborate-world-summary')).toContainText('Linked artifacts: 2 across 1 collaborate clusters');
+  await expect(page.getByTestId('collaborate-world-summary')).toContainText('Publish bridge: Publish Review');
   await expect(page.getByTestId('collaborate-workflow-panel')).toBeVisible();
   await expect(page.getByTestId('collaborate-workflow-suggested-next')).toContainText('Continue Collaborating');
   await expect(page.getByTestId('collaborate-workflow-cluster-knowledge')).toContainText('Knowledge');

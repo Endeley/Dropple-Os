@@ -626,10 +626,11 @@
         {
           "id": "U17.3",
           "title": "Collaborate Workspace Product Polish",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
             "ui/workspace/shell/ProjectPerspectiveShell.jsx",
             "runtime/workspaces/collaboratePerspectiveWorkflow.js",
+            "tests/kernel/collaboratePerspectiveWorkflowLaw.test.ts",
             "tests/e2e/workspace-routes.smoke.spec.js"
           ]
         },

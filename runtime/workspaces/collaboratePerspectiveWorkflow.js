@@ -152,6 +152,19 @@ export function buildCollaboratePerspectiveWorkflow({ universe = null, activeEnt
           })
         : null;
 
+    const activeArtifact = linkedArtifacts.find((item) => item.active) ?? null;
+    const worldSummary = Object.freeze({
+        activityLabel: ENTRY_LABELS[activeId] ?? 'Review',
+        currentTaskLabel: activeArtifact?.label ?? linkedArtifacts[0]?.label ?? 'Awaiting collaboration context',
+        linkedArtifactCount: linkedArtifacts.length,
+        clusterCount: artifactClusters.length,
+        nextArtifactLabel:
+            linkedArtifacts.find((item) => item.entryId !== activeId)?.label ??
+            linkedArtifacts[0]?.label ??
+            null,
+        publishBridgeLabel: publishHandoff?.entryLabel ?? null,
+    });
+
     return Object.freeze({
         activeEntryId: activeId,
         linkedArtifacts: Object.freeze(linkedArtifacts),
@@ -159,5 +172,6 @@ export function buildCollaboratePerspectiveWorkflow({ universe = null, activeEnt
         artifactClusters: Object.freeze(artifactClusters),
         suggestedNextArtifact: linkedArtifacts.find((item) => item.entryId !== activeId) ?? linkedArtifacts[0] ?? null,
         publishHandoff,
+        worldSummary,
     });
 }

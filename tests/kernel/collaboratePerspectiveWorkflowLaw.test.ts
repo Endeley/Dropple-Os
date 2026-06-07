@@ -29,6 +29,12 @@ test('collaborate perspective workflow derives deterministic linked artifact rou
     assert.equal(left.entrySummaries[3]?.entryId, 'education');
     assert.equal(left.publishHandoff?.entryId, 'review');
     assert.equal(left.publishHandoff?.href, '/workspace/publish?entry=review&u=document%3Aprimary');
+    assert.equal(left.worldSummary?.activityLabel, 'Review');
+    assert.equal(left.worldSummary?.currentTaskLabel, 'Production Machine');
+    assert.equal(left.worldSummary?.linkedArtifactCount, 8);
+    assert.equal(left.worldSummary?.clusterCount, 3);
+    assert.equal(left.worldSummary?.nextArtifactLabel, 'Production Machine');
+    assert.equal(left.worldSummary?.publishBridgeLabel, 'Publish Review');
 });
 
 test('collaborate perspective workflow fails closed with empty universe', () => {
@@ -41,6 +47,14 @@ test('collaborate perspective workflow fails closed with empty universe', () => 
             artifactClusters: Object.freeze([]),
             suggestedNextArtifact: null,
             publishHandoff: null,
+            worldSummary: Object.freeze({
+                activityLabel: 'Knowledge',
+                currentTaskLabel: 'Awaiting collaboration context',
+                linkedArtifactCount: 0,
+                clusterCount: 0,
+                nextArtifactLabel: null,
+                publishBridgeLabel: null,
+            }),
         }),
     );
 });

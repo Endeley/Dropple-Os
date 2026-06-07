@@ -1705,6 +1705,67 @@ export function ProjectPerspectiveShell({
                         {perspectiveId === 'collaborate' ? (
                             <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
                                 <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                                    Collaborate World
+                                </div>
+                                <div
+                                    data-testid='collaborate-world-panel'
+                                    style={{
+                                        border: '1px solid #ddd6fe',
+                                        borderRadius: 8,
+                                        padding: 8,
+                                        background: '#faf5ff',
+                                        display: 'grid',
+                                        gap: 8,
+                                        marginBottom: 8,
+                                    }}>
+                                    <div
+                                        style={{
+                                            fontSize: 10,
+                                            fontWeight: 700,
+                                            letterSpacing: '0.04em',
+                                            textTransform: 'uppercase',
+                                            color: '#7c3aed',
+                                        }}>
+                                        Collaborate World
+                                    </div>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: '#6d28d9' }}>
+                                        {collaborateWorkflow.worldSummary?.activityLabel ?? 'Collaborate'}
+                                    </div>
+                                    <div
+                                        data-testid='collaborate-world-summary'
+                                        style={{ display: 'grid', gap: 3, fontSize: 10, color: '#6d28d9' }}>
+                                        <span>
+                                            Current task:{' '}
+                                            <strong style={{ color: '#581c87' }}>
+                                                {collaborateWorkflow.worldSummary?.currentTaskLabel ?? 'Awaiting collaboration context'}
+                                            </strong>
+                                        </span>
+                                        <span>
+                                            Assistant:{' '}
+                                            <strong style={{ color: '#581c87' }}>
+                                                Collaborate Assistant
+                                            </strong>
+                                        </span>
+                                        <span>
+                                            Linked artifacts:{' '}
+                                            <strong style={{ color: '#581c87' }}>
+                                                {collaborateWorkflow.worldSummary?.linkedArtifactCount ?? 0}
+                                            </strong>{' '}
+                                            across{' '}
+                                            <strong style={{ color: '#581c87' }}>
+                                                {collaborateWorkflow.worldSummary?.clusterCount ?? 0}
+                                            </strong>{' '}
+                                            collaborate clusters
+                                        </span>
+                                        <span>
+                                            Publish bridge:{' '}
+                                            <strong style={{ color: '#581c87' }}>
+                                                {collaborateWorkflow.worldSummary?.publishBridgeLabel ?? 'No publish handoff'}
+                                            </strong>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
                                     Collaborate Workflow
                                 </div>
                                 <div
