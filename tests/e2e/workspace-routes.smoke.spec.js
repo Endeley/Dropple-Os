@@ -577,6 +577,12 @@ test('create perspective exposes linked artifact workflow routes', async ({ page
   });
 
   expect(response?.ok(), 'create workflow route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('create-world-panel')).toContainText('Create World');
+  await expect(page.getByTestId('create-world-panel')).toContainText('UI / UX');
+  await expect(page.getByTestId('create-world-summary')).toContainText('Current task: Frame Dispatch');
+  await expect(page.getByTestId('create-world-summary')).toContainText('Assistant: Design Assistant');
+  await expect(page.getByTestId('create-world-summary')).toContainText('Linked artifacts: 3 across 2 create clusters');
+  await expect(page.getByTestId('create-world-summary')).toContainText('Next focus: Untitled');
   await expect(page.getByTestId('create-workflow-panel')).toBeVisible();
   await expect(page.getByTestId('create-workflow-suggested-next')).toContainText('Continue Creating');
   await expect(page.getByTestId('create-workflow-cluster-interface')).toContainText('Interface');
@@ -586,6 +592,58 @@ test('create perspective exposes linked artifact workflow routes', async ({ page
   await expect(page).toHaveURL(/[\?&]entry=document/);
   await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
   await expect(page.locator('body')).toContainText('Active context: Create > Document');
+});
+
+test('world-based shell parity stays explicit across create build operate collaborate and publish', async ({ page }) => {
+  const expectations = [
+    {
+      path: '/workspace/create?blueprint=bp.logistics.v1&bootstrap=1',
+      activity: 'Create / UI / UX',
+      panel: 'create-world-panel',
+      summary: 'create-world-summary',
+      label: 'Create World',
+    },
+    {
+      path: '/workspace/build?blueprint=bp.logistics.v1&bootstrap=1',
+      activity: 'Build / Application',
+      panel: 'build-world-panel',
+      summary: 'build-world-summary',
+      label: 'Build World',
+    },
+    {
+      path: '/workspace/operate?entry=systems-engineering&blueprint=bp.logistics.v1&bootstrap=1',
+      activity: 'Operate / Systems Engineering',
+      panel: 'operate-world-panel',
+      summary: 'operate-world-summary',
+      label: 'Operate World',
+    },
+    {
+      path: '/workspace/collaborate?blueprint=bp.logistics.v1&bootstrap=1',
+      activity: 'Collaborate / Review',
+      panel: 'collaborate-world-panel',
+      summary: 'collaborate-world-summary',
+      label: 'Collaborate World',
+    },
+    {
+      path: '/workspace/publish?entry=governance',
+      activity: 'Publish / Governance',
+      panel: 'publish-world-panel',
+      summary: 'publish-world-summary',
+      label: 'Publish World',
+    },
+  ];
+
+  for (const expectation of expectations) {
+    const response = await page.goto(expectation.path, { waitUntil: 'networkidle' });
+    expect(response?.ok(), `${expectation.path} should respond successfully`).toBeTruthy();
+    await expect(page.getByTestId('project-world-anchor')).toBeVisible();
+    await expect(page.getByTestId('project-world-anchor-activity')).toContainText(expectation.activity);
+    await expect(page.getByTestId('project-world-anchor-focus')).not.toHaveText('');
+    await expect(page.getByTestId('project-world-anchor-hub')).toContainText('Return to Project Hub');
+    await expect(page.getByTestId(expectation.panel)).toContainText(expectation.label);
+    await expect(page.getByTestId(expectation.summary)).toContainText('Assistant:');
+    await expect(page.getByTestId('assistant-surface-panel')).toBeVisible();
+  }
 });
 
 test('create shell consolidates project utilities behind a single tabbed panel', async ({ page }) => {

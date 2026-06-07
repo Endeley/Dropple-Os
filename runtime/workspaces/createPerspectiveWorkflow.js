@@ -108,6 +108,13 @@ export function buildCreatePerspectiveWorkflow({ universe = null, activeEntryId 
             entrySummaries: Object.freeze([]),
             artifactClusters: Object.freeze([]),
             suggestedNextArtifact: null,
+            worldSummary: Object.freeze({
+                activityLabel: ENTRY_LABELS[activeId] ?? 'UI / UX',
+                currentTaskLabel: 'Awaiting create context',
+                linkedArtifactCount: 0,
+                clusterCount: 0,
+                nextArtifactLabel: null,
+            }),
         });
     }
 
@@ -181,6 +188,14 @@ export function buildCreatePerspectiveWorkflow({ universe = null, activeEntryId 
         );
 
     const suggestedNextArtifact = linkedArtifacts.find((item) => item.entryId !== activeId) ?? linkedArtifacts[0] ?? null;
+    const activeArtifact = linkedArtifacts.find((item) => item.active) ?? null;
+    const worldSummary = Object.freeze({
+        activityLabel: ENTRY_LABELS[activeId] ?? 'UI / UX',
+        currentTaskLabel: activeArtifact?.label ?? linkedArtifacts[0]?.label ?? 'Awaiting create context',
+        linkedArtifactCount: linkedArtifacts.length,
+        clusterCount: artifactClusters.length,
+        nextArtifactLabel: suggestedNextArtifact?.label ?? null,
+    });
 
     return Object.freeze({
         activeEntryId: activeId,
@@ -188,5 +203,6 @@ export function buildCreatePerspectiveWorkflow({ universe = null, activeEntryId 
         entrySummaries: Object.freeze(entrySummaries),
         artifactClusters: Object.freeze(artifactClusters),
         suggestedNextArtifact,
+        worldSummary,
     });
 }

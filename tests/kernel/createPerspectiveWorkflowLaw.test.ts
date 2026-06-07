@@ -90,6 +90,11 @@ test('create perspective workflow derives deterministic linked artifact routes f
         }),
     ]));
     assert.equal(left.suggestedNextArtifact?.targetId, 'components:library');
+    assert.equal(left.worldSummary?.activityLabel, 'UI / UX');
+    assert.equal(left.worldSummary?.currentTaskLabel, 'Dispatch Board');
+    assert.equal(left.worldSummary?.linkedArtifactCount, 4);
+    assert.equal(left.worldSummary?.clusterCount, 4);
+    assert.equal(left.worldSummary?.nextArtifactLabel, 'Component Library');
 });
 
 test('create perspective workflow fails closed when create group or nodes are absent', () => {
@@ -101,6 +106,13 @@ test('create perspective workflow fails closed when create group or nodes are ab
             entrySummaries: Object.freeze([]),
             artifactClusters: Object.freeze([]),
             suggestedNextArtifact: null,
+            worldSummary: Object.freeze({
+                activityLabel: 'Document',
+                currentTaskLabel: 'Awaiting create context',
+                linkedArtifactCount: 0,
+                clusterCount: 0,
+                nextArtifactLabel: null,
+            }),
         }),
     );
 });

@@ -595,7 +595,7 @@
     {
       "id": "U17",
       "title": "Perspective Product Parity",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["U16"],
       "milestones": [
         {
@@ -648,7 +648,7 @@
         {
           "id": "U17.5",
           "title": "Cross-Perspective World Parity",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
             "ui/workspace/shell/ProjectPerspectiveShell.jsx",
             "tests/e2e/workspace-routes.smoke.spec.js",

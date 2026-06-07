@@ -1339,6 +1339,67 @@ export function ProjectPerspectiveShell({
                         {perspectiveId === 'create' ? (
                             <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
                                 <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                                    Create World
+                                </div>
+                                <div
+                                    data-testid='create-world-panel'
+                                    style={{
+                                        border: '1px solid #fed7aa',
+                                        borderRadius: 8,
+                                        padding: 8,
+                                        background: '#fff7ed',
+                                        display: 'grid',
+                                        gap: 8,
+                                        marginBottom: 8,
+                                    }}>
+                                    <div
+                                        style={{
+                                            fontSize: 10,
+                                            fontWeight: 700,
+                                            letterSpacing: '0.04em',
+                                            textTransform: 'uppercase',
+                                            color: '#c2410c',
+                                        }}>
+                                        Create World
+                                    </div>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: '#9a3412' }}>
+                                        {createWorkflow.worldSummary?.activityLabel ?? 'Create'}
+                                    </div>
+                                    <div
+                                        data-testid='create-world-summary'
+                                        style={{ display: 'grid', gap: 3, fontSize: 10, color: '#9a3412' }}>
+                                        <span>
+                                            Current task:{' '}
+                                            <strong style={{ color: '#7c2d12' }}>
+                                                {createWorkflow.worldSummary?.currentTaskLabel ?? 'Awaiting create context'}
+                                            </strong>
+                                        </span>
+                                        <span>
+                                            Assistant:{' '}
+                                            <strong style={{ color: '#7c2d12' }}>
+                                                {createAssistantLabels?.assistantLabel ?? 'Design Assistant'}
+                                            </strong>
+                                        </span>
+                                        <span>
+                                            Linked artifacts:{' '}
+                                            <strong style={{ color: '#7c2d12' }}>
+                                                {createWorkflow.worldSummary?.linkedArtifactCount ?? 0}
+                                            </strong>{' '}
+                                            across{' '}
+                                            <strong style={{ color: '#7c2d12' }}>
+                                                {createWorkflow.worldSummary?.clusterCount ?? 0}
+                                            </strong>{' '}
+                                            create clusters
+                                        </span>
+                                        <span>
+                                            Next focus:{' '}
+                                            <strong style={{ color: '#7c2d12' }}>
+                                                {createWorkflow.worldSummary?.nextArtifactLabel ?? 'No linked create targets'}
+                                            </strong>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
                                     Create Workflow
                                 </div>
                                 <div
