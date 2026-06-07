@@ -101,3 +101,31 @@ export function withProjectPerspectiveContinuitySearchParams({ searchParams, con
 
     return next;
 }
+
+export function resolveProjectWorldRouteStateFromSearchParams(searchParams) {
+    return Object.freeze({
+        camera: resolveProjectCameraFromSearchParams(searchParams),
+        focus: resolveProjectUniverseFocusFromSearchParams(searchParams),
+        continuity: resolveProjectPerspectiveContinuityFromSearchParams(searchParams),
+    });
+}
+
+export function withProjectWorldSearchParams({
+    searchParams,
+    camera,
+    focus,
+    continuity,
+} = {}) {
+    const withCamera = withProjectCameraSearchParams({
+        searchParams,
+        camera,
+    });
+    const withFocus = withProjectUniverseFocusSearchParams({
+        searchParams: withCamera,
+        focus,
+    });
+    return withProjectPerspectiveContinuitySearchParams({
+        searchParams: withFocus,
+        continuity,
+    });
+}

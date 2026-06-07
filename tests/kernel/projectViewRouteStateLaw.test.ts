@@ -5,10 +5,12 @@ import {
     normalizeProjectCameraState,
     resolveProjectCameraFromSearchParams,
     resolveProjectPerspectiveContinuityFromSearchParams,
+    resolveProjectWorldRouteStateFromSearchParams,
     resolveProjectUniverseFocusFromSearchParams,
     withProjectCameraSearchParams,
     withProjectPerspectiveContinuitySearchParams,
     withProjectUniverseFocusSearchParams,
+    withProjectWorldSearchParams,
 } from '@/runtime/workspaces/projectViewRouteState.js';
 
 test('project camera normalization is deterministic and fail-closed', () => {
@@ -98,4 +100,52 @@ test('project perspective continuity search-param serialization preserves existi
     assert.equal(next.get('pu'), 'document:primary');
     assert.equal(next.get('pl'), 'Document');
     assert.equal(next.get('pe'), 'document');
+});
+
+test('project world route-state resolution is deterministic and frozen', () => {
+    const params = new URLSearchParams(
+        'entry=uiux&x=12.25&y=-6.50&z=0.750&u=group:operate&uq=operate&pf=create&pt=build&pu=group:operate&pl=Operate&pe=automation',
+    );
+    const state = resolveProjectWorldRouteStateFromSearchParams(params);
+    assert.deepEqual(state, Object.freeze({
+        camera: Object.freeze({ x: 12.25, y: -6.5, scale: 0.75 }),
+        focus: Object.freeze({ targetId: 'group:operate', query: 'operate' }),
+        continuity: Object.freeze({
+            fromPerspectiveId: 'create',
+            toPerspectiveId: 'build',
+            sourceTargetId: 'group:operate',
+            sourceLabel: 'Operate',
+            targetEntryId: 'automation',
+        }),
+    }));
+    assert.equal(Object.isFrozen(state), true);
+});
+
+test('project world search-param serialization preserves route continuity envelope during camera updates', () => {
+    const params = new URLSearchParams(
+        'entry=uiux&u=group:operate&uq=operate&pf=create&pt=build&pu=group:operate&pl=Operate&pe=automation',
+    );
+    const next = withProjectWorldSearchParams({
+        searchParams: params,
+        camera: { x: 48.123, y: -12.4, scale: 0.61234 },
+        focus: { targetId: 'group:operate', query: 'operate' },
+        continuity: {
+            fromPerspectiveId: 'create',
+            toPerspectiveId: 'build',
+            sourceTargetId: 'group:operate',
+            sourceLabel: 'Operate',
+            targetEntryId: 'automation',
+        },
+    });
+    assert.equal(next.get('entry'), 'uiux');
+    assert.equal(next.get('x'), '48.12');
+    assert.equal(next.get('y'), '-12.40');
+    assert.equal(next.get('z'), '0.612');
+    assert.equal(next.get('u'), 'group:operate');
+    assert.equal(next.get('uq'), 'operate');
+    assert.equal(next.get('pf'), 'create');
+    assert.equal(next.get('pt'), 'build');
+    assert.equal(next.get('pu'), 'group:operate');
+    assert.equal(next.get('pl'), 'Operate');
+    assert.equal(next.get('pe'), 'automation');
 });

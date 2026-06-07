@@ -427,7 +427,7 @@
     {
       "id": "U15",
       "title": "Motion-First Creative Environment",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["U14"],
       "milestones": [
         {
@@ -492,7 +492,7 @@
         {
           "id": "U15.M6",
           "title": "World-Continuity Route Contracts",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
             "tests/e2e/workspace-routes.smoke.spec.js",
             "tests/e2e/workspace-interactions.spec.js",

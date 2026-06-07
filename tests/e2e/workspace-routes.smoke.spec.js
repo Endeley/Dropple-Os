@@ -332,6 +332,28 @@ test('project perspective links preserve universe continuity state across hops',
   await expect(page.getByTestId('project-universe-status-summary')).toContainText('artifacts');
 });
 
+test('project world continuity route envelope survives local camera mutations', async ({ page }) => {
+  const response = await page.goto('/workspace/create?blueprint=bp.logistics.v1&bootstrap=1&z=0.300&u=group%3Aoperate&uq=operate', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'world continuity route should respond successfully').toBeTruthy();
+  await page.getByRole('link', { name: 'Build' }).click();
+
+  await expect(page).toHaveURL(/\/workspace\/build\?/);
+  await expect(page).toHaveURL(/[\?&]pf=create/);
+  await expect(page).toHaveURL(/[\?&]pt=build/);
+  await expect(page).toHaveURL(/[\?&]pu=group%3Aoperate/);
+
+  await page.getByRole('button', { name: 'Reset' }).click();
+  await expect(page).toHaveURL(/[\?&]z=1\.000/);
+  await expect(page).toHaveURL(/[\?&]pf=create/);
+  await expect(page).toHaveURL(/[\?&]pt=build/);
+  await expect(page).toHaveURL(/[\?&]pu=group%3Aoperate/);
+  await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
+  await expect(page.getByTestId('project-shell-transition-context')).toContainText('Create -> Build');
+});
+
 test('project shell exposes motion meaning and reduced-motion fallback contracts', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const response = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1&z=1.000', {

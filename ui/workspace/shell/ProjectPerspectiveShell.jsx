@@ -28,9 +28,7 @@ import {
     resolveProjectCameraFromSearchParams,
     resolveProjectPerspectiveContinuityFromSearchParams,
     resolveProjectUniverseFocusFromSearchParams,
-    withProjectCameraSearchParams,
-    withProjectPerspectiveContinuitySearchParams,
-    withProjectUniverseFocusSearchParams,
+    withProjectWorldSearchParams,
 } from '@/runtime/workspaces/projectViewRouteState.js';
 import {
     buildProjectViewShareHref,
@@ -306,45 +304,30 @@ export function ProjectPerspectiveShell({
             return;
         }
 
-        const withCamera = withProjectCameraSearchParams({
+        const next = withProjectWorldSearchParams({
             searchParams: getLiveShellSearchParams(),
             camera: nextState,
-        });
-        const next = withProjectUniverseFocusSearchParams({
-            searchParams: withCamera,
             focus: universeFocusState,
+            continuity: perspectiveContinuityState,
         });
         replaceShellSearchParams(next);
-    }, [cameraRouteState, getLiveShellSearchParams, replaceShellSearchParams, universeFocusState]);
+    }, [cameraRouteState, getLiveShellSearchParams, perspectiveContinuityState, replaceShellSearchParams, universeFocusState]);
 
     const replaceUniverseRouteState = useCallback(({ camera = cameraRouteState, focus = universeFocusState } = {}) => {
-        const baseSearchParams = getLiveShellSearchParams();
-        const withCamera = withProjectCameraSearchParams({
-            searchParams: baseSearchParams,
+        const next = withProjectWorldSearchParams({
+            searchParams: getLiveShellSearchParams(),
             camera,
-        });
-        const withFocus = withProjectUniverseFocusSearchParams({
-            searchParams: withCamera,
             focus,
-        });
-        const next = withProjectPerspectiveContinuitySearchParams({
-            searchParams: withFocus,
             continuity: perspectiveContinuityState,
         });
         replaceShellSearchParams(next);
     }, [cameraRouteState, getLiveShellSearchParams, perspectiveContinuityState, replaceShellSearchParams, universeFocusState]);
 
     const buildPerspectiveHref = useCallback((nextPerspectiveId) => {
-        const withCamera = withProjectCameraSearchParams({
+        const next = withProjectWorldSearchParams({
             searchParams: new URLSearchParams(),
             camera: cameraRouteState,
-        });
-        const withFocus = withProjectUniverseFocusSearchParams({
-            searchParams: withCamera,
             focus: universeFocusState,
-        });
-        const next = withProjectPerspectiveContinuitySearchParams({
-            searchParams: withFocus,
             continuity: {
                 fromPerspectiveId: perspectiveId,
                 toPerspectiveId: nextPerspectiveId,
@@ -406,19 +389,13 @@ export function ProjectPerspectiveShell({
             return;
         }
 
-        const withCamera = withProjectCameraSearchParams({
+        const next = withProjectWorldSearchParams({
             searchParams: new URLSearchParams(),
             camera: cameraRouteState,
-        });
-        const withFocus = withProjectUniverseFocusSearchParams({
-            searchParams: withCamera,
             focus: Object.freeze({
                 targetId: handoff.targetId,
                 query: universeFocusState.query,
             }),
-        });
-        const next = withProjectPerspectiveContinuitySearchParams({
-            searchParams: withFocus,
             continuity: {
                 fromPerspectiveId: perspectiveId,
                 toPerspectiveId: handoff.perspectiveId,

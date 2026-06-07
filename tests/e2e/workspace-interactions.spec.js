@@ -3057,6 +3057,37 @@ test('workspace canvas host contract keeps exactly one visible host across works
   await expectSingleVisibleCanvasHost(page);
 });
 
+test('project world continuity stays stable across browser history after perspective handoff and camera reset', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+
+  const response = await page.goto('/workspace/create?blueprint=bp.logistics.v1&bootstrap=1&z=0.300&u=group%3Aoperate&uq=operate', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'project world continuity route should respond successfully').toBeTruthy();
+  await page.getByRole('link', { name: 'Build' }).click();
+  await expect(page).toHaveURL(/\/workspace\/build\?/);
+  await expect(page).toHaveURL(/[\?&]pf=create/);
+  await expect(page).toHaveURL(/[\?&]pt=build/);
+  await expect(page).toHaveURL(/[\?&]pu=group%3Aoperate/);
+
+  await page.getByRole('button', { name: 'Reset' }).click();
+  await expect(page).toHaveURL(/[\?&]z=1\.000/);
+  await expect(page).toHaveURL(/[\?&]pf=create/);
+  await expect(page).toHaveURL(/[\?&]pt=build/);
+  await expect(page).toHaveURL(/[\?&]pu=group%3Aoperate/);
+  await expect(page.getByTestId('project-shell-transition-context')).toContainText('Create -> Build');
+
+  await page.goBack({ waitUntil: 'networkidle' });
+  await expect(page).toHaveURL(/\/workspace\/create\?/);
+  await expect(page).toHaveURL(/[\?&]z=0\.300/);
+  await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
+  await expect(page.getByTestId('project-universe-surface')).toHaveAttribute('data-camera-mode', 'focus-anchor');
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
 test('workspace pointercancel does not leave stuck alt/shift state for keyboard nudge deltas', async ({ page }) => {
   const runtimeErrors = attachRuntimeErrorCollectors(page);
   await gotoNewWorkspace(page);
