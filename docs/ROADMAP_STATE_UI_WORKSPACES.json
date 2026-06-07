@@ -512,7 +512,7 @@
     {
       "id": "U16",
       "title": "World-Based Creative OS Experience",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["U15"],
       "milestones": [
         {
@@ -572,10 +572,11 @@
         {
           "id": "U16.5",
           "title": "Create Workspace Product Polish",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
             "ui/workspace/uiux/UIUXAuthoringShell.jsx",
             "ui/workspace/uiux/UIUXTopBar.jsx",
+            "ui/workspace/design/DesignShellPrimitives.jsx",
             "ui/styles/uiux.css",
             "tests/e2e/workspace-routes.smoke.spec.js",
             "tests/e2e/workspace-interactions.spec.js"

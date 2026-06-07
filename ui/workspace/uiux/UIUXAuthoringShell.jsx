@@ -66,8 +66,10 @@ export function UIUXAuthoringShell({
     const motionClipCount = useWorkspaceProjectionState((s) => Object.keys(s?.document?.motion?.clips || {}).length);
 
     const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
-
     const node = selectedId ? nodes[selectedId] : null;
+    const selectionCount = selectedIds.length;
+    const timelineState = node?.id ? 'expanded' : 'compact';
+    const workspaceActivitySummary = selectionCount > 0 ? 'Focused authoring' : 'Canvas-first authoring';
 
     useKeyboardNudge({
         enabled: true,
@@ -103,7 +105,12 @@ export function UIUXAuthoringShell({
                 mode={resolvedModeId}
             />
 
-            <div className='uiux-root' data-workspace={resolvedModeId}>
+            <div
+                className='uiux-root'
+                data-workspace={resolvedModeId}
+                data-testid='uiux-world-editor'
+                data-editor-unity='world-based'
+                data-editor-focus={selectionCount > 0 ? 'focused' : 'open'}>
                 {/* Primary authoring chrome */}
                 <header className='uiux-top-chrome'>
                     <UIUXTopBar
@@ -117,10 +124,27 @@ export function UIUXAuthoringShell({
                 </header>
 
                 {/* Secondary workspace strip */}
-                <DesignWorkspaceStrip modeId={resolvedModeId} status='Draft' />
+                <DesignWorkspaceStrip
+                    modeId={resolvedModeId}
+                    status='Draft'
+                    activity={workspaceActivitySummary}
+                    selectionCount={selectionCount}
+                    timelineState={timelineState}
+                />
+
+                <div className='uiux-world-editor-summary' data-testid='uiux-world-editor-summary'>
+                    <span>Create world</span>
+                    <span>{resolvedDesignContext.workspaceId === 'design' ? 'Unified editor' : resolvedDesignContext.workspaceId}</span>
+                    <span>{selectionCount > 0 ? `${selectionCount} focused node${selectionCount === 1 ? '' : 's'}` : 'Canvas open'}</span>
+                    <span>{timelineState === 'expanded' ? 'Motion ready' : 'Motion waiting'}</span>
+                </div>
 
                 {/* Main dock grid */}
-                <div className='uiux-main-grid' data-testid='uiux-main-grid'>
+                <div
+                    className='uiux-main-grid'
+                    data-testid='uiux-main-grid'
+                    data-editor-cohesion='create-world'
+                    data-canvas-priority='primary'>
                     <aside className='uiux-left-dock' data-testid='uiux-left-dock'>
                         <UIUXToolRail modeId={resolvedModeId} />
                     </aside>

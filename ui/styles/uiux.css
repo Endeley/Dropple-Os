@@ -29,6 +29,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 14px;
+  position: relative;
 }
 
 .uiux-topbar-left,
@@ -64,6 +65,25 @@
   opacity: .52;
 }
 
+.uiux-topbar-unity-summary {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .06);
+  background: rgba(255, 255, 255, .03);
+  font-size: 10px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: rgba(229, 231, 235, .68);
+  pointer-events: none;
+}
+
 .uiux-topbar button,
 .uiux-rightpanel button {
   height: 28px;
@@ -93,13 +113,20 @@
 ========================= */
 
 .uiux-workspace-strip {
-  height: 34px;
+  min-height: 40px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 14px;
   background: #1d2128;
   border-bottom: 1px solid rgba(255, 255, 255, .05);
+}
+
+.uiux-workspace-strip-leading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 0;
 }
 
 .uiux-breadcrumb {
@@ -109,9 +136,31 @@
   opacity: .72;
 }
 
+.uiux-workspace-activity {
+  font-size: 11px;
+  color: rgba(229, 231, 235, .72);
+}
+
 .uiux-surface-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-size: 11px;
   opacity: .6;
+}
+
+.uiux-world-editor-summary {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, .04);
+  background: #171b22;
+  color: rgba(229, 231, 235, .7);
+  font-size: 10px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
 }
 
 

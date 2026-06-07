@@ -4,13 +4,16 @@ import {
     normalizeDesignModeId,
     DesignWorkspaceBrand,
     resolveDesignTopChrome,
+    resolveDesignModeLabel,
 } from '@/ui/workspace/design/DesignShellPrimitives.jsx';
 
 export function UIUXTopBar({ modeId = 'uiux', templatesOpen = false, onToggleTemplates, onPublish = null }) {
     const resolvedModeId = normalizeDesignModeId(modeId);
     const topChrome = resolveDesignTopChrome(resolvedModeId);
+    const modeLabel = resolveDesignModeLabel(resolvedModeId);
+
     return (
-        <header className='uiux-topbar'>
+        <header className='uiux-topbar' data-testid='uiux-topbar' data-editor-unity='world-based'>
             {/* Left — editor controls */}
             <div className='uiux-topbar-left' data-testid='uiux-topbar-editor-group' aria-label='Editor controls'>
                 <DesignWorkspaceBrand modeId={resolvedModeId} />
@@ -49,6 +52,12 @@ export function UIUXTopBar({ modeId = 'uiux', templatesOpen = false, onToggleTem
                 <button type='button' onClick={onPublish} disabled={typeof onPublish !== 'function'}>
                     Publish
                 </button>
+            </div>
+
+            <div className='uiux-topbar-unity-summary' data-testid='uiux-topbar-unity-summary'>
+                <span>World Editor</span>
+                <span>{modeLabel}</span>
+                <span>{topChrome.surfaceLabel}</span>
             </div>
         </header>
     );

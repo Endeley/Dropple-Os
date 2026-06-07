@@ -745,10 +745,22 @@ test('design modes expose parity-stable shell chrome and strip signals', async (
 
     expect(response?.ok(), `${mode.modeId} route should respond successfully`).toBeTruthy();
     if (mode.uiuxShell) {
+      await expect(page.getByTestId('uiux-world-editor')).toHaveAttribute('data-editor-unity', 'world-based');
+      await expect(page.getByTestId('uiux-world-editor-summary')).toContainText('Create world');
+      await expect(page.getByTestId('uiux-world-editor-summary')).toContainText('Unified editor');
+      await expect(page.getByTestId('uiux-world-editor-summary')).toContainText('Canvas open');
+      await expect(page.getByTestId('uiux-world-editor-summary')).toContainText('Motion waiting');
       await expect(page.locator('.workspace-name')).toContainText('Create');
       await expect(page.locator('.workspace-mode')).toContainText('UI / UX');
       await expect(page.locator('.uiux-workspace-strip')).toContainText('Create > UI / UX');
+      await expect(page.getByTestId('uiux-workspace-activity')).toContainText('Canvas-first authoring');
+      await expect(page.getByTestId('uiux-workspace-status')).toContainText('Draft');
+      await expect(page.getByTestId('uiux-workspace-status')).toContainText('0 selected nodes');
+      await expect(page.getByTestId('uiux-workspace-status')).toContainText('Timeline waiting');
       await expect(page.locator('.frame-indicator')).toContainText('Draft Surface');
+      await expect(page.getByTestId('uiux-topbar-unity-summary')).toContainText('World Editor');
+      await expect(page.getByTestId('uiux-topbar-unity-summary')).toContainText('UI / UX');
+      await expect(page.getByTestId('uiux-topbar-unity-summary')).toContainText('Draft Surface');
       await expect(page.getByTestId('uiux-topbar-editor-group')).toContainText('Editor');
       await expect(page.getByTestId('uiux-topbar-editor-group')).toContainText('File');
       await expect(page.getByTestId('uiux-topbar-editor-group')).toContainText('Prototype');
