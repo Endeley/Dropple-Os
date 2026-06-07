@@ -331,7 +331,7 @@ test('project perspective links preserve universe continuity state across hops',
   await expect(page).toHaveURL(/[\?&]pf=create/);
   await expect(page).toHaveURL(/[\?&]pt=build/);
   await expect(page).toHaveURL(/[\?&]pu=group%3Aoperate/);
-  await expect(page.getByTestId('project-shell-transition-context')).toContainText('Create -> Build');
+  await expect(page.getByTestId('project-shell-transition-context')).toContainText('hop: Create > UI / UX');
   await expect(page.getByTestId('project-universe-status-summary')).toContainText('artifacts');
   await expect(page.getByTestId('project-world-anchor-activity')).toContainText('Build / Application');
   await expect(page.getByTestId('project-world-anchor-focus')).toContainText('Operate');
@@ -356,7 +356,7 @@ test('project world continuity route envelope survives local camera mutations', 
   await expect(page).toHaveURL(/[\?&]pt=build/);
   await expect(page).toHaveURL(/[\?&]pu=group%3Aoperate/);
   await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
-  await expect(page.getByTestId('project-shell-transition-context')).toContainText('Create -> Build');
+  await expect(page.getByTestId('project-shell-transition-context')).toContainText('hop: Create > UI / UX');
 });
 
 test('project shell exposes motion meaning and reduced-motion fallback contracts', async ({ page }) => {
@@ -997,7 +997,17 @@ test('build perspective exposes linked workflow guidance and operate handoff rou
   await page.getByTestId('build-workflow-operate-handoff').click();
   await expect(page).toHaveURL(/\/workspace\/operate\?/);
   await expect(page).toHaveURL(/[\?&]entry=systems-engineering/);
+  await expect(page).toHaveURL(/[\?&]u=system%3Amodel/);
+  await expect(page).toHaveURL(/[\?&]pf=build/);
+  await expect(page).toHaveURL(/[\?&]pt=operate/);
+  await expect(page).toHaveURL(/[\?&]pu=system%3Amodel/);
+  await expect(page).toHaveURL(/[\?&]pl=System\+Model/);
+  await expect(page).toHaveURL(/[\?&]pe=systems-engineering/);
+  await expect(page).toHaveURL(/[\?&]ps=application/);
+  await expect(page).toHaveURL(/[\?&]pk=system-model/);
+  await expect(page).toHaveURL(/[\?&]pm=hop/);
   await expect(page.locator('body')).toContainText('Active context: Operate > Systems Engineering');
+  await expect(page.getByTestId('project-shell-transition-context')).toContainText('hop: System Model');
 });
 
 test('operate overlays expose deterministic systems and operations panels', async ({ page }) => {
@@ -1216,5 +1226,15 @@ test('collaborate perspective exposes linked workflow guidance and publish hando
   await page.getByTestId('collaborate-workflow-publish-handoff').click();
   await expect(page).toHaveURL(/\/workspace\/publish\?/);
   await expect(page).toHaveURL(/[\?&]entry=review/);
+  await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
+  await expect(page).toHaveURL(/[\?&]pf=collaborate/);
+  await expect(page).toHaveURL(/[\?&]pt=publish/);
+  await expect(page).toHaveURL(/[\?&]pu=document%3Aprimary/);
+  await expect(page).toHaveURL(/[\?&]pl=Untitled/);
+  await expect(page).toHaveURL(/[\?&]pe=review/);
+  await expect(page).toHaveURL(/[\?&]ps=review/);
+  await expect(page).toHaveURL(/[\?&]pk=document/);
+  await expect(page).toHaveURL(/[\?&]pm=hop/);
   await expect(page.locator('body')).toContainText('Active context: Publish > Review');
+  await expect(page.getByTestId('project-shell-transition-context')).toContainText('hop: Untitled');
 });

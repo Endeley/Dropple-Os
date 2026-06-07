@@ -668,7 +668,7 @@
     {
       "id": "U18",
       "title": "Project Universe Intelligence",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["U17"],
       "milestones": [
         {
@@ -724,10 +724,12 @@
         {
           "id": "U18.5",
           "title": "Cross-Perspective Artifact Continuity",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
             "runtime/workspaces/projectUniverseEditorHandoff.js",
             "runtime/workspaces/projectViewRouteState.js",
+            "tests/kernel/projectUniverseEditorHandoffLaw.test.ts",
+            "tests/kernel/projectViewRouteStateLaw.test.ts",
             "tests/e2e/workspace-routes.smoke.spec.js",
             "tests/e2e/workspace-interactions.spec.js"
           ]

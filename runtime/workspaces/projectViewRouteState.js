@@ -28,6 +28,13 @@ function normalizeContinuityKind(value) {
     return null;
 }
 
+function resolvePerspectiveIdFromPathname(pathname) {
+    const normalized = asNonEmptyString(pathname);
+    if (!normalized) return null;
+    const match = normalized.match(/^\/workspace\/([^/?#]+)/);
+    return asNonEmptyString(match?.[1]);
+}
+
 export function normalizeProjectCameraState(camera = {}) {
     return Object.freeze({
         x: clamp(parseFiniteOr(camera?.x, 0), CAMERA_LIMITS.minPosition, CAMERA_LIMITS.maxPosition),
@@ -151,4 +158,54 @@ export function withProjectWorldSearchParams({
         searchParams: withFocus,
         continuity,
     });
+}
+
+export function buildProjectArtifactContinuityHref({
+    href,
+    camera,
+    query = '',
+    currentPerspectiveId = 'overview',
+    currentEntryId = null,
+    continuityTarget = null,
+} = {}) {
+    const normalizedHref = asNonEmptyString(href);
+    if (!normalizedHref) return '/workspace/overview';
+
+    const url = new URL(normalizedHref, 'https://dropple.local');
+    const targetPerspectiveId =
+        resolvePerspectiveIdFromPathname(url.pathname) ??
+        asNonEmptyString(currentPerspectiveId) ??
+        'overview';
+    const targetEntryId = asNonEmptyString(url.searchParams.get('entry'));
+    const continuityTargetId =
+        asNonEmptyString(url.searchParams.get('u')) ??
+        asNonEmptyString(continuityTarget?.targetId);
+
+    const continuityKind =
+        targetPerspectiveId === asNonEmptyString(currentPerspectiveId) &&
+        targetEntryId &&
+        targetEntryId !== asNonEmptyString(currentEntryId)
+            ? 'dive'
+            : 'hop';
+
+    const next = withProjectWorldSearchParams({
+        searchParams: url.searchParams,
+        camera,
+        focus: {
+            targetId: continuityTargetId,
+            query: asNonEmptyString(query) ?? '',
+        },
+        continuity: {
+            fromPerspectiveId: asNonEmptyString(currentPerspectiveId),
+            toPerspectiveId: targetPerspectiveId,
+            sourceTargetId: continuityTargetId,
+            sourceLabel: asNonEmptyString(continuityTarget?.label),
+            targetEntryId,
+            sourceEntryId: asNonEmptyString(currentEntryId),
+            sourceKind: asNonEmptyString(continuityTarget?.kind),
+            continuityKind,
+        },
+    });
+
+    return `${url.pathname}?${next.toString()}`;
 }

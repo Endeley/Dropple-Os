@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+    buildProjectArtifactContinuityHref,
     normalizeProjectCameraState,
     resolveProjectCameraFromSearchParams,
     resolveProjectPerspectiveContinuityFromSearchParams,
@@ -166,4 +167,33 @@ test('project world search-param serialization preserves route continuity envelo
     assert.equal(next.get('ps'), 'uiux');
     assert.equal(next.get('pk'), 'workflow');
     assert.equal(next.get('pm'), 'hop');
+});
+
+test('artifact continuity href serialization preserves camera focus and artifact handoff metadata deterministically', () => {
+    const href = buildProjectArtifactContinuityHref({
+        href: '/workspace/operate?entry=systems-engineering&u=system:model',
+        camera: { x: 8.37, y: 4.2, scale: 1 },
+        query: 'operate',
+        currentPerspectiveId: 'build',
+        currentEntryId: 'application',
+        continuityTarget: Object.freeze({
+            targetId: 'system:model',
+            label: 'System Model',
+            kind: 'system-model',
+        }),
+    });
+
+    const url = new URL(href, 'https://dropple.local');
+    assert.equal(url.pathname, '/workspace/operate');
+    assert.equal(url.searchParams.get('entry'), 'systems-engineering');
+    assert.equal(url.searchParams.get('u'), 'system:model');
+    assert.equal(url.searchParams.get('uq'), 'operate');
+    assert.equal(url.searchParams.get('pf'), 'build');
+    assert.equal(url.searchParams.get('pt'), 'operate');
+    assert.equal(url.searchParams.get('pu'), 'system:model');
+    assert.equal(url.searchParams.get('pl'), 'System Model');
+    assert.equal(url.searchParams.get('pe'), 'systems-engineering');
+    assert.equal(url.searchParams.get('ps'), 'application');
+    assert.equal(url.searchParams.get('pk'), 'system-model');
+    assert.equal(url.searchParams.get('pm'), 'hop');
 });

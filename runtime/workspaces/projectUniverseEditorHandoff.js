@@ -19,6 +19,75 @@ const ARTIFACT_ROUTE_MAP = Object.freeze({
     [ArtifactKind.SYSTEM_MODEL]: Object.freeze({ perspectiveId: 'operate', entryId: 'systems-engineering' }),
 });
 
+function resolveNodeRoute(node, currentPerspectiveId, currentEntryId) {
+    const mapped = ARTIFACT_ROUTE_MAP[node?.kind] ?? null;
+    return Object.freeze({
+        perspectiveId: mapped?.perspectiveId ?? asNonEmptyString(currentPerspectiveId) ?? 'overview',
+        entryId: mapped?.entryId ?? asNonEmptyString(currentEntryId) ?? 'uiux',
+    });
+}
+
+export function resolveProjectUniverseContinuityTarget({
+    universe = null,
+    targetId = null,
+    currentPerspectiveId = 'overview',
+    currentEntryId = null,
+} = {}) {
+    const normalizedTargetId = asNonEmptyString(targetId);
+    if (!normalizedTargetId) return null;
+
+    const node =
+        universe?.nodes && typeof universe.nodes === 'object'
+            ? universe.nodes[normalizedTargetId] ?? null
+            : null;
+
+    if (node) {
+        const route = resolveNodeRoute(node, currentPerspectiveId, currentEntryId);
+        return Object.freeze({
+            targetId: normalizedTargetId,
+            perspectiveId: route.perspectiveId,
+            entryId: route.entryId,
+            label: asNonEmptyString(node.label) ?? normalizedTargetId,
+            kind: asNonEmptyString(node.kind) ?? ArtifactKind.DOCUMENT,
+        });
+    }
+
+    const group =
+        universe?.groups && typeof universe.groups === 'object'
+            ? universe.groups[normalizedTargetId] ?? null
+            : null;
+    if (group) {
+        const primaryNodeId = asNonEmptyString(group?.metadata?.primaryNodeId);
+        const primaryNode =
+            primaryNodeId && universe?.nodes && typeof universe.nodes === 'object'
+                ? universe.nodes[primaryNodeId] ?? null
+                : null;
+        return Object.freeze({
+            targetId: normalizedTargetId,
+            perspectiveId: asNonEmptyString(group.perspectiveId) ?? 'overview',
+            entryId: primaryNode ? resolveNodeRoute(primaryNode, currentPerspectiveId, currentEntryId).entryId : null,
+            label: asNonEmptyString(group.label) ?? normalizedTargetId,
+            kind: asNonEmptyString(primaryNode?.kind),
+        });
+    }
+
+    if (normalizedTargetId === asNonEmptyString(universe?.hubId)) {
+        const hubNode =
+            universe?.nodes && typeof universe.nodes === 'object'
+                ? universe.nodes[normalizedTargetId] ?? null
+                : null;
+        return Object.freeze({
+            targetId: normalizedTargetId,
+            perspectiveId: 'overview',
+            entryId: null,
+            label: asNonEmptyString(hubNode?.label) ?? 'Project Hub',
+            kind: asNonEmptyString(hubNode?.kind) ?? ArtifactKind.PROJECT_HUB,
+        });
+    }
+
+    return null;
+}
+
 export function resolveProjectUniverseEditorHandoff({
     universe = null,
     targetId = null,
@@ -35,14 +104,12 @@ export function resolveProjectUniverseEditorHandoff({
 
     if (!node || node.id === universe?.hubId) return null;
 
-    const mapped = ARTIFACT_ROUTE_MAP[node.kind] ?? null;
-    const perspectiveId = mapped?.perspectiveId ?? asNonEmptyString(currentPerspectiveId) ?? 'overview';
-    const entryId = mapped?.entryId ?? asNonEmptyString(currentEntryId) ?? 'uiux';
+    const route = resolveNodeRoute(node, currentPerspectiveId, currentEntryId);
 
     return Object.freeze({
         targetId: normalizedTargetId,
-        perspectiveId,
-        entryId,
+        perspectiveId: route.perspectiveId,
+        entryId: route.entryId,
         label: asNonEmptyString(node.label) ?? normalizedTargetId,
         kind: asNonEmptyString(node.kind) ?? ArtifactKind.DOCUMENT,
     });

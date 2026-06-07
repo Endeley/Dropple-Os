@@ -25,6 +25,7 @@ import { useWorkspaceVisualState } from '@/runtime/projection';
 import { useCommandPalette } from '@/commands/useCommandPalette';
 import { CommandPalette } from '@/commands/CommandPalette';
 import {
+    buildProjectArtifactContinuityHref,
     normalizeProjectCameraState,
     resolveProjectCameraFromSearchParams,
     resolveProjectPerspectiveContinuityFromSearchParams,
@@ -43,7 +44,10 @@ import {
     buildProjectUniverseOrientation,
     resolveProjectUniverseFocusTarget,
 } from '@/runtime/workspaces/projectUniverseNavigation.js';
-import { resolveProjectUniverseEditorHandoff } from '@/runtime/workspaces/projectUniverseEditorHandoff.js';
+import {
+    resolveProjectUniverseContinuityTarget,
+    resolveProjectUniverseEditorHandoff,
+} from '@/runtime/workspaces/projectUniverseEditorHandoff.js';
 import { resolveProjectWorldAnchor } from '@/runtime/workspaces/projectWorldAnchor.js';
 import { buildCreatePerspectiveWorkflow } from '@/runtime/workspaces/createPerspectiveWorkflow.js';
 import { buildBuildPerspectiveWorkflow } from '@/runtime/workspaces/buildPerspectiveWorkflow.js';
@@ -130,14 +134,6 @@ async function copyTextWithFallback(text) {
         }
     }
     window.prompt('Copy project view URL', text);
-}
-
-function navigateProjectWorkflowHref(router, href) {
-    if (typeof window !== 'undefined') {
-        window.location.assign(href);
-        return;
-    }
-    router.push(href);
 }
 
 function isSameCameraState(left, right) {
@@ -370,20 +366,20 @@ export function ProjectPerspectiveShell({
         if (!perspectiveContinuityState.fromPerspectiveId) return null;
         if (perspectiveContinuityState.toPerspectiveId !== perspectiveId) return null;
 
-        if (
-            perspectiveContinuityState.sourceLabel &&
-            perspectiveContinuityState.targetEntryId === projectPerspectiveContext.entryId
-        ) {
+        if (perspectiveContinuityState.sourceLabel) {
             if (perspectiveContinuityState.continuityKind === 'surface') {
                 return `surface: ${perspectiveContinuityState.sourceLabel}`;
             }
             if (perspectiveContinuityState.continuityKind === 'dive') {
                 return `dive: ${perspectiveContinuityState.sourceLabel}`;
             }
+            if (perspectiveContinuityState.continuityKind === 'hop') {
+                return `hop: ${perspectiveContinuityState.sourceLabel}`;
+            }
         }
 
         return `${formatEntryLabel(perspectiveContinuityState.fromPerspectiveId)} -> ${perspectiveLabel}`;
-    }, [perspectiveContinuityState, perspectiveId, perspectiveLabel, projectPerspectiveContext.entryId]);
+    }, [perspectiveContinuityState, perspectiveId, perspectiveLabel]);
 
     const editorEmergenceState = useMemo(() => {
         if (perspectiveContinuityState.continuityKind !== 'dive') return null;
@@ -487,6 +483,43 @@ export function ProjectPerspectiveShell({
         projectUniverse,
         router,
         universeFocusState.query,
+    ]);
+    const navigateArtifactWorkflowHref = useCallback((href) => {
+        const normalizedHref = typeof href === 'string' ? href.trim() : '';
+        if (!normalizedHref) return;
+
+        const url = new URL(
+            normalizedHref,
+            typeof window !== 'undefined' ? window.location.origin : 'https://dropple.local',
+        );
+        const continuityTarget = resolveProjectUniverseContinuityTarget({
+            universe: projectUniverse,
+            targetId: url.searchParams.get('u') ?? universeFocusState.targetId ?? projectUniverse?.hubId,
+            currentPerspectiveId: perspectiveId,
+            currentEntryId: projectPerspectiveContext.entryId,
+        });
+        const nextHref = buildProjectArtifactContinuityHref({
+            href: normalizedHref,
+            camera: cameraRouteState,
+            query: universeFocusState.query,
+            currentPerspectiveId: perspectiveId,
+            currentEntryId: projectPerspectiveContext.entryId,
+            continuityTarget,
+        });
+
+        if (typeof window !== 'undefined') {
+            window.location.assign(nextHref);
+            return;
+        }
+        router.push(nextHref);
+    }, [
+        cameraRouteState,
+        perspectiveId,
+        projectPerspectiveContext.entryId,
+        projectUniverse,
+        router,
+        universeFocusState.query,
+        universeFocusState.targetId,
     ]);
 
     const shareCurrentView = async () => {
@@ -986,7 +1019,7 @@ export function ProjectPerspectiveShell({
                                 key={suggestion.id}
                                 type='button'
                                 data-testid={`project-universe-workflow-suggestion-${suggestion.id}`}
-                                onClick={() => navigateProjectWorkflowHref(router, suggestion.href)}
+                                onClick={() => navigateArtifactWorkflowHref(suggestion.href)}
                                 style={{
                                     textAlign: 'left',
                                     border: '1px solid #e2e8f0',
@@ -1613,12 +1646,7 @@ export function ProjectPerspectiveShell({
                                     {createWorkflow.suggestedNextArtifact ? (
                                         <button
                                             type='button'
-                                            onClick={() =>
-                                                navigateProjectWorkflowHref(
-                                                    router,
-                                                    createWorkflow.suggestedNextArtifact.href,
-                                                )
-                                            }
+                                            onClick={() => navigateArtifactWorkflowHref(createWorkflow.suggestedNextArtifact.href)}
                                             data-testid='create-workflow-suggested-next'
                                             style={{
                                                 textAlign: 'left',
@@ -1681,7 +1709,7 @@ export function ProjectPerspectiveShell({
                                                         <button
                                                             key={item.targetId}
                                                             type='button'
-                                                            onClick={() => navigateProjectWorkflowHref(router, item.href)}
+                                                            onClick={() => navigateArtifactWorkflowHref(item.href)}
                                                             data-testid={`create-workflow-link-${item.targetId}`}
                                                             style={{
                                                                 display: 'grid',
@@ -1787,12 +1815,7 @@ export function ProjectPerspectiveShell({
                                     {buildWorkflow.suggestedNextArtifact ? (
                                         <button
                                             type='button'
-                                            onClick={() =>
-                                                navigateProjectWorkflowHref(
-                                                    router,
-                                                    buildWorkflow.suggestedNextArtifact.href,
-                                                )
-                                            }
+                                            onClick={() => navigateArtifactWorkflowHref(buildWorkflow.suggestedNextArtifact.href)}
                                             data-testid='build-workflow-suggested-next'
                                             style={{
                                                 textAlign: 'left',
@@ -1819,7 +1842,7 @@ export function ProjectPerspectiveShell({
                                     {buildWorkflow.operateHandoff ? (
                                         <button
                                             type='button'
-                                            onClick={() => navigateProjectWorkflowHref(router, buildWorkflow.operateHandoff.href)}
+                                            onClick={() => navigateArtifactWorkflowHref(buildWorkflow.operateHandoff.href)}
                                             data-testid='build-workflow-operate-handoff'
                                             style={{
                                                 textAlign: 'left',
@@ -1882,7 +1905,7 @@ export function ProjectPerspectiveShell({
                                                         <button
                                                             key={item.targetId}
                                                             type='button'
-                                                            onClick={() => navigateProjectWorkflowHref(router, item.href)}
+                                                            onClick={() => navigateArtifactWorkflowHref(item.href)}
                                                             data-testid={`build-workflow-link-${item.targetId}`}
                                                             style={{
                                                                 display: 'grid',
@@ -2052,12 +2075,7 @@ export function ProjectPerspectiveShell({
                                     {collaborateWorkflow.suggestedNextArtifact ? (
                                         <button
                                             type='button'
-                                            onClick={() =>
-                                                navigateProjectWorkflowHref(
-                                                    router,
-                                                    collaborateWorkflow.suggestedNextArtifact.href,
-                                                )
-                                            }
+                                            onClick={() => navigateArtifactWorkflowHref(collaborateWorkflow.suggestedNextArtifact.href)}
                                             data-testid='collaborate-workflow-suggested-next'
                                             style={{
                                                 textAlign: 'left',
@@ -2084,7 +2102,7 @@ export function ProjectPerspectiveShell({
                                     {collaborateWorkflow.publishHandoff ? (
                                         <button
                                             type='button'
-                                            onClick={() => navigateProjectWorkflowHref(router, collaborateWorkflow.publishHandoff.href)}
+                                            onClick={() => navigateArtifactWorkflowHref(collaborateWorkflow.publishHandoff.href)}
                                             data-testid='collaborate-workflow-publish-handoff'
                                             style={{
                                                 textAlign: 'left',
@@ -2147,7 +2165,7 @@ export function ProjectPerspectiveShell({
                                                         <button
                                                             key={`${item.targetId}:${item.entryId}`}
                                                             type='button'
-                                                            onClick={() => navigateProjectWorkflowHref(router, item.href)}
+                                                            onClick={() => navigateArtifactWorkflowHref(item.href)}
                                                             data-testid={`collaborate-workflow-link-${item.targetId}-${item.entryId}`}
                                                             style={{
                                                                 display: 'grid',

@@ -3076,13 +3076,36 @@ test('project world continuity stays stable across browser history after perspec
   await expect(page).toHaveURL(/[\?&]pf=create/);
   await expect(page).toHaveURL(/[\?&]pt=build/);
   await expect(page).toHaveURL(/[\?&]pu=group%3Aoperate/);
-  await expect(page.getByTestId('project-shell-transition-context')).toContainText('Create -> Build');
+  await expect(page.getByTestId('project-shell-transition-context')).toContainText('hop: Create > UI / UX');
 
   await page.goBack({ waitUntil: 'networkidle' });
   await expect(page).toHaveURL(/\/workspace\/create\?/);
   await expect(page).toHaveURL(/[\?&]z=0\.300/);
   await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
   await expect(page.getByTestId('project-universe-surface')).toHaveAttribute('data-camera-mode', 'focus-anchor');
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
+test('artifact-driven workflow handoff preserves continuity across perspective history', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+
+  const response = await page.goto('/workspace/build?blueprint=bp.logistics.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'artifact-driven handoff route should respond successfully').toBeTruthy();
+  await page.getByTestId('build-workflow-operate-handoff').click();
+  await expect(page).toHaveURL(/\/workspace\/operate\?/);
+  await expect(page).toHaveURL(/[\?&]u=system%3Amodel/);
+  await expect(page).toHaveURL(/[\?&]pf=build/);
+  await expect(page.getByTestId('project-shell-transition-context')).toContainText('hop: System Model');
+
+  await page.goBack({ waitUntil: 'networkidle' });
+  await expect(page).toHaveURL(/\/workspace\/build\?/);
+  await expect(page.locator('body')).toContainText('Active context: Build > Application');
+  await expect(page.getByTestId('project-world-anchor-focus')).toContainText('Project Hub');
 
   expect(runtimeErrors.pageErrors).toEqual([]);
   expect(runtimeErrors.consoleErrors).toEqual([]);
