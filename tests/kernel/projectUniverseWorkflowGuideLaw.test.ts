@@ -62,6 +62,20 @@ test('project universe workflow guide falls back to orientation targets when per
         perspectiveId: 'operate',
         entryId: 'automation',
         orientation: Object.freeze({
+            dependencyTargets: Object.freeze([
+                Object.freeze({
+                    targetId: 'group:build',
+                    label: 'Build',
+                    relationshipSummary: 'Depends on Build',
+                }),
+            ]),
+            downstreamTargets: Object.freeze([
+                Object.freeze({
+                    targetId: 'group:publish',
+                    label: 'Publish',
+                    relationshipSummary: 'Operates Publish',
+                }),
+            ]),
             relatedTargets: Object.freeze([
                 Object.freeze({
                     targetId: 'workflow:ops',
@@ -91,7 +105,10 @@ test('project universe workflow guide falls back to orientation targets when per
 
     assert.equal(guide.activityLabel, 'Automation');
     assert.equal(guide.currentTaskLabel, 'System Model');
-    assert.equal(guide.suggestions.length, 2);
+    assert.equal(guide.suggestions.length, 3);
     assert.equal(guide.suggestions[0].targetId, 'workflow:ops');
-    assert.equal(guide.suggestions[1].targetId, 'group:publish');
+    assert.equal(guide.suggestions[1].targetId, 'group:build');
+    assert.equal(guide.suggestions[1].reason, 'Depends on Build');
+    assert.equal(guide.suggestions[2].targetId, 'group:publish');
+    assert.equal(guide.suggestions[2].reason, 'Operates Publish');
 });

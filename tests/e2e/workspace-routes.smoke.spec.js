@@ -578,6 +578,7 @@ test('project universe navigator search and jump stay route-driven and determini
   await expect(page).toHaveURL(/[\?&]uq=operate/);
   await expect(page.getByTestId('project-universe-orientation-summary')).toBeVisible();
   await expect(page.getByTestId('project-universe-orientation-summary')).toContainText('Return');
+  await expect(page.getByTestId('project-universe-orientation-summary')).toContainText('Upstream');
   await expect(page.getByTestId('project-universe-orientation-summary')).toContainText('Next likely');
   await expect(page.getByTestId('project-universe-workflow-guide')).toBeVisible();
   await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Project Workflow');

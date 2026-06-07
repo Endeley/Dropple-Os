@@ -42,8 +42,37 @@ function asNavigatorItem(item) {
         perspectiveId: item.perspectiveId,
         label: item.label,
         subtitle: item.subtitle,
+        relationshipType: asNonEmptyString(item.relationshipType),
+        relationshipSummary: asNonEmptyString(item.relationshipSummary),
         x: Number.isFinite(item.x) ? Number(item.x) : 0,
         y: Number.isFinite(item.y) ? Number(item.y) : 0,
+    });
+}
+
+function isDependencyRelationship(type) {
+    return (
+        type === 'depends-on' ||
+        type === 'documents' ||
+        type === 'styles' ||
+        type === 'components-for'
+    );
+}
+
+function isDownstreamRelationship(type) {
+    return (
+        type === 'produces' ||
+        type === 'publishes' ||
+        type === 'operates' ||
+        type === 'reviews'
+    );
+}
+
+function attachRelationship(item, relationship) {
+    if (!item || !relationship) return asNavigatorItem(item);
+    return Object.freeze({
+        ...asNavigatorItem(item),
+        relationshipType: asNonEmptyString(relationship.type),
+        relationshipSummary: asNonEmptyString(relationship.summary),
     });
 }
 
@@ -135,21 +164,30 @@ export function buildProjectUniverseOrientation({ universe = null, targetId = nu
                 ? asNavigatorItem(hubId ? byTargetId.get(hubId) ?? null : null)
                 : null;
 
-    const relatedTargetIds =
+    const relationshipEdges =
         current.targetType === 'group'
-            ? Array.isArray(group?.metadata?.relatedGroupIds)
-                ? group.metadata.relatedGroupIds
+            ? Array.isArray(group?.metadata?.relationshipEdges)
+                ? group.metadata.relationshipEdges
                 : []
             : current.targetType === 'node'
-                ? Array.isArray(node?.refs)
-                    ? node.refs.filter((ref) => ref !== hubId)
+                ? Array.isArray(node?.metadata?.relationshipEdges)
+                    ? node.metadata.relationshipEdges
                     : []
                 : [];
 
     const relatedTargets = dedupeTargets(
-        relatedTargetIds
-            .map((id) => asNavigatorItem(byTargetId.get(id) ?? null))
+        relationshipEdges
+            .map((edge) => {
+                const targetId = asNonEmptyString(edge?.targetNodeId) ?? asNonEmptyString(edge?.targetGroupId);
+                return attachRelationship(byTargetId.get(targetId) ?? null, edge);
+            })
             .filter(Boolean),
+    );
+    const dependencyTargets = dedupeTargets(
+        relatedTargets.filter((item) => isDependencyRelationship(item.relationshipType)),
+    );
+    const downstreamTargets = dedupeTargets(
+        relatedTargets.filter((item) => isDownstreamRelationship(item.relationshipType)),
     );
 
     const siblingTargets = dedupeTargets(
@@ -178,14 +216,22 @@ export function buildProjectUniverseOrientation({ universe = null, targetId = nu
               )
             : Object.freeze([]);
     const nextTargets = matchedTargets.length > 0 ? matchedTargets : siblingTargets;
+    const flowTargets = dedupeTargets(
+        matchedTargets.length > 0
+            ? [...dependencyTargets, ...downstreamTargets, ...matchedTargets]
+            : [...dependencyTargets, ...downstreamTargets, ...siblingTargets],
+    );
 
     return Object.freeze({
         current,
         returnTarget,
         relatedTargets,
+        dependencyTargets,
+        downstreamTargets,
         siblingTargets,
         matchedTargets,
         nextTargets,
+        flowTargets,
     });
 }
 

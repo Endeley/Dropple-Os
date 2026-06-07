@@ -878,6 +878,8 @@ export function ProjectPerspectiveShell({
     const renderUniverseOrientation = () => {
         if (!universeOrientation) return null;
         const relatedTargets = universeOrientation.relatedTargets.slice(0, 3);
+        const dependencyTargets = universeOrientation.dependencyTargets.slice(0, 3);
+        const downstreamTargets = universeOrientation.downstreamTargets.slice(0, 3);
         const nextTargets = universeOrientation.nextTargets
             .filter((item) => item.targetId !== universeOrientation.returnTarget?.targetId)
             .slice(0, 3);
@@ -944,7 +946,55 @@ export function ProjectPerspectiveShell({
                                     cursor: 'pointer',
                                 }}>
                                 <div style={{ fontSize: 11, fontWeight: 600 }}>{item.label}</div>
-                                <div style={{ fontSize: 10, color: '#64748b' }}>{item.subtitle}</div>
+                                <div style={{ fontSize: 10, color: '#64748b' }}>{item.relationshipSummary ?? item.subtitle}</div>
+                            </button>
+                        ))}
+                    </div>
+                ) : null}
+                {dependencyTargets.length > 0 ? (
+                    <div style={{ display: 'grid', gap: 4 }}>
+                        <div style={{ fontSize: 10, color: '#64748b' }}>Upstream</div>
+                        {dependencyTargets.map((item) => (
+                            <button
+                                key={`dependency-${item.targetId}`}
+                                type='button'
+                                data-testid={`project-universe-orientation-dependency-${item.targetId}`}
+                                onClick={() => handleUniverseFocusTarget(item.targetId)}
+                                style={{
+                                    textAlign: 'left',
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: 6,
+                                    background: '#ffffff',
+                                    color: '#334155',
+                                    padding: '6px 8px',
+                                    cursor: 'pointer',
+                                }}>
+                                <div style={{ fontSize: 11, fontWeight: 600 }}>{item.label}</div>
+                                <div style={{ fontSize: 10, color: '#64748b' }}>{item.relationshipSummary ?? item.subtitle}</div>
+                            </button>
+                        ))}
+                    </div>
+                ) : null}
+                {downstreamTargets.length > 0 ? (
+                    <div style={{ display: 'grid', gap: 4 }}>
+                        <div style={{ fontSize: 10, color: '#64748b' }}>Downstream</div>
+                        {downstreamTargets.map((item) => (
+                            <button
+                                key={`downstream-${item.targetId}`}
+                                type='button'
+                                data-testid={`project-universe-orientation-downstream-${item.targetId}`}
+                                onClick={() => handleUniverseFocusTarget(item.targetId)}
+                                style={{
+                                    textAlign: 'left',
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: 6,
+                                    background: '#ffffff',
+                                    color: '#334155',
+                                    padding: '6px 8px',
+                                    cursor: 'pointer',
+                                }}>
+                                <div style={{ fontSize: 11, fontWeight: 600 }}>{item.label}</div>
+                                <div style={{ fontSize: 10, color: '#64748b' }}>{item.relationshipSummary ?? item.subtitle}</div>
                             </button>
                         ))}
                     </div>

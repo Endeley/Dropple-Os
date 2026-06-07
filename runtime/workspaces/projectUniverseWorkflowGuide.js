@@ -69,6 +69,41 @@ function resolveCurrentSummary({
 }
 
 function buildFallbackOrientationSuggestions({ suggestions, seen, orientation, perspectiveId, entryId }) {
+    const dependencyTargets = Array.isArray(orientation?.dependencyTargets) ? orientation.dependencyTargets : [];
+    const downstreamTargets = Array.isArray(orientation?.downstreamTargets) ? orientation.downstreamTargets : [];
+
+    for (const item of dependencyTargets) {
+        appendSuggestion(
+            suggestions,
+            seen,
+            createSuggestion({
+                id: `orientation:dependency:${item.targetId}`,
+                label: item.label,
+                reason: item.relationshipSummary ?? 'Resolve upstream dependency context from the current project world.',
+                href: buildPerspectiveHref({ perspectiveId, entryId, targetId: item.targetId }),
+                targetId: item.targetId,
+                perspectiveId,
+                entryId,
+            }),
+        );
+    }
+
+    for (const item of downstreamTargets) {
+        appendSuggestion(
+            suggestions,
+            seen,
+            createSuggestion({
+                id: `orientation:downstream:${item.targetId}`,
+                label: item.label,
+                reason: item.relationshipSummary ?? 'Move into downstream project flow from the current focus.',
+                href: buildPerspectiveHref({ perspectiveId, entryId, targetId: item.targetId }),
+                targetId: item.targetId,
+                perspectiveId,
+                entryId,
+            }),
+        );
+    }
+
     for (const item of orientation?.nextTargets ?? []) {
         appendSuggestion(
             suggestions,

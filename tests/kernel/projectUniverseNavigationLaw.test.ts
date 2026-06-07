@@ -102,6 +102,23 @@ test('project universe orientation derives deterministic current, return, relate
                 y: 5,
                 kind: 'document',
                 refs: Object.freeze(['group:build', 'project:hub', 'workflow:publish']),
+                metadata: Object.freeze({
+                    relationshipEdges: Object.freeze([
+                        Object.freeze({
+                            targetPerspectiveId: 'build',
+                            targetGroupId: 'group:build',
+                            targetNodeId: 'workflow:publish',
+                            type: 'documents',
+                            summary: 'documents Publish Targets',
+                        }),
+                        Object.freeze({
+                            targetPerspectiveId: 'publish',
+                            targetGroupId: 'group:publish',
+                            type: 'documents',
+                            summary: 'documents Publish',
+                        }),
+                    ]),
+                }),
             }),
             'components:library': Object.freeze({
                 id: 'components:library',
@@ -131,6 +148,20 @@ test('project universe orientation derives deterministic current, return, relate
                 metadata: Object.freeze({
                     primaryNodeLabel: 'Primary Document',
                     relatedGroupIds: Object.freeze(['group:build', 'group:publish']),
+                    relationshipEdges: Object.freeze([
+                        Object.freeze({
+                            targetPerspectiveId: 'build',
+                            targetGroupId: 'group:build',
+                            type: 'depends-on',
+                            summary: 'depends on Build',
+                        }),
+                        Object.freeze({
+                            targetPerspectiveId: 'publish',
+                            targetGroupId: 'group:publish',
+                            type: 'publishes',
+                            summary: 'publishes to Publish',
+                        }),
+                    ]),
                 }),
             }),
             'group:build': Object.freeze({
@@ -168,7 +199,15 @@ test('project universe orientation derives deterministic current, return, relate
     assert.equal(nodeOrientation?.returnTarget?.targetId, 'group:create');
     assert.deepEqual(
         nodeOrientation?.relatedTargets.map((item) => item.targetId),
-        ['group:build', 'workflow:publish'],
+        ['workflow:publish', 'group:publish'],
+    );
+    assert.deepEqual(
+        nodeOrientation?.dependencyTargets.map((item) => item.targetId),
+        ['workflow:publish', 'group:publish'],
+    );
+    assert.deepEqual(
+        nodeOrientation?.downstreamTargets.map((item) => item.targetId),
+        [],
     );
     assert.deepEqual(
         nodeOrientation?.siblingTargets.map((item) => item.targetId),
@@ -193,6 +232,14 @@ test('project universe orientation derives deterministic current, return, relate
     assert.deepEqual(
         groupOrientation?.relatedTargets.map((item) => item.targetId),
         ['group:build', 'group:publish'],
+    );
+    assert.deepEqual(
+        groupOrientation?.dependencyTargets.map((item) => item.targetId),
+        ['group:build'],
+    );
+    assert.deepEqual(
+        groupOrientation?.downstreamTargets.map((item) => item.targetId),
+        ['group:publish'],
     );
     assert.deepEqual(
         groupOrientation?.siblingTargets.map((item) => item.targetId),
