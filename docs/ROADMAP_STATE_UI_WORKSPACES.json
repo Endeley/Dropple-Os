@@ -457,9 +457,10 @@
         {
           "id": "U15.M3",
           "title": "Contextual Surface Emergence",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
             "ui/workspace/shell/PanelRenderer.jsx",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
             "ui/workspace/uiux/UIUXAuthoringShell.jsx",
             "ui/workspace/uiux/UIUXTransitionTimelinePanel.jsx",
             "tests/e2e/workspace-routes.smoke.spec.js"

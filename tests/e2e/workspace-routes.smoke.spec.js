@@ -517,7 +517,12 @@ test('create shell keeps timeline compact until a motion-capable node is active'
   });
 
   expect(response?.ok(), 'create timeline compact route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('inspector-shell')).toHaveAttribute('data-state', 'idle');
+  await expect(page.getByTestId('inspector-shell')).toHaveAttribute('data-emergence-source', 'context');
+  await expect(page.getByTestId('inspector-context-summary')).toContainText('waiting for selection');
   await expect(page.getByTestId('uiux-transition-timeline')).toHaveAttribute('data-state', 'inactive');
+  await expect(page.getByTestId('uiux-transition-timeline')).toHaveAttribute('data-emergence', 'dormant');
+  await expect(page.getByTestId('uiux-transition-timeline')).toHaveAttribute('data-emergence-source', 'context');
   await expect(page.getByTestId('uiux-transition-timeline-inactive')).toContainText(
     'Motion tools appear when a motion-capable node is active',
   );
@@ -553,10 +558,13 @@ test('project shell assistant intent enqueues through canonical runtime bridge',
 
   expect(response?.ok(), 'create bootstrap route should respond successfully').toBeTruthy();
   await expect(page.getByTestId('assistant-surface-panel')).toBeVisible();
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-state', 'ready');
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-emergence-source', 'assistant');
   await expect(page.getByTestId('assistant-surface-focus')).toContainText('Design Assistant for UI / UX');
   await expect(page.getByTestId('assistant-surface-details')).toContainText('Assistant details');
 
   await page.getByTestId('assistant-action-recommend').click();
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-state', 'engaged');
   await expect(page.locator('body')).toContainText(/assistant intent:\s+enqueued:/);
 });
 

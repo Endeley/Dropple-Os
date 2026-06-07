@@ -70,6 +70,7 @@ export function UIUXTransitionTimelinePanel({ node = null }) {
         [property, selectedMotionClips],
     );
     const timelineActive = Boolean(activeNode?.id);
+    const timelineEmergence = timelineActive ? 'raised' : 'dormant';
     const [activeKeyframeId, setActiveKeyframeId] = useState(null);
     const activeKeyframe = useMemo(
         () =>
@@ -135,7 +136,9 @@ export function UIUXTransitionTimelinePanel({ node = null }) {
         <div
             className={`uiux-transition-timeline ${timelineActive ? 'is-active' : 'is-inactive'}`}
             data-testid='uiux-transition-timeline'
-            data-state={timelineActive ? 'active' : 'inactive'}>
+            data-state={timelineActive ? 'active' : 'inactive'}
+            data-emergence={timelineEmergence}
+            data-emergence-source={timelineActive ? 'selection' : 'context'}>
             <div className='uiux-transition-timeline__summary'>
                 <strong>Transition Timeline</strong>
                 <span className='inspector-subtle'>

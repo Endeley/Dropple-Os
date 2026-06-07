@@ -138,6 +138,8 @@ export function PanelRenderer({ workspaceId, node, emit, extraPanels = [] }) {
         () => normalizedPanels.filter((panelId) => resolvePanelTab(panelId) === 'library'),
         [normalizedPanels],
     );
+    const inspectorSurfaceState = node ? 'focused' : activeTab === 'library' ? 'library' : activeTab === 'surface' ? 'surface' : 'idle';
+    const inspectorSurfaceSource = node ? 'selection' : activeTab === 'library' ? 'library' : activeTab === 'surface' ? 'canvas' : 'context';
 
     function renderPanel(panelId) {
         const entry = PanelRegistry[panelId];
@@ -153,11 +155,32 @@ export function PanelRenderer({ workspaceId, node, emit, extraPanels = [] }) {
 
     return (
         <aside className='uiux-rightpanel'>
-            <div className='inspector-shell'>
+            <div
+                className='inspector-shell'
+                data-testid='inspector-shell'
+                data-state={inspectorSurfaceState}
+                data-emergence-source={inspectorSurfaceSource}>
                 <div className='inspector-header'>
                     <div className='inspector-title'>Inspector</div>
 
                     <div className='inspector-subtitle'>{node?.name || node?.type || 'No Selection'}</div>
+                </div>
+                <div
+                    data-testid='inspector-context-summary'
+                    style={{
+                        padding: '0 12px 10px',
+                        fontSize: 10,
+                        color: '#64748b',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em',
+                    }}>
+                    {inspectorSurfaceState === 'focused'
+                        ? 'Context: selection'
+                        : inspectorSurfaceState === 'surface'
+                          ? 'Context: canvas surface'
+                          : inspectorSurfaceState === 'library'
+                            ? 'Context: blueprint library'
+                            : 'Context: waiting for selection'}
                 </div>
 
                 {tabs.length > 1 ? (

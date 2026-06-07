@@ -677,6 +677,11 @@ export function ProjectPerspectiveShell({
         [perspectiveId, projectPerspectiveContext.entryId],
     );
     const isCreatePerspective = perspectiveId === 'create';
+    const assistantSurfaceState = assistantIntentStatus
+        ? 'engaged'
+        : assistantSurface?.activeAssistantId
+          ? 'ready'
+          : 'idle';
 
     const requestAssistantPlaceholder = async (assistantAction) => {
         const result = await dispatchOsWorkspaceShellIntent(
@@ -1502,6 +1507,8 @@ export function ProjectPerspectiveShell({
                             </div>
                             <div
                                 data-testid='assistant-surface-panel'
+                                data-state={assistantSurfaceState}
+                                data-emergence-source='assistant'
                                 style={{
                                     border: '1px solid #e2e8f0',
                                     borderRadius: 6,

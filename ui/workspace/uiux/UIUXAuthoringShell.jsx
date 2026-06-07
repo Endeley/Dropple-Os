@@ -153,7 +153,10 @@ export function UIUXAuthoringShell({
 
                 {/* Reserved bottom dock for design timeline */}
                 {capabilitySurface.showTransitionTimeline ? (
-                    <footer className='uiux-bottom-dock' data-testid='uiux-bottom-dock'>
+                    <footer
+                        className='uiux-bottom-dock'
+                        data-testid='uiux-bottom-dock'
+                        data-surface='timeline'>
                         <UIUXTransitionTimelinePanel node={node} />
                     </footer>
                 ) : null}
