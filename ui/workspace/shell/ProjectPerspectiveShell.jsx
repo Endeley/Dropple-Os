@@ -46,6 +46,7 @@ import { resolveProjectUniverseEditorHandoff } from '@/runtime/workspaces/projec
 import { resolveProjectWorldAnchor } from '@/runtime/workspaces/projectWorldAnchor.js';
 import { buildCreatePerspectiveWorkflow } from '@/runtime/workspaces/createPerspectiveWorkflow.js';
 import { buildBuildPerspectiveWorkflow } from '@/runtime/workspaces/buildPerspectiveWorkflow.js';
+import { buildOperatePerspectiveWorldSummary } from '@/runtime/workspaces/buildOverlayWorkflow.js';
 import { buildCollaboratePerspectiveWorkflow } from '@/runtime/workspaces/collaboratePerspectiveWorkflow.js';
 import { resolveCreateAssistantActionLabels } from '@/runtime/workspaces/createAssistantActionLabels.js';
 import { resolveBuildAssistantActionLabels } from '@/runtime/workspaces/buildAssistantActionLabels.js';
@@ -712,6 +713,17 @@ export function ProjectPerspectiveShell({
                 activeEntryId: projectPerspectiveContext.entryId,
             }),
         [projectPerspectiveContext.entryId, projectUniverse],
+    );
+    const operateWorldSummary = useMemo(
+        () =>
+            perspectiveId === 'operate'
+                ? buildOperatePerspectiveWorldSummary({
+                      entryId: projectPerspectiveContext.entryId,
+                      document: projectedDocument,
+                      universe: projectUniverse,
+                  })
+                : null,
+        [perspectiveId, projectPerspectiveContext.entryId, projectedDocument, projectUniverse],
     );
     const createAssistantLabels = useMemo(
         () =>
@@ -1626,6 +1638,66 @@ export function ProjectPerspectiveShell({
                                                 No linked build artifacts
                                             </span>
                                         ) : null}
+                                    </div>
+                                </div>
+                            </div>
+                        ) : null}
+                        {perspectiveId === 'operate' ? (
+                            <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                                    Operate World
+                                </div>
+                                <div
+                                    data-testid='operate-world-panel'
+                                    style={{
+                                        border: '1px solid #dcfce7',
+                                        borderRadius: 8,
+                                        padding: 8,
+                                        background: '#f0fdf4',
+                                        display: 'grid',
+                                        gap: 8,
+                                    }}>
+                                    <div
+                                        style={{
+                                            fontSize: 10,
+                                            fontWeight: 700,
+                                            letterSpacing: '0.04em',
+                                            textTransform: 'uppercase',
+                                            color: '#166534',
+                                        }}>
+                                        Operate World
+                                    </div>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: '#14532d' }}>
+                                        {operateWorldSummary?.activityLabel ?? 'Operate'}
+                                    </div>
+                                    <div
+                                        data-testid='operate-world-summary'
+                                        style={{ display: 'grid', gap: 3, fontSize: 10, color: '#166534' }}>
+                                        <span>
+                                            Current task:{' '}
+                                            <strong style={{ color: '#14532d' }}>
+                                                {operateWorldSummary?.currentTaskLabel ?? 'Awaiting operate context'}
+                                            </strong>
+                                        </span>
+                                        <span>
+                                            Assistant:{' '}
+                                            <strong style={{ color: '#14532d' }}>
+                                                {operateAssistantLabels?.assistantLabel ?? 'Operations Assistant'}
+                                            </strong>
+                                        </span>
+                                        <span>
+                                            Context:{' '}
+                                            <strong style={{ color: '#14532d' }}>
+                                                {operateWorldSummary?.linkedContextCount ?? 0}
+                                            </strong>{' '}
+                                            linked operate targets
+                                        </span>
+                                        <span>
+                                            Signals:{' '}
+                                            <strong style={{ color: '#14532d' }}>
+                                                {operateWorldSummary?.summaryLabel ?? 'No operate signals'}
+                                            </strong>
+                                        </span>
                                     </div>
                                 </div>
                             </div>

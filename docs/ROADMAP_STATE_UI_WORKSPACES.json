@@ -614,7 +614,7 @@
         {
           "id": "U17.2",
           "title": "Operate Workspace Product Polish",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
             "ui/workspace/shell/ProjectPerspectiveShell.jsx",
             "ui/workspace/build/SystemsEngineeringPanel.jsx",

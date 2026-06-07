@@ -22,6 +22,17 @@ function buildOverlayHref(entryId, targetId = null) {
     return `/workspace/operate?${searchParams.toString()}`;
 }
 
+function summarizeOperateEntryLabel(entryId) {
+    const labels = {
+        automation: 'Automation',
+        'systems-engineering': 'Systems Engineering',
+        'enterprise-operations': 'Enterprise Operations',
+        production: 'Production',
+        governance: 'Governance',
+    };
+    return labels[entryId] ?? 'Operate';
+}
+
 function summarizeSimulation(document) {
     const simulation = asObject(document?.simulation);
     return Object.freeze({
@@ -89,5 +100,42 @@ export function buildEnterpriseOperationsOverlayModel({ document = null, univers
         roleCount: 0,
         processNodes: Object.freeze(processNodes),
         suggestedHref: processNodes[0]?.href ?? buildOverlayHref('enterprise-operations'),
+    });
+}
+
+export function buildOperatePerspectiveWorldSummary({ entryId = 'automation', document = null, universe = null } = {}) {
+    const normalizedEntryId = String(entryId ?? 'automation').trim().toLowerCase() || 'automation';
+
+    if (normalizedEntryId === 'systems-engineering') {
+        const model = buildSystemsEngineeringOverlayModel({ document, universe });
+        return Object.freeze({
+            activityLabel: 'Systems Engineering',
+            currentTaskLabel: model.workflowNodes[0]?.label ?? model.systemNodes[0]?.label ?? 'Awaiting system model',
+            linkedContextCount: model.workflowNodes.length + model.systemNodes.length,
+            summaryLabel: `${model.graphCount} graphs · ${model.controlCount} controls · ${model.dataflowCount} signals`,
+            bridgeLabel: 'Operate / Systems Engineering',
+        });
+    }
+
+    if (normalizedEntryId === 'enterprise-operations') {
+        const model = buildEnterpriseOperationsOverlayModel({ document, universe });
+        return Object.freeze({
+            activityLabel: 'Enterprise Operations',
+            currentTaskLabel: model.processNodes[0]?.label ?? 'Awaiting process model',
+            linkedContextCount: model.processNodes.length,
+            summaryLabel: `${model.processCount} processes · ${model.automationCount} automation paths · ${model.datasourceCount} data sources`,
+            bridgeLabel: 'Operate / Enterprise Operations',
+        });
+    }
+
+    const workflowCount = countKeys(asObject(document?.app)?.flows) + countKeys(asObject(document?.stateMachines)?.machines);
+    const signalCount = countKeys(document?.variables) + countKeys(document?.bindings);
+
+    return Object.freeze({
+        activityLabel: summarizeOperateEntryLabel(normalizedEntryId),
+        currentTaskLabel: workflowCount > 0 ? 'Operate active workflows' : 'Awaiting operate context',
+        linkedContextCount: workflowCount,
+        summaryLabel: `${workflowCount} workflows · ${signalCount} signals`,
+        bridgeLabel: `Operate / ${summarizeOperateEntryLabel(normalizedEntryId)}`,
     });
 }

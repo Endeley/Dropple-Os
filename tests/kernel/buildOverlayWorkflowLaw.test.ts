@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { ArtifactKind } from '@/core/artifacts/ArtifactKind.js';
 import {
     buildEnterpriseOperationsOverlayModel,
+    buildOperatePerspectiveWorldSummary,
     buildSystemsEngineeringOverlayModel,
 } from '@/runtime/workspaces/buildOverlayWorkflow.js';
 
@@ -75,5 +76,50 @@ test('enterprise operations overlay model is deterministic and fail-closed', () 
     assert.equal(
         buildEnterpriseOperationsOverlayModel({ document: null, universe: null }).suggestedHref,
         '/workspace/operate?entry=enterprise-operations',
+    );
+});
+
+test('operate perspective world summary is deterministic and entry-aware', () => {
+    const document = {
+        graphs: { logistics: {} },
+        app: { flows: { assignDriver: {} } },
+        stateMachines: { machines: { dispatch: {} } },
+        variables: { warehouse: {} },
+        bindings: {},
+    };
+    const universe = {
+        hubId: 'project:hub',
+        nodes: {
+            'project:hub': { id: 'project:hub', kind: ArtifactKind.PROJECT_HUB, label: 'Hub' },
+            'workflow:graph:architecture': { id: 'workflow:graph:architecture', kind: ArtifactKind.WORKFLOW, label: 'Architecture' },
+            'state-machine:dispatch': { id: 'state-machine:dispatch', kind: ArtifactKind.STATE_MACHINE, label: 'Dispatch' },
+            'system:model': { id: 'system:model', kind: ArtifactKind.SYSTEM_MODEL, label: 'System Model' },
+        },
+    };
+
+    const left = buildOperatePerspectiveWorldSummary({ entryId: 'systems-engineering', document, universe });
+    const right = buildOperatePerspectiveWorldSummary({ entryId: 'systems-engineering', document, universe });
+
+    assert.deepEqual(left, right);
+    assert.deepEqual(
+        left,
+        Object.freeze({
+            activityLabel: 'Systems Engineering',
+            currentTaskLabel: 'Architecture',
+            linkedContextCount: 3,
+            summaryLabel: '1 graphs · 1 controls · 2 signals',
+            bridgeLabel: 'Operate / Systems Engineering',
+        }),
+    );
+
+    assert.deepEqual(
+        buildOperatePerspectiveWorldSummary({ entryId: 'enterprise-operations', document, universe }),
+        Object.freeze({
+            activityLabel: 'Enterprise Operations',
+            currentTaskLabel: 'Architecture',
+            linkedContextCount: 2,
+            summaryLabel: '2 processes · 2 automation paths · 1 data sources',
+            bridgeLabel: 'Operate / Enterprise Operations',
+        }),
     );
 });

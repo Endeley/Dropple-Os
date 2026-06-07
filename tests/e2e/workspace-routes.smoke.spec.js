@@ -924,6 +924,12 @@ test('operate overlays expose deterministic systems and operations panels', asyn
   });
 
   expect(response?.ok(), 'systems engineering route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('operate-world-panel')).toContainText('Operate World');
+  await expect(page.getByTestId('operate-world-panel')).toContainText('Systems Engineering');
+  await expect(page.getByTestId('operate-world-summary')).toContainText('Current task: System Model');
+  await expect(page.getByTestId('operate-world-summary')).toContainText('Assistant: Operations Assistant');
+  await expect(page.getByTestId('operate-world-summary')).toContainText('Context: 2 linked operate targets');
+  await expect(page.getByTestId('operate-world-summary')).toContainText('Signals: 0 graphs · 0 controls · 0 signals');
   await expect(page.getByTestId('systems-engineering-panel')).toContainText('Systems Engineering');
   await expect(page.getByTestId('systems-engineering-panel')).toContainText('Architecture graphs:');
   await expect(page.getByTestId('systems-engineering-panel')).toContainText('Continue in Systems Engineering');
@@ -933,6 +939,10 @@ test('operate overlays expose deterministic systems and operations panels', asyn
   });
 
   expect(response?.ok(), 'enterprise operations route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('operate-world-panel')).toContainText('Enterprise Operations');
+  await expect(page.getByTestId('operate-world-summary')).toContainText('Current task: System Model');
+  await expect(page.getByTestId('operate-world-summary')).toContainText('Context: 1 linked operate targets');
+  await expect(page.getByTestId('operate-world-summary')).toContainText('Signals: 0 processes · 0 automation paths · 0 data sources');
   await expect(page.getByTestId('enterprise-operations-panel')).toContainText('Enterprise Operations');
   await expect(page.getByTestId('enterprise-operations-panel')).toContainText('Processes:');
   await expect(page.getByTestId('enterprise-operations-panel')).toContainText('Continue in Enterprise Operations');
