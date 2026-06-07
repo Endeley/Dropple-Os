@@ -68,7 +68,7 @@ test('project universe focus search-param serialization preserves existing query
 });
 
 test('project perspective continuity search-param resolution is deterministic and fail-closed', () => {
-    const params = new URLSearchParams('pf=create&pt=build&pu=document:primary&pl=Document&pe=document');
+    const params = new URLSearchParams('pf=create&pt=build&pu=document:primary&pl=Document&pe=document&ps=uiux&pk=document&pm=dive');
     const continuity = resolveProjectPerspectiveContinuityFromSearchParams(params);
     assert.deepEqual(
         continuity,
@@ -78,6 +78,9 @@ test('project perspective continuity search-param resolution is deterministic an
             sourceTargetId: 'document:primary',
             sourceLabel: 'Document',
             targetEntryId: 'document',
+            sourceEntryId: 'uiux',
+            sourceKind: 'document',
+            continuityKind: 'dive',
         }),
     );
 });
@@ -92,6 +95,9 @@ test('project perspective continuity search-param serialization preserves existi
             sourceTargetId: 'document:primary',
             sourceLabel: 'Document',
             targetEntryId: 'document',
+            sourceEntryId: 'uiux',
+            sourceKind: 'document',
+            continuityKind: 'dive',
         },
     });
     assert.equal(next.get('entry'), 'uiux');
@@ -100,11 +106,14 @@ test('project perspective continuity search-param serialization preserves existi
     assert.equal(next.get('pu'), 'document:primary');
     assert.equal(next.get('pl'), 'Document');
     assert.equal(next.get('pe'), 'document');
+    assert.equal(next.get('ps'), 'uiux');
+    assert.equal(next.get('pk'), 'document');
+    assert.equal(next.get('pm'), 'dive');
 });
 
 test('project world route-state resolution is deterministic and frozen', () => {
     const params = new URLSearchParams(
-        'entry=uiux&x=12.25&y=-6.50&z=0.750&u=group:operate&uq=operate&pf=create&pt=build&pu=group:operate&pl=Operate&pe=automation',
+        'entry=uiux&x=12.25&y=-6.50&z=0.750&u=group:operate&uq=operate&pf=create&pt=build&pu=group:operate&pl=Operate&pe=automation&ps=uiux&pk=workflow&pm=hop',
     );
     const state = resolveProjectWorldRouteStateFromSearchParams(params);
     assert.deepEqual(state, Object.freeze({
@@ -116,6 +125,9 @@ test('project world route-state resolution is deterministic and frozen', () => {
             sourceTargetId: 'group:operate',
             sourceLabel: 'Operate',
             targetEntryId: 'automation',
+            sourceEntryId: 'uiux',
+            sourceKind: 'workflow',
+            continuityKind: 'hop',
         }),
     }));
     assert.equal(Object.isFrozen(state), true);
@@ -123,7 +135,7 @@ test('project world route-state resolution is deterministic and frozen', () => {
 
 test('project world search-param serialization preserves route continuity envelope during camera updates', () => {
     const params = new URLSearchParams(
-        'entry=uiux&u=group:operate&uq=operate&pf=create&pt=build&pu=group:operate&pl=Operate&pe=automation',
+        'entry=uiux&u=group:operate&uq=operate&pf=create&pt=build&pu=group:operate&pl=Operate&pe=automation&ps=uiux&pk=workflow&pm=hop',
     );
     const next = withProjectWorldSearchParams({
         searchParams: params,
@@ -135,6 +147,9 @@ test('project world search-param serialization preserves route continuity envelo
             sourceTargetId: 'group:operate',
             sourceLabel: 'Operate',
             targetEntryId: 'automation',
+            sourceEntryId: 'uiux',
+            sourceKind: 'workflow',
+            continuityKind: 'hop',
         },
     });
     assert.equal(next.get('entry'), 'uiux');
@@ -148,4 +163,7 @@ test('project world search-param serialization preserves route continuity envelo
     assert.equal(next.get('pu'), 'group:operate');
     assert.equal(next.get('pl'), 'Operate');
     assert.equal(next.get('pe'), 'automation');
+    assert.equal(next.get('ps'), 'uiux');
+    assert.equal(next.get('pk'), 'workflow');
+    assert.equal(next.get('pm'), 'hop');
 });

@@ -20,6 +20,14 @@ function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
 }
 
+function normalizeContinuityKind(value) {
+    const normalized = asNonEmptyString(value);
+    if (normalized === 'hop' || normalized === 'dive' || normalized === 'surface') {
+        return normalized;
+    }
+    return null;
+}
+
 export function normalizeProjectCameraState(camera = {}) {
     return Object.freeze({
         x: clamp(parseFiniteOr(camera?.x, 0), CAMERA_LIMITS.minPosition, CAMERA_LIMITS.maxPosition),
@@ -73,6 +81,9 @@ export function resolveProjectPerspectiveContinuityFromSearchParams(searchParams
         sourceTargetId: asNonEmptyString(searchParams?.get?.('pu')),
         sourceLabel: asNonEmptyString(searchParams?.get?.('pl')),
         targetEntryId: asNonEmptyString(searchParams?.get?.('pe')),
+        sourceEntryId: asNonEmptyString(searchParams?.get?.('ps')),
+        sourceKind: asNonEmptyString(searchParams?.get?.('pk')),
+        continuityKind: normalizeContinuityKind(searchParams?.get?.('pm')),
     });
 }
 
@@ -83,6 +94,9 @@ export function withProjectPerspectiveContinuitySearchParams({ searchParams, con
     const sourceTargetId = asNonEmptyString(continuity?.sourceTargetId);
     const sourceLabel = asNonEmptyString(continuity?.sourceLabel);
     const targetEntryId = asNonEmptyString(continuity?.targetEntryId);
+    const sourceEntryId = asNonEmptyString(continuity?.sourceEntryId);
+    const sourceKind = asNonEmptyString(continuity?.sourceKind);
+    const continuityKind = normalizeContinuityKind(continuity?.continuityKind);
 
     if (fromPerspectiveId) next.set('pf', fromPerspectiveId);
     else next.delete('pf');
@@ -98,6 +112,15 @@ export function withProjectPerspectiveContinuitySearchParams({ searchParams, con
 
     if (targetEntryId) next.set('pe', targetEntryId);
     else next.delete('pe');
+
+    if (sourceEntryId) next.set('ps', sourceEntryId);
+    else next.delete('ps');
+
+    if (sourceKind) next.set('pk', sourceKind);
+    else next.delete('pk');
+
+    if (continuityKind) next.set('pm', continuityKind);
+    else next.delete('pm');
 
     return next;
 }

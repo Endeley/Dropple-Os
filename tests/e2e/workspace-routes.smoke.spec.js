@@ -393,7 +393,7 @@ test('project universe exposes spatial pointer and camera readability contracts'
   await expect(page.getByTestId('project-universe-surface')).toHaveAttribute('data-camera-mode', 'focus-anchor');
 });
 
-test('project universe node handoff preserves world state while diving into the editor', async ({ page }) => {
+test('project universe node handoff preserves world state while diving into the editor and surfacing back', async ({ page }) => {
   const response = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1&z=1.000&x=8.37&y=4.20', {
     waitUntil: 'networkidle',
   });
@@ -409,11 +409,26 @@ test('project universe node handoff preserves world state while diving into the 
   await expect(page).toHaveURL(/[\?&]pt=create/);
   await expect(page).toHaveURL(/[\?&]pl=Untitled/);
   await expect(page).toHaveURL(/[\?&]pe=document/);
+  await expect(page).toHaveURL(/[\?&]ps=uiux/);
+  await expect(page).toHaveURL(/[\?&]pk=document/);
+  await expect(page).toHaveURL(/[\?&]pm=dive/);
   await expect(page).toHaveURL(/[\?&]x=8\.37/);
   await expect(page).toHaveURL(/[\?&]y=4\.20/);
   await expect(page).toHaveURL(/[\?&]z=1\.000/);
   await expect(page.locator('body')).toContainText('Active context: Create > Document');
   await expect(page.getByTestId('project-shell-transition-context')).toContainText('dive: Untitled');
+  await expect(page.getByTestId('project-shell-editor-emergence')).toContainText('Entered from Untitled');
+  await expect(page.getByTestId('project-shell-editor-emergence')).toContainText('Return to Create / UI / UX');
+
+  await page.getByTestId('project-shell-surface-return').click();
+  await expect(page).toHaveURL(/\/workspace\/create\?/);
+  await expect(page).toHaveURL(/[\?&]entry=uiux/);
+  await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
+  await expect(page).toHaveURL(/[\?&]pm=surface/);
+  await expect(page.locator('body')).toContainText('Active context: Create > UI / UX');
+  await expect(page.getByTestId('project-shell-transition-context')).toContainText('surface: Untitled');
+  await expect(page.getByTestId('project-universe-node-document:primary')).toHaveAttribute('data-focus-state', 'active');
+  await expect(page.getByTestId('project-shell-editor-emergence')).toHaveCount(0);
 });
 
 test('project perspective route bootstrap installs a single blueprint deterministically', async ({ page }) => {

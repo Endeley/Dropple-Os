@@ -532,11 +532,12 @@
         {
           "id": "U16.2",
           "title": "Editor Emergence Refinement",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
             "runtime/workspaces/projectUniverseEditorHandoff.js",
             "runtime/workspaces/projectViewRouteState.js",
             "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/kernel/projectViewRouteStateLaw.test.ts",
             "tests/kernel/projectUniverseEditorHandoffLaw.test.ts",
             "tests/e2e/workspace-routes.smoke.spec.js"
           ]

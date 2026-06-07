@@ -63,6 +63,14 @@ function formatEntryLabel(entryId) {
         .join(' ');
 }
 
+function formatArtifactKindLabel(kind) {
+    if (typeof kind !== 'string' || kind.trim().length === 0) return 'Artifact';
+    return kind
+        .split('-')
+        .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
+        .join(' ');
+}
+
 function formatShortHash(value) {
     if (typeof value !== 'string' || value.length < 12) return 'n/a';
     return `${value.slice(0, 12)}…`;
@@ -329,6 +337,7 @@ export function ProjectPerspectiveShell({
             camera: cameraRouteState,
             focus: universeFocusState,
             continuity: {
+                continuityKind: 'hop',
                 fromPerspectiveId: perspectiveId,
                 toPerspectiveId: nextPerspectiveId,
                 sourceTargetId: universeFocusState.targetId ?? `perspective:${projectPerspectiveContext.entryId}`,
@@ -337,6 +346,7 @@ export function ProjectPerspectiveShell({
                     nextPerspectiveId === perspectiveId
                         ? projectPerspectiveContext.entryId
                         : null,
+                sourceEntryId: projectPerspectiveContext.entryId,
             },
         });
         return `/workspace/${nextPerspectiveId}?${next.toString()}`;
@@ -348,14 +358,67 @@ export function ProjectPerspectiveShell({
         universeFocusState,
     ]);
 
-    const transitionDescriptor =
-        perspectiveContinuityState.fromPerspectiveId &&
-        perspectiveContinuityState.toPerspectiveId === perspectiveId
-            ? perspectiveContinuityState.sourceLabel &&
-              perspectiveContinuityState.targetEntryId === projectPerspectiveContext.entryId
-                ? `dive: ${perspectiveContinuityState.sourceLabel}`
-                : `${formatEntryLabel(perspectiveContinuityState.fromPerspectiveId)} -> ${perspectiveLabel}`
-            : null;
+    const transitionDescriptor = useMemo(() => {
+        if (!perspectiveContinuityState.fromPerspectiveId) return null;
+        if (perspectiveContinuityState.toPerspectiveId !== perspectiveId) return null;
+
+        if (
+            perspectiveContinuityState.sourceLabel &&
+            perspectiveContinuityState.targetEntryId === projectPerspectiveContext.entryId
+        ) {
+            if (perspectiveContinuityState.continuityKind === 'surface') {
+                return `surface: ${perspectiveContinuityState.sourceLabel}`;
+            }
+            if (perspectiveContinuityState.continuityKind === 'dive') {
+                return `dive: ${perspectiveContinuityState.sourceLabel}`;
+            }
+        }
+
+        return `${formatEntryLabel(perspectiveContinuityState.fromPerspectiveId)} -> ${perspectiveLabel}`;
+    }, [perspectiveContinuityState, perspectiveId, perspectiveLabel, projectPerspectiveContext.entryId]);
+
+    const editorEmergenceState = useMemo(() => {
+        if (perspectiveContinuityState.continuityKind !== 'dive') return null;
+        if (perspectiveContinuityState.toPerspectiveId !== perspectiveId) return null;
+        if (perspectiveContinuityState.targetEntryId !== projectPerspectiveContext.entryId) return null;
+        if (!perspectiveContinuityState.sourceLabel || !perspectiveContinuityState.sourceTargetId) return null;
+
+        const sourcePerspectiveId = perspectiveContinuityState.fromPerspectiveId ?? perspectiveId;
+        const sourceEntryId = perspectiveContinuityState.sourceEntryId ?? projectPerspectiveContext.entryId;
+        const next = withProjectWorldSearchParams({
+            searchParams: new URLSearchParams(),
+            camera: cameraRouteState,
+            focus: Object.freeze({
+                targetId: perspectiveContinuityState.sourceTargetId,
+                query: universeFocusState.query,
+            }),
+            continuity: {
+                continuityKind: 'surface',
+                fromPerspectiveId: perspectiveId,
+                toPerspectiveId: sourcePerspectiveId,
+                sourceTargetId: perspectiveContinuityState.sourceTargetId,
+                sourceLabel: perspectiveContinuityState.sourceLabel,
+                targetEntryId: sourceEntryId,
+                sourceEntryId: projectPerspectiveContext.entryId,
+                sourceKind: perspectiveContinuityState.sourceKind,
+            },
+        });
+        next.set('entry', sourceEntryId);
+
+        return Object.freeze({
+            sourcePerspectiveId,
+            sourceEntryId,
+            sourceLabel: perspectiveContinuityState.sourceLabel,
+            sourceKind: perspectiveContinuityState.sourceKind,
+            href: `/workspace/${sourcePerspectiveId}?${next.toString()}`,
+        });
+    }, [
+        cameraRouteState,
+        perspectiveContinuityState,
+        perspectiveId,
+        projectPerspectiveContext.entryId,
+        universeFocusState.query,
+    ]);
 
     const handleUniverseFocusTarget = (targetId) => {
         const focusTarget = resolveProjectUniverseFocusTarget({
@@ -397,11 +460,14 @@ export function ProjectPerspectiveShell({
                 query: universeFocusState.query,
             }),
             continuity: {
+                continuityKind: 'dive',
                 fromPerspectiveId: perspectiveId,
                 toPerspectiveId: handoff.perspectiveId,
                 sourceTargetId: handoff.targetId,
                 sourceLabel: handoff.label,
                 targetEntryId: handoff.entryId,
+                sourceEntryId: projectPerspectiveContext.entryId,
+                sourceKind: handoff.kind,
             },
         });
         next.set('entry', handoff.entryId);
@@ -708,7 +774,7 @@ export function ProjectPerspectiveShell({
             data-testid='project-shell-root'
             data-motion-mode={motionMode}
             data-motion-meaning='world-continuity'
-            style={{ display: 'grid', gridTemplateRows: 'auto auto auto 1fr', height: '100%' }}>
+            style={{ display: 'grid', gridTemplateRows: 'auto auto auto auto 1fr', height: '100%' }}>
             {commandOpen && (
                 <CommandPalette
                     commands={perspectiveCommands}
@@ -825,6 +891,51 @@ export function ProjectPerspectiveShell({
                     ) : null}
                 </div>
             </header>
+            {editorEmergenceState ? (
+                <section
+                    data-testid='project-shell-editor-emergence'
+                    data-motion-meaning='continuity'
+                    data-emergence-state='editor-dive'
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 12,
+                        padding: '8px 16px',
+                        borderBottom: '1px solid #e2e8f0',
+                        background: '#f8fafc',
+                    }}>
+                    <div style={{ display: 'grid', gap: 2 }}>
+                        <strong style={{ fontSize: 11, color: '#0f172a', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                            Editor Emergence
+                        </strong>
+                        <span style={{ fontSize: 12, color: '#334155' }}>
+                            Entered from {editorEmergenceState.sourceLabel}
+                            {editorEmergenceState.sourceKind ? ` · ${formatArtifactKindLabel(editorEmergenceState.sourceKind)}` : ''}
+                        </span>
+                        <span style={{ fontSize: 11, color: '#64748b' }}>
+                            Return to {formatEntryLabel(editorEmergenceState.sourcePerspectiveId)} / {formatEntryLabel(editorEmergenceState.sourceEntryId)}
+                        </span>
+                    </div>
+                    <Link
+                        data-testid='project-shell-surface-return'
+                        href={editorEmergenceState.href}
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            border: '1px solid #cbd5e1',
+                            borderRadius: 999,
+                            background: '#ffffff',
+                            color: '#0f172a',
+                            fontSize: 11,
+                            fontWeight: 600,
+                            textDecoration: 'none',
+                            padding: '6px 10px',
+                        }}>
+                        Surface Back
+                    </Link>
+                </section>
+            ) : null}
             <nav
                 aria-label='Project perspectives'
                 style={{
