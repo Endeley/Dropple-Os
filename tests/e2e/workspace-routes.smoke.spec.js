@@ -490,11 +490,11 @@ test('project universe semantic zoom tiers expose deterministic focus and detail
   await expect(page.getByTestId('project-universe-group-operate')).toContainText('Operate');
   await expect(page.getByTestId('project-universe-group-create')).toHaveAttribute(
     'data-relationship-summary',
-    /Linked to/,
+    /Produces|Publishes|Depends|Operates|Reviews/,
   );
   await expect(page.getByTestId('project-universe-group-operate')).toHaveAttribute(
     'data-relationship-summary',
-    /Linked to/,
+    /Produces|Publishes|Depends|Operates|Reviews/,
   );
 
   const normalResponse = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1&z=1', {
@@ -530,7 +530,7 @@ test('project universe deepens domain focus and supports return-to-project navig
   await page.getByTestId('create-shell-utility-tab-navigate').click();
   await expect(page.getByTestId('project-universe-focus-summary')).toContainText('Project Hub');
   await expect(page.getByTestId('project-universe-nav-project:hub')).toContainText('project universe anchor');
-  await expect(page.getByTestId('project-universe-nav-group:operate')).toContainText('Linked to');
+  await expect(page.getByTestId('project-universe-nav-group:operate')).toContainText(/Depends on|Produces for|Publishes to|Operates|Reviews/);
 
   await page.getByTestId('project-universe-group-operate').click();
   await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);

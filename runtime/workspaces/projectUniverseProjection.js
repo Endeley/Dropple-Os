@@ -54,11 +54,10 @@ function createGroup(id, perspectiveId, label, nodeIds, metadata = {}) {
     });
 }
 
-function joinLabels(labels) {
-    if (!Array.isArray(labels) || labels.length === 0) return '';
-    if (labels.length === 1) return labels[0];
-    if (labels.length === 2) return `${labels[0]} and ${labels[1]}`;
-    return `${labels.slice(0, -1).join(', ')}, and ${labels[labels.length - 1]}`;
+function capitalize(value) {
+    const normalized = asNonEmptyString(value);
+    if (!normalized) return '';
+    return normalized[0].toUpperCase() + normalized.slice(1);
 }
 
 function summarizeKinds(nodeIds, nodes) {
@@ -386,6 +385,88 @@ function resolveGroupRelationshipOrder(perspectiveId) {
     }
 }
 
+function resolveGroupRelationshipType(sourcePerspectiveId, targetPerspectiveId) {
+    const relationshipTypes = {
+        create: Object.freeze({
+            build: 'produces',
+            publish: 'publishes',
+        }),
+        build: Object.freeze({
+            create: 'depends-on',
+            operate: 'operates',
+            publish: 'produces',
+        }),
+        operate: Object.freeze({
+            build: 'depends-on',
+            publish: 'operates',
+        }),
+        collaborate: Object.freeze({
+            create: 'reviews',
+            publish: 'reviews',
+        }),
+        publish: Object.freeze({
+            create: 'depends-on',
+            build: 'depends-on',
+            operate: 'depends-on',
+            collaborate: 'depends-on',
+        }),
+    };
+
+    return relationshipTypes?.[sourcePerspectiveId]?.[targetPerspectiveId] ?? 'depends-on';
+}
+
+function resolveNodeRelationshipType(nodeKind, fallbackType) {
+    switch (nodeKind) {
+        case ArtifactKind.COMPONENT_LIBRARY:
+            return 'components-for';
+        case ArtifactKind.DOCUMENT:
+        case ArtifactKind.KNOWLEDGE_PAGE:
+            return 'documents';
+        case ArtifactKind.SYSTEM_MODEL:
+        case ArtifactKind.WORKFLOW:
+        case ArtifactKind.STATE_MACHINE:
+        case ArtifactKind.AI_AGENT:
+            return 'operates';
+        case ArtifactKind.FRAME:
+        case ArtifactKind.VIDEO:
+        case ArtifactKind.ANIMATION:
+            return fallbackType === 'publishes' ? 'publishes' : 'produces';
+        default:
+            return fallbackType;
+    }
+}
+
+function describeRelationship(type, targetLabel) {
+    const label = asNonEmptyString(targetLabel) ?? 'project context';
+    switch (type) {
+        case 'depends-on':
+            return `depends on ${label}`;
+        case 'produces':
+            return `produces for ${label}`;
+        case 'documents':
+            return `documents ${label}`;
+        case 'reviews':
+            return `reviews ${label}`;
+        case 'publishes':
+            return `publishes to ${label}`;
+        case 'operates':
+            return `operates ${label}`;
+        case 'styles':
+            return `styles ${label}`;
+        case 'components-for':
+            return `provides components for ${label}`;
+        default:
+            return `relates to ${label}`;
+    }
+}
+
+function summarizeRelationshipEdges(edges) {
+    const summaries = (Array.isArray(edges) ? edges : [])
+        .map((edge) => capitalize(edge?.summary))
+        .filter(Boolean);
+    return summaries.length > 0 ? summaries.join(' · ') : 'Linked within project hub';
+}
+
 function enrichGroupsWithRelationships(groups) {
     const allPerspectiveIds = Object.keys(groups ?? {})
         .filter((groupId) => groupId.startsWith('group:'))
@@ -404,18 +485,32 @@ function enrichGroupsWithRelationships(groups) {
             (perspectiveId, index, collection) => collection.indexOf(perspectiveId) === index,
         );
         const relatedGroupIds = relatedPerspectiveIds.map((perspectiveId) => `group:${perspectiveId}`);
-        const relatedLabels = relatedPerspectiveIds
-            .map((perspectiveId) => groups[`group:${perspectiveId}`]?.label)
-            .filter(Boolean);
+        const relationshipEdges = relatedPerspectiveIds
+            .map((perspectiveId) => {
+                const targetGroupId = `group:${perspectiveId}`;
+                const targetGroup = groups[targetGroupId] ?? null;
+                const targetLabel = targetGroup?.label ?? perspectiveId;
+                const type = resolveGroupRelationshipType(group.perspectiveId, perspectiveId);
+                return Object.freeze({
+                    targetPerspectiveId: perspectiveId,
+                    targetGroupId,
+                    type,
+                    summary: describeRelationship(type, targetLabel),
+                });
+            });
+        const relationshipSummary = summarizeRelationshipEdges(relationshipEdges);
         nextGroups[groupId] = Object.freeze({
             ...group,
             metadata: Object.freeze({
                 ...group.metadata,
                 relatedPerspectiveIds: Object.freeze(relatedPerspectiveIds),
                 relatedGroupIds: Object.freeze(relatedGroupIds),
+                relationshipEdges: Object.freeze(relationshipEdges),
+                relationshipTypes: Object.freeze(
+                    Object.fromEntries(relationshipEdges.map((edge) => [edge.targetPerspectiveId, edge.type])),
+                ),
                 relationshipCount: relatedGroupIds.length,
-                relationshipSummary:
-                    relatedLabels.length > 0 ? `Linked to ${joinLabels(relatedLabels)}` : 'Linked within project hub',
+                relationshipSummary,
             }),
         });
     }
@@ -446,6 +541,21 @@ function enrichNodesWithRelationships(nodes, groups, hubId) {
         const relatedPrimaryNodeIds = relatedGroups
             .map((group) => group?.metadata?.primaryNodeId)
             .filter((value) => typeof value === 'string' && value.length > 0 && value !== nodeId);
+        const relationshipEdges = relatedGroups
+            .map((group) => {
+                const targetPerspectiveId = asNonEmptyString(group?.perspectiveId) ?? 'overview';
+                const fallbackType = resolveGroupRelationshipType(ownerGroup?.perspectiveId ?? 'overview', targetPerspectiveId);
+                const type = resolveNodeRelationshipType(node.kind, fallbackType);
+                const targetNodeId = asNonEmptyString(group?.metadata?.primaryNodeId);
+                const targetLabel = asNonEmptyString(group?.metadata?.primaryNodeLabel) ?? asNonEmptyString(group?.label) ?? targetPerspectiveId;
+                return Object.freeze({
+                    targetPerspectiveId,
+                    targetGroupId: group.id,
+                    targetNodeId,
+                    type,
+                    summary: describeRelationship(type, targetLabel),
+                });
+            });
         const refs = Object.freeze(
             [...new Set([hubId, ...relatedPrimaryNodeIds, ...(Array.isArray(node.refs) ? node.refs : [])])]
                 .filter((value) => typeof value === 'string' && value.length > 0)
@@ -463,7 +573,11 @@ function enrichNodesWithRelationships(nodes, groups, hubId) {
                         ? [...ownerGroup.metadata.relatedPerspectiveIds]
                         : [],
                 ),
-                relationshipSummary: ownerGroup?.metadata?.relationshipSummary ?? null,
+                relationshipEdges: Object.freeze(relationshipEdges),
+                relationshipTypes: Object.freeze(
+                    Object.fromEntries(relationshipEdges.map((edge) => [edge.targetPerspectiveId, edge.type])),
+                ),
+                relationshipSummary: summarizeRelationshipEdges(relationshipEdges),
             }),
         });
     }
