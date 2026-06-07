@@ -157,6 +157,8 @@ export function buildBuildPerspectiveWorkflow({ universe = null, activeEntryId =
         })
         .filter(Boolean);
 
+    const activeArtifact = linkedArtifacts.find((item) => item.active) ?? null;
+
     const operateNode =
         listUniverseNodes(universe, (node) => node.kind === ArtifactKind.SYSTEM_MODEL)[0] ??
         listUniverseNodes(universe, (node) => node.kind === ArtifactKind.WORKFLOW)[0] ??
@@ -171,6 +173,16 @@ export function buildBuildPerspectiveWorkflow({ universe = null, activeEntryId =
           })
         : null;
 
+    const worldSummary = Object.freeze({
+        activityLabel: ENTRY_LABELS[activeId] ?? 'Application',
+        activeArtifactLabel: activeArtifact?.label ?? null,
+        activeArtifactCount: summaryCounts.get(activeId) ?? 0,
+        linkedArtifactCount: linkedArtifacts.length,
+        clusterCount: artifactClusters.length,
+        nextArtifactLabel: linkedArtifacts.find((item) => item.entryId !== activeId)?.label ?? linkedArtifacts[0]?.label ?? null,
+        operateBridgeLabel: operateHandoff?.entryLabel ?? null,
+    });
+
     return Object.freeze({
         activeEntryId: activeId,
         linkedArtifacts: Object.freeze(linkedArtifacts),
@@ -178,5 +190,6 @@ export function buildBuildPerspectiveWorkflow({ universe = null, activeEntryId =
         artifactClusters: Object.freeze(artifactClusters),
         suggestedNextArtifact: linkedArtifacts.find((item) => item.entryId !== activeId) ?? linkedArtifacts[0] ?? null,
         operateHandoff,
+        worldSummary,
     });
 }

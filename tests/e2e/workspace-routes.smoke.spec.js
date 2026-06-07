@@ -894,6 +894,12 @@ test('build perspective exposes linked workflow guidance and operate handoff rou
 
   expect(response?.ok(), 'build workflow route should respond successfully').toBeTruthy();
   await expect(page.getByTestId('build-workflow-panel')).toBeVisible();
+  await expect(page.getByTestId('build-world-panel')).toContainText('Build World');
+  await expect(page.getByTestId('build-world-panel')).toContainText('Application');
+  await expect(page.getByTestId('build-world-summary')).toContainText('Current task: System Model');
+  await expect(page.getByTestId('build-world-summary')).toContainText('Assistant: Build Assistant');
+  await expect(page.getByTestId('build-world-summary')).toContainText('Linked artifacts: 2 across 2 build clusters');
+  await expect(page.getByTestId('build-world-summary')).toContainText('Operate bridge: Systems Engineering');
   await expect(page.getByTestId('build-workflow-suggested-next')).toContainText('Continue Building');
   await expect(page.getByTestId('build-workflow-cluster-application')).toContainText('Application');
   const applicationLink = page.getByTestId('build-workflow-cluster-application').getByRole('button').first();

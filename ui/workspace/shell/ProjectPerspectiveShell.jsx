@@ -1444,6 +1444,63 @@ export function ProjectPerspectiveShell({
                                         display: 'grid',
                                         gap: 8,
                                     }}>
+                                    <div
+                                        data-testid='build-world-panel'
+                                        style={{
+                                            border: '1px solid #dbeafe',
+                                            borderRadius: 8,
+                                            background: '#ffffff',
+                                            padding: '8px 10px',
+                                            display: 'grid',
+                                            gap: 6,
+                                        }}>
+                                        <div
+                                            style={{
+                                                fontSize: 10,
+                                                fontWeight: 700,
+                                                letterSpacing: '0.04em',
+                                                textTransform: 'uppercase',
+                                                color: '#1d4ed8',
+                                            }}>
+                                            Build World
+                                        </div>
+                                        <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>
+                                            {buildWorkflow.worldSummary.activityLabel}
+                                        </div>
+                                        <div
+                                            data-testid='build-world-summary'
+                                            style={{ display: 'grid', gap: 3, fontSize: 10, color: '#475569' }}>
+                                            <span>
+                                                Current task:{' '}
+                                                <strong style={{ color: '#0f172a' }}>
+                                                    {buildWorkflow.worldSummary.activeArtifactLabel ?? 'Awaiting build artifact'}
+                                                </strong>
+                                            </span>
+                                            <span>
+                                                Assistant:{' '}
+                                                <strong style={{ color: '#0f172a' }}>
+                                                    {buildAssistantLabels?.assistantLabel ?? 'Build Assistant'}
+                                                </strong>
+                                            </span>
+                                            <span>
+                                                Linked artifacts:{' '}
+                                                <strong style={{ color: '#0f172a' }}>
+                                                    {buildWorkflow.worldSummary.linkedArtifactCount}
+                                                </strong>{' '}
+                                                across{' '}
+                                                <strong style={{ color: '#0f172a' }}>
+                                                    {buildWorkflow.worldSummary.clusterCount}
+                                                </strong>{' '}
+                                                build clusters
+                                            </span>
+                                            <span>
+                                                Operate bridge:{' '}
+                                                <strong style={{ color: '#0f172a' }}>
+                                                    {buildWorkflow.worldSummary.operateBridgeLabel ?? 'Not ready'}
+                                                </strong>
+                                            </span>
+                                        </div>
+                                    </div>
                                     {buildWorkflow.suggestedNextArtifact ? (
                                         <button
                                             type='button'

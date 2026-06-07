@@ -32,6 +32,18 @@ test('build perspective workflow derives deterministic linked artifact routes an
     ]));
     assert.equal(left.operateHandoff?.entryId, 'systems-engineering');
     assert.equal(left.operateHandoff?.href, '/workspace/operate?entry=systems-engineering&u=system%3Amodel');
+    assert.deepEqual(
+        left.worldSummary,
+        Object.freeze({
+            activityLabel: 'Application',
+            activeArtifactLabel: 'System Model',
+            activeArtifactCount: 1,
+            linkedArtifactCount: 4,
+            clusterCount: 4,
+            nextArtifactLabel: 'Routing Workflow',
+            operateBridgeLabel: 'Systems Engineering',
+        }),
+    );
 });
 
 test('build perspective workflow fails closed with empty universe', () => {
@@ -44,6 +56,15 @@ test('build perspective workflow fails closed with empty universe', () => {
             artifactClusters: Object.freeze([]),
             suggestedNextArtifact: null,
             operateHandoff: null,
+            worldSummary: Object.freeze({
+                activityLabel: 'Automation',
+                activeArtifactLabel: null,
+                activeArtifactCount: 0,
+                linkedArtifactCount: 0,
+                clusterCount: 0,
+                nextArtifactLabel: null,
+                operateBridgeLabel: null,
+            }),
         }),
     );
 });
