@@ -307,6 +307,8 @@ export function ProjectUniverseCanvas({
         universe?.hubId && universe?.nodes?.[universe.hubId]?.label
             ? universe.nodes[universe.hubId].label
             : 'Project Hub';
+    const pointerMode = dragState ? 'dragging' : focusedTargetId ? 'focused' : 'ready';
+    const cameraMode = dragState ? 'manual-pan' : focusedTargetId ? 'focus-anchor' : 'free-pan';
 
     return (
         <section
@@ -314,6 +316,9 @@ export function ProjectUniverseCanvas({
             data-testid='project-universe-surface'
             data-motion-meaning='navigation'
             data-motion-mode={motionMode}
+            data-pointer-surface='camera'
+            data-pointer-mode={pointerMode}
+            data-camera-mode={cameraMode}
             style={{
                 border: '1px solid #d9dee6',
                 borderRadius: 10,
@@ -410,6 +415,10 @@ export function ProjectUniverseCanvas({
                 </div>
             </div>
             <div
+                data-testid='project-universe-viewport'
+                data-pointer-surface='camera'
+                data-pointer-mode={pointerMode}
+                data-camera-mode={cameraMode}
                 onWheel={onWheel}
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
@@ -422,6 +431,8 @@ export function ProjectUniverseCanvas({
                 }}>
                 <aside
                     aria-label='Project universe mini-map'
+                    data-testid='project-universe-minimap'
+                    data-pointer-role='reposition'
                     style={{
                         position: 'absolute',
                         right: 10,
@@ -556,6 +567,7 @@ export function ProjectUniverseCanvas({
                         <div
                             key={group.id}
                             data-testid={`project-universe-group-${group.perspectiveId}`}
+                            data-pointer-role='focus-group'
                             onPointerDown={(event) => {
                                 event.stopPropagation();
                             }}
@@ -629,6 +641,7 @@ export function ProjectUniverseCanvas({
                         <div
                             key={node.id}
                             data-testid={`project-universe-node-${node.id}`}
+                            data-pointer-role='open-artifact'
                             onPointerDown={(event) => {
                                 event.stopPropagation();
                             }}

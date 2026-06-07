@@ -351,6 +351,26 @@ test('project shell exposes motion meaning and reduced-motion fallback contracts
   await expect(page.getByTestId('project-shell-transition-context')).toHaveAttribute('data-motion-meaning', 'continuity');
 });
 
+test('project universe exposes spatial pointer and camera readability contracts', async ({ page }) => {
+  const response = await page.goto('/workspace/create?blueprint=bp.logistics.v1&bootstrap=1&z=0.300', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'spatial pointer route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('project-universe-surface')).toHaveAttribute('data-pointer-surface', 'camera');
+  await expect(page.getByTestId('project-universe-surface')).toHaveAttribute('data-pointer-mode', 'ready');
+  await expect(page.getByTestId('project-universe-surface')).toHaveAttribute('data-camera-mode', 'free-pan');
+  await expect(page.getByTestId('project-universe-minimap')).toHaveAttribute('data-pointer-role', 'reposition');
+  await expect(page.getByTestId('project-universe-group-operate')).toHaveAttribute('data-pointer-role', 'focus-group');
+  await expect(page.getByTestId('uiux-canvas-stage')).toHaveAttribute('data-pointer-surface', 'authoring');
+  await expect(page.getByTestId('uiux-canvas-stage')).toHaveAttribute('data-pointer-mode', 'node-authoring');
+
+  await page.getByTestId('project-universe-group-operate').click();
+  await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
+  await expect(page.getByTestId('project-universe-surface')).toHaveAttribute('data-pointer-mode', 'focused');
+  await expect(page.getByTestId('project-universe-surface')).toHaveAttribute('data-camera-mode', 'focus-anchor');
+});
+
 test('project universe node handoff preserves world state while diving into the editor', async ({ page }) => {
   const response = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1&z=1.000&x=8.37&y=4.20', {
     waitUntil: 'networkidle',

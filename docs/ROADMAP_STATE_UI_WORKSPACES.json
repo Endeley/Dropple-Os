@@ -481,7 +481,7 @@
         {
           "id": "U15.M5",
           "title": "Spatial Pointer and Camera Readability",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
             "ui/workspace/shell/ProjectUniverseCanvas.jsx",
             "ui/workspace/uiux/UIUXCanvasStage.jsx",
