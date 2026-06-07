@@ -664,6 +664,81 @@
         { "name": "route smoke", "command": "npm run test:routes:smoke" },
         { "name": "interaction smoke", "command": "npm run ui:interactions:test" }
       ]
+    },
+    {
+      "id": "U18",
+      "title": "Project Universe Intelligence",
+      "status": "active",
+      "depends_on": ["U17"],
+      "milestones": [
+        {
+          "id": "U18.1",
+          "title": "Universe Comprehension Audit",
+          "status": "active",
+          "evidence": [
+            "ui/workspace/shell/ProjectUniverseCanvas.jsx",
+            "runtime/workspaces/projectUniverseProjection.js",
+            "runtime/workspaces/projectUniverseNavigation.js",
+            "runtime/workspaces/projectWorldAnchor.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js"
+          ]
+        },
+        {
+          "id": "U18.2",
+          "title": "Artifact Relationship Depth",
+          "status": "not-started",
+          "evidence": [
+            "core/project/normalizeProjectUniverseArtifacts.js",
+            "runtime/workspaces/projectUniverseProjection.js",
+            "tests/kernel/projectUniverseProjectionLaw.test.ts",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U18.3",
+          "title": "Project-Scale Navigation",
+          "status": "not-started",
+          "evidence": [
+            "runtime/workspaces/projectUniverseNavigation.js",
+            "runtime/workspaces/projectViewRouteState.js",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js"
+          ]
+        },
+        {
+          "id": "U18.4",
+          "title": "Universe-Guided Workflow",
+          "status": "not-started",
+          "evidence": [
+            "runtime/workspaces/createPerspectiveWorkflow.js",
+            "runtime/workspaces/buildPerspectiveWorkflow.js",
+            "runtime/workspaces/collaboratePerspectiveWorkflow.js",
+            "runtime/workspaces/publishPerspectiveWorkflow.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx"
+          ]
+        },
+        {
+          "id": "U18.5",
+          "title": "Cross-Perspective Artifact Continuity",
+          "status": "not-started",
+          "evidence": [
+            "runtime/workspaces/projectUniverseEditorHandoff.js",
+            "runtime/workspaces/projectViewRouteState.js",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js"
+          ]
+        }
+      ],
+      "gates": [
+        { "name": "generated cleanup", "command": "npm run release:trust:clean-generated" },
+        { "name": "architecture gate", "command": "npm run arch" },
+        { "name": "law enforcement", "command": "npm run enforce:laws" },
+        { "name": "architecture tests", "command": "npm run test:architecture" },
+        { "name": "route smoke", "command": "npm run test:routes:smoke" },
+        { "name": "interaction smoke", "command": "npm run ui:interactions:test" }
+      ]
     }
   ]
 }
