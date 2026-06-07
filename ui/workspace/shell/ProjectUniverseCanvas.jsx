@@ -93,6 +93,14 @@ function resolveGroupPreviewLabels(group, visibleNodeById) {
         .slice(0, 2);
 }
 
+function resolveRelationshipSummary(group) {
+    const summary =
+        typeof group?.metadata?.relationshipSummary === 'string' && group.metadata.relationshipSummary.trim().length > 0
+            ? group.metadata.relationshipSummary.trim()
+            : null;
+    return summary;
+}
+
 export function ProjectUniverseCanvas({
     perspectiveId = 'overview',
     universe = null,
@@ -578,12 +586,14 @@ export function ProjectUniverseCanvas({
                         : null}
                     {visibility.showGroups ? visibleGroups.map((group) => {
                         const previewLabels = resolveGroupPreviewLabels(group, visibleNodeById);
+                        const relationshipSummary = resolveRelationshipSummary(group);
                         return (
                         <div
                             key={group.id}
                             data-testid={`project-universe-group-${group.perspectiveId}`}
                             data-pointer-role='focus-group'
                             data-focus-state={focusedTargetId === group.id ? 'active' : 'inactive'}
+                            data-relationship-summary={relationshipSummary ?? ''}
                             onPointerDown={(event) => {
                                 event.stopPropagation();
                             }}
@@ -623,6 +633,11 @@ export function ProjectUniverseCanvas({
                             {visibility.showGroupCounts ? (
                                 <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
                                     {group.nodeIds.length} artifact{group.nodeIds.length === 1 ? '' : 's'}
+                                </div>
+                            ) : null}
+                            {presentation.groupDetailLevel !== 'domain-chip' && relationshipSummary ? (
+                                <div style={{ fontSize: 9, color: '#64748b', marginTop: 4 }}>
+                                    {relationshipSummary}
                                 </div>
                             ) : null}
                             {visibility.showGroupPreviews && previewLabels.length > 0 ? (

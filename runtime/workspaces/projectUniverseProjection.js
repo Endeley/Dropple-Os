@@ -54,6 +54,13 @@ function createGroup(id, perspectiveId, label, nodeIds, metadata = {}) {
     });
 }
 
+function joinLabels(labels) {
+    if (!Array.isArray(labels) || labels.length === 0) return '';
+    if (labels.length === 1) return labels[0];
+    if (labels.length === 2) return `${labels[0]} and ${labels[1]}`;
+    return `${labels.slice(0, -1).join(', ')}, and ${labels[labels.length - 1]}`;
+}
+
 function summarizeKinds(nodeIds, nodes) {
     const counts = {};
     for (const nodeId of nodeIds) {
@@ -362,6 +369,108 @@ function buildUniverseGroups(nodes) {
     );
 }
 
+function resolveGroupRelationshipOrder(perspectiveId) {
+    switch (perspectiveId) {
+        case 'create':
+            return ['build', 'publish'];
+        case 'build':
+            return ['create', 'operate', 'publish'];
+        case 'operate':
+            return ['build', 'publish'];
+        case 'collaborate':
+            return ['create', 'publish'];
+        case 'publish':
+            return ['create', 'build', 'operate', 'collaborate'];
+        default:
+            return [];
+    }
+}
+
+function enrichGroupsWithRelationships(groups) {
+    const allPerspectiveIds = Object.keys(groups ?? {})
+        .filter((groupId) => groupId.startsWith('group:'))
+        .map((groupId) => groupId.slice('group:'.length))
+        .sort((left, right) => left.localeCompare(right));
+    const nextGroups = {};
+    for (const [groupId, group] of Object.entries(groups ?? {}).sort(([left], [right]) => left.localeCompare(right))) {
+        const preferredPerspectiveIds = resolveGroupRelationshipOrder(group.perspectiveId).filter(
+            (perspectiveId) => Object.prototype.hasOwnProperty.call(groups, `group:${perspectiveId}`),
+        );
+        const fallbackPerspectiveIds =
+            preferredPerspectiveIds.length > 0
+                ? preferredPerspectiveIds
+                : allPerspectiveIds.filter((perspectiveId) => perspectiveId !== group.perspectiveId);
+        const relatedPerspectiveIds = fallbackPerspectiveIds.filter(
+            (perspectiveId, index, collection) => collection.indexOf(perspectiveId) === index,
+        );
+        const relatedGroupIds = relatedPerspectiveIds.map((perspectiveId) => `group:${perspectiveId}`);
+        const relatedLabels = relatedPerspectiveIds
+            .map((perspectiveId) => groups[`group:${perspectiveId}`]?.label)
+            .filter(Boolean);
+        nextGroups[groupId] = Object.freeze({
+            ...group,
+            metadata: Object.freeze({
+                ...group.metadata,
+                relatedPerspectiveIds: Object.freeze(relatedPerspectiveIds),
+                relatedGroupIds: Object.freeze(relatedGroupIds),
+                relationshipCount: relatedGroupIds.length,
+                relationshipSummary:
+                    relatedLabels.length > 0 ? `Linked to ${joinLabels(relatedLabels)}` : 'Linked within project hub',
+            }),
+        });
+    }
+    return nextGroups;
+}
+
+function enrichNodesWithRelationships(nodes, groups, hubId) {
+    const groupByNodeId = new Map();
+    for (const group of Object.values(groups ?? {})) {
+        for (const nodeId of group.nodeIds ?? []) {
+            groupByNodeId.set(nodeId, group);
+        }
+    }
+
+    const nextNodes = {};
+    for (const [nodeId, node] of Object.entries(nodes ?? {}).sort(([left], [right]) => left.localeCompare(right))) {
+        if (nodeId === hubId) {
+            nextNodes[nodeId] = node;
+            continue;
+        }
+
+        const ownerGroup = groupByNodeId.get(nodeId) ?? null;
+        const relatedGroups = Array.isArray(ownerGroup?.metadata?.relatedGroupIds)
+            ? ownerGroup.metadata.relatedGroupIds
+                  .map((groupId) => groups?.[groupId] ?? null)
+                  .filter(Boolean)
+            : [];
+        const relatedPrimaryNodeIds = relatedGroups
+            .map((group) => group?.metadata?.primaryNodeId)
+            .filter((value) => typeof value === 'string' && value.length > 0 && value !== nodeId);
+        const refs = Object.freeze(
+            [...new Set([hubId, ...relatedPrimaryNodeIds, ...(Array.isArray(node.refs) ? node.refs : [])])]
+                .filter((value) => typeof value === 'string' && value.length > 0)
+                .sort(),
+        );
+
+        nextNodes[nodeId] = Object.freeze({
+            ...node,
+            refs,
+            metadata: Object.freeze({
+                ...node.metadata,
+                ownerPerspectiveId: ownerGroup?.perspectiveId ?? 'overview',
+                relatedPerspectiveIds: Object.freeze(
+                    Array.isArray(ownerGroup?.metadata?.relatedPerspectiveIds)
+                        ? [...ownerGroup.metadata.relatedPerspectiveIds]
+                        : [],
+                ),
+                relationshipSummary: ownerGroup?.metadata?.relationshipSummary ?? null,
+            }),
+        });
+    }
+
+    return nextNodes;
+}
+
 export function buildProjectUniverseProjection({ document = null, projectIdentity = null } = {}) {
     const bootstrap = asObject(document?.meta)?.projectBootstrap ?? null;
     const blueprint = resolveBlueprintFromBootstrap(bootstrap);
@@ -394,12 +503,14 @@ export function buildProjectUniverseProjection({ document = null, projectIdentit
     const deduped = Object.fromEntries(rawNodes.map((node) => [node.id, node]));
     const withRefs = withHubRefs(hubId, deduped);
     const laidOutNodes = layoutNodes(withRefs);
-    const groups = buildUniverseGroups(laidOutNodes);
+    const baseGroups = buildUniverseGroups(laidOutNodes);
+    const groups = enrichGroupsWithRelationships(baseGroups);
+    const nodes = enrichNodesWithRelationships(laidOutNodes, groups, hubId);
 
     return normalizeProjectUniverseArtifacts({
         version: 1,
         hubId,
-        nodes: laidOutNodes,
+        nodes,
         groups,
     });
 }

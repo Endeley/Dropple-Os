@@ -674,7 +674,7 @@
         {
           "id": "U18.1",
           "title": "Universe Comprehension Audit",
-          "status": "active",
+          "status": "complete",
           "evidence": [
             "ui/workspace/shell/ProjectUniverseCanvas.jsx",
             "runtime/workspaces/projectUniverseProjection.js",
@@ -688,7 +688,7 @@
         {
           "id": "U18.2",
           "title": "Artifact Relationship Depth",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
             "core/project/normalizeProjectUniverseArtifacts.js",
             "runtime/workspaces/projectUniverseProjection.js",

@@ -90,6 +90,8 @@ test('project universe projection derives deterministic artifact nodes from docu
     assert.equal(left?.groups['group:create']?.metadata?.artifactCount, 6);
     assert.equal(left?.groups['group:create']?.metadata?.primaryNodeId, 'document:primary');
     assert.equal(left?.groups['group:create']?.metadata?.primaryNodeLabel, 'Logistics Control');
+    assert.deepEqual(left?.groups['group:create']?.metadata?.relatedPerspectiveIds, Object.freeze(['build', 'publish']));
+    assert.equal(left?.groups['group:create']?.metadata?.relationshipSummary, 'Linked to Build and Publish');
     assert.deepEqual(left?.groups['group:create']?.metadata?.kindCounts, Object.freeze({
         animation: 1,
         'component-library': 1,
@@ -107,14 +109,26 @@ test('project universe projection derives deterministic artifact nodes from docu
     ]));
     assert.equal(left?.groups['group:build']?.label, 'Build');
     assert.equal(left?.groups['group:build']?.metadata?.primaryNodeId, 'workflow:flow:dispatchApproval');
+    assert.deepEqual(left?.groups['group:build']?.metadata?.relatedPerspectiveIds, Object.freeze(['create', 'operate', 'publish']));
+    assert.equal(left?.groups['group:build']?.metadata?.relationshipSummary, 'Linked to Create, Operate, and Publish');
     assert.deepEqual(left?.groups['group:build']?.nodeIds, Object.freeze([
         'state-machine:fulfillment',
         'workflow:flow:dispatchApproval',
         'workflow:graph:routing',
     ]));
     assert.equal(left?.groups['group:operate']?.label, 'Operate');
+    assert.equal(left?.groups['group:operate']?.metadata?.relationshipSummary, 'Linked to Build and Publish');
     assert.deepEqual(left?.groups['group:operate']?.nodeIds, Object.freeze(['system:model']));
     assert.equal(left?.groups['group:publish']?.label, 'Publish');
+    assert.equal(left?.groups['group:publish']?.metadata?.relationshipSummary, 'Linked to Create, Build, and Operate');
     assert.deepEqual(left?.groups['group:publish']?.nodeIds, Object.freeze(['workflow:publish']));
+    assert.deepEqual(left?.nodes['document:primary']?.metadata?.relatedPerspectiveIds, Object.freeze(['build', 'publish']));
+    assert.equal(left?.nodes['document:primary']?.metadata?.relationshipSummary, 'Linked to Build and Publish');
+    assert.deepEqual(left?.nodes['document:primary']?.refs, Object.freeze(['project:hub', 'workflow:flow:dispatchApproval', 'workflow:publish']));
+    assert.deepEqual(left?.nodes['workflow:flow:dispatchApproval']?.metadata?.relatedPerspectiveIds, Object.freeze(['create', 'operate', 'publish']));
+    assert.deepEqual(
+        left?.nodes['workflow:flow:dispatchApproval']?.refs,
+        Object.freeze(['document:primary', 'project:hub', 'system:model', 'workflow:publish']),
+    );
     assert.deepEqual(left, right);
 });

@@ -41,8 +41,8 @@ export function buildProjectUniverseNavigatorItems({ universe = null, query = ''
                 label: group.label,
                 subtitle:
                     typeof group?.metadata?.primaryNodeLabel === 'string' && group.metadata.primaryNodeLabel.trim().length > 0
-                        ? `${group.nodeIds.length} artifact${group.nodeIds.length === 1 ? '' : 's'} · ${group.metadata.primaryNodeLabel}`
-                        : `${group.nodeIds.length} artifact${group.nodeIds.length === 1 ? '' : 's'}`,
+                        ? `${group.nodeIds.length} artifact${group.nodeIds.length === 1 ? '' : 's'} · ${group.metadata.primaryNodeLabel}${typeof group?.metadata?.relationshipSummary === 'string' && group.metadata.relationshipSummary.trim().length > 0 ? ` · ${group.metadata.relationshipSummary}` : ''}`
+                        : `${group.nodeIds.length} artifact${group.nodeIds.length === 1 ? '' : 's'}${typeof group?.metadata?.relationshipSummary === 'string' && group.metadata.relationshipSummary.trim().length > 0 ? ` · ${group.metadata.relationshipSummary}` : ''}`,
                 x: Number.isFinite(group.x) ? Number(group.x) : 0,
                 y: Number.isFinite(group.y) ? Number(group.y) : 0,
             }),

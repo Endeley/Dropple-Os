@@ -488,6 +488,14 @@ test('project universe semantic zoom tiers expose deterministic focus and detail
   expect(logisticsFarResponse?.ok(), 'far zoom logistics bootstrap route should respond successfully').toBeTruthy();
   await expect(page.getByTestId('project-universe-group-create')).toContainText('Create');
   await expect(page.getByTestId('project-universe-group-operate')).toContainText('Operate');
+  await expect(page.getByTestId('project-universe-group-create')).toHaveAttribute(
+    'data-relationship-summary',
+    /Linked to/,
+  );
+  await expect(page.getByTestId('project-universe-group-operate')).toHaveAttribute(
+    'data-relationship-summary',
+    /Linked to/,
+  );
 
   const normalResponse = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1&z=1', {
     waitUntil: 'networkidle',
@@ -522,6 +530,7 @@ test('project universe deepens domain focus and supports return-to-project navig
   await page.getByTestId('create-shell-utility-tab-navigate').click();
   await expect(page.getByTestId('project-universe-focus-summary')).toContainText('Project Hub');
   await expect(page.getByTestId('project-universe-nav-project:hub')).toContainText('project universe anchor');
+  await expect(page.getByTestId('project-universe-nav-group:operate')).toContainText('Linked to');
 
   await page.getByTestId('project-universe-group-operate').click();
   await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
