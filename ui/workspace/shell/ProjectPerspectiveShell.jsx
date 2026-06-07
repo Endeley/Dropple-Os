@@ -155,6 +155,7 @@ export function ProjectPerspectiveShell({
     const { open: commandOpen, close: commandClose } = useCommandPalette({ enabled: true });
     const [navigatorQuery, setNavigatorQuery] = useState('');
     const [recentRoutes, setRecentRoutes] = useState(() => []);
+    const [motionMode, setMotionMode] = useState('full');
 
     const activeRoute = `/workspace/${perspectiveId}?entry=${projectPerspectiveContext.entryId}`;
     const [cameraRouteState, setCameraRouteState] = useState(() => resolveProjectCameraFromSearchParams(searchParams));
@@ -253,6 +254,23 @@ export function ProjectPerspectiveShell({
         setUniverseFocusState(resolveProjectUniverseFocusFromSearchParams(searchParams));
         setPerspectiveContinuityState(resolveProjectPerspectiveContinuityFromSearchParams(searchParams));
     }, [searchParams]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+        const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const applyMotionMode = () => {
+            setMotionMode(mediaQuery.matches ? 'reduced' : 'full');
+        };
+        applyMotionMode();
+
+        if (typeof mediaQuery.addEventListener === 'function') {
+            mediaQuery.addEventListener('change', applyMotionMode);
+            return () => mediaQuery.removeEventListener('change', applyMotionMode);
+        }
+
+        mediaQuery.addListener(applyMotionMode);
+        return () => mediaQuery.removeListener(applyMotionMode);
+    }, []);
 
     const preserveExplicitCameraOnFocus = useMemo(
         () => Boolean(searchParams?.get?.('x') || searchParams?.get?.('y') || searchParams?.get?.('z')),
@@ -702,7 +720,11 @@ export function ProjectPerspectiveShell({
     };
 
     return (
-        <div style={{ display: 'grid', gridTemplateRows: 'auto auto auto 1fr', height: '100%' }}>
+        <div
+            data-testid='project-shell-root'
+            data-motion-mode={motionMode}
+            data-motion-meaning='world-continuity'
+            style={{ display: 'grid', gridTemplateRows: 'auto auto auto 1fr', height: '100%' }}>
             {commandOpen && (
                 <CommandPalette
                     commands={perspectiveCommands}
@@ -747,6 +769,8 @@ export function ProjectPerspectiveShell({
                         {transitionDescriptor ? (
                             <span
                                 data-testid='project-shell-transition-context'
+                                data-motion-meaning='continuity'
+                                data-motion-mode={motionMode}
                                 style={{
                                     display: 'inline-flex',
                                     alignItems: 'center',
@@ -884,6 +908,7 @@ export function ProjectPerspectiveShell({
                 <ProjectUniverseCanvas
                     perspectiveId={perspectiveId}
                     universe={projectUniverse}
+                    motionMode={motionMode}
                     initialCamera={cameraRouteState}
                     preserveExplicitCameraOnFocus={preserveExplicitCameraOnFocus}
                     onCameraChange={handleCameraChange}
@@ -1509,6 +1534,8 @@ export function ProjectPerspectiveShell({
                                 data-testid='assistant-surface-panel'
                                 data-state={assistantSurfaceState}
                                 data-emergence-source='assistant'
+                                data-motion-meaning='context'
+                                data-motion-mode={motionMode}
                                 style={{
                                     border: '1px solid #e2e8f0',
                                     borderRadius: 6,

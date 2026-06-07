@@ -332,6 +332,25 @@ test('project perspective links preserve universe continuity state across hops',
   await expect(page.getByTestId('project-universe-status-summary')).toContainText('artifacts');
 });
 
+test('project shell exposes motion meaning and reduced-motion fallback contracts', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const response = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1&z=1.000', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'reduced-motion route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('project-shell-root')).toHaveAttribute('data-motion-mode', 'reduced');
+  await expect(page.getByTestId('project-shell-root')).toHaveAttribute('data-motion-meaning', 'world-continuity');
+  await expect(page.getByTestId('project-universe-surface')).toHaveAttribute('data-motion-mode', 'reduced');
+  await expect(page.getByTestId('project-universe-surface')).toHaveAttribute('data-motion-meaning', 'navigation');
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-motion-mode', 'reduced');
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-motion-meaning', 'context');
+
+  await page.getByRole('link', { name: 'Build' }).click();
+  await expect(page.getByTestId('project-shell-transition-context')).toHaveAttribute('data-motion-mode', 'reduced');
+  await expect(page.getByTestId('project-shell-transition-context')).toHaveAttribute('data-motion-meaning', 'continuity');
+});
+
 test('project universe node handoff preserves world state while diving into the editor', async ({ page }) => {
   const response = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1&z=1.000&x=8.37&y=4.20', {
     waitUntil: 'networkidle',

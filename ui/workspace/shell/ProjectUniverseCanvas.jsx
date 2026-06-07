@@ -96,6 +96,7 @@ function resolveGroupPreviewLabels(group, visibleNodeById) {
 export function ProjectUniverseCanvas({
     perspectiveId = 'overview',
     universe = null,
+    motionMode = 'full',
     initialCamera = null,
     preserveExplicitCameraOnFocus = false,
     onCameraChange = null,
@@ -310,6 +311,9 @@ export function ProjectUniverseCanvas({
     return (
         <section
             aria-label='Project Universe'
+            data-testid='project-universe-surface'
+            data-motion-meaning='navigation'
+            data-motion-mode={motionMode}
             style={{
                 border: '1px solid #d9dee6',
                 borderRadius: 10,

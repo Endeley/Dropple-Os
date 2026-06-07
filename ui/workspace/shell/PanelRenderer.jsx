@@ -159,7 +159,8 @@ export function PanelRenderer({ workspaceId, node, emit, extraPanels = [] }) {
                 className='inspector-shell'
                 data-testid='inspector-shell'
                 data-state={inspectorSurfaceState}
-                data-emergence-source={inspectorSurfaceSource}>
+                data-emergence-source={inspectorSurfaceSource}
+                data-motion-meaning='focus'>
                 <div className='inspector-header'>
                     <div className='inspector-title'>Inspector</div>
 

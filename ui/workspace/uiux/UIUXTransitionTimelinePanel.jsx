@@ -138,7 +138,8 @@ export function UIUXTransitionTimelinePanel({ node = null }) {
             data-testid='uiux-transition-timeline'
             data-state={timelineActive ? 'active' : 'inactive'}
             data-emergence={timelineEmergence}
-            data-emergence-source={timelineActive ? 'selection' : 'context'}>
+            data-emergence-source={timelineActive ? 'selection' : 'context'}
+            data-motion-meaning='context'>
             <div className='uiux-transition-timeline__summary'>
                 <strong>Transition Timeline</strong>
                 <span className='inspector-subtle'>

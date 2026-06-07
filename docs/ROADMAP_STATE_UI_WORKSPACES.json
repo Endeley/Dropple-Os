@@ -469,10 +469,11 @@
         {
           "id": "U15.M4",
           "title": "Motion Meaning and Reduced-Motion Fallbacks",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
             "ui/workspace/shell/ProjectPerspectiveShell.jsx",
             "ui/workspace/shell/ProjectUniverseCanvas.jsx",
+            "ui/styles/uiux.css",
             "tests/e2e/workspace-routes.smoke.spec.js",
             "tests/architecture/osSurfaceBoundary.test.ts"
           ]
