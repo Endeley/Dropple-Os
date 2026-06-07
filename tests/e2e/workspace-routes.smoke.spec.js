@@ -579,6 +579,10 @@ test('project universe navigator search and jump stay route-driven and determini
   await expect(page.getByTestId('project-universe-orientation-summary')).toBeVisible();
   await expect(page.getByTestId('project-universe-orientation-summary')).toContainText('Return');
   await expect(page.getByTestId('project-universe-orientation-summary')).toContainText('Next likely');
+  await expect(page.getByTestId('project-universe-workflow-guide')).toBeVisible();
+  await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Project Workflow');
+  await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Current task');
+  await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Next focus');
   await expect(page.getByTestId('project-universe-orientation-return-project:hub')).toContainText('Bp Logistics V1');
   await page.getByTestId('project-universe-orientation-return-project:hub').click();
   await expect(page).toHaveURL(/[\?&]u=project%3Ahub/);
@@ -975,6 +979,9 @@ test('build perspective exposes linked workflow guidance and operate handoff rou
   await expect(page.getByTestId('build-world-summary')).toContainText('Assistant: Build Assistant');
   await expect(page.getByTestId('build-world-summary')).toContainText('Linked artifacts: 2 across 2 build clusters');
   await expect(page.getByTestId('build-world-summary')).toContainText('Operate bridge: Systems Engineering');
+  await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Project Workflow');
+  await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Application');
+  await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Move from build planning into live operating context.');
   await expect(page.getByTestId('build-workflow-suggested-next')).toContainText('Continue Building');
   await expect(page.getByTestId('build-workflow-cluster-application')).toContainText('Application');
   const applicationLink = page.getByTestId('build-workflow-cluster-application').getByRole('button').first();

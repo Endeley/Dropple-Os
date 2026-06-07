@@ -710,12 +710,14 @@
         {
           "id": "U18.4",
           "title": "Universe-Guided Workflow",
-          "status": "not-started",
+          "status": "complete",
           "evidence": [
             "runtime/workspaces/createPerspectiveWorkflow.js",
             "runtime/workspaces/buildPerspectiveWorkflow.js",
             "runtime/workspaces/collaboratePerspectiveWorkflow.js",
             "runtime/workspaces/publishPerspectiveWorkflow.js",
+            "runtime/workspaces/projectUniverseWorkflowGuide.js",
+            "tests/kernel/projectUniverseWorkflowGuideLaw.test.ts",
             "ui/workspace/shell/ProjectPerspectiveShell.jsx"
           ]
         },

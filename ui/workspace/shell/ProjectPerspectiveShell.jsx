@@ -55,6 +55,7 @@ import { resolveOperateAssistantActionLabels } from '@/runtime/workspaces/operat
 import { resolvePublishAssistantActionLabels } from '@/runtime/workspaces/publishAssistantActionLabels.js';
 import { buildPublishPerspectiveWorldSummary } from '@/runtime/workspaces/publishPerspectiveWorkflow.js';
 import { resolveCreateShellChoreography } from '@/runtime/workspaces/createShellChoreography.js';
+import { buildProjectUniverseWorkflowGuide } from '@/runtime/workspaces/projectUniverseWorkflowGuide.js';
 import { ProjectUniverseCanvas } from './ProjectUniverseCanvas.jsx';
 
 function formatEntryLabel(entryId) {
@@ -783,6 +784,29 @@ export function ProjectPerspectiveShell({
             }),
         [navigatorQuery, projectUniverse, universeFocusState.targetId],
     );
+    const universeWorkflowGuide = useMemo(
+        () =>
+            buildProjectUniverseWorkflowGuide({
+                perspectiveId,
+                entryId: projectPerspectiveContext.entryId,
+                orientation: universeOrientation,
+                createWorkflow,
+                buildWorkflow,
+                collaborateWorkflow,
+                operateWorldSummary,
+                publishWorldSummary,
+            }),
+        [
+            buildWorkflow,
+            collaborateWorkflow,
+            createWorkflow,
+            operateWorldSummary,
+            perspectiveId,
+            projectPerspectiveContext.entryId,
+            publishWorldSummary,
+            universeOrientation,
+        ],
+    );
     const assistantSurfaceState = assistantIntentStatus
         ? 'engaged'
         : assistantSurface?.activeAssistantId
@@ -912,6 +936,68 @@ export function ProjectPerspectiveShell({
                                 }}>
                                 <div style={{ fontSize: 11, fontWeight: 600 }}>{item.label}</div>
                                 <div style={{ fontSize: 10, color: '#64748b' }}>{item.subtitle}</div>
+                            </button>
+                        ))}
+                    </div>
+                ) : null}
+            </div>
+        );
+    };
+
+    const renderUniverseWorkflowGuide = () => {
+        if (!universeWorkflowGuide) return null;
+
+        return (
+            <div
+                data-testid='project-universe-workflow-guide'
+                style={{
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 8,
+                    background: '#ffffff',
+                    padding: '8px 10px',
+                    display: 'grid',
+                    gap: 6,
+                    marginBottom: 8,
+                }}>
+                <div
+                    style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: '#64748b',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                    }}>
+                    Project Workflow
+                </div>
+                <div style={{ display: 'grid', gap: 2 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>
+                        {universeWorkflowGuide.activityLabel}
+                    </div>
+                    <div style={{ fontSize: 10, color: '#334155' }}>
+                        Current task: <strong style={{ color: '#0f172a' }}>{universeWorkflowGuide.currentTaskLabel}</strong>
+                    </div>
+                    <div style={{ fontSize: 10, color: '#64748b' }}>{universeWorkflowGuide.summaryLabel}</div>
+                </div>
+                {universeWorkflowGuide.suggestions.length > 0 ? (
+                    <div style={{ display: 'grid', gap: 4 }}>
+                        <div style={{ fontSize: 10, color: '#64748b' }}>Next focus</div>
+                        {universeWorkflowGuide.suggestions.map((suggestion) => (
+                            <button
+                                key={suggestion.id}
+                                type='button'
+                                data-testid={`project-universe-workflow-suggestion-${suggestion.id}`}
+                                onClick={() => navigateProjectWorkflowHref(router, suggestion.href)}
+                                style={{
+                                    textAlign: 'left',
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: 6,
+                                    background: '#ffffff',
+                                    color: '#334155',
+                                    padding: '6px 8px',
+                                    cursor: 'pointer',
+                                }}>
+                                <div style={{ fontSize: 11, fontWeight: 600, color: '#0f172a' }}>{suggestion.label}</div>
+                                <div style={{ fontSize: 10, color: '#64748b' }}>{suggestion.reason}</div>
                             </button>
                         ))}
                     </div>
@@ -2500,6 +2586,7 @@ export function ProjectPerspectiveShell({
                                         </div>
                                     </div>
                                     {renderUniverseOrientation()}
+                                    {renderUniverseWorkflowGuide()}
                                     <div style={{ display: 'grid', gap: 4 }}>
                                         {universeNavigatorItems.map((item) => {
                                             const active = item.targetId === universeFocusState.targetId;
@@ -2834,6 +2921,7 @@ export function ProjectPerspectiveShell({
                                 </div>
                             </div>
                             {renderUniverseOrientation()}
+                            {renderUniverseWorkflowGuide()}
                             <div style={{ display: 'grid', gap: 4, marginBottom: 10 }}>
                                 {universeNavigatorItems.map((item) => {
                                     const active = item.targetId === universeFocusState.targetId;
