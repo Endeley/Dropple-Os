@@ -101,6 +101,14 @@ function resolveRelationshipSummary(group) {
     return summary;
 }
 
+function resolveCausalitySummary(entity) {
+    const summary =
+        typeof entity?.metadata?.relationshipCausality === 'string' && entity.metadata.relationshipCausality.trim().length > 0
+            ? entity.metadata.relationshipCausality.trim()
+            : null;
+    return summary;
+}
+
 export function ProjectUniverseCanvas({
     perspectiveId = 'overview',
     universe = null,
@@ -587,6 +595,7 @@ export function ProjectUniverseCanvas({
                     {visibility.showGroups ? visibleGroups.map((group) => {
                         const previewLabels = resolveGroupPreviewLabels(group, visibleNodeById);
                         const relationshipSummary = resolveRelationshipSummary(group);
+                        const causalitySummary = resolveCausalitySummary(group);
                         return (
                         <div
                             key={group.id}
@@ -594,6 +603,7 @@ export function ProjectUniverseCanvas({
                             data-pointer-role='focus-group'
                             data-focus-state={focusedTargetId === group.id ? 'active' : 'inactive'}
                             data-relationship-summary={relationshipSummary ?? ''}
+                            data-causality-summary={causalitySummary ?? ''}
                             onPointerDown={(event) => {
                                 event.stopPropagation();
                             }}
@@ -640,6 +650,11 @@ export function ProjectUniverseCanvas({
                                     {relationshipSummary}
                                 </div>
                             ) : null}
+                            {presentation.groupDetailLevel !== 'domain-chip' && causalitySummary ? (
+                                <div style={{ fontSize: 9, color: '#475569', marginTop: 4 }}>
+                                    {causalitySummary}
+                                </div>
+                            ) : null}
                             {visibility.showGroupPreviews && previewLabels.length > 0 ? (
                                 <div
                                     style={{
@@ -668,12 +683,15 @@ export function ProjectUniverseCanvas({
                         </div>
                     )}) : null}
                     {visibility.showNodeLabels || visibility.showNodeCards
-                        ? renderNodes.map((node) => (
+                        ? renderNodes.map((node) => {
+                        const causalitySummary = resolveCausalitySummary(node);
+                        return (
                         <div
                             key={node.id}
                             data-testid={`project-universe-node-${node.id}`}
                             data-pointer-role='open-artifact'
                             data-focus-state={focusedTargetId === node.id ? 'active' : 'inactive'}
+                            data-causality-summary={causalitySummary ?? ''}
                             onPointerDown={(event) => {
                                 event.stopPropagation();
                             }}
@@ -714,12 +732,17 @@ export function ProjectUniverseCanvas({
                                             {summarizeNodeMetadata(node)}
                                         </div>
                                     ) : null}
+                                    {visibility.showNodeCards && causalitySummary ? (
+                                        <div style={{ fontSize: 9, color: '#475569', marginTop: 3 }}>
+                                            {causalitySummary}
+                                        </div>
+                                    ) : null}
                                 </>
                             ) : (
                                 node.id
                             )}
                         </div>
-                    )) : null}
+                    )}) : null}
                     {visibility.showClusterDots && nodeSelection.hiddenCount > 0 ? (
                         <div
                             style={{

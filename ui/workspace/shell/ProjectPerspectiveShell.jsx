@@ -808,6 +808,11 @@ export function ProjectPerspectiveShell({
                 : null,
         [universeFocusState.targetId, universeNavigatorItems],
     );
+    const focusedUniverseEntity = useMemo(() => {
+        const targetId = universeFocusState.targetId ?? projectUniverse?.hubId ?? null;
+        if (!targetId) return null;
+        return projectUniverse?.groups?.[targetId] ?? projectUniverse?.nodes?.[targetId] ?? null;
+    }, [projectUniverse?.groups, projectUniverse?.hubId, projectUniverse?.nodes, universeFocusState.targetId]);
     const universeOrientation = useMemo(
         () =>
             buildProjectUniverseOrientation({
@@ -839,6 +844,20 @@ export function ProjectPerspectiveShell({
             publishWorldSummary,
             universeOrientation,
         ],
+    );
+    const focusedUniverseCausality = useMemo(
+        () => ({
+            reliesOn:
+                focusedUniverseEntity?.metadata?.reliesOnSummary ??
+                (focusedUniverseItem?.targetType === 'hub' ? 'Relies on project-wide work' : null),
+            influences:
+                focusedUniverseEntity?.metadata?.influencesSummary ??
+                (focusedUniverseItem?.targetType === 'hub' ? 'Influences every active perspective' : null),
+            mattersNext:
+                focusedUniverseEntity?.metadata?.mattersNextSummary ??
+                (focusedUniverseItem?.targetType === 'hub' ? 'Matters next as the project world anchor' : null),
+        }),
+        [focusedUniverseEntity, focusedUniverseItem?.targetType],
     );
     const assistantSurfaceState = assistantIntentStatus
         ? 'engaged'
@@ -1060,6 +1079,11 @@ export function ProjectPerspectiveShell({
                         Current task: <strong style={{ color: '#0f172a' }}>{universeWorkflowGuide.currentTaskLabel}</strong>
                     </div>
                     <div style={{ fontSize: 10, color: '#64748b' }}>{universeWorkflowGuide.summaryLabel}</div>
+                    {focusedUniverseCausality.mattersNext ? (
+                        <div data-testid='project-universe-workflow-causality' style={{ fontSize: 10, color: '#475569' }}>
+                            {focusedUniverseCausality.mattersNext}
+                        </div>
+                    ) : null}
                 </div>
                 {universeWorkflowGuide.suggestions.length > 0 ? (
                     <div style={{ display: 'grid', gap: 4 }}>
@@ -2649,9 +2673,24 @@ export function ProjectPerspectiveShell({
                                             <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>
                                                 {focusedUniverseItem?.label ?? 'Project Hub'}
                                             </div>
-                                        <div style={{ fontSize: 10, color: '#64748b' }}>
-                                            {focusedUniverseItem?.subtitle ?? 'project universe anchor'}
-                                        </div>
+                                            <div style={{ fontSize: 10, color: '#64748b' }}>
+                                                {focusedUniverseItem?.subtitle ?? 'project universe anchor'}
+                                            </div>
+                                            {focusedUniverseCausality.reliesOn ? (
+                                                <div data-testid='project-universe-focus-relies-on' style={{ fontSize: 10, color: '#475569' }}>
+                                                    {focusedUniverseCausality.reliesOn}
+                                                </div>
+                                            ) : null}
+                                            {focusedUniverseCausality.influences ? (
+                                                <div data-testid='project-universe-focus-influences' style={{ fontSize: 10, color: '#475569' }}>
+                                                    {focusedUniverseCausality.influences}
+                                                </div>
+                                            ) : null}
+                                            {focusedUniverseCausality.mattersNext ? (
+                                                <div data-testid='project-universe-focus-matters-next' style={{ fontSize: 10, color: '#475569' }}>
+                                                    {focusedUniverseCausality.mattersNext}
+                                                </div>
+                                            ) : null}
                                     </div>
                                     {renderUniverseOrientation()}
                                     {renderUniverseWorkflowGuide()}
@@ -2987,6 +3026,21 @@ export function ProjectPerspectiveShell({
                                 <div style={{ fontSize: 10, color: '#64748b' }}>
                                     {focusedUniverseItem?.subtitle ?? 'project universe anchor'}
                                 </div>
+                                {focusedUniverseCausality.reliesOn ? (
+                                    <div data-testid='project-universe-focus-relies-on' style={{ fontSize: 10, color: '#475569' }}>
+                                        {focusedUniverseCausality.reliesOn}
+                                    </div>
+                                ) : null}
+                                {focusedUniverseCausality.influences ? (
+                                    <div data-testid='project-universe-focus-influences' style={{ fontSize: 10, color: '#475569' }}>
+                                        {focusedUniverseCausality.influences}
+                                    </div>
+                                ) : null}
+                                {focusedUniverseCausality.mattersNext ? (
+                                    <div data-testid='project-universe-focus-matters-next' style={{ fontSize: 10, color: '#475569' }}>
+                                        {focusedUniverseCausality.mattersNext}
+                                    </div>
+                                ) : null}
                             </div>
                             {renderUniverseOrientation()}
                             {renderUniverseWorkflowGuide()}

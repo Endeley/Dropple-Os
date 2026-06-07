@@ -580,10 +580,15 @@ test('project universe navigator search and jump stay route-driven and determini
   await expect(page.getByTestId('project-universe-orientation-summary')).toContainText('Return');
   await expect(page.getByTestId('project-universe-orientation-summary')).toContainText('Upstream');
   await expect(page.getByTestId('project-universe-orientation-summary')).toContainText('Next likely');
+  await expect(page.getByTestId('project-universe-focus-relies-on')).toContainText('Relies on');
+  await expect(page.getByTestId('project-universe-focus-influences')).toContainText('Influences');
+  await expect(page.getByTestId('project-universe-focus-matters-next')).toContainText('Matters next');
   await expect(page.getByTestId('project-universe-workflow-guide')).toBeVisible();
   await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Project Workflow');
   await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Current task');
   await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Next focus');
+  await expect(page.getByTestId('project-universe-workflow-causality')).toContainText('Matters next');
+  await expect(page.getByTestId('project-universe-group-operate')).toHaveAttribute('data-causality-summary', /Matters next/);
   await expect(page.getByTestId('project-universe-orientation-return-project:hub')).toContainText('Bp Logistics V1');
   await page.getByTestId('project-universe-orientation-return-project:hub').click();
   await expect(page).toHaveURL(/[\?&]u=project%3Ahub/);

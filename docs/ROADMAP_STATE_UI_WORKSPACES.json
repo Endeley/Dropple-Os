@@ -866,7 +866,7 @@
         {
           "id": "U20.4",
           "title": "Universe Causality Summaries",
-          "status": "active",
+          "status": "complete",
           "evidence": [
             "ui/workspace/shell/ProjectUniverseCanvas.jsx",
             "ui/workspace/shell/ProjectPerspectiveShell.jsx"
@@ -875,7 +875,7 @@
         {
           "id": "U20.5",
           "title": "Universe-Driven Next Work",
-          "status": "not-started",
+          "status": "active",
           "evidence": [
             "runtime/workspaces/projectUniverseWorkflowGuide.js",
             "ui/workspace/shell/ProjectPerspectiveShell.jsx"

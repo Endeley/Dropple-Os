@@ -460,6 +460,101 @@ function describeRelationship(type, targetLabel) {
     }
 }
 
+function isUpstreamRelationship(type) {
+    return (
+        type === 'depends-on' ||
+        type === 'documents' ||
+        type === 'styles' ||
+        type === 'components-for'
+    );
+}
+
+function isDownstreamRelationship(type) {
+    return (
+        type === 'produces' ||
+        type === 'publishes' ||
+        type === 'operates' ||
+        type === 'reviews'
+    );
+}
+
+function formatRelationshipLabel(type) {
+    switch (type) {
+        case 'depends-on':
+            return 'dependency';
+        case 'produces':
+            return 'delivery';
+        case 'documents':
+            return 'documentation';
+        case 'reviews':
+            return 'review';
+        case 'publishes':
+            return 'publish';
+        case 'operates':
+            return 'operation';
+        case 'styles':
+            return 'style';
+        case 'components-for':
+            return 'component';
+        default:
+            return 'relationship';
+    }
+}
+
+function formatLabelList(values) {
+    const items = [...new Set((Array.isArray(values) ? values : []).filter(Boolean))];
+    if (items.length === 0) return '';
+    if (items.length === 1) return items[0];
+    if (items.length === 2) return `${items[0]} and ${items[1]}`;
+    return `${items.slice(0, -1).join(', ')}, and ${items[items.length - 1]}`;
+}
+
+function buildCausalitySummary(relationshipEdges) {
+    const edges = Array.isArray(relationshipEdges) ? relationshipEdges.filter(Boolean) : [];
+    const upstreamEdges = edges.filter((edge) => isUpstreamRelationship(edge?.type));
+    const downstreamEdges = edges.filter((edge) => isDownstreamRelationship(edge?.type));
+
+    const reliesOnSummary =
+        upstreamEdges.length > 0
+            ? `Relies on ${formatLabelList(
+                  upstreamEdges.map((edge) =>
+                      asNonEmptyString(edge?.targetLabel) ??
+                      asNonEmptyString(edge?.targetPerspectiveId) ??
+                      'project context',
+                  ),
+              )}`
+            : 'Relies on project hub context';
+
+    const influencesSummary =
+        downstreamEdges.length > 0
+            ? `Influences ${formatLabelList(
+                  downstreamEdges.map((edge) =>
+                      asNonEmptyString(edge?.targetLabel) ??
+                      asNonEmptyString(edge?.targetPerspectiveId) ??
+                      'project context',
+                  ),
+              )}`
+            : upstreamEdges.length > 0
+              ? 'Influences downstream work through dependencies'
+              : 'Influences the project hub directly';
+
+    const primaryNextEdge = downstreamEdges[0] ?? upstreamEdges[0] ?? edges[0] ?? null;
+    const mattersNextSummary = primaryNextEdge
+        ? `Matters next for ${formatRelationshipLabel(primaryNextEdge.type)} in ${
+              asNonEmptyString(primaryNextEdge?.targetLabel) ??
+              asNonEmptyString(primaryNextEdge?.targetPerspectiveId) ??
+              'project context'
+          }`
+        : 'Matters next as the current project anchor';
+
+    return Object.freeze({
+        reliesOnSummary,
+        influencesSummary,
+        mattersNextSummary,
+        summary: `${reliesOnSummary} · ${influencesSummary} · ${mattersNextSummary}`,
+    });
+}
+
 function summarizeRelationshipEdges(edges) {
     const summaries = (Array.isArray(edges) ? edges : [])
         .map((edge) => capitalize(edge?.summary))
@@ -495,10 +590,12 @@ function enrichGroupsWithRelationships(groups) {
                     targetPerspectiveId: perspectiveId,
                     targetGroupId,
                     type,
+                    targetLabel,
                     summary: describeRelationship(type, targetLabel),
                 });
             });
         const relationshipSummary = summarizeRelationshipEdges(relationshipEdges);
+        const causalitySummary = buildCausalitySummary(relationshipEdges);
         nextGroups[groupId] = Object.freeze({
             ...group,
             metadata: Object.freeze({
@@ -511,6 +608,10 @@ function enrichGroupsWithRelationships(groups) {
                 ),
                 relationshipCount: relatedGroupIds.length,
                 relationshipSummary,
+                relationshipCausality: causalitySummary.summary,
+                reliesOnSummary: causalitySummary.reliesOnSummary,
+                influencesSummary: causalitySummary.influencesSummary,
+                mattersNextSummary: causalitySummary.mattersNextSummary,
             }),
         });
     }
@@ -553,6 +654,7 @@ function enrichNodesWithRelationships(nodes, groups, hubId) {
                     targetGroupId: group.id,
                     targetNodeId,
                     type,
+                    targetLabel,
                     summary: describeRelationship(type, targetLabel),
                 });
             });
@@ -561,6 +663,7 @@ function enrichNodesWithRelationships(nodes, groups, hubId) {
                 .filter((value) => typeof value === 'string' && value.length > 0)
                 .sort(),
         );
+        const causalitySummary = buildCausalitySummary(relationshipEdges);
 
         nextNodes[nodeId] = Object.freeze({
             ...node,
@@ -578,6 +681,10 @@ function enrichNodesWithRelationships(nodes, groups, hubId) {
                     Object.fromEntries(relationshipEdges.map((edge) => [edge.targetPerspectiveId, edge.type])),
                 ),
                 relationshipSummary: summarizeRelationshipEdges(relationshipEdges),
+                relationshipCausality: causalitySummary.summary,
+                reliesOnSummary: causalitySummary.reliesOnSummary,
+                influencesSummary: causalitySummary.influencesSummary,
+                mattersNextSummary: causalitySummary.mattersNextSummary,
             }),
         });
     }

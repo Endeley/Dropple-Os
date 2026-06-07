@@ -96,6 +96,9 @@ test('project universe projection derives deterministic artifact nodes from docu
         Object.freeze({ build: 'produces', publish: 'publishes' }),
     );
     assert.equal(left?.groups['group:create']?.metadata?.relationshipSummary, 'Produces for Build · Publishes to Publish');
+    assert.equal(left?.groups['group:create']?.metadata?.reliesOnSummary, 'Relies on project hub context');
+    assert.equal(left?.groups['group:create']?.metadata?.influencesSummary, 'Influences Build and Publish');
+    assert.equal(left?.groups['group:create']?.metadata?.mattersNextSummary, 'Matters next for delivery in Build');
     assert.deepEqual(left?.groups['group:create']?.metadata?.kindCounts, Object.freeze({
         animation: 1,
         'component-library': 1,
@@ -122,6 +125,9 @@ test('project universe projection derives deterministic artifact nodes from docu
         left?.groups['group:build']?.metadata?.relationshipSummary,
         'Depends on Create · Operates Operate · Produces for Publish',
     );
+    assert.equal(left?.groups['group:build']?.metadata?.reliesOnSummary, 'Relies on Create');
+    assert.equal(left?.groups['group:build']?.metadata?.influencesSummary, 'Influences Operate and Publish');
+    assert.equal(left?.groups['group:build']?.metadata?.mattersNextSummary, 'Matters next for operation in Operate');
     assert.deepEqual(left?.groups['group:build']?.nodeIds, Object.freeze([
         'state-machine:fulfillment',
         'workflow:flow:dispatchApproval',
@@ -133,6 +139,9 @@ test('project universe projection derives deterministic artifact nodes from docu
         Object.freeze({ build: 'depends-on', publish: 'operates' }),
     );
     assert.equal(left?.groups['group:operate']?.metadata?.relationshipSummary, 'Depends on Build · Operates Publish');
+    assert.equal(left?.groups['group:operate']?.metadata?.reliesOnSummary, 'Relies on Build');
+    assert.equal(left?.groups['group:operate']?.metadata?.influencesSummary, 'Influences Publish');
+    assert.equal(left?.groups['group:operate']?.metadata?.mattersNextSummary, 'Matters next for operation in Publish');
     assert.deepEqual(left?.groups['group:operate']?.nodeIds, Object.freeze(['system:model']));
     assert.equal(left?.groups['group:publish']?.label, 'Publish');
     assert.deepEqual(
@@ -147,6 +156,9 @@ test('project universe projection derives deterministic artifact nodes from docu
         left?.groups['group:publish']?.metadata?.relationshipSummary,
         'Depends on Create · Depends on Build · Depends on Operate',
     );
+    assert.equal(left?.groups['group:publish']?.metadata?.reliesOnSummary, 'Relies on Create, Build, and Operate');
+    assert.equal(left?.groups['group:publish']?.metadata?.influencesSummary, 'Influences downstream work through dependencies');
+    assert.equal(left?.groups['group:publish']?.metadata?.mattersNextSummary, 'Matters next for dependency in Create');
     assert.deepEqual(left?.groups['group:publish']?.nodeIds, Object.freeze(['workflow:publish']));
     assert.deepEqual(left?.nodes['document:primary']?.metadata?.relatedPerspectiveIds, Object.freeze(['build', 'publish']));
     assert.deepEqual(
@@ -154,6 +166,9 @@ test('project universe projection derives deterministic artifact nodes from docu
         Object.freeze({ build: 'documents', publish: 'documents' }),
     );
     assert.equal(left?.nodes['document:primary']?.metadata?.relationshipSummary, 'Documents DispatchApproval · Documents Publish Targets');
+    assert.equal(left?.nodes['document:primary']?.metadata?.reliesOnSummary, 'Relies on DispatchApproval and Publish Targets');
+    assert.equal(left?.nodes['document:primary']?.metadata?.influencesSummary, 'Influences downstream work through dependencies');
+    assert.equal(left?.nodes['document:primary']?.metadata?.mattersNextSummary, 'Matters next for documentation in DispatchApproval');
     assert.deepEqual(left?.nodes['document:primary']?.refs, Object.freeze(['project:hub', 'workflow:flow:dispatchApproval', 'workflow:publish']));
     assert.deepEqual(left?.nodes['workflow:flow:dispatchApproval']?.metadata?.relatedPerspectiveIds, Object.freeze(['create', 'operate', 'publish']));
     assert.deepEqual(
@@ -164,5 +179,11 @@ test('project universe projection derives deterministic artifact nodes from docu
         left?.nodes['workflow:flow:dispatchApproval']?.refs,
         Object.freeze(['document:primary', 'project:hub', 'system:model', 'workflow:publish']),
     );
+    assert.equal(left?.nodes['workflow:flow:dispatchApproval']?.metadata?.reliesOnSummary, 'Relies on project hub context');
+    assert.equal(
+        left?.nodes['workflow:flow:dispatchApproval']?.metadata?.influencesSummary,
+        'Influences Logistics Control, System Model, and Publish Targets',
+    );
+    assert.equal(left?.nodes['workflow:flow:dispatchApproval']?.metadata?.mattersNextSummary, 'Matters next for operation in Logistics Control');
     assert.deepEqual(left, right);
 });
