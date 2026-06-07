@@ -41,6 +41,8 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
     const createSessionOrdinalRef = useRef(0);
     const overlaySessionRef = useRef(null);
     const overlayCleanupRef = useRef(null);
+    const primaryPointerSessionRef = useRef(null);
+    const primaryPointerCleanupRef = useRef(null);
     const handleDownRef = useRef(null);
     const dragStartRef = useRef(null);
 
@@ -101,6 +103,73 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
             overlayCleanupRef.current = null;
         }
     }, []);
+
+    const clearPrimaryPointerSession = useCallback(() => {
+        primaryPointerSessionRef.current = null;
+
+        if (typeof primaryPointerCleanupRef.current === 'function') {
+            primaryPointerCleanupRef.current();
+            primaryPointerCleanupRef.current = null;
+        }
+    }, []);
+
+    const cancelPrimaryInteraction = useCallback(
+        (e) => {
+            if (!e.defaultPrevented) {
+                e.stopPropagation?.();
+            }
+
+            if (overlaySessionRef.current) {
+                if (createSessionRef.current?.sessionId) {
+                    closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId, dispatcher });
+                }
+                createSessionRef.current = null;
+                dragStartRef.current = null;
+                setOverlayDebug('idle');
+                return;
+            }
+
+            if (!createSessionRef.current) {
+                routePointerInput('pointercancel', e);
+            } else if (createSessionRef.current?.sessionId) {
+                closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId, dispatcher });
+            }
+
+            createSessionRef.current = null;
+            dragStartRef.current = null;
+            setOverlayDebug('idle');
+
+            e.currentTarget.releasePointerCapture?.(e.pointerId);
+        },
+        [dispatcher, routePointerInput],
+    );
+
+    const bindPrimaryPointerSession = useCallback(
+        (event) => {
+            if (typeof window === 'undefined') return;
+
+            clearPrimaryPointerSession();
+
+            const session = {
+                pointerId: event.pointerId,
+            };
+
+            primaryPointerSessionRef.current = session;
+
+            const handlePointerCancel = (nextEvent) => {
+                if (primaryPointerSessionRef.current?.pointerId !== nextEvent.pointerId) return;
+                cancelPrimaryInteraction(nextEvent);
+                clearPrimaryPointerSession();
+            };
+
+            window.addEventListener('pointercancel', handlePointerCancel, true);
+
+            primaryPointerCleanupRef.current = () => {
+                window.removeEventListener('pointercancel', handlePointerCancel, true);
+            };
+        },
+        [cancelPrimaryInteraction, clearPrimaryPointerSession],
+    );
 
     const bindOverlayPointerSession = useCallback(
         (event, overrides) => {
@@ -172,8 +241,9 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
     useEffect(
         () => () => {
             clearOverlaySession();
+            clearPrimaryPointerSession();
         },
-        [clearOverlaySession],
+        [clearOverlaySession, clearPrimaryPointerSession],
     );
 
     const isDuplicateHandleDown = useCallback((event, key) => {
@@ -265,9 +335,10 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
             }
 
             e.currentTarget.setPointerCapture?.(e.pointerId);
+            bindPrimaryPointerSession(e);
             setOverlayDebug(`${tool}:pending`);
         },
-        [dispatcher, getActiveToolId, toWorldPoint],
+        [bindPrimaryPointerSession, dispatcher, getActiveToolId, toWorldPoint],
     );
 
     const onPointerMove = useCallback(
@@ -452,6 +523,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                 setOverlayDebug('idle');
                 setCreateSessionDebug(`${tool}:session-closed:${sessionId}`);
                 e.currentTarget.releasePointerCapture?.(e.pointerId);
+                clearPrimaryPointerSession();
                 return;
             }
 
@@ -468,41 +540,19 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
 
             dragStartRef.current = null;
             setOverlayDebug('idle');
+            clearPrimaryPointerSession();
 
             e.currentTarget.releasePointerCapture?.(e.pointerId);
         },
-        [dispatcher, getDefaultParentId, routePointerInput],
+        [clearPrimaryPointerSession, dispatcher, getDefaultParentId, routePointerInput],
     );
 
     const onPointerCancel = useCallback(
         (e) => {
-            if (!e.defaultPrevented) {
-                e.stopPropagation();
-            }
-
-            if (overlaySessionRef.current) {
-                if (createSessionRef.current?.sessionId) {
-                    closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId, dispatcher });
-                }
-                createSessionRef.current = null;
-                dragStartRef.current = null;
-                setOverlayDebug('idle');
-                return;
-            }
-
-            if (!createSessionRef.current) {
-                routePointerInput('pointercancel', e);
-            } else if (createSessionRef.current?.sessionId) {
-                closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId, dispatcher });
-            }
-
-            createSessionRef.current = null;
-            dragStartRef.current = null;
-            setOverlayDebug('idle');
-
-            e.currentTarget.releasePointerCapture?.(e.pointerId);
+            cancelPrimaryInteraction(e);
+            clearPrimaryPointerSession();
         },
-        [dispatcher, routePointerInput],
+        [cancelPrimaryInteraction, clearPrimaryPointerSession],
     );
 
     const onResizeHandlePointerDown = useCallback(
