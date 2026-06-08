@@ -1259,6 +1259,240 @@
         { "name": "route smoke", "command": "npm run test:routes:smoke" },
         { "name": "interaction smoke", "command": "npm run ui:interactions:test" }
       ]
+    },
+    {
+      "id": "U26",
+      "title": "Creative OS Completion Audit",
+      "status": "complete",
+      "depends_on": ["U25"],
+      "milestones": [
+        {
+          "id": "U26.1",
+          "title": "Project World Completion",
+          "status": "complete",
+          "evidence": [
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "runtime/workspaces/projectViewRouteState.js",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js"
+          ]
+        },
+        {
+          "id": "U26.2",
+          "title": "Universe Comprehension",
+          "status": "complete",
+          "evidence": [
+            "runtime/workspaces/projectUniverseNavigation.js",
+            "runtime/workspaces/projectUniverseWorkflowGuide.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U26.3",
+          "title": "Room Naturalness",
+          "status": "complete",
+          "evidence": [
+            "runtime/workspaces/buildShellChoreography.js",
+            "runtime/workspaces/operateShellChoreography.js",
+            "runtime/workspaces/collaborateShellChoreography.js",
+            "runtime/workspaces/publishShellChoreography.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U26.4",
+          "title": "Editor Naturalness",
+          "status": "complete",
+          "evidence": [
+            "runtime/workspaces/projectUniverseEditorHandoff.js",
+            "runtime/workspaces/projectViewRouteState.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js"
+          ]
+        },
+        {
+          "id": "U26.5",
+          "title": "Guidance Naturalness",
+          "status": "complete",
+          "evidence": [
+            "runtime/workspaces/projectUniverseWorkflowGuide.js",
+            "runtime/workspaces/projectUniverseNavigation.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U26.6",
+          "title": "Creative OS Identity",
+          "status": "complete",
+          "evidence": [
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "runtime/workspaces/projectWorldAnchor.js",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js"
+          ]
+        },
+        {
+          "id": "U26.7",
+          "title": "User Journey Completion",
+          "status": "complete",
+          "evidence": [
+            "tests/e2e/workspace-workflows.smoke.spec.js",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx"
+          ]
+        },
+        {
+          "id": "U26.8",
+          "title": "Remaining Friction",
+          "status": "complete",
+          "evidence": [
+            "docs/ROADMAP_STATE_UI_WORKSPACES.json",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js"
+          ]
+        }
+      ],
+      "gates": [
+        { "name": "navigator dry run", "command": "npm run implementation:navigator:ui-workspaces -- --phase U26 --dry-run" },
+        { "name": "architecture gate", "command": "npm run arch" },
+        { "name": "architecture tests", "command": "npm run test:architecture" }
+      ]
+    },
+    {
+      "id": "U27",
+      "title": "Guidance and Naturalness Refinement",
+      "status": "active",
+      "depends_on": ["U26"],
+      "milestones": [
+        {
+          "id": "U27.1",
+          "title": "Collaborate Room Naturalness",
+          "status": "active",
+          "evidence": [
+            "runtime/workspaces/collaboratePerspectiveWorkflow.js",
+            "runtime/workspaces/collaborateShellChoreography.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js"
+          ]
+        },
+        {
+          "id": "U27.2",
+          "title": "Guidance Readability Refinement",
+          "status": "pending",
+          "evidence": [
+            "runtime/workspaces/projectUniverseWorkflowGuide.js",
+            "runtime/workspaces/projectUniverseNavigation.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U27.3",
+          "title": "Emergence and Return Naturalness",
+          "status": "pending",
+          "evidence": [
+            "runtime/workspaces/projectUniverseEditorHandoff.js",
+            "runtime/workspaces/projectViewRouteState.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js"
+          ]
+        },
+        {
+          "id": "U27.4",
+          "title": "Universe Comprehension at a Glance",
+          "status": "pending",
+          "evidence": [
+            "runtime/workspaces/projectUniverseNavigation.js",
+            "runtime/workspaces/projectUniverseWorkflowGuide.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U27.5",
+          "title": "Shared Naturalness Validation",
+          "status": "pending",
+          "evidence": [
+            "runtime/workspaces/createShellChoreography.js",
+            "runtime/workspaces/buildShellChoreography.js",
+            "runtime/workspaces/operateShellChoreography.js",
+            "runtime/workspaces/collaborateShellChoreography.js",
+            "runtime/workspaces/publishShellChoreography.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js"
+          ]
+        }
+      ],
+      "gates": [
+        { "name": "generated cleanup", "command": "npm run release:trust:clean-generated" },
+        { "name": "architecture gate", "command": "npm run arch" },
+        { "name": "law enforcement", "command": "npm run enforce:laws" },
+        { "name": "architecture tests", "command": "npm run test:architecture" },
+        { "name": "route smoke", "command": "npm run test:routes:smoke" },
+        { "name": "interaction smoke", "command": "npm run ui:interactions:test" }
+      ]
+    },
+    {
+      "id": "U28",
+      "title": "Real User Audit",
+      "status": "not-started",
+      "depends_on": ["U27"],
+      "milestones": [
+        {
+          "id": "U28.1",
+          "title": "Human Navigation Comprehension Audit",
+          "status": "not-started",
+          "evidence": [
+            "docs/ROADMAP_STATE_UI_WORKSPACES.json"
+          ]
+        },
+        {
+          "id": "U28.2",
+          "title": "Human Project Completion Audit",
+          "status": "not-started",
+          "evidence": [
+            "docs/ROADMAP_STATE_UI_WORKSPACES.json"
+          ]
+        },
+        {
+          "id": "U28.3",
+          "title": "Creative OS Perception Audit",
+          "status": "not-started",
+          "evidence": [
+            "docs/ROADMAP_STATE_UI_WORKSPACES.json"
+          ]
+        }
+      ],
+      "gates": [
+        { "name": "navigator dry run", "command": "npm run implementation:navigator:ui-workspaces -- --phase U28 --dry-run" }
+      ]
+    },
+    {
+      "id": "U29",
+      "title": "Creative OS Polish",
+      "status": "not-started",
+      "depends_on": ["U28"],
+      "milestones": [
+        {
+          "id": "U29.1",
+          "title": "Post-Audit Product Polish",
+          "status": "not-started",
+          "evidence": [
+            "docs/ROADMAP_STATE_UI_WORKSPACES.json"
+          ]
+        }
+      ],
+      "gates": [
+        { "name": "navigator dry run", "command": "npm run implementation:navigator:ui-workspaces -- --phase U29 --dry-run" }
+      ]
     }
   ]
 }
