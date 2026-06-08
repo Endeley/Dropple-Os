@@ -690,24 +690,88 @@ test('world-based shell parity stays explicit across create build operate collab
     await expect(page.getByTestId(expectation.panel)).toContainText(expectation.label);
     await expect(page.getByTestId(expectation.summary)).toContainText('Assistant:');
     await expect(page.getByTestId('assistant-surface-panel')).toBeVisible();
+    await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'ready');
     if (expectation.panel === 'operate-world-panel') {
       await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-contract', 'operate-world');
-      await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-workflow', 'linked');
-      await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-guidance', 'guided');
+      await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-choreography', 'workflow-leading');
+      await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-workflow', 'leading');
+      await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-guidance', 'ready');
       await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-anchor', 'anchored');
+      await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-focus', 'systems');
       await expect(page.getByTestId('operate-workflow-panel')).toBeVisible();
       await expect(page.getByTestId('operate-guidance-panel')).toBeVisible();
       await expect(page.getByTestId('operate-universe-anchor-panel')).toBeVisible();
     }
+    if (expectation.panel === 'build-world-panel') {
+      await expect(page.getByTestId('build-room-panel')).toHaveAttribute('data-room-contract', 'build-world');
+      await expect(page.getByTestId('build-room-panel')).toHaveAttribute('data-room-choreography', 'workflow-leading');
+      await expect(page.getByTestId('build-room-panel')).toHaveAttribute('data-room-workflow', 'leading');
+      await expect(page.getByTestId('build-room-panel')).toHaveAttribute('data-room-handoff', 'ready');
+      await expect(page.getByTestId('build-room-panel')).toHaveAttribute('data-room-focus', 'structure');
+      await expect(page.getByTestId('build-workflow-panel')).toBeVisible();
+    }
+    if (expectation.panel === 'collaborate-world-panel') {
+      await expect(page.getByTestId('collaborate-room-panel')).toHaveAttribute('data-room-contract', 'collaborate-world');
+      await expect(page.getByTestId('collaborate-room-panel')).toHaveAttribute('data-room-choreography', 'workflow-leading');
+      await expect(page.getByTestId('collaborate-room-panel')).toHaveAttribute('data-room-workflow', 'leading');
+      await expect(page.getByTestId('collaborate-room-panel')).toHaveAttribute('data-room-handoff', 'ready');
+      await expect(page.getByTestId('collaborate-room-panel')).toHaveAttribute('data-room-focus', 'review');
+      await expect(page.getByTestId('collaborate-workflow-panel')).toBeVisible();
+    }
     if (expectation.panel === 'publish-world-panel') {
       await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-contract', 'publish-world');
-      await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-workflow', 'linked');
-      await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-guidance', 'guided');
+      await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-choreography', 'workflow-leading');
+      await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-workflow', 'leading');
+      await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-guidance', 'ready');
       await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-anchor', 'anchored');
+      await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-focus', 'governance');
       await expect(page.getByTestId('publish-workflow-panel')).toBeVisible();
       await expect(page.getByTestId('publish-guidance-panel')).toBeVisible();
       await expect(page.getByTestId('publish-universe-anchor-panel')).toBeVisible();
     }
+  }
+});
+
+test('shared room choreography stays parity-stable across build operate collaborate and publish', async ({ page }) => {
+  const expectations = [
+    {
+      path: '/workspace/build?blueprint=bp.logistics.v1&bootstrap=1',
+      room: 'build-room-panel',
+      workflow: 'build-workflow-panel',
+      focus: 'structure',
+    },
+    {
+      path: '/workspace/operate?entry=systems-engineering&blueprint=bp.logistics.v1&bootstrap=1',
+      room: 'operate-room-panel',
+      workflow: 'operate-workflow-panel',
+      focus: 'systems',
+    },
+    {
+      path: '/workspace/collaborate?blueprint=bp.logistics.v1&bootstrap=1',
+      room: 'collaborate-room-panel',
+      workflow: 'collaborate-workflow-panel',
+      focus: 'review',
+    },
+    {
+      path: '/workspace/publish?entry=governance&blueprint=bp.logistics.v1&bootstrap=1',
+      room: 'publish-room-panel',
+      workflow: 'publish-workflow-panel',
+      focus: 'governance',
+    },
+  ];
+
+  for (const expectation of expectations) {
+    const response = await page.goto(expectation.path, { waitUntil: 'networkidle' });
+
+    expect(response?.ok(), `${expectation.path} should respond successfully`).toBeTruthy();
+    await expect(page.getByTestId(expectation.room)).toHaveAttribute('data-room-choreography', 'workflow-leading');
+    await expect(page.getByTestId(expectation.room)).toHaveAttribute('data-room-workflow', 'leading');
+    await expect(page.getByTestId(expectation.room)).toHaveAttribute('data-room-focus', expectation.focus);
+    await expect(page.getByTestId(expectation.workflow)).toHaveAttribute('data-choreography-state', 'leading');
+    await expect(page.getByTestId(expectation.workflow)).toHaveAttribute('data-context-visibility', 'expanded');
+    await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-state', 'ready');
+    await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'ready');
+    await expect(page.getByTestId('assistant-surface-context')).toContainText('is ready while');
   }
 });
 
@@ -1016,19 +1080,45 @@ test('build perspective exposes linked workflow guidance and operate handoff rou
   });
 
   expect(response?.ok(), 'build workflow route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('build-room-panel')).toHaveAttribute('data-room-contract', 'build-world');
+  await expect(page.getByTestId('build-room-panel')).toHaveAttribute('data-room-choreography', 'workflow-leading');
+  await expect(page.getByTestId('build-room-panel')).toHaveAttribute('data-room-workflow', 'leading');
+  await expect(page.getByTestId('build-room-panel')).toHaveAttribute('data-room-handoff', 'ready');
+  await expect(page.getByTestId('build-room-panel')).toHaveAttribute('data-room-focus', 'structure');
   await expect(page.getByTestId('build-workflow-panel')).toBeVisible();
+  await expect(page.getByTestId('build-workflow-panel')).toHaveAttribute('data-choreography-state', 'leading');
+  await expect(page.getByTestId('build-workflow-panel')).toHaveAttribute('data-context-visibility', 'expanded');
   await expect(page.getByTestId('build-world-panel')).toContainText('Build World');
   await expect(page.getByTestId('build-world-panel')).toContainText('Application');
   await expect(page.getByTestId('build-world-summary')).toContainText('Current task: System Model');
   await expect(page.getByTestId('build-world-summary')).toContainText('Assistant: Build Assistant');
   await expect(page.getByTestId('build-world-summary')).toContainText('Linked artifacts: 2 across 2 build clusters');
   await expect(page.getByTestId('build-world-summary')).toContainText('Operate bridge: Systems Engineering');
+  await expect(page.getByTestId('build-world-summary')).toContainText('Build focus: structure');
+  await expect(page.getByTestId('build-world-summary')).toContainText('Room behavior: workflow-leading');
   await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Project Workflow');
   await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Application');
   await expect(page.getByTestId('project-universe-workflow-primary-next')).toContainText('Next work:');
   await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Move from build planning into live operating context.');
   await expect(page.getByTestId('build-workflow-suggested-next')).toContainText('Continue Building');
+  await expect(page.getByTestId('build-workflow-operate-handoff')).toHaveAttribute('data-choreography-state', 'ready');
   await expect(page.getByTestId('build-workflow-cluster-application')).toContainText('Application');
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-state', 'ready');
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'ready');
+  await expect(page.getByTestId('assistant-surface-context')).toContainText('Build Assistant is ready while build workflow leads this room.');
+  await page.getByTestId('assistant-action-recommend').click();
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-state', 'engaged');
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'engaged');
+  await expect(page.getByTestId('assistant-surface-context')).toContainText('Build Assistant is engaged with the active build flow.');
+  await expect(page.getByTestId('build-room-panel')).toHaveAttribute('data-room-choreography', 'assistant-engaged');
+  await expect(page.getByTestId('build-room-panel')).toHaveAttribute('data-room-workflow', 'yielding');
+  await expect(page.getByTestId('build-workflow-panel')).toHaveAttribute('data-choreography-state', 'yielding');
+  await expect(page.getByTestId('build-workflow-panel')).toHaveAttribute('data-context-visibility', 'supporting');
+  await expect(page.locator('body')).toContainText(/assistant intent:\s+enqueued:/);
+
+  await page.goto('/workspace/build?blueprint=bp.logistics.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
   const applicationLink = page.getByTestId('build-workflow-cluster-application').getByRole('button').first();
   await expect(applicationLink).toBeVisible();
   await applicationLink.click();
@@ -1064,6 +1154,12 @@ test('operate overlays expose deterministic systems and operations panels', asyn
   });
 
   expect(response?.ok(), 'systems engineering route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-contract', 'operate-world');
+  await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-choreography', 'workflow-leading');
+  await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-workflow', 'leading');
+  await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-guidance', 'ready');
+  await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-anchor', 'anchored');
+  await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-focus', 'systems');
   await expect(page.getByTestId('operate-world-panel')).toContainText('Operate World');
   await expect(page.getByTestId('operate-world-panel')).toContainText('Systems Engineering');
   await expect(page.getByTestId('operate-world-summary')).toContainText('Current task: System Model');
@@ -1074,13 +1170,19 @@ test('operate overlays expose deterministic systems and operations panels', asyn
   await expect(page.getByTestId('operate-world-summary')).toContainText('Signals: 0 graphs · 0 controls · 0 signals');
   await expect(page.getByTestId('operate-world-summary')).toContainText('Next focus:');
   await expect(page.getByTestId('operate-world-summary')).toContainText('Guidance: Operations Assistant is guiding Systems Engineering toward System Model.');
+  await expect(page.getByTestId('operate-world-summary')).toContainText('Operate focus: systems');
+  await expect(page.getByTestId('operate-world-summary')).toContainText('Room behavior: workflow-leading');
   await expect(page.getByTestId('operate-workflow-panel')).toBeVisible();
+  await expect(page.getByTestId('operate-workflow-panel')).toHaveAttribute('data-choreography-state', 'leading');
+  await expect(page.getByTestId('operate-workflow-panel')).toHaveAttribute('data-context-visibility', 'expanded');
   await expect(page.getByTestId('operate-workflow-suggested-next')).toContainText('Continue Operating');
   await expect(page.getByTestId('operate-workflow-cluster-systems')).toContainText('Systems');
   await expect(page.getByTestId('operate-guidance-panel')).toBeVisible();
+  await expect(page.getByTestId('operate-guidance-panel')).toHaveAttribute('data-choreography-state', 'ready');
   await expect(page.getByTestId('operate-guidance-summary')).toContainText('Current guidance: Operations Assistant is guiding Systems Engineering toward System Model.');
   await expect(page.getByTestId('operate-guidance-summary')).toContainText('Next move: Continue from System Model into Enterprise Operations via System Model.');
   await expect(page.getByTestId('operate-universe-anchor-panel')).toBeVisible();
+  await expect(page.getByTestId('operate-universe-anchor-panel')).toHaveAttribute('data-choreography-state', 'anchored');
   await expect(page.getByTestId('operate-universe-anchor-panel')).toContainText('Operate');
   await expect(page.getByTestId('operate-universe-anchor-summary')).toContainText('Return anchor:');
   await expect(page.getByTestId('operate-universe-anchor-summary')).toContainText('linked world targets');
@@ -1124,6 +1226,25 @@ test('operate overlays expose deterministic systems and operations panels', asyn
   await expect(page.getByTestId('enterprise-operations-panel')).toContainText('Enterprise Operations');
   await expect(page.getByTestId('enterprise-operations-panel')).toContainText('Processes:');
   await expect(page.getByTestId('enterprise-operations-panel')).toContainText('Continue in Enterprise Operations');
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-state', 'ready');
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'ready');
+  await expect(page.getByTestId('assistant-surface-context')).toContainText('Operations Assistant is ready while operating workflow leads this room.');
+  await page.getByTestId('assistant-action-recommend').click();
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-state', 'engaged');
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'engaged');
+  await expect(page.getByTestId('assistant-surface-context')).toContainText('Operations Assistant is engaged with the active operating flow.');
+  await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-choreography', 'guidance-engaged');
+  await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-workflow', 'yielding');
+  await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-anchor', 'supporting');
+  await expect(page.getByTestId('operate-workflow-panel')).toHaveAttribute('data-choreography-state', 'yielding');
+  await expect(page.getByTestId('operate-workflow-panel')).toHaveAttribute('data-context-visibility', 'supporting');
+  await expect(page.getByTestId('operate-guidance-panel')).toHaveAttribute('data-choreography-state', 'engaged');
+  await expect(page.getByTestId('operate-universe-anchor-panel')).toHaveAttribute('data-choreography-state', 'supporting');
+  await expect(page.locator('body')).toContainText(/assistant intent:\s+enqueued:/);
+
+  await page.goto('/workspace/enterprise-operations?blueprint=bp.logistics.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
   await page.getByTestId('enterprise-operations-panel').getByRole('link', { name: /Continue in Enterprise Operations/i }).click();
   await expect(page).toHaveURL(/\/workspace\/operate\?/);
   await expect(page).toHaveURL(/[\?&]entry=enterprise-operations/);
@@ -1192,7 +1313,8 @@ test('operate perspective assistant surface stays entry-consistent across workfl
     await expect(page.getByTestId('assistant-surface-focus')).toContainText(
       `Operations Assistant for ${expectedOperateEntries[entryId].specialization}`,
     );
-    await expect(page.getByTestId('assistant-surface-context')).toContainText('Operations Assistant is guiding');
+    await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'ready');
+    await expect(page.getByTestId('assistant-surface-context')).toContainText('Operations Assistant is ready while operating workflow leads this room.');
     await expect(page.getByTestId('assistant-action-recommend')).toContainText(expectedOperateEntries[entryId].recommendLabel);
     await expect(page.getByTestId('assistant-action-generate')).toContainText(expectedOperateEntries[entryId].generateLabel);
     await expect(page.getByTestId('assistant-action-explain')).toContainText(expectedOperateEntries[entryId].explainLabel);
@@ -1274,13 +1396,21 @@ test('publish perspective assistant surface stays entry-consistent for governanc
     await expect(page.getByTestId('publish-world-summary')).toContainText(`Signals: ${expectedPublishEntries[entryId].signals}`);
     await expect(page.getByTestId('publish-world-summary')).toContainText('Next focus:');
     await expect(page.getByTestId('publish-world-summary')).toContainText('Guidance:');
+    await expect(page.getByTestId('publish-world-summary')).toContainText('Publish focus:');
+    await expect(page.getByTestId('publish-world-summary')).toContainText('Room behavior:');
     await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-contract', 'publish-world');
-    await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-workflow', 'linked');
-    await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-guidance', 'guided');
+    await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-choreography', 'workflow-leading');
+    await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-workflow', 'leading');
+    await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-guidance', 'ready');
     await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-anchor', 'anchored');
+    await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-focus', /governance|release|system|delivery/);
     await expect(page.getByTestId('publish-workflow-panel')).toBeVisible();
+    await expect(page.getByTestId('publish-workflow-panel')).toHaveAttribute('data-choreography-state', 'leading');
+    await expect(page.getByTestId('publish-workflow-panel')).toHaveAttribute('data-context-visibility', 'expanded');
     await expect(page.getByTestId('publish-guidance-panel')).toBeVisible();
+    await expect(page.getByTestId('publish-guidance-panel')).toHaveAttribute('data-choreography-state', 'ready');
     await expect(page.getByTestId('publish-universe-anchor-panel')).toBeVisible();
+    await expect(page.getByTestId('publish-universe-anchor-panel')).toHaveAttribute('data-choreography-state', 'anchored');
     await expect(page.getByTestId('publish-universe-anchor-panel')).toContainText('Publish');
     await expect(page.getByTestId('publish-universe-anchor-summary')).toContainText('Return anchor:');
     await expect(page.getByTestId('publish-universe-anchor-summary')).toContainText('linked world targets');
@@ -1290,6 +1420,8 @@ test('publish perspective assistant surface stays entry-consistent for governanc
     await expect(page.getByTestId('assistant-surface-focus')).toContainText(
       `Publishing Assistant for ${expectedPublishEntries[entryId].specialization}`,
     );
+    await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'ready');
+    await expect(page.getByTestId('assistant-surface-context')).toContainText('Publishing Assistant is ready');
     await expect(page.getByTestId('assistant-action-recommend')).toContainText(expectedPublishEntries[entryId].recommendLabel);
     await expect(page.getByTestId('assistant-action-generate')).toContainText(expectedPublishEntries[entryId].generateLabel);
     await expect(page.getByTestId('assistant-action-explain')).toContainText(expectedPublishEntries[entryId].explainLabel);
@@ -1307,13 +1439,21 @@ test('publish perspective exposes linked workflow depth when bootstrapped into p
   await expect(page.getByTestId('publish-world-summary')).toContainText('publish clusters');
   await expect(page.getByTestId('publish-world-summary')).toContainText('Next focus:');
   await expect(page.getByTestId('publish-world-summary')).toContainText('Guidance: Publishing Assistant is guiding Governance toward Untitled.');
+  await expect(page.getByTestId('publish-world-summary')).toContainText('Publish focus: governance');
+  await expect(page.getByTestId('publish-world-summary')).toContainText('Room behavior: workflow-leading');
   await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-contract', 'publish-world');
-  await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-workflow', 'linked');
-  await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-guidance', 'guided');
+  await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-choreography', 'workflow-leading');
+  await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-workflow', 'leading');
+  await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-guidance', 'ready');
   await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-anchor', 'anchored');
+  await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-focus', 'governance');
   await expect(page.getByTestId('publish-workflow-panel')).toBeVisible();
+  await expect(page.getByTestId('publish-workflow-panel')).toHaveAttribute('data-choreography-state', 'leading');
+  await expect(page.getByTestId('publish-workflow-panel')).toHaveAttribute('data-context-visibility', 'expanded');
   await expect(page.getByTestId('publish-guidance-panel')).toBeVisible();
+  await expect(page.getByTestId('publish-guidance-panel')).toHaveAttribute('data-choreography-state', 'ready');
   await expect(page.getByTestId('publish-universe-anchor-panel')).toBeVisible();
+  await expect(page.getByTestId('publish-universe-anchor-panel')).toHaveAttribute('data-choreography-state', 'anchored');
   await expect(page.getByTestId('publish-universe-anchor-panel')).toContainText('Publish');
   await expect(page.getByTestId('publish-universe-anchor-summary')).toContainText('Return anchor:');
   await expect(page.getByTestId('publish-universe-anchor-summary')).toContainText('linked world targets');
@@ -1324,6 +1464,24 @@ test('publish perspective exposes linked workflow depth when bootstrapped into p
   await expect(page.getByTestId('publish-guidance-summary')).toContainText('Next move: Continue from Untitled into Conversion via Untitled.');
   await expect(page.getByTestId('publish-guidance-summary')).toContainText('Release note: Keep release rules, approvals, and artifact evidence aligned before publication.');
   await expect(page.getByTestId('publish-workflow-suggested-next')).toContainText('Continue Publishing');
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-state', 'ready');
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'ready');
+  await expect(page.getByTestId('assistant-surface-context')).toContainText('Publishing Assistant is ready while publish workflow leads this room.');
+  await page.getByTestId('assistant-action-recommend').click();
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-state', 'engaged');
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'engaged');
+  await expect(page.getByTestId('assistant-surface-context')).toContainText('Publishing Assistant is engaged with the active publish flow.');
+  await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-choreography', 'guidance-engaged');
+  await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-workflow', 'yielding');
+  await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-anchor', 'supporting');
+  await expect(page.getByTestId('publish-workflow-panel')).toHaveAttribute('data-choreography-state', 'yielding');
+  await expect(page.getByTestId('publish-workflow-panel')).toHaveAttribute('data-context-visibility', 'supporting');
+  await expect(page.getByTestId('publish-guidance-panel')).toHaveAttribute('data-choreography-state', 'engaged');
+  await expect(page.getByTestId('publish-universe-anchor-panel')).toHaveAttribute('data-choreography-state', 'supporting');
+  await expect(page.locator('body')).toContainText(/assistant intent:\s+enqueued:/);
+  await page.goto('/workspace/publish?entry=governance&blueprint=bp.logistics.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
   await page.getByTestId('publish-workflow-suggested-next').click();
   await expect(page).toHaveURL(/\/workspace\/publish\?/);
   await expect(page).toHaveURL(/[\?&]entry=conversion/);
@@ -1352,6 +1510,8 @@ test('collaborate perspective assistant surface stays entry-consistent across re
     await expect(page.locator('body')).toContainText('Collaborate');
     await expect(page.locator('body')).toContainText(`Active context: Collaborate > ${entryId[0].toUpperCase()}${entryId.slice(1)}`);
     await expect(page.getByTestId('assistant-surface-panel')).toBeVisible();
+    await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'ready');
+    await expect(page.getByTestId('assistant-surface-context')).toContainText('Collaborate Assistant is ready');
     await expect(page.getByTestId('assistant-surface-details')).toContainText('Assistant details');
     await expect(page.getByTestId('assistant-action-recommend')).toBeVisible();
     await expect(page.getByTestId('assistant-action-generate')).toBeVisible();
@@ -1365,15 +1525,40 @@ test('collaborate perspective exposes linked workflow guidance and publish hando
   });
 
   expect(response?.ok(), 'collaborate workflow route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('collaborate-room-panel')).toHaveAttribute('data-room-contract', 'collaborate-world');
+  await expect(page.getByTestId('collaborate-room-panel')).toHaveAttribute('data-room-choreography', 'workflow-leading');
+  await expect(page.getByTestId('collaborate-room-panel')).toHaveAttribute('data-room-workflow', 'leading');
+  await expect(page.getByTestId('collaborate-room-panel')).toHaveAttribute('data-room-handoff', 'ready');
+  await expect(page.getByTestId('collaborate-room-panel')).toHaveAttribute('data-room-focus', 'review');
   await expect(page.getByTestId('collaborate-world-panel')).toContainText('Collaborate World');
   await expect(page.getByTestId('collaborate-world-panel')).toContainText('Review');
   await expect(page.getByTestId('collaborate-world-summary')).toContainText('Current task: Untitled');
   await expect(page.getByTestId('collaborate-world-summary')).toContainText('Assistant: Collaborate Assistant');
   await expect(page.getByTestId('collaborate-world-summary')).toContainText('Linked artifacts: 2 across 1 collaborate clusters');
   await expect(page.getByTestId('collaborate-world-summary')).toContainText('Publish bridge: Publish Review');
+  await expect(page.getByTestId('collaborate-world-summary')).toContainText('Collaborate focus: review');
+  await expect(page.getByTestId('collaborate-world-summary')).toContainText('Room behavior: workflow-leading');
   await expect(page.getByTestId('collaborate-workflow-panel')).toBeVisible();
+  await expect(page.getByTestId('collaborate-workflow-panel')).toHaveAttribute('data-choreography-state', 'leading');
+  await expect(page.getByTestId('collaborate-workflow-panel')).toHaveAttribute('data-context-visibility', 'expanded');
   await expect(page.getByTestId('collaborate-workflow-suggested-next')).toContainText('Continue Collaborating');
+  await expect(page.getByTestId('collaborate-workflow-publish-handoff')).toHaveAttribute('data-choreography-state', 'ready');
   await expect(page.getByTestId('collaborate-workflow-cluster-knowledge')).toContainText('Knowledge');
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-state', 'ready');
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'ready');
+  await expect(page.getByTestId('assistant-surface-context')).toContainText('Collaborate Assistant is ready while collaboration workflow leads this room.');
+  await page.getByTestId('assistant-action-recommend').click();
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-state', 'engaged');
+  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'engaged');
+  await expect(page.getByTestId('assistant-surface-context')).toContainText('Collaborate Assistant is engaged with the active collaboration flow.');
+  await expect(page.getByTestId('collaborate-room-panel')).toHaveAttribute('data-room-choreography', 'assistant-engaged');
+  await expect(page.getByTestId('collaborate-room-panel')).toHaveAttribute('data-room-workflow', 'yielding');
+  await expect(page.getByTestId('collaborate-workflow-panel')).toHaveAttribute('data-choreography-state', 'yielding');
+  await expect(page.getByTestId('collaborate-workflow-panel')).toHaveAttribute('data-context-visibility', 'supporting');
+  await expect(page.locator('body')).toContainText(/assistant intent:\s+enqueued:/);
+  await page.goto('/workspace/collaborate?blueprint=bp.logistics.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
   await page.getByTestId('collaborate-workflow-link-document:primary-knowledge').click();
   await expect(page).toHaveURL(/[\?&]entry=knowledge/);
   await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);

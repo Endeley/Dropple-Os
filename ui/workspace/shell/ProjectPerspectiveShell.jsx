@@ -54,6 +54,7 @@ import { buildCreatePerspectiveWorkflow } from '@/runtime/workspaces/createPersp
 import { buildBuildPerspectiveWorkflow } from '@/runtime/workspaces/buildPerspectiveWorkflow.js';
 import { buildOperatePerspectiveWorkflow } from '@/runtime/workspaces/buildOverlayWorkflow.js';
 import { buildCollaboratePerspectiveWorkflow } from '@/runtime/workspaces/collaboratePerspectiveWorkflow.js';
+import { resolveCollaborateShellChoreography } from '@/runtime/workspaces/collaborateShellChoreography.js';
 import { resolveCreateAssistantActionLabels } from '@/runtime/workspaces/createAssistantActionLabels.js';
 import { resolveBuildAssistantActionLabels } from '@/runtime/workspaces/buildAssistantActionLabels.js';
 import { resolveOperateAssistantActionLabels } from '@/runtime/workspaces/operateAssistantActionLabels.js';
@@ -63,6 +64,9 @@ import {
     buildPublishPerspectiveWorldSummary,
 } from '@/runtime/workspaces/publishPerspectiveWorkflow.js';
 import { resolveCreateShellChoreography } from '@/runtime/workspaces/createShellChoreography.js';
+import { resolveBuildShellChoreography } from '@/runtime/workspaces/buildShellChoreography.js';
+import { resolveOperateShellChoreography } from '@/runtime/workspaces/operateShellChoreography.js';
+import { resolvePublishShellChoreography } from '@/runtime/workspaces/publishShellChoreography.js';
 import { buildProjectUniverseWorkflowGuide } from '@/runtime/workspaces/projectUniverseWorkflowGuide.js';
 import { ProjectUniverseCanvas } from './ProjectUniverseCanvas.jsx';
 
@@ -982,6 +986,31 @@ export function ProjectPerspectiveShell({
             }),
         [assistantSurfaceState, createUtilityPanel, editorEmergenceState, isCreatePerspective, selectedIds.length],
     );
+    const buildShellChoreography = useMemo(
+        () =>
+            resolveBuildShellChoreography({
+                activeEntryId: projectPerspectiveContext.entryId,
+                hasWorkflow: buildWorkflow.linkedArtifacts.length > 0,
+                hasOperateHandoff: Boolean(buildWorkflow.operateHandoff),
+                assistantState: assistantSurfaceState,
+            }),
+        [assistantSurfaceState, buildWorkflow.linkedArtifacts.length, buildWorkflow.operateHandoff, projectPerspectiveContext.entryId],
+    );
+    const collaborateShellChoreography = useMemo(
+        () =>
+            resolveCollaborateShellChoreography({
+                activeEntryId: projectPerspectiveContext.entryId,
+                hasWorkflow: collaborateWorkflow.linkedArtifacts.length > 0,
+                hasPublishHandoff: Boolean(collaborateWorkflow.publishHandoff),
+                assistantState: assistantSurfaceState,
+            }),
+        [
+            assistantSurfaceState,
+            collaborateWorkflow.linkedArtifacts.length,
+            collaborateWorkflow.publishHandoff,
+            projectPerspectiveContext.entryId,
+        ],
+    );
     const operateUniverseAnchor = useMemo(
         () =>
             perspectiveId === 'operate'
@@ -990,6 +1019,16 @@ export function ProjectPerspectiveShell({
                   })
                 : null,
         [operateUniverseOrientation, perspectiveId],
+    );
+    const operateShellChoreography = useMemo(
+        () =>
+            resolveOperateShellChoreography({
+                activeEntryId: projectPerspectiveContext.entryId,
+                hasWorkflow: Boolean(operateWorkflow?.linkedArtifacts?.length),
+                hasUniverseAnchor: Boolean(operateUniverseAnchor),
+                assistantState: assistantSurfaceState,
+            }),
+        [assistantSurfaceState, operateUniverseAnchor, operateWorkflow?.linkedArtifacts?.length, projectPerspectiveContext.entryId],
     );
     const publishUniverseAnchor = useMemo(
         () => {
@@ -1009,10 +1048,36 @@ export function ProjectPerspectiveShell({
         },
         [perspectiveId, publishUniverseOrientation, universeWorkflowGuide],
     );
+    const publishShellChoreography = useMemo(
+        () =>
+            resolvePublishShellChoreography({
+                activeEntryId: projectPerspectiveContext.entryId,
+                hasWorkflow: Boolean(publishWorkflow?.linkedArtifacts?.length),
+                hasUniverseAnchor: Boolean(publishUniverseAnchor),
+                assistantState: assistantSurfaceState,
+            }),
+        [assistantSurfaceState, projectPerspectiveContext.entryId, publishUniverseAnchor, publishWorkflow?.linkedArtifacts?.length],
+    );
     const assistantSurfaceContextSummary =
-        perspectiveId === 'operate'
-            ? operateWorkflow?.assistantGuidance?.assistantSummary ?? createShellChoreography.assistantSummary
-            : createShellChoreography.assistantSummary;
+        perspectiveId === 'build'
+            ? buildShellChoreography.assistantSummary
+            : perspectiveId === 'collaborate'
+              ? collaborateShellChoreography.assistantSummary
+            : perspectiveId === 'operate'
+              ? operateShellChoreography.assistantSummary
+              : perspectiveId === 'publish'
+                ? publishShellChoreography.assistantSummary
+                : createShellChoreography.assistantSummary;
+    const assistantSurfaceChoreographyState =
+        perspectiveId === 'build'
+            ? buildShellChoreography.assistantState
+            : perspectiveId === 'collaborate'
+              ? collaborateShellChoreography.assistantState
+            : perspectiveId === 'operate'
+              ? operateShellChoreography.assistantState
+              : perspectiveId === 'publish'
+                ? publishShellChoreography.assistantState
+                : createShellChoreography.assistantState;
 
     const renderUniverseOrientation = () => {
         if (!universeOrientation) return null;
@@ -2126,29 +2191,39 @@ export function ProjectPerspectiveShell({
                         ) : null}
                         {perspectiveId === 'build' ? (
                             <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
-                                <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
-                                    Build Workflow
-                                </div>
                                 <div
-                                    data-testid='build-workflow-panel'
-                                    style={{
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: 8,
-                                        padding: 8,
-                                        background: '#f8fafc',
-                                        display: 'grid',
-                                        gap: 8,
-                                    }}>
+                                    data-testid='build-room-panel'
+                                    data-room-contract='build-world'
+                                    data-room-choreography={buildShellChoreography.roomState}
+                                    data-room-workflow={buildShellChoreography.workflowState}
+                                    data-room-handoff={buildShellChoreography.handoffState}
+                                    data-room-focus={buildShellChoreography.focusState}
+                                    style={{ display: 'grid', gap: 8 }}>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                                        Build Workflow
+                                    </div>
                                     <div
-                                        data-testid='build-world-panel'
+                                        data-testid='build-workflow-panel'
+                                        data-choreography-state={buildShellChoreography.workflowState}
+                                        data-context-visibility={buildShellChoreography.workflowState === 'yielding' ? 'supporting' : 'expanded'}
                                         style={{
-                                            border: '1px solid #dbeafe',
+                                            border: '1px solid #e2e8f0',
                                             borderRadius: 8,
-                                            background: '#ffffff',
-                                            padding: '8px 10px',
+                                            padding: 8,
+                                            background: '#f8fafc',
                                             display: 'grid',
-                                            gap: 6,
+                                            gap: 8,
                                         }}>
+                                        <div
+                                            data-testid='build-world-panel'
+                                            style={{
+                                                border: '1px solid #dbeafe',
+                                                borderRadius: 8,
+                                                background: '#ffffff',
+                                                padding: '8px 10px',
+                                                display: 'grid',
+                                                gap: 6,
+                                            }}>
                                         <div
                                             style={{
                                                 fontSize: 10,
@@ -2194,6 +2269,18 @@ export function ProjectPerspectiveShell({
                                                     {buildWorkflow.worldSummary.operateBridgeLabel ?? 'Not ready'}
                                                 </strong>
                                             </span>
+                                            <span>
+                                                Build focus:{' '}
+                                                <strong style={{ color: '#0f172a' }}>
+                                                    {buildShellChoreography.focusState}
+                                                </strong>
+                                            </span>
+                                            <span>
+                                                Room behavior:{' '}
+                                                <strong style={{ color: '#0f172a' }}>
+                                                    {buildShellChoreography.roomState}
+                                                </strong>
+                                            </span>
                                         </div>
                                     </div>
                                     {buildWorkflow.suggestedNextArtifact ? (
@@ -2233,6 +2320,7 @@ export function ProjectPerspectiveShell({
                                                 })
                                             }
                                             data-testid='build-workflow-operate-handoff'
+                                            data-choreography-state={buildShellChoreography.handoffState}
                                             style={{
                                                 textAlign: 'left',
                                                 border: '1px solid #86efac',
@@ -2322,6 +2410,7 @@ export function ProjectPerspectiveShell({
                                             </span>
                                         ) : null}
                                     </div>
+                                    </div>
                                 </div>
                             </div>
                         ) : null}
@@ -2330,9 +2419,11 @@ export function ProjectPerspectiveShell({
                                 <div
                                     data-testid='operate-room-panel'
                                     data-room-contract='operate-world'
-                                    data-room-workflow={operateWorkflow?.linkedArtifacts?.length > 0 ? 'linked' : 'empty'}
-                                    data-room-guidance={operateWorkflow?.assistantGuidance ? 'guided' : 'idle'}
-                                    data-room-anchor={operateUniverseAnchor ? 'anchored' : 'floating'}
+                                    data-room-choreography={operateShellChoreography.roomState}
+                                    data-room-workflow={operateShellChoreography.workflowState}
+                                    data-room-guidance={operateShellChoreography.assistantState}
+                                    data-room-anchor={operateShellChoreography.anchorState}
+                                    data-room-focus={operateShellChoreography.focusState}
                                     style={{ display: 'grid', gap: 8 }}>
                                     <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
                                         Operate World
@@ -2411,6 +2502,18 @@ export function ProjectPerspectiveShell({
                                                     {operateWorldSummary?.assistantSummary ?? 'Operations Assistant is ready to guide this activity.'}
                                                 </strong>
                                             </span>
+                                            <span>
+                                                Operate focus:{' '}
+                                                <strong style={{ color: '#14532d' }}>
+                                                    {operateShellChoreography.focusState}
+                                                </strong>
+                                            </span>
+                                            <span>
+                                                Room behavior:{' '}
+                                                <strong style={{ color: '#14532d' }}>
+                                                    {operateShellChoreography.roomState}
+                                                </strong>
+                                            </span>
                                         </div>
                                     </div>
                                     <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
@@ -2418,6 +2521,8 @@ export function ProjectPerspectiveShell({
                                     </div>
                                     <div
                                         data-testid='operate-workflow-panel'
+                                        data-choreography-state={operateShellChoreography.workflowState}
+                                        data-context-visibility={operateShellChoreography.workflowState === 'yielding' ? 'supporting' : 'expanded'}
                                         style={{
                                             border: '1px solid #e2e8f0',
                                             borderRadius: 8,
@@ -2526,6 +2631,7 @@ export function ProjectPerspectiveShell({
                                     </div>
                                     <div
                                         data-testid='operate-guidance-panel'
+                                        data-choreography-state={operateShellChoreography.assistantState}
                                         style={{
                                             border: '1px solid #dbeafe',
                                             borderRadius: 8,
@@ -2565,6 +2671,7 @@ export function ProjectPerspectiveShell({
                                     </div>
                                     <div
                                         data-testid='operate-universe-anchor-panel'
+                                        data-choreography-state={operateShellChoreography.anchorState}
                                         style={{
                                             border: '1px solid #cbd5e1',
                                             borderRadius: 8,
@@ -2616,6 +2723,14 @@ export function ProjectPerspectiveShell({
                         ) : null}
                         {perspectiveId === 'collaborate' ? (
                             <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
+                                <div
+                                    data-testid='collaborate-room-panel'
+                                    data-room-contract='collaborate-world'
+                                    data-room-choreography={collaborateShellChoreography.roomState}
+                                    data-room-workflow={collaborateShellChoreography.workflowState}
+                                    data-room-handoff={collaborateShellChoreography.handoffState}
+                                    data-room-focus={collaborateShellChoreography.focusState}
+                                    style={{ display: 'grid', gap: 8 }}>
                                 <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
                                     Collaborate World
                                 </div>
@@ -2675,6 +2790,18 @@ export function ProjectPerspectiveShell({
                                                 {collaborateWorkflow.worldSummary?.publishBridgeLabel ?? 'No publish handoff'}
                                             </strong>
                                         </span>
+                                        <span>
+                                            Collaborate focus:{' '}
+                                            <strong style={{ color: '#581c87' }}>
+                                                {collaborateShellChoreography.focusState}
+                                            </strong>
+                                        </span>
+                                        <span>
+                                            Room behavior:{' '}
+                                            <strong style={{ color: '#581c87' }}>
+                                                {collaborateShellChoreography.roomState}
+                                            </strong>
+                                        </span>
                                     </div>
                                 </div>
                                 <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
@@ -2682,6 +2809,8 @@ export function ProjectPerspectiveShell({
                                 </div>
                                 <div
                                     data-testid='collaborate-workflow-panel'
+                                    data-choreography-state={collaborateShellChoreography.workflowState}
+                                    data-context-visibility={collaborateShellChoreography.workflowState === 'yielding' ? 'supporting' : 'expanded'}
                                     style={{
                                         border: '1px solid #e2e8f0',
                                         borderRadius: 8,
@@ -2727,6 +2856,7 @@ export function ProjectPerspectiveShell({
                                                 })
                                             }
                                             data-testid='collaborate-workflow-publish-handoff'
+                                            data-choreography-state={collaborateShellChoreography.handoffState}
                                             style={{
                                                 textAlign: 'left',
                                                 border: '1px solid #fcd34d',
@@ -2817,6 +2947,7 @@ export function ProjectPerspectiveShell({
                                         ) : null}
                                     </div>
                                 </div>
+                                </div>
                             </div>
                         ) : null}
                         {perspectiveId === 'publish' ? (
@@ -2824,9 +2955,11 @@ export function ProjectPerspectiveShell({
                                 <div
                                     data-testid='publish-room-panel'
                                     data-room-contract='publish-world'
-                                    data-room-workflow={(publishWorkflow?.linkedArtifacts?.length ?? 0) > 0 ? 'linked' : 'empty'}
-                                    data-room-guidance={publishWorkflow?.assistantGuidance ? 'guided' : 'idle'}
-                                    data-room-anchor={publishUniverseAnchor ? 'anchored' : 'floating'}
+                                    data-room-choreography={publishShellChoreography.roomState}
+                                    data-room-workflow={publishShellChoreography.workflowState}
+                                    data-room-guidance={publishShellChoreography.assistantState}
+                                    data-room-anchor={publishShellChoreography.anchorState}
+                                    data-room-focus={publishShellChoreography.focusState}
                                     style={{ display: 'grid', gap: 8 }}>
                                     <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
                                         Publish World
@@ -2905,6 +3038,18 @@ export function ProjectPerspectiveShell({
                                                     {publishWorldSummary?.assistantSummary ?? 'Publishing Assistant is ready to guide this activity.'}
                                                 </strong>
                                             </span>
+                                            <span>
+                                                Publish focus:{' '}
+                                                <strong style={{ color: '#78350f' }}>
+                                                    {publishShellChoreography.focusState}
+                                                </strong>
+                                            </span>
+                                            <span>
+                                                Room behavior:{' '}
+                                                <strong style={{ color: '#78350f' }}>
+                                                    {publishShellChoreography.roomState}
+                                                </strong>
+                                            </span>
                                         </div>
                                     </div>
                                     <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
@@ -2912,6 +3057,8 @@ export function ProjectPerspectiveShell({
                                     </div>
                                     <div
                                         data-testid='publish-workflow-panel'
+                                        data-choreography-state={publishShellChoreography.workflowState}
+                                        data-context-visibility={publishShellChoreography.workflowState === 'yielding' ? 'supporting' : 'expanded'}
                                         style={{
                                             border: '1px solid #e2e8f0',
                                             borderRadius: 8,
@@ -3040,6 +3187,7 @@ export function ProjectPerspectiveShell({
                                     </div>
                                     <div
                                         data-testid='publish-guidance-panel'
+                                        data-choreography-state={publishShellChoreography.assistantState}
                                         style={{
                                             border: '1px solid #dbeafe',
                                             borderRadius: 8,
@@ -3079,6 +3227,7 @@ export function ProjectPerspectiveShell({
                                     </div>
                                     <div
                                         data-testid='publish-universe-anchor-panel'
+                                        data-choreography-state={publishShellChoreography.anchorState}
                                         style={{
                                             border: '1px solid #cbd5e1',
                                             borderRadius: 8,
@@ -3135,7 +3284,7 @@ export function ProjectPerspectiveShell({
                             <div
                                 data-testid='assistant-surface-panel'
                                 data-state={assistantSurfaceState}
-                                data-choreography-state={createShellChoreography.assistantState}
+                                data-choreography-state={assistantSurfaceChoreographyState}
                                 data-emergence-source='assistant'
                                 data-motion-meaning='context'
                                 data-motion-mode={motionMode}

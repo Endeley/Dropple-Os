@@ -1110,6 +1110,155 @@
         { "name": "route smoke", "command": "npm run test:routes:smoke" },
         { "name": "interaction smoke", "command": "npm run ui:interactions:test" }
       ]
+    },
+    {
+      "id": "U24",
+      "title": "Post-Publish Product Experience Audit",
+      "status": "complete",
+      "depends_on": ["U23"],
+      "milestones": [
+        {
+          "id": "U24.1",
+          "title": "Room Parity Re-Audit",
+          "status": "complete",
+          "evidence": [
+            "runtime/workspaces/createPerspectiveWorkflow.js",
+            "runtime/workspaces/buildPerspectiveWorkflow.js",
+            "runtime/workspaces/buildOverlayWorkflow.js",
+            "runtime/workspaces/collaboratePerspectiveWorkflow.js",
+            "runtime/workspaces/publishPerspectiveWorkflow.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U24.2",
+          "title": "Cross-Perspective Choreography Audit",
+          "status": "complete",
+          "evidence": [
+            "runtime/workspaces/createShellChoreography.js",
+            "ui/workspace/shell/PanelRenderer.jsx",
+            "ui/workspace/uiux/UIUXAuthoringShell.jsx",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U24.3",
+          "title": "Universe-to-Room Naturalness Audit",
+          "status": "complete",
+          "evidence": [
+            "runtime/workspaces/projectUniverseEditorHandoff.js",
+            "runtime/workspaces/projectViewRouteState.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js"
+          ]
+        },
+        {
+          "id": "U24.4",
+          "title": "Project Guidance Clarity Audit",
+          "status": "complete",
+          "evidence": [
+            "runtime/workspaces/projectUniverseWorkflowGuide.js",
+            "runtime/workspaces/projectUniverseNavigation.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U24.5",
+          "title": "Creative OS Product Priority Score",
+          "status": "complete",
+          "evidence": [
+            "docs/ROADMAP_STATE_UI_WORKSPACES.json",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js"
+          ]
+        }
+      ],
+      "gates": [
+        { "name": "navigator dry run", "command": "npm run implementation:navigator:ui-workspaces -- --phase U24 --dry-run" },
+        { "name": "architecture gate", "command": "npm run arch" },
+        { "name": "architecture tests", "command": "npm run test:architecture" }
+      ]
+    },
+    {
+      "id": "U25",
+      "title": "Cross-Perspective Choreography Parity",
+      "status": "complete",
+      "depends_on": ["U24"],
+      "milestones": [
+        {
+          "id": "U25.1",
+          "title": "Build Choreography Depth",
+          "status": "complete",
+          "evidence": [
+            "runtime/workspaces/buildShellChoreography.js",
+            "runtime/workspaces/buildPerspectiveWorkflow.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/kernel/buildShellChoreographyLaw.test.ts"
+          ]
+        },
+        {
+          "id": "U25.2",
+          "title": "Operate Choreography Depth",
+          "status": "complete",
+          "evidence": [
+            "runtime/workspaces/operateShellChoreography.js",
+            "runtime/workspaces/buildOverlayWorkflow.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/kernel/operateShellChoreographyLaw.test.ts"
+          ]
+        },
+        {
+          "id": "U25.3",
+          "title": "Collaborate Choreography Depth",
+          "status": "complete",
+          "evidence": [
+            "runtime/workspaces/collaborateShellChoreography.js",
+            "runtime/workspaces/collaboratePerspectiveWorkflow.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/kernel/collaborateShellChoreographyLaw.test.ts"
+          ]
+        },
+        {
+          "id": "U25.4",
+          "title": "Publish Choreography Depth",
+          "status": "complete",
+          "evidence": [
+            "runtime/workspaces/publishShellChoreography.js",
+            "runtime/workspaces/publishPerspectiveWorkflow.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/kernel/publishShellChoreographyLaw.test.ts"
+          ]
+        },
+        {
+          "id": "U25.5",
+          "title": "Shared Room Choreography Validation",
+          "status": "complete",
+          "evidence": [
+            "runtime/workspaces/createShellChoreography.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "ui/workspace/shell/PanelRenderer.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js"
+          ]
+        }
+      ],
+      "gates": [
+        { "name": "generated cleanup", "command": "npm run release:trust:clean-generated" },
+        { "name": "architecture gate", "command": "npm run arch" },
+        { "name": "law enforcement", "command": "npm run enforce:laws" },
+        { "name": "architecture tests", "command": "npm run test:architecture" },
+        { "name": "route smoke", "command": "npm run test:routes:smoke" },
+        { "name": "interaction smoke", "command": "npm run ui:interactions:test" }
+      ]
     }
   ]
 }
