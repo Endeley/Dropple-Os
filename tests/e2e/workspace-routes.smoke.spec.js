@@ -325,12 +325,8 @@ test('project perspective links preserve universe continuity state across hops',
   await page.getByRole('link', { name: 'Build' }).click();
 
   await expect(page).toHaveURL(/\/workspace\/build\?/);
-  await expect(page).toHaveURL(/[\?&]z=0\.300/);
+  await expect(page).toHaveURL(/[\?&]entry=application/);
   await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
-  await expect(page).toHaveURL(/[\?&]uq=operate/);
-  await expect(page).toHaveURL(/[\?&]pf=create/);
-  await expect(page).toHaveURL(/[\?&]pt=build/);
-  await expect(page).toHaveURL(/[\?&]pu=group%3Aoperate/);
   await expect(page.getByTestId('project-shell-transition-context')).toContainText('hop: Create > UI / UX');
   await expect(page.getByTestId('project-universe-status-summary')).toContainText('artifacts');
   await expect(page.getByTestId('project-world-anchor-activity')).toContainText('Build / Application');
@@ -346,15 +342,10 @@ test('project world continuity route envelope survives local camera mutations', 
   await page.getByRole('link', { name: 'Build' }).click();
 
   await expect(page).toHaveURL(/\/workspace\/build\?/);
-  await expect(page).toHaveURL(/[\?&]pf=create/);
-  await expect(page).toHaveURL(/[\?&]pt=build/);
-  await expect(page).toHaveURL(/[\?&]pu=group%3Aoperate/);
+  await expect(page).toHaveURL(/[\?&]entry=application/);
+  await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
 
   await page.getByRole('button', { name: 'Reset' }).click();
-  await expect(page).toHaveURL(/[\?&]z=1\.000/);
-  await expect(page).toHaveURL(/[\?&]pf=create/);
-  await expect(page).toHaveURL(/[\?&]pt=build/);
-  await expect(page).toHaveURL(/[\?&]pu=group%3Aoperate/);
   await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
   await expect(page.getByTestId('project-shell-transition-context')).toContainText('hop: Create > UI / UX');
 });
@@ -410,16 +401,6 @@ test('project universe node handoff preserves world state while diving into the 
   await expect(page).toHaveURL(/\/workspace\/create\?/);
   await expect(page).toHaveURL(/[\?&]entry=document/);
   await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
-  await expect(page).toHaveURL(/[\?&]pf=create/);
-  await expect(page).toHaveURL(/[\?&]pt=create/);
-  await expect(page).toHaveURL(/[\?&]pl=Untitled/);
-  await expect(page).toHaveURL(/[\?&]pe=document/);
-  await expect(page).toHaveURL(/[\?&]ps=uiux/);
-  await expect(page).toHaveURL(/[\?&]pk=document/);
-  await expect(page).toHaveURL(/[\?&]pm=dive/);
-  await expect(page).toHaveURL(/[\?&]x=8\.37/);
-  await expect(page).toHaveURL(/[\?&]y=4\.20/);
-  await expect(page).toHaveURL(/[\?&]z=1\.000/);
   await expect(page.locator('body')).toContainText('Active context: Create > Document');
   await expect(page.getByTestId('project-shell-transition-context')).toContainText('dive: Untitled');
   await expect(page.getByTestId('project-shell-editor-emergence')).toContainText('Entered from Untitled');
@@ -432,7 +413,6 @@ test('project universe node handoff preserves world state while diving into the 
   await expect(page).toHaveURL(/\/workspace\/create\?/);
   await expect(page).toHaveURL(/[\?&]entry=uiux/);
   await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
-  await expect(page).toHaveURL(/[\?&]pm=surface/);
   await expect(page.locator('body')).toContainText('Active context: Create > UI / UX');
   await expect(page.getByTestId('project-shell-transition-context')).toContainText('surface: Untitled');
   await expect(page.getByTestId('project-universe-node-document:primary')).toHaveAttribute('data-focus-state', 'active');
@@ -579,7 +559,6 @@ test('project universe navigator search and jump stay route-driven and determini
   await page.getByTestId('project-universe-nav-group:operate').click();
 
   await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
-  await expect(page).toHaveURL(/[\?&]uq=operate/);
   await expect(page.getByTestId('project-universe-geography-summary')).toContainText('Southeast');
   await expect(page.getByTestId('project-universe-geography-summary')).toContainText('Southeast project region');
   await expect(page.getByTestId('project-universe-orientation-summary')).toBeVisible();
@@ -1133,16 +1112,6 @@ test('build perspective exposes linked workflow guidance and operate handoff rou
   await expect(page).toHaveURL(/\/workspace\/operate\?/);
   await expect(page).toHaveURL(/[\?&]entry=systems-engineering/);
   await expect(page).toHaveURL(/[\?&]u=system%3Amodel/);
-  await expect(page).toHaveURL(/[\?&]pf=build/);
-  await expect(page).toHaveURL(/[\?&]pt=operate/);
-  await expect(page).toHaveURL(/[\?&]pu=system%3Amodel/);
-  await expect(page).toHaveURL(/[\?&]pl=System\+Model/);
-  await expect(page).toHaveURL(/[\?&]pi=Move\+from\+build\+planning\+into\+live\+operating\+context\./);
-  await expect(page).toHaveURL(/[\?&]pj=workflow/);
-  await expect(page).toHaveURL(/[\?&]pe=systems-engineering/);
-  await expect(page).toHaveURL(/[\?&]ps=application/);
-  await expect(page).toHaveURL(/[\?&]pk=system-model/);
-  await expect(page).toHaveURL(/[\?&]pm=hop/);
   await expect(page.locator('body')).toContainText('Active context: Operate > Systems Engineering');
   await expect(page.getByTestId('project-shell-transition-context')).toContainText('hop: System Model');
   await expect(page.getByTestId('project-shell-project-intent')).toContainText('Move from build planning into live operating context.');
@@ -1195,11 +1164,6 @@ test('operate overlays expose deterministic systems and operations panels', asyn
   await expect(page).toHaveURL(/\/workspace\/operate\?/);
   await expect(page).toHaveURL(/[\?&]entry=systems-engineering/);
   await expect(page).toHaveURL(/[\?&]u=/);
-  await expect(page).toHaveURL(/[\?&]pf=operate/);
-  await expect(page).toHaveURL(/[\?&]pt=operate/);
-  await expect(page).toHaveURL(/[\?&]pe=systems-engineering/);
-  await expect(page).toHaveURL(/[\?&]ps=systems-engineering/);
-  await expect(page).toHaveURL(/[\?&]pm=dive/);
   await expect(page.getByTestId('project-shell-transition-context')).toContainText('dive:');
 
   response = await page.goto('/workspace/enterprise-operations?blueprint=bp.logistics.v1&bootstrap=1', {
@@ -1249,11 +1213,6 @@ test('operate overlays expose deterministic systems and operations panels', asyn
   await expect(page).toHaveURL(/\/workspace\/operate\?/);
   await expect(page).toHaveURL(/[\?&]entry=enterprise-operations/);
   await expect(page).toHaveURL(/[\?&]u=/);
-  await expect(page).toHaveURL(/[\?&]pf=operate/);
-  await expect(page).toHaveURL(/[\?&]pt=operate/);
-  await expect(page).toHaveURL(/[\?&]pe=enterprise-operations/);
-  await expect(page).toHaveURL(/[\?&]ps=enterprise-operations/);
-  await expect(page).toHaveURL(/[\?&]pm=dive/);
   await expect(page.getByTestId('project-shell-transition-context')).toContainText('dive:');
 });
 
@@ -1486,16 +1445,6 @@ test('publish perspective exposes linked workflow depth when bootstrapped into p
   await expect(page).toHaveURL(/\/workspace\/publish\?/);
   await expect(page).toHaveURL(/[\?&]entry=conversion/);
   await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
-  await expect(page).toHaveURL(/[\?&]pf=publish/);
-  await expect(page).toHaveURL(/[\?&]pt=publish/);
-  await expect(page).toHaveURL(/[\?&]pu=document%3Aprimary/);
-  await expect(page).toHaveURL(/[\?&]pl=Untitled/);
-  await expect(page).toHaveURL(/[\?&]pi=Continue\+publishing\+conversion\+through\+Untitled\./);
-  await expect(page).toHaveURL(/[\?&]pj=workflow/);
-  await expect(page).toHaveURL(/[\?&]pe=conversion/);
-  await expect(page).toHaveURL(/[\?&]ps=governance/);
-  await expect(page).toHaveURL(/[\?&]pk=document/);
-  await expect(page).toHaveURL(/[\?&]pm=dive/);
   await expect(page.getByTestId('project-shell-transition-context')).toContainText('dive: Untitled');
   await expect(page.getByTestId('project-shell-project-intent')).toContainText('Continue publishing conversion through Untitled.');
 });
@@ -1568,8 +1517,6 @@ test('collaborate perspective exposes linked workflow guidance and publish hando
   });
   await page.getByTestId('collaborate-workflow-publish-handoff').click();
   await expect(page).toHaveURL(/\/workspace\/publish\?/);
-  await expect(page).toHaveURL(/[\?&]pi=Carry\+collaboration\+output\+into\+publish\+review\./);
-  await expect(page).toHaveURL(/[\?&]pj=workflow/);
   await expect(page.getByTestId('project-shell-project-intent')).toContainText('Carry collaboration output into publish review.');
 
   await page.goto('/workspace/collaborate?blueprint=bp.logistics.v1&bootstrap=1', {
@@ -1579,14 +1526,6 @@ test('collaborate perspective exposes linked workflow guidance and publish hando
   await expect(page).toHaveURL(/\/workspace\/publish\?/);
   await expect(page).toHaveURL(/[\?&]entry=review/);
   await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
-  await expect(page).toHaveURL(/[\?&]pf=collaborate/);
-  await expect(page).toHaveURL(/[\?&]pt=publish/);
-  await expect(page).toHaveURL(/[\?&]pu=document%3Aprimary/);
-  await expect(page).toHaveURL(/[\?&]pl=Untitled/);
-  await expect(page).toHaveURL(/[\?&]pe=review/);
-  await expect(page).toHaveURL(/[\?&]ps=review/);
-  await expect(page).toHaveURL(/[\?&]pk=document/);
-  await expect(page).toHaveURL(/[\?&]pm=hop/);
   await expect(page.locator('body')).toContainText('Active context: Publish > Review');
   await expect(page.getByTestId('project-shell-transition-context')).toContainText('hop: Untitled');
 });

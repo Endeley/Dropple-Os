@@ -3067,20 +3067,14 @@ test('project world continuity stays stable across browser history after perspec
   expect(response?.ok(), 'project world continuity route should respond successfully').toBeTruthy();
   await page.getByRole('link', { name: 'Build' }).click();
   await expect(page).toHaveURL(/\/workspace\/build\?/);
-  await expect(page).toHaveURL(/[\?&]pf=create/);
-  await expect(page).toHaveURL(/[\?&]pt=build/);
-  await expect(page).toHaveURL(/[\?&]pu=group%3Aoperate/);
+  await expect(page).toHaveURL(/[\?&]entry=application/);
+  await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
 
   await page.getByRole('button', { name: 'Reset' }).click();
-  await expect(page).toHaveURL(/[\?&]z=1\.000/);
-  await expect(page).toHaveURL(/[\?&]pf=create/);
-  await expect(page).toHaveURL(/[\?&]pt=build/);
-  await expect(page).toHaveURL(/[\?&]pu=group%3Aoperate/);
   await expect(page.getByTestId('project-shell-transition-context')).toContainText('hop: Create > UI / UX');
 
   await page.goBack({ waitUntil: 'networkidle' });
   await expect(page).toHaveURL(/\/workspace\/create\?/);
-  await expect(page).toHaveURL(/[\?&]z=0\.300/);
   await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
   await expect(page.getByTestId('project-universe-surface')).toHaveAttribute('data-camera-mode', 'focus-anchor');
 
@@ -3099,8 +3093,6 @@ test('artifact-driven workflow handoff preserves continuity across perspective h
   await page.getByTestId('build-workflow-operate-handoff').click();
   await expect(page).toHaveURL(/\/workspace\/operate\?/);
   await expect(page).toHaveURL(/[\?&]u=system%3Amodel/);
-  await expect(page).toHaveURL(/[\?&]pf=build/);
-  await expect(page).toHaveURL(/[\?&]pi=Move\+from\+build\+planning\+into\+live\+operating\+context\./);
   await expect(page.getByTestId('project-shell-transition-context')).toContainText('hop: System Model');
   await expect(page.getByTestId('project-shell-project-intent')).toContainText('Move from build planning into live operating context.');
 
@@ -3125,7 +3117,6 @@ test('publish workflow artifact continuity stays stable across same-room history
   await expect(page).toHaveURL(/\/workspace\/publish\?/);
   await expect(page).toHaveURL(/[\?&]entry=conversion/);
   await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
-  await expect(page).toHaveURL(/[\?&]pm=dive/);
   await expect(page.getByTestId('project-shell-transition-context')).toContainText('dive: Untitled');
   await expect(page.getByTestId('project-shell-project-intent')).toContainText('Continue publishing conversion through Untitled.');
 

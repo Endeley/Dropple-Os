@@ -7,6 +7,7 @@ import { buildProjectUniverseProjection } from '@/runtime/workspaces/projectUniv
 import { buildSystemsEngineeringOverlayModel } from '@/runtime/workspaces/buildOverlayWorkflow.js';
 import {
     buildProjectArtifactContinuityHref,
+    buildProjectWorldSessionBridgeKey,
     resolveProjectCameraFromSearchParams,
 } from '@/runtime/workspaces/projectViewRouteState.js';
 
@@ -22,7 +23,7 @@ export function SystemsEngineeringPanel() {
         searchParams?.get('entry') ??
         (pathname?.endsWith('/systems-engineering') ? 'systems-engineering' : 'systems-engineering');
 
-    function buildContinuityHref(item) {
+    function buildContinuityTarget(item) {
         return buildProjectArtifactContinuityHref({
             href: item?.href,
             camera,
@@ -35,6 +36,18 @@ export function SystemsEngineeringPanel() {
                 kind: item?.kind,
             }),
         });
+    }
+
+    function writeContinuityEnvelope(target) {
+        if (typeof window === 'undefined' || !window.sessionStorage || !target?.href || !target?.envelope) return;
+        try {
+            window.sessionStorage.setItem(
+                buildProjectWorldSessionBridgeKey({ href: target.href }),
+                JSON.stringify(target.envelope),
+            );
+        } catch {
+            // fail-closed: route still navigates with durable intent
+        }
     }
 
     return (
@@ -62,35 +75,47 @@ export function SystemsEngineeringPanel() {
                 </div>
             </div>
             <div style={{ marginTop: 10, display: 'grid', gap: 6 }}>
-                <Link
-                    href={buildContinuityHref({
+                {(() => {
+                    const target = buildContinuityTarget({
                         id: model.workflowNodes[0]?.id ?? model.systemNodes[0]?.id ?? null,
                         label: model.workflowNodes[0]?.label ?? model.systemNodes[0]?.label ?? 'Systems Engineering',
                         kind: model.workflowNodes[0]?.kind ?? model.systemNodes[0]?.kind ?? 'workflow',
                         href: model.suggestedHref,
-                    })}
-                    style={{ color: '#f8fafc', fontSize: 11, textDecoration: 'none', border: '1px solid rgba(226,232,240,0.24)', borderRadius: 8, padding: '6px 8px' }}
-                >
-                    Continue in Systems Engineering
-                </Link>
-                {model.workflowNodes.slice(0, 2).map((item) => (
+                    });
+                    return (
+                        <Link
+                            href={target.href}
+                            onClick={() => writeContinuityEnvelope(target)}
+                            style={{ color: '#f8fafc', fontSize: 11, textDecoration: 'none', border: '1px solid rgba(226,232,240,0.24)', borderRadius: 8, padding: '6px 8px' }}
+                        >
+                            Continue in Systems Engineering
+                        </Link>
+                    );
+                })()}
+                {model.workflowNodes.slice(0, 2).map((item) => {
+                    const target = buildContinuityTarget(item);
+                    return (
                     <Link
                         key={item.id}
-                        href={buildContinuityHref(item)}
+                        href={target.href}
+                        onClick={() => writeContinuityEnvelope(target)}
                         style={{ color: '#cbd5e1', fontSize: 11, textDecoration: 'none' }}
                     >
                         {item.label} · {item.kind}
                     </Link>
-                ))}
-                {model.systemNodes.slice(0, 1).map((item) => (
+                )})}
+                {model.systemNodes.slice(0, 1).map((item) => {
+                    const target = buildContinuityTarget(item);
+                    return (
                     <Link
                         key={item.id}
-                        href={buildContinuityHref(item)}
+                        href={target.href}
+                        onClick={() => writeContinuityEnvelope(target)}
                         style={{ color: '#cbd5e1', fontSize: 11, textDecoration: 'none' }}
                     >
                         {item.label} · {item.kind}
                     </Link>
-                ))}
+                )})}
             </div>
         </section>
     );

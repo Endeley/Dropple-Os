@@ -3,12 +3,14 @@ import assert from 'node:assert/strict';
 
 import {
     buildProjectArtifactContinuityHref,
+    buildProjectWorldNavigationEnvelope,
     normalizeProjectCameraState,
     resolveProjectCameraFromSearchParams,
     resolveProjectPerspectiveContinuityFromSearchParams,
     resolveProjectWorldRouteStateFromSearchParams,
     resolveProjectUniverseFocusFromSearchParams,
     withProjectCameraSearchParams,
+    withProjectDurableWorldSearchParams,
     withProjectPerspectiveContinuitySearchParams,
     withProjectUniverseFocusSearchParams,
     withProjectWorldSearchParams,
@@ -181,8 +183,36 @@ test('project world search-param serialization preserves route continuity envelo
     assert.equal(next.get('pm'), 'hop');
 });
 
+test('project durable world search-param serialization strips transient continuity envelope fields', () => {
+    const params = new URLSearchParams(
+        'entry=uiux&x=48.12&y=-12.40&z=0.612&u=group:operate&uq=operate&pf=create&pt=build&pu=group:operate&pl=Operate&pi=Move%20into%20operate&pj=workflow&pe=automation&ps=uiux&pk=workflow&pm=hop&blueprint=bp.logistics.v1',
+    );
+    const next = withProjectDurableWorldSearchParams({
+        searchParams: params,
+        focus: { targetId: 'group:operate', query: 'operate' },
+        entryId: 'application',
+    });
+    assert.equal(next.get('entry'), 'application');
+    assert.equal(next.get('u'), 'group:operate');
+    assert.equal(next.get('blueprint'), 'bp.logistics.v1');
+    assert.equal(next.get('x'), null);
+    assert.equal(next.get('y'), null);
+    assert.equal(next.get('z'), null);
+    assert.equal(next.get('uq'), null);
+    assert.equal(next.get('pf'), null);
+    assert.equal(next.get('pt'), null);
+    assert.equal(next.get('pu'), null);
+    assert.equal(next.get('pl'), null);
+    assert.equal(next.get('pi'), null);
+    assert.equal(next.get('pj'), null);
+    assert.equal(next.get('pe'), null);
+    assert.equal(next.get('ps'), null);
+    assert.equal(next.get('pk'), null);
+    assert.equal(next.get('pm'), null);
+});
+
 test('artifact continuity href serialization preserves camera focus and artifact handoff metadata deterministically', () => {
-    const href = buildProjectArtifactContinuityHref({
+    const target = buildProjectArtifactContinuityHref({
         href: '/workspace/operate?entry=systems-engineering&u=system:model',
         camera: { x: 8.37, y: 4.2, scale: 1 },
         query: 'operate',
@@ -197,25 +227,44 @@ test('artifact continuity href serialization preserves camera focus and artifact
         continuityIntentSource: 'workflow',
     });
 
-    const url = new URL(href, 'https://dropple.local');
+    const url = new URL(target.href, 'https://dropple.local');
     assert.equal(url.pathname, '/workspace/operate');
     assert.equal(url.searchParams.get('entry'), 'systems-engineering');
     assert.equal(url.searchParams.get('u'), 'system:model');
-    assert.equal(url.searchParams.get('uq'), 'operate');
-    assert.equal(url.searchParams.get('pf'), 'build');
-    assert.equal(url.searchParams.get('pt'), 'operate');
-    assert.equal(url.searchParams.get('pu'), 'system:model');
-    assert.equal(url.searchParams.get('pl'), 'System Model');
-    assert.equal(url.searchParams.get('pi'), 'Move from build planning into live operating context.');
-    assert.equal(url.searchParams.get('pj'), 'workflow');
-    assert.equal(url.searchParams.get('pe'), 'systems-engineering');
-    assert.equal(url.searchParams.get('ps'), 'application');
-    assert.equal(url.searchParams.get('pk'), 'system-model');
-    assert.equal(url.searchParams.get('pm'), 'hop');
+    assert.equal(url.searchParams.get('uq'), null);
+    assert.equal(url.searchParams.get('pf'), null);
+    assert.equal(url.searchParams.get('pt'), null);
+    assert.equal(url.searchParams.get('pu'), null);
+    assert.equal(url.searchParams.get('pl'), null);
+    assert.equal(url.searchParams.get('pi'), null);
+    assert.equal(url.searchParams.get('pj'), null);
+    assert.equal(url.searchParams.get('pe'), null);
+    assert.equal(url.searchParams.get('ps'), null);
+    assert.equal(url.searchParams.get('pk'), null);
+    assert.equal(url.searchParams.get('pm'), null);
+    assert.deepEqual(
+        target.envelope,
+        buildProjectWorldNavigationEnvelope({
+            camera: { x: 8.37, y: 4.2, scale: 1 },
+            focus: { targetId: 'system:model', query: 'operate' },
+            continuity: {
+                fromPerspectiveId: 'build',
+                toPerspectiveId: 'operate',
+                sourceTargetId: 'system:model',
+                sourceLabel: 'System Model',
+                sourceIntentLabel: 'Move from build planning into live operating context.',
+                sourceIntentSource: 'workflow',
+                targetEntryId: 'systems-engineering',
+                sourceEntryId: 'application',
+                sourceKind: 'system-model',
+                continuityKind: 'hop',
+            },
+        }),
+    );
 });
 
 test('artifact continuity href treats same-perspective overlay artifact navigation as a dive', () => {
-    const href = buildProjectArtifactContinuityHref({
+    const target = buildProjectArtifactContinuityHref({
         href: '/workspace/operate?entry=systems-engineering&u=workflow:graph:architecture',
         camera: { x: 3.5, y: -1.25, scale: 0.6 },
         query: 'operate',
@@ -230,24 +279,16 @@ test('artifact continuity href treats same-perspective overlay artifact navigati
         continuityIntentSource: 'priority',
     });
 
-    const url = new URL(href, 'https://dropple.local');
+    const url = new URL(target.href, 'https://dropple.local');
     assert.equal(url.pathname, '/workspace/operate');
     assert.equal(url.searchParams.get('entry'), 'systems-engineering');
     assert.equal(url.searchParams.get('u'), 'workflow:graph:architecture');
-    assert.equal(url.searchParams.get('pf'), 'operate');
-    assert.equal(url.searchParams.get('pt'), 'operate');
-    assert.equal(url.searchParams.get('pu'), 'workflow:graph:architecture');
-    assert.equal(url.searchParams.get('pl'), 'Architecture');
-    assert.equal(url.searchParams.get('pi'), 'Inspect architecture in the current operate room.');
-    assert.equal(url.searchParams.get('pj'), 'priority');
-    assert.equal(url.searchParams.get('pe'), 'systems-engineering');
-    assert.equal(url.searchParams.get('ps'), 'systems-engineering');
-    assert.equal(url.searchParams.get('pk'), 'workflow');
-    assert.equal(url.searchParams.get('pm'), 'dive');
+    assert.equal(url.searchParams.get('pf'), null);
+    assert.equal(target.envelope.continuity.continuityKind, 'dive');
 });
 
 test('artifact continuity href preserves same-perspective publish room navigation as a dive', () => {
-    const href = buildProjectArtifactContinuityHref({
+    const target = buildProjectArtifactContinuityHref({
         href: '/workspace/publish?entry=themes',
         camera: { x: 8.37, y: 4.2, scale: 1 },
         query: 'publish',
@@ -262,18 +303,10 @@ test('artifact continuity href preserves same-perspective publish room navigatio
         continuityIntentSource: 'workflow',
     });
 
-    const url = new URL(href, 'https://dropple.local');
+    const url = new URL(target.href, 'https://dropple.local');
     assert.equal(url.pathname, '/workspace/publish');
     assert.equal(url.searchParams.get('entry'), 'themes');
     assert.equal(url.searchParams.get('u'), 'components:library');
-    assert.equal(url.searchParams.get('pf'), 'publish');
-    assert.equal(url.searchParams.get('pt'), 'publish');
-    assert.equal(url.searchParams.get('pu'), 'components:library');
-    assert.equal(url.searchParams.get('pl'), 'Component Library');
-    assert.equal(url.searchParams.get('pi'), 'Continue publishing themes through Component Library.');
-    assert.equal(url.searchParams.get('pj'), 'workflow');
-    assert.equal(url.searchParams.get('pe'), 'themes');
-    assert.equal(url.searchParams.get('ps'), 'governance');
-    assert.equal(url.searchParams.get('pk'), 'component-library');
-    assert.equal(url.searchParams.get('pm'), 'dive');
+    assert.equal(url.searchParams.get('pf'), null);
+    assert.equal(target.envelope.continuity.continuityKind, 'dive');
 });

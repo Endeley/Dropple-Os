@@ -26,11 +26,14 @@ import { useCommandPalette } from '@/commands/useCommandPalette';
 import { CommandPalette } from '@/commands/CommandPalette';
 import {
     buildProjectArtifactContinuityHref,
+    buildProjectWorldNavigationEnvelope,
+    buildProjectWorldSessionBridgeKey,
     normalizeProjectCameraState,
+    PROJECT_WORLD_NAVIGATION_STATE_KEY,
     resolveProjectCameraFromSearchParams,
     resolveProjectPerspectiveContinuityFromSearchParams,
     resolveProjectUniverseFocusFromSearchParams,
-    withProjectWorldSearchParams,
+    withProjectDurableWorldSearchParams,
 } from '@/runtime/workspaces/projectViewRouteState.js';
 import {
     buildProjectViewShareHref,
@@ -152,6 +155,52 @@ function isSameCameraState(left, right) {
     );
 }
 
+function buildHref(pathname, searchParams) {
+    const query = searchParams?.toString?.() ?? '';
+    return query.length > 0 ? `${pathname}?${query}` : pathname;
+}
+
+function readProjectWorldEnvelopeFromHistoryState(historyState) {
+    const envelope = historyState?.[PROJECT_WORLD_NAVIGATION_STATE_KEY];
+    return envelope ? buildProjectWorldNavigationEnvelope(envelope) : null;
+}
+
+function mergeProjectWorldEnvelopeIntoHistoryState(historyState, envelope) {
+    const nextState =
+        historyState && typeof historyState === 'object' && !Array.isArray(historyState)
+            ? { ...historyState }
+            : {};
+    nextState[PROJECT_WORLD_NAVIGATION_STATE_KEY] = envelope;
+    return nextState;
+}
+
+function readProjectWorldEnvelopeFromSessionBridge({ pathname, searchParams, consume = false } = {}) {
+    if (typeof window === 'undefined' || !window.sessionStorage) return null;
+    const key = buildProjectWorldSessionBridgeKey({ pathname, searchParams });
+    const raw = window.sessionStorage.getItem(key);
+    if (!raw) return null;
+    if (consume) {
+        window.sessionStorage.removeItem(key);
+    }
+    try {
+        return buildProjectWorldNavigationEnvelope(JSON.parse(raw));
+    } catch {
+        return null;
+    }
+}
+
+function writeProjectWorldEnvelopeToSessionBridge({ href, envelope } = {}) {
+    if (typeof window === 'undefined' || !window.sessionStorage || !href || !envelope) return;
+    try {
+        window.sessionStorage.setItem(
+            buildProjectWorldSessionBridgeKey({ href }),
+            JSON.stringify(envelope),
+        );
+    } catch {
+        // fail-closed: continuity falls back to durable URL parsing
+    }
+}
+
 export function ProjectPerspectiveShell({
     projectPerspectiveContext = null,
     activeModeId = null,
@@ -175,6 +224,30 @@ export function ProjectPerspectiveShell({
     const [motionMode, setMotionMode] = useState('full');
 
     const activeRoute = `/workspace/${perspectiveId}?entry=${projectPerspectiveContext.entryId}`;
+    const resolveRouteEnvelope = useCallback(({ consumeSessionBridge = false } = {}) => {
+        const searchState = Object.freeze({
+            camera: resolveProjectCameraFromSearchParams(searchParams),
+            focus: resolveProjectUniverseFocusFromSearchParams(searchParams),
+            continuity: resolveProjectPerspectiveContinuityFromSearchParams(searchParams),
+        });
+
+        if (typeof window === 'undefined') return searchState;
+
+        const historyEnvelope = readProjectWorldEnvelopeFromHistoryState(window.history.state);
+        if (historyEnvelope) return historyEnvelope;
+
+        const bridgeSearchParams = withProjectDurableWorldSearchParams({
+            searchParams,
+            focus: searchState.focus,
+            entryId: searchParams?.get?.('entry') ?? projectPerspectiveContext.entryId,
+        });
+        const pendingEnvelope = readProjectWorldEnvelopeFromSessionBridge({
+            pathname,
+            searchParams: bridgeSearchParams,
+            consume: consumeSessionBridge,
+        });
+        return pendingEnvelope ?? searchState;
+    }, [pathname, projectPerspectiveContext.entryId, searchParams]);
     const [cameraRouteState, setCameraRouteState] = useState(() => resolveProjectCameraFromSearchParams(searchParams));
     const [universeFocusState, setUniverseFocusState] = useState(() =>
         resolveProjectUniverseFocusFromSearchParams(searchParams),
@@ -268,10 +341,15 @@ export function ProjectPerspectiveShell({
     }, [recentRoutes]);
 
     useEffect(() => {
-        setCameraRouteState(resolveProjectCameraFromSearchParams(searchParams));
-        setUniverseFocusState(resolveProjectUniverseFocusFromSearchParams(searchParams));
-        setPerspectiveContinuityState(resolveProjectPerspectiveContinuityFromSearchParams(searchParams));
-    }, [searchParams]);
+        const envelope = resolveRouteEnvelope({ consumeSessionBridge: true });
+        if (typeof window !== 'undefined') {
+            const nextHistoryState = mergeProjectWorldEnvelopeIntoHistoryState(window.history.state, envelope);
+            window.history.replaceState(nextHistoryState, '', window.location.href);
+        }
+        setCameraRouteState(envelope.camera);
+        setUniverseFocusState(envelope.focus);
+        setPerspectiveContinuityState(envelope.continuity);
+    }, [resolveRouteEnvelope]);
 
     useEffect(() => {
         if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
@@ -291,7 +369,13 @@ export function ProjectPerspectiveShell({
     }, []);
 
     const preserveExplicitCameraOnFocus = useMemo(
-        () => Boolean(searchParams?.get?.('x') || searchParams?.get?.('y') || searchParams?.get?.('z')),
+        () =>
+            Boolean(
+                searchParams?.get?.('x') ||
+                searchParams?.get?.('y') ||
+                searchParams?.get?.('z') ||
+                readProjectWorldEnvelopeFromHistoryState(typeof window !== 'undefined' ? window.history.state : null),
+            ),
         [searchParams],
     );
 
@@ -301,10 +385,13 @@ export function ProjectPerspectiveShell({
         setNavigatorQuery(nextQuery);
     }, [navigatorQuery, universeFocusState.query]);
 
-    const replaceShellSearchParams = useCallback((nextSearchParams) => {
-        const href = `${pathname}?${nextSearchParams.toString()}`;
+    const replaceShellSearchParams = useCallback((nextSearchParams, envelope = null) => {
+        const href = buildHref(pathname, nextSearchParams);
         if (typeof window !== 'undefined') {
-            window.history.replaceState(window.history.state, '', href);
+            const nextHistoryState = envelope
+                ? mergeProjectWorldEnvelopeIntoHistoryState(window.history.state, envelope)
+                : window.history.state;
+            window.history.replaceState(nextHistoryState, '', href);
             return;
         }
         router.replace(href, { scroll: false });
@@ -316,6 +403,22 @@ export function ProjectPerspectiveShell({
             : new URLSearchParams(searchParams?.toString?.() ?? ''),
     [searchParams]);
 
+    const buildDurableShellSearchParams = useCallback(({
+        focus = universeFocusState,
+        entryId = projectPerspectiveContext.entryId,
+        searchParams: baseSearchParams = getLiveShellSearchParams(),
+    } = {}) =>
+        withProjectDurableWorldSearchParams({
+            searchParams: baseSearchParams,
+            focus,
+            entryId,
+        }),
+    [getLiveShellSearchParams, projectPerspectiveContext.entryId, universeFocusState]);
+
+    const writeNavigationEnvelopeForHref = useCallback(({ href, envelope } = {}) => {
+        writeProjectWorldEnvelopeToSessionBridge({ href, envelope });
+    }, []);
+
     const handleCameraChange = useCallback((camera) => {
         const nextState = normalizeProjectCameraState(camera);
         setCameraRouteState((current) => (isSameCameraState(current, nextState) ? current : nextState));
@@ -324,28 +427,43 @@ export function ProjectPerspectiveShell({
             return;
         }
 
-        const next = withProjectWorldSearchParams({
-            searchParams: getLiveShellSearchParams(),
+        const envelope = buildProjectWorldNavigationEnvelope({
             camera: nextState,
             focus: universeFocusState,
             continuity: perspectiveContinuityState,
         });
-        replaceShellSearchParams(next);
-    }, [cameraRouteState, getLiveShellSearchParams, perspectiveContinuityState, replaceShellSearchParams, universeFocusState]);
+        const next = buildDurableShellSearchParams({
+            focus: universeFocusState,
+        });
+        replaceShellSearchParams(next, envelope);
+    }, [buildDurableShellSearchParams, cameraRouteState, perspectiveContinuityState, replaceShellSearchParams, universeFocusState]);
 
     const replaceUniverseRouteState = useCallback(({ camera = cameraRouteState, focus = universeFocusState } = {}) => {
-        const next = withProjectWorldSearchParams({
-            searchParams: getLiveShellSearchParams(),
+        const envelope = buildProjectWorldNavigationEnvelope({
             camera,
             focus,
             continuity: perspectiveContinuityState,
         });
-        replaceShellSearchParams(next);
-    }, [cameraRouteState, getLiveShellSearchParams, perspectiveContinuityState, replaceShellSearchParams, universeFocusState]);
+        const next = buildDurableShellSearchParams({
+            searchParams: getLiveShellSearchParams(),
+            focus,
+        });
+        replaceShellSearchParams(next, envelope);
+    }, [buildDurableShellSearchParams, cameraRouteState, getLiveShellSearchParams, perspectiveContinuityState, replaceShellSearchParams, universeFocusState]);
 
-    const buildPerspectiveHref = useCallback((nextPerspectiveId) => {
-        const next = withProjectWorldSearchParams({
+    const buildPerspectiveNavigationTarget = useCallback((nextPerspectiveId) => {
+        const targetDefinition = getProjectPerspectiveDefinition(nextPerspectiveId);
+        const targetEntryId =
+            nextPerspectiveId === perspectiveId
+                ? projectPerspectiveContext.entryId
+                : targetDefinition?.defaultEntryId ?? null;
+        const search = withProjectDurableWorldSearchParams({
             searchParams: new URLSearchParams(),
+            focus: universeFocusState,
+            entryId: targetEntryId,
+        });
+        const href = buildHref(`/workspace/${nextPerspectiveId}`, search);
+        const envelope = buildProjectWorldNavigationEnvelope({
             camera: cameraRouteState,
             focus: universeFocusState,
             continuity: {
@@ -354,14 +472,11 @@ export function ProjectPerspectiveShell({
                 toPerspectiveId: nextPerspectiveId,
                 sourceTargetId: universeFocusState.targetId ?? `perspective:${projectPerspectiveContext.entryId}`,
                 sourceLabel: activeContextLabel,
-                targetEntryId:
-                    nextPerspectiveId === perspectiveId
-                        ? projectPerspectiveContext.entryId
-                        : null,
+                targetEntryId,
                 sourceEntryId: projectPerspectiveContext.entryId,
             },
         });
-        return `/workspace/${nextPerspectiveId}?${next.toString()}`;
+        return Object.freeze({ href, envelope });
     }, [
         activeContextLabel,
         cameraRouteState,
@@ -404,13 +519,19 @@ export function ProjectPerspectiveShell({
 
         const sourcePerspectiveId = perspectiveContinuityState.fromPerspectiveId ?? perspectiveId;
         const sourceEntryId = perspectiveContinuityState.sourceEntryId ?? projectPerspectiveContext.entryId;
-        const next = withProjectWorldSearchParams({
+        const focus = Object.freeze({
+            targetId: perspectiveContinuityState.sourceTargetId,
+            query: universeFocusState.query,
+        });
+        const search = withProjectDurableWorldSearchParams({
             searchParams: new URLSearchParams(),
+            focus,
+            entryId: sourceEntryId,
+        });
+        const href = buildHref(`/workspace/${sourcePerspectiveId}`, search);
+        const envelope = buildProjectWorldNavigationEnvelope({
             camera: cameraRouteState,
-            focus: Object.freeze({
-                targetId: perspectiveContinuityState.sourceTargetId,
-                query: universeFocusState.query,
-            }),
+            focus,
             continuity: {
                 continuityKind: 'surface',
                 fromPerspectiveId: perspectiveId,
@@ -422,14 +543,14 @@ export function ProjectPerspectiveShell({
                 sourceKind: perspectiveContinuityState.sourceKind,
             },
         });
-        next.set('entry', sourceEntryId);
 
         return Object.freeze({
             sourcePerspectiveId,
             sourceEntryId,
             sourceLabel: perspectiveContinuityState.sourceLabel,
             sourceKind: perspectiveContinuityState.sourceKind,
-            href: `/workspace/${sourcePerspectiveId}?${next.toString()}`,
+            href,
+            envelope,
         });
     }, [
         cameraRouteState,
@@ -471,13 +592,19 @@ export function ProjectPerspectiveShell({
             return;
         }
 
-        const next = withProjectWorldSearchParams({
+        const focus = Object.freeze({
+            targetId: handoff.targetId,
+            query: universeFocusState.query,
+        });
+        const search = withProjectDurableWorldSearchParams({
             searchParams: new URLSearchParams(),
+            focus,
+            entryId: handoff.entryId,
+        });
+        const href = buildHref(`/workspace/${handoff.perspectiveId}`, search);
+        const envelope = buildProjectWorldNavigationEnvelope({
             camera: cameraRouteState,
-            focus: Object.freeze({
-                targetId: handoff.targetId,
-                query: universeFocusState.query,
-            }),
+            focus,
             continuity: {
                 continuityKind: 'dive',
                 fromPerspectiveId: perspectiveId,
@@ -491,8 +618,8 @@ export function ProjectPerspectiveShell({
                 sourceKind: handoff.kind,
             },
         });
-        next.set('entry', handoff.entryId);
-        router.push(`/workspace/${handoff.perspectiveId}?${next.toString()}`, { scroll: false });
+        writeNavigationEnvelopeForHref({ href, envelope });
+        router.push(href, { scroll: false });
     }, [
         cameraRouteState,
         perspectiveId,
@@ -500,6 +627,7 @@ export function ProjectPerspectiveShell({
         projectUniverse,
         router,
         universeFocusState.query,
+        writeNavigationEnvelopeForHref,
     ]);
     const navigateArtifactWorkflowHref = useCallback((href, options = {}) => {
         const normalizedHref = typeof href === 'string' ? href.trim() : '';
@@ -532,7 +660,7 @@ export function ProjectPerspectiveShell({
                       currentPerspectiveId: perspectiveId,
                       currentEntryId: projectPerspectiveContext.entryId,
                   });
-        const nextHref = buildProjectArtifactContinuityHref({
+        const nextTarget = buildProjectArtifactContinuityHref({
             href: normalizedHref,
             camera: cameraRouteState,
             query: universeFocusState.query,
@@ -548,12 +676,13 @@ export function ProjectPerspectiveShell({
                     ? options.intentSource.trim()
                     : null,
         });
+        writeNavigationEnvelopeForHref(nextTarget);
 
         if (typeof window !== 'undefined') {
-            window.location.assign(nextHref);
+            window.location.assign(nextTarget.href);
             return;
         }
-        router.push(nextHref);
+        router.push(nextTarget.href);
     }, [
         cameraRouteState,
         perspectiveId,
@@ -562,6 +691,7 @@ export function ProjectPerspectiveShell({
         router,
         universeFocusState.query,
         universeFocusState.targetId,
+        writeNavigationEnvelopeForHref,
     ]);
 
     const shareCurrentView = async () => {
@@ -1720,6 +1850,7 @@ export function ProjectPerspectiveShell({
                     <Link
                         data-testid='project-shell-surface-return'
                         href={editorEmergenceState.href}
+                        onClick={() => writeNavigationEnvelopeForHref(editorEmergenceState)}
                         style={{
                             display: 'inline-flex',
                             alignItems: 'center',
@@ -1749,10 +1880,12 @@ export function ProjectPerspectiveShell({
                 {perspectiveIds.map((id) => {
                     const active = id === perspectiveId;
                     const definition = getProjectPerspectiveDefinition(id);
+                    const navigationTarget = buildPerspectiveNavigationTarget(id);
                     return (
                         <Link
                             key={id}
-                            href={buildPerspectiveHref(id)}
+                            href={navigationTarget.href}
+                            onClick={() => writeNavigationEnvelopeForHref(navigationTarget)}
                             style={{
                                 padding: '8px 12px',
                                 borderRadius: 999,

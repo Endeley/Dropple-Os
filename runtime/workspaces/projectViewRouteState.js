@@ -5,6 +5,26 @@ const CAMERA_LIMITS = Object.freeze({
     maxScale: 8,
 });
 
+export const PROJECT_WORLD_NAVIGATION_STATE_KEY = '__droppleProjectWorldEnvelope';
+export const PROJECT_WORLD_SESSION_BRIDGE_PREFIX = 'dropple:project-world-envelope:';
+
+const PROJECT_WORLD_TRANSIENT_QUERY_KEYS = Object.freeze([
+    'x',
+    'y',
+    'z',
+    'uq',
+    'pf',
+    'pt',
+    'pu',
+    'pl',
+    'pi',
+    'pj',
+    'pe',
+    'ps',
+    'pk',
+    'pm',
+]);
+
 function asNonEmptyString(value) {
     if (typeof value !== 'string') return null;
     const trimmed = value.trim();
@@ -67,6 +87,13 @@ export function resolveProjectUniverseFocusFromSearchParams(searchParams) {
     });
 }
 
+export function normalizeProjectUniverseFocusState(focus = {}) {
+    return Object.freeze({
+        targetId: asNonEmptyString(focus?.targetId),
+        query: asNonEmptyString(focus?.query) ?? '',
+    });
+}
+
 export function withProjectUniverseFocusSearchParams({ searchParams, focus } = {}) {
     const next = new URLSearchParams(searchParams?.toString?.() ?? '');
     const targetId = asNonEmptyString(focus?.targetId);
@@ -93,6 +120,21 @@ export function resolveProjectPerspectiveContinuityFromSearchParams(searchParams
         sourceEntryId: asNonEmptyString(searchParams?.get?.('ps')),
         sourceKind: asNonEmptyString(searchParams?.get?.('pk')),
         continuityKind: normalizeContinuityKind(searchParams?.get?.('pm')),
+    });
+}
+
+export function normalizeProjectPerspectiveContinuityState(continuity = {}) {
+    return Object.freeze({
+        fromPerspectiveId: asNonEmptyString(continuity?.fromPerspectiveId),
+        toPerspectiveId: asNonEmptyString(continuity?.toPerspectiveId),
+        sourceTargetId: asNonEmptyString(continuity?.sourceTargetId),
+        sourceLabel: asNonEmptyString(continuity?.sourceLabel),
+        sourceIntentLabel: asNonEmptyString(continuity?.sourceIntentLabel),
+        sourceIntentSource: asNonEmptyString(continuity?.sourceIntentSource),
+        targetEntryId: asNonEmptyString(continuity?.targetEntryId),
+        sourceEntryId: asNonEmptyString(continuity?.sourceEntryId),
+        sourceKind: asNonEmptyString(continuity?.sourceKind),
+        continuityKind: normalizeContinuityKind(continuity?.continuityKind),
     });
 }
 
@@ -150,6 +192,53 @@ export function resolveProjectWorldRouteStateFromSearchParams(searchParams) {
     });
 }
 
+export function buildProjectWorldNavigationEnvelope({
+    camera,
+    focus,
+    continuity,
+} = {}) {
+    return Object.freeze({
+        camera: normalizeProjectCameraState(camera),
+        focus: normalizeProjectUniverseFocusState(focus),
+        continuity: normalizeProjectPerspectiveContinuityState(continuity),
+    });
+}
+
+export function buildProjectWorldSessionBridgeKey({ href, pathname, searchParams } = {}) {
+    let routeHref = asNonEmptyString(href);
+    if (!routeHref) {
+        const normalizedPathname = asNonEmptyString(pathname) ?? '/workspace/overview';
+        const normalizedSearchParams = searchParams instanceof URLSearchParams
+            ? searchParams
+            : new URLSearchParams(searchParams?.toString?.() ?? '');
+        routeHref = `${normalizedPathname}?${normalizedSearchParams.toString()}`;
+    }
+    return `${PROJECT_WORLD_SESSION_BRIDGE_PREFIX}${routeHref}`;
+}
+
+export function withProjectDurableWorldSearchParams({
+    searchParams,
+    focus,
+    entryId = undefined,
+} = {}) {
+    const next = new URLSearchParams(searchParams?.toString?.() ?? '');
+    for (const key of PROJECT_WORLD_TRANSIENT_QUERY_KEYS) {
+        next.delete(key);
+    }
+
+    if (entryId !== undefined) {
+        const normalizedEntryId = asNonEmptyString(entryId);
+        if (normalizedEntryId) next.set('entry', normalizedEntryId);
+        else next.delete('entry');
+    }
+
+    const normalizedFocus = normalizeProjectUniverseFocusState(focus);
+    if (normalizedFocus.targetId) next.set('u', normalizedFocus.targetId);
+    else next.delete('u');
+
+    return next;
+}
+
 export function withProjectWorldSearchParams({
     searchParams,
     camera,
@@ -200,8 +289,14 @@ export function buildProjectArtifactContinuityHref({
             ? 'dive'
             : 'hop';
 
-    const next = withProjectWorldSearchParams({
+    const next = withProjectDurableWorldSearchParams({
         searchParams: url.searchParams,
+        focus: {
+            targetId: continuityTargetId,
+        },
+        entryId: targetEntryId,
+    });
+    const envelope = buildProjectWorldNavigationEnvelope({
         camera,
         focus: {
             targetId: continuityTargetId,
@@ -220,6 +315,10 @@ export function buildProjectArtifactContinuityHref({
             continuityKind,
         },
     });
+    const queryString = next.toString();
 
-    return `${url.pathname}?${next.toString()}`;
+    return Object.freeze({
+        href: queryString.length > 0 ? `${url.pathname}?${queryString}` : url.pathname,
+        envelope,
+    });
 }

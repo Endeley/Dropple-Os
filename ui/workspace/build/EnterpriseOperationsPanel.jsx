@@ -7,6 +7,7 @@ import { buildProjectUniverseProjection } from '@/runtime/workspaces/projectUniv
 import { buildEnterpriseOperationsOverlayModel } from '@/runtime/workspaces/buildOverlayWorkflow.js';
 import {
     buildProjectArtifactContinuityHref,
+    buildProjectWorldSessionBridgeKey,
     resolveProjectCameraFromSearchParams,
 } from '@/runtime/workspaces/projectViewRouteState.js';
 
@@ -22,7 +23,7 @@ export function EnterpriseOperationsPanel() {
         searchParams?.get('entry') ??
         (pathname?.endsWith('/enterprise-operations') ? 'enterprise-operations' : 'enterprise-operations');
 
-    function buildContinuityHref(item) {
+    function buildContinuityTarget(item) {
         return buildProjectArtifactContinuityHref({
             href: item?.href,
             camera,
@@ -35,6 +36,18 @@ export function EnterpriseOperationsPanel() {
                 kind: item?.kind,
             }),
         });
+    }
+
+    function writeContinuityEnvelope(target) {
+        if (typeof window === 'undefined' || !window.sessionStorage || !target?.href || !target?.envelope) return;
+        try {
+            window.sessionStorage.setItem(
+                buildProjectWorldSessionBridgeKey({ href: target.href }),
+                JSON.stringify(target.envelope),
+            );
+        } catch {
+            // fail-closed: route still navigates with durable intent
+        }
     }
 
     return (
@@ -60,26 +73,35 @@ export function EnterpriseOperationsPanel() {
                 <div>Roles: <strong>{model.roleCount}</strong></div>
             </div>
             <div style={{ marginTop: 10, display: 'grid', gap: 6 }}>
-                <Link
-                    href={buildContinuityHref({
+                {(() => {
+                    const target = buildContinuityTarget({
                         id: model.processNodes[0]?.id ?? null,
                         label: model.processNodes[0]?.label ?? 'Enterprise Operations',
                         kind: model.processNodes[0]?.kind ?? 'workflow',
                         href: model.suggestedHref,
-                    })}
-                    style={{ color: '#f8fafc', fontSize: 11, textDecoration: 'none', border: '1px solid rgba(226,232,240,0.24)', borderRadius: 8, padding: '6px 8px' }}
-                >
-                    Continue in Enterprise Operations
-                </Link>
-                {model.processNodes.slice(0, 3).map((item) => (
+                    });
+                    return (
+                        <Link
+                            href={target.href}
+                            onClick={() => writeContinuityEnvelope(target)}
+                            style={{ color: '#f8fafc', fontSize: 11, textDecoration: 'none', border: '1px solid rgba(226,232,240,0.24)', borderRadius: 8, padding: '6px 8px' }}
+                        >
+                            Continue in Enterprise Operations
+                        </Link>
+                    );
+                })()}
+                {model.processNodes.slice(0, 3).map((item) => {
+                    const target = buildContinuityTarget(item);
+                    return (
                     <Link
                         key={item.id}
-                        href={buildContinuityHref(item)}
+                        href={target.href}
+                        onClick={() => writeContinuityEnvelope(target)}
                         style={{ color: '#cbd5e1', fontSize: 11, textDecoration: 'none' }}
                     >
                         {item.label} · {item.kind}
                     </Link>
-                ))}
+                )})}
             </div>
         </section>
     );
