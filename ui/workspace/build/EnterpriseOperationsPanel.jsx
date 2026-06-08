@@ -1,13 +1,41 @@
 'use client';
 
+import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useWorkspaceProjectionState } from '@/runtime/projection';
 import { buildProjectUniverseProjection } from '@/runtime/workspaces/projectUniverseProjection.js';
 import { buildEnterpriseOperationsOverlayModel } from '@/runtime/workspaces/buildOverlayWorkflow.js';
+import {
+    buildProjectArtifactContinuityHref,
+    resolveProjectCameraFromSearchParams,
+} from '@/runtime/workspaces/projectViewRouteState.js';
 
 export function EnterpriseOperationsPanel() {
     const document = useWorkspaceProjectionState((state) => state?.document ?? null);
     const universe = buildProjectUniverseProjection({ document });
     const model = buildEnterpriseOperationsOverlayModel({ document, universe });
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const camera = resolveProjectCameraFromSearchParams(searchParams);
+    const query = searchParams?.get('uq') ?? '';
+    const currentEntryId =
+        searchParams?.get('entry') ??
+        (pathname?.endsWith('/enterprise-operations') ? 'enterprise-operations' : 'enterprise-operations');
+
+    function buildContinuityHref(item) {
+        return buildProjectArtifactContinuityHref({
+            href: item?.href,
+            camera,
+            query,
+            currentPerspectiveId: 'operate',
+            currentEntryId,
+            continuityTarget: Object.freeze({
+                targetId: item?.id,
+                label: item?.label,
+                kind: item?.kind,
+            }),
+        });
+    }
 
     return (
         <section
@@ -32,20 +60,25 @@ export function EnterpriseOperationsPanel() {
                 <div>Roles: <strong>{model.roleCount}</strong></div>
             </div>
             <div style={{ marginTop: 10, display: 'grid', gap: 6 }}>
-                <a
-                    href={model.suggestedHref}
+                <Link
+                    href={buildContinuityHref({
+                        id: model.processNodes[0]?.id ?? null,
+                        label: model.processNodes[0]?.label ?? 'Enterprise Operations',
+                        kind: model.processNodes[0]?.kind ?? 'workflow',
+                        href: model.suggestedHref,
+                    })}
                     style={{ color: '#f8fafc', fontSize: 11, textDecoration: 'none', border: '1px solid rgba(226,232,240,0.24)', borderRadius: 8, padding: '6px 8px' }}
                 >
                     Continue in Enterprise Operations
-                </a>
+                </Link>
                 {model.processNodes.slice(0, 3).map((item) => (
-                    <a
+                    <Link
                         key={item.id}
-                        href={item.href}
+                        href={buildContinuityHref(item)}
                         style={{ color: '#cbd5e1', fontSize: 11, textDecoration: 'none' }}
                     >
                         {item.label} · {item.kind}
-                    </a>
+                    </Link>
                 ))}
             </div>
         </section>

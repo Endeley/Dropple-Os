@@ -5,6 +5,15 @@ import { buildProjectUniverseWorkflowGuide } from '@/runtime/workspaces/projectU
 
 test('project universe workflow guide stays deterministic for build handoff guidance', () => {
     const orientation = Object.freeze({
+        priorityTargets: Object.freeze([
+            Object.freeze({
+                targetId: 'group:operate',
+                targetType: 'group',
+                perspectiveId: 'operate',
+                label: 'Operate',
+                prioritySummary: 'Priority path: Operates Operate',
+            }),
+        ]),
         relatedTargets: Object.freeze([]),
         nextTargets: Object.freeze([
             Object.freeze({
@@ -51,10 +60,14 @@ test('project universe workflow guide stays deterministic for build handoff guid
     assert.deepEqual(left, right);
     assert.equal(left.activityLabel, 'Application');
     assert.equal(left.currentTaskLabel, 'System Model');
+    assert.equal(left.primarySuggestionLabel, 'Operate');
+    assert.equal(left.primarySuggestionReason, 'Priority path: Operates Operate');
     assert.equal(left.suggestions.length, 3);
-    assert.equal(left.suggestions[0].perspectiveId, 'build');
-    assert.equal(left.suggestions[1].perspectiveId, 'operate');
-    assert.equal(left.suggestions[2].targetId, 'group:operate');
+    assert.equal(left.suggestions[0].source, 'priority');
+    assert.equal(left.suggestions[0].perspectiveId, 'operate');
+    assert.equal(left.suggestions[1].perspectiveId, 'build');
+    assert.equal(left.suggestions[2].perspectiveId, 'operate');
+    assert.equal(left.suggestions[2].entryId, 'systems-engineering');
 });
 
 test('project universe workflow guide falls back to orientation targets when perspective workflow is sparse', () => {
@@ -62,6 +75,15 @@ test('project universe workflow guide falls back to orientation targets when per
         perspectiveId: 'operate',
         entryId: 'automation',
         orientation: Object.freeze({
+            priorityTargets: Object.freeze([
+                Object.freeze({
+                    targetId: 'group:build',
+                    targetType: 'group',
+                    perspectiveId: 'build',
+                    label: 'Build',
+                    prioritySummary: 'Priority path: Depends on Build',
+                }),
+            ]),
             dependencyTargets: Object.freeze([
                 Object.freeze({
                     targetId: 'group:build',
@@ -105,10 +127,12 @@ test('project universe workflow guide falls back to orientation targets when per
 
     assert.equal(guide.activityLabel, 'Automation');
     assert.equal(guide.currentTaskLabel, 'System Model');
+    assert.equal(guide.primarySuggestionLabel, 'Build');
+    assert.equal(guide.primarySuggestionReason, 'Priority path: Depends on Build');
     assert.equal(guide.suggestions.length, 3);
-    assert.equal(guide.suggestions[0].targetId, 'workflow:ops');
-    assert.equal(guide.suggestions[1].targetId, 'group:build');
-    assert.equal(guide.suggestions[1].reason, 'Depends on Build');
+    assert.equal(guide.suggestions[0].targetId, 'group:build');
+    assert.equal(guide.suggestions[0].source, 'priority');
+    assert.equal(guide.suggestions[1].targetId, 'workflow:ops');
     assert.equal(guide.suggestions[2].targetId, 'group:publish');
     assert.equal(guide.suggestions[2].reason, 'Operates Publish');
 });

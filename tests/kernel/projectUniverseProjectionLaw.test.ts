@@ -76,6 +76,10 @@ test('project universe projection derives deterministic artifact nodes from docu
 
     assert.equal(left?.hubId, 'project:hub');
     assert.equal(left?.nodes['project:hub']?.label, 'Logistics Control');
+    assert.equal(
+        left?.nodes['project:hub']?.metadata?.geographySummary,
+        'North: Build and Create · South: Operate and Publish · East: Build and Operate · West: Create',
+    );
     assert.equal(left?.nodes['document:primary']?.kind, 'document');
     assert.equal(left?.nodes['frame:frame.dispatch']?.kind, 'frame');
     assert.equal(left?.nodes['frame:frame.ops.root']?.label, 'Operations Root');
@@ -87,6 +91,8 @@ test('project universe projection derives deterministic artifact nodes from docu
     assert.equal(left?.nodes['animation:motion']?.kind, 'animation');
     assert.equal(left?.nodes['system:model']?.kind, 'system-model');
     assert.equal(left?.groups['group:create']?.label, 'Create');
+    assert.equal(left?.groups['group:create']?.metadata?.geographyZone, 'north-west');
+    assert.equal(left?.groups['group:create']?.metadata?.geographySummary, 'Northwest project region');
     assert.equal(left?.groups['group:create']?.metadata?.artifactCount, 6);
     assert.equal(left?.groups['group:create']?.metadata?.primaryNodeId, 'document:primary');
     assert.equal(left?.groups['group:create']?.metadata?.primaryNodeLabel, 'Logistics Control');
@@ -96,6 +102,9 @@ test('project universe projection derives deterministic artifact nodes from docu
         Object.freeze({ build: 'produces', publish: 'publishes' }),
     );
     assert.equal(left?.groups['group:create']?.metadata?.relationshipSummary, 'Produces for Build · Publishes to Publish');
+    assert.equal(left?.groups['group:create']?.metadata?.prioritySummary, 'Priority path: Produces for Build');
+    assert.equal(left?.groups['group:create']?.metadata?.priorityTier, 'supporting');
+    assert.equal(left?.groups['group:create']?.metadata?.primaryRelationshipLabel, 'Build');
     assert.equal(left?.groups['group:create']?.metadata?.reliesOnSummary, 'Relies on project hub context');
     assert.equal(left?.groups['group:create']?.metadata?.influencesSummary, 'Influences Build and Publish');
     assert.equal(left?.groups['group:create']?.metadata?.mattersNextSummary, 'Matters next for delivery in Build');
@@ -115,6 +124,7 @@ test('project universe projection derives deterministic artifact nodes from docu
         'sequence:timelineA',
     ]));
     assert.equal(left?.groups['group:build']?.label, 'Build');
+    assert.equal(left?.groups['group:build']?.metadata?.geographyZone, 'north-east');
     assert.equal(left?.groups['group:build']?.metadata?.primaryNodeId, 'workflow:flow:dispatchApproval');
     assert.deepEqual(left?.groups['group:build']?.metadata?.relatedPerspectiveIds, Object.freeze(['create', 'operate', 'publish']));
     assert.deepEqual(
@@ -125,6 +135,8 @@ test('project universe projection derives deterministic artifact nodes from docu
         left?.groups['group:build']?.metadata?.relationshipSummary,
         'Depends on Create · Operates Operate · Produces for Publish',
     );
+    assert.equal(left?.groups['group:build']?.metadata?.prioritySummary, 'Priority path: Depends on Create');
+    assert.equal(left?.groups['group:build']?.metadata?.priorityTier, 'primary');
     assert.equal(left?.groups['group:build']?.metadata?.reliesOnSummary, 'Relies on Create');
     assert.equal(left?.groups['group:build']?.metadata?.influencesSummary, 'Influences Operate and Publish');
     assert.equal(left?.groups['group:build']?.metadata?.mattersNextSummary, 'Matters next for operation in Operate');
@@ -134,16 +146,20 @@ test('project universe projection derives deterministic artifact nodes from docu
         'workflow:graph:routing',
     ]));
     assert.equal(left?.groups['group:operate']?.label, 'Operate');
+    assert.equal(left?.groups['group:operate']?.metadata?.geographyZone, 'south-east');
     assert.deepEqual(
         left?.groups['group:operate']?.metadata?.relationshipTypes,
         Object.freeze({ build: 'depends-on', publish: 'operates' }),
     );
     assert.equal(left?.groups['group:operate']?.metadata?.relationshipSummary, 'Depends on Build · Operates Publish');
+    assert.equal(left?.groups['group:operate']?.metadata?.prioritySummary, 'Priority path: Depends on Build');
+    assert.equal(left?.groups['group:operate']?.metadata?.priorityTier, 'primary');
     assert.equal(left?.groups['group:operate']?.metadata?.reliesOnSummary, 'Relies on Build');
     assert.equal(left?.groups['group:operate']?.metadata?.influencesSummary, 'Influences Publish');
     assert.equal(left?.groups['group:operate']?.metadata?.mattersNextSummary, 'Matters next for operation in Publish');
     assert.deepEqual(left?.groups['group:operate']?.nodeIds, Object.freeze(['system:model']));
     assert.equal(left?.groups['group:publish']?.label, 'Publish');
+    assert.equal(left?.groups['group:publish']?.metadata?.geographyZone, 'south');
     assert.deepEqual(
         left?.groups['group:publish']?.metadata?.relationshipTypes,
         Object.freeze({
@@ -154,13 +170,15 @@ test('project universe projection derives deterministic artifact nodes from docu
     );
     assert.equal(
         left?.groups['group:publish']?.metadata?.relationshipSummary,
-        'Depends on Create · Depends on Build · Depends on Operate',
+        'Depends on Build · Depends on Create · Depends on Operate',
     );
-    assert.equal(left?.groups['group:publish']?.metadata?.reliesOnSummary, 'Relies on Create, Build, and Operate');
+    assert.equal(left?.groups['group:publish']?.metadata?.reliesOnSummary, 'Relies on Build, Create, and Operate');
     assert.equal(left?.groups['group:publish']?.metadata?.influencesSummary, 'Influences downstream work through dependencies');
-    assert.equal(left?.groups['group:publish']?.metadata?.mattersNextSummary, 'Matters next for dependency in Create');
+    assert.equal(left?.groups['group:publish']?.metadata?.mattersNextSummary, 'Matters next for dependency in Build');
     assert.deepEqual(left?.groups['group:publish']?.nodeIds, Object.freeze(['workflow:publish']));
     assert.deepEqual(left?.nodes['document:primary']?.metadata?.relatedPerspectiveIds, Object.freeze(['build', 'publish']));
+    assert.equal(left?.nodes['document:primary']?.metadata?.geographyZone, 'north-west');
+    assert.equal(left?.nodes['document:primary']?.metadata?.geographySummary, 'Northwest project region');
     assert.deepEqual(
         left?.nodes['document:primary']?.metadata?.relationshipTypes,
         Object.freeze({ build: 'documents', publish: 'documents' }),
@@ -182,7 +200,7 @@ test('project universe projection derives deterministic artifact nodes from docu
     assert.equal(left?.nodes['workflow:flow:dispatchApproval']?.metadata?.reliesOnSummary, 'Relies on project hub context');
     assert.equal(
         left?.nodes['workflow:flow:dispatchApproval']?.metadata?.influencesSummary,
-        'Influences Logistics Control, System Model, and Publish Targets',
+        'Influences Logistics Control, Publish Targets, and System Model',
     );
     assert.equal(left?.nodes['workflow:flow:dispatchApproval']?.metadata?.mattersNextSummary, 'Matters next for operation in Logistics Control');
     assert.deepEqual(left, right);

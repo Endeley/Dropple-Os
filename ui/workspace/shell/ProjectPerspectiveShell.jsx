@@ -40,6 +40,7 @@ import {
 } from '@/runtime/workspaces/projectShellRouteState.js';
 import { buildProjectUniverseProjection } from '@/runtime/workspaces/projectUniverseProjection.js';
 import {
+    buildProjectUniverseAnchoringSummary,
     buildProjectUniverseNavigatorItems,
     buildProjectUniverseOrientation,
     resolveProjectUniverseFocusTarget,
@@ -51,7 +52,7 @@ import {
 import { resolveProjectWorldAnchor } from '@/runtime/workspaces/projectWorldAnchor.js';
 import { buildCreatePerspectiveWorkflow } from '@/runtime/workspaces/createPerspectiveWorkflow.js';
 import { buildBuildPerspectiveWorkflow } from '@/runtime/workspaces/buildPerspectiveWorkflow.js';
-import { buildOperatePerspectiveWorldSummary } from '@/runtime/workspaces/buildOverlayWorkflow.js';
+import { buildOperatePerspectiveWorkflow } from '@/runtime/workspaces/buildOverlayWorkflow.js';
 import { buildCollaboratePerspectiveWorkflow } from '@/runtime/workspaces/collaboratePerspectiveWorkflow.js';
 import { resolveCreateAssistantActionLabels } from '@/runtime/workspaces/createAssistantActionLabels.js';
 import { resolveBuildAssistantActionLabels } from '@/runtime/workspaces/buildAssistantActionLabels.js';
@@ -381,6 +382,13 @@ export function ProjectPerspectiveShell({
         return `${formatEntryLabel(perspectiveContinuityState.fromPerspectiveId)} -> ${perspectiveLabel}`;
     }, [perspectiveContinuityState, perspectiveId, perspectiveLabel]);
 
+    const projectIntentDescriptor = useMemo(() => {
+        if (!perspectiveContinuityState.fromPerspectiveId) return null;
+        if (perspectiveContinuityState.toPerspectiveId !== perspectiveId) return null;
+        if (!perspectiveContinuityState.sourceIntentLabel) return null;
+        return perspectiveContinuityState.sourceIntentLabel;
+    }, [perspectiveContinuityState, perspectiveId]);
+
     const editorEmergenceState = useMemo(() => {
         if (perspectiveContinuityState.continuityKind !== 'dive') return null;
         if (perspectiveContinuityState.toPerspectiveId !== perspectiveId) return null;
@@ -469,6 +477,8 @@ export function ProjectPerspectiveShell({
                 toPerspectiveId: handoff.perspectiveId,
                 sourceTargetId: handoff.targetId,
                 sourceLabel: handoff.label,
+                sourceIntentLabel: `Open ${handoff.label} from Project Universe`,
+                sourceIntentSource: 'universe',
                 targetEntryId: handoff.entryId,
                 sourceEntryId: projectPerspectiveContext.entryId,
                 sourceKind: handoff.kind,
@@ -484,7 +494,7 @@ export function ProjectPerspectiveShell({
         router,
         universeFocusState.query,
     ]);
-    const navigateArtifactWorkflowHref = useCallback((href) => {
+    const navigateArtifactWorkflowHref = useCallback((href, options = {}) => {
         const normalizedHref = typeof href === 'string' ? href.trim() : '';
         if (!normalizedHref) return;
 
@@ -505,6 +515,14 @@ export function ProjectPerspectiveShell({
             currentPerspectiveId: perspectiveId,
             currentEntryId: projectPerspectiveContext.entryId,
             continuityTarget,
+            continuityIntentLabel:
+                typeof options?.intentLabel === 'string' && options.intentLabel.trim().length > 0
+                    ? options.intentLabel.trim()
+                    : null,
+            continuityIntentSource:
+                typeof options?.intentSource === 'string' && options.intentSource.trim().length > 0
+                    ? options.intentSource.trim()
+                    : null,
         });
 
         if (typeof window !== 'undefined') {
@@ -750,10 +768,10 @@ export function ProjectPerspectiveShell({
             }),
         [projectPerspectiveContext.entryId, projectUniverse],
     );
-    const operateWorldSummary = useMemo(
+    const operateWorkflow = useMemo(
         () =>
             perspectiveId === 'operate'
-                ? buildOperatePerspectiveWorldSummary({
+                ? buildOperatePerspectiveWorkflow({
                       entryId: projectPerspectiveContext.entryId,
                       document: projectedDocument,
                       universe: projectUniverse,
@@ -761,6 +779,7 @@ export function ProjectPerspectiveShell({
                 : null,
         [perspectiveId, projectPerspectiveContext.entryId, projectedDocument, projectUniverse],
     );
+    const operateWorldSummary = operateWorkflow?.worldSummary ?? null;
     const publishWorldSummary = useMemo(
         () =>
             perspectiveId === 'publish'
@@ -822,6 +841,17 @@ export function ProjectPerspectiveShell({
             }),
         [navigatorQuery, projectUniverse, universeFocusState.targetId],
     );
+    const operateUniverseOrientation = useMemo(
+        () =>
+            perspectiveId === 'operate'
+                ? buildProjectUniverseOrientation({
+                      universe: projectUniverse,
+                      targetId: universeFocusState.targetId ?? (projectUniverse?.groups?.['group:operate'] ? 'group:operate' : projectUniverse?.hubId),
+                      query: navigatorQuery,
+                  })
+                : null,
+        [navigatorQuery, perspectiveId, projectUniverse, universeFocusState.targetId],
+    );
     const universeWorkflowGuide = useMemo(
         () =>
             buildProjectUniverseWorkflowGuide({
@@ -859,6 +889,22 @@ export function ProjectPerspectiveShell({
         }),
         [focusedUniverseEntity, focusedUniverseItem?.targetType],
     );
+    const focusedUniverseGeography = useMemo(
+        () => ({
+            zoneLabel:
+                focusedUniverseEntity?.metadata?.geographyLabel ??
+                (focusedUniverseItem?.targetType === 'hub' ? 'Center' : null),
+            summary:
+                focusedUniverseEntity?.metadata?.geographySummary ??
+                (focusedUniverseItem?.targetType === 'hub' ? 'Center project region' : null),
+            north: focusedUniverseEntity?.metadata?.geographyRegions?.north ?? [],
+            south: focusedUniverseEntity?.metadata?.geographyRegions?.south ?? [],
+            east: focusedUniverseEntity?.metadata?.geographyRegions?.east ?? [],
+            west: focusedUniverseEntity?.metadata?.geographyRegions?.west ?? [],
+            center: focusedUniverseEntity?.metadata?.geographyRegions?.center ?? [],
+        }),
+        [focusedUniverseEntity, focusedUniverseItem?.targetType],
+    );
     const assistantSurfaceState = assistantIntentStatus
         ? 'engaged'
         : assistantSurface?.activeAssistantId
@@ -893,9 +939,23 @@ export function ProjectPerspectiveShell({
             }),
         [assistantSurfaceState, createUtilityPanel, editorEmergenceState, isCreatePerspective, selectedIds.length],
     );
+    const operateUniverseAnchor = useMemo(
+        () =>
+            perspectiveId === 'operate'
+                ? buildProjectUniverseAnchoringSummary({
+                      orientation: operateUniverseOrientation,
+                  })
+                : null,
+        [operateUniverseOrientation, perspectiveId],
+    );
+    const assistantSurfaceContextSummary =
+        perspectiveId === 'operate'
+            ? operateWorkflow?.assistantGuidance?.assistantSummary ?? createShellChoreography.assistantSummary
+            : createShellChoreography.assistantSummary;
 
     const renderUniverseOrientation = () => {
         if (!universeOrientation) return null;
+        const priorityTargets = universeOrientation.priorityTargets.slice(0, 3);
         const relatedTargets = universeOrientation.relatedTargets.slice(0, 3);
         const dependencyTargets = universeOrientation.dependencyTargets.slice(0, 3);
         const downstreamTargets = universeOrientation.downstreamTargets.slice(0, 3);
@@ -944,6 +1004,32 @@ export function ProjectPerspectiveShell({
                             <div style={{ fontSize: 11, fontWeight: 600 }}>{universeOrientation.returnTarget.label}</div>
                             <div style={{ fontSize: 10, color: '#64748b' }}>{universeOrientation.returnTarget.subtitle}</div>
                         </button>
+                    </div>
+                ) : null}
+                {priorityTargets.length > 0 ? (
+                    <div data-testid='project-universe-orientation-priority-summary' style={{ display: 'grid', gap: 4 }}>
+                        <div style={{ fontSize: 10, color: '#64748b' }}>Priority path</div>
+                        {priorityTargets.map((item) => (
+                            <button
+                                key={`priority-${item.targetId}`}
+                                type='button'
+                                data-testid={`project-universe-orientation-priority-${item.targetId}`}
+                                onClick={() => handleUniverseFocusTarget(item.targetId)}
+                                style={{
+                                    textAlign: 'left',
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: 6,
+                                    background: '#f8fafc',
+                                    color: '#0f172a',
+                                    padding: '6px 8px',
+                                    cursor: 'pointer',
+                                }}>
+                                <div style={{ fontSize: 11, fontWeight: 600 }}>{item.label}</div>
+                                <div style={{ fontSize: 10, color: '#64748b' }}>
+                                    {item.prioritySummary ?? item.relationshipSummary ?? item.subtitle}
+                                </div>
+                            </button>
+                        ))}
                     </div>
                 ) : null}
                 {relatedTargets.length > 0 ? (
@@ -1078,22 +1164,33 @@ export function ProjectPerspectiveShell({
                     <div style={{ fontSize: 10, color: '#334155' }}>
                         Current task: <strong style={{ color: '#0f172a' }}>{universeWorkflowGuide.currentTaskLabel}</strong>
                     </div>
+                    <div data-testid='project-universe-workflow-primary-next' style={{ fontSize: 10, color: '#334155' }}>
+                        Next work: <strong style={{ color: '#0f172a' }}>{universeWorkflowGuide.primarySuggestionLabel}</strong>
+                    </div>
                     <div style={{ fontSize: 10, color: '#64748b' }}>{universeWorkflowGuide.summaryLabel}</div>
                     {focusedUniverseCausality.mattersNext ? (
                         <div data-testid='project-universe-workflow-causality' style={{ fontSize: 10, color: '#475569' }}>
                             {focusedUniverseCausality.mattersNext}
                         </div>
                     ) : null}
+                    <div data-testid='project-universe-workflow-primary-reason' style={{ fontSize: 10, color: '#475569' }}>
+                        {universeWorkflowGuide.primarySuggestionReason}
+                    </div>
                 </div>
                 {universeWorkflowGuide.suggestions.length > 0 ? (
                     <div style={{ display: 'grid', gap: 4 }}>
-                        <div style={{ fontSize: 10, color: '#64748b' }}>Next focus</div>
+                        <div style={{ fontSize: 10, color: '#64748b' }}>Next work</div>
                         {universeWorkflowGuide.suggestions.map((suggestion) => (
                             <button
                                 key={suggestion.id}
                                 type='button'
                                 data-testid={`project-universe-workflow-suggestion-${suggestion.id}`}
-                                onClick={() => navigateArtifactWorkflowHref(suggestion.href)}
+                                onClick={() =>
+                                    navigateArtifactWorkflowHref(suggestion.href, {
+                                        intentLabel: suggestion.reason,
+                                        intentSource: suggestion.source,
+                                    })
+                                }
                                 style={{
                                     textAlign: 'left',
                                     border: '1px solid #e2e8f0',
@@ -1105,7 +1202,134 @@ export function ProjectPerspectiveShell({
                                 }}>
                                 <div style={{ fontSize: 11, fontWeight: 600, color: '#0f172a' }}>{suggestion.label}</div>
                                 <div style={{ fontSize: 10, color: '#64748b' }}>{suggestion.reason}</div>
+                                <div style={{ fontSize: 10, color: '#94a3b8' }}>
+                                    {suggestion.source === 'priority' ? 'Universe-first' : 'Workflow-guided'}
+                                </div>
                             </button>
+                        ))}
+                    </div>
+                ) : null}
+            </div>
+        );
+    };
+
+    const renderUniverseDominanceValidation = ({
+        panelTestId = 'project-universe-dominance-panel',
+        summaryTestId = 'project-universe-dominance-summary',
+    } = {}) => {
+        const hasGeography = Boolean(focusedUniverseGeography.summary);
+        const hasPriority = Boolean(
+            universeOrientation?.priorityTargets?.length ||
+                universeNavigatorItems.some(
+                    (item) => item.prioritySummary || item.primaryRelationshipType || item.primaryRelationshipLabel,
+                ),
+        );
+        const priorityState = hasPriority ? 'ranked' : !focusedUniverseItem || focusedUniverseItem.targetType === 'hub' ? 'project-scoped' : 'none';
+        const hasWorkflow = Boolean(universeWorkflowGuide?.suggestions?.length);
+        const hasExplicitIntent = Boolean(projectIntentDescriptor);
+        const focusLabel = focusedUniverseItem?.label ?? 'Project Hub';
+        const summaryLabel = hasWorkflow
+            ? `${focusLabel} is leading project comprehension through geography, ranked relationships, and next work.`
+            : `${focusLabel} is leading project comprehension through geography and ranked relationships.`;
+
+        return (
+            <div
+                data-testid={panelTestId}
+                data-dominance='primary'
+                data-anchor='persistent'
+                data-geography={hasGeography ? 'mapped' : 'missing'}
+                data-priority={priorityState}
+                data-workflow={hasWorkflow ? 'guided' : 'contextual'}
+                data-intent={hasExplicitIntent ? 'explicit' : 'ambient'}
+                style={{
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 8,
+                    background: '#ffffff',
+                    padding: '8px 10px',
+                    display: 'grid',
+                    gap: 6,
+                    marginBottom: 8,
+                }}>
+                <div
+                    style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: '#64748b',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                    }}>
+                    Universe Dominance
+                </div>
+                <div data-testid={summaryTestId} style={{ fontSize: 10, color: '#475569' }}>
+                    {summaryLabel}
+                </div>
+                <div style={{ display: 'grid', gap: 3 }}>
+                    <div style={{ fontSize: 10, color: '#64748b' }}>
+                        Anchor: <strong style={{ color: '#334155' }}>persistent world anchor</strong>
+                    </div>
+                    <div style={{ fontSize: 10, color: '#64748b' }}>
+                        Focus: <strong style={{ color: '#334155' }}>{focusLabel}</strong>
+                    </div>
+                    <div style={{ fontSize: 10, color: '#64748b' }}>
+                        Guidance: <strong style={{ color: '#334155' }}>{hasWorkflow ? 'universe-first next work' : 'world context is still leading'}</strong>
+                    </div>
+                    <div style={{ fontSize: 10, color: '#64748b' }}>
+                        Intent: <strong style={{ color: '#334155' }}>{hasExplicitIntent ? 'cross-perspective intent is explicit' : 'ambient project intent'}</strong>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const renderUniverseGeography = () => {
+        const geographySummary = focusedUniverseGeography.summary;
+        if (!geographySummary) return null;
+
+        const geographyRows =
+            focusedUniverseItem?.targetType === 'hub'
+                ? [
+                      ['North', focusedUniverseGeography.north],
+                      ['South', focusedUniverseGeography.south],
+                      ['East', focusedUniverseGeography.east],
+                      ['West', focusedUniverseGeography.west],
+                      ['Center', focusedUniverseGeography.center],
+                  ].filter(([, labels]) => Array.isArray(labels) && labels.length > 0)
+                : [];
+
+        return (
+            <div
+                data-testid='project-universe-geography-summary'
+                style={{
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 8,
+                    background: '#ffffff',
+                    padding: '8px 10px',
+                    display: 'grid',
+                    gap: 6,
+                    marginBottom: 8,
+                }}>
+                <div
+                    style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: '#64748b',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                    }}>
+                    Project Geography
+                </div>
+                {focusedUniverseGeography.zoneLabel ? (
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>
+                        {focusedUniverseGeography.zoneLabel}
+                    </div>
+                ) : null}
+                <div style={{ fontSize: 10, color: '#475569' }}>{geographySummary}</div>
+                {geographyRows.length > 0 ? (
+                    <div style={{ display: 'grid', gap: 3 }}>
+                        {geographyRows.map(([label, values]) => (
+                            <div key={label} style={{ fontSize: 10, color: '#64748b' }}>
+                                {label}: <strong style={{ color: '#334155' }}>{values.join(', ')}</strong>
+                            </div>
                         ))}
                     </div>
                 ) : null}
@@ -1197,6 +1421,23 @@ export function ProjectPerspectiveShell({
                                     border: '1px solid #99f6e4',
                                 }}>
                                 {transitionDescriptor}
+                            </span>
+                        ) : null}
+                        {projectIntentDescriptor ? (
+                            <span
+                                data-testid='project-shell-project-intent'
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    padding: '4px 8px',
+                                    borderRadius: 999,
+                                    fontSize: 10,
+                                    fontWeight: 600,
+                                    color: '#1d4ed8',
+                                    background: '#eff6ff',
+                                    border: '1px solid #bfdbfe',
+                                }}>
+                                {projectIntentDescriptor}
                             </span>
                         ) : null}
                     </div>
@@ -1315,6 +1556,14 @@ export function ProjectPerspectiveShell({
                     }}>
                     Return to Project Hub
                 </button>
+            </section>
+            <section
+                style={{
+                    padding: '8px 16px 0 16px',
+                    background: '#f8fafc',
+                    borderBottom: editorEmergenceState ? '1px solid #e2e8f0' : 'none',
+                }}>
+                {renderUniverseDominanceValidation()}
             </section>
             {editorEmergenceState ? (
                 <section
@@ -1916,7 +2165,12 @@ export function ProjectPerspectiveShell({
                                     {buildWorkflow.operateHandoff ? (
                                         <button
                                             type='button'
-                                            onClick={() => navigateArtifactWorkflowHref(buildWorkflow.operateHandoff.href)}
+                                            onClick={() =>
+                                                navigateArtifactWorkflowHref(buildWorkflow.operateHandoff.href, {
+                                                    intentLabel: 'Move from build planning into live operating context.',
+                                                    intentSource: 'workflow',
+                                                })
+                                            }
                                             data-testid='build-workflow-operate-handoff'
                                             style={{
                                                 textAlign: 'left',
@@ -2012,60 +2266,289 @@ export function ProjectPerspectiveShell({
                         ) : null}
                         {perspectiveId === 'operate' ? (
                             <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
-                                <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
-                                    Operate World
-                                </div>
                                 <div
-                                    data-testid='operate-world-panel'
-                                    style={{
-                                        border: '1px solid #dcfce7',
-                                        borderRadius: 8,
-                                        padding: 8,
-                                        background: '#f0fdf4',
-                                        display: 'grid',
-                                        gap: 8,
-                                    }}>
-                                    <div
-                                        style={{
-                                            fontSize: 10,
-                                            fontWeight: 700,
-                                            letterSpacing: '0.04em',
-                                            textTransform: 'uppercase',
-                                            color: '#166534',
-                                        }}>
+                                    data-testid='operate-room-panel'
+                                    data-room-contract='operate-world'
+                                    data-room-workflow={operateWorkflow?.linkedArtifacts?.length > 0 ? 'linked' : 'empty'}
+                                    data-room-guidance={operateWorkflow?.assistantGuidance ? 'guided' : 'idle'}
+                                    data-room-anchor={operateUniverseAnchor ? 'anchored' : 'floating'}
+                                    style={{ display: 'grid', gap: 8 }}>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
                                         Operate World
                                     </div>
-                                    <div style={{ fontSize: 12, fontWeight: 700, color: '#14532d' }}>
-                                        {operateWorldSummary?.activityLabel ?? 'Operate'}
+                                    <div
+                                        data-testid='operate-world-panel'
+                                        style={{
+                                            border: '1px solid #dcfce7',
+                                            borderRadius: 8,
+                                            padding: 8,
+                                            background: '#f0fdf4',
+                                            display: 'grid',
+                                            gap: 8,
+                                        }}>
+                                        <div
+                                            style={{
+                                                fontSize: 10,
+                                                fontWeight: 700,
+                                                letterSpacing: '0.04em',
+                                                textTransform: 'uppercase',
+                                                color: '#166534',
+                                            }}>
+                                            Operate World
+                                        </div>
+                                        <div style={{ fontSize: 12, fontWeight: 700, color: '#14532d' }}>
+                                            {operateWorldSummary?.activityLabel ?? 'Operate'}
+                                        </div>
+                                        <div
+                                            data-testid='operate-world-summary'
+                                            style={{ display: 'grid', gap: 3, fontSize: 10, color: '#166534' }}>
+                                            <span>
+                                                Current task:{' '}
+                                                <strong style={{ color: '#14532d' }}>
+                                                    {operateWorldSummary?.currentTaskLabel ?? 'Awaiting operate context'}
+                                                </strong>
+                                            </span>
+                                            <span>
+                                                Assistant:{' '}
+                                                <strong style={{ color: '#14532d' }}>
+                                                    {operateAssistantLabels?.assistantLabel ?? 'Operations Assistant'}
+                                                </strong>
+                                            </span>
+                                            <span>
+                                                Context:{' '}
+                                                <strong style={{ color: '#14532d' }}>
+                                                    {operateWorldSummary?.linkedContextCount ?? 0}
+                                                </strong>{' '}
+                                                linked operate targets
+                                            </span>
+                                            <span>
+                                                Linked artifacts:{' '}
+                                                <strong style={{ color: '#14532d' }}>
+                                                    {operateWorldSummary?.linkedArtifactCount ?? 0}
+                                                </strong>{' '}
+                                                across{' '}
+                                                <strong style={{ color: '#14532d' }}>
+                                                    {operateWorldSummary?.clusterCount ?? 0}
+                                                </strong>{' '}
+                                                operate clusters
+                                            </span>
+                                            <span>
+                                                Signals:{' '}
+                                                <strong style={{ color: '#14532d' }}>
+                                                    {operateWorldSummary?.summaryLabel ?? 'No operate signals'}
+                                                </strong>
+                                            </span>
+                                            <span>
+                                                Next focus:{' '}
+                                                <strong style={{ color: '#14532d' }}>
+                                                    {operateWorldSummary?.nextTargetLabel ?? 'No operate next target'}
+                                                </strong>
+                                            </span>
+                                            <span>
+                                                Guidance:{' '}
+                                                <strong style={{ color: '#14532d' }}>
+                                                    {operateWorldSummary?.assistantSummary ?? 'Operations Assistant is ready to guide this activity.'}
+                                                </strong>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                                        Operate Workflow
                                     </div>
                                     <div
-                                        data-testid='operate-world-summary'
-                                        style={{ display: 'grid', gap: 3, fontSize: 10, color: '#166534' }}>
-                                        <span>
-                                            Current task:{' '}
-                                            <strong style={{ color: '#14532d' }}>
-                                                {operateWorldSummary?.currentTaskLabel ?? 'Awaiting operate context'}
-                                            </strong>
-                                        </span>
-                                        <span>
-                                            Assistant:{' '}
-                                            <strong style={{ color: '#14532d' }}>
-                                                {operateAssistantLabels?.assistantLabel ?? 'Operations Assistant'}
-                                            </strong>
-                                        </span>
-                                        <span>
-                                            Context:{' '}
-                                            <strong style={{ color: '#14532d' }}>
-                                                {operateWorldSummary?.linkedContextCount ?? 0}
-                                            </strong>{' '}
-                                            linked operate targets
-                                        </span>
-                                        <span>
-                                            Signals:{' '}
-                                            <strong style={{ color: '#14532d' }}>
-                                                {operateWorldSummary?.summaryLabel ?? 'No operate signals'}
-                                            </strong>
-                                        </span>
+                                        data-testid='operate-workflow-panel'
+                                        style={{
+                                            border: '1px solid #e2e8f0',
+                                            borderRadius: 8,
+                                            padding: 8,
+                                            background: '#f8fafc',
+                                            display: 'grid',
+                                            gap: 8,
+                                        }}>
+                                        {operateWorkflow?.suggestedNextArtifact ? (
+                                            <button
+                                                type='button'
+                                                onClick={() => navigateArtifactWorkflowHref(operateWorkflow.suggestedNextArtifact.href)}
+                                                data-testid='operate-workflow-suggested-next'
+                                                style={{
+                                                    textAlign: 'left',
+                                                    border: '1px solid #86efac',
+                                                    borderRadius: 8,
+                                                    background: '#f0fdf4',
+                                                    color: '#166534',
+                                                    padding: '8px 10px',
+                                                    cursor: 'pointer',
+                                                    display: 'grid',
+                                                    gap: 2,
+                                                }}>
+                                                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                                                    Continue Operating
+                                                </span>
+                                                <strong style={{ fontSize: 12, color: '#166534' }}>
+                                                    {operateWorkflow.suggestedNextArtifact.label}
+                                                </strong>
+                                                <span style={{ fontSize: 10 }}>
+                                                    {operateWorkflow.suggestedNextArtifact.clusterLabel} · {operateWorkflow.suggestedNextArtifact.entryLabel}
+                                                </span>
+                                            </button>
+                                        ) : null}
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                            {operateWorkflow?.entrySummaries?.map((summary) => (
+                                                <span
+                                                    key={summary.entryId}
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: 4,
+                                                        border: '1px solid #cbd5e1',
+                                                        borderRadius: 999,
+                                                        background: '#ffffff',
+                                                        color: '#334155',
+                                                        fontSize: 10,
+                                                        padding: '3px 7px',
+                                                    }}>
+                                                    {summary.entryLabel}
+                                                    <strong style={{ color: '#0f172a' }}>{summary.count}</strong>
+                                                </span>
+                                            ))}
+                                        </div>
+                                        <div style={{ display: 'grid', gap: 8 }}>
+                                            {operateWorkflow?.artifactClusters?.map((cluster) => (
+                                                <div key={cluster.clusterId} data-testid={`operate-workflow-cluster-${cluster.clusterId}`}>
+                                                    <div
+                                                        style={{
+                                                            fontSize: 10,
+                                                            fontWeight: 700,
+                                                            color: '#475569',
+                                                            marginBottom: 4,
+                                                            letterSpacing: '0.04em',
+                                                            textTransform: 'uppercase',
+                                                        }}>
+                                                        {cluster.clusterLabel}
+                                                    </div>
+                                                    <div style={{ display: 'grid', gap: 4 }}>
+                                                        {cluster.items.map((item) => (
+                                                            <button
+                                                                key={`${item.targetId}:${item.entryId}`}
+                                                                type='button'
+                                                                onClick={() => navigateArtifactWorkflowHref(item.href)}
+                                                                data-testid={`operate-workflow-link-${item.targetId}-${item.entryId}`}
+                                                                style={{
+                                                                    display: 'grid',
+                                                                    gap: 2,
+                                                                    textAlign: 'left',
+                                                                    border: `1px solid ${item.active ? '#0f172a' : '#e2e8f0'}`,
+                                                                    borderRadius: 6,
+                                                                    background: '#ffffff',
+                                                                    color: '#334155',
+                                                                    padding: '6px 8px',
+                                                                    cursor: 'pointer',
+                                                                }}>
+                                                                <strong style={{ fontSize: 11, color: '#0f172a' }}>{item.label}</strong>
+                                                                <span style={{ fontSize: 10, color: '#64748b' }}>
+                                                                    {item.entryLabel} · {item.kind}
+                                                                </span>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {operateWorkflow?.linkedArtifacts?.length === 0 ? (
+                                                <span style={{ fontSize: 11, color: '#64748b' }}>
+                                                    No linked operate artifacts
+                                                </span>
+                                            ) : null}
+                                        </div>
+                                    </div>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                                        Operate Guidance
+                                    </div>
+                                    <div
+                                        data-testid='operate-guidance-panel'
+                                        style={{
+                                            border: '1px solid #dbeafe',
+                                            borderRadius: 8,
+                                            padding: 8,
+                                            background: '#f8fbff',
+                                            display: 'grid',
+                                            gap: 6,
+                                        }}>
+                                        <div style={{ fontSize: 12, fontWeight: 700, color: '#1d4ed8' }}>
+                                            {operateWorkflow?.assistantGuidance?.assistantLabel ?? 'Operations Assistant'}
+                                        </div>
+                                        <div
+                                            data-testid='operate-guidance-summary'
+                                            style={{ display: 'grid', gap: 3, fontSize: 10, color: '#1e3a8a' }}>
+                                            <span>
+                                                Current guidance:{' '}
+                                                <strong style={{ color: '#1d4ed8' }}>
+                                                    {operateWorkflow?.assistantGuidance?.assistantSummary ?? 'Operations Assistant is ready to guide this activity.'}
+                                                </strong>
+                                            </span>
+                                            <span>
+                                                Next move:{' '}
+                                                <strong style={{ color: '#1d4ed8' }}>
+                                                    {operateWorkflow?.assistantGuidance?.nextGuidanceLabel ?? 'Keep the operating world anchored.'}
+                                                </strong>
+                                            </span>
+                                            <span>
+                                                System note:{' '}
+                                                <strong style={{ color: '#1d4ed8' }}>
+                                                    {operateWorkflow?.assistantGuidance?.systemGuidanceLabel ?? 'Keep operating context connected to the project world.'}
+                                                </strong>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                                        Operate Universe Anchor
+                                    </div>
+                                    <div
+                                        data-testid='operate-universe-anchor-panel'
+                                        style={{
+                                            border: '1px solid #cbd5e1',
+                                            borderRadius: 8,
+                                            padding: 8,
+                                            background: '#ffffff',
+                                            display: 'grid',
+                                            gap: 6,
+                                        }}>
+                                        <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>
+                                            {operateUniverseAnchor?.focusLabel ?? projectWorldAnchor.focusLabel}
+                                        </div>
+                                        <div
+                                            data-testid='operate-universe-anchor-summary'
+                                            style={{ display: 'grid', gap: 3, fontSize: 10, color: '#475569' }}>
+                                            <span>
+                                                Return anchor:{' '}
+                                                <strong style={{ color: '#0f172a' }}>
+                                                    {operateUniverseAnchor?.returnLabel ?? 'Project Hub'}
+                                                </strong>
+                                            </span>
+                                            <span>
+                                                Related context:{' '}
+                                                <strong style={{ color: '#0f172a' }}>
+                                                    {operateUniverseAnchor?.relatedCount ?? 0}
+                                                </strong>{' '}
+                                                linked world targets
+                                            </span>
+                                            <span>
+                                                World flow:{' '}
+                                                <strong style={{ color: '#0f172a' }}>
+                                                    {operateUniverseAnchor?.upstreamCount ?? 0}
+                                                </strong>{' '}
+                                                upstream ·{' '}
+                                                <strong style={{ color: '#0f172a' }}>
+                                                    {operateUniverseAnchor?.downstreamCount ?? 0}
+                                                </strong>{' '}
+                                                downstream
+                                            </span>
+                                            <span>
+                                                Next likely world target:{' '}
+                                                <strong style={{ color: '#0f172a' }}>
+                                                    {operateUniverseAnchor?.nextLabel ?? 'Project Hub'}
+                                                </strong>
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -2176,7 +2659,12 @@ export function ProjectPerspectiveShell({
                                     {collaborateWorkflow.publishHandoff ? (
                                         <button
                                             type='button'
-                                            onClick={() => navigateArtifactWorkflowHref(collaborateWorkflow.publishHandoff.href)}
+                                            onClick={() =>
+                                                navigateArtifactWorkflowHref(collaborateWorkflow.publishHandoff.href, {
+                                                    intentLabel: 'Carry collaboration output into publish review.',
+                                                    intentSource: 'workflow',
+                                                })
+                                            }
                                             data-testid='collaborate-workflow-publish-handoff'
                                             style={{
                                                 textAlign: 'left',
@@ -2359,7 +2847,7 @@ export function ProjectPerspectiveShell({
                                 <span
                                     data-testid='assistant-surface-context'
                                     style={{ fontSize: 10, color: '#64748b' }}>
-                                    {createShellChoreography.assistantSummary}
+                                    {assistantSurfaceContextSummary}
                                 </span>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                                     <button
@@ -2692,6 +3180,11 @@ export function ProjectPerspectiveShell({
                                                 </div>
                                             ) : null}
                                     </div>
+                                    {renderUniverseDominanceValidation({
+                                        panelTestId: 'project-universe-dominance-panel-navigate',
+                                        summaryTestId: 'project-universe-dominance-summary-navigate',
+                                    })}
+                                    {renderUniverseGeography()}
                                     {renderUniverseOrientation()}
                                     {renderUniverseWorkflowGuide()}
                                     <div style={{ display: 'grid', gap: 4 }}>
@@ -3042,6 +3535,11 @@ export function ProjectPerspectiveShell({
                                     </div>
                                 ) : null}
                             </div>
+                            {renderUniverseDominanceValidation({
+                                panelTestId: 'project-universe-dominance-panel-mobile',
+                                summaryTestId: 'project-universe-dominance-summary-mobile',
+                            })}
+                            {renderUniverseGeography()}
                             {renderUniverseOrientation()}
                             {renderUniverseWorkflowGuide()}
                             <div style={{ display: 'grid', gap: 4, marginBottom: 10 }}>

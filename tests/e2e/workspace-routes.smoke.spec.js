@@ -529,8 +529,12 @@ test('project universe deepens domain focus and supports return-to-project navig
   expect(response?.ok(), 'project universe depth route should respond successfully').toBeTruthy();
   await page.getByTestId('create-shell-utility-tab-navigate').click();
   await expect(page.getByTestId('project-universe-focus-summary')).toContainText('Project Hub');
+  await expect(page.getByTestId('project-universe-geography-summary')).toBeVisible();
+  await expect(page.getByTestId('project-universe-geography-summary')).toContainText('Project Geography');
+  await expect(page.getByTestId('project-universe-geography-summary')).toContainText('North: Create');
+  await expect(page.getByTestId('project-universe-geography-summary')).toContainText('South: Operate');
   await expect(page.getByTestId('project-universe-nav-project:hub')).toContainText('project universe anchor');
-  await expect(page.getByTestId('project-universe-nav-group:operate')).toContainText(/Depends on|Produces for|Publishes to|Operates|Reviews/);
+  await expect(page.getByTestId('project-universe-nav-group:operate')).toContainText('Priority path: Depends on Create');
 
   await page.getByTestId('project-universe-group-operate').click();
   await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
@@ -576,7 +580,12 @@ test('project universe navigator search and jump stay route-driven and determini
 
   await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
   await expect(page).toHaveURL(/[\?&]uq=operate/);
+  await expect(page.getByTestId('project-universe-geography-summary')).toContainText('Southeast');
+  await expect(page.getByTestId('project-universe-geography-summary')).toContainText('Southeast project region');
   await expect(page.getByTestId('project-universe-orientation-summary')).toBeVisible();
+  await expect(page.getByTestId('project-universe-orientation-priority-summary')).toBeVisible();
+  await expect(page.getByTestId('project-universe-orientation-priority-summary')).toContainText('Priority path');
+  await expect(page.getByTestId('project-universe-orientation-priority-group:create')).toContainText('Priority path: depends on Create');
   await expect(page.getByTestId('project-universe-orientation-summary')).toContainText('Return');
   await expect(page.getByTestId('project-universe-orientation-summary')).toContainText('Upstream');
   await expect(page.getByTestId('project-universe-orientation-summary')).toContainText('Next likely');
@@ -586,8 +595,11 @@ test('project universe navigator search and jump stay route-driven and determini
   await expect(page.getByTestId('project-universe-workflow-guide')).toBeVisible();
   await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Project Workflow');
   await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Current task');
-  await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Next focus');
+  await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Next work');
+  await expect(page.getByTestId('project-universe-workflow-primary-next')).toContainText('Next work:');
+  await expect(page.getByTestId('project-universe-workflow-primary-reason')).toContainText('Priority path:');
   await expect(page.getByTestId('project-universe-workflow-causality')).toContainText('Matters next');
+  await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Universe-first');
   await expect(page.getByTestId('project-universe-group-operate')).toHaveAttribute('data-causality-summary', /Matters next/);
   await expect(page.getByTestId('project-universe-orientation-return-project:hub')).toContainText('Bp Logistics V1');
   await page.getByTestId('project-universe-orientation-return-project:hub').click();
@@ -663,13 +675,30 @@ test('world-based shell parity stays explicit across create build operate collab
   for (const expectation of expectations) {
     const response = await page.goto(expectation.path, { waitUntil: 'networkidle' });
     expect(response?.ok(), `${expectation.path} should respond successfully`).toBeTruthy();
+    await expect(page.getByTestId('project-universe-surface')).toHaveAttribute('data-world-role', 'primary');
+    await expect(page.getByTestId('project-universe-surface')).toHaveAttribute('data-world-comprehension', 'dominant');
     await expect(page.getByTestId('project-world-anchor')).toBeVisible();
     await expect(page.getByTestId('project-world-anchor-activity')).toContainText(expectation.activity);
     await expect(page.getByTestId('project-world-anchor-focus')).not.toHaveText('');
     await expect(page.getByTestId('project-world-anchor-hub')).toContainText('Return to Project Hub');
+    await expect(page.getByTestId('project-universe-dominance-panel')).toHaveAttribute('data-dominance', 'primary');
+    await expect(page.getByTestId('project-universe-dominance-panel')).toHaveAttribute('data-anchor', 'persistent');
+    await expect(page.getByTestId('project-universe-dominance-panel')).toHaveAttribute('data-geography', 'mapped');
+    await expect(page.getByTestId('project-universe-dominance-panel')).not.toHaveAttribute('data-priority', 'none');
+    await expect(page.getByTestId('project-universe-dominance-panel')).not.toHaveAttribute('data-workflow', 'missing');
+    await expect(page.getByTestId('project-universe-dominance-summary')).toContainText('project comprehension');
     await expect(page.getByTestId(expectation.panel)).toContainText(expectation.label);
     await expect(page.getByTestId(expectation.summary)).toContainText('Assistant:');
     await expect(page.getByTestId('assistant-surface-panel')).toBeVisible();
+    if (expectation.panel === 'operate-world-panel') {
+      await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-contract', 'operate-world');
+      await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-workflow', 'linked');
+      await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-guidance', 'guided');
+      await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-anchor', 'anchored');
+      await expect(page.getByTestId('operate-workflow-panel')).toBeVisible();
+      await expect(page.getByTestId('operate-guidance-panel')).toBeVisible();
+      await expect(page.getByTestId('operate-universe-anchor-panel')).toBeVisible();
+    }
   }
 });
 
@@ -987,6 +1016,7 @@ test('build perspective exposes linked workflow guidance and operate handoff rou
   await expect(page.getByTestId('build-world-summary')).toContainText('Operate bridge: Systems Engineering');
   await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Project Workflow');
   await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Application');
+  await expect(page.getByTestId('project-universe-workflow-primary-next')).toContainText('Next work:');
   await expect(page.getByTestId('project-universe-workflow-guide')).toContainText('Move from build planning into live operating context.');
   await expect(page.getByTestId('build-workflow-suggested-next')).toContainText('Continue Building');
   await expect(page.getByTestId('build-workflow-cluster-application')).toContainText('Application');
@@ -1008,12 +1038,15 @@ test('build perspective exposes linked workflow guidance and operate handoff rou
   await expect(page).toHaveURL(/[\?&]pt=operate/);
   await expect(page).toHaveURL(/[\?&]pu=system%3Amodel/);
   await expect(page).toHaveURL(/[\?&]pl=System\+Model/);
+  await expect(page).toHaveURL(/[\?&]pi=Move\+from\+build\+planning\+into\+live\+operating\+context\./);
+  await expect(page).toHaveURL(/[\?&]pj=workflow/);
   await expect(page).toHaveURL(/[\?&]pe=systems-engineering/);
   await expect(page).toHaveURL(/[\?&]ps=application/);
   await expect(page).toHaveURL(/[\?&]pk=system-model/);
   await expect(page).toHaveURL(/[\?&]pm=hop/);
   await expect(page.locator('body')).toContainText('Active context: Operate > Systems Engineering');
   await expect(page.getByTestId('project-shell-transition-context')).toContainText('hop: System Model');
+  await expect(page.getByTestId('project-shell-project-intent')).toContainText('Move from build planning into live operating context.');
 });
 
 test('operate overlays expose deterministic systems and operations panels', async ({ page }) => {
@@ -1027,10 +1060,36 @@ test('operate overlays expose deterministic systems and operations panels', asyn
   await expect(page.getByTestId('operate-world-summary')).toContainText('Current task: System Model');
   await expect(page.getByTestId('operate-world-summary')).toContainText('Assistant: Operations Assistant');
   await expect(page.getByTestId('operate-world-summary')).toContainText('Context: 2 linked operate targets');
+  await expect(page.getByTestId('operate-world-summary')).toContainText('Linked artifacts:');
+  await expect(page.getByTestId('operate-world-summary')).toContainText('operate clusters');
   await expect(page.getByTestId('operate-world-summary')).toContainText('Signals: 0 graphs · 0 controls · 0 signals');
+  await expect(page.getByTestId('operate-world-summary')).toContainText('Next focus:');
+  await expect(page.getByTestId('operate-world-summary')).toContainText('Guidance: Operations Assistant is guiding Systems Engineering toward System Model.');
+  await expect(page.getByTestId('operate-workflow-panel')).toBeVisible();
+  await expect(page.getByTestId('operate-workflow-suggested-next')).toContainText('Continue Operating');
+  await expect(page.getByTestId('operate-workflow-cluster-systems')).toContainText('Systems');
+  await expect(page.getByTestId('operate-guidance-panel')).toBeVisible();
+  await expect(page.getByTestId('operate-guidance-summary')).toContainText('Current guidance: Operations Assistant is guiding Systems Engineering toward System Model.');
+  await expect(page.getByTestId('operate-guidance-summary')).toContainText('Next move: Continue from System Model into Enterprise Operations via System Model.');
+  await expect(page.getByTestId('operate-universe-anchor-panel')).toBeVisible();
+  await expect(page.getByTestId('operate-universe-anchor-panel')).toContainText('Operate');
+  await expect(page.getByTestId('operate-universe-anchor-summary')).toContainText('Return anchor:');
+  await expect(page.getByTestId('operate-universe-anchor-summary')).toContainText('linked world targets');
+  await expect(page.getByTestId('operate-universe-anchor-summary')).toContainText('upstream');
+  await expect(page.getByTestId('operate-universe-anchor-summary')).toContainText('downstream');
   await expect(page.getByTestId('systems-engineering-panel')).toContainText('Systems Engineering');
   await expect(page.getByTestId('systems-engineering-panel')).toContainText('Architecture graphs:');
   await expect(page.getByTestId('systems-engineering-panel')).toContainText('Continue in Systems Engineering');
+  await page.getByTestId('systems-engineering-panel').getByRole('link', { name: /Continue in Systems Engineering/i }).click();
+  await expect(page).toHaveURL(/\/workspace\/operate\?/);
+  await expect(page).toHaveURL(/[\?&]entry=systems-engineering/);
+  await expect(page).toHaveURL(/[\?&]u=/);
+  await expect(page).toHaveURL(/[\?&]pf=operate/);
+  await expect(page).toHaveURL(/[\?&]pt=operate/);
+  await expect(page).toHaveURL(/[\?&]pe=systems-engineering/);
+  await expect(page).toHaveURL(/[\?&]ps=systems-engineering/);
+  await expect(page).toHaveURL(/[\?&]pm=dive/);
+  await expect(page.getByTestId('project-shell-transition-context')).toContainText('dive:');
 
   response = await page.goto('/workspace/enterprise-operations?blueprint=bp.logistics.v1&bootstrap=1', {
     waitUntil: 'networkidle',
@@ -1040,10 +1099,32 @@ test('operate overlays expose deterministic systems and operations panels', asyn
   await expect(page.getByTestId('operate-world-panel')).toContainText('Enterprise Operations');
   await expect(page.getByTestId('operate-world-summary')).toContainText('Current task: System Model');
   await expect(page.getByTestId('operate-world-summary')).toContainText('Context: 1 linked operate targets');
+  await expect(page.getByTestId('operate-world-summary')).toContainText('Linked artifacts:');
+  await expect(page.getByTestId('operate-world-summary')).toContainText('operate clusters');
   await expect(page.getByTestId('operate-world-summary')).toContainText('Signals: 0 processes · 0 automation paths · 0 data sources');
+  await expect(page.getByTestId('operate-world-summary')).toContainText('Next focus:');
+  await expect(page.getByTestId('operate-world-summary')).toContainText('Guidance: Operations Assistant is guiding Enterprise Operations toward System Model.');
+  await expect(page.getByTestId('operate-workflow-panel')).toBeVisible();
+  await expect(page.getByTestId('operate-workflow-cluster-operations')).toContainText('Operations');
+  await expect(page.getByTestId('operate-guidance-panel')).toBeVisible();
+  await expect(page.getByTestId('operate-guidance-summary')).toContainText('Current guidance: Operations Assistant is guiding Enterprise Operations toward System Model.');
+  await expect(page.getByTestId('operate-guidance-summary')).toContainText('System note: Carry process changes back into system models so enterprise operations stay grounded in project reality.');
+  await expect(page.getByTestId('operate-universe-anchor-panel')).toBeVisible();
+  await expect(page.getByTestId('operate-universe-anchor-panel')).toContainText('Operate');
+  await expect(page.getByTestId('operate-universe-anchor-summary')).toContainText('Next likely world target:');
   await expect(page.getByTestId('enterprise-operations-panel')).toContainText('Enterprise Operations');
   await expect(page.getByTestId('enterprise-operations-panel')).toContainText('Processes:');
   await expect(page.getByTestId('enterprise-operations-panel')).toContainText('Continue in Enterprise Operations');
+  await page.getByTestId('enterprise-operations-panel').getByRole('link', { name: /Continue in Enterprise Operations/i }).click();
+  await expect(page).toHaveURL(/\/workspace\/operate\?/);
+  await expect(page).toHaveURL(/[\?&]entry=enterprise-operations/);
+  await expect(page).toHaveURL(/[\?&]u=/);
+  await expect(page).toHaveURL(/[\?&]pf=operate/);
+  await expect(page).toHaveURL(/[\?&]pt=operate/);
+  await expect(page).toHaveURL(/[\?&]pe=enterprise-operations/);
+  await expect(page).toHaveURL(/[\?&]ps=enterprise-operations/);
+  await expect(page).toHaveURL(/[\?&]pm=dive/);
+  await expect(page.getByTestId('project-shell-transition-context')).toContainText('dive:');
 });
 
 test('operate perspective assistant surface stays entry-consistent across workflow and operations routes', async ({ page }) => {
@@ -1102,6 +1183,7 @@ test('operate perspective assistant surface stays entry-consistent across workfl
     await expect(page.getByTestId('assistant-surface-focus')).toContainText(
       `Operations Assistant for ${expectedOperateEntries[entryId].specialization}`,
     );
+    await expect(page.getByTestId('assistant-surface-context')).toContainText('Operations Assistant is guiding');
     await expect(page.getByTestId('assistant-action-recommend')).toContainText(expectedOperateEntries[entryId].recommendLabel);
     await expect(page.getByTestId('assistant-action-generate')).toContainText(expectedOperateEntries[entryId].generateLabel);
     await expect(page.getByTestId('assistant-action-explain')).toContainText(expectedOperateEntries[entryId].explainLabel);
@@ -1225,6 +1307,14 @@ test('collaborate perspective exposes linked workflow guidance and publish hando
   await expect(page).toHaveURL(/[\?&]entry=knowledge/);
   await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
   await expect(page.locator('body')).toContainText('Active context: Collaborate > Knowledge');
+  await page.goto('/workspace/collaborate?blueprint=bp.logistics.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
+  await page.getByTestId('collaborate-workflow-publish-handoff').click();
+  await expect(page).toHaveURL(/\/workspace\/publish\?/);
+  await expect(page).toHaveURL(/[\?&]pi=Carry\+collaboration\+output\+into\+publish\+review\./);
+  await expect(page).toHaveURL(/[\?&]pj=workflow/);
+  await expect(page.getByTestId('project-shell-project-intent')).toContainText('Carry collaboration output into publish review.');
 
   await page.goto('/workspace/collaborate?blueprint=bp.logistics.v1&bootstrap=1', {
     waitUntil: 'networkidle',

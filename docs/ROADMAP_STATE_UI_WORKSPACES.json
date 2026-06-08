@@ -830,55 +830,134 @@
     },
     {
       "id": "U20",
-      "title": "Universe Intelligence V2",
-      "status": "active",
+      "title": "Operate World Refinement",
+      "status": "complete",
       "depends_on": ["U19"],
       "milestones": [
         {
           "id": "U20.1",
-          "title": "Relationship Meaning Audit",
+          "title": "Operate Workflow Depth",
           "status": "complete",
           "evidence": [
-            "runtime/workspaces/projectUniverseProjection.js",
-            "runtime/workspaces/projectUniverseNavigation.js",
-            "ui/workspace/shell/ProjectUniverseCanvas.jsx",
-            "tests/kernel/projectUniverseProjectionLaw.test.ts"
+            "runtime/workspaces/buildOverlayWorkflow.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "ui/workspace/build/SystemsEngineeringPanel.jsx",
+            "ui/workspace/build/EnterpriseOperationsPanel.jsx",
+            "tests/kernel/buildOverlayWorkflowLaw.test.ts",
+            "tests/e2e/workspace-routes.smoke.spec.js"
           ]
         },
         {
           "id": "U20.2",
-          "title": "Typed Artifact Relationships",
+          "title": "Operate Artifact and Overlay Continuity",
           "status": "complete",
           "evidence": [
-            "runtime/workspaces/projectUniverseProjection.js",
-            "core/project/normalizeProjectUniverseArtifacts.js"
+            "runtime/workspaces/projectUniverseEditorHandoff.js",
+            "runtime/workspaces/projectViewRouteState.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js"
           ]
         },
         {
           "id": "U20.3",
-          "title": "Dependency and Flow Orientation",
+          "title": "Operate Assistant and Guidance Depth",
           "status": "complete",
           "evidence": [
-            "runtime/workspaces/projectUniverseNavigation.js",
-            "runtime/workspaces/projectUniverseWorkflowGuide.js"
+            "runtime/workspaces/operateAssistantActionLabels.js",
+            "runtime/workspaces/buildOverlayWorkflow.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
           ]
         },
         {
           "id": "U20.4",
-          "title": "Universe Causality Summaries",
+          "title": "Operate Universe Anchoring",
           "status": "complete",
           "evidence": [
-            "ui/workspace/shell/ProjectUniverseCanvas.jsx",
-            "ui/workspace/shell/ProjectPerspectiveShell.jsx"
+            "runtime/workspaces/projectWorldAnchor.js",
+            "runtime/workspaces/projectUniverseNavigation.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
           ]
         },
         {
           "id": "U20.5",
-          "title": "Universe-Driven Next Work",
-          "status": "active",
+          "title": "Operate Room Parity Validation",
+          "status": "complete",
+          "evidence": [
+            "runtime/workspaces/buildOverlayWorkflow.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js"
+          ]
+        }
+      ],
+      "gates": [
+        { "name": "generated cleanup", "command": "npm run release:trust:clean-generated" },
+        { "name": "architecture gate", "command": "npm run arch" },
+        { "name": "law enforcement", "command": "npm run enforce:laws" },
+        { "name": "architecture tests", "command": "npm run test:architecture" },
+        { "name": "route smoke", "command": "npm run test:routes:smoke" },
+        { "name": "interaction smoke", "command": "npm run ui:interactions:test" }
+      ]
+    },
+    {
+      "id": "U21",
+      "title": "Universe Intelligence V2",
+      "status": "complete",
+      "depends_on": ["U20"],
+      "milestones": [
+        {
+          "id": "U21.1",
+          "title": "Project Geography Comprehension",
+          "status": "complete",
+          "evidence": [
+            "runtime/workspaces/projectUniverseProjection.js",
+            "ui/workspace/shell/ProjectUniverseCanvas.jsx",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/kernel/projectUniverseProjectionLaw.test.ts"
+          ]
+        },
+        {
+          "id": "U21.2",
+          "title": "Relationship Ranking and Priority",
+          "status": "complete",
+          "evidence": [
+            "runtime/workspaces/projectUniverseProjection.js",
+            "runtime/workspaces/projectUniverseNavigation.js",
+            "tests/kernel/projectUniverseNavigationLaw.test.ts"
+          ]
+        },
+        {
+          "id": "U21.3",
+          "title": "Universe-First Next Work",
+          "status": "complete",
           "evidence": [
             "runtime/workspaces/projectUniverseWorkflowGuide.js",
-            "ui/workspace/shell/ProjectPerspectiveShell.jsx"
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/kernel/projectUniverseWorkflowGuideLaw.test.ts"
+          ]
+        },
+        {
+          "id": "U21.4",
+          "title": "Cross-Perspective Project Intent",
+          "status": "complete",
+          "evidence": [
+            "runtime/workspaces/projectUniverseEditorHandoff.js",
+            "runtime/workspaces/projectViewRouteState.js",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js"
+          ]
+        },
+        {
+          "id": "U21.5",
+          "title": "Universe Dominance Validation",
+          "status": "complete",
+          "evidence": [
+            "ui/workspace/shell/ProjectUniverseCanvas.jsx",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
           ]
         }
       ],

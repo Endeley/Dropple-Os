@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+    buildProjectUniverseAnchoringSummary,
     buildProjectUniverseNavigatorItems,
     buildProjectUniverseOrientation,
     normalizeProjectUniverseNavigatorQuery,
@@ -202,6 +203,12 @@ test('project universe orientation derives deterministic current, return, relate
         ['workflow:publish', 'group:publish'],
     );
     assert.deepEqual(
+        nodeOrientation?.priorityTargets.map((item) => item.targetId),
+        ['workflow:publish', 'group:publish', 'group:build'],
+    );
+    assert.equal(nodeOrientation?.relatedTargets[0]?.priorityTier, 'adjacent');
+    assert.equal(nodeOrientation?.relatedTargets[0]?.prioritySummary, 'Priority path: documents Publish Targets');
+    assert.deepEqual(
         nodeOrientation?.dependencyTargets.map((item) => item.targetId),
         ['workflow:publish', 'group:publish'],
     );
@@ -233,6 +240,12 @@ test('project universe orientation derives deterministic current, return, relate
         groupOrientation?.relatedTargets.map((item) => item.targetId),
         ['group:build', 'group:publish'],
     );
+    assert.deepEqual(
+        groupOrientation?.priorityTargets.map((item) => item.targetId),
+        ['group:build', 'group:publish'],
+    );
+    assert.equal(groupOrientation?.relatedTargets[0]?.priorityTier, 'primary');
+    assert.equal(groupOrientation?.relatedTargets[0]?.prioritySummary, 'Priority path: depends on Build');
     assert.deepEqual(
         groupOrientation?.dependencyTargets.map((item) => item.targetId),
         ['group:build'],
@@ -283,4 +296,37 @@ test('project universe focus target resolves deterministic camera targets for gr
         Object.freeze({ id: 'node:a', targetType: 'node', x: 11, y: -7, scale: 1.25 }),
     );
     assert.equal(resolveProjectUniverseFocusTarget({ universe, targetId: 'missing' }), null);
+});
+
+test('project universe anchoring summary derives deterministic anchor signals', () => {
+    const orientation = Object.freeze({
+        current: Object.freeze({ targetId: 'group:operate', label: 'Operate' }),
+        returnTarget: Object.freeze({ targetId: 'project:hub', label: 'Logistics Control' }),
+        relatedTargets: Object.freeze([
+            Object.freeze({ targetId: 'system:model', label: 'System Model' }),
+            Object.freeze({ targetId: 'workflow:dispatch', label: 'Dispatch Flow' }),
+        ]),
+        dependencyTargets: Object.freeze([Object.freeze({ targetId: 'system:model', label: 'System Model' })]),
+        downstreamTargets: Object.freeze([Object.freeze({ targetId: 'publish:review', label: 'Publish Review' })]),
+        nextTargets: Object.freeze([Object.freeze({ targetId: 'system:model', label: 'System Model' })]),
+    });
+    const workflowGuide = Object.freeze({
+        suggestions: Object.freeze([Object.freeze({ id: 'operate:related:system:model', label: 'System Model' })]),
+    });
+
+    const left = buildProjectUniverseAnchoringSummary({ orientation, workflowGuide });
+    const right = buildProjectUniverseAnchoringSummary({ orientation, workflowGuide });
+
+    assert.deepEqual(left, right);
+    assert.deepEqual(
+        left,
+        Object.freeze({
+            focusLabel: 'Operate',
+            returnLabel: 'Logistics Control',
+            relatedCount: 2,
+            upstreamCount: 1,
+            downstreamCount: 1,
+            nextLabel: 'System Model',
+        }),
+    );
 });

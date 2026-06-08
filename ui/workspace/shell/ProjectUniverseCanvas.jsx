@@ -335,6 +335,8 @@ export function ProjectUniverseCanvas({
             data-pointer-surface='camera'
             data-pointer-mode={pointerMode}
             data-camera-mode={cameraMode}
+            data-world-role='primary'
+            data-world-comprehension='dominant'
             style={{
                 border: '1px solid #d9dee6',
                 borderRadius: 10,

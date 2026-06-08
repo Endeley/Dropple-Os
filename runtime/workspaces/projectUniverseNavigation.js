@@ -44,9 +44,31 @@ function asNavigatorItem(item) {
         subtitle: item.subtitle,
         relationshipType: asNonEmptyString(item.relationshipType),
         relationshipSummary: asNonEmptyString(item.relationshipSummary),
+        relationshipPriority: Number.isFinite(item.relationshipPriority) ? Number(item.relationshipPriority) : 0,
+        priorityTier: asNonEmptyString(item.priorityTier),
+        prioritySummary: asNonEmptyString(item.prioritySummary),
         x: Number.isFinite(item.x) ? Number(item.x) : 0,
         y: Number.isFinite(item.y) ? Number(item.y) : 0,
     });
+}
+
+function compareNavigatorTargetsByPriority(left, right) {
+    const leftPriority = Number.isFinite(left?.relationshipPriority) ? Number(left.relationshipPriority) : 0;
+    const rightPriority = Number.isFinite(right?.relationshipPriority) ? Number(right.relationshipPriority) : 0;
+    if (leftPriority !== rightPriority) return rightPriority - leftPriority;
+
+    const targetPriority = { node: 0, group: 1, hub: 2 };
+    const leftType = targetPriority[left?.targetType] ?? 99;
+    const rightType = targetPriority[right?.targetType] ?? 99;
+    if (leftType !== rightType) return leftType - rightType;
+
+    const leftLabel = asNonEmptyString(left?.label) ?? '';
+    const rightLabel = asNonEmptyString(right?.label) ?? '';
+    return leftLabel.localeCompare(rightLabel);
+}
+
+function sortTargetsByPriority(items) {
+    return Object.freeze([...(Array.isArray(items) ? items : [])].sort(compareNavigatorTargetsByPriority));
 }
 
 function isDependencyRelationship(type) {
@@ -67,13 +89,52 @@ function isDownstreamRelationship(type) {
     );
 }
 
+function resolveRelationshipPriority(type) {
+    switch (type) {
+        case 'depends-on':
+            return 100;
+        case 'operates':
+            return 90;
+        case 'produces':
+            return 80;
+        case 'publishes':
+            return 70;
+        case 'reviews':
+            return 60;
+        case 'documents':
+            return 50;
+        case 'components-for':
+            return 40;
+        case 'styles':
+            return 30;
+        default:
+            return 10;
+    }
+}
+
+function resolveRelationshipPriorityTier(priority) {
+    if (priority >= 90) return 'primary';
+    if (priority >= 70) return 'supporting';
+    return 'adjacent';
+}
+
 function attachRelationship(item, relationship) {
     if (!item || !relationship) return asNavigatorItem(item);
+    const relationshipPriority = Number.isFinite(relationship.priority)
+        ? Number(relationship.priority)
+        : resolveRelationshipPriority(relationship.type);
     return Object.freeze({
         ...asNavigatorItem(item),
         relationshipType: asNonEmptyString(relationship.type),
         relationshipSummary: asNonEmptyString(relationship.summary),
+        relationshipPriority,
+        priorityTier: asNonEmptyString(relationship.priorityTier) ?? resolveRelationshipPriorityTier(relationshipPriority),
+        prioritySummary: `Priority path: ${asNonEmptyString(relationship.summary) ?? 'project context'}`,
     });
+}
+
+function resolveTargetLabel(item, fallback) {
+    return asNonEmptyString(item?.label) ?? fallback;
 }
 
 export function buildProjectUniverseNavigatorItems({ universe = null, query = '' } = {}) {
@@ -104,8 +165,8 @@ export function buildProjectUniverseNavigatorItems({ universe = null, query = ''
                 label: group.label,
                 subtitle:
                     typeof group?.metadata?.primaryNodeLabel === 'string' && group.metadata.primaryNodeLabel.trim().length > 0
-                        ? `${group.nodeIds.length} artifact${group.nodeIds.length === 1 ? '' : 's'} · ${group.metadata.primaryNodeLabel}${typeof group?.metadata?.relationshipSummary === 'string' && group.metadata.relationshipSummary.trim().length > 0 ? ` · ${group.metadata.relationshipSummary}` : ''}`
-                        : `${group.nodeIds.length} artifact${group.nodeIds.length === 1 ? '' : 's'}${typeof group?.metadata?.relationshipSummary === 'string' && group.metadata.relationshipSummary.trim().length > 0 ? ` · ${group.metadata.relationshipSummary}` : ''}`,
+                        ? `${group.nodeIds.length} artifact${group.nodeIds.length === 1 ? '' : 's'} · ${group.metadata.primaryNodeLabel}${typeof group?.metadata?.prioritySummary === 'string' && group.metadata.prioritySummary.trim().length > 0 ? ` · ${group.metadata.prioritySummary}` : typeof group?.metadata?.relationshipSummary === 'string' && group.metadata.relationshipSummary.trim().length > 0 ? ` · ${group.metadata.relationshipSummary}` : ''}`
+                        : `${group.nodeIds.length} artifact${group.nodeIds.length === 1 ? '' : 's'}${typeof group?.metadata?.prioritySummary === 'string' && group.metadata.prioritySummary.trim().length > 0 ? ` · ${group.metadata.prioritySummary}` : typeof group?.metadata?.relationshipSummary === 'string' && group.metadata.relationshipSummary.trim().length > 0 ? ` · ${group.metadata.relationshipSummary}` : ''}`,
                 x: Number.isFinite(group.x) ? Number(group.x) : 0,
                 y: Number.isFinite(group.y) ? Number(group.y) : 0,
             }),
@@ -175,19 +236,19 @@ export function buildProjectUniverseOrientation({ universe = null, targetId = nu
                     : []
                 : [];
 
-    const relatedTargets = dedupeTargets(
+    const relatedTargets = dedupeTargets(sortTargetsByPriority(
         relationshipEdges
             .map((edge) => {
                 const targetId = asNonEmptyString(edge?.targetNodeId) ?? asNonEmptyString(edge?.targetGroupId);
                 return attachRelationship(byTargetId.get(targetId) ?? null, edge);
             })
             .filter(Boolean),
-    );
+    ));
     const dependencyTargets = dedupeTargets(
-        relatedTargets.filter((item) => isDependencyRelationship(item.relationshipType)),
+        sortTargetsByPriority(relatedTargets.filter((item) => isDependencyRelationship(item.relationshipType))),
     );
     const downstreamTargets = dedupeTargets(
-        relatedTargets.filter((item) => isDownstreamRelationship(item.relationshipType)),
+        sortTargetsByPriority(relatedTargets.filter((item) => isDownstreamRelationship(item.relationshipType))),
     );
 
     const siblingTargets = dedupeTargets(
@@ -215,12 +276,13 @@ export function buildProjectUniverseOrientation({ universe = null, targetId = nu
                       .map((item) => asNavigatorItem(item)),
               )
             : Object.freeze([]);
-    const nextTargets = matchedTargets.length > 0 ? matchedTargets : siblingTargets;
-    const flowTargets = dedupeTargets(
+    const flowTargets = dedupeTargets(sortTargetsByPriority(
         matchedTargets.length > 0
             ? [...dependencyTargets, ...downstreamTargets, ...matchedTargets]
             : [...dependencyTargets, ...downstreamTargets, ...siblingTargets],
-    );
+    ));
+    const priorityTargets = flowTargets.filter((item) => item.targetId !== current.targetId);
+    const nextTargets = matchedTargets.length > 0 ? matchedTargets : priorityTargets.length > 0 ? priorityTargets : siblingTargets;
 
     return Object.freeze({
         current,
@@ -232,6 +294,28 @@ export function buildProjectUniverseOrientation({ universe = null, targetId = nu
         matchedTargets,
         nextTargets,
         flowTargets,
+        priorityTargets,
+    });
+}
+
+export function buildProjectUniverseAnchoringSummary({ orientation = null, workflowGuide = null } = {}) {
+    if (!orientation?.current) return null;
+
+    const relatedCount = Array.isArray(orientation.relatedTargets) ? orientation.relatedTargets.length : 0;
+    const upstreamCount = Array.isArray(orientation.dependencyTargets) ? orientation.dependencyTargets.length : 0;
+    const downstreamCount = Array.isArray(orientation.downstreamTargets) ? orientation.downstreamTargets.length : 0;
+    const nextLabel =
+        resolveTargetLabel(workflowGuide?.suggestions?.[0], null) ??
+        resolveTargetLabel(orientation.nextTargets?.[0], null) ??
+        resolveTargetLabel(orientation.returnTarget, 'Project Hub');
+
+    return Object.freeze({
+        focusLabel: resolveTargetLabel(orientation.current, 'Project Hub'),
+        returnLabel: resolveTargetLabel(orientation.returnTarget, 'Project Hub'),
+        relatedCount,
+        upstreamCount,
+        downstreamCount,
+        nextLabel: nextLabel ?? 'Project Hub',
     });
 }
 

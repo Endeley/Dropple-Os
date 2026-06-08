@@ -87,6 +87,8 @@ export function resolveProjectPerspectiveContinuityFromSearchParams(searchParams
         toPerspectiveId: asNonEmptyString(searchParams?.get?.('pt')),
         sourceTargetId: asNonEmptyString(searchParams?.get?.('pu')),
         sourceLabel: asNonEmptyString(searchParams?.get?.('pl')),
+        sourceIntentLabel: asNonEmptyString(searchParams?.get?.('pi')),
+        sourceIntentSource: asNonEmptyString(searchParams?.get?.('pj')),
         targetEntryId: asNonEmptyString(searchParams?.get?.('pe')),
         sourceEntryId: asNonEmptyString(searchParams?.get?.('ps')),
         sourceKind: asNonEmptyString(searchParams?.get?.('pk')),
@@ -100,6 +102,8 @@ export function withProjectPerspectiveContinuitySearchParams({ searchParams, con
     const toPerspectiveId = asNonEmptyString(continuity?.toPerspectiveId);
     const sourceTargetId = asNonEmptyString(continuity?.sourceTargetId);
     const sourceLabel = asNonEmptyString(continuity?.sourceLabel);
+    const sourceIntentLabel = asNonEmptyString(continuity?.sourceIntentLabel);
+    const sourceIntentSource = asNonEmptyString(continuity?.sourceIntentSource);
     const targetEntryId = asNonEmptyString(continuity?.targetEntryId);
     const sourceEntryId = asNonEmptyString(continuity?.sourceEntryId);
     const sourceKind = asNonEmptyString(continuity?.sourceKind);
@@ -116,6 +120,12 @@ export function withProjectPerspectiveContinuitySearchParams({ searchParams, con
 
     if (sourceLabel) next.set('pl', sourceLabel);
     else next.delete('pl');
+
+    if (sourceIntentLabel) next.set('pi', sourceIntentLabel);
+    else next.delete('pi');
+
+    if (sourceIntentSource) next.set('pj', sourceIntentSource);
+    else next.delete('pj');
 
     if (targetEntryId) next.set('pe', targetEntryId);
     else next.delete('pe');
@@ -167,6 +177,8 @@ export function buildProjectArtifactContinuityHref({
     currentPerspectiveId = 'overview',
     currentEntryId = null,
     continuityTarget = null,
+    continuityIntentLabel = null,
+    continuityIntentSource = null,
 } = {}) {
     const normalizedHref = asNonEmptyString(href);
     if (!normalizedHref) return '/workspace/overview';
@@ -181,10 +193,10 @@ export function buildProjectArtifactContinuityHref({
         asNonEmptyString(url.searchParams.get('u')) ??
         asNonEmptyString(continuityTarget?.targetId);
 
+    const samePerspective = targetPerspectiveId === asNonEmptyString(currentPerspectiveId);
+    const sameEntry = targetEntryId === asNonEmptyString(currentEntryId);
     const continuityKind =
-        targetPerspectiveId === asNonEmptyString(currentPerspectiveId) &&
-        targetEntryId &&
-        targetEntryId !== asNonEmptyString(currentEntryId)
+        samePerspective && (continuityTargetId || !sameEntry)
             ? 'dive'
             : 'hop';
 
@@ -200,6 +212,8 @@ export function buildProjectArtifactContinuityHref({
             toPerspectiveId: targetPerspectiveId,
             sourceTargetId: continuityTargetId,
             sourceLabel: asNonEmptyString(continuityTarget?.label),
+            sourceIntentLabel: asNonEmptyString(continuityIntentLabel),
+            sourceIntentSource: asNonEmptyString(continuityIntentSource),
             targetEntryId,
             sourceEntryId: asNonEmptyString(currentEntryId),
             sourceKind: asNonEmptyString(continuityTarget?.kind),

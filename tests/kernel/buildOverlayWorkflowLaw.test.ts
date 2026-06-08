@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { ArtifactKind } from '@/core/artifacts/ArtifactKind.js';
 import {
     buildEnterpriseOperationsOverlayModel,
+    buildOperatePerspectiveWorkflow,
     buildOperatePerspectiveWorldSummary,
     buildSystemsEngineeringOverlayModel,
 } from '@/runtime/workspaces/buildOverlayWorkflow.js';
@@ -122,4 +123,48 @@ test('operate perspective world summary is deterministic and entry-aware', () =>
             bridgeLabel: 'Operate / Enterprise Operations',
         }),
     );
+});
+
+test('operate perspective workflow is deterministic and exposes clusters and next focus', () => {
+    const document = {
+        graphs: { logistics: {} },
+        app: { flows: { assignDriver: {} } },
+        stateMachines: { machines: { dispatch: {} } },
+        variables: { warehouse: {} },
+        bindings: {},
+    };
+    const universe = {
+        hubId: 'project:hub',
+        nodes: {
+            'project:hub': { id: 'project:hub', kind: ArtifactKind.PROJECT_HUB, label: 'Hub' },
+            'workflow:graph:architecture': { id: 'workflow:graph:architecture', kind: ArtifactKind.WORKFLOW, label: 'Architecture' },
+            'state-machine:dispatch': { id: 'state-machine:dispatch', kind: ArtifactKind.STATE_MACHINE, label: 'Dispatch' },
+            'system:model': { id: 'system:model', kind: ArtifactKind.SYSTEM_MODEL, label: 'System Model' },
+        },
+    };
+
+    const left = buildOperatePerspectiveWorkflow({ entryId: 'systems-engineering', document, universe });
+    const right = buildOperatePerspectiveWorkflow({ entryId: 'systems-engineering', document, universe });
+
+    assert.deepEqual(left, right);
+    assert.equal(left.worldSummary.activityLabel, 'Systems Engineering');
+    assert.equal(left.worldSummary.currentTaskLabel, 'Architecture');
+    assert.equal(left.worldSummary.linkedContextCount, 3);
+    assert.equal(left.worldSummary.linkedArtifactCount, 10);
+    assert.equal(left.worldSummary.clusterCount, 3);
+    assert.equal(left.worldSummary.nextTargetLabel, 'Architecture');
+    assert.equal(left.worldSummary.assistantSummary, 'Operations Assistant is guiding Systems Engineering toward Architecture.');
+    assert.equal(left.suggestedNextArtifact?.entryId, 'automation');
+    assert.equal(left.assistantGuidance.assistantLabel, 'Operations Assistant');
+    assert.equal(left.assistantGuidance.recommendLabel, 'Ask Operations Assistant');
+    assert.equal(left.assistantGuidance.nextGuidanceLabel, 'Continue from Architecture into Automation via Architecture.');
+    assert.equal(
+        left.assistantGuidance.systemGuidanceLabel,
+        'Keep system models, controls, and simulations aligned before surfacing downstream operations.',
+    );
+    assert.equal(left.entrySummaries[0]?.entryId, 'automation');
+    assert.equal(left.entrySummaries[1]?.entryId, 'systems-engineering');
+    assert.equal(left.artifactClusters[0]?.clusterId, 'automation');
+    assert.equal(left.artifactClusters[1]?.clusterId, 'systems');
+    assert.equal(left.artifactClusters[2]?.clusterId, 'operations');
 });

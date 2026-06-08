@@ -73,6 +73,39 @@ function summarizeKinds(nodeIds, nodes) {
     );
 }
 
+function resolveGeographyZone(x, y) {
+    const horizontal = Number(x) <= -120 ? 'west' : Number(x) >= 120 ? 'east' : 'center';
+    const vertical = Number(y) <= -120 ? 'north' : Number(y) >= 120 ? 'south' : 'center';
+
+    if (horizontal === 'center' && vertical === 'center') return 'center';
+    if (horizontal === 'center') return vertical;
+    if (vertical === 'center') return horizontal;
+    return `${vertical}-${horizontal}`;
+}
+
+function formatGeographyZone(zone) {
+    switch (zone) {
+        case 'north-west':
+            return 'Northwest';
+        case 'north-east':
+            return 'Northeast';
+        case 'south-west':
+            return 'Southwest';
+        case 'south-east':
+            return 'Southeast';
+        case 'north':
+            return 'North';
+        case 'south':
+            return 'South';
+        case 'west':
+            return 'West';
+        case 'east':
+            return 'East';
+        default:
+            return 'Center';
+    }
+}
+
 function resolvePrimaryNodeId(nodeIds, nodes) {
     if (!Array.isArray(nodeIds) || nodeIds.length === 0) return null;
     const preferredKinds = [
@@ -501,6 +534,49 @@ function formatRelationshipLabel(type) {
     }
 }
 
+function resolveRelationshipPriority(type) {
+    switch (type) {
+        case 'depends-on':
+            return 100;
+        case 'operates':
+            return 90;
+        case 'produces':
+            return 80;
+        case 'publishes':
+            return 70;
+        case 'reviews':
+            return 60;
+        case 'documents':
+            return 50;
+        case 'components-for':
+            return 40;
+        case 'styles':
+            return 30;
+        default:
+            return 10;
+    }
+}
+
+function resolveRelationshipPriorityTier(priority) {
+    if (priority >= 90) return 'primary';
+    if (priority >= 70) return 'supporting';
+    return 'adjacent';
+}
+
+function compareRelationshipEdges(left, right) {
+    const leftPriority = Number.isFinite(left?.priority) ? Number(left.priority) : resolveRelationshipPriority(left?.type);
+    const rightPriority = Number.isFinite(right?.priority) ? Number(right.priority) : resolveRelationshipPriority(right?.type);
+    if (leftPriority !== rightPriority) return rightPriority - leftPriority;
+
+    const leftNode = asNonEmptyString(left?.targetNodeId) ? 0 : 1;
+    const rightNode = asNonEmptyString(right?.targetNodeId) ? 0 : 1;
+    if (leftNode !== rightNode) return leftNode - rightNode;
+
+    const leftLabel = asNonEmptyString(left?.targetLabel) ?? '';
+    const rightLabel = asNonEmptyString(right?.targetLabel) ?? '';
+    return leftLabel.localeCompare(rightLabel);
+}
+
 function formatLabelList(values) {
     const items = [...new Set((Array.isArray(values) ? values : []).filter(Boolean))];
     if (items.length === 0) return '';
@@ -562,6 +638,31 @@ function summarizeRelationshipEdges(edges) {
     return summaries.length > 0 ? summaries.join(' · ') : 'Linked within project hub';
 }
 
+function buildRelationshipPrioritySummary(edges) {
+    const prioritizedEdges = (Array.isArray(edges) ? edges : []).filter(Boolean).sort(compareRelationshipEdges);
+    const primaryEdge = prioritizedEdges[0] ?? null;
+    if (!primaryEdge) {
+        return Object.freeze({
+            prioritySummary: 'Priority path: Project hub context',
+            priorityTier: 'anchor',
+            primaryRelationshipType: null,
+            primaryRelationshipLabel: null,
+            primaryRelationshipTargetId: null,
+        });
+    }
+
+    return Object.freeze({
+        prioritySummary: `Priority path: ${capitalize(primaryEdge.summary)}`,
+        priorityTier: asNonEmptyString(primaryEdge.priorityTier) ?? resolveRelationshipPriorityTier(primaryEdge.priority),
+        primaryRelationshipType: asNonEmptyString(primaryEdge.type),
+        primaryRelationshipLabel: asNonEmptyString(primaryEdge.targetLabel),
+        primaryRelationshipTargetId:
+            asNonEmptyString(primaryEdge.targetNodeId) ??
+            asNonEmptyString(primaryEdge.targetGroupId) ??
+            null,
+    });
+}
+
 function enrichGroupsWithRelationships(groups) {
     const allPerspectiveIds = Object.keys(groups ?? {})
         .filter((groupId) => groupId.startsWith('group:'))
@@ -586,20 +687,30 @@ function enrichGroupsWithRelationships(groups) {
                 const targetGroup = groups[targetGroupId] ?? null;
                 const targetLabel = targetGroup?.label ?? perspectiveId;
                 const type = resolveGroupRelationshipType(group.perspectiveId, perspectiveId);
+                const priority = resolveRelationshipPriority(type);
                 return Object.freeze({
                     targetPerspectiveId: perspectiveId,
                     targetGroupId,
                     type,
+                    priority,
+                    priorityTier: resolveRelationshipPriorityTier(priority),
                     targetLabel,
                     summary: describeRelationship(type, targetLabel),
                 });
-            });
+            })
+            .sort(compareRelationshipEdges);
         const relationshipSummary = summarizeRelationshipEdges(relationshipEdges);
         const causalitySummary = buildCausalitySummary(relationshipEdges);
+        const prioritySummary = buildRelationshipPrioritySummary(relationshipEdges);
+        const geographyZone = resolveGeographyZone(group.x, group.y);
+        const geographyLabel = formatGeographyZone(geographyZone);
         nextGroups[groupId] = Object.freeze({
             ...group,
             metadata: Object.freeze({
                 ...group.metadata,
+                geographyZone,
+                geographyLabel,
+                geographySummary: `${geographyLabel} project region`,
                 relatedPerspectiveIds: Object.freeze(relatedPerspectiveIds),
                 relatedGroupIds: Object.freeze(relatedGroupIds),
                 relationshipEdges: Object.freeze(relationshipEdges),
@@ -608,6 +719,11 @@ function enrichGroupsWithRelationships(groups) {
                 ),
                 relationshipCount: relatedGroupIds.length,
                 relationshipSummary,
+                prioritySummary: prioritySummary.prioritySummary,
+                priorityTier: prioritySummary.priorityTier,
+                primaryRelationshipType: prioritySummary.primaryRelationshipType,
+                primaryRelationshipLabel: prioritySummary.primaryRelationshipLabel,
+                primaryRelationshipTargetId: prioritySummary.primaryRelationshipTargetId,
                 relationshipCausality: causalitySummary.summary,
                 reliesOnSummary: causalitySummary.reliesOnSummary,
                 influencesSummary: causalitySummary.influencesSummary,
@@ -649,21 +765,26 @@ function enrichNodesWithRelationships(nodes, groups, hubId) {
                 const type = resolveNodeRelationshipType(node.kind, fallbackType);
                 const targetNodeId = asNonEmptyString(group?.metadata?.primaryNodeId);
                 const targetLabel = asNonEmptyString(group?.metadata?.primaryNodeLabel) ?? asNonEmptyString(group?.label) ?? targetPerspectiveId;
+                const priority = resolveRelationshipPriority(type);
                 return Object.freeze({
                     targetPerspectiveId,
                     targetGroupId: group.id,
                     targetNodeId,
                     type,
+                    priority,
+                    priorityTier: resolveRelationshipPriorityTier(priority),
                     targetLabel,
                     summary: describeRelationship(type, targetLabel),
                 });
-            });
+            })
+            .sort(compareRelationshipEdges);
         const refs = Object.freeze(
             [...new Set([hubId, ...relatedPrimaryNodeIds, ...(Array.isArray(node.refs) ? node.refs : [])])]
                 .filter((value) => typeof value === 'string' && value.length > 0)
                 .sort(),
         );
         const causalitySummary = buildCausalitySummary(relationshipEdges);
+        const prioritySummary = buildRelationshipPrioritySummary(relationshipEdges);
 
         nextNodes[nodeId] = Object.freeze({
             ...node,
@@ -671,6 +792,9 @@ function enrichNodesWithRelationships(nodes, groups, hubId) {
             metadata: Object.freeze({
                 ...node.metadata,
                 ownerPerspectiveId: ownerGroup?.perspectiveId ?? 'overview',
+                geographyZone: ownerGroup?.metadata?.geographyZone ?? 'center',
+                geographyLabel: ownerGroup?.metadata?.geographyLabel ?? 'Center',
+                geographySummary: ownerGroup?.metadata?.geographySummary ?? 'Center project region',
                 relatedPerspectiveIds: Object.freeze(
                     Array.isArray(ownerGroup?.metadata?.relatedPerspectiveIds)
                         ? [...ownerGroup.metadata.relatedPerspectiveIds]
@@ -681,6 +805,11 @@ function enrichNodesWithRelationships(nodes, groups, hubId) {
                     Object.fromEntries(relationshipEdges.map((edge) => [edge.targetPerspectiveId, edge.type])),
                 ),
                 relationshipSummary: summarizeRelationshipEdges(relationshipEdges),
+                prioritySummary: prioritySummary.prioritySummary,
+                priorityTier: prioritySummary.priorityTier,
+                primaryRelationshipType: prioritySummary.primaryRelationshipType,
+                primaryRelationshipLabel: prioritySummary.primaryRelationshipLabel,
+                primaryRelationshipTargetId: prioritySummary.primaryRelationshipTargetId,
                 relationshipCausality: causalitySummary.summary,
                 reliesOnSummary: causalitySummary.reliesOnSummary,
                 influencesSummary: causalitySummary.influencesSummary,
@@ -690,6 +819,55 @@ function enrichNodesWithRelationships(nodes, groups, hubId) {
     }
 
     return nextNodes;
+}
+
+function enrichHubWithGeography(nodes, groups, hubId) {
+    const hub = nodes?.[hubId] ?? null;
+    if (!hub) return nodes;
+
+    const geographyRegions = {
+        north: [],
+        south: [],
+        east: [],
+        west: [],
+        center: [],
+    };
+
+    for (const group of Object.values(groups ?? {})) {
+        const zone = asNonEmptyString(group?.metadata?.geographyZone) ?? 'center';
+        const label = asNonEmptyString(group?.label);
+        if (!label) continue;
+        if (zone.includes('north')) geographyRegions.north.push(label);
+        if (zone.includes('south')) geographyRegions.south.push(label);
+        if (zone.includes('east')) geographyRegions.east.push(label);
+        if (zone.includes('west')) geographyRegions.west.push(label);
+        if (zone === 'center') geographyRegions.center.push(label);
+    }
+
+    const regionSummaryParts = [];
+    if (geographyRegions.north.length > 0) regionSummaryParts.push(`North: ${geographyRegions.north.join(' and ')}`);
+    if (geographyRegions.south.length > 0) regionSummaryParts.push(`South: ${geographyRegions.south.join(' and ')}`);
+    if (geographyRegions.east.length > 0) regionSummaryParts.push(`East: ${geographyRegions.east.join(' and ')}`);
+    if (geographyRegions.west.length > 0) regionSummaryParts.push(`West: ${geographyRegions.west.join(' and ')}`);
+    if (geographyRegions.center.length > 0) regionSummaryParts.push(`Center: ${geographyRegions.center.join(' and ')}`);
+
+    return Object.freeze({
+        ...nodes,
+        [hubId]: Object.freeze({
+            ...hub,
+            metadata: Object.freeze({
+                ...hub.metadata,
+                geographyZone: 'center',
+                geographyLabel: 'Center',
+                geographySummary: regionSummaryParts.join(' · ') || 'Center project region',
+                geographyRegions: Object.freeze(
+                    Object.fromEntries(
+                        Object.entries(geographyRegions).map(([region, labels]) => [region, Object.freeze([...labels].sort())]),
+                    ),
+                ),
+            }),
+        }),
+    });
 }
 
 export function buildProjectUniverseProjection({ document = null, projectIdentity = null } = {}) {
@@ -726,7 +904,8 @@ export function buildProjectUniverseProjection({ document = null, projectIdentit
     const laidOutNodes = layoutNodes(withRefs);
     const baseGroups = buildUniverseGroups(laidOutNodes);
     const groups = enrichGroupsWithRelationships(baseGroups);
-    const nodes = enrichNodesWithRelationships(laidOutNodes, groups, hubId);
+    const enrichedNodes = enrichNodesWithRelationships(laidOutNodes, groups, hubId);
+    const nodes = enrichHubWithGeography(enrichedNodes, groups, hubId);
 
     return normalizeProjectUniverseArtifacts({
         version: 1,

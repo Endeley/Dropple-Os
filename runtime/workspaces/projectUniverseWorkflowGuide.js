@@ -23,6 +23,7 @@ function createSuggestion({
     targetId = null,
     perspectiveId,
     entryId = null,
+    source = null,
 }) {
     const normalizedId = asNonEmptyString(id);
     const normalizedLabel = asNonEmptyString(label);
@@ -41,12 +42,13 @@ function createSuggestion({
         targetId: asNonEmptyString(targetId),
         perspectiveId: normalizedPerspectiveId,
         entryId: asNonEmptyString(entryId),
+        source: asNonEmptyString(source) ?? 'workflow',
     });
 }
 
 function appendSuggestion(suggestions, seen, suggestion) {
     if (!suggestion) return;
-    const key = `${suggestion.perspectiveId}:${suggestion.entryId ?? 'none'}:${suggestion.targetId ?? suggestion.href}`;
+    const key = suggestion.targetId ? `target:${suggestion.targetId}` : `href:${suggestion.href}`;
     if (seen.has(key)) return;
     seen.add(key);
     suggestions.push(suggestion);
@@ -84,6 +86,7 @@ function buildFallbackOrientationSuggestions({ suggestions, seen, orientation, p
                 targetId: item.targetId,
                 perspectiveId,
                 entryId,
+                source: 'orientation',
             }),
         );
     }
@@ -100,6 +103,7 @@ function buildFallbackOrientationSuggestions({ suggestions, seen, orientation, p
                 targetId: item.targetId,
                 perspectiveId,
                 entryId,
+                source: 'orientation',
             }),
         );
     }
@@ -116,6 +120,35 @@ function buildFallbackOrientationSuggestions({ suggestions, seen, orientation, p
                 targetId: item.targetId,
                 perspectiveId,
                 entryId,
+                source: 'orientation',
+            }),
+        );
+    }
+}
+
+function buildPriorityOrientationSuggestions({ suggestions, seen, orientation, perspectiveId, entryId }) {
+    for (const item of orientation?.priorityTargets ?? []) {
+        const targetPerspectiveId =
+            item.targetType === 'group' && asNonEmptyString(item.perspectiveId)
+                ? item.perspectiveId
+                : perspectiveId;
+
+        appendSuggestion(
+            suggestions,
+            seen,
+            createSuggestion({
+                id: `orientation:priority:${item.targetId}`,
+                label: item.label,
+                reason: item.prioritySummary ?? item.relationshipSummary ?? 'Priority path from the current project world.',
+                href: buildPerspectiveHref({
+                    perspectiveId: targetPerspectiveId,
+                    entryId: targetPerspectiveId === perspectiveId ? entryId : null,
+                    targetId: item.targetId,
+                }),
+                targetId: item.targetId,
+                perspectiveId: targetPerspectiveId,
+                entryId: targetPerspectiveId === perspectiveId ? entryId : null,
+                source: 'priority',
             }),
         );
     }
@@ -145,6 +178,14 @@ export function buildProjectUniverseWorkflowGuide({
     const suggestions = [];
     const seen = new Set();
 
+    buildPriorityOrientationSuggestions({
+        suggestions,
+        seen,
+        orientation,
+        perspectiveId: normalizedPerspectiveId,
+        entryId: normalizedEntryId,
+    });
+
     if (normalizedPerspectiveId === 'create') {
         appendSuggestion(
             suggestions,
@@ -157,6 +198,7 @@ export function buildProjectUniverseWorkflowGuide({
                 targetId: createWorkflow?.suggestedNextArtifact?.targetId,
                 perspectiveId: 'create',
                 entryId: createWorkflow?.suggestedNextArtifact?.entryId,
+                source: 'workflow',
             }),
         );
     }
@@ -173,6 +215,7 @@ export function buildProjectUniverseWorkflowGuide({
                 targetId: buildWorkflow?.suggestedNextArtifact?.targetId,
                 perspectiveId: 'build',
                 entryId: buildWorkflow?.suggestedNextArtifact?.entryId,
+                source: 'workflow',
             }),
         );
         appendSuggestion(
@@ -185,6 +228,7 @@ export function buildProjectUniverseWorkflowGuide({
                 href: buildWorkflow?.operateHandoff?.href,
                 perspectiveId: 'operate',
                 entryId: buildWorkflow?.operateHandoff?.entryId,
+                source: 'workflow',
             }),
         );
     }
@@ -201,6 +245,7 @@ export function buildProjectUniverseWorkflowGuide({
                 targetId: collaborateWorkflow?.suggestedNextArtifact?.targetId,
                 perspectiveId: 'collaborate',
                 entryId: collaborateWorkflow?.suggestedNextArtifact?.entryId,
+                source: 'workflow',
             }),
         );
         appendSuggestion(
@@ -213,6 +258,7 @@ export function buildProjectUniverseWorkflowGuide({
                 href: collaborateWorkflow?.publishHandoff?.href,
                 perspectiveId: 'publish',
                 entryId: collaborateWorkflow?.publishHandoff?.entryId,
+                source: 'workflow',
             }),
         );
     }
@@ -234,6 +280,7 @@ export function buildProjectUniverseWorkflowGuide({
                     targetId: item.targetId,
                     perspectiveId: 'operate',
                     entryId: normalizedEntryId ?? 'automation',
+                    source: 'workflow',
                 }),
             );
         }
@@ -256,6 +303,7 @@ export function buildProjectUniverseWorkflowGuide({
                     targetId: orientation.returnTarget.targetId,
                     perspectiveId: 'publish',
                     entryId: normalizedEntryId ?? 'governance',
+                    source: 'workflow',
                 }),
             );
         }
@@ -278,7 +326,9 @@ export function buildProjectUniverseWorkflowGuide({
         summaryLabel:
             asNonEmptyString(currentSummary?.summaryLabel) ??
             asNonEmptyString(currentSummary?.nextArtifactLabel) ??
-            `${suggestions.length} guided next focus${suggestions.length === 1 ? '' : 'es'}`,
+            `${suggestions.length} guided next work item${suggestions.length === 1 ? '' : 's'}`,
+        primarySuggestionLabel: asNonEmptyString(suggestions[0]?.label) ?? 'Project Hub',
+        primarySuggestionReason: asNonEmptyString(suggestions[0]?.reason) ?? 'Awaiting project workflow context',
         suggestions: Object.freeze(suggestions.slice(0, 4)),
     });
 }

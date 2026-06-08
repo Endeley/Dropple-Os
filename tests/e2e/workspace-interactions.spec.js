@@ -3100,7 +3100,9 @@ test('artifact-driven workflow handoff preserves continuity across perspective h
   await expect(page).toHaveURL(/\/workspace\/operate\?/);
   await expect(page).toHaveURL(/[\?&]u=system%3Amodel/);
   await expect(page).toHaveURL(/[\?&]pf=build/);
+  await expect(page).toHaveURL(/[\?&]pi=Move\+from\+build\+planning\+into\+live\+operating\+context\./);
   await expect(page.getByTestId('project-shell-transition-context')).toContainText('hop: System Model');
+  await expect(page.getByTestId('project-shell-project-intent')).toContainText('Move from build planning into live operating context.');
 
   await page.goBack({ waitUntil: 'networkidle' });
   await expect(page).toHaveURL(/\/workspace\/build\?/);
