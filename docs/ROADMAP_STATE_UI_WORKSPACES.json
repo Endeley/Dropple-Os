@@ -1445,31 +1445,62 @@
     {
       "id": "U28",
       "title": "Real User Audit",
-      "status": "not-started",
+      "status": "active",
       "depends_on": ["U27"],
       "milestones": [
         {
           "id": "U28.1",
-          "title": "Human Navigation Comprehension Audit",
-          "status": "not-started",
+          "title": "First-Time User Orientation",
+          "status": "active",
           "evidence": [
-            "docs/ROADMAP_STATE_UI_WORKSPACES.json"
+            "docs/ROADMAP_STATE_UI_WORKSPACES.json",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
           ]
         },
         {
           "id": "U28.2",
-          "title": "Human Project Completion Audit",
+          "title": "Project Creation Clarity",
           "status": "not-started",
           "evidence": [
-            "docs/ROADMAP_STATE_UI_WORKSPACES.json"
+            "docs/ROADMAP_STATE_UI_WORKSPACES.json",
+            "app/page.js",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-workflows.smoke.spec.js"
           ]
         },
         {
           "id": "U28.3",
-          "title": "Creative OS Perception Audit",
+          "title": "Universe Comprehension",
           "status": "not-started",
           "evidence": [
-            "docs/ROADMAP_STATE_UI_WORKSPACES.json"
+            "docs/ROADMAP_STATE_UI_WORKSPACES.json",
+            "runtime/workspaces/projectUniverseAtGlance.js",
+            "runtime/workspaces/projectUniverseWorkflowGuide.js",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
+          ]
+        },
+        {
+          "id": "U28.4",
+          "title": "Room Navigation",
+          "status": "not-started",
+          "evidence": [
+            "docs/ROADMAP_STATE_UI_WORKSPACES.json",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js",
+            "tests/e2e/workspace-workflows.smoke.spec.js",
+            "tests/e2e/workspace-interactions.spec.js"
+          ]
+        },
+        {
+          "id": "U28.5",
+          "title": "Creative OS Recognition",
+          "status": "not-started",
+          "evidence": [
+            "docs/ROADMAP_STATE_UI_WORKSPACES.json",
+            "ui/workspace/shell/ProjectPerspectiveShell.jsx",
+            "tests/e2e/workspace-routes.smoke.spec.js"
           ]
         }
       ],
@@ -1479,13 +1510,29 @@
     },
     {
       "id": "U29",
-      "title": "Creative OS Polish",
+      "title": "Creative OS Polish or Clarity & Orientation Repair",
       "status": "not-started",
       "depends_on": ["U28"],
       "milestones": [
         {
           "id": "U29.1",
-          "title": "Post-Audit Product Polish",
+          "title": "Post-User-Audit Direction Lock",
+          "status": "not-started",
+          "evidence": [
+            "docs/ROADMAP_STATE_UI_WORKSPACES.json"
+          ]
+        },
+        {
+          "id": "U29.2",
+          "title": "Creative OS Polish",
+          "status": "not-started",
+          "evidence": [
+            "docs/ROADMAP_STATE_UI_WORKSPACES.json"
+          ]
+        },
+        {
+          "id": "U29.3",
+          "title": "Clarity and Orientation Repair",
           "status": "not-started",
           "evidence": [
             "docs/ROADMAP_STATE_UI_WORKSPACES.json"
