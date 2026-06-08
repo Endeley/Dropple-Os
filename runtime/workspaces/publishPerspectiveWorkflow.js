@@ -32,6 +32,38 @@ const ENTRY_LABELS = Object.freeze({
     review: 'Review',
 });
 
+const ENTRY_PRIORITIES = Object.freeze({
+    governance: 0,
+    review: 1,
+    versioning: 2,
+    conversion: 3,
+    components: 4,
+    themes: 5,
+    variants: 6,
+    tokens: 7,
+});
+
+const CLUSTER_DEFINITIONS = Object.freeze({
+    release: Object.freeze({
+        id: 'release',
+        label: 'Release',
+        entryIds: Object.freeze(['governance', 'review', 'versioning', 'conversion']),
+    }),
+    system: Object.freeze({
+        id: 'system',
+        label: 'System',
+        entryIds: Object.freeze(['components', 'themes', 'variants', 'tokens']),
+    }),
+});
+
+const ENTRY_TO_CLUSTER_ID = Object.freeze(
+    Object.fromEntries(
+        Object.values(CLUSTER_DEFINITIONS).flatMap((cluster) =>
+            cluster.entryIds.map((entryId) => [entryId, cluster.id]),
+        ),
+    ),
+);
+
 const ENTRY_FALLBACK_TASKS = Object.freeze({
     governance: 'Awaiting governance review',
     versioning: 'Awaiting version plan',
@@ -41,6 +73,17 @@ const ENTRY_FALLBACK_TASKS = Object.freeze({
     variants: 'Awaiting variant set',
     conversion: 'Awaiting delivery plan',
     review: 'Awaiting release review',
+});
+
+const ENTRY_GUIDANCE_NOTES = Object.freeze({
+    governance: 'Keep release rules, approvals, and artifact evidence aligned before publication.',
+    review: 'Close the review loop before advancing publication so release evidence stays trustworthy.',
+    versioning: 'Keep version plans and release evidence synchronized before surfacing downstream delivery.',
+    conversion: 'Keep delivery targets grounded in the source artifact so exports remain traceable.',
+    components: 'Keep component publication aligned with the system library before surfacing release output.',
+    themes: 'Keep themes connected to components and tokens so visual publication stays coherent.',
+    variants: 'Keep variants tied to theme and component intent before pushing publication forward.',
+    tokens: 'Keep token publication anchored to themes and components so system signals stay lawful.',
 });
 
 function countThemeVariants(themesById) {
@@ -55,6 +98,74 @@ function countTokenEntries(tokens) {
         const value = tokens[key];
         return value != null && typeof value !== 'function';
     }).length;
+}
+
+function buildPublishWorkflowHref({ entryId, targetId = null }) {
+    const searchParams = new URLSearchParams();
+    searchParams.set('entry', entryId);
+    if (targetId) searchParams.set('u', targetId);
+    return `/workspace/publish?${searchParams.toString()}`;
+}
+
+function resolveClusterId(entryId) {
+    return ENTRY_TO_CLUSTER_ID[entryId] ?? 'release';
+}
+
+function resolvePublishContinuityNode(universe, targetId) {
+    const normalizedTargetId = asNonEmptyString(targetId);
+    if (!normalizedTargetId) return null;
+    return asObject(universe?.nodes)?.[normalizedTargetId] ?? null;
+}
+
+function buildWorkflowItem({
+    targetId,
+    entryId,
+    kind,
+    label,
+    activeEntryId,
+    continuityTargetId = null,
+    continuityTargetLabel = null,
+    continuityTargetKind = null,
+    continuityIntentLabel = null,
+}) {
+    const clusterId = resolveClusterId(entryId);
+    return Object.freeze({
+        targetId,
+        entryId,
+        entryLabel: ENTRY_LABELS[entryId] ?? entryId,
+        clusterId,
+        clusterLabel: CLUSTER_DEFINITIONS[clusterId]?.label ?? 'Release',
+        kind,
+        label,
+        href: buildPublishWorkflowHref({ entryId, targetId: targetId.startsWith('publish:') ? null : targetId }),
+        continuityTargetId: asNonEmptyString(continuityTargetId) ?? targetId,
+        continuityTargetLabel: asNonEmptyString(continuityTargetLabel) ?? label,
+        continuityTargetKind: asNonEmptyString(continuityTargetKind) ?? kind,
+        continuityIntentLabel:
+            asNonEmptyString(continuityIntentLabel) ??
+            `Continue publishing through ${ENTRY_LABELS[entryId] ?? entryId} via ${label}.`,
+        active: entryId === activeEntryId,
+    });
+}
+
+function buildPublishAssistantGuidance({
+    activeEntryId,
+    currentTaskLabel,
+    suggestedNextArtifact,
+}) {
+    const entryLabel = ENTRY_LABELS[activeEntryId] ?? 'Publish';
+    const taskLabel = asNonEmptyString(currentTaskLabel) ?? ENTRY_FALLBACK_TASKS[activeEntryId] ?? 'publish context';
+    const nextArtifactLabel = asNonEmptyString(suggestedNextArtifact?.label) ?? taskLabel;
+    const nextArtifactEntryLabel = asNonEmptyString(suggestedNextArtifact?.entryLabel) ?? entryLabel;
+
+    return Object.freeze({
+        assistantLabel: 'Publishing Assistant',
+        assistantSummary: `Publishing Assistant is guiding ${entryLabel} toward ${taskLabel}.`,
+        nextGuidanceLabel: `Continue from ${taskLabel} into ${nextArtifactEntryLabel} via ${nextArtifactLabel}.`,
+        systemGuidanceLabel:
+            ENTRY_GUIDANCE_NOTES[activeEntryId] ??
+            'Keep publish intent, artifact evidence, and release system context aligned before surfacing delivery.',
+    });
 }
 
 export function buildPublishPerspectiveWorldSummary({ entryId = 'governance', document = null, universe = null } = {}) {
@@ -139,5 +250,197 @@ export function buildPublishPerspectiveWorldSummary({ entryId = 'governance', do
         linkedContextCount: publishNodes.length,
         summaryLabel: `${exportTargetCount} export targets · ${componentCount} components · ${themeCount} themes`,
         bridgeLabel: `Publish / ${ENTRY_LABELS[normalizedEntryId] ?? 'Publish'}`,
+    });
+}
+
+export function buildPublishPerspectiveWorkflow({ entryId = 'governance', document = null, universe = null } = {}) {
+    const activeEntryId = asNonEmptyString(entryId)?.toLowerCase() ?? 'governance';
+    const normalizedDocument = asObject(document) ?? {};
+    const publishTargetNode = resolvePublishContinuityNode(universe, 'workflow:publish');
+    const componentLibraryNode = resolvePublishContinuityNode(universe, 'components:library');
+    const documentNode = resolvePublishContinuityNode(universe, 'document:primary');
+    const publishFallbackTarget =
+        componentLibraryNode ??
+        documentNode ??
+        publishTargetNode ??
+        null;
+    const publishNodes = listUniverseNodes(
+        universe,
+        (node) =>
+            node.id === 'workflow:publish' ||
+            node.kind === ArtifactKind.DOCUMENT ||
+            node.kind === ArtifactKind.COMPONENT_LIBRARY ||
+            node.kind === ArtifactKind.VIDEO ||
+            node.kind === ArtifactKind.ANIMATION,
+    );
+
+    const themeCount = countObjectKeys(normalizedDocument?.themes?.byId);
+    const variantCount = countThemeVariants(normalizedDocument?.themes?.byId);
+    const tokenCount = countTokenEntries(normalizedDocument?.tokens);
+
+    const linkedArtifacts = [
+        ...publishNodes.flatMap((node) => {
+            if (node.id === 'workflow:publish') {
+                return [
+                    buildWorkflowItem({
+                        targetId: node.id,
+                        entryId: 'governance',
+                        kind: String(node.kind ?? 'workflow'),
+                        label: asNonEmptyString(node.label) ?? node.id,
+                        activeEntryId,
+                        continuityIntentLabel: 'Continue publishing governance through Publish Targets.',
+                    }),
+                    buildWorkflowItem({
+                        targetId: node.id,
+                        entryId: 'review',
+                        kind: String(node.kind ?? 'workflow'),
+                        label: asNonEmptyString(node.label) ?? node.id,
+                        activeEntryId,
+                        continuityIntentLabel: 'Continue publishing review through Publish Targets.',
+                    }),
+                    buildWorkflowItem({
+                        targetId: node.id,
+                        entryId: 'versioning',
+                        kind: String(node.kind ?? 'workflow'),
+                        label: asNonEmptyString(node.label) ?? node.id,
+                        activeEntryId,
+                        continuityIntentLabel: 'Continue publishing versioning through Publish Targets.',
+                    }),
+                ];
+            }
+
+            if (node.kind === ArtifactKind.COMPONENT_LIBRARY) {
+                return [
+                    buildWorkflowItem({
+                        targetId: node.id,
+                        entryId: 'components',
+                        kind: String(node.kind),
+                        label: asNonEmptyString(node.label) ?? node.id,
+                        activeEntryId,
+                        continuityIntentLabel: 'Continue publishing components through Component Library.',
+                    }),
+                ];
+            }
+
+            return [
+                buildWorkflowItem({
+                    targetId: node.id,
+                    entryId: 'conversion',
+                    kind: String(node.kind ?? 'document'),
+                    label: asNonEmptyString(node.label) ?? node.id,
+                    activeEntryId,
+                    continuityIntentLabel: `Continue publishing conversion through ${asNonEmptyString(node.label) ?? node.id}.`,
+                }),
+            ];
+        }),
+        ...(themeCount > 0
+            ? [
+                  buildWorkflowItem({
+                      targetId: 'publish:themes',
+                      entryId: 'themes',
+                      kind: 'theme-system',
+                      label: asNonEmptyString(normalizedDocument?.themes?.activeThemeId) ?? 'Theme System',
+                      activeEntryId,
+                      continuityTargetId: publishFallbackTarget?.id,
+                      continuityTargetLabel: asNonEmptyString(publishFallbackTarget?.label),
+                      continuityTargetKind: asNonEmptyString(publishFallbackTarget?.kind),
+                      continuityIntentLabel: 'Continue publishing themes through Component Library.',
+                  }),
+              ]
+            : []),
+        ...(variantCount > 0
+            ? [
+                  buildWorkflowItem({
+                      targetId: 'publish:variants',
+                      entryId: 'variants',
+                      kind: 'variant-system',
+                      label:
+                          Object.entries(asObject(normalizedDocument?.themes?.byId) ?? {})
+                              .flatMap(([themeId, theme]) =>
+                                  Object.keys(asObject(theme?.variants) ?? {})
+                                      .sort()
+                                      .map((variantId) => `${themeId}/${variantId}`),
+                              )[0] ?? 'Variant System',
+                      activeEntryId,
+                      continuityTargetId: publishFallbackTarget?.id,
+                      continuityTargetLabel: asNonEmptyString(publishFallbackTarget?.label),
+                      continuityTargetKind: asNonEmptyString(publishFallbackTarget?.kind),
+                      continuityIntentLabel: 'Continue publishing variants through Component Library.',
+                  }),
+              ]
+            : []),
+        ...(tokenCount > 0
+            ? [
+                  buildWorkflowItem({
+                      targetId: 'publish:tokens',
+                      entryId: 'tokens',
+                      kind: 'token-system',
+                      label: asNonEmptyString(normalizedDocument?.themes?.activeThemeId) ?? 'Token System',
+                      activeEntryId,
+                      continuityTargetId: publishFallbackTarget?.id,
+                      continuityTargetLabel: asNonEmptyString(publishFallbackTarget?.label),
+                      continuityTargetKind: asNonEmptyString(publishFallbackTarget?.kind),
+                      continuityIntentLabel: 'Continue publishing tokens through Component Library.',
+                  }),
+              ]
+            : []),
+    ].sort((left, right) => {
+        const activeDelta = Number(right.active) - Number(left.active);
+        if (activeDelta !== 0) return activeDelta;
+        const priorityDelta = (ENTRY_PRIORITIES[left.entryId] ?? 999) - (ENTRY_PRIORITIES[right.entryId] ?? 999);
+        if (priorityDelta !== 0) return priorityDelta;
+        return left.label.localeCompare(right.label);
+    });
+
+    const summaryCounts = new Map();
+    for (const item of linkedArtifacts) {
+        summaryCounts.set(item.entryId, (summaryCounts.get(item.entryId) ?? 0) + 1);
+    }
+
+    const entrySummaries = Object.keys(ENTRY_PRIORITIES)
+        .filter((candidateEntryId) => summaryCounts.has(candidateEntryId))
+        .map((candidateEntryId) =>
+            Object.freeze({
+                entryId: candidateEntryId,
+                entryLabel: ENTRY_LABELS[candidateEntryId] ?? candidateEntryId,
+                count: summaryCounts.get(candidateEntryId) ?? 0,
+            }),
+        )
+        .sort((left, right) => (ENTRY_PRIORITIES[left.entryId] ?? 999) - (ENTRY_PRIORITIES[right.entryId] ?? 999));
+
+    const artifactClusters = Object.values(CLUSTER_DEFINITIONS)
+        .map((cluster) => {
+            const items = linkedArtifacts.filter((item) => item.clusterId === cluster.id);
+            if (items.length === 0) return null;
+            return Object.freeze({
+                clusterId: cluster.id,
+                clusterLabel: cluster.label,
+                items: Object.freeze(items),
+            });
+        })
+        .filter(Boolean);
+
+    const suggestedNextArtifact = linkedArtifacts.find((item) => item.entryId !== activeEntryId) ?? linkedArtifacts[0] ?? null;
+    const worldSummary = buildPublishPerspectiveWorldSummary({ entryId: activeEntryId, document, universe });
+    const assistantGuidance = buildPublishAssistantGuidance({
+        activeEntryId,
+        currentTaskLabel: worldSummary?.currentTaskLabel,
+        suggestedNextArtifact,
+    });
+
+    return Object.freeze({
+        activeEntryId,
+        linkedArtifacts: Object.freeze(linkedArtifacts),
+        entrySummaries: Object.freeze(entrySummaries),
+        artifactClusters: Object.freeze(artifactClusters),
+        suggestedNextArtifact,
+        assistantGuidance,
+        worldSummary: Object.freeze({
+            ...worldSummary,
+            linkedArtifactCount: linkedArtifacts.length,
+            clusterCount: artifactClusters.length,
+            nextArtifactLabel: suggestedNextArtifact?.label ?? null,
+            assistantSummary: assistantGuidance.assistantSummary,
+        }),
     });
 }

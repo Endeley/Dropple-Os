@@ -3113,6 +3113,32 @@ test('artifact-driven workflow handoff preserves continuity across perspective h
   expect(runtimeErrors.consoleErrors).toEqual([]);
 });
 
+test('publish workflow artifact continuity stays stable across same-room history', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+
+  const response = await page.goto('/workspace/publish?entry=governance&blueprint=bp.logistics.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'publish artifact continuity route should respond successfully').toBeTruthy();
+  await page.getByTestId('publish-workflow-suggested-next').click();
+  await expect(page).toHaveURL(/\/workspace\/publish\?/);
+  await expect(page).toHaveURL(/[\?&]entry=conversion/);
+  await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
+  await expect(page).toHaveURL(/[\?&]pm=dive/);
+  await expect(page.getByTestId('project-shell-transition-context')).toContainText('dive: Untitled');
+  await expect(page.getByTestId('project-shell-project-intent')).toContainText('Continue publishing conversion through Untitled.');
+
+  await page.goBack({ waitUntil: 'networkidle' });
+  await expect(page).toHaveURL(/\/workspace\/publish\?/);
+  await expect(page).toHaveURL(/[\?&]entry=governance/);
+  await expect(page.getByTestId('publish-world-panel')).toContainText('Publish World');
+  await expect(page.getByTestId('project-world-anchor-focus')).toContainText('Project Hub');
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
 test('workspace pointercancel does not leave stuck alt/shift state for keyboard nudge deltas', async ({ page }) => {
   const runtimeErrors = attachRuntimeErrorCollectors(page);
   await gotoNewWorkspace(page);

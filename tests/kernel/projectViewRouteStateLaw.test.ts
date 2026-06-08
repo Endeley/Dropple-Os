@@ -245,3 +245,35 @@ test('artifact continuity href treats same-perspective overlay artifact navigati
     assert.equal(url.searchParams.get('pk'), 'workflow');
     assert.equal(url.searchParams.get('pm'), 'dive');
 });
+
+test('artifact continuity href preserves same-perspective publish room navigation as a dive', () => {
+    const href = buildProjectArtifactContinuityHref({
+        href: '/workspace/publish?entry=themes',
+        camera: { x: 8.37, y: 4.2, scale: 1 },
+        query: 'publish',
+        currentPerspectiveId: 'publish',
+        currentEntryId: 'governance',
+        continuityTarget: Object.freeze({
+            targetId: 'components:library',
+            label: 'Component Library',
+            kind: 'component-library',
+        }),
+        continuityIntentLabel: 'Continue publishing themes through Component Library.',
+        continuityIntentSource: 'workflow',
+    });
+
+    const url = new URL(href, 'https://dropple.local');
+    assert.equal(url.pathname, '/workspace/publish');
+    assert.equal(url.searchParams.get('entry'), 'themes');
+    assert.equal(url.searchParams.get('u'), 'components:library');
+    assert.equal(url.searchParams.get('pf'), 'publish');
+    assert.equal(url.searchParams.get('pt'), 'publish');
+    assert.equal(url.searchParams.get('pu'), 'components:library');
+    assert.equal(url.searchParams.get('pl'), 'Component Library');
+    assert.equal(url.searchParams.get('pi'), 'Continue publishing themes through Component Library.');
+    assert.equal(url.searchParams.get('pj'), 'workflow');
+    assert.equal(url.searchParams.get('pe'), 'themes');
+    assert.equal(url.searchParams.get('ps'), 'governance');
+    assert.equal(url.searchParams.get('pk'), 'component-library');
+    assert.equal(url.searchParams.get('pm'), 'dive');
+});

@@ -699,6 +699,15 @@ test('world-based shell parity stays explicit across create build operate collab
       await expect(page.getByTestId('operate-guidance-panel')).toBeVisible();
       await expect(page.getByTestId('operate-universe-anchor-panel')).toBeVisible();
     }
+    if (expectation.panel === 'publish-world-panel') {
+      await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-contract', 'publish-world');
+      await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-workflow', 'linked');
+      await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-guidance', 'guided');
+      await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-anchor', 'anchored');
+      await expect(page.getByTestId('publish-workflow-panel')).toBeVisible();
+      await expect(page.getByTestId('publish-guidance-panel')).toBeVisible();
+      await expect(page.getByTestId('publish-universe-anchor-panel')).toBeVisible();
+    }
   }
 });
 
@@ -1261,7 +1270,23 @@ test('publish perspective assistant surface stays entry-consistent for governanc
     await expect(page.getByTestId('publish-world-summary')).toContainText(`Current task: ${expectedPublishEntries[entryId].currentTask}`);
     await expect(page.getByTestId('publish-world-summary')).toContainText('Assistant: Publishing Assistant');
     await expect(page.getByTestId('publish-world-summary')).toContainText(`Context: ${expectedPublishEntries[entryId].context}`);
+    await expect(page.getByTestId('publish-world-summary')).toContainText('Linked artifacts:');
     await expect(page.getByTestId('publish-world-summary')).toContainText(`Signals: ${expectedPublishEntries[entryId].signals}`);
+    await expect(page.getByTestId('publish-world-summary')).toContainText('Next focus:');
+    await expect(page.getByTestId('publish-world-summary')).toContainText('Guidance:');
+    await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-contract', 'publish-world');
+    await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-workflow', 'linked');
+    await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-guidance', 'guided');
+    await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-anchor', 'anchored');
+    await expect(page.getByTestId('publish-workflow-panel')).toBeVisible();
+    await expect(page.getByTestId('publish-guidance-panel')).toBeVisible();
+    await expect(page.getByTestId('publish-universe-anchor-panel')).toBeVisible();
+    await expect(page.getByTestId('publish-universe-anchor-panel')).toContainText('Publish');
+    await expect(page.getByTestId('publish-universe-anchor-summary')).toContainText('Return anchor:');
+    await expect(page.getByTestId('publish-universe-anchor-summary')).toContainText('linked world targets');
+    await expect(page.getByTestId('publish-guidance-summary')).toContainText(
+      `Current guidance: Publishing Assistant is guiding ${expectedPublishEntries[entryId].specialization} toward ${expectedPublishEntries[entryId].currentTask}.`,
+    );
     await expect(page.getByTestId('assistant-surface-focus')).toContainText(
       `Publishing Assistant for ${expectedPublishEntries[entryId].specialization}`,
     );
@@ -1269,6 +1294,52 @@ test('publish perspective assistant surface stays entry-consistent for governanc
     await expect(page.getByTestId('assistant-action-generate')).toContainText(expectedPublishEntries[entryId].generateLabel);
     await expect(page.getByTestId('assistant-action-explain')).toContainText(expectedPublishEntries[entryId].explainLabel);
   }
+});
+
+test('publish perspective exposes linked workflow depth when bootstrapped into project context', async ({ page }) => {
+  const response = await page.goto('/workspace/publish?entry=governance&blueprint=bp.logistics.v1&bootstrap=1', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'publish workflow depth route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('publish-world-panel')).toContainText('Publish World');
+  await expect(page.getByTestId('publish-world-summary')).toContainText('Linked artifacts:');
+  await expect(page.getByTestId('publish-world-summary')).toContainText('publish clusters');
+  await expect(page.getByTestId('publish-world-summary')).toContainText('Next focus:');
+  await expect(page.getByTestId('publish-world-summary')).toContainText('Guidance: Publishing Assistant is guiding Governance toward Untitled.');
+  await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-contract', 'publish-world');
+  await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-workflow', 'linked');
+  await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-guidance', 'guided');
+  await expect(page.getByTestId('publish-room-panel')).toHaveAttribute('data-room-anchor', 'anchored');
+  await expect(page.getByTestId('publish-workflow-panel')).toBeVisible();
+  await expect(page.getByTestId('publish-guidance-panel')).toBeVisible();
+  await expect(page.getByTestId('publish-universe-anchor-panel')).toBeVisible();
+  await expect(page.getByTestId('publish-universe-anchor-panel')).toContainText('Publish');
+  await expect(page.getByTestId('publish-universe-anchor-summary')).toContainText('Return anchor:');
+  await expect(page.getByTestId('publish-universe-anchor-summary')).toContainText('linked world targets');
+  await expect(page.getByTestId('publish-universe-anchor-summary')).toContainText('upstream');
+  await expect(page.getByTestId('publish-universe-anchor-summary')).toContainText('downstream');
+  await expect(page.getByTestId('publish-universe-anchor-summary')).toContainText('Next likely world target:');
+  await expect(page.getByTestId('publish-guidance-summary')).toContainText('Current guidance: Publishing Assistant is guiding Governance toward Untitled.');
+  await expect(page.getByTestId('publish-guidance-summary')).toContainText('Next move: Continue from Untitled into Conversion via Untitled.');
+  await expect(page.getByTestId('publish-guidance-summary')).toContainText('Release note: Keep release rules, approvals, and artifact evidence aligned before publication.');
+  await expect(page.getByTestId('publish-workflow-suggested-next')).toContainText('Continue Publishing');
+  await page.getByTestId('publish-workflow-suggested-next').click();
+  await expect(page).toHaveURL(/\/workspace\/publish\?/);
+  await expect(page).toHaveURL(/[\?&]entry=conversion/);
+  await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
+  await expect(page).toHaveURL(/[\?&]pf=publish/);
+  await expect(page).toHaveURL(/[\?&]pt=publish/);
+  await expect(page).toHaveURL(/[\?&]pu=document%3Aprimary/);
+  await expect(page).toHaveURL(/[\?&]pl=Untitled/);
+  await expect(page).toHaveURL(/[\?&]pi=Continue\+publishing\+conversion\+through\+Untitled\./);
+  await expect(page).toHaveURL(/[\?&]pj=workflow/);
+  await expect(page).toHaveURL(/[\?&]pe=conversion/);
+  await expect(page).toHaveURL(/[\?&]ps=governance/);
+  await expect(page).toHaveURL(/[\?&]pk=document/);
+  await expect(page).toHaveURL(/[\?&]pm=dive/);
+  await expect(page.getByTestId('project-shell-transition-context')).toContainText('dive: Untitled');
+  await expect(page.getByTestId('project-shell-project-intent')).toContainText('Continue publishing conversion through Untitled.');
 });
 
 test('collaborate perspective assistant surface stays entry-consistent across review and knowledge routes', async ({ page }) => {

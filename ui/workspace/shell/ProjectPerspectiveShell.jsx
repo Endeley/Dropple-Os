@@ -58,7 +58,10 @@ import { resolveCreateAssistantActionLabels } from '@/runtime/workspaces/createA
 import { resolveBuildAssistantActionLabels } from '@/runtime/workspaces/buildAssistantActionLabels.js';
 import { resolveOperateAssistantActionLabels } from '@/runtime/workspaces/operateAssistantActionLabels.js';
 import { resolvePublishAssistantActionLabels } from '@/runtime/workspaces/publishAssistantActionLabels.js';
-import { buildPublishPerspectiveWorldSummary } from '@/runtime/workspaces/publishPerspectiveWorkflow.js';
+import {
+    buildPublishPerspectiveWorkflow,
+    buildPublishPerspectiveWorldSummary,
+} from '@/runtime/workspaces/publishPerspectiveWorkflow.js';
 import { resolveCreateShellChoreography } from '@/runtime/workspaces/createShellChoreography.js';
 import { buildProjectUniverseWorkflowGuide } from '@/runtime/workspaces/projectUniverseWorkflowGuide.js';
 import { ProjectUniverseCanvas } from './ProjectUniverseCanvas.jsx';
@@ -502,12 +505,29 @@ export function ProjectPerspectiveShell({
             normalizedHref,
             typeof window !== 'undefined' ? window.location.origin : 'https://dropple.local',
         );
-        const continuityTarget = resolveProjectUniverseContinuityTarget({
-            universe: projectUniverse,
-            targetId: url.searchParams.get('u') ?? universeFocusState.targetId ?? projectUniverse?.hubId,
-            currentPerspectiveId: perspectiveId,
-            currentEntryId: projectPerspectiveContext.entryId,
-        });
+        const explicitContinuityTargetId =
+            typeof options?.continuityTarget?.targetId === 'string' && options.continuityTarget.targetId.trim().length > 0
+                ? options.continuityTarget.targetId.trim()
+                : null;
+        const continuityTarget =
+            explicitContinuityTargetId
+                ? Object.freeze({
+                      targetId: explicitContinuityTargetId,
+                      label:
+                          typeof options?.continuityTarget?.label === 'string' && options.continuityTarget.label.trim().length > 0
+                              ? options.continuityTarget.label.trim()
+                              : explicitContinuityTargetId,
+                      kind:
+                          typeof options?.continuityTarget?.kind === 'string' && options.continuityTarget.kind.trim().length > 0
+                              ? options.continuityTarget.kind.trim()
+                              : null,
+                  })
+                : resolveProjectUniverseContinuityTarget({
+                      universe: projectUniverse,
+                      targetId: url.searchParams.get('u') ?? universeFocusState.targetId ?? projectUniverse?.hubId,
+                      currentPerspectiveId: perspectiveId,
+                      currentEntryId: projectPerspectiveContext.entryId,
+                  });
         const nextHref = buildProjectArtifactContinuityHref({
             href: normalizedHref,
             camera: cameraRouteState,
@@ -780,16 +800,28 @@ export function ProjectPerspectiveShell({
         [perspectiveId, projectPerspectiveContext.entryId, projectedDocument, projectUniverse],
     );
     const operateWorldSummary = operateWorkflow?.worldSummary ?? null;
-    const publishWorldSummary = useMemo(
+    const publishWorkflow = useMemo(
         () =>
             perspectiveId === 'publish'
-                ? buildPublishPerspectiveWorldSummary({
+                ? buildPublishPerspectiveWorkflow({
                       entryId: projectPerspectiveContext.entryId,
                       document: projectedDocument,
                       universe: projectUniverse,
                   })
                 : null,
         [perspectiveId, projectPerspectiveContext.entryId, projectedDocument, projectUniverse],
+    );
+    const publishWorldSummary = useMemo(
+        () =>
+            perspectiveId === 'publish'
+                ? publishWorkflow?.worldSummary ??
+                  buildPublishPerspectiveWorldSummary({
+                      entryId: projectPerspectiveContext.entryId,
+                      document: projectedDocument,
+                      universe: projectUniverse,
+                  })
+                : null,
+        [perspectiveId, projectPerspectiveContext.entryId, projectedDocument, projectUniverse, publishWorkflow],
     );
     const createAssistantLabels = useMemo(
         () =>
@@ -847,6 +879,17 @@ export function ProjectPerspectiveShell({
                 ? buildProjectUniverseOrientation({
                       universe: projectUniverse,
                       targetId: universeFocusState.targetId ?? (projectUniverse?.groups?.['group:operate'] ? 'group:operate' : projectUniverse?.hubId),
+                      query: navigatorQuery,
+                  })
+                : null,
+        [navigatorQuery, perspectiveId, projectUniverse, universeFocusState.targetId],
+    );
+    const publishUniverseOrientation = useMemo(
+        () =>
+            perspectiveId === 'publish'
+                ? buildProjectUniverseOrientation({
+                      universe: projectUniverse,
+                      targetId: universeFocusState.targetId ?? (projectUniverse?.groups?.['group:publish'] ? 'group:publish' : projectUniverse?.hubId),
                       query: navigatorQuery,
                   })
                 : null,
@@ -947,6 +990,24 @@ export function ProjectPerspectiveShell({
                   })
                 : null,
         [operateUniverseOrientation, perspectiveId],
+    );
+    const publishUniverseAnchor = useMemo(
+        () => {
+            if (perspectiveId !== 'publish') return null;
+            const summary = buildProjectUniverseAnchoringSummary({
+                orientation: publishUniverseOrientation,
+                workflowGuide: universeWorkflowGuide,
+            });
+            return Object.freeze({
+                focusLabel: 'Publish',
+                returnLabel: summary?.returnLabel ?? 'Project Hub',
+                relatedCount: summary?.relatedCount ?? 0,
+                upstreamCount: summary?.upstreamCount ?? 0,
+                downstreamCount: summary?.downstreamCount ?? 0,
+                nextLabel: summary?.nextLabel ?? 'Project Hub',
+            });
+        },
+        [perspectiveId, publishUniverseOrientation, universeWorkflowGuide],
     );
     const assistantSurfaceContextSummary =
         perspectiveId === 'operate'
@@ -2760,61 +2821,310 @@ export function ProjectPerspectiveShell({
                         ) : null}
                         {perspectiveId === 'publish' ? (
                             <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
-                                <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
-                                    Publish World
-                                </div>
                                 <div
-                                    data-testid='publish-world-panel'
-                                    style={{
-                                        border: '1px solid #fde68a',
-                                        borderRadius: 8,
-                                        padding: 8,
-                                        background: '#fffbeb',
-                                        display: 'grid',
-                                        gap: 8,
-                                    }}>
-                                    <div
-                                        style={{
-                                            fontSize: 10,
-                                            fontWeight: 700,
-                                            letterSpacing: '0.04em',
-                                            textTransform: 'uppercase',
-                                            color: '#b45309',
-                                        }}>
+                                    data-testid='publish-room-panel'
+                                    data-room-contract='publish-world'
+                                    data-room-workflow={(publishWorkflow?.linkedArtifacts?.length ?? 0) > 0 ? 'linked' : 'empty'}
+                                    data-room-guidance={publishWorkflow?.assistantGuidance ? 'guided' : 'idle'}
+                                    data-room-anchor={publishUniverseAnchor ? 'anchored' : 'floating'}
+                                    style={{ display: 'grid', gap: 8 }}>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
                                         Publish World
                                     </div>
-                                    <div style={{ fontSize: 12, fontWeight: 700, color: '#92400e' }}>
-                                        {publishWorldSummary?.activityLabel ?? 'Publish'}
+                                    <div
+                                        data-testid='publish-world-panel'
+                                        style={{
+                                            border: '1px solid #fde68a',
+                                            borderRadius: 8,
+                                            padding: 8,
+                                            background: '#fffbeb',
+                                            display: 'grid',
+                                            gap: 8,
+                                        }}>
+                                        <div
+                                            style={{
+                                                fontSize: 10,
+                                                fontWeight: 700,
+                                                letterSpacing: '0.04em',
+                                                textTransform: 'uppercase',
+                                                color: '#b45309',
+                                            }}>
+                                            Publish World
+                                        </div>
+                                        <div style={{ fontSize: 12, fontWeight: 700, color: '#92400e' }}>
+                                            {publishWorldSummary?.activityLabel ?? 'Publish'}
+                                        </div>
+                                        <div
+                                            data-testid='publish-world-summary'
+                                            style={{ display: 'grid', gap: 3, fontSize: 10, color: '#a16207' }}>
+                                            <span>
+                                                Current task:{' '}
+                                                <strong style={{ color: '#78350f' }}>
+                                                    {publishWorldSummary?.currentTaskLabel ?? 'Awaiting publish context'}
+                                                </strong>
+                                            </span>
+                                            <span>
+                                                Assistant:{' '}
+                                                <strong style={{ color: '#78350f' }}>
+                                                    {publishAssistantLabels?.assistantLabel ?? 'Publishing Assistant'}
+                                                </strong>
+                                            </span>
+                                            <span>
+                                                Context:{' '}
+                                                <strong style={{ color: '#78350f' }}>
+                                                    {publishWorldSummary?.linkedContextCount ?? 0}
+                                                </strong>{' '}
+                                                linked publish targets
+                                            </span>
+                                            <span>
+                                                Linked artifacts:{' '}
+                                                <strong style={{ color: '#78350f' }}>
+                                                    {publishWorldSummary?.linkedArtifactCount ?? 0}
+                                                </strong>{' '}
+                                                across{' '}
+                                                <strong style={{ color: '#78350f' }}>
+                                                    {publishWorldSummary?.clusterCount ?? 0}
+                                                </strong>{' '}
+                                                publish clusters
+                                            </span>
+                                            <span>
+                                                Signals:{' '}
+                                                <strong style={{ color: '#78350f' }}>
+                                                    {publishWorldSummary?.summaryLabel ?? 'No publish signals'}
+                                                </strong>
+                                            </span>
+                                            <span>
+                                                Next focus:{' '}
+                                                <strong style={{ color: '#78350f' }}>
+                                                    {publishWorldSummary?.nextArtifactLabel ?? 'No linked publish targets'}
+                                                </strong>
+                                            </span>
+                                            <span>
+                                                Guidance:{' '}
+                                                <strong style={{ color: '#78350f' }}>
+                                                    {publishWorldSummary?.assistantSummary ?? 'Publishing Assistant is ready to guide this activity.'}
+                                                </strong>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                                        Publish Workflow
                                     </div>
                                     <div
-                                        data-testid='publish-world-summary'
-                                        style={{ display: 'grid', gap: 3, fontSize: 10, color: '#a16207' }}>
+                                        data-testid='publish-workflow-panel'
+                                        style={{
+                                            border: '1px solid #e2e8f0',
+                                            borderRadius: 8,
+                                            padding: 8,
+                                            background: '#f8fafc',
+                                            display: 'grid',
+                                            gap: 8,
+                                        }}>
+                                    {publishWorkflow?.suggestedNextArtifact ? (
+                                        <button
+                                            type='button'
+                                            onClick={() =>
+                                                navigateArtifactWorkflowHref(publishWorkflow.suggestedNextArtifact.href, {
+                                                    continuityTarget: {
+                                                        targetId: publishWorkflow.suggestedNextArtifact.continuityTargetId,
+                                                        label: publishWorkflow.suggestedNextArtifact.continuityTargetLabel,
+                                                        kind: publishWorkflow.suggestedNextArtifact.continuityTargetKind,
+                                                    },
+                                                    intentLabel: publishWorkflow.suggestedNextArtifact.continuityIntentLabel,
+                                                    intentSource: 'workflow',
+                                                })
+                                            }
+                                            data-testid='publish-workflow-suggested-next'
+                                            style={{
+                                                textAlign: 'left',
+                                                border: '1px solid #fcd34d',
+                                                borderRadius: 8,
+                                                background: '#fffbeb',
+                                                color: '#a16207',
+                                                padding: '8px 10px',
+                                                cursor: 'pointer',
+                                                display: 'grid',
+                                                gap: 2,
+                                            }}>
+                                            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                                                Continue Publishing
+                                            </span>
+                                            <strong style={{ fontSize: 12, color: '#92400e' }}>
+                                                {publishWorkflow.suggestedNextArtifact.label}
+                                            </strong>
+                                            <span style={{ fontSize: 10 }}>
+                                                {publishWorkflow.suggestedNextArtifact.clusterLabel} · {publishWorkflow.suggestedNextArtifact.entryLabel}
+                                            </span>
+                                        </button>
+                                    ) : null}
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                        {(publishWorkflow?.entrySummaries ?? []).map((summary) => (
+                                            <span
+                                                key={summary.entryId}
+                                                style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: 4,
+                                                    border: '1px solid #cbd5e1',
+                                                    borderRadius: 999,
+                                                    background: '#ffffff',
+                                                    color: '#334155',
+                                                    fontSize: 10,
+                                                    padding: '3px 7px',
+                                                }}>
+                                                {summary.entryLabel}
+                                                <strong style={{ color: '#0f172a' }}>{summary.count}</strong>
+                                            </span>
+                                        ))}
+                                    </div>
+                                    <div style={{ display: 'grid', gap: 8 }}>
+                                        {(publishWorkflow?.artifactClusters ?? []).map((cluster) => (
+                                            <div key={cluster.clusterId} data-testid={`publish-workflow-cluster-${cluster.clusterId}`}>
+                                                <div
+                                                    style={{
+                                                        fontSize: 10,
+                                                        fontWeight: 700,
+                                                        color: '#475569',
+                                                        marginBottom: 4,
+                                                        letterSpacing: '0.04em',
+                                                        textTransform: 'uppercase',
+                                                    }}>
+                                                    {cluster.clusterLabel}
+                                                </div>
+                                                <div style={{ display: 'grid', gap: 4 }}>
+                                                    {cluster.items.map((item) => (
+                                                        <button
+                                                            key={`${item.targetId}:${item.entryId}`}
+                                                            type='button'
+                                                            onClick={() =>
+                                                                navigateArtifactWorkflowHref(item.href, {
+                                                                    continuityTarget: {
+                                                                        targetId: item.continuityTargetId,
+                                                                        label: item.continuityTargetLabel,
+                                                                        kind: item.continuityTargetKind,
+                                                                    },
+                                                                    intentLabel: item.continuityIntentLabel,
+                                                                    intentSource: 'workflow',
+                                                                })
+                                                            }
+                                                            data-testid={`publish-workflow-link-${item.targetId}-${item.entryId}`}
+                                                            style={{
+                                                                display: 'grid',
+                                                                gap: 2,
+                                                                textAlign: 'left',
+                                                                border: `1px solid ${item.active ? '#0f172a' : '#e2e8f0'}`,
+                                                                borderRadius: 6,
+                                                                background: '#ffffff',
+                                                                color: '#334155',
+                                                                padding: '6px 8px',
+                                                                cursor: 'pointer',
+                                                            }}>
+                                                            <strong style={{ fontSize: 11, color: '#0f172a' }}>{item.label}</strong>
+                                                            <span style={{ fontSize: 10, color: '#64748b' }}>
+                                                                {item.entryLabel} · {item.kind}
+                                                            </span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {(publishWorkflow?.linkedArtifacts?.length ?? 0) === 0 ? (
+                                            <span style={{ fontSize: 11, color: '#64748b' }}>
+                                                No linked publish artifacts
+                                            </span>
+                                        ) : null}
+                                    </div>
+                                    </div>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                                        Publish Guidance
+                                    </div>
+                                    <div
+                                        data-testid='publish-guidance-panel'
+                                        style={{
+                                            border: '1px solid #dbeafe',
+                                            borderRadius: 8,
+                                            padding: 8,
+                                            background: '#f8fbff',
+                                            display: 'grid',
+                                            gap: 6,
+                                        }}>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: '#1d4ed8' }}>
+                                        {publishWorkflow?.assistantGuidance?.assistantLabel ?? 'Publishing Assistant'}
+                                    </div>
+                                    <div
+                                        data-testid='publish-guidance-summary'
+                                        style={{ display: 'grid', gap: 3, fontSize: 10, color: '#1e3a8a' }}>
                                         <span>
-                                            Current task:{' '}
-                                            <strong style={{ color: '#78350f' }}>
-                                                {publishWorldSummary?.currentTaskLabel ?? 'Awaiting publish context'}
+                                            Current guidance:{' '}
+                                            <strong style={{ color: '#1d4ed8' }}>
+                                                {publishWorkflow?.assistantGuidance?.assistantSummary ?? 'Publishing Assistant is ready to guide this activity.'}
                                             </strong>
                                         </span>
                                         <span>
-                                            Assistant:{' '}
-                                            <strong style={{ color: '#78350f' }}>
-                                                {publishAssistantLabels?.assistantLabel ?? 'Publishing Assistant'}
+                                            Next move:{' '}
+                                            <strong style={{ color: '#1d4ed8' }}>
+                                                {publishWorkflow?.assistantGuidance?.nextGuidanceLabel ?? 'Keep the publish world anchored.'}
                                             </strong>
                                         </span>
                                         <span>
-                                            Context:{' '}
-                                            <strong style={{ color: '#78350f' }}>
-                                                {publishWorldSummary?.linkedContextCount ?? 0}
-                                            </strong>{' '}
-                                            linked publish targets
-                                        </span>
-                                        <span>
-                                            Signals:{' '}
-                                            <strong style={{ color: '#78350f' }}>
-                                                {publishWorldSummary?.summaryLabel ?? 'No publish signals'}
+                                            Release note:{' '}
+                                            <strong style={{ color: '#1d4ed8' }}>
+                                                {publishWorkflow?.assistantGuidance?.systemGuidanceLabel ?? 'Keep publish intent connected to release evidence.'}
                                             </strong>
                                         </span>
                                     </div>
+                                    </div>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                                        Publish Universe Anchor
+                                    </div>
+                                    <div
+                                        data-testid='publish-universe-anchor-panel'
+                                        style={{
+                                            border: '1px solid #cbd5e1',
+                                            borderRadius: 8,
+                                            padding: 8,
+                                            background: '#ffffff',
+                                            display: 'grid',
+                                            gap: 6,
+                                        }}>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>
+                                        {publishUniverseAnchor?.focusLabel ?? projectWorldAnchor.focusLabel}
+                                    </div>
+                                    <div
+                                        data-testid='publish-universe-anchor-summary'
+                                        style={{ display: 'grid', gap: 3, fontSize: 10, color: '#475569' }}>
+                                        <span>
+                                            Return anchor:{' '}
+                                            <strong style={{ color: '#0f172a' }}>
+                                                {publishUniverseAnchor?.returnLabel ?? 'Project Hub'}
+                                            </strong>
+                                        </span>
+                                        <span>
+                                            Related context:{' '}
+                                            <strong style={{ color: '#0f172a' }}>
+                                                {publishUniverseAnchor?.relatedCount ?? 0}
+                                            </strong>{' '}
+                                            linked world targets
+                                        </span>
+                                        <span>
+                                            World flow:{' '}
+                                            <strong style={{ color: '#0f172a' }}>
+                                                {publishUniverseAnchor?.upstreamCount ?? 0}
+                                            </strong>{' '}
+                                            upstream ·{' '}
+                                            <strong style={{ color: '#0f172a' }}>
+                                                {publishUniverseAnchor?.downstreamCount ?? 0}
+                                            </strong>{' '}
+                                            downstream
+                                        </span>
+                                        <span>
+                                            Next likely world target:{' '}
+                                            <strong style={{ color: '#0f172a' }}>
+                                                {publishUniverseAnchor?.nextLabel ?? 'Project Hub'}
+                                            </strong>
+                                        </span>
+                                    </div>
+                                </div>
                                 </div>
                             </div>
                         ) : null}

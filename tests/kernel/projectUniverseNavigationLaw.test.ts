@@ -330,3 +330,36 @@ test('project universe anchoring summary derives deterministic anchor signals', 
         }),
     );
 });
+
+test('project universe anchoring summary stays deterministic for publish-first room anchoring', () => {
+    const orientation = Object.freeze({
+        current: Object.freeze({ targetId: 'group:publish', label: 'Publish' }),
+        returnTarget: Object.freeze({ targetId: 'project:hub', label: 'Project Hub' }),
+        relatedTargets: Object.freeze([
+            Object.freeze({ targetId: 'workflow:publish', label: 'Publish Targets' }),
+            Object.freeze({ targetId: 'components:library', label: 'Component Library' }),
+        ]),
+        dependencyTargets: Object.freeze([Object.freeze({ targetId: 'components:library', label: 'Component Library' })]),
+        downstreamTargets: Object.freeze([Object.freeze({ targetId: 'workflow:publish', label: 'Publish Targets' })]),
+        nextTargets: Object.freeze([Object.freeze({ targetId: 'workflow:publish', label: 'Publish Targets' })]),
+    });
+    const workflowGuide = Object.freeze({
+        suggestions: Object.freeze([Object.freeze({ id: 'publish:related:workflow:publish', label: 'Publish Targets' })]),
+    });
+
+    const left = buildProjectUniverseAnchoringSummary({ orientation, workflowGuide });
+    const right = buildProjectUniverseAnchoringSummary({ orientation, workflowGuide });
+
+    assert.deepEqual(left, right);
+    assert.deepEqual(
+        left,
+        Object.freeze({
+            focusLabel: 'Publish',
+            returnLabel: 'Project Hub',
+            relatedCount: 2,
+            upstreamCount: 1,
+            downstreamCount: 1,
+            nextLabel: 'Publish Targets',
+        }),
+    );
+});
