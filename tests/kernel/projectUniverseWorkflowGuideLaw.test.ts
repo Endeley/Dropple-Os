@@ -62,8 +62,12 @@ test('project universe workflow guide stays deterministic for build handoff guid
     assert.equal(left.currentTaskLabel, 'System Model');
     assert.equal(left.primarySuggestionLabel, 'Operate');
     assert.equal(left.primarySuggestionReason, 'Priority path: Operates Operate');
+    assert.equal(left.primarySuggestionReadableReason, 'Operates Operate');
+    assert.equal(left.primarySuggestionSourceLabel, 'From project world');
     assert.equal(left.suggestions.length, 3);
     assert.equal(left.suggestions[0].source, 'priority');
+    assert.equal(left.suggestions[0].readableReason, 'Operates Operate');
+    assert.equal(left.suggestions[0].sourceLabel, 'From project world');
     assert.equal(left.suggestions[0].perspectiveId, 'operate');
     assert.equal(left.suggestions[1].perspectiveId, 'build');
     assert.equal(left.suggestions[2].perspectiveId, 'operate');
@@ -129,9 +133,12 @@ test('project universe workflow guide falls back to orientation targets when per
     assert.equal(guide.currentTaskLabel, 'System Model');
     assert.equal(guide.primarySuggestionLabel, 'Build');
     assert.equal(guide.primarySuggestionReason, 'Priority path: Depends on Build');
+    assert.equal(guide.primarySuggestionReadableReason, 'Depends on Build');
+    assert.equal(guide.primarySuggestionSourceLabel, 'From project world');
     assert.equal(guide.suggestions.length, 3);
     assert.equal(guide.suggestions[0].targetId, 'group:build');
     assert.equal(guide.suggestions[0].source, 'priority');
+    assert.equal(guide.suggestions[0].readableReason, 'Depends on Build');
     assert.equal(guide.suggestions[1].targetId, 'workflow:ops');
     assert.equal(guide.suggestions[2].targetId, 'group:publish');
     assert.equal(guide.suggestions[2].reason, 'Operates Publish');

@@ -54,6 +54,16 @@ function appendSuggestion(suggestions, seen, suggestion) {
     suggestions.push(suggestion);
 }
 
+function formatReadableReason(reason) {
+    const normalizedReason = asNonEmptyString(reason);
+    if (!normalizedReason) return 'Nothing needs attention yet.';
+    return normalizedReason.replace(/^Priority path:\s*/i, '');
+}
+
+function formatReadableSourceLabel(source) {
+    return source === 'priority' ? 'From project world' : 'From current room';
+}
+
 function resolveCurrentSummary({
     perspectiveId,
     createWorkflow,
@@ -317,6 +327,16 @@ export function buildProjectUniverseWorkflowGuide({
         entryId: normalizedEntryId,
     });
 
+    const normalizedSuggestions = Object.freeze(
+        suggestions.slice(0, 4).map((suggestion) =>
+            Object.freeze({
+                ...suggestion,
+                readableReason: formatReadableReason(suggestion.reason),
+                sourceLabel: formatReadableSourceLabel(suggestion.source),
+            }),
+        ),
+    );
+
     return Object.freeze({
         activityLabel: asNonEmptyString(currentSummary?.activityLabel) ?? 'Project Workflow',
         currentTaskLabel:
@@ -326,9 +346,12 @@ export function buildProjectUniverseWorkflowGuide({
         summaryLabel:
             asNonEmptyString(currentSummary?.summaryLabel) ??
             asNonEmptyString(currentSummary?.nextArtifactLabel) ??
-            `${suggestions.length} guided next work item${suggestions.length === 1 ? '' : 's'}`,
-        primarySuggestionLabel: asNonEmptyString(suggestions[0]?.label) ?? 'Project Hub',
-        primarySuggestionReason: asNonEmptyString(suggestions[0]?.reason) ?? 'Awaiting project workflow context',
-        suggestions: Object.freeze(suggestions.slice(0, 4)),
+            `${normalizedSuggestions.length} likely next move${normalizedSuggestions.length === 1 ? '' : 's'}`,
+        primarySuggestionLabel: asNonEmptyString(normalizedSuggestions[0]?.label) ?? 'Project Hub',
+        primarySuggestionReason: asNonEmptyString(normalizedSuggestions[0]?.reason) ?? 'Awaiting project workflow context',
+        primarySuggestionReadableReason:
+            asNonEmptyString(normalizedSuggestions[0]?.readableReason) ?? 'Awaiting project workflow context',
+        primarySuggestionSourceLabel: formatReadableSourceLabel(normalizedSuggestions[0]?.source),
+        suggestions: normalizedSuggestions,
     });
 }

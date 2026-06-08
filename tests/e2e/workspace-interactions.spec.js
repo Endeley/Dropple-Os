@@ -3071,7 +3071,7 @@ test('project world continuity stays stable across browser history after perspec
   await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
 
   await page.getByRole('button', { name: 'Reset' }).click();
-  await expect(page.getByTestId('project-shell-transition-context')).toContainText('hop: Create > UI / UX');
+  await expect(page.getByTestId('project-shell-transition-context')).toContainText('moving from Create > UI / UX');
 
   await page.goBack({ waitUntil: 'networkidle' });
   await expect(page).toHaveURL(/\/workspace\/create\?/);
@@ -3093,7 +3093,7 @@ test('artifact-driven workflow handoff preserves continuity across perspective h
   await page.getByTestId('build-workflow-operate-handoff').click();
   await expect(page).toHaveURL(/\/workspace\/operate\?/);
   await expect(page).toHaveURL(/[\?&]u=system%3Amodel/);
-  await expect(page.getByTestId('project-shell-transition-context')).toContainText('hop: System Model');
+  await expect(page.getByTestId('project-shell-transition-context')).toContainText('moving from System Model');
   await expect(page.getByTestId('project-shell-project-intent')).toContainText('Move from build planning into live operating context.');
 
   await page.goBack({ waitUntil: 'networkidle' });
@@ -3117,7 +3117,7 @@ test('publish workflow artifact continuity stays stable across same-room history
   await expect(page).toHaveURL(/\/workspace\/publish\?/);
   await expect(page).toHaveURL(/[\?&]entry=conversion/);
   await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
-  await expect(page.getByTestId('project-shell-transition-context')).toContainText('dive: Untitled');
+  await expect(page.getByTestId('project-shell-transition-context')).toContainText('opened from Untitled');
   await expect(page.getByTestId('project-shell-project-intent')).toContainText('Continue publishing conversion through Untitled.');
 
   await page.goBack({ waitUntil: 'networkidle' });

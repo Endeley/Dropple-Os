@@ -1366,13 +1366,13 @@
     {
       "id": "U27",
       "title": "Guidance and Naturalness Refinement",
-      "status": "active",
+      "status": "complete",
       "depends_on": ["U26"],
       "milestones": [
         {
           "id": "U27.1",
           "title": "Collaborate Room Naturalness",
-          "status": "active",
+          "status": "complete",
           "evidence": [
             "runtime/workspaces/collaboratePerspectiveWorkflow.js",
             "runtime/workspaces/collaborateShellChoreography.js",
@@ -1384,7 +1384,7 @@
         {
           "id": "U27.2",
           "title": "Guidance Readability Refinement",
-          "status": "pending",
+          "status": "complete",
           "evidence": [
             "runtime/workspaces/projectUniverseWorkflowGuide.js",
             "runtime/workspaces/projectUniverseNavigation.js",
@@ -1395,7 +1395,7 @@
         {
           "id": "U27.3",
           "title": "Emergence and Return Naturalness",
-          "status": "pending",
+          "status": "complete",
           "evidence": [
             "runtime/workspaces/projectUniverseEditorHandoff.js",
             "runtime/workspaces/projectViewRouteState.js",
@@ -1407,7 +1407,7 @@
         {
           "id": "U27.4",
           "title": "Universe Comprehension at a Glance",
-          "status": "pending",
+          "status": "complete",
           "evidence": [
             "runtime/workspaces/projectUniverseNavigation.js",
             "runtime/workspaces/projectUniverseWorkflowGuide.js",
@@ -1418,13 +1418,15 @@
         {
           "id": "U27.5",
           "title": "Shared Naturalness Validation",
-          "status": "pending",
+          "status": "complete",
           "evidence": [
             "runtime/workspaces/createShellChoreography.js",
             "runtime/workspaces/buildShellChoreography.js",
             "runtime/workspaces/operateShellChoreography.js",
             "runtime/workspaces/collaborateShellChoreography.js",
             "runtime/workspaces/publishShellChoreography.js",
+            "runtime/workspaces/projectUniverseAtGlance.js",
+            "runtime/workspaces/projectUniverseWorkflowGuide.js",
             "ui/workspace/shell/ProjectPerspectiveShell.jsx",
             "tests/e2e/workspace-routes.smoke.spec.js",
             "tests/e2e/workspace-interactions.spec.js"

@@ -71,6 +71,7 @@ import { resolveBuildShellChoreography } from '@/runtime/workspaces/buildShellCh
 import { resolveOperateShellChoreography } from '@/runtime/workspaces/operateShellChoreography.js';
 import { resolvePublishShellChoreography } from '@/runtime/workspaces/publishShellChoreography.js';
 import { buildProjectUniverseWorkflowGuide } from '@/runtime/workspaces/projectUniverseWorkflowGuide.js';
+import { buildProjectUniverseAtGlance } from '@/runtime/workspaces/projectUniverseAtGlance.js';
 import { ProjectUniverseCanvas } from './ProjectUniverseCanvas.jsx';
 
 function formatEntryLabel(entryId) {
@@ -491,13 +492,13 @@ export function ProjectPerspectiveShell({
 
         if (perspectiveContinuityState.sourceLabel) {
             if (perspectiveContinuityState.continuityKind === 'surface') {
-                return `surface: ${perspectiveContinuityState.sourceLabel}`;
+                return `back to ${perspectiveContinuityState.sourceLabel}`;
             }
             if (perspectiveContinuityState.continuityKind === 'dive') {
-                return `dive: ${perspectiveContinuityState.sourceLabel}`;
+                return `opened from ${perspectiveContinuityState.sourceLabel}`;
             }
             if (perspectiveContinuityState.continuityKind === 'hop') {
-                return `hop: ${perspectiveContinuityState.sourceLabel}`;
+                return `moving from ${perspectiveContinuityState.sourceLabel}`;
             }
         }
 
@@ -1052,6 +1053,15 @@ export function ProjectPerspectiveShell({
             universeOrientation,
         ],
     );
+    const universeAtGlance = useMemo(
+        () =>
+            buildProjectUniverseAtGlance({
+                universe: projectUniverse,
+                orientation: universeOrientation,
+                workflowGuide: universeWorkflowGuide,
+            }),
+        [projectUniverse, universeOrientation, universeWorkflowGuide],
+    );
     const focusedUniverseCausality = useMemo(
         () => ({
             reliesOn:
@@ -1411,17 +1421,17 @@ export function ProjectPerspectiveShell({
                         textTransform: 'uppercase',
                         letterSpacing: '0.04em',
                     }}>
-                    Project Workflow
+                    What to do next
                 </div>
                 <div style={{ display: 'grid', gap: 2 }}>
                     <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>
                         {universeWorkflowGuide.activityLabel}
                     </div>
                     <div style={{ fontSize: 10, color: '#334155' }}>
-                        Current task: <strong style={{ color: '#0f172a' }}>{universeWorkflowGuide.currentTaskLabel}</strong>
+                        Now: <strong style={{ color: '#0f172a' }}>{universeWorkflowGuide.currentTaskLabel}</strong>
                     </div>
                     <div data-testid='project-universe-workflow-primary-next' style={{ fontSize: 10, color: '#334155' }}>
-                        Next work: <strong style={{ color: '#0f172a' }}>{universeWorkflowGuide.primarySuggestionLabel}</strong>
+                        Do next: <strong style={{ color: '#0f172a' }}>{universeWorkflowGuide.primarySuggestionLabel}</strong>
                     </div>
                     <div style={{ fontSize: 10, color: '#64748b' }}>{universeWorkflowGuide.summaryLabel}</div>
                     {focusedUniverseCausality.mattersNext ? (
@@ -1429,13 +1439,16 @@ export function ProjectPerspectiveShell({
                             {focusedUniverseCausality.mattersNext}
                         </div>
                     ) : null}
+                    <div data-testid='project-universe-workflow-primary-source' style={{ fontSize: 10, color: '#64748b' }}>
+                        {universeWorkflowGuide.primarySuggestionSourceLabel}
+                    </div>
                     <div data-testid='project-universe-workflow-primary-reason' style={{ fontSize: 10, color: '#475569' }}>
-                        {universeWorkflowGuide.primarySuggestionReason}
+                        Why now: {universeWorkflowGuide.primarySuggestionReadableReason}
                     </div>
                 </div>
                 {universeWorkflowGuide.suggestions.length > 0 ? (
                     <div style={{ display: 'grid', gap: 4 }}>
-                        <div style={{ fontSize: 10, color: '#64748b' }}>Next work</div>
+                        <div style={{ fontSize: 10, color: '#64748b' }}>Next moves</div>
                         {universeWorkflowGuide.suggestions.map((suggestion) => (
                             <button
                                 key={suggestion.id}
@@ -1457,14 +1470,56 @@ export function ProjectPerspectiveShell({
                                     cursor: 'pointer',
                                 }}>
                                 <div style={{ fontSize: 11, fontWeight: 600, color: '#0f172a' }}>{suggestion.label}</div>
-                                <div style={{ fontSize: 10, color: '#64748b' }}>{suggestion.reason}</div>
-                                <div style={{ fontSize: 10, color: '#94a3b8' }}>
-                                    {suggestion.source === 'priority' ? 'Universe-first' : 'Workflow-guided'}
-                                </div>
+                                <div style={{ fontSize: 10, color: '#64748b' }}>{suggestion.readableReason}</div>
+                                <div style={{ fontSize: 10, color: '#94a3b8' }}>{suggestion.sourceLabel}</div>
                             </button>
                         ))}
                     </div>
                 ) : null}
+            </div>
+        );
+    };
+
+    const renderUniverseAtGlance = () => {
+        if (!universeAtGlance) return null;
+
+        return (
+            <div
+                data-testid='project-universe-at-a-glance'
+                style={{
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 8,
+                    background: '#ffffff',
+                    padding: '8px 10px',
+                    display: 'grid',
+                    gap: 6,
+                    marginBottom: 8,
+                }}>
+                <div
+                    style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: '#64748b',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                    }}>
+                    Project At A Glance
+                </div>
+                <div data-testid='project-universe-at-a-glance-exists' style={{ fontSize: 10, color: '#334155' }}>
+                    Exists: <strong style={{ color: '#0f172a' }}>{universeAtGlance.existsLabel}</strong>
+                </div>
+                <div data-testid='project-universe-at-a-glance-active' style={{ fontSize: 10, color: '#334155' }}>
+                    Active: <strong style={{ color: '#0f172a' }}>{universeAtGlance.activeLabel}</strong>
+                </div>
+                <div data-testid='project-universe-at-a-glance-next' style={{ fontSize: 10, color: '#334155' }}>
+                    Next: <strong style={{ color: '#0f172a' }}>{universeAtGlance.nextLabel}</strong>
+                </div>
+                <div data-testid='project-universe-at-a-glance-blocked' style={{ fontSize: 10, color: '#334155' }}>
+                    Blocked: <strong style={{ color: '#0f172a' }}>{universeAtGlance.blockedLabel}</strong>
+                </div>
+                <div data-testid='project-universe-at-a-glance-done' style={{ fontSize: 10, color: '#334155' }}>
+                    Done: <strong style={{ color: '#0f172a' }}>{universeAtGlance.doneLabel}</strong>
+                </div>
             </div>
         );
     };
@@ -1837,14 +1892,14 @@ export function ProjectPerspectiveShell({
                     }}>
                     <div style={{ display: 'grid', gap: 2 }}>
                         <strong style={{ fontSize: 11, color: '#0f172a', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                            Editor Emergence
+                            Opened Here
                         </strong>
                         <span style={{ fontSize: 12, color: '#334155' }}>
-                            Entered from {editorEmergenceState.sourceLabel}
+                            Opened from {editorEmergenceState.sourceLabel}
                             {editorEmergenceState.sourceKind ? ` · ${formatArtifactKindLabel(editorEmergenceState.sourceKind)}` : ''}
                         </span>
                         <span style={{ fontSize: 11, color: '#64748b' }}>
-                            Return to {formatEntryLabel(editorEmergenceState.sourcePerspectiveId)} / {formatEntryLabel(editorEmergenceState.sourceEntryId)}
+                            Back to {formatEntryLabel(editorEmergenceState.sourcePerspectiveId)} / {formatEntryLabel(editorEmergenceState.sourceEntryId)} when you leave this editor.
                         </span>
                     </div>
                     <Link
@@ -1863,7 +1918,7 @@ export function ProjectPerspectiveShell({
                             textDecoration: 'none',
                             padding: '6px 10px',
                         }}>
-                        Surface Back
+                        Back to {formatEntryLabel(editorEmergenceState.sourcePerspectiveId)} / {formatEntryLabel(editorEmergenceState.sourceEntryId)}
                     </Link>
                 </section>
             ) : null}
@@ -3776,6 +3831,7 @@ export function ProjectPerspectiveShell({
                                         panelTestId: 'project-universe-dominance-panel-navigate',
                                         summaryTestId: 'project-universe-dominance-summary-navigate',
                                     })}
+                                    {renderUniverseAtGlance()}
                                     {renderUniverseGeography()}
                                     {renderUniverseOrientation()}
                                     {renderUniverseWorkflowGuide()}
@@ -4131,6 +4187,7 @@ export function ProjectPerspectiveShell({
                                 panelTestId: 'project-universe-dominance-panel-mobile',
                                 summaryTestId: 'project-universe-dominance-summary-mobile',
                             })}
+                            {renderUniverseAtGlance()}
                             {renderUniverseGeography()}
                             {renderUniverseOrientation()}
                             {renderUniverseWorkflowGuide()}

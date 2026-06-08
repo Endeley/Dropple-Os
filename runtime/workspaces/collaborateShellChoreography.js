@@ -7,23 +7,23 @@ function normalizeEntryId(value) {
 }
 
 function resolveFocusState(entryId) {
-    if (entryId === 'production') return 'production';
-    if (entryId === 'knowledge') return 'knowledge';
+    if (entryId === 'production') return 'alignment';
+    if (entryId === 'knowledge') return 'discussion';
     if (entryId === 'education') return 'learning';
     return 'review';
 }
 
 function resolveFocusSummary(focusState) {
-    if (focusState === 'production') {
-        return 'Collaborate is emphasizing production flow and coordinated delivery.';
+    if (focusState === 'alignment') {
+        return 'Collaborate is emphasizing team alignment and coordinated delivery.';
     }
-    if (focusState === 'knowledge') {
-        return 'Collaborate is emphasizing shared knowledge and durable team context.';
+    if (focusState === 'discussion') {
+        return 'Collaborate is emphasizing discussion, shared understanding, and durable team context.';
     }
     if (focusState === 'learning') {
-        return 'Collaborate is emphasizing learning flow and guided understanding.';
+        return 'Collaborate is emphasizing guided learning and shared understanding.';
     }
-    return 'Collaborate is emphasizing review flow and coordinated decision-making.';
+    return 'Collaborate is emphasizing review, feedback, and aligned decisions.';
 }
 
 export function resolveCollaborateShellChoreography({
@@ -35,36 +35,45 @@ export function resolveCollaborateShellChoreography({
     const normalizedEntryId = normalizeEntryId(activeEntryId);
     const normalizedAssistantState = normalizeAssistantState(assistantState);
     const focusState = resolveFocusState(normalizedEntryId);
+    const hasActiveCollaboration = hasWorkflow || hasPublishHandoff;
     const dominantContext =
         normalizedAssistantState === 'engaged'
             ? 'assistant'
-            : hasWorkflow
-              ? 'workflow'
-              : hasPublishHandoff
-                ? 'handoff'
-                : 'project';
+            : hasActiveCollaboration
+              ? focusState === 'learning'
+                  ? 'education'
+                  : focusState === 'discussion' || focusState === 'alignment'
+                    ? 'discussion'
+                    : 'review'
+              : 'project';
 
     const roomState =
         dominantContext === 'assistant'
-            ? 'assistant-engaged'
-            : dominantContext === 'workflow'
-              ? 'workflow-leading'
-              : dominantContext === 'handoff'
-                ? 'handoff-ready'
-                : 'receded';
+            ? 'assistant-facilitating'
+            : dominantContext === 'education'
+              ? 'education-guiding'
+              : dominantContext === 'discussion'
+                ? 'discussion-active'
+                : dominantContext === 'review'
+                  ? 'review-focused'
+                  : 'receded';
 
     const workflowState = hasWorkflow ? (normalizedAssistantState === 'engaged' ? 'yielding' : 'leading') : 'dormant';
     const handoffState = hasPublishHandoff ? 'ready' : 'idle';
     const assistantSummary =
         normalizedAssistantState === 'engaged'
-            ? 'Collaborate Assistant is engaged with the active collaboration flow.'
+            ? 'Collaborate Assistant is facilitating the active collaboration flow.'
             : normalizedAssistantState === 'ready'
-              ? hasWorkflow
-                  ? 'Collaborate Assistant is ready while collaboration workflow leads this room.'
-                  : 'Collaborate Assistant is ready to help the current Collaborate activity.'
-              : hasWorkflow
-                ? 'Collaborate Assistant stays quiet while collaboration flow stays primary.'
-                : 'Collaborate Assistant stays quiet until collaboration context deepens.';
+              ? dominantContext === 'education'
+                  ? 'Collaborate Assistant is ready to support guided learning in this room.'
+                  : dominantContext === 'discussion'
+                    ? 'Collaborate Assistant is ready to support discussion and alignment in this room.'
+                    : hasActiveCollaboration
+                      ? 'Collaborate Assistant is ready to support review and alignment in this room.'
+                      : 'Collaborate Assistant is ready to help the current Collaborate activity.'
+              : hasActiveCollaboration
+                ? 'Collaborate Assistant stays quiet while people stay aligned on the work.'
+                : 'Collaborate Assistant stays quiet until people need help aligning.';
 
     return Object.freeze({
         dominantContext,
