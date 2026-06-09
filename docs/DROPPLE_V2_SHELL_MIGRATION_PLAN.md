@@ -3,6 +3,14 @@
 Status: Proposed  
 Purpose: define how Dropple moves from a panel-first application shell to a substrate-first Creative OS shell without changing the runtime or product constitutions.
 
+## Authority
+
+[`DROPPLE_WORLDSHELL_UI_SPEC.md`](./DROPPLE_WORLDSHELL_UI_SPEC.md) is the authoritative description of the target shell.
+
+This document describes migration from the current shell to the WorldShell architecture.
+
+If a conflict exists between this document and the WorldShell spec, the WorldShell spec wins.
+
 ## Core Premise
 
 Dropple does not need a new runtime architecture.
@@ -16,6 +24,172 @@ The central law is:
 > The substrate never changes. The grammar changes.
 
 Everything in this migration plan follows from that rule.
+
+## Dropple V2 Convergence Principle
+
+### Core Law
+
+> The substrate never changes. The grammar changes.
+
+### Foundational Model
+
+Dropple is a Creative Operating System built around persistent project worlds.
+
+- the project is the owning object
+- the substrate is the persistent environment in which work occurs
+- perspectives change intent
+- grammars change behavior
+- tools, inspectors, overlays, timelines, assistants, and workflows are contextual projections of grammar and intent
+
+### Target Hierarchy
+
+Preferred:
+
+Project  
+→ Perspective  
+→ Grammar  
+→ Substrate  
+→ Contextual Surfaces
+
+Rejected:
+
+Project  
+→ Workspace  
+→ Editor  
+→ Canvas
+
+### Definitions
+
+#### Project
+
+The owning object.
+
+All artifacts, workflows, relationships, collaboration, and publishing activity belong to a project.
+
+#### Perspective
+
+Answers:
+
+> Why am I here?
+
+Examples:
+
+- Create
+- Build
+- Operate
+- Collaborate
+- Publish
+
+Perspectives are intent lenses, not applications.
+
+#### Grammar
+
+Answers:
+
+> How am I working?
+
+Examples:
+
+- UI
+- Graphic
+- Application
+- Review
+- Governance
+- Audio
+- Video
+- Motion
+
+Grammars determine:
+
+- tools
+- inspectors
+- overlays
+- shortcuts
+- behaviors
+- contextual assistance
+
+#### Substrate
+
+Answers:
+
+> Where does work happen?
+
+The substrate is the primary persistent surface.
+
+Examples:
+
+- spatial canvas
+- timeline
+- coordinated canvas + timeline
+
+A world may expose only one primary substrate at a time.
+
+#### Contextual Surfaces
+
+Contextual surfaces emerge from grammar and intent.
+
+Examples:
+
+- tool docks
+- inspectors
+- overlays
+- timelines
+- assistants
+- workflow guidance
+- selection actions
+
+They are projections, not structural boundaries.
+
+### Convergence Rules
+
+Future UI work should converge toward:
+
+- one shared substrate per world class
+- grammar-driven tool injection
+- grammar-driven inspector injection
+- grammar-driven overlay injection
+- capability-driven surfaces
+- contextual emergence and recession
+- perspective as intent
+
+Future UI work should move away from:
+
+- duplicate canvases
+- competing primary surfaces
+- workspace-specific layout systems
+- permanent inspector ownership
+- permanent workflow ownership
+- shell proliferation
+- application-style boundaries
+
+### Primary Design Filter
+
+For every proposed surface ask:
+
+1. Is this the substrate?
+2. Is this grammar?
+3. Is this a contextual projection?
+4. Or is this another hidden workspace shell?
+
+If it is another hidden workspace shell, it is likely moving away from the Creative OS vision.
+
+### Long-Term Goal
+
+Users should feel:
+
+> I am still inside my project.
+>
+> I am working differently now.
+
+Not:
+
+> I opened another tool.
+>
+> I switched applications.
+
+The world remains.
+
+The grammar changes.
 
 ## Constitutional Context
 
@@ -657,4 +831,3 @@ The goal is to stop trapping the Creative OS model inside permanent panels.
 The world remains.
 
 The grammar changes.
-
