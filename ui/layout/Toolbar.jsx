@@ -33,6 +33,9 @@ const TOOLBAR_EXPORT_ACTIONS = Object.freeze({
     },
 });
 
+const EMPTY_RUNTIME_EVENTS = Object.freeze([]);
+const EMPTY_EXPORT_TARGETS = Object.freeze([]);
+
 export default function Toolbar({ mode, onOpenTemplateGenerator, emit, getState, events, cursor, exportArtifact = null, documentName, onSave, onSaveAs, recentDocs = [], onOpenDocument, canPersist = true, onImportJSONReplace, onImportJSONMerge, onImportSVGReplace, onImportSVGMerge, canImport = true }) {
     const { grid, toggleGrid } = useGrid();
     const { selectedIds } = useSelection();
@@ -49,7 +52,7 @@ export default function Toolbar({ mode, onOpenTemplateGenerator, emit, getState,
     const runtimeScene = useWorkspaceProjectionState((runtimeState) => runtimeState?.scene ?? null);
     const runtimeTimeline = useWorkspaceProjectionState((runtimeState) => runtimeState?.timeline ?? null);
     const runtimePlayback = useWorkspaceProjectionState((runtimeState) => runtimeState?.playback ?? null);
-    const runtimeEvents = useWorkspaceProjectionState((runtimeState) => runtimeState?.events ?? []);
+    const runtimeEvents = useWorkspaceProjectionState((runtimeState) => runtimeState?.events ?? EMPTY_RUNTIME_EVENTS);
     const runtimeCursorIndex = useWorkspaceProjectionState((runtimeState) => runtimeState?.cursorIndex ?? -1);
     const exportRuntimeSnapshot = useMemo(
         () => ({
@@ -63,7 +66,10 @@ export default function Toolbar({ mode, onOpenTemplateGenerator, emit, getState,
         [runtimeDocument, runtimeScene, runtimeTimeline, runtimePlayback, runtimeEvents, runtimeCursorIndex],
     );
     const savedExportTargets = useWorkspaceProjectionState(
-        (runtimeState) => (Array.isArray(runtimeState?.document?.exports?.targets) ? runtimeState.document.exports.targets : []),
+        (runtimeState) =>
+            Array.isArray(runtimeState?.document?.exports?.targets)
+                ? runtimeState.document.exports.targets
+                : EMPTY_EXPORT_TARGETS,
     );
     const { runWorkflow, performWorkflow, serviceState } = useExportExecution();
     const toolbarExportFormats = exportCapabilities

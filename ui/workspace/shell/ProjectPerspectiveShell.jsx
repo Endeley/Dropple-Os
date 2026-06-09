@@ -250,6 +250,7 @@ export function ProjectPerspectiveShell({
         return pendingEnvelope ?? searchState;
     }, [pathname, projectPerspectiveContext.entryId, searchParams]);
     const [cameraRouteState, setCameraRouteState] = useState(() => resolveProjectCameraFromSearchParams(searchParams));
+    const cameraRouteStateRef = useRef(cameraRouteState);
     const [universeFocusState, setUniverseFocusState] = useState(() =>
         resolveProjectUniverseFocusFromSearchParams(searchParams),
     );
@@ -420,11 +421,23 @@ export function ProjectPerspectiveShell({
         writeProjectWorldEnvelopeToSessionBridge({ href, envelope });
     }, []);
 
+    useEffect(() => {
+        cameraRouteStateRef.current = cameraRouteState;
+    }, [cameraRouteState]);
+
     const handleCameraChange = useCallback((camera) => {
         const nextState = normalizeProjectCameraState(camera);
-        setCameraRouteState((current) => (isSameCameraState(current, nextState) ? current : nextState));
+        let didChange = false;
+        setCameraRouteState((current) => {
+            if (isSameCameraState(current, nextState)) {
+                return current;
+            }
+            didChange = true;
+            cameraRouteStateRef.current = nextState;
+            return nextState;
+        });
 
-        if (isSameCameraState(cameraRouteState, nextState)) {
+        if (!didChange && isSameCameraState(cameraRouteStateRef.current, nextState)) {
             return;
         }
 
@@ -437,7 +450,7 @@ export function ProjectPerspectiveShell({
             focus: universeFocusState,
         });
         replaceShellSearchParams(next, envelope);
-    }, [buildDurableShellSearchParams, cameraRouteState, perspectiveContinuityState, replaceShellSearchParams, universeFocusState]);
+    }, [buildDurableShellSearchParams, perspectiveContinuityState, replaceShellSearchParams, universeFocusState]);
 
     const replaceUniverseRouteState = useCallback(({ camera = cameraRouteState, focus = universeFocusState } = {}) => {
         const envelope = buildProjectWorldNavigationEnvelope({
