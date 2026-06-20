@@ -40,3 +40,56 @@ export const WORKSPACE_OVERLAY_CAPABILITIES = Object.freeze({
     'system:themes': Object.freeze(['theme-authoring']),
     'system:variants': Object.freeze([]),
 });
+
+export const WORKSPACE_COMMAND_CAPABILITIES = Object.freeze({
+    graphic: Object.freeze({
+        group: true,
+        ungroup: true,
+    }),
+    uiux: Object.freeze({
+        group: true,
+        ungroup: true,
+    }),
+    design: Object.freeze({
+        group: true,
+        ungroup: true,
+    }),
+    prototype: Object.freeze({
+        group: false,
+        ungroup: false,
+    }),
+    motion: Object.freeze({
+        group: false,
+        ungroup: false,
+    }),
+    dev: Object.freeze({
+        group: false,
+        ungroup: false,
+    }),
+    animation: Object.freeze({
+        group: false,
+        ungroup: false,
+    }),
+    media: Object.freeze({
+        group: false,
+        ungroup: false,
+    }),
+    build: Object.freeze({
+        group: false,
+        ungroup: false,
+    }),
+    system: Object.freeze({
+        group: false,
+        ungroup: false,
+    }),
+    collaborate: Object.freeze({
+        group: false,
+        ungroup: false,
+    }),
+});
+
+export function canRunWorkspaceCommand(workspaceOrModeId, commandId) {
+    const commandCaps = WORKSPACE_COMMAND_CAPABILITIES[workspaceOrModeId];
+    if (!commandCaps) return false;
+    return commandCaps[commandId] === true;
+}

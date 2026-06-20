@@ -1,7 +1,7 @@
-import { canRunWorkspaceCommand } from '@/ui/capabilities/workspaceCapabilities.js';
 import { getNodes } from '@/runtime/document/documentAdapter.js';
 import { groupSelection } from '@/runtime/grouping/groupSelection.js';
 import { ungroupSelection } from '@/runtime/grouping/ungroupSelection.js';
+import { canRunWorkspaceCommand } from '@/runtime/workspaces/index.js';
 
 const __DEV__ = process.env.NODE_ENV !== 'production';
 

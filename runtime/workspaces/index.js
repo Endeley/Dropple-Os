@@ -3,6 +3,8 @@ export {
     WORKSPACE_CAPABILITIES,
     WORKSPACE_MODE_CAPABILITIES,
     WORKSPACE_OVERLAY_CAPABILITIES,
+    WORKSPACE_COMMAND_CAPABILITIES,
+    canRunWorkspaceCommand,
 } from './workspaceCapabilities.js';
 export { createDefaultSlice } from './defaultDocumentSlices.js';
 export { bootWorkspaceDocument } from './bootWorkspaceDocument.js';
