@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { getArchitectureScannerPolicy } from './architectureIgnorePolicy.mjs';
+import { ARCHITECTURE_DRIFT_RULES } from './architectureDriftRules.mjs';
 
 const ROOT = process.cwd();
 const SOURCE_EXTENSIONS = new Set(['.js', '.jsx', '.mjs', '.ts', '.tsx']);
@@ -8,57 +9,6 @@ const SCANNER_POLICY = getArchitectureScannerPolicy({
   scannerId: 'architectureDrift',
 });
 const IGNORE_DIRS = SCANNER_POLICY.ignoreDirs;
-
-const RULES = [
-  {
-    id: 'core-imports-higher-layers',
-    description: 'Core layer must not import runtime, ui, workspace, or product roots',
-    roots: ['core'],
-    patterns: [
-      /from\s+['"]@\/runtime\//,
-      /from\s+['"]@\/ui\//,
-      /from\s+['"]@\/workspace\//,
-      /from\s+['"]@\/workspaces\//,
-      /from\s+['"]@\/product\//,
-      /from\s+['"](?:\.\.\/)+(runtime|ui|workspace|workspaces|product)\//
-    ]
-  },
-  {
-    id: 'infrastructure-imports-higher-layers',
-    description: 'Infrastructure layer must not import runtime, ui, workspace, or product roots',
-    roots: ['infrastructure'],
-    patterns: [
-      /from\s+['"]@\/runtime\//,
-      /from\s+['"]@\/ui\//,
-      /from\s+['"]@\/workspace\//,
-      /from\s+['"]@\/workspaces\//,
-      /from\s+['"]@\/product\//,
-      /from\s+['"](?:\.\.\/)+(runtime|ui|workspace|workspaces|product)\//
-    ]
-  },
-  {
-    id: 'runtime-imports-ui',
-    description: 'Runtime layer must not import UI roots',
-    roots: ['runtime'],
-    patterns: [
-      /from\s+['"]@\/ui\//,
-      /from\s+['"](?:\.\.\/)+ui\//
-    ]
-  },
-  {
-    id: 'federation-bridge-imports-authority',
-    description: 'Create-session federation bridge must stay coordination-only and never import reducer/core authority paths',
-    roots: ['runtime/input'],
-    fileMatchers: ['createSessionFederationRuntimeBridge.js'],
-    patterns: [
-      /from\s+['"]@\/core\/events\/reducers\//,
-      /from\s+['"]@\/runtime\/state\//,
-      /from\s+['"]@\/runtime\/dispatcher\/dispatcherStore\//,
-      /\buseRuntimeStore\b/,
-      /\.setState\s*\(/
-    ]
-  }
-];
 
 function walk(dir, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -81,10 +31,43 @@ function relative(filePath) {
   return path.relative(ROOT, filePath).replaceAll(path.sep, '/');
 }
 
-function findViolations() {
+function findMatchedLine(source, pattern) {
+  const lines = source.split('\n');
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    pattern.lastIndex = 0;
+    if (pattern.test(line)) {
+      return {
+        lineNumber: index + 1,
+        snippet: line.trim(),
+      };
+    }
+  }
+
+  pattern.lastIndex = 0;
+  const match = pattern.exec(source);
+  pattern.lastIndex = 0;
+  if (!match || typeof match.index !== 'number') {
+    return {
+      lineNumber: null,
+      snippet: null,
+    };
+  }
+
+  const start = match.index;
+  const prefix = source.slice(0, start);
+  const lineNumber = prefix.split('\n').length;
+  const line = source.split('\n')[lineNumber - 1] ?? '';
+  return {
+    lineNumber,
+    snippet: line.trim() || String(match[0]).trim() || null,
+  };
+}
+
+export function findViolations({ rules = ARCHITECTURE_DRIFT_RULES } = {}) {
   const violations = [];
 
-  for (const rule of RULES) {
+  for (const rule of rules) {
     for (const root of rule.roots) {
       const rootPath = path.join(ROOT, root);
       if (!fs.existsSync(rootPath)) continue;
@@ -98,11 +81,21 @@ function findViolations() {
         }
         const source = fs.readFileSync(file, 'utf8');
         for (const pattern of rule.patterns) {
+          pattern.lastIndex = 0;
           if (pattern.test(source)) {
+            const match = findMatchedLine(source, pattern);
             violations.push({
-              rule: rule.id,
+              ruleId: rule.id,
+              legacyRuleId: rule.legacyId,
+              ruleName: rule.name,
               description: rule.description,
-              file: relative(file)
+              owner: rule.owner,
+              law: rule.law,
+              reason: rule.reason,
+              suggestedFix: rule.suggestedFix,
+              file: relative(file),
+              lineNumber: match.lineNumber,
+              matchedSnippet: match.snippet,
             });
             break;
           }
@@ -114,19 +107,77 @@ function findViolations() {
   return violations;
 }
 
-const violations = findViolations();
+export function formatViolation(violation) {
+  const lines = [
+    '------------------------------------------------------------',
+    violation.ruleId,
+    '',
+    'Rule',
+    violation.ruleName,
+    '',
+    'File',
+    violation.lineNumber ? `${violation.file}:${violation.lineNumber}` : violation.file,
+    '',
+    'Matched Snippet',
+    violation.matchedSnippet ?? '(match unavailable)',
+    '',
+    'Constitution',
+    violation.law,
+    `Layer: ${violation.owner}`,
+    '',
+    'Reason',
+    violation.reason,
+    '',
+    'Suggested Fix',
+    violation.suggestedFix,
+  ];
 
-console.log('Dropple Architecture Drift Check');
-console.log('');
+  if (violation.legacyRuleId) {
+    lines.push('', 'Legacy Rule', violation.legacyRuleId);
+  }
 
-if (violations.length === 0) {
-  console.log('No drift detected for the current high-confidence layer rules.');
-  process.exit(0);
+  return lines.join('\n');
 }
 
-console.log('Architecture drift detected:');
-for (const violation of violations) {
-  console.log(`- ${violation.rule}: ${violation.file}`);
+export function formatDriftReport({ violations = [], rules = ARCHITECTURE_DRIFT_RULES } = {}) {
+  const lines = [
+    'Dropple Architecture Drift Check',
+    '',
+  ];
+
+  if (violations.length === 0) {
+    lines.push('No drift detected for the current high-confidence layer rules.');
+    lines.push(`Rules Evaluated: ${rules.length}`);
+    return `${lines.join('\n')}\n`;
+  }
+
+  lines.push('Architecture drift detected:');
+  lines.push('');
+  lines.push(...violations.map((violation) => formatViolation(violation)));
+  lines.push('------------------------------------------------------------');
+  lines.push(`Violations: ${violations.length}`);
+  lines.push(`Rules Evaluated: ${rules.length}`);
+  return `${lines.join('\n')}\n`;
 }
 
-process.exit(1);
+export function runArchitectureDrift() {
+  const violations = findViolations();
+  const output = formatDriftReport({ violations });
+  const ok = violations.length === 0;
+  return Object.freeze({
+    ok,
+    violations,
+    output,
+    rulesEvaluated: ARCHITECTURE_DRIFT_RULES.length,
+  });
+}
+
+const isDirectRun =
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname);
+
+if (isDirectRun) {
+  const result = runArchitectureDrift();
+  process.stdout.write(result.output);
+  process.exit(result.ok ? 0 : 1);
+}
