@@ -144,7 +144,7 @@ test('computeDragDelta delegates snapping to custom resolver and returns guides'
     });
 });
 
-test('computeDragDelta builds interaction transforms from runtime computed transforms when provided', () => {
+test('computeDragDelta builds interaction transforms from authored layout before computed transforms', () => {
     const delta = computeDragDelta(
         {
             nodeIds: ['a'],
@@ -152,14 +152,14 @@ test('computeDragDelta builds interaction transforms from runtime computed trans
             currentPointer: { x: 16, y: 25 },
         },
         {
-            runtime: {
-                scene: {
-                    computed: {
-                        transforms: {
-                            a: { x: 100, y: 200 },
-                        },
-                    },
+            nodeLookup: {
+                a: {
+                    id: 'a',
+                    layout: { x: -577, y: -52, width: 100, height: 100 },
                 },
+            },
+            computedTransforms: {
+                a: { x: 100, y: 200 },
             },
         },
     );
@@ -169,7 +169,40 @@ test('computeDragDelta builds interaction transforms from runtime computed trans
         dy: 15,
         guides: [],
         interactionTransforms: {
-            a: { x: 106, y: 215 },
+            a: { x: -571, y: -37 },
+        },
+    });
+});
+
+test('computeDragDelta keeps interaction transforms anchored to drag origin across successive updates', () => {
+    const delta = computeDragDelta(
+        {
+            nodeIds: ['a'],
+            origin: {
+                a: { x: 100, y: 200 },
+            },
+            startPointer: { x: 10, y: 10 },
+            currentPointer: { x: 40, y: 50 },
+        },
+        {
+            nodeLookup: {
+                a: {
+                    id: 'a',
+                    layout: { x: 120, y: 230, width: 100, height: 100 },
+                },
+            },
+            computedTransforms: {
+                a: { x: 120, y: 230 },
+            },
+        },
+    );
+
+    assert.deepEqual(delta, {
+        dx: 30,
+        dy: 40,
+        guides: [],
+        interactionTransforms: {
+            a: { x: 130, y: 240 },
         },
     });
 });

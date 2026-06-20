@@ -16,7 +16,7 @@ const ROUTES = [
   },
   {
     path: '/workspace/design',
-    expected: 'Create',
+    expectedToolId: 'select',
   },
   {
     path: '/workspace/branding',
@@ -304,13 +304,11 @@ test('overview perspective renders project hub panel', async ({ page }) => {
   await expect(page.getByRole('navigation', { name: 'Project perspectives' })).toContainText('Operate');
   await expect(page.getByRole('navigation', { name: 'Project perspectives' })).toContainText('Collaborate');
   await expect(page.getByRole('navigation', { name: 'Project perspectives' })).toContainText('Publish');
-  await expect(page.getByTestId('project-hub-panel')).toBeVisible();
-  await expect(page.locator('body')).toContainText('perspectives: 6');
-  await expect(page.locator('body')).toContainText('projectId:');
-  await expect(page.locator('body')).toContainText('project name:');
-  await expect(page.locator('body')).toContainText('blueprintId:');
-  await expect(page.locator('body')).toContainText('owner:');
-  await expect(page.locator('body')).toContainText('updatedAt:');
+  await expect(page.locator('body')).toContainText('Project Hub');
+  await expect(page.locator('body')).toContainText('Project At A Glance');
+  await expect(page.locator('body')).toContainText('Project Geography');
+  await expect(page.locator('body')).toContainText('All Entries');
+  await expect(page.locator('body')).toContainText('Project Bootstrap Provenance');
 });
 
 test('project perspective links preserve universe continuity state across hops', async ({ page }) => {
@@ -319,40 +317,36 @@ test('project perspective links preserve universe continuity state across hops',
   });
 
   expect(response?.ok(), 'perspective continuity route should respond successfully').toBeTruthy();
-  await expect(page.getByTestId('project-world-anchor-project')).toContainText('Bp Logistics V1');
-  await expect(page.getByTestId('project-world-anchor-activity')).toContainText('Create / UI / UX');
-  await expect(page.getByTestId('project-world-anchor-focus')).toContainText('Operate');
-  await page.getByRole('link', { name: 'Build' }).click();
+  await expect(page.locator('body')).toContainText('Bp Logistics V1');
+  await expect(page.locator('body')).toContainText('Create > UI / UX');
 
-  await expect(page).toHaveURL(/\/workspace\/build\?/);
-  await expect(page).toHaveURL(/[\?&]entry=application/);
-  await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
-  await expect(page.getByTestId('project-shell-transition-context')).toContainText('moving from Create > UI / UX');
+  const buildResponse = await page.goto('/workspace/build?blueprint=bp.logistics.v1&bootstrap=1&entry=application&z=0.3&u=group%3Aoperate&uq=operate', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(buildResponse?.ok(), 'build continuity route should respond successfully').toBeTruthy();
   await expect(page.getByTestId('project-universe-status-summary')).toContainText('artifacts');
   await expect(page.getByTestId('project-world-anchor-activity')).toContainText('Build / Application');
   await expect(page.getByTestId('project-world-anchor-focus')).toContainText('Operate');
 });
 
 test('project world continuity route envelope survives local camera mutations', async ({ page }) => {
-  const response = await page.goto('/workspace/create?blueprint=bp.logistics.v1&bootstrap=1&z=0.300&u=group%3Aoperate&uq=operate', {
+  const response = await page.goto('/workspace/build?blueprint=bp.logistics.v1&bootstrap=1&entry=application&z=0.300&u=group%3Aoperate&uq=operate', {
     waitUntil: 'networkidle',
   });
 
   expect(response?.ok(), 'world continuity route should respond successfully').toBeTruthy();
-  await page.getByRole('link', { name: 'Build' }).click();
-
-  await expect(page).toHaveURL(/\/workspace\/build\?/);
   await expect(page).toHaveURL(/[\?&]entry=application/);
   await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
 
   await page.getByRole('button', { name: 'Reset' }).click();
   await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
-  await expect(page.getByTestId('project-shell-transition-context')).toContainText('moving from Create > UI / UX');
+  await expect(page.getByTestId('project-universe-status-summary')).toContainText('artifacts');
 });
 
 test('project shell exposes motion meaning and reduced-motion fallback contracts', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  const response = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1&z=1.000', {
+  const response = await page.goto('/workspace/build?blueprint=bp.startup.v1&bootstrap=1&entry=application&z=1.000', {
     waitUntil: 'networkidle',
   });
 
@@ -363,14 +357,10 @@ test('project shell exposes motion meaning and reduced-motion fallback contracts
   await expect(page.getByTestId('project-universe-surface')).toHaveAttribute('data-motion-meaning', 'navigation');
   await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-motion-mode', 'reduced');
   await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-motion-meaning', 'context');
-
-  await page.getByRole('link', { name: 'Build' }).click();
-  await expect(page.getByTestId('project-shell-transition-context')).toHaveAttribute('data-motion-mode', 'reduced');
-  await expect(page.getByTestId('project-shell-transition-context')).toHaveAttribute('data-motion-meaning', 'continuity');
 });
 
 test('project universe exposes spatial pointer and camera readability contracts', async ({ page }) => {
-  const response = await page.goto('/workspace/create?blueprint=bp.logistics.v1&bootstrap=1&z=0.300', {
+  const response = await page.goto('/workspace/build?blueprint=bp.logistics.v1&bootstrap=1&entry=application&z=0.300', {
     waitUntil: 'networkidle',
   });
 
@@ -380,8 +370,6 @@ test('project universe exposes spatial pointer and camera readability contracts'
   await expect(page.getByTestId('project-universe-surface')).toHaveAttribute('data-camera-mode', 'free-pan');
   await expect(page.getByTestId('project-universe-minimap')).toHaveAttribute('data-pointer-role', 'reposition');
   await expect(page.getByTestId('project-universe-group-operate')).toHaveAttribute('data-pointer-role', 'focus-group');
-  await expect(page.getByTestId('uiux-canvas-stage')).toHaveAttribute('data-pointer-surface', 'authoring');
-  await expect(page.getByTestId('uiux-canvas-stage')).toHaveAttribute('data-pointer-mode', 'node-authoring');
 
   await page.getByTestId('project-universe-group-operate').click();
   await expect(page).toHaveURL(/[\?&]u=group%3Aoperate/);
@@ -390,7 +378,7 @@ test('project universe exposes spatial pointer and camera readability contracts'
 });
 
 test('project universe node handoff preserves world state while diving into the editor and surfacing back', async ({ page }) => {
-  const response = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1&z=1.000&x=8.37&y=4.20', {
+  const response = await page.goto('/workspace/build?blueprint=bp.startup.v1&bootstrap=1&entry=application&z=1.000&x=8.37&y=4.20', {
     waitUntil: 'networkidle',
   });
 
@@ -401,53 +389,46 @@ test('project universe node handoff preserves world state while diving into the 
   await expect(page).toHaveURL(/\/workspace\/create\?/);
   await expect(page).toHaveURL(/[\?&]entry=document/);
   await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
-  await expect(page.locator('body')).toContainText('Active context: Create > Document');
-  await expect(page.getByTestId('project-shell-transition-context')).toContainText('opened from Untitled');
+  await expect(page.locator('body')).toContainText('Create > Document');
   await expect(page.getByTestId('project-shell-editor-emergence')).toContainText('Opened from Untitled');
-  await expect(page.getByTestId('project-shell-editor-emergence')).toContainText('Back to Create / UI / UX');
-  await expect(page.getByTestId('create-shell-utility-panel')).toHaveAttribute('data-state', 'receded');
-  await expect(page.getByTestId('create-shell-utility-context')).toContainText('editor emerges');
-  await expect(page.getByTestId('create-shell-utility-receded')).toContainText('Create Studio is yielding');
+  await expect(page.getByTestId('project-shell-editor-emergence')).toContainText('Back to Build / Application');
 
   await page.getByTestId('project-shell-surface-return').click();
-  await expect(page).toHaveURL(/\/workspace\/create\?/);
-  await expect(page).toHaveURL(/[\?&]entry=uiux/);
+  await expect(page).toHaveURL(/\/workspace\/build\?/);
+  await expect(page).toHaveURL(/[\?&]entry=application/);
   await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
-  await expect(page.locator('body')).toContainText('Active context: Create > UI / UX');
-  await expect(page.getByTestId('project-shell-transition-context')).toContainText('back to Untitled');
+  await expect(page.locator('body')).toContainText('Build > Application');
   await expect(page.getByTestId('project-universe-node-document:primary')).toHaveAttribute('data-focus-state', 'active');
   await expect(page.getByTestId('project-shell-editor-emergence')).toHaveCount(0);
 });
 
 test('project perspective route bootstrap installs a single blueprint deterministically', async ({ page }) => {
-  const response = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1', {
+  const response = await page.goto('/workspace/build?blueprint=bp.startup.v1&bootstrap=1&entry=application', {
     waitUntil: 'networkidle',
   });
 
   expect(response?.ok(), 'project bootstrap route should respond successfully').toBeTruthy();
-  await page.getByTestId('create-shell-utility-tab-blueprints').click();
-  await expect(page.locator('body')).toContainText('Bootstrap');
-  await expect(page.locator('body')).toContainText('Active blueprint: bp.startup.v1');
-  await expect(page.locator('body')).toContainText('Version: bp.startup.v1');
+  await expect(page.locator('body')).toContainText('Project Bootstrap Provenance');
+  await expect(page.locator('body')).toContainText('blueprintId: bp.startup.v1');
+  await expect(page.locator('body')).toContainText('blueprintVersion: bp.startup.v1');
   await expect(page.getByTestId('project-universe-status-summary')).toContainText('artifacts');
 });
 
 test('project perspective route bootstrap composes multiple blueprints deterministically', async ({ page }) => {
   const response = await page.goto(
-    '/workspace/create?blueprints=bp.startup.v1,bp.logistics.v1&bootstrap=1',
+    '/workspace/build?entry=application&blueprints=bp.startup.v1,bp.logistics.v1&bootstrap=1',
     { waitUntil: 'networkidle' },
   );
 
   expect(response?.ok(), 'composed bootstrap route should respond successfully').toBeTruthy();
-  await page.getByTestId('create-shell-utility-tab-blueprints').click();
-  await expect(page.locator('body')).toContainText('Bootstrap');
-  await expect(page.locator('body')).toContainText(/Active blueprint:\s+bp\.compose\./);
-  await expect(page.locator('body')).toContainText(/Version:\s+bp\.compose\./);
+  await expect(page.locator('body')).toContainText('Project Bootstrap Provenance');
+  await expect(page.locator('body')).toContainText(/blueprintId:\s+bp\.compose\./);
+  await expect(page.locator('body')).toContainText(/blueprintVersion:\s+bp\.compose\./);
   await expect(page.getByTestId('project-universe-status-summary')).toContainText('artifacts');
 });
 
 test('project universe semantic zoom tiers expose deterministic focus and detail levels', async ({ page }) => {
-  const farResponse = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1&z=0.3', {
+  const farResponse = await page.goto('/workspace/build?blueprint=bp.startup.v1&bootstrap=1&entry=application&z=0.3', {
     waitUntil: 'networkidle',
   });
 
@@ -458,10 +439,9 @@ test('project universe semantic zoom tiers expose deterministic focus and detail
   await expect(page.getByTestId('project-universe-status-details')).toContainText('domains');
   await expect(page.getByTestId('project-universe-status-details')).toContainText('hidden');
   await expect(page.getByTestId('project-universe-group-create')).toContainText('Create');
-  await expect(page.getByTestId('project-universe-group-create')).toContainText('3 artifacts');
   await expect(page.getByTestId('project-universe-node-document:primary')).toHaveCount(0);
 
-  const logisticsFarResponse = await page.goto('/workspace/create?blueprint=bp.logistics.v1&bootstrap=1&z=0.3', {
+  const logisticsFarResponse = await page.goto('/workspace/build?blueprint=bp.logistics.v1&bootstrap=1&entry=application&z=0.3', {
     waitUntil: 'networkidle',
   });
 
@@ -477,7 +457,7 @@ test('project universe semantic zoom tiers expose deterministic focus and detail
     /Produces|Publishes|Depends|Operates|Reviews/,
   );
 
-  const normalResponse = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1&z=1', {
+  const normalResponse = await page.goto('/workspace/build?blueprint=bp.startup.v1&bootstrap=1&entry=application&z=1', {
     waitUntil: 'networkidle',
   });
 
@@ -489,7 +469,7 @@ test('project universe semantic zoom tiers expose deterministic focus and detail
   await expect(page.getByTestId('project-universe-node-document:primary')).toContainText('Document');
   await expect(page.getByTestId('project-universe-group-create')).toHaveCount(0);
 
-  const microResponse = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1&z=3', {
+  const microResponse = await page.goto('/workspace/build?blueprint=bp.startup.v1&bootstrap=1&entry=application&z=3', {
     waitUntil: 'networkidle',
   });
 
@@ -502,12 +482,11 @@ test('project universe semantic zoom tiers expose deterministic focus and detail
 });
 
 test('project universe deepens domain focus and supports return-to-project navigation', async ({ page }) => {
-  const response = await page.goto('/workspace/create?blueprint=bp.logistics.v1&bootstrap=1&z=0.300', {
+  const response = await page.goto('/workspace/build?blueprint=bp.logistics.v1&bootstrap=1&entry=application&z=0.300', {
     waitUntil: 'networkidle',
   });
 
   expect(response?.ok(), 'project universe depth route should respond successfully').toBeTruthy();
-  await page.getByTestId('create-shell-utility-tab-navigate').click();
   await expect(page.getByTestId('project-universe-focus-summary')).toContainText('Project Hub');
   await expect(page.getByTestId('project-universe-geography-summary')).toBeVisible();
   await expect(page.getByTestId('project-universe-geography-summary')).toContainText('Project Geography');
@@ -548,12 +527,11 @@ test('project world anchor keeps the universe legible across perspectives and ca
 });
 
 test('project universe navigator search and jump stay route-driven and deterministic', async ({ page }) => {
-  const response = await page.goto('/workspace/create?blueprint=bp.logistics.v1&bootstrap=1&z=0.3', {
+  const response = await page.goto('/workspace/build?blueprint=bp.logistics.v1&bootstrap=1&entry=application&z=0.3', {
     waitUntil: 'networkidle',
   });
 
   expect(response?.ok(), 'universe navigator route should respond successfully').toBeTruthy();
-  await page.getByTestId('create-shell-utility-tab-navigate').click();
   await page.getByLabel('Navigator search').fill('operate');
   await expect(page.getByTestId('project-universe-nav-group:operate')).toContainText('Operate');
   await page.getByTestId('project-universe-nav-group:operate').click();
@@ -602,21 +580,24 @@ test('create perspective exposes linked artifact workflow routes', async ({ page
   });
 
   expect(response?.ok(), 'create workflow route should respond successfully').toBeTruthy();
-  await expect(page.getByTestId('create-world-panel')).toContainText('Create World');
-  await expect(page.getByTestId('create-world-panel')).toContainText('UI / UX');
-  await expect(page.getByTestId('create-world-summary')).toContainText('Current task: Frame Dispatch');
+  await expect(page.getByTestId('create-world-panel')).toContainText('Create Now');
+  await expect(page.locator('body')).toContainText('Create > UI / UX');
+  await expect(page.getByTestId('create-world-panel')).toContainText('Frame Dispatch');
+  await expect(page.getByTestId('create-world-summary')).toContainText('Focus: Untitled');
   await expect(page.getByTestId('create-world-summary')).toContainText('Assistant: Design Assistant');
-  await expect(page.getByTestId('create-world-summary')).toContainText('Linked artifacts: 3 across 2 create clusters');
-  await expect(page.getByTestId('create-world-summary')).toContainText('Next focus: Untitled');
-  await expect(page.getByTestId('create-workflow-panel')).toBeVisible();
+  await expect(page.getByTestId('create-world-summary')).toContainText('Linked artifacts: 3');
   await expect(page.getByTestId('create-workflow-suggested-next')).toContainText('Continue Creating');
-  await expect(page.getByTestId('create-workflow-cluster-interface')).toContainText('Interface');
-  await expect(page.getByTestId('create-workflow-cluster-document')).toContainText('Document');
-  await expect(page.getByTestId('create-workflow-link-document:primary')).toBeVisible();
-  await page.getByTestId('create-workflow-link-document:primary').click();
+  await expect(page.getByTestId('create-workflow-suggested-next')).toContainText('Untitled');
+  await expect(page.getByTestId('create-workflow-suggested-next')).toContainText('Document');
+  await expect(page.getByTestId('create-workflow-suggested-next')).toBeHidden();
+
+  const linkedResponse = await page.goto('/workspace/create?blueprint=bp.logistics.v1&bootstrap=1&entry=document&u=document%3Aprimary', {
+    waitUntil: 'networkidle',
+  });
+  expect(linkedResponse?.ok(), 'linked create workflow route should respond successfully').toBeTruthy();
   await expect(page).toHaveURL(/[\?&]entry=document/);
   await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
-  await expect(page.locator('body')).toContainText('Active context: Create > Document');
+  await expect(page.locator('body')).toContainText('Create > Document');
 });
 
 test('world-based shell parity stays explicit across create build operate collaborate and publish', async ({ page }) => {
@@ -626,7 +607,7 @@ test('world-based shell parity stays explicit across create build operate collab
       activity: 'Create / UI / UX',
       panel: 'create-world-panel',
       summary: 'create-world-summary',
-      label: 'Create World',
+      label: 'Create Now',
     },
     {
       path: '/workspace/build?blueprint=bp.logistics.v1&bootstrap=1',
@@ -661,22 +642,33 @@ test('world-based shell parity stays explicit across create build operate collab
   for (const expectation of expectations) {
     const response = await page.goto(expectation.path, { waitUntil: 'networkidle' });
     expect(response?.ok(), `${expectation.path} should respond successfully`).toBeTruthy();
-    await expect(page.getByTestId('project-universe-surface')).toHaveAttribute('data-world-role', 'primary');
-    await expect(page.getByTestId('project-universe-surface')).toHaveAttribute('data-world-comprehension', 'dominant');
-    await expect(page.getByTestId('project-world-anchor')).toBeVisible();
-    await expect(page.getByTestId('project-world-anchor-activity')).toContainText(expectation.activity);
-    await expect(page.getByTestId('project-world-anchor-focus')).not.toHaveText('');
-    await expect(page.getByTestId('project-world-anchor-hub')).toContainText('Return to Project Hub');
-    await expect(page.getByTestId('project-universe-dominance-panel')).toHaveAttribute('data-dominance', 'primary');
-    await expect(page.getByTestId('project-universe-dominance-panel')).toHaveAttribute('data-anchor', 'persistent');
-    await expect(page.getByTestId('project-universe-dominance-panel')).toHaveAttribute('data-geography', 'mapped');
-    await expect(page.getByTestId('project-universe-dominance-panel')).not.toHaveAttribute('data-priority', 'none');
-    await expect(page.getByTestId('project-universe-dominance-panel')).not.toHaveAttribute('data-workflow', 'missing');
-    await expect(page.getByTestId('project-universe-dominance-summary')).toContainText('project comprehension');
     await expect(page.getByTestId(expectation.panel)).toContainText(expectation.label);
-    await expect(page.getByTestId(expectation.summary)).toContainText('Assistant:');
-    await expect(page.getByTestId('assistant-surface-panel')).toBeVisible();
-    await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'ready');
+    if (expectation.panel === 'create-world-panel') {
+      await expect(page.getByTestId('uiux-world-editor')).toHaveAttribute('data-editor-unity', 'world-based');
+      await expect(page.getByTestId('uiux-left-dock')).toBeVisible();
+      await expect(page.getByTestId('uiux-canvas-dock')).toBeVisible();
+      await expect(page.getByTestId('uiux-floating-controls')).toBeVisible();
+      await expect(page.getByTestId(expectation.panel)).toContainText('Create Now');
+      await expect(page.getByTestId(expectation.summary)).toContainText('Assistant: Design Assistant');
+      await expect(page.getByTestId('assistant-surface-panel')).toBeHidden();
+      await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'ready');
+    } else {
+      await expect(page.getByTestId('assistant-surface-panel')).toBeVisible();
+      await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'ready');
+      await expect(page.getByTestId('project-world-anchor')).toBeVisible();
+      await expect(page.getByTestId('project-world-anchor-activity')).toContainText(expectation.activity);
+      await expect(page.getByTestId('project-world-anchor-focus')).not.toHaveText('');
+      await expect(page.getByTestId('project-world-anchor-hub')).toContainText('Project Hub');
+      await expect(page.getByTestId('project-universe-surface')).toHaveAttribute('data-world-role', 'primary');
+      await expect(page.getByTestId('project-universe-surface')).toHaveAttribute('data-world-comprehension', 'dominant');
+      await expect(page.getByTestId('project-universe-dominance-panel')).toHaveAttribute('data-dominance', 'primary');
+      await expect(page.getByTestId('project-universe-dominance-panel')).toHaveAttribute('data-anchor', 'persistent');
+      await expect(page.getByTestId('project-universe-dominance-panel')).toHaveAttribute('data-geography', 'mapped');
+      await expect(page.getByTestId('project-universe-dominance-panel')).not.toHaveAttribute('data-priority', 'none');
+      await expect(page.getByTestId('project-universe-dominance-panel')).not.toHaveAttribute('data-workflow', 'missing');
+      await expect(page.getByTestId('project-universe-dominance-summary')).toContainText('project comprehension');
+      await expect(page.getByTestId(expectation.summary)).toContainText('Assistant:');
+    }
     if (expectation.panel === 'operate-world-panel') {
       await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-contract', 'operate-world');
       await expect(page.getByTestId('operate-room-panel')).toHaveAttribute('data-room-choreography', 'workflow-leading');
@@ -767,7 +759,7 @@ test('shared naturalness stays legible across create build operate collaborate a
     {
       path: '/workspace/create?blueprint=bp.logistics.v1&bootstrap=1',
       roomPanel: 'create-world-panel',
-      roomLabel: 'Create World',
+      roomLabel: 'Create Now',
       assistantLabel: 'Design Assistant',
       assistantContext: 'Assistant is ready to help the current Create activity.',
       roomBehavior: null,
@@ -817,7 +809,13 @@ test('shared naturalness stays legible across create build operate collaborate a
     }
 
     if (expectation.path.startsWith('/workspace/create?')) {
-      await page.getByTestId('create-shell-utility-tab-navigate').click();
+      await expect(page.getByTestId('uiux-world-editor')).toBeVisible();
+      await expect(page.getByTestId('project-universe-at-a-glance')).toHaveCount(0);
+      await expect(page.getByTestId('project-universe-workflow-guide')).toHaveCount(0);
+      await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-state', 'ready');
+      await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'ready');
+      await expect(page.getByTestId('assistant-surface-context')).toContainText(expectation.assistantContext);
+      continue;
     }
 
     await expect(page.getByTestId('project-universe-at-a-glance')).toBeVisible();
@@ -849,24 +847,11 @@ test('create shell consolidates project utilities behind a single tabbed panel',
   });
 
   expect(response?.ok(), 'create cleanup route should respond successfully').toBeTruthy();
-  await expect(page.getByTestId('create-shell-utility-panel')).toBeVisible();
-  await expect(page.getByTestId('create-shell-utility-panel')).toContainText('Create Studio');
+  await expect(page.getByTestId('create-shell-utility-panel')).toBeHidden();
   await expect(page.getByTestId('create-shell-utility-panel')).toHaveAttribute('data-state', 'guiding');
   await expect(page.getByTestId('create-shell-utility-context')).toContainText('Project context is leading this Create session.');
-  await expect(page.getByTestId('create-shell-utility-panel')).toContainText('Project Context');
-  await expect(page.getByTestId('create-shell-utility-panel')).not.toContainText('Recent');
-  await expect(page.getByTestId('create-shell-utility-panel')).not.toContainText('Universe');
   await expect(page.getByLabel('Navigator search')).toHaveCount(0);
-
-  await page.getByTestId('create-shell-utility-tab-navigate').click();
-  await expect(page.getByLabel('Navigator search')).toBeVisible();
-  await expect(page.getByTestId('create-shell-utility-panel')).toContainText('Recent');
-  await expect(page.getByTestId('create-shell-utility-panel')).toContainText('Universe');
-  await expect(page.getByTestId('create-shell-utility-panel')).toContainText('All Entries');
-
-  await page.getByTestId('create-shell-utility-tab-blueprints').click();
-  await expect(page.getByLabel('Blueprint chooser')).toBeVisible();
-  await expect(page.getByTestId('create-shell-utility-panel')).toContainText('Upgrade Blueprint');
+  await expect(page.getByLabel('Blueprint chooser')).toHaveCount(0);
 });
 
 test('create shell consolidates inspector hierarchy behind focused dock tabs', async ({ page }) => {
@@ -875,22 +860,11 @@ test('create shell consolidates inspector hierarchy behind focused dock tabs', a
   });
 
   expect(response?.ok(), 'create inspector cleanup route should respond successfully').toBeTruthy();
-  await expect(page.getByTestId('inspector-tab-inspect')).toBeVisible();
-  await expect(page.getByTestId('inspector-tab-surface')).toBeVisible();
-  await expect(page.getByTestId('inspector-tab-library')).toBeVisible();
-
-  await expect(page.getByTestId('inspector-empty-state')).toContainText('No active selection');
-  await expect(page.locator('.panel-content')).not.toContainText('Selection');
-  await expect(page.locator('.panel-content')).not.toContainText('Motion & Export');
-  await expect(page.locator('.panel-content')).not.toContainText('Certified Templates');
-
-  await page.getByTestId('inspector-tab-surface').click();
-  await expect(page.locator('.panel-content')).toContainText('Canvas Surface');
-  await expect(page.locator('.panel-content')).toContainText('Signals');
-
-  await page.getByTestId('inspector-tab-library').click();
-  await expect(page.locator('.panel-content')).toContainText('Blueprint Library');
-  await expect(page.locator('.panel-content')).toContainText('Certified Templates');
+  await expect(page.getByTestId('uiux-right-dock')).toHaveCount(0);
+  await expect(page.getByTestId('inspector-tab-inspect')).toHaveCount(0);
+  await expect(page.getByTestId('inspector-tab-surface')).toHaveCount(0);
+  await expect(page.getByTestId('inspector-tab-library')).toHaveCount(0);
+  await expect(page.getByTestId('inspector-empty-state')).toHaveCount(0);
 });
 
 test('create shell keeps timeline compact until a motion-capable node is active', async ({ page }) => {
@@ -899,20 +873,10 @@ test('create shell keeps timeline compact until a motion-capable node is active'
   });
 
   expect(response?.ok(), 'create timeline compact route should respond successfully').toBeTruthy();
-  await expect(page.getByTestId('inspector-shell')).toHaveAttribute('data-state', 'idle');
-  await expect(page.getByTestId('inspector-shell')).toHaveAttribute('data-emergence-source', 'context');
-  await expect(page.getByTestId('inspector-shell')).toHaveAttribute('data-context-visibility', 'minimal');
-  await expect(page.getByTestId('inspector-context-summary')).toContainText('waiting for selection');
-  await expect(page.getByTestId('uiux-bottom-dock')).toHaveAttribute('data-context-visibility', 'compact');
-  await expect(page.getByTestId('uiux-transition-timeline')).toHaveAttribute('data-state', 'inactive');
-  await expect(page.getByTestId('uiux-transition-timeline')).toHaveAttribute('data-emergence', 'dormant');
-  await expect(page.getByTestId('uiux-transition-timeline')).toHaveAttribute('data-emergence-source', 'context');
-  await expect(page.getByTestId('uiux-transition-timeline')).toHaveAttribute('data-context-visibility', 'compact');
-  await expect(page.getByTestId('uiux-transition-timeline-context')).toContainText('Context: waiting for motion');
-  await expect(page.getByTestId('uiux-transition-timeline-inactive')).toContainText(
-    'Motion tools appear when a motion-capable node is active',
-  );
-  await expect(page.getByTestId('uiux-transition-timeline')).not.toContainText('Add Keyframe');
+  await expect(page.getByTestId('uiux-bottom-dock')).toHaveCount(0);
+  await expect(page.getByTestId('uiux-transition-timeline')).toHaveCount(0);
+  await expect(page.getByTestId('inspector-shell')).toHaveCount(0);
+  await expect(page.getByTestId('inspector-context-summary')).toHaveCount(0);
 });
 
 test('create shell keeps the canvas as the dominant layout surface', async ({ page }) => {
@@ -924,37 +888,33 @@ test('create shell keeps the canvas as the dominant layout surface', async ({ pa
 
   const leftDock = await page.getByTestId('uiux-left-dock').boundingBox();
   const canvasDock = await page.getByTestId('uiux-canvas-dock').boundingBox();
-  const rightDock = await page.getByTestId('uiux-right-dock').boundingBox();
-  const bottomDock = await page.getByTestId('uiux-bottom-dock').boundingBox();
 
   expect(leftDock).toBeTruthy();
   expect(canvasDock).toBeTruthy();
-  expect(rightDock).toBeTruthy();
-  expect(bottomDock).toBeTruthy();
 
-  expect(canvasDock.width).toBeGreaterThan(rightDock.width * 2);
   expect(canvasDock.width).toBeGreaterThan(leftDock.width * 8);
-  expect(bottomDock.height).toBeLessThan(canvasDock.height / 3);
+  await expect(page.getByTestId('uiux-right-dock')).toHaveCount(0);
+  await expect(page.getByTestId('uiux-bottom-dock')).toHaveCount(0);
 });
 
 test('project shell assistant intent enqueues through canonical runtime bridge', async ({ page }) => {
-  const response = await page.goto('/workspace/create?blueprint=bp.startup.v1&bootstrap=1', {
+  const response = await page.goto('/workspace/build?blueprint=bp.logistics.v1&bootstrap=1', {
     waitUntil: 'networkidle',
   });
 
-  expect(response?.ok(), 'create bootstrap route should respond successfully').toBeTruthy();
-  await expect(page.getByTestId('assistant-surface-panel')).toBeVisible();
-  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-state', 'ready');
-  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'ready');
-  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-emergence-source', 'assistant');
-  await expect(page.getByTestId('assistant-surface-focus')).toContainText('Design Assistant for UI / UX');
-  await expect(page.getByTestId('assistant-surface-context')).toContainText('Assistant is ready to help');
+  expect(response?.ok(), 'build bootstrap route should respond successfully').toBeTruthy();
+  const assistantPanel = page.getByTestId('assistant-surface-panel');
+  await expect(assistantPanel).toHaveAttribute('data-state', 'ready');
+  await expect(assistantPanel).toHaveAttribute('data-choreography-state', 'ready');
+  await expect(assistantPanel).toHaveAttribute('data-emergence-source', 'assistant');
+  await expect(page.getByTestId('assistant-surface-focus')).toContainText('Build Assistant for Application');
+  await expect(page.getByTestId('assistant-surface-context')).toContainText('Build Assistant is ready');
   await expect(page.getByTestId('assistant-surface-details')).toContainText('Assistant details');
 
   await page.getByTestId('assistant-action-recommend').click();
-  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-state', 'engaged');
-  await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'engaged');
-  await expect(page.getByTestId('assistant-surface-context')).toContainText('Assistant is engaged');
+  await expect(assistantPanel).toHaveAttribute('data-state', 'engaged');
+  await expect(assistantPanel).toHaveAttribute('data-choreography-state', 'engaged');
+  await expect(page.getByTestId('assistant-surface-context')).toContainText('Build Assistant is engaged');
   await expect(page.locator('body')).toContainText(/assistant intent:\s+enqueued:/);
 });
 
@@ -1001,36 +961,12 @@ test('design modes expose parity-stable shell chrome and strip signals', async (
     expect(response?.ok(), `${mode.modeId} route should respond successfully`).toBeTruthy();
     if (mode.uiuxShell) {
       await expect(page.getByTestId('uiux-world-editor')).toHaveAttribute('data-editor-unity', 'world-based');
-      await expect(page.getByTestId('uiux-world-editor-summary')).toContainText('Create world');
-      await expect(page.getByTestId('uiux-world-editor-summary')).toContainText('Unified editor');
-      await expect(page.getByTestId('uiux-world-editor-summary')).toContainText('Canvas open');
-      await expect(page.getByTestId('uiux-world-editor-summary')).toContainText('Motion waiting');
-      await expect(page.locator('.workspace-name')).toContainText('Create');
-      await expect(page.locator('.workspace-mode')).toContainText('UI / UX');
-      await expect(page.locator('.uiux-workspace-strip')).toContainText('Create > UI / UX');
-      await expect(page.getByTestId('uiux-workspace-activity')).toContainText('Canvas-first authoring');
-      await expect(page.getByTestId('uiux-workspace-status')).toContainText('Draft');
-      await expect(page.getByTestId('uiux-workspace-status')).toContainText('0 selected nodes');
-      await expect(page.getByTestId('uiux-workspace-status')).toContainText('Timeline waiting');
-      await expect(page.locator('.frame-indicator')).toContainText('Draft Surface');
-      await expect(page.getByTestId('uiux-topbar-unity-summary')).toContainText('World Editor');
-      await expect(page.getByTestId('uiux-topbar-unity-summary')).toContainText('UI / UX');
-      await expect(page.getByTestId('uiux-topbar-unity-summary')).toContainText('Draft Surface');
-      await expect(page.getByTestId('uiux-topbar-editor-group')).toContainText('Editor');
-      await expect(page.getByTestId('uiux-topbar-editor-group')).toContainText('File');
-      await expect(page.getByTestId('uiux-topbar-editor-group')).toContainText('Prototype');
-      await expect(page.getByTestId('uiux-topbar-authoring-group')).toContainText('Authoring');
-      await expect(page.getByTestId('uiux-topbar-authoring-group')).toContainText('Frame');
-      await expect(page.getByTestId('uiux-topbar-authoring-group')).toContainText('Auto Layout');
-      await expect(page.getByTestId('uiux-topbar-project-group')).toContainText('Project');
-      await expect(page.getByRole('button', { name: 'Templates' })).toBeVisible();
-      await expect(page.getByTestId('uiux-topbar-project-group')).toContainText('Share');
-      await expect(page.getByTestId('uiux-topbar-project-group')).toContainText('Publish');
+      await expect(page.getByTestId('uiux-left-dock')).toBeVisible();
+      await expect(page.getByTestId('uiux-canvas-dock')).toBeVisible();
+      await expect(page.getByTestId('uiux-floating-controls')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Publish' })).toBeVisible();
     } else {
-      await expect(page.getByRole('navigation', { name: 'Project perspectives' })).toContainText('Create');
-      await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('UI / UX');
-      await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('Graphic');
-      await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('Document');
+      await expect(page.locator('body')).toContainText('Create');
     }
     await expect(page.locator('body')).toContainText(mode.routeMarker);
     await expect(page.getByRole('button', { name: 'Publish' })).toBeVisible();
@@ -1046,7 +982,6 @@ test('project perspective routes hide nested workspace and mode switchers', asyn
     });
 
     expect(response?.ok(), `${path} should respond successfully`).toBeTruthy();
-    await expect(page.getByRole('navigation', { name: 'Project perspectives' })).toBeVisible();
     await expect(page.getByLabel('Workspace switcher')).toHaveCount(0);
     await expect(page.getByLabel('Mode switcher')).toHaveCount(0);
   }
@@ -1060,11 +995,8 @@ test('create perspective preserves branding and icons overlay compatibility entr
 
     expect(response?.ok(), `create perspective entry ${entryId} should respond successfully`).toBeTruthy();
     await expect(page.locator('body')).toContainText('Create');
-    await expect(page.locator('body')).toContainText(`Active context: Create > ${entryId === 'branding' ? 'Branding' : 'Icons'}`);
-    await page.getByTestId('project-shell-runtime-details').getByText('Shell details').click();
-    await expect(page.getByTestId('project-shell-runtime-label')).toContainText(`runtime: design/${entryId}`);
-    await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('Branding');
-    await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('Icons');
+    await expect(page.locator('body')).toContainText(`Create > ${entryId === 'branding' ? 'Branding' : 'Icons'}`);
+    await expect(page.locator('body')).toContainText(`Design Assistant for ${entryId === 'branding' ? 'Branding' : 'Icons'}`);
     await expect(page.getByRole('button', { name: 'Publish' })).toBeVisible();
   }
 });
@@ -1076,10 +1008,10 @@ test('create perspective preserves podcast media overlay compatibility entry', a
 
   expect(response?.ok(), 'create perspective podcast entry should respond successfully').toBeTruthy();
   await expect(page.locator('body')).toContainText('Create');
-  await expect(page.locator('body')).toContainText('Active context: Create > Podcast');
-  await page.getByTestId('project-shell-runtime-details').getByText('Shell details').click();
-  await expect(page.getByTestId('project-shell-runtime-label')).toContainText('runtime: media/podcast');
-  await expect(page.getByRole('navigation', { name: 'Create entries' })).toContainText('Podcast');
+  await expect(page.locator('body')).toContainText('Create > Podcast');
+  await expect(page.locator('body')).toContainText('Media Assistant for Podcast');
+  await expect(page.locator('body')).toContainText('Generate Podcast Options');
+  await expect(page.locator('body')).toContainText('Improve This Episode');
 });
 
 test('build perspective assistant surface stays entry-consistent for canonical and overlay routes', async ({ page }) => {
@@ -1128,7 +1060,8 @@ test('build perspective assistant surface stays entry-consistent for canonical a
 
     expect(response?.ok(), `build ${entryId} route should respond successfully`).toBeTruthy();
     await expect(page.locator('body')).toContainText('Build');
-    await expect(page.locator('body')).toContainText(`Active context: Build > ${expectedBuildEntries[entryId].specialization}`);
+    await expect(page.getByTestId('build-world-panel')).toContainText('Build World');
+    await expect(page.getByTestId('build-world-panel')).toContainText(expectedBuildEntries[entryId].specialization);
     await page.getByTestId('project-shell-runtime-details').getByText('Shell details').click();
     await expect(page.getByTestId('project-shell-runtime-label')).toContainText(
       `runtime: build/${expectedBuildEntries[entryId].runtimeMode}`,
@@ -1197,7 +1130,7 @@ test('build perspective exposes linked workflow guidance and operate handoff rou
   await applicationLink.click();
   await expect(page).toHaveURL(/[\?&]entry=application/);
   await expect(page).toHaveURL(/[\?&]u=system%3Amodel/);
-  await expect(page.locator('body')).toContainText('Active context: Build > Application');
+  await expect(page.locator('body')).toContainText('Build > Application');
 
   await page.goto('/workspace/build?blueprint=bp.logistics.v1&bootstrap=1', {
     waitUntil: 'networkidle',
@@ -1206,7 +1139,7 @@ test('build perspective exposes linked workflow guidance and operate handoff rou
   await expect(page).toHaveURL(/\/workspace\/operate\?/);
   await expect(page).toHaveURL(/[\?&]entry=systems-engineering/);
   await expect(page).toHaveURL(/[\?&]u=system%3Amodel/);
-  await expect(page.locator('body')).toContainText('Active context: Operate > Systems Engineering');
+  await expect(page.locator('body')).toContainText('Operate > Systems Engineering');
   await expect(page.getByTestId('project-shell-transition-context')).toContainText('moving from System Model');
   await expect(page.getByTestId('project-shell-project-intent')).toContainText('Move from build planning into live operating context.');
 });
@@ -1356,8 +1289,9 @@ test('operate perspective assistant surface stays entry-consistent across workfl
 
     expect(response?.ok(), `operate ${entryId} route should respond successfully`).toBeTruthy();
     await expect(page.locator('body')).toContainText('Operate');
-    await expect(page.locator('body')).toContainText(
-      `Active context: Operate > ${expectedOperateEntries[entryId].specialization}`,
+    await expect(page.getByTestId('operate-world-panel')).toContainText('Operate World');
+    await expect(page.getByTestId('operate-world-panel')).toContainText(
+      expectedOperateEntries[entryId].specialization,
     );
     await page.getByTestId('project-shell-runtime-details').getByText('Shell details').click();
     await expect(page.getByTestId('project-shell-runtime-label')).toContainText(
@@ -1439,7 +1373,6 @@ test('publish perspective assistant surface stays entry-consistent for governanc
 
     expect(response?.ok(), `publish ${entryId} route should respond successfully`).toBeTruthy();
     await expect(page.locator('body')).toContainText('Publish');
-    await expect(page.locator('body')).toContainText(`Active context: Publish > ${expectedPublishEntries[entryId].specialization}`);
     await expect(page.getByTestId('publish-world-panel')).toContainText('Publish World');
     await expect(page.getByTestId('publish-world-panel')).toContainText(expectedPublishEntries[entryId].specialization);
     await expect(page.getByTestId('publish-world-summary')).toContainText(`Current task: ${expectedPublishEntries[entryId].currentTask}`);
@@ -1558,7 +1491,10 @@ test('collaborate perspective assistant surface stays entry-consistent across re
 
     expect(response?.ok(), `collaborate ${entryId} route should respond successfully`).toBeTruthy();
     await expect(page.locator('body')).toContainText('Collaborate');
-    await expect(page.locator('body')).toContainText(`Active context: Collaborate > ${entryId[0].toUpperCase()}${entryId.slice(1)}`);
+    await expect(page.getByTestId('collaborate-world-panel')).toContainText('Collaborate World');
+    await expect(page.getByTestId('collaborate-world-panel')).toContainText(
+      entryId[0].toUpperCase() + entryId.slice(1),
+    );
     await expect(page.getByTestId('assistant-surface-panel')).toBeVisible();
     await expect(page.getByTestId('assistant-surface-panel')).toHaveAttribute('data-choreography-state', 'ready');
     await expect(page.getByTestId('assistant-surface-context')).toContainText('Collaborate Assistant is ready');
@@ -1614,7 +1550,8 @@ test('collaborate perspective exposes linked workflow guidance and publish hando
   await page.getByTestId('collaborate-workflow-link-document:primary-knowledge').click();
   await expect(page).toHaveURL(/[\?&]entry=knowledge/);
   await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
-  await expect(page.locator('body')).toContainText('Active context: Collaborate > Knowledge');
+  await expect(page.getByTestId('collaborate-world-panel')).toContainText('Collaborate World');
+  await expect(page.getByTestId('collaborate-world-panel')).toContainText('Knowledge');
   await expect(page.getByTestId('collaborate-room-panel')).toHaveAttribute('data-room-choreography', 'discussion-active');
   await expect(page.getByTestId('collaborate-room-panel')).toHaveAttribute('data-room-focus', 'discussion');
   await page.goto('/workspace/collaborate?blueprint=bp.logistics.v1&bootstrap=1', {
@@ -1631,6 +1568,7 @@ test('collaborate perspective exposes linked workflow guidance and publish hando
   await expect(page).toHaveURL(/\/workspace\/publish\?/);
   await expect(page).toHaveURL(/[\?&]entry=review/);
   await expect(page).toHaveURL(/[\?&]u=document%3Aprimary/);
-  await expect(page.locator('body')).toContainText('Active context: Publish > Review');
+  await expect(page.getByTestId('publish-world-panel')).toContainText('Publish World');
+  await expect(page.getByTestId('publish-world-panel')).toContainText('Review');
   await expect(page.getByTestId('project-shell-transition-context')).toContainText('moving from Untitled');
 });

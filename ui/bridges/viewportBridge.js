@@ -1,11 +1,11 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
 import {
-    VIEWPORT_SET,
     VIEWPORT_PAN,
     VIEWPORT_ZOOM,
     VIEWPORT_FIT,
     VIEWPORT_CENTER,
 } from '@/core/events/viewportEvents.js';
+import { EventTypes } from '@/core/events/eventTypes.js';
 
 let registered = false;
 
@@ -19,7 +19,7 @@ export function registerViewportBridge(dispatcher) {
         if (!viewport) return;
         if (typeof dispatch === 'function') {
             dispatch({
-                type: VIEWPORT_SET,
+                type: EventTypes.WORKSPACE_SET_VIEWPORT,
                 payload: viewport,
             });
         } else {

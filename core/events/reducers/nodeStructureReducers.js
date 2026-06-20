@@ -1,4 +1,5 @@
 import { EventTypes } from '../eventTypes.js';
+import { NodeMutationTypes } from '../nodeMutationTypes.js';
 import { attachNode } from '@/core/structure/attachNode.js';
 import { detachNode } from '@/core/structure/detachNode.js';
 import { reparentNode } from '@/core/structure/reparentNode.js';
@@ -153,7 +154,7 @@ export function nodeStructureReducers(state, event) {
             });
         }
 
-        case 'node.children.reorder': {
+        case NodeMutationTypes.CHILDREN_REORDER: {
             const { parentId, fromIndex, toIndex } = payload;
             const parent = graph.nodes[parentId];
             if (!parent) return state;

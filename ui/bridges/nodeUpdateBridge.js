@@ -1,17 +1,30 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
+import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
+import { createNodeUpdateBridgeEvent } from '@/ui/bridges/intentEventFacade.js';
+import { resolveBridgeDispatch } from '@/ui/bridges/resolveBridgeDispatch.js';
 let registered = false;
 let activeDispatch = null;
 let activeRegistrations = 0;
 
-export function registerNodeUpdateBridge(dispatcher) {
-    activeDispatch = dispatcher?.dispatch ?? null;
+export function registerNodeUpdateBridge(dispatcherOrDispatch) {
+    activeDispatch = resolveBridgeDispatch(dispatcherOrDispatch);
     activeRegistrations += 1;
 
     const handler = (intent) => {
-        const event = intent?.event;
-        if (!event?.type || !event.type.startsWith('node.')) return;
+        const result = createNodeUpdateBridgeEvent(intent);
+        if (!result?.event) return;
+
+        if (result.event.type === 'node/delete') {
+            useAnimatedRuntimeStore.setState(
+                {
+                    previewNodes: {},
+                    cameraTransform: null,
+                },
+                false,
+            );
+        }
         if (typeof activeDispatch === 'function') {
-            activeDispatch(event);
+            activeDispatch(result.event);
         } else {
             console.warn('[nodeUpdateBridge] Dispatcher not provided; skipping node update.');
         }

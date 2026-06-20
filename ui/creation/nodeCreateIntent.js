@@ -1,6 +1,10 @@
 import { canvasBus } from '../eventBus/canvasBus.js';
-import { getProjectedWorkspaceViewState } from '@/runtime/projection';
+import {
+    getProjectedRuntimeViewState,
+    getProjectedWorkspaceViewState,
+} from '@/runtime/projection/index.js';
 import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
+import { resolveFirstFrameBounds } from '@/runtime/workspaces/projectSubstrateNavigation.js';
 
 const DEFAULT_BOUNDS = { x: 0, y: 0, width: 160, height: 100 };
 const MIN_SIZE = 1;
@@ -41,8 +45,11 @@ function normalizeBounds(bounds, position) {
 function resolveWorkspace() {
     const projection = getProjectedWorkspaceViewState?.();
     const workspaceId = projection?.id ?? null;
-    if (!workspaceId) return null;
-    return getWorkspaceActivation(workspaceId);
+    return {
+        workspaceId,
+        projection,
+        activation: workspaceId ? getWorkspaceActivation(workspaceId) : null,
+    };
 }
 
 function isCreationAllowed(workspace, type) {
@@ -78,15 +85,27 @@ function normalizeProps(props, type) {
 }
 
 export function nodeCreateIntent(payload) {
-    console.log('INTENT EMITTED:', payload);
     if (!payload?.type) return;
     const workspace = resolveWorkspace();
 
     const type = normalizeType(payload.type);
     if (!type) return;
-    if (!isCreationAllowed(workspace, type)) return;
+    if (!isCreationAllowed(workspace?.activation, type)) return;
 
-    const bounds = normalizeBounds(payload.bounds, payload.position);
+    const projectedRuntime = getProjectedRuntimeViewState?.();
+    const nodeCount = Object.keys(projectedRuntime?.viewNodes ?? {}).length;
+    const worldHistory = projectedRuntime?.document?.world?.history ?? null;
+    const resolvedBounds =
+        !payload.bounds && !payload.position && type === 'frame'
+            ? resolveFirstFrameBounds({
+                  workspaceId: workspace?.workspaceId,
+                  modeId: workspace?.projection?.modeId,
+                  nodeCount,
+                  worldHistory,
+              }) ?? payload.bounds
+            : payload.bounds;
+
+    const bounds = normalizeBounds(resolvedBounds, payload.position);
     const normalized = {
         id: payload.id ?? null,
         type,

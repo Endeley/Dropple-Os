@@ -42,9 +42,18 @@ function resolvePanelTab(panelId) {
 }
 
 function resolveInspectSections({ panelIds = [], extras = [], hasSelection = false }) {
-    const selection = panelIds.filter((panelId) =>
-        ['NodeHeaderPanel', 'LayoutInspector', 'AutoLayoutPanel', 'ContentPanel', 'SemanticsPanel'].includes(panelId),
+    const structure = panelIds.filter((panelId) =>
+        ['SelectionActionsPanel', 'NodeHeaderPanel'].includes(panelId),
     );
+    const layout = hasSelection
+        ? panelIds.filter((panelId) => ['LayoutInspector', 'AutoLayoutPanel'].includes(panelId))
+        : [];
+    const appearance = hasSelection
+        ? panelIds.filter((panelId) => ['AppearancePanel'].includes(panelId))
+        : [];
+    const content = hasSelection
+        ? panelIds.filter((panelId) => ['ContentPanel', 'SemanticsPanel'].includes(panelId))
+        : [];
     const motion = hasSelection
         ? panelIds.filter((panelId) => ['MotionPanel', 'ExportPreviewPanel'].includes(panelId))
         : [];
@@ -54,7 +63,10 @@ function resolveInspectSections({ panelIds = [], extras = [], hasSelection = fal
     }
 
     return [
-        Object.freeze({ id: 'selection', title: 'Selection', panelIds: hasSelection ? selection : [] }),
+        Object.freeze({ id: 'structure', title: 'Structure', panelIds: hasSelection ? structure : [] }),
+        Object.freeze({ id: 'layout', title: 'Layout', panelIds: layout }),
+        Object.freeze({ id: 'appearance', title: 'Appearance', panelIds: appearance }),
+        Object.freeze({ id: 'content', title: 'Content & Semantics', panelIds: content }),
         Object.freeze({ id: 'motion', title: 'Motion & Export', panelIds: motion }),
     ].filter((section) => section.panelIds.length > 0);
 }
@@ -164,9 +176,10 @@ export function PanelRenderer({ workspaceId, node, emit, extraPanels = [] }) {
                 data-context-visibility={inspectorContextVisibility}
                 data-motion-meaning='focus'>
                 <div className='inspector-header'>
-                    <div className='inspector-title'>Inspector</div>
-
-                    <div className='inspector-subtitle'>{node?.name || node?.type || 'No Selection'}</div>
+                    <div className='inspector-header-main'>
+                        <div className='inspector-title'>Inspector</div>
+                        <div className='inspector-subtitle'>{node?.name || node?.type || 'No Selection'}</div>
+                    </div>
                 </div>
                 <div
                     data-testid='inspector-context-summary'

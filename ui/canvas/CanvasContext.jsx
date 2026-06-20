@@ -8,6 +8,8 @@ import {
 } from '@/runtime/projection';
 import { useAnimatedRuntimeStore } from '@/runtime/stores/useAnimatedRuntimeStore.js';
 
+const EMPTY_SUBSCRIBE = () => () => {};
+
 const CanvasContext = createContext({
     zoomTier: 'normal',
     onResizeHandlePointerDown: null,
@@ -31,9 +33,7 @@ export function useCanvasContext() {
 
 function useOverrideAwareStoreValue({ override, store, projectState, selector }) {
     return useSyncExternalStore(
-        override
-            ? () => () => {}
-            : store.subscribe,
+        override ? EMPTY_SUBSCRIBE : store.subscribe,
         () => {
             if (override) {
                 return selector(override);

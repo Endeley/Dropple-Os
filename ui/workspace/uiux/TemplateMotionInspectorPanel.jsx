@@ -2,6 +2,12 @@
 
 import { useMemo } from 'react';
 import { useWorkspaceProjectionState } from '@/runtime/projection';
+import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
+import {
+    attachMotionClipToNode,
+    getMotionClipsForNode,
+    removeMotionClipsFromNode,
+} from '@/ui/motion/motionClipActions.js';
 
 function sortClips(clips = []) {
     return [...clips].sort((left, right) => {
@@ -27,6 +33,7 @@ function formatRange(keyframes = []) {
 }
 
 export function TemplateMotionInspectorPanel({ nodeId = null }) {
+    const dispatcher = useDispatcher();
     const document = useWorkspaceProjectionState((state) => state.document ?? null);
     const timeline = useWorkspaceProjectionState((state) => state.timeline ?? null);
 
@@ -50,6 +57,17 @@ export function TemplateMotionInspectorPanel({ nodeId = null }) {
         };
     }, [document?.motion?.clips, nodeId, timeline?.timelines]);
 
+    const selectedNodeClips = useMemo(() => getMotionClipsForNode(document, nodeId), [document, nodeId]);
+    const hasMotionForSelectedNode = selectedNodeClips.length > 0;
+
+    function handleAttachMotion() {
+        attachMotionClipToNode(dispatcher?.dispatch, nodeId);
+    }
+
+    function handleRemoveMotion() {
+        removeMotionClipsFromNode(dispatcher?.dispatch, nodeId, selectedNodeClips);
+    }
+
     if (motionView.allClips.length === 0) {
         return (
             <div className='inspector-group' data-testid='uiux-motion-inspector-empty'>
@@ -57,6 +75,15 @@ export function TemplateMotionInspectorPanel({ nodeId = null }) {
                 <div className='inspector-subtle' style={{ fontSize: 12 }}>
                     No timeline-backed motion is installed.
                 </div>
+                {nodeId ? (
+                    <button
+                        type='button'
+                        className='selection-context-menu__button'
+                        data-testid='uiux-motion-attach'
+                        onClick={handleAttachMotion}>
+                        Attach Motion
+                    </button>
+                ) : null}
             </div>
         );
     }
@@ -89,6 +116,28 @@ export function TemplateMotionInspectorPanel({ nodeId = null }) {
                 <span className='inspector-subtle'>Active Clips</span>
                 <span data-testid='uiux-motion-inspector-active-clips'>{motionView.activeClips.length}</span>
             </div>
+
+            {nodeId ? (
+                <div className='inspector-row' style={{ justifyContent: 'flex-start', gap: 8 }}>
+                    {!hasMotionForSelectedNode ? (
+                        <button
+                            type='button'
+                            className='selection-context-menu__button'
+                            data-testid='uiux-motion-attach'
+                            onClick={handleAttachMotion}>
+                            Attach Motion
+                        </button>
+                    ) : (
+                        <button
+                            type='button'
+                            className='selection-context-menu__button is-danger'
+                            data-testid='uiux-motion-remove'
+                            onClick={handleRemoveMotion}>
+                            Remove Motion
+                        </button>
+                    )}
+                </div>
+            ) : null}
 
             <div className='inspector-group' style={{ gap: 8 }}>
                 {motionView.activeClips.map((clip) => (

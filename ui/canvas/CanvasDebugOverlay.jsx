@@ -5,6 +5,7 @@ export function CanvasDebugOverlay({
     bounds,
     cursor,
     zoomTier,
+    drag = null,
     suggestionsVisible = false,
     onToggleSuggestions,
     validationsVisible = false,
@@ -18,8 +19,8 @@ export function CanvasDebugOverlay({
         <div
             style={{
                 position: 'absolute',
-                right: 16,
-                top: 16,
+                left: 88,
+                bottom: 176,
                 padding: '10px 12px',
                 background: 'rgba(15, 23, 42, 0.75)',
                 color: '#e2e8f0',
@@ -28,6 +29,9 @@ export function CanvasDebugOverlay({
                 lineHeight: 1.4,
                 pointerEvents: 'auto',
                 minWidth: 200,
+                maxWidth: 320,
+                zIndex: 80,
+                boxShadow: '0 12px 32px rgba(15, 23, 42, 0.35)',
             }}
         >
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, gap: 6 }}>
@@ -90,6 +94,22 @@ export function CanvasDebugOverlay({
             </div>
             <div>
                 Cursor: {cursor ? `${cursor.x.toFixed(1)}, ${cursor.y.toFixed(1)}` : '—'}
+            </div>
+            <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(226,232,240,0.16)' }}>
+                <div>Drag active: {drag?.active ? 'yes' : 'no'}</div>
+                <div>Drag type: {drag?.type ?? '—'}</div>
+                <div>
+                    Start: {drag?.startPointer ? `${drag.startPointer.x.toFixed(1)}, ${drag.startPointer.y.toFixed(1)}` : '—'}
+                </div>
+                <div>
+                    Current: {drag?.currentPointer ? `${drag.currentPointer.x.toFixed(1)}, ${drag.currentPointer.y.toFixed(1)}` : '—'}
+                </div>
+                <div>
+                    Delta: {drag?.delta ? `${drag.delta.dx.toFixed(1)}, ${drag.delta.dy.toFixed(1)}` : '—'}
+                </div>
+                <div>
+                    Primary node: {drag?.primaryNode ? `${drag.primaryNode.x.toFixed(1)}, ${drag.primaryNode.y.toFixed(1)}` : '—'}
+                </div>
             </div>
         </div>
     );

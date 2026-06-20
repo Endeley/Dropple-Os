@@ -9,6 +9,7 @@ import {
     timelineIntentKeyframeCreate,
 } from '@/ui/timeline/timelineIntent.js';
 import { motionIntentKeyframeDelete, motionIntentKeyframeUpdate } from '@/ui/motion/motionIntent.js';
+import { hasTimelineRelevance } from './timelineRelevance.js';
 
 function getTimelineDuration(document, timeline) {
     const timelineDuration = Number(timeline?.timelines?.default?.duration ?? 0);
@@ -36,6 +37,7 @@ function getDefaultValue(property, node) {
 export function UIUXTransitionTimelinePanel({ node = null }) {
     const document = useWorkspaceProjectionState((state) => state.document ?? null);
     const timeline = useWorkspaceProjectionState((state) => state.timeline ?? null);
+    const activeTool = useWorkspaceProjectionState((state) => state.tools?.activeTool ?? null);
     const frameTime = useWorkspaceProjectionState((state) => Number(state.frameTime ?? 0));
     const playback = useWorkspaceProjectionState((state) => state.playback ?? { isPlaying: false });
 
@@ -69,7 +71,12 @@ export function UIUXTransitionTimelinePanel({ node = null }) {
             null,
         [property, selectedMotionClips],
     );
-    const timelineActive = Boolean(activeNode?.id);
+    const timelineActive = hasTimelineRelevance({
+        capabilitySurface: { showTransitionTimeline: true },
+        document,
+        selectedNode: activeNode,
+        activeTool,
+    });
     const timelineEmergence = timelineActive ? 'raised' : 'dormant';
     const [activeKeyframeId, setActiveKeyframeId] = useState(null);
     const activeKeyframe = useMemo(

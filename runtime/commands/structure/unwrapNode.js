@@ -1,6 +1,10 @@
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { getSceneGraph } from '@/runtime/document/documentAdapter';
 
+function isThenable(value) {
+    return Boolean(value) && typeof value.then === 'function';
+}
+
 export function createUnwrapNodeEvent({ runtimeState, nodeId }) {
     const graph = getSceneGraph(runtimeState);
     if (!nodeId) {
@@ -33,12 +37,22 @@ export function unwrapNodeCommand({ runtimeState, nodeId, dispatch }) {
 
     const result = dispatch(event);
 
-    if (childrenIds.length) {
-        dispatch({
-            type: EventTypes.SELECTION_SET,
-            payload: { ids: childrenIds },
-        });
+    if (!childrenIds.length) {
+        return result;
     }
+
+    const selectionEvent = {
+        type: EventTypes.SELECTION_SET,
+        payload: { ids: childrenIds },
+    };
+
+    if (isThenable(result)) {
+        return result.then((resolved) =>
+            Promise.resolve(dispatch(selectionEvent)).then(() => resolved),
+        );
+    }
+
+    dispatch(selectionEvent);
 
     return result;
 }

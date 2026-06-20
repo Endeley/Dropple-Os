@@ -1,7 +1,9 @@
 // core/events/reducers/styleReducers.js
 
+import { NodeMutationTypes } from '../nodeMutationTypes.js';
+
 export function styleReducers(state, event) {
-  if (event?.type !== 'node.style.update') return state;
+  if (event?.type !== NodeMutationTypes.STYLE_UPDATE) return state;
 
   const { nodeId, style } = event.payload || {};
   const graph = state?.document?.sceneGraph ?? null;

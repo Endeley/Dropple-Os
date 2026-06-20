@@ -3,6 +3,7 @@
 import { useEffect, useMemo } from 'react';
 import CanvasRoot from '@/ui/canvas/CanvasRoot.jsx';
 import CanvasHost from '@/ui/canvas/CanvasHost.jsx';
+import HomeLandmark from '@/ui/canvas/HomeLandmark.jsx';
 import NodeLayer from '@/ui/canvas/NodeLayer.jsx';
 import { CanvasProvider } from '@/ui/canvas/CanvasContext.jsx';
 import { CanvasSurface } from '@/ui/canvas/surface/CanvasSurface.jsx';
@@ -65,10 +66,10 @@ function ReadOnlyReplayCanvasAdapter({
                 viewport={viewport}
                 worldOffset={{ x: 0, y: 0 }}
                 cameraTransform={cameraTransform}
-            >
+                background={<CanvasSurface surface={canvasSurface} viewport={viewport} />}>
                 <div style={{ position: 'absolute', inset: 0 }}>
-                    <CanvasSurface surface={canvasSurface} viewport={viewport} />
-                    <WorldOriginMarker viewport={viewport} />
+                    <HomeLandmark workspaceId={viewState?.id ?? null} viewport={viewport} />
+                    <WorldOriginMarker workspaceId={viewState?.id ?? null} viewport={viewport} />
                     <NodeLayer />
                 </div>
             </CanvasHost>
@@ -104,9 +105,9 @@ function ReadOnlyRuntimeCanvasAdapter() {
                 viewport={viewport}
                 worldOffset={{ x: 0, y: 0 }}
                 cameraTransform={cameraTransform}
-            >
+                background={<CanvasSurface surface={canvasSurface} viewport={viewport} />}>
                 <div style={{ position: 'absolute', inset: 0 }}>
-                    <CanvasSurface surface={canvasSurface} viewport={viewport} />
+                    <HomeLandmark viewport={viewport} />
                     <WorldOriginMarker viewport={viewport} />
                     <NodeLayer />
                 </div>

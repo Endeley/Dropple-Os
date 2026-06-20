@@ -13,7 +13,9 @@ import { canvasBus } from '../eventBus/canvasBus.js';
  */
 const CanvasHost = forwardRef(function CanvasHost(
     {
+        background = null,
         children,
+        overlay = null,
         viewport,
         worldOffset,
         cameraTransform,
@@ -24,6 +26,7 @@ const CanvasHost = forwardRef(function CanvasHost(
         onPointerCancel,
         onWheel,
         onDoubleClick,
+        onContextMenu,
     },
     ref,
 ) {
@@ -89,6 +92,7 @@ const CanvasHost = forwardRef(function CanvasHost(
                 emitPointer('pointer.cancel', e);
             }}
             onDoubleClick={onDoubleClick}
+            onContextMenu={onContextMenu}
             style={{
                 position: 'relative',
                 width: '100%',
@@ -97,6 +101,18 @@ const CanvasHost = forwardRef(function CanvasHost(
                 touchAction: 'none',
                 userSelect: 'none',
             }}>
+            {background ? (
+                <div
+                    style={{
+                        position: 'absolute',
+                        inset: 0,
+                        overflow: 'hidden',
+                        pointerEvents: 'none',
+                    }}
+                >
+                    {background}
+                </div>
+            ) : null}
             {/* 🌍 WORLD — FULLSCREEN, TRANSFORMED */}
             <div
                 style={{
@@ -108,6 +124,17 @@ const CanvasHost = forwardRef(function CanvasHost(
                 }}>
                 {children}
             </div>
+            {overlay ? (
+                <div
+                    style={{
+                        position: 'absolute',
+                        inset: 0,
+                        overflow: 'visible',
+                        pointerEvents: 'none',
+                    }}>
+                    {overlay}
+                </div>
+            ) : null}
         </div>
     );
 });

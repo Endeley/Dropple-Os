@@ -58,7 +58,7 @@ export function InspectorPanel({ node, emit }) {
                 <SemanticsPanel node={node} emit={emit} />
             </InspectorSection>
 
-            <InspectorSection title="Motion (Read-Only)" defaultOpen={false}>
+            <InspectorSection title="Motion" defaultOpen>
                 <MotionPanel node={node} />
             </InspectorSection>
 

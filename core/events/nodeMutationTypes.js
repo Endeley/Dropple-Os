@@ -1,0 +1,15 @@
+export const NodeMutationTypes = Object.freeze({
+    CHILDREN_REORDER: 'node.children.reorder',
+    CONTENT_UPDATE: 'node.content.update',
+    IMAGE_SOURCE_UPDATE: 'image.source.update',
+    LAYOUT_BULK: 'node.layout.bulk',
+    LAYOUT_CLEAR_AUTO_LAYOUT: 'node.layout.clearAutoLayout',
+    LAYOUT_CLEAR_CONSTRAINT: 'node.layout.clearConstraint',
+    LAYOUT_ROTATE: 'node.layout.rotate',
+    LAYOUT_SET_AUTO_LAYOUT: 'node.layout.setAutoLayout',
+    LAYOUT_SET_CONSTRAINT: 'node.layout.setConstraint',
+    LAYOUT_UPDATE: 'node.layout.update',
+    PROPS_UPDATE: 'node.props.update',
+    STYLE_UPDATE: 'node.style.update',
+    TEXT_CONTENT_UPDATE: 'text.content.update',
+});

@@ -11,7 +11,6 @@ export function registerNodeCreateBridge(dispatcherOrDispatch) {
     activeRegistrations += 1;
 
     const handler = (intent) => {
-        console.log('BRIDGE RECEIVED:', intent);
         const result = createNodeCreateBridgeEvent(intent);
         if (!result) return;
 

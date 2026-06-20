@@ -85,6 +85,7 @@ export function adaptWorkspaceToContractV1(ws) {
     )
   ) {
     caps.push('node:mutate');
+    caps.push('node:delete');
   }
 
   if (tools.some((tool) => CREATE_TOOLS.has(tool))) {

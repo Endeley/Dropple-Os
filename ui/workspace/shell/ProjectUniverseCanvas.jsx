@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
     resolveSemanticZoomNodeSelection,
     resolveSemanticZoomPresentation,
@@ -128,6 +128,7 @@ export function ProjectUniverseCanvas({
         }),
     );
     const [dragState, setDragState] = useState(null);
+    const onCameraChangeRef = useRef(onCameraChange);
 
     const presentation = useMemo(
         () => resolveSemanticZoomPresentation({ scale: camera.scale, perspectiveId }),
@@ -185,10 +186,14 @@ export function ProjectUniverseCanvas({
     }, [bounds.span, camera.x, camera.y, camera.scale]);
 
     useEffect(() => {
-        if (typeof onCameraChange === 'function') {
-            onCameraChange(camera);
+        onCameraChangeRef.current = onCameraChange;
+    }, [onCameraChange]);
+
+    useEffect(() => {
+        if (typeof onCameraChangeRef.current === 'function') {
+            onCameraChangeRef.current(camera);
         }
-    }, [camera, onCameraChange]);
+    }, [camera]);
 
     useEffect(() => {
         if (!initialCamera) return;

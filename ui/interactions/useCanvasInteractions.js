@@ -3,7 +3,10 @@ import { handleInputEvent } from '@/ui/bridges/inputEngineFacade.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions';
 import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
+import { resolveFirstFrameBounds } from '@/runtime/workspaces/projectSubstrateNavigation.js';
+import { viewportIntent } from '@/ui/viewport/viewportIntent.js';
 import { resolveTargetNodeId } from '@/ui/interactions/resolveTargetNodeId.js';
+import { resolveSelectableGroupTarget } from '@/runtime/grouping/resolveSelectableGroupTarget.js';
 import {
     beginCreateSessionFederation,
     closeCreateSessionFederation,
@@ -36,7 +39,16 @@ function setCreateSessionDebug(value) {
     document.documentElement.dataset.droppleCreateSessionDebug = value;
 }
 
-export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getWorldPointFromEvent, getDefaultParentId }) {
+export function useCanvasInteractions({
+    dispatcher = null,
+    workspaceId = null,
+    modeId = null,
+    resolveFocusViewportForBounds,
+    getActiveToolId,
+    getWorldPointFromEvent,
+    getDefaultParentId,
+    getNodeCount,
+}) {
     const createSessionRef = useRef(null);
     const createSessionOrdinalRef = useRef(0);
     const overlaySessionRef = useRef(null);
@@ -47,6 +59,12 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
     const dragStartRef = useRef(null);
 
     const DRAG_THRESHOLD = 6;
+
+    const resetCreateAndDragState = useCallback(() => {
+        createSessionRef.current = null;
+        dragStartRef.current = null;
+        setCreateSessionDebug('idle');
+    }, []);
 
     const toWorldPoint = useCallback(
         (e) => {
@@ -62,13 +80,22 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
         (type, e, overrides = null) => {
             const worldPoint = toWorldPoint(e);
             const tool = overrides?.tool ?? (typeof getActiveToolId === 'function' ? getActiveToolId(e) : 'select');
+            const runtimeState =
+                typeof dispatcher?.getState === 'function'
+                    ? dispatcher.getState()
+                    : null;
+            const nodesById =
+                runtimeState?.document?.sceneGraph?.nodes ??
+                runtimeState?.nodes ??
+                null;
 
-            const targetNodeId =
+            const rawTargetNodeId =
                 overrides?.targetNodeId ??
                 resolveTargetNodeId(e.target, {
                     x: e.clientX,
                     y: e.clientY,
                 });
+            const targetNodeId = resolveSelectableGroupTarget(nodesById, rawTargetNodeId);
 
             return handleInputEvent(
                 {
@@ -92,6 +119,22 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
             );
         },
         [dispatcher, getActiveToolId, toWorldPoint],
+    );
+
+    const resolveImplicitCreateBounds = useCallback(
+        (nodeType) => {
+            if (nodeType !== 'frame') return null;
+
+            const nodeCount = typeof getNodeCount === 'function' ? Number(getNodeCount()) : 0;
+            return (
+                resolveFirstFrameBounds({
+                    workspaceId,
+                    modeId,
+                    nodeCount,
+                }) ?? null
+            );
+        },
+        [getNodeCount, modeId, workspaceId],
     );
 
     const clearOverlaySession = useCallback(() => {
@@ -123,9 +166,8 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                 if (createSessionRef.current?.sessionId) {
                     closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId, dispatcher });
                 }
-                createSessionRef.current = null;
-                dragStartRef.current = null;
-                setOverlayDebug('idle');
+                resetCreateAndDragState();
+                clearOverlaySession();
                 return;
             }
 
@@ -135,13 +177,12 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                 closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId, dispatcher });
             }
 
-            createSessionRef.current = null;
-            dragStartRef.current = null;
+            resetCreateAndDragState();
             setOverlayDebug('idle');
 
             e.currentTarget.releasePointerCapture?.(e.pointerId);
         },
-        [dispatcher, routePointerInput],
+        [clearOverlaySession, dispatcher, resetCreateAndDragState, routePointerInput],
     );
 
     const bindPrimaryPointerSession = useCallback(
@@ -246,6 +287,27 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
         [clearOverlaySession, clearPrimaryPointerSession],
     );
 
+    useEffect(() => {
+        if (typeof window === 'undefined') return undefined;
+
+        const handleWindowBlur = () => {
+            if (createSessionRef.current?.sessionId) {
+                closeCreateSessionFederation({
+                    sessionId: createSessionRef.current.sessionId,
+                    dispatcher,
+                });
+            }
+
+            resetCreateAndDragState();
+            clearOverlaySession();
+            clearPrimaryPointerSession();
+            setOverlayDebug('idle');
+        };
+
+        window.addEventListener('blur', handleWindowBlur);
+        return () => window.removeEventListener('blur', handleWindowBlur);
+    }, [clearOverlaySession, clearPrimaryPointerSession, dispatcher, resetCreateAndDragState]);
+
     const isDuplicateHandleDown = useCallback((event, key) => {
         const previous = handleDownRef.current;
         const current = {
@@ -275,27 +337,32 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
             e.stopPropagation();
 
             if (createSessionRef.current || dragStartRef.current) {
-                if (process.env.NODE_ENV === 'development') {
-                    console.warn(
-                        '[useCanvasInteractions] clearing leaked interaction session before new pointerdown',
-                    );
-                }
                 if (createSessionRef.current?.sessionId) {
                     closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId, dispatcher });
                 }
-                createSessionRef.current = null;
-                dragStartRef.current = null;
+                resetCreateAndDragState();
+                clearPrimaryPointerSession();
+                clearOverlaySession();
                 setOverlayDebug('idle');
             }
 
             const worldPoint = toWorldPoint(e);
             const tool = typeof getActiveToolId === 'function' ? getActiveToolId(e) : 'select';
             const toolDef = TOOL_DEFINITION_BY_ID[tool];
+            const runtimeState =
+                typeof dispatcher?.getState === 'function'
+                    ? dispatcher.getState()
+                    : null;
+            const nodesById =
+                runtimeState?.document?.sceneGraph?.nodes ??
+                runtimeState?.nodes ??
+                null;
 
-            const targetNodeId = resolveTargetNodeId(e.target, {
+            const rawTargetNodeId = resolveTargetNodeId(e.target, {
                 x: e.clientX,
                 y: e.clientY,
             });
+            const targetNodeId = resolveSelectableGroupTarget(nodesById, rawTargetNodeId);
 
             dragStartRef.current = {
                 start: worldPoint,
@@ -320,6 +387,8 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                     start: worldPoint,
                     current: worldPoint,
                     pointerId: e.pointerId,
+                    initialNodeCount:
+                        typeof getNodeCount === 'function' ? Number(getNodeCount()) : 0,
                 };
                 beginCreateSessionFederation({
                     dispatcher,
@@ -338,7 +407,7 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
             bindPrimaryPointerSession(e);
             setOverlayDebug(`${tool}:pending`);
         },
-        [bindPrimaryPointerSession, dispatcher, getActiveToolId, toWorldPoint],
+        [bindPrimaryPointerSession, clearPrimaryPointerSession, dispatcher, getActiveToolId, toWorldPoint],
     );
 
     const onPointerMove = useCallback(
@@ -419,14 +488,13 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                 if (createSessionRef.current?.sessionId) {
                     closeCreateSessionFederation({ sessionId: createSessionRef.current.sessionId, dispatcher });
                 }
-                createSessionRef.current = null;
-                dragStartRef.current = null;
-                setOverlayDebug('idle');
+                resetCreateAndDragState();
+                clearOverlaySession();
                 return;
             }
 
             if (createSessionRef.current) {
-                const { start, current, nodeType, tool, pointerId, sessionId } = createSessionRef.current;
+                const { start, current, nodeType, tool, pointerId, sessionId, initialNodeCount = 0 } = createSessionRef.current;
                 const width = Math.abs(current.x - start.x);
                 const height = Math.abs(current.y - start.y);
                 const pointerMatches = pointerId === e.pointerId;
@@ -439,20 +507,16 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                     committed: false,
                     commitResult: 'skipped',
                 };
+                let committedBounds = null;
 
-                if (pointerMatches && width > DRAG_THRESHOLD && height > DRAG_THRESHOLD) {
+                const commitCreateBounds = (bounds) => {
+                    committedBounds = bounds;
                     assertCreateSessionInvariant(
                         typeof sessionId === 'string' && sessionId.length > 0,
                         'create-session',
                         'MISSING_SESSION_ID',
                         { sessionId },
                     );
-                    const bounds = {
-                        x: Math.min(start.x, current.x),
-                        y: Math.min(start.y, current.y),
-                        width,
-                        height,
-                    };
                     const federationSnapshot = sealCreateSessionFederationCommit({
                         dispatcher,
                         sessionId,
@@ -494,25 +558,57 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
                         nodeCreateIntent({
                             type: nodeType,
                             bounds,
-                                parentId,
+                            parentId,
                         });
                         sessionState.commitResult = 'fallback-intent';
                     } else {
                         sessionState.commitResult = 'engine-handled';
                     }
                     sessionState.committed = true;
+                };
+
+                if (pointerMatches && width > DRAG_THRESHOLD && height > DRAG_THRESHOLD) {
+                    commitCreateBounds({
+                        x: Math.min(start.x, current.x),
+                        y: Math.min(start.y, current.y),
+                        width,
+                        height,
+                    });
                 } else if (!pointerMatches) {
                     sessionState.commitResult = 'pointer-mismatch';
                 } else {
-                    sessionState.commitResult = 'threshold-not-met';
+                    const implicitBounds = resolveImplicitCreateBounds(nodeType);
+                    if (implicitBounds) {
+                        commitCreateBounds(implicitBounds);
+                        sessionState.commitResult = 'home-affordance';
+                    } else {
+                        sessionState.commitResult = 'threshold-not-met';
+                    }
                 }
 
                 setCreateSessionDebug(
                     `${tool}:${sessionState.commitResult}:w=${Math.round(width)}:h=${Math.round(height)}:pointerMatch=${pointerMatches ? '1' : '0'}`,
                 );
 
-                createSessionRef.current = null;
-                dragStartRef.current = null;
+                if (
+                    sessionState.committed &&
+                    nodeType === 'frame' &&
+                    Number(initialNodeCount) === 0 &&
+                    committedBounds
+                ) {
+                    const nextViewport =
+                        typeof resolveFocusViewportForBounds === 'function'
+                            ? resolveFocusViewportForBounds(committedBounds)
+                            : null;
+
+                    if (nextViewport) {
+                        viewportIntent({
+                            viewport: nextViewport,
+                        });
+                    }
+                }
+
+                resetCreateAndDragState();
                 closeCreateSessionFederation({ sessionId, dispatcher });
                 assertCreateSessionInvariant(
                     createSessionRef.current === null,
@@ -538,13 +634,13 @@ export function useCanvasInteractions({ dispatcher = null, getActiveToolId, getW
 
             routePointerInput('pointerup', e);
 
-            dragStartRef.current = null;
+            resetCreateAndDragState();
             setOverlayDebug('idle');
             clearPrimaryPointerSession();
 
             e.currentTarget.releasePointerCapture?.(e.pointerId);
         },
-        [clearPrimaryPointerSession, dispatcher, getDefaultParentId, routePointerInput],
+        [clearOverlaySession, clearPrimaryPointerSession, dispatcher, getDefaultParentId, resetCreateAndDragState, resolveFocusViewportForBounds, resolveImplicitCreateBounds, routePointerInput],
     );
 
     const onPointerCancel = useCallback(

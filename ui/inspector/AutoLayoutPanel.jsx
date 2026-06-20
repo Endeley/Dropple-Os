@@ -1,5 +1,6 @@
 'use client';
 
+import { NodeMutationTypes } from '@/core/events/nodeMutationTypes.js';
 import { Control, Input, Select } from '@/ui/Control';
 
 function ReorderList({ parent, emit, readOnly = false }) {
@@ -8,7 +9,7 @@ function ReorderList({ parent, emit, readOnly = false }) {
   function move(from, to) {
     if (readOnly) return;
     emit({
-      type: 'node.children.reorder',
+      type: NodeMutationTypes.CHILDREN_REORDER,
       payload: {
         parentId: parent.id,
         fromIndex: from,
@@ -52,7 +53,7 @@ export function AutoLayoutPanel({ node, emit, readOnly = false }) {
   function enable() {
     if (readOnly) return;
     emit({
-      type: 'node.layout.setAutoLayout',
+      type: NodeMutationTypes.LAYOUT_SET_AUTO_LAYOUT,
       payload: { nodeId: node.id, config: {} },
     });
   }
@@ -60,7 +61,7 @@ export function AutoLayoutPanel({ node, emit, readOnly = false }) {
   function disable() {
     if (readOnly) return;
     emit({
-      type: 'node.layout.clearAutoLayout',
+      type: NodeMutationTypes.LAYOUT_CLEAR_AUTO_LAYOUT,
       payload: { nodeId: node.id },
     });
   }
@@ -93,7 +94,7 @@ export function AutoLayoutPanel({ node, emit, readOnly = false }) {
           disabled={readOnly}
           onChange={(e) =>
             emit({
-              type: 'node.layout.setAutoLayout',
+              type: NodeMutationTypes.LAYOUT_SET_AUTO_LAYOUT,
               payload: {
                 nodeId: node.id,
                 config: { type: e.target.value },
@@ -116,7 +117,7 @@ export function AutoLayoutPanel({ node, emit, readOnly = false }) {
               disabled={readOnly}
               onChange={(e) =>
                 emit({
-                  type: 'node.layout.setAutoLayout',
+                  type: NodeMutationTypes.LAYOUT_SET_AUTO_LAYOUT,
                   payload: {
                     nodeId: node.id,
                     config: { columns: Number(e.target.value) },
@@ -133,7 +134,7 @@ export function AutoLayoutPanel({ node, emit, readOnly = false }) {
               disabled={readOnly}
               onChange={(e) =>
                 emit({
-                  type: 'node.layout.setAutoLayout',
+                  type: NodeMutationTypes.LAYOUT_SET_AUTO_LAYOUT,
                   payload: {
                     nodeId: node.id,
                     config: { gap: Number(e.target.value) },
@@ -150,7 +151,7 @@ export function AutoLayoutPanel({ node, emit, readOnly = false }) {
               disabled={readOnly}
               onChange={(e) =>
                 emit({
-                  type: 'node.layout.setAutoLayout',
+                  type: NodeMutationTypes.LAYOUT_SET_AUTO_LAYOUT,
                   payload: {
                     nodeId: node.id,
                     config: { padding: Number(e.target.value) },
@@ -168,7 +169,7 @@ export function AutoLayoutPanel({ node, emit, readOnly = false }) {
               disabled={readOnly}
               onChange={(e) =>
                 emit({
-                  type: 'node.layout.setAutoLayout',
+                  type: NodeMutationTypes.LAYOUT_SET_AUTO_LAYOUT,
                   payload: {
                     nodeId: node.id,
                     config: { direction: e.target.value },
@@ -188,7 +189,7 @@ export function AutoLayoutPanel({ node, emit, readOnly = false }) {
               disabled={readOnly}
               onChange={(e) =>
                 emit({
-                  type: 'node.layout.setAutoLayout',
+                  type: NodeMutationTypes.LAYOUT_SET_AUTO_LAYOUT,
                   payload: {
                     nodeId: node.id,
                     config: { gap: Number(e.target.value) },
@@ -205,7 +206,7 @@ export function AutoLayoutPanel({ node, emit, readOnly = false }) {
               disabled={readOnly}
               onChange={(e) =>
                 emit({
-                  type: 'node.layout.setAutoLayout',
+                  type: NodeMutationTypes.LAYOUT_SET_AUTO_LAYOUT,
                   payload: {
                     nodeId: node.id,
                     config: { padding: Number(e.target.value) },

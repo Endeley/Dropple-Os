@@ -1,6 +1,7 @@
 // runtime/layout/shouldRunLayout.js
 
 import { EventTypes } from '@/core/events/eventTypes.js';
+import { NodeMutationTypes } from '@/core/events/nodeMutationTypes.js';
 import { getLayout } from '../document/documentAdapter.js';
 
 const LAYOUT_EVENTS = new Set([
@@ -13,15 +14,15 @@ const LAYOUT_EVENTS = new Set([
     EventTypes.NODE_WRAP,
     EventTypes.NODE_UNWRAP,
     EventTypes.NODE_MOVE,
-    'node.content.update',
-    'text.content.update',
-    'image.source.update',
-    'node.layout.rotate',
-    'node.layout.update',
-    'node.layout.bulk',
-    'node.layout.setConstraint',
-    'node.layout.clearConstraint',
-    'node.layout.setAutoLayout',
+    NodeMutationTypes.CONTENT_UPDATE,
+    NodeMutationTypes.TEXT_CONTENT_UPDATE,
+    NodeMutationTypes.IMAGE_SOURCE_UPDATE,
+    NodeMutationTypes.LAYOUT_ROTATE,
+    NodeMutationTypes.LAYOUT_UPDATE,
+    NodeMutationTypes.LAYOUT_BULK,
+    NodeMutationTypes.LAYOUT_SET_CONSTRAINT,
+    NodeMutationTypes.LAYOUT_CLEAR_CONSTRAINT,
+    NodeMutationTypes.LAYOUT_SET_AUTO_LAYOUT,
     'layout.node.patch',
     'layout.container.set',
     'layout.container.remove',

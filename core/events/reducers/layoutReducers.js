@@ -1,6 +1,7 @@
 // core/events/reducers/layoutReducers.js
 
 import { EventTypes } from '../eventTypes.js';
+import { NodeMutationTypes } from '../nodeMutationTypes.js';
 import { markLayoutDirty } from './layoutDirtyHelpers.js';
 
 function getSceneNodes(state) {
@@ -262,7 +263,7 @@ export function layoutReducers(state, event) {
             });
         }
 
-        case 'node.layout.update': {
+        case NodeMutationTypes.LAYOUT_UPDATE: {
             const { nodeId, layout } = payload;
             const node = sceneNodes[nodeId];
             if (!node) return state;
@@ -280,7 +281,7 @@ export function layoutReducers(state, event) {
             });
         }
 
-        case 'node.layout.bulk': {
+        case NodeMutationTypes.LAYOUT_BULK: {
             const { updates } = payload || {};
             if (!Array.isArray(updates) || updates.length === 0) return state;
 
@@ -315,7 +316,7 @@ export function layoutReducers(state, event) {
             });
         }
 
-        case 'node.layout.setConstraint': {
+        case NodeMutationTypes.LAYOUT_SET_CONSTRAINT: {
             const { nodeId, constraint } = payload;
             const node = sceneNodes[nodeId];
             if (!node) return state;
@@ -337,7 +338,7 @@ export function layoutReducers(state, event) {
             });
         }
 
-        case 'node.layout.clearConstraint': {
+        case NodeMutationTypes.LAYOUT_CLEAR_CONSTRAINT: {
             const { nodeId, key } = payload;
             const node = sceneNodes[nodeId];
             if (!node) return state;
@@ -358,7 +359,7 @@ export function layoutReducers(state, event) {
             });
         }
 
-        case 'node.layout.setAutoLayout': {
+        case NodeMutationTypes.LAYOUT_SET_AUTO_LAYOUT: {
             const { nodeId, config } = payload;
             const node = sceneNodes[nodeId];
             if (!node) return state;
@@ -397,7 +398,7 @@ export function layoutReducers(state, event) {
             });
         }
 
-        case 'node.layout.clearAutoLayout': {
+        case NodeMutationTypes.LAYOUT_CLEAR_AUTO_LAYOUT: {
             const { nodeId } = payload;
             const node = sceneNodes[nodeId];
             if (!node) return state;

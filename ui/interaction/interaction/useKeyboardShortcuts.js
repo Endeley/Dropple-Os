@@ -7,6 +7,7 @@ import { useClipboard } from '@/ui/workspace/shared/ClipboardContext';
 import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent';
 import { handleKeyboardEvent } from '@/ui/bridges/keyboardEngineFacade.js';
 import { getNode } from '@/runtime/document/documentAdapter.js';
+import { dispatchNodeDeleteSelection } from '@/ui/canvas/deleteSelection.js';
 
 // ✅ NEW — canonical history intents
 import { historyIntentUndo, historyIntentRedo } from '@/ui/history/historyIntent.js';
@@ -18,11 +19,9 @@ export function useKeyboardShortcuts({ enabled = true, selectedIds, setSelection
         if (!enabled) return;
 
         function deleteSelection() {
-            selectedIds.forEach((id) => {
-                emit({
-                    type: 'node.delete',
-                    payload: { nodeId: id },
-                });
+            dispatchNodeDeleteSelection({
+                ids: selectedIds,
+                dispatchEvent: emit,
             });
         }
 

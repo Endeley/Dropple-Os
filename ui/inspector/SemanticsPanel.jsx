@@ -1,5 +1,6 @@
 'use client';
 
+import { NodeMutationTypes } from '@/core/events/nodeMutationTypes.js';
 import { Control, Input, Select } from '@/ui/Control';
 
 const TAG_OPTIONS = [
@@ -21,7 +22,7 @@ export function SemanticsPanel({ node, emit, readOnly = false }) {
   function updateSemantic(patch) {
     if (readOnly) return;
     emit({
-      type: 'node.props.update',
+      type: NodeMutationTypes.PROPS_UPDATE,
       payload: {
         nodeId: node.id,
         props: {

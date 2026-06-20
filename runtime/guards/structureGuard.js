@@ -92,7 +92,6 @@ export function applyStructureGuard(event) {
         const nodeId = payload?.nodeId;
         const wrapper = nodeId ? nodes[nodeId] : null;
         if (!wrapper) return null;
-        if (!wrapper.parentId) return null;
         if (!Array.isArray(wrapper.children) || wrapper.children.length === 0) return null;
         return event;
     }

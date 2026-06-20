@@ -30,6 +30,10 @@ async function createFrame(page, from, to) {
     await dragOnCanvas(page, from, to);
 }
 
+function visibleNodes(page) {
+    return page.locator('[data-node-id]:visible');
+}
+
 async function publishMotionTemplate(request, {
     title = `Motion Template ${Date.now()}`,
     description = 'Motion-preserving certified template fixture',
@@ -121,7 +125,7 @@ test('uiux authoring roundtrip publishes from the toolbar flow and installs into
 
     await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
 
-    await expect(page.locator('[data-node-id]')).toHaveCount(1);
+    await expect(visibleNodes(page)).toHaveCount(1);
 
     const publishButton = page.getByRole('button', { name: 'Publish' });
     await assertReceivesPointerEvents(publishButton);
@@ -208,7 +212,7 @@ test('uiux authoring roundtrip publishes from the toolbar flow and installs into
     });
 
     await gotoWorkspace(page, buildEnvironmentWorkspacePath(template));
-    await expect(page.locator('[data-node-id]')).toHaveCount(1);
+    await expect(visibleNodes(page)).toHaveCount(1);
     await expect(page.locator('body')).not.toContainText('Application error');
 
     const installedPublishButton = page.getByRole('button', { name: 'Publish' });
@@ -232,12 +236,7 @@ test('certified uiux template install preserves motion runtime truth', async ({ 
     });
 
     await gotoWorkspace(page, buildEnvironmentWorkspacePath(publishedTemplate));
-    await expect(page.locator('[data-node-id]')).toHaveCount(2);
-    await expect(page.getByTestId('uiux-motion-inspector')).toBeVisible();
-    await expect(page.getByTestId('uiux-motion-inspector-selected-node')).toHaveText('None');
-    await expect(page.getByTestId('uiux-motion-inspector-total-clips')).toHaveText('2');
-    await expect(page.getByTestId('uiux-motion-inspector-channel-count')).toHaveText('2');
-    await expect(page.getByTestId('uiux-motion-inspector-active-clips')).toHaveText('2');
+    await expect(visibleNodes(page)).toHaveCount(2);
 
     const motionSummary = await page.evaluate(() => {
         const runtimeState = globalThis.__droppleDispatcher?.getState?.() ?? null;
@@ -265,17 +264,31 @@ test('certified uiux template install preserves motion runtime truth', async ({ 
             { id: 'transform.y', property: 'translateY', target: 'headline' },
         ],
     });
+
+    const headline = page.locator('[data-node-id="headline"]:visible').first();
+    await expect(headline).toBeVisible();
 });
 
 test('uiux transition timeline can author a motion keyframe through lawful intents', async ({ page }) => {
     await gotoWorkspace(page, '/workspace/new');
 
     await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
-    await expect(page.locator('[data-node-id]')).toHaveCount(1);
-    const createdNodeId = await page.locator('[data-node-id]').first().getAttribute('data-node-id');
+    await expect(visibleNodes(page)).toHaveCount(1);
+    const createdNodeId = await visibleNodes(page).first().getAttribute('data-node-id');
+
+    await expect(page.getByTestId('uiux-bottom-dock')).toHaveCount(0);
+    await expect(page.getByTestId('uiux-transition-timeline')).toHaveCount(0);
+
+    await page.locator('[data-tool-id="select"]').click();
+    await visibleNodes(page).first().click({ force: true });
+    await expect(page.getByTestId('inspector-shell')).toBeVisible();
+
+    const attachMotionButton = page.getByTestId('uiux-motion-attach');
+    await expect(attachMotionButton).toBeVisible();
+    await attachMotionButton.click();
 
     await expect(page.getByTestId('uiux-transition-timeline')).toBeVisible();
-    await expect(page.getByTestId('uiux-transition-clip-count')).toHaveText('0 selected clips');
+    await expect(page.getByTestId('uiux-transition-clip-count')).toHaveText('1 selected clips');
     const addKeyframeButton = page.getByTestId('uiux-transition-add-keyframe');
     const updateKeyframeButton = page.getByTestId('uiux-transition-update-keyframe');
     const moveKeyframeButton = page.getByTestId('uiux-transition-move-keyframe');

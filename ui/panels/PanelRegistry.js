@@ -1,9 +1,11 @@
 import { NodeHeaderPanel } from '@/ui/inspector/NodeHeaderPanel.jsx';
 import LayoutInspector from '@/ui/inspector/LayoutInspector.jsx';
 import { AutoLayoutPanel } from '@/ui/inspector/AutoLayoutPanel.jsx';
+import { AppearancePanel } from '@/ui/inspector/AppearancePanel.jsx';
 import { ContentPanel } from '@/ui/inspector/ContentPanel.jsx';
 import { SemanticsPanel } from '@/ui/inspector/SemanticsPanel.jsx';
 import { MotionPanel } from '@/ui/inspector/MotionPanel.jsx';
+import { SelectionActionsPanel } from '@/ui/inspector/SelectionActionsPanel.jsx';
 import { ExportPreviewPanel } from '@/ui/inspector/ExportPreviewPanel.jsx';
 
 import { InspectorPanel } from '@/ui/panels/InspectorPanel.jsx';
@@ -32,6 +34,11 @@ export const PanelRegistry = {
         component: NodeHeaderPanel,
     },
 
+    SelectionActionsPanel: {
+        id: 'SelectionActionsPanel',
+        component: SelectionActionsPanel,
+    },
+
     LayoutInspector: {
         id: 'LayoutInspector',
         component: LayoutInspector,
@@ -40,6 +47,11 @@ export const PanelRegistry = {
     AutoLayoutPanel: {
         id: 'AutoLayoutPanel',
         component: AutoLayoutPanel,
+    },
+
+    AppearancePanel: {
+        id: 'AppearancePanel',
+        component: AppearancePanel,
     },
 
     ContentPanel: {

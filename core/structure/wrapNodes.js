@@ -1,6 +1,13 @@
 function resolveOrderedNodeIds(nodes, parentChildren, nodeIds) {
     const selected = new Set(nodeIds);
-    return parentChildren.filter((id) => selected.has(id) && nodes[id]);
+    const orderedFromParent = parentChildren.filter((id) => selected.has(id) && nodes[id]);
+    if (orderedFromParent.length === selected.size) {
+        return orderedFromParent;
+    }
+
+    // Fallback for routes that have valid selected nodes but stale or incomplete
+    // parent/root child ordering. Grouping must still produce a real wrapper node.
+    return nodeIds.filter((id) => selected.has(id) && nodes[id]);
 }
 
 export function wrapNodes({ nodes = {}, rootIds = [], nodeIds = [], wrapperNode, parentId = undefined, index }) {

@@ -2,18 +2,13 @@
 
 import CanvasSnapGuides from './CanvasSnapGuides.jsx';
 import InsertionLine from './InsertionLine.jsx';
-import FrameRulers from './FrameRulers.jsx';
-import { useCharacterRenderNodes } from '@/ui/canvas/hooks/useCharacterRenderNodes.js';
 import { useEffect, useRef, useState } from 'react';
 import { getReorderPreviewOnly } from '@/ui/bridges/inputSessionRuntimeFacade.js';
-import { useCanvasViewState, useCanvasVisualState } from '@/ui/canvas/CanvasContext.jsx';
+import { useCanvasVisualState } from '@/ui/canvas/CanvasContext.jsx';
 
 export default function GuideLayer() {
-    const nodes = useCharacterRenderNodes();
-    const selectedIds = useCanvasVisualState((s) => s.selection?.ids || []);
     const guides = useCanvasVisualState((s) => s.guides || []);
     const marquee = useCanvasVisualState((s) => s.marquee ?? null);
-    const viewport = useCanvasViewState((state) => state.viewport) || { x: 0, y: 0, scale: 1 };
     const [reorderPreview, setReorderPreview] = useState(null);
     const lastPreviewRef = useRef(null);
 
@@ -42,14 +37,6 @@ export default function GuideLayer() {
         };
     }, []);
 
-    let selectedFrame = null;
-    if (Array.isArray(selectedIds) && selectedIds.length === 1) {
-        const node = nodes[selectedIds[0]];
-        if (node?.type === 'frame') {
-            selectedFrame = node;
-        }
-    }
-
     return (
         <>
             {marquee && (marquee.width > 0 || marquee.height > 0) && (
@@ -72,7 +59,6 @@ export default function GuideLayer() {
                 />
             )}
             <CanvasSnapGuides guides={guides} />
-            {selectedFrame && <FrameRulers frame={selectedFrame} viewport={viewport} />}
             {reorderPreview && (
                 <InsertionLine containerId={reorderPreview.containerId} index={reorderPreview.index} />
             )}

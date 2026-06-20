@@ -1,5 +1,6 @@
 'use client';
 
+import { NodeMutationTypes } from '@/core/events/nodeMutationTypes.js';
 import { Control, Input, Select } from '@/ui/Control';
 
 const FILL_PRESET_OPTIONS = Object.freeze([
@@ -56,7 +57,7 @@ export function AppearancePanel({ node, emit, readOnly = false }) {
         if (readOnly) return;
 
         emit({
-            type: 'node.style.update',
+            type: NodeMutationTypes.STYLE_UPDATE,
             payload: {
                 nodeId: node.id,
                 style: patch,

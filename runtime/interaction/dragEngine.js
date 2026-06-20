@@ -32,21 +32,31 @@ export function applyAxisLock(delta, options = {}) {
     };
 }
 
-/**
- * 🔑 NEW: resolves animation base transform (read-only)
- */
-function resolveBaseTransform(nodeId, runtime) {
-    const computed = runtime?.scene?.computed?.transforms?.[nodeId];
+function resolveBaseTransform(nodeId, options = {}, dragState = null) {
+    const dragOrigin = dragState?.origin?.[nodeId] ?? null;
+    if (Number.isFinite(dragOrigin?.x) && Number.isFinite(dragOrigin?.y)) {
+        return { x: dragOrigin.x, y: dragOrigin.y };
+    }
+
+    const node = options?.nodeLookup?.[nodeId] ?? null;
+    const layout = node?.layout ?? {};
+    const transform = node?.transform ?? {};
+
+    const authoredX = layout.x ?? node?.x ?? transform.x ?? null;
+    const authoredY = layout.y ?? node?.y ?? transform.y ?? null;
+
+    if (Number.isFinite(authoredX) && Number.isFinite(authoredY)) {
+        return { x: authoredX, y: authoredY };
+    }
+
+    const computed = options?.computedTransforms?.[nodeId];
     if (computed) return computed;
 
     return null;
 }
 
-/**
- * 🔑 NEW: builds interaction layer (non-mutating)
- */
-function buildInteractionTransform(nodeId, delta, runtime) {
-    const base = resolveBaseTransform(nodeId, runtime);
+function buildInteractionTransform(nodeId, delta, options = {}, dragState = null) {
+    const base = resolveBaseTransform(nodeId, options, dragState);
 
     const baseX = base?.x ?? 0;
     const baseY = base?.y ?? 0;
@@ -91,16 +101,25 @@ export function computeDragDelta(dragState, options = {}) {
     }
 
     // 🔑 NEW: build interaction transforms per node
-    const runtime = options.runtime ?? null;
     const nodeIds = dragState?.nodeIds ?? [];
+    const nodeLookup = options.nodeLookup ?? null;
+    const computedTransforms = options.computedTransforms ?? null;
 
     let interactionTransforms = null;
 
-    if (runtime && nodeIds.length > 0) {
+    if ((nodeLookup || computedTransforms) && nodeIds.length > 0) {
         interactionTransforms = {};
 
         for (const nodeId of nodeIds) {
-            interactionTransforms[nodeId] = buildInteractionTransform(nodeId, { dx, dy }, runtime);
+            interactionTransforms[nodeId] = buildInteractionTransform(
+                nodeId,
+                { dx, dy },
+                {
+                    nodeLookup,
+                    computedTransforms,
+                },
+                dragState,
+            );
         }
     }
 

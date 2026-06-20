@@ -251,13 +251,14 @@ export function ProjectPerspectiveShell({
     }, [pathname, projectPerspectiveContext.entryId, searchParams]);
     const [cameraRouteState, setCameraRouteState] = useState(() => resolveProjectCameraFromSearchParams(searchParams));
     const cameraRouteStateRef = useRef(cameraRouteState);
+    const searchParamsRef = useRef(searchParams);
     const [universeFocusState, setUniverseFocusState] = useState(() =>
         resolveProjectUniverseFocusFromSearchParams(searchParams),
     );
     const [perspectiveContinuityState, setPerspectiveContinuityState] = useState(() =>
         resolveProjectPerspectiveContinuityFromSearchParams(searchParams),
     );
-    const [createUtilityPanel, setCreateUtilityPanel] = useState('project');
+    const [createUtilityPanel, setCreateUtilityPanel] = useState('support');
     const [shareFeedback, setShareFeedback] = useState('');
     const [blueprintOptions] = useState(() => listBlueprintInstallOptions());
     const [selectedBlueprintIds, setSelectedBlueprintIds] = useState(() =>
@@ -348,10 +349,14 @@ export function ProjectPerspectiveShell({
             const nextHistoryState = mergeProjectWorldEnvelopeIntoHistoryState(window.history.state, envelope);
             window.history.replaceState(nextHistoryState, '', window.location.href);
         }
-        setCameraRouteState(envelope.camera);
+        setCameraRouteState((current) => (isSameCameraState(current, envelope.camera) ? current : envelope.camera));
         setUniverseFocusState(envelope.focus);
         setPerspectiveContinuityState(envelope.continuity);
     }, [resolveRouteEnvelope]);
+
+    useEffect(() => {
+        searchParamsRef.current = searchParams;
+    }, [searchParams]);
 
     useEffect(() => {
         if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
@@ -399,11 +404,13 @@ export function ProjectPerspectiveShell({
         router.replace(href, { scroll: false });
     }, [pathname, router]);
 
-    const getLiveShellSearchParams = useCallback(() =>
-        typeof window !== 'undefined'
-            ? new URLSearchParams(window.location.search)
-            : new URLSearchParams(searchParams?.toString?.() ?? ''),
-    [searchParams]);
+    const getLiveShellSearchParams = useCallback(
+        () =>
+            typeof window !== 'undefined'
+                ? new URLSearchParams(window.location.search)
+                : new URLSearchParams(searchParamsRef.current?.toString?.() ?? ''),
+        [],
+    );
 
     const buildDurableShellSearchParams = useCallback(({
         focus = universeFocusState,
@@ -1684,7 +1691,13 @@ export function ProjectPerspectiveShell({
             data-testid='project-shell-root'
             data-motion-mode={motionMode}
             data-motion-meaning='world-continuity'
-            style={{ display: 'grid', gridTemplateRows: 'auto auto auto auto auto 1fr', height: '100%' }}>
+            style={{
+                display: 'grid',
+                gridTemplateRows: 'auto auto 1fr',
+                minHeight: '100dvh',
+                height: '100dvh',
+                background: '#f8fafc',
+            }}>
             {commandOpen && (
                 <CommandPalette
                     commands={perspectiveCommands}
@@ -1699,196 +1712,274 @@ export function ProjectPerspectiveShell({
             )}
             <header
                 style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
+                    display: 'grid',
                     gap: 10,
-                    padding: '12px 16px',
-                    borderBottom: '1px solid #e2e8f0',
-                    background: 'linear-gradient(135deg, #fff7ed 0%, #ffffff 52%, #ecfeff 100%)',
+                    padding: isCreatePerspective ? 0 : '10px 14px',
+                    borderBottom: isCreatePerspective ? 'none' : '1px solid #e2e8f0',
+                    background: isCreatePerspective ? 'transparent' : '#ffffff',
+                    position: isCreatePerspective ? 'absolute' : 'relative',
+                    top: isCreatePerspective ? 16 : undefined,
+                    left: isCreatePerspective ? 16 : undefined,
+                    zIndex: isCreatePerspective ? 40 : undefined,
                 }}>
-                <div style={{ display: 'grid', gap: 2 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {isCreatePerspective ? (
+                    <div
+                        data-testid='worldshell-project-capsule'
+                        style={{
+                            display: 'grid',
+                            gap: 4,
+                            minWidth: 220,
+                            padding: '12px 14px',
+                            borderRadius: 18,
+                            border: '1px solid rgba(148, 163, 184, 0.22)',
+                            background: 'rgba(255, 255, 255, 0.92)',
+                            boxShadow: '0 20px 40px rgba(15, 23, 42, 0.12)',
+                            backdropFilter: 'blur(14px)',
+                        }}>
                         <span
                             style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                padding: '4px 8px',
-                                borderRadius: 999,
-                                fontSize: 10,
+                                fontSize: 11,
                                 fontWeight: 700,
-                                letterSpacing: '0.08em',
-                                textTransform: 'uppercase',
-                                color: '#9a3412',
-                                background: '#ffedd5',
-                                border: '1px solid #fdba74',
+                                letterSpacing: '0.04em',
+                                color: '#0f172a',
                             }}>
-                            Project
+                            Dropple
                         </span>
-                        <strong style={{ fontSize: 18, color: '#0f172a' }}>{activeContextLabel}</strong>
-                        {transitionDescriptor ? (
-                            <span
-                                data-testid='project-shell-transition-context'
-                                data-motion-meaning='continuity'
-                                data-motion-mode={motionMode}
-                                style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    padding: '4px 8px',
-                                    borderRadius: 999,
-                                    fontSize: 10,
-                                    fontWeight: 700,
-                                    letterSpacing: '0.06em',
-                                    textTransform: 'uppercase',
-                                    color: '#0f766e',
-                                    background: '#ecfeff',
-                                    border: '1px solid #99f6e4',
-                                }}>
-                                {transitionDescriptor}
-                            </span>
-                        ) : null}
-                        {projectIntentDescriptor ? (
-                            <span
-                                data-testid='project-shell-project-intent'
-                                style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    padding: '4px 8px',
-                                    borderRadius: 999,
-                                    fontSize: 10,
-                                    fontWeight: 600,
-                                    color: '#1d4ed8',
-                                    background: '#eff6ff',
-                                    border: '1px solid #bfdbfe',
-                                }}>
-                                {projectIntentDescriptor}
-                            </span>
-                        ) : null}
+                        <strong
+                            data-testid='worldshell-project-capsule-project'
+                            style={{ fontSize: 16, lineHeight: 1.2, color: '#0f172a' }}>
+                            {projectIdentity.name}
+                        </strong>
+                        <span
+                            data-testid='worldshell-project-capsule-context'
+                            style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>
+                            {perspectiveLabel} {'>'} {formatEntryLabel(projectPerspectiveContext.entryId)}
+                        </span>
                     </div>
-                    <span style={{ fontSize: 12, color: '#475569' }}>
-                        Active context: {activeContextLabel}
-                    </span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <details data-testid='project-shell-runtime-details'>
-                        <summary
-                            style={{
-                                cursor: 'pointer',
-                                listStyle: 'none',
-                                fontSize: 11,
-                                color: '#64748b',
-                            }}>
-                            Shell details
-                        </summary>
-                        <div
-                            style={{
-                                marginTop: 6,
-                                padding: '8px 10px',
-                                borderRadius: 8,
-                                border: '1px solid #cbd5e1',
-                                background: '#ffffff',
-                                color: '#475569',
-                                fontSize: 11,
-                                display: 'grid',
-                                gap: 4,
-                            }}>
-                            <span data-testid='project-shell-runtime-label'>
-                                runtime: {projectPerspectiveContext.workspaceId}/{activeModeId ?? projectPerspectiveContext.modeId}
-                            </span>
-                            <span>mode: {activeModeId ?? projectPerspectiveContext.modeId}</span>
-                            <span>perspective: {projectPerspectiveContext.perspectiveId}</span>
+                ) : (
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            justifyContent: 'space-between',
+                            gap: 12,
+                            flexWrap: 'wrap',
+                        }}>
+                        <div style={{ display: 'grid', gap: 6 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                <span
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        padding: '4px 8px',
+                                        borderRadius: 999,
+                                        fontSize: 10,
+                                        fontWeight: 700,
+                                        letterSpacing: '0.08em',
+                                        textTransform: 'uppercase',
+                                        color: '#9a3412',
+                                        background: '#ffedd5',
+                                        border: '1px solid #fdba74',
+                                    }}>
+                                    Project
+                                </span>
+                                <strong style={{ fontSize: 16, color: '#0f172a' }}>{activeContextLabel}</strong>
+                                {transitionDescriptor ? (
+                                    <span
+                                        data-testid='project-shell-transition-context'
+                                        data-motion-meaning='continuity'
+                                        data-motion-mode={motionMode}
+                                        style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            padding: '4px 8px',
+                                            borderRadius: 999,
+                                            fontSize: 10,
+                                            fontWeight: 700,
+                                            letterSpacing: '0.06em',
+                                            textTransform: 'uppercase',
+                                            color: '#0f766e',
+                                            background: '#ecfeff',
+                                            border: '1px solid #99f6e4',
+                                        }}>
+                                        {transitionDescriptor}
+                                    </span>
+                                ) : null}
+                                {projectIntentDescriptor ? (
+                                    <span
+                                        data-testid='project-shell-project-intent'
+                                        style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            padding: '4px 8px',
+                                            borderRadius: 999,
+                                            fontSize: 10,
+                                            fontWeight: 600,
+                                            color: '#1d4ed8',
+                                            background: '#eff6ff',
+                                            border: '1px solid #bfdbfe',
+                                        }}>
+                                        {projectIntentDescriptor}
+                                    </span>
+                                ) : null}
+                            </div>
+                            <div
+                                data-testid='project-world-anchor'
+                                data-motion-meaning='hierarchy'
+                                style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', fontSize: 11, color: '#475569' }}>
+                                <span data-testid='project-world-anchor-project'>
+                                    <strong style={{ color: '#0f172a' }}>{projectWorldAnchor.projectLabel}</strong>
+                                </span>
+                                <span>
+                                    {perspectiveLabel} / <span data-testid='project-world-anchor-activity'>{projectWorldAnchor.activityLabel}</span>
+                                </span>
+                                <span data-testid='project-world-anchor-focus'>
+                                    Focus: <strong style={{ color: '#0f172a' }}>{projectWorldAnchor.focusLabel}</strong>
+                                </span>
+                                <span data-testid='project-world-anchor-subtitle' style={{ color: '#64748b' }}>
+                                    {projectWorldAnchor.focusSubtitle}
+                                </span>
+                            </div>
+                            <nav
+                                aria-label='Project perspectives'
+                                style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                {perspectiveIds.map((id) => {
+                                    const active = id === perspectiveId;
+                                    const definition = getProjectPerspectiveDefinition(id);
+                                    const navigationTarget = buildPerspectiveNavigationTarget(id);
+                                    return (
+                                        <Link
+                                            key={id}
+                                            href={navigationTarget.href}
+                                            onClick={() => writeNavigationEnvelopeForHref(navigationTarget)}
+                                            style={{
+                                                padding: '6px 10px',
+                                                borderRadius: 999,
+                                                fontSize: 11,
+                                                fontWeight: 600,
+                                                textDecoration: 'none',
+                                                border: `1px solid ${active ? '#0f172a' : '#fed7aa'}`,
+                                                color: active ? '#ffffff' : '#7c2d12',
+                                                background: active ? '#0f172a' : '#ffffff',
+                                            }}>
+                                            {definition?.label ?? formatEntryLabel(id)}
+                                        </Link>
+                                    );
+                                })}
+                            </nav>
+                            <nav
+                                aria-label={`${perspectiveLabel} entries`}
+                                style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                {perspectiveEntries.map((entryId) => {
+                                    const active = entryId === projectPerspectiveContext.entryId;
+                                    return (
+                                        <Link
+                                            key={entryId}
+                                            href={`/workspace/${perspectiveId}?entry=${entryId}`}
+                                            style={{
+                                                padding: '4px 8px',
+                                                borderRadius: 999,
+                                                fontSize: 10,
+                                                textDecoration: 'none',
+                                                border: `1px solid ${active ? '#0f172a' : '#d1d5db'}`,
+                                                color: active ? '#0f172a' : '#475569',
+                                                background: active ? '#e2e8f0' : '#ffffff',
+                                            }}>
+                                            {formatEntryLabel(entryId)}
+                                        </Link>
+                                    );
+                                })}
+                            </nav>
                         </div>
-                    </details>
-                    <button
-                        type='button'
-                        onClick={shareCurrentView}
-                        style={{
-                            border: '1px solid #cbd5e1',
-                            borderRadius: 7,
-                            background: '#ffffff',
-                            color: '#334155',
-                            fontSize: 11,
-                            padding: '3px 9px',
-                            cursor: 'pointer',
-                        }}>
-                        Share View
-                    </button>
-                    {shareFeedback ? (
-                        <span style={{ fontSize: 11, color: '#0f766e' }}>{shareFeedback}</span>
-                    ) : null}
-                </div>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                            <button
+                                type='button'
+                                data-testid='project-world-anchor-hub'
+                                onClick={() => handleUniverseFocusTarget(projectUniverse?.hubId ?? 'project:hub')}
+                                style={{
+                                    border: '1px solid #cbd5e1',
+                                    borderRadius: 999,
+                                    background: '#ffffff',
+                                    color: '#0f172a',
+                                    fontSize: 11,
+                                    fontWeight: 600,
+                                    padding: '6px 10px',
+                                    cursor: 'pointer',
+                                }}>
+                                Project Hub
+                            </button>
+                            <details data-testid='project-shell-world-details'>
+                                <summary
+                                    style={{
+                                        cursor: 'pointer',
+                                        listStyle: 'none',
+                                        fontSize: 11,
+                                        color: '#64748b',
+                                        border: '1px solid #cbd5e1',
+                                        borderRadius: 999,
+                                        background: '#ffffff',
+                                        padding: '6px 10px',
+                                    }}>
+                                    World details
+                                </summary>
+                                <div style={{ marginTop: 8, minWidth: 260 }}>
+                                    {renderUniverseDominanceValidation()}
+                                </div>
+                            </details>
+                            <details data-testid='project-shell-runtime-details'>
+                                <summary
+                                    style={{
+                                        cursor: 'pointer',
+                                        listStyle: 'none',
+                                        fontSize: 11,
+                                        color: '#64748b',
+                                        border: '1px solid #cbd5e1',
+                                        borderRadius: 999,
+                                        background: '#ffffff',
+                                        padding: '6px 10px',
+                                    }}>
+                                    Shell details
+                                </summary>
+                                <div
+                                    style={{
+                                        marginTop: 8,
+                                        padding: '8px 10px',
+                                        borderRadius: 8,
+                                        border: '1px solid #cbd5e1',
+                                        background: '#ffffff',
+                                        color: '#475569',
+                                        fontSize: 11,
+                                        display: 'grid',
+                                        gap: 4,
+                                    }}>
+                                    <span data-testid='project-shell-runtime-label'>
+                                        runtime: {projectPerspectiveContext.workspaceId}/{activeModeId ?? projectPerspectiveContext.modeId}
+                                    </span>
+                                    <span>mode: {activeModeId ?? projectPerspectiveContext.modeId}</span>
+                                    <span>perspective: {projectPerspectiveContext.perspectiveId}</span>
+                                </div>
+                            </details>
+                            <button
+                                type='button'
+                                onClick={shareCurrentView}
+                                style={{
+                                    border: '1px solid #cbd5e1',
+                                    borderRadius: 999,
+                                    background: '#ffffff',
+                                    color: '#334155',
+                                    fontSize: 11,
+                                    padding: '6px 10px',
+                                    cursor: 'pointer',
+                                }}>
+                                Share View
+                            </button>
+                            {shareFeedback ? (
+                                <span style={{ fontSize: 11, color: '#0f766e', alignSelf: 'center' }}>{shareFeedback}</span>
+                            ) : null}
+                        </div>
+                    </div>
+                )}
             </header>
-            <section
-                data-testid='project-world-anchor'
-                data-motion-meaning='hierarchy'
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 12,
-                    padding: '8px 16px',
-                    borderBottom: '1px solid #e2e8f0',
-                    background: '#f8fafc',
-                }}>
-                <div style={{ display: 'grid', gap: 2 }}>
-                    <strong
-                        style={{
-                            fontSize: 11,
-                            color: '#0f172a',
-                            letterSpacing: '0.04em',
-                            textTransform: 'uppercase',
-                        }}>
-                        Project Universe
-                    </strong>
-                    <span data-testid='project-world-anchor-project' style={{ fontSize: 12, color: '#334155' }}>
-                        {projectWorldAnchor.projectLabel}
-                    </span>
-                    <span style={{ fontSize: 11, color: '#64748b' }}>
-                        Activity: <span data-testid='project-world-anchor-activity'>{projectWorldAnchor.activityLabel}</span>
-                    </span>
-                </div>
-                <div style={{ display: 'grid', gap: 2, justifyItems: 'end' }}>
-                    <span
-                        style={{
-                            fontSize: 10,
-                            color: '#64748b',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.04em',
-                        }}>
-                        World Focus
-                    </span>
-                    <strong data-testid='project-world-anchor-focus' style={{ fontSize: 12, color: '#0f172a' }}>
-                        {projectWorldAnchor.focusLabel}
-                    </strong>
-                    <span data-testid='project-world-anchor-subtitle' style={{ fontSize: 10, color: '#64748b' }}>
-                        {projectWorldAnchor.focusSubtitle}
-                    </span>
-                </div>
-                <button
-                    type='button'
-                    data-testid='project-world-anchor-hub'
-                    onClick={() => handleUniverseFocusTarget(projectUniverse?.hubId ?? 'project:hub')}
-                    style={{
-                        border: '1px solid #cbd5e1',
-                        borderRadius: 999,
-                        background: '#ffffff',
-                        color: '#0f172a',
-                        fontSize: 11,
-                        fontWeight: 600,
-                        padding: '6px 10px',
-                        cursor: 'pointer',
-                    }}>
-                    Return to Project Hub
-                </button>
-            </section>
-            <section
-                style={{
-                    padding: '8px 16px 0 16px',
-                    background: '#f8fafc',
-                    borderBottom: editorEmergenceState ? '1px solid #e2e8f0' : 'none',
-                }}>
-                {renderUniverseDominanceValidation()}
-            </section>
             {editorEmergenceState ? (
                 <section
                     data-testid='project-shell-editor-emergence'
@@ -1935,72 +2026,8 @@ export function ProjectPerspectiveShell({
                     </Link>
                 </section>
             ) : null}
-            <nav
-                aria-label='Project perspectives'
-                style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: 6,
-                    padding: '10px 14px',
-                    borderBottom: '1px solid #e2e8f0',
-                    background: '#fffaf5',
-                }}>
-                {perspectiveIds.map((id) => {
-                    const active = id === perspectiveId;
-                    const definition = getProjectPerspectiveDefinition(id);
-                    const navigationTarget = buildPerspectiveNavigationTarget(id);
-                    return (
-                        <Link
-                            key={id}
-                            href={navigationTarget.href}
-                            onClick={() => writeNavigationEnvelopeForHref(navigationTarget)}
-                            style={{
-                                padding: '8px 12px',
-                                borderRadius: 999,
-                                fontSize: 12,
-                                fontWeight: 600,
-                                textDecoration: 'none',
-                                border: `1px solid ${active ? '#0f172a' : '#fed7aa'}`,
-                                color: active ? '#ffffff' : '#7c2d12',
-                                background: active ? '#0f172a' : '#ffffff',
-                                boxShadow: active ? '0 8px 24px rgba(15, 23, 42, 0.16)' : 'none',
-                            }}>
-                            {definition?.label ?? formatEntryLabel(id)}
-                        </Link>
-                    );
-                })}
-            </nav>
-            <nav
-                aria-label={`${perspectiveLabel} entries`}
-                style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: 6,
-                    padding: '8px 14px',
-                    borderBottom: '1px solid #e2e8f0',
-                    background: '#ffffff',
-                }}>
-                {perspectiveEntries.map((entryId) => {
-                    const active = entryId === projectPerspectiveContext.entryId;
-                    return (
-                        <Link
-                            key={entryId}
-                            href={`/workspace/${perspectiveId}?entry=${entryId}`}
-                            style={{
-                                padding: '4px 8px',
-                                borderRadius: 8,
-                                fontSize: 11,
-                                textDecoration: 'none',
-                                border: `1px solid ${active ? '#0f172a' : '#d1d5db'}`,
-                                color: active ? '#0f172a' : '#475569',
-                                background: active ? '#e2e8f0' : '#ffffff',
-                            }}>
-                            {formatEntryLabel(entryId)}
-                        </Link>
-                    );
-                })}
-            </nav>
-            <div style={{ minHeight: 0, display: 'grid', gridTemplateRows: 'auto 1fr' }}>
+            <div style={{ minHeight: 0, display: 'grid', gridTemplateRows: isCreatePerspective ? '1fr' : 'auto 1fr' }}>
+                {isCreatePerspective ? null : (
                 <ProjectUniverseCanvas
                     perspectiveId={perspectiveId}
                     universe={projectUniverse}
@@ -2012,15 +2039,27 @@ export function ProjectPerspectiveShell({
                     onFocusTarget={handleUniverseFocusTarget}
                     onOpenTarget={handleUniverseOpenTarget}
                 />
+                )}
                 <div
                     style={{
                         minHeight: 0,
                         display: 'grid',
-                        gridTemplateColumns: isCreatePerspective ? '248px minmax(0, 1fr)' : '280px minmax(0, 1fr)',
+                        gridTemplateColumns: isCreatePerspective ? 'minmax(0, 1fr)' : '280px minmax(0, 1fr)',
+                        position: 'relative',
                     }}>
                     <aside
                         style={{
-                            borderRight: '1px solid #e2e8f0',
+                            display: isCreatePerspective ? 'none' : 'block',
+                            position: isCreatePerspective ? 'absolute' : 'relative',
+                            top: isCreatePerspective ? 16 : undefined,
+                            left: isCreatePerspective ? 16 : undefined,
+                            bottom: isCreatePerspective ? 16 : undefined,
+                            width: isCreatePerspective ? 232 : undefined,
+                            zIndex: isCreatePerspective ? 16 : undefined,
+                            borderRight: isCreatePerspective ? 'none' : '1px solid #e2e8f0',
+                            border: isCreatePerspective ? '1px solid #e2e8f0' : undefined,
+                            borderRadius: isCreatePerspective ? 14 : undefined,
+                            boxShadow: isCreatePerspective ? '0 18px 36px rgba(15, 23, 42, 0.12)' : undefined,
                             background: '#ffffff',
                             minHeight: 0,
                             overflow: 'auto',
@@ -2059,70 +2098,6 @@ export function ProjectPerspectiveShell({
                         {isCreatePerspective ? null : (
                         <>
                         <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
-                            {perspectiveId === 'overview' ? (
-                                <div
-                                    data-testid='project-hub-panel'
-                                    style={{
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: 8,
-                                        padding: 8,
-                                        background: '#f8fafc',
-                                        display: 'grid',
-                                        gap: 6,
-                                        marginBottom: 10,
-                                    }}>
-                                    <div style={{ fontSize: 11, fontWeight: 700, color: '#0f172a' }}>
-                                        Project Hub
-                                    </div>
-                                    <div style={{ fontSize: 10, color: '#334155' }}>
-                                        perspectives: {perspectiveEntrySummary.length}
-                                    </div>
-                                    <div style={{ fontSize: 10, color: '#334155' }}>
-                                        entries: {totalPerspectiveEntries}
-                                    </div>
-                                    <div style={{ fontSize: 10, color: '#334155' }}>
-                                        recent views: {recentRoutes.length}
-                                    </div>
-                                    <div style={{ fontSize: 10, color: '#334155' }}>
-                                        projectId: {projectIdentity.projectId ?? 'none'}
-                                    </div>
-                                    <div style={{ fontSize: 10, color: '#334155' }}>
-                                        project name: {projectIdentity.name}
-                                    </div>
-                                    <div style={{ fontSize: 10, color: '#334155' }}>
-                                        blueprintId: {projectIdentity.blueprintId ?? 'none'}
-                                    </div>
-                                    <div style={{ fontSize: 10, color: '#334155' }}>
-                                        owner: {projectIdentity.owner ?? 'none'}
-                                    </div>
-                                    <div style={{ fontSize: 10, color: '#334155' }}>
-                                        updatedAt: {projectIdentity.updatedAt ?? 'none'}
-                                    </div>
-                                    <div style={{ fontSize: 10, color: '#334155' }}>
-                                        bootstrap:{' '}
-                                        {persistedProjectBootstrap?.blueprintVersionId
-                                            ? persistedProjectBootstrap.blueprintVersionId
-                                            : 'none'}
-                                    </div>
-                                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                                        <Link
-                                            href='/workspace/create'
-                                            style={{ fontSize: 10, color: '#0f172a', textDecoration: 'none' }}>
-                                            Open Create
-                                        </Link>
-                                        <Link
-                                            href='/workspace/build'
-                                            style={{ fontSize: 10, color: '#0f172a', textDecoration: 'none' }}>
-                                            Open Build
-                                        </Link>
-                                        <Link
-                                            href='/workspace/publish'
-                                            style={{ fontSize: 10, color: '#0f172a', textDecoration: 'none' }}>
-                                            Open Publish
-                                        </Link>
-                                    </div>
-                                </div>
-                            ) : null}
                             <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
                                 Start from Blueprint
                             </div>
@@ -2217,179 +2192,6 @@ export function ProjectPerspectiveShell({
                         </div>
                         </>
                         )}
-                        {perspectiveId === 'create' ? (
-                            <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
-                                <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
-                                    Create World
-                                </div>
-                                <div
-                                    data-testid='create-world-panel'
-                                    style={{
-                                        border: '1px solid #fed7aa',
-                                        borderRadius: 8,
-                                        padding: 8,
-                                        background: '#fff7ed',
-                                        display: 'grid',
-                                        gap: 8,
-                                        marginBottom: 8,
-                                    }}>
-                                    <div
-                                        style={{
-                                            fontSize: 10,
-                                            fontWeight: 700,
-                                            letterSpacing: '0.04em',
-                                            textTransform: 'uppercase',
-                                            color: '#c2410c',
-                                        }}>
-                                        Create World
-                                    </div>
-                                    <div style={{ fontSize: 12, fontWeight: 700, color: '#9a3412' }}>
-                                        {createWorkflow.worldSummary?.activityLabel ?? 'Create'}
-                                    </div>
-                                    <div
-                                        data-testid='create-world-summary'
-                                        style={{ display: 'grid', gap: 3, fontSize: 10, color: '#9a3412' }}>
-                                        <span>
-                                            Current task:{' '}
-                                            <strong style={{ color: '#7c2d12' }}>
-                                                {createWorkflow.worldSummary?.currentTaskLabel ?? 'Awaiting create context'}
-                                            </strong>
-                                        </span>
-                                        <span>
-                                            Assistant:{' '}
-                                            <strong style={{ color: '#7c2d12' }}>
-                                                {createAssistantLabels?.assistantLabel ?? 'Design Assistant'}
-                                            </strong>
-                                        </span>
-                                        <span>
-                                            Linked artifacts:{' '}
-                                            <strong style={{ color: '#7c2d12' }}>
-                                                {createWorkflow.worldSummary?.linkedArtifactCount ?? 0}
-                                            </strong>{' '}
-                                            across{' '}
-                                            <strong style={{ color: '#7c2d12' }}>
-                                                {createWorkflow.worldSummary?.clusterCount ?? 0}
-                                            </strong>{' '}
-                                            create clusters
-                                        </span>
-                                        <span>
-                                            Next focus:{' '}
-                                            <strong style={{ color: '#7c2d12' }}>
-                                                {createWorkflow.worldSummary?.nextArtifactLabel ?? 'No linked create targets'}
-                                            </strong>
-                                        </span>
-                                    </div>
-                                </div>
-                                <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
-                                    Create Workflow
-                                </div>
-                                <div
-                                    data-testid='create-workflow-panel'
-                                    style={{
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: 8,
-                                        padding: 8,
-                                        background: '#f8fafc',
-                                        display: 'grid',
-                                        gap: 8,
-                                    }}>
-                                    {createWorkflow.suggestedNextArtifact ? (
-                                        <button
-                                            type='button'
-                                            onClick={() => navigateArtifactWorkflowHref(createWorkflow.suggestedNextArtifact.href)}
-                                            data-testid='create-workflow-suggested-next'
-                                            style={{
-                                                textAlign: 'left',
-                                                border: '1px solid #fdba74',
-                                                borderRadius: 8,
-                                                background: '#fff7ed',
-                                                color: '#7c2d12',
-                                                padding: '8px 10px',
-                                                cursor: 'pointer',
-                                                display: 'grid',
-                                                gap: 2,
-                                            }}>
-                                            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                                                Continue Creating
-                                            </span>
-                                            <strong style={{ fontSize: 12, color: '#9a3412' }}>
-                                                {createWorkflow.suggestedNextArtifact.label}
-                                            </strong>
-                                            <span style={{ fontSize: 10 }}>
-                                                {createWorkflow.suggestedNextArtifact.clusterLabel} · {createWorkflow.suggestedNextArtifact.entryLabel}
-                                            </span>
-                                        </button>
-                                    ) : null}
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                                        {createWorkflow.entrySummaries.map((summary) => (
-                                            <span
-                                                key={summary.entryId}
-                                                style={{
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    gap: 4,
-                                                    border: '1px solid #cbd5e1',
-                                                    borderRadius: 999,
-                                                    background: '#ffffff',
-                                                    color: '#334155',
-                                                    fontSize: 10,
-                                                    padding: '3px 7px',
-                                                }}>
-                                                {summary.entryLabel}
-                                                <strong style={{ color: '#0f172a' }}>{summary.count}</strong>
-                                            </span>
-                                        ))}
-                                    </div>
-                                    <div style={{ display: 'grid', gap: 8 }}>
-                                        {createWorkflow.artifactClusters.map((cluster) => (
-                                            <div key={cluster.clusterId} data-testid={`create-workflow-cluster-${cluster.clusterId}`}>
-                                                <div
-                                                    style={{
-                                                        fontSize: 10,
-                                                        fontWeight: 700,
-                                                        color: '#475569',
-                                                        marginBottom: 4,
-                                                        letterSpacing: '0.04em',
-                                                        textTransform: 'uppercase',
-                                                    }}>
-                                                    {cluster.clusterLabel}
-                                                </div>
-                                                <div style={{ display: 'grid', gap: 4 }}>
-                                                    {cluster.items.map((item) => (
-                                                        <button
-                                                            key={item.targetId}
-                                                            type='button'
-                                                            onClick={() => navigateArtifactWorkflowHref(item.href)}
-                                                            data-testid={`create-workflow-link-${item.targetId}`}
-                                                            style={{
-                                                                display: 'grid',
-                                                                gap: 2,
-                                                                textAlign: 'left',
-                                                                border: `1px solid ${item.active ? '#0f172a' : '#e2e8f0'}`,
-                                                                borderRadius: 6,
-                                                                background: '#ffffff',
-                                                                color: '#334155',
-                                                                padding: '6px 8px',
-                                                                cursor: 'pointer',
-                                                            }}>
-                                                            <strong style={{ fontSize: 11, color: '#0f172a' }}>{item.label}</strong>
-                                                            <span style={{ fontSize: 10, color: '#64748b' }}>
-                                                                {item.entryLabel} · {item.kind}
-                                                            </span>
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ))}
-                                        {createWorkflow.linkedArtifacts.length === 0 ? (
-                                            <span style={{ fontSize: 11, color: '#64748b' }}>
-                                                No linked create artifacts
-                                            </span>
-                                        ) : null}
-                                    </div>
-                                </div>
-                            </div>
-                        ) : null}
                         {perspectiveId === 'build' ? (
                             <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
                                 <div
@@ -3478,6 +3280,7 @@ export function ProjectPerspectiveShell({
                                 </div>
                             </div>
                         ) : null}
+                        {isCreatePerspective ? null : (
                         <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0' }}>
                             <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
                                 Assistants
@@ -3585,6 +3388,7 @@ export function ProjectPerspectiveShell({
                                 ) : null}
                             </div>
                         </div>
+                        )}
                         {isCreatePerspective ? (
                             <div
                                 data-testid='create-shell-utility-panel'
@@ -3599,6 +3403,7 @@ export function ProjectPerspectiveShell({
                                 </div>
                                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                                     {[
+                                        { id: 'support', label: 'Now' },
                                         { id: 'project', label: 'Project' },
                                         { id: 'navigate', label: 'Navigate' },
                                         { id: 'blueprints', label: 'Blueprints' },
@@ -3624,6 +3429,152 @@ export function ProjectPerspectiveShell({
                                         );
                                     })}
                                 </div>
+                                {createUtilityPanel === 'support' ? (
+                                    <div style={{ display: 'grid', gap: 8 }}>
+                                        <div
+                                            data-testid='create-world-panel'
+                                            style={{
+                                                border: '1px solid #fed7aa',
+                                                borderRadius: 8,
+                                                padding: '8px 10px',
+                                                background: '#fff7ed',
+                                                display: 'grid',
+                                                gap: 6,
+                                            }}>
+                                            <div
+                                                style={{
+                                                    fontSize: 10,
+                                                    fontWeight: 700,
+                                                    letterSpacing: '0.04em',
+                                                    textTransform: 'uppercase',
+                                                    color: '#c2410c',
+                                                }}>
+                                                Create Now
+                                            </div>
+                                            <div style={{ fontSize: 12, fontWeight: 700, color: '#9a3412' }}>
+                                                {createWorkflow.worldSummary?.currentTaskLabel ?? 'Awaiting create context'}
+                                            </div>
+                                            <div data-testid='create-world-summary' style={{ display: 'grid', gap: 3, fontSize: 10, color: '#9a3412' }}>
+                                                <span>
+                                                    Focus: <strong style={{ color: '#7c2d12' }}>{createWorkflow.worldSummary?.nextArtifactLabel ?? 'No linked create targets'}</strong>
+                                                </span>
+                                                <span>
+                                                    Assistant: <strong style={{ color: '#7c2d12' }}>{createAssistantLabels?.assistantLabel ?? 'Design Assistant'}</strong>
+                                                </span>
+                                                <span>
+                                                    Linked artifacts: <strong style={{ color: '#7c2d12' }}>{createWorkflow.worldSummary?.linkedArtifactCount ?? 0}</strong>
+                                                </span>
+                                            </div>
+                                            {createWorkflow.suggestedNextArtifact ? (
+                                                <button
+                                                    type='button'
+                                                    onClick={() => navigateArtifactWorkflowHref(createWorkflow.suggestedNextArtifact.href)}
+                                                    data-testid='create-workflow-suggested-next'
+                                                    style={{
+                                                        textAlign: 'left',
+                                                        border: '1px solid #fdba74',
+                                                        borderRadius: 8,
+                                                        background: '#ffffff',
+                                                        color: '#7c2d12',
+                                                        padding: '8px 10px',
+                                                        cursor: 'pointer',
+                                                        display: 'grid',
+                                                        gap: 2,
+                                                    }}>
+                                                    <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                                                        Continue Creating
+                                                    </span>
+                                                    <strong style={{ fontSize: 12, color: '#9a3412' }}>
+                                                        {createWorkflow.suggestedNextArtifact.label}
+                                                    </strong>
+                                                    <span style={{ fontSize: 10 }}>
+                                                        {createWorkflow.suggestedNextArtifact.clusterLabel} · {createWorkflow.suggestedNextArtifact.entryLabel}
+                                                    </span>
+                                                </button>
+                                            ) : null}
+                                        </div>
+                                        <details
+                                            data-testid='assistant-surface-panel'
+                                            data-state={assistantSurfaceState}
+                                            data-choreography-state={assistantSurfaceChoreographyState}
+                                            data-emergence-source='assistant'
+                                            data-motion-meaning='context'
+                                            data-motion-mode={motionMode}
+                                            style={{
+                                                border: '1px solid #e2e8f0',
+                                                borderRadius: 8,
+                                                background: '#f8fafc',
+                                                padding: '8px 10px',
+                                            }}>
+                                            <summary style={{ fontSize: 11, fontWeight: 700, color: '#334155', cursor: 'pointer' }}>
+                                                Assistant
+                                            </summary>
+                                            <div style={{ display: 'grid', gap: 6, marginTop: 8 }}>
+                                                <span data-testid='assistant-surface-focus' style={{ fontSize: 10, color: '#334155' }}>
+                                                    {(createAssistantLabels ?? buildAssistantLabels ?? operateAssistantLabels ?? publishAssistantLabels)?.assistantLabel ?? 'Design Assistant'} for {formatEntryLabel(projectPerspectiveContext.entryId)}
+                                                </span>
+                                                <span data-testid='assistant-surface-context' style={{ fontSize: 10, color: '#64748b' }}>
+                                                    {assistantSurfaceContextSummary}
+                                                </span>
+                                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                                    <button
+                                                        type='button'
+                                                        onClick={() => requestAssistantPlaceholder('recommend')}
+                                                        data-testid='assistant-action-recommend'
+                                                        disabled={!assistantSurface?.activeAssistantId}
+                                                        style={{
+                                                            border: '1px solid #cbd5e1',
+                                                            borderRadius: 6,
+                                                            background: '#ffffff',
+                                                            color: '#334155',
+                                                            fontSize: 10,
+                                                            padding: '4px 6px',
+                                                            cursor: assistantSurface?.activeAssistantId ? 'pointer' : 'not-allowed',
+                                                        }}>
+                                                        {createAssistantLabels?.recommendLabel ?? 'Ask Assistant'}
+                                                    </button>
+                                                    <button
+                                                        type='button'
+                                                        onClick={() => requestAssistantPlaceholder('generate')}
+                                                        data-testid='assistant-action-generate'
+                                                        disabled={!assistantSurface?.activeAssistantId}
+                                                        style={{
+                                                            border: '1px solid #cbd5e1',
+                                                            borderRadius: 6,
+                                                            background: '#ffffff',
+                                                            color: '#334155',
+                                                            fontSize: 10,
+                                                            padding: '4px 6px',
+                                                            cursor: assistantSurface?.activeAssistantId ? 'pointer' : 'not-allowed',
+                                                        }}>
+                                                        {createAssistantLabels?.generateLabel ?? 'Generate Options'}
+                                                    </button>
+                                                    <button
+                                                        type='button'
+                                                        onClick={() => requestAssistantPlaceholder('explain')}
+                                                        data-testid='assistant-action-explain'
+                                                        disabled={!assistantSurface?.activeAssistantId}
+                                                        style={{
+                                                            border: '1px solid #cbd5e1',
+                                                            borderRadius: 6,
+                                                            background: '#ffffff',
+                                                            color: '#334155',
+                                                            fontSize: 10,
+                                                            padding: '4px 6px',
+                                                            cursor: assistantSurface?.activeAssistantId ? 'pointer' : 'not-allowed',
+                                                        }}>
+                                                        {createAssistantLabels?.explainLabel ?? 'Improve This'}
+                                                    </button>
+                                                </div>
+                                                {assistantIntentStatus ? (
+                                                    <span style={{ fontSize: 10, color: '#64748b' }}>
+                                                        assistant intent: {assistantIntentStatus}
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                        </details>
+                                    </div>
+                                ) : null}
                                 {createUtilityPanel === 'project' ? (
                                     createShellChoreography.utilityState === 'guiding' ? (
                                         <div style={{ display: 'grid', gap: 8 }}>
@@ -4264,7 +4215,7 @@ export function ProjectPerspectiveShell({
                         </>
                         )}
                     </aside>
-                    <div style={{ minHeight: 0 }}>{children}</div>
+                    <div style={{ minHeight: 0, minWidth: 0 }}>{children}</div>
                 </div>
             </div>
         </div>

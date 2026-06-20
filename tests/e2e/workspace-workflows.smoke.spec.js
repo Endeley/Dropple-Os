@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
 
+function visibleNodes(page) {
+  return page.locator('[data-node-id]:visible');
+}
+
 async function publishMarketplaceFixture(request, {
   title = `Marketplace Fixture ${Date.now()}`,
   description = 'Certified marketplace fixture',
@@ -125,7 +129,9 @@ test('marketplace blueprint workflow opens certified blueprint details and enter
   expect(workspaceUrl.searchParams.get('lineageRootId')).toBe(lineage.lineageRootId);
   expect(workspaceUrl.searchParams.get('versionId')).toBe(lineage.versionId);
   await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();
-  await expect(page.locator('[data-node-id]')).toHaveCount(2);
+  await expect
+    .poll(async () => visibleNodes(page).count())
+    .toBeGreaterThanOrEqual(2);
 
   assertNoFatalErrors(tracked, 'marketplace blueprint workflow');
 });

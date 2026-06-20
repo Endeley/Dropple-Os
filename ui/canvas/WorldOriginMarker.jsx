@@ -1,10 +1,13 @@
 'use client';
 
+import { isCreateUiWorld } from '@/runtime/workspaces/projectSubstrateNavigation.js';
+
 const __DEV__ = process.env.NODE_ENV !== 'production';
 
-export function WorldOriginMarker({ viewport }) {
+export function WorldOriginMarker({ viewport, workspaceId = null, modeId = null }) {
     if (!__DEV__) return null;
     if (!viewport) return null;
+    if (isCreateUiWorld({ workspaceId, modeId })) return null;
 
     const { x: vx, y: vy, scale: vs } = viewport;
 
@@ -12,20 +15,12 @@ export function WorldOriginMarker({ viewport }) {
         return null;
     }
 
-    // World (0,0) -> screen
-    const left = -vx * vs;
-    const top = -vy * vs;
-
-    if (!Number.isFinite(left) || !Number.isFinite(top)) {
-        return null;
-    }
-
     return (
         <div
             style={{
                 position: 'absolute',
-                left,
-                top,
+                left: 0,
+                top: 0,
                 pointerEvents: 'none',
                 zIndex: 1,
             }}

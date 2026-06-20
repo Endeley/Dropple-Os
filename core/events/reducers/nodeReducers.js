@@ -1,6 +1,7 @@
 // core/events/reducers/nodeReducers.js
 
 import { EventTypes } from "../eventTypes.js";
+import { NodeMutationTypes } from "../nodeMutationTypes.js";
 import { markLayoutDirty } from "./layoutDirtyHelpers.js";
 
 const defaultLayout = Object.freeze({
@@ -59,6 +60,19 @@ function getSceneGraph(state) {
   };
 }
 
+function collectNodeSubtreeIds(nodes, nodeId, visited = new Set()) {
+  if (!nodeId || visited.has(nodeId) || !nodes[nodeId]) return visited;
+
+  visited.add(nodeId);
+
+  const children = Array.isArray(nodes[nodeId]?.children) ? nodes[nodeId].children : [];
+  children.forEach((childId) => {
+    collectNodeSubtreeIds(nodes, childId, visited);
+  });
+
+  return visited;
+}
+
 function applySceneGraph(state, nextGraph) {
   return applyDocumentSlices(state, {
     sceneGraph: nextGraph,
@@ -76,6 +90,19 @@ function applyDocumentSlices(state, slices) {
   return {
     ...state,
     document,
+  };
+}
+
+function resolveFirstRememberedArtifact(state) {
+  return state?.document?.world?.history?.firstRememberedArtifact ?? null;
+}
+
+function createFirstRememberedArtifactEntry(node = {}) {
+  return {
+    nodeId: node?.id ?? null,
+    nodeType: node?.type ?? null,
+    parentId: node?.parentId ?? null,
+    layout: extractLayoutEntry(node),
   };
 }
 
@@ -134,6 +161,14 @@ export function nodeReducers(state, event) {
             [node.id]: nextLayoutEntry,
           },
         },
+        world: {
+          ...(state?.document?.world ?? {}),
+          history: {
+            ...(state?.document?.world?.history ?? {}),
+            firstRememberedArtifact:
+              resolveFirstRememberedArtifact(state) ?? createFirstRememberedArtifactEntry(baseNode),
+          },
+        },
       });
       return markLayoutDirty(nextState, {
         nodeIds: parentNode ? [parentId, node.id] : [node.id],
@@ -190,20 +225,35 @@ export function nodeReducers(state, event) {
 
     case EventTypes.NODE_DELETE: {
       const { id } = payload;
-      if (!graph.nodes[id]) return state;
+      const target = graph.nodes[id];
+      if (!target) return state;
+
+      const removedIds = Array.from(collectNodeSubtreeIds(graph.nodes, id));
 
       const nextNodes = { ...graph.nodes };
-      delete nextNodes[id];
+      removedIds.forEach((nodeId) => {
+        delete nextNodes[nodeId];
+      });
+
+      const parentId = target.parentId ?? null;
+      if (parentId && nextNodes[parentId]) {
+        nextNodes[parentId] = {
+          ...nextNodes[parentId],
+          children: (nextNodes[parentId].children ?? []).filter((childId) => !removedIds.includes(childId)),
+        };
+      }
 
       const nextLayoutNodes = { ...(state?.document?.layout?.nodes ?? {}) };
       const nextComputed = { ...(state?.document?.layout?.computed ?? {}) };
-      delete nextLayoutNodes[id];
-      delete nextComputed[id];
+      removedIds.forEach((nodeId) => {
+        delete nextLayoutNodes[nodeId];
+        delete nextComputed[nodeId];
+      });
 
       const nextState = applyDocumentSlices(state, {
         sceneGraph: {
           nodes: nextNodes,
-          rootIds: graph.rootIds.filter((rootId) => rootId !== id),
+          rootIds: graph.rootIds.filter((rootId) => !removedIds.includes(rootId)),
         },
         layout: {
           ...(state?.document?.layout ?? {}),
@@ -212,13 +262,13 @@ export function nodeReducers(state, event) {
         },
       });
       return markLayoutDirty(nextState, {
-        nodeIds: [id],
+        nodeIds: [parentId, ...removedIds].filter(Boolean),
       });
     }
 
-    case 'node.content.update':
-    case 'text.content.update':
-    case 'image.source.update': {
+    case NodeMutationTypes.CONTENT_UPDATE:
+    case NodeMutationTypes.TEXT_CONTENT_UPDATE:
+    case NodeMutationTypes.IMAGE_SOURCE_UPDATE: {
       const { nodeId, content } = payload;
       const prev = graph.nodes[nodeId];
       if (!prev) return state;
@@ -238,7 +288,7 @@ export function nodeReducers(state, event) {
       });
     }
 
-    case 'node.props.update': {
+    case NodeMutationTypes.PROPS_UPDATE: {
       const { nodeId, props } = payload;
       const prev = graph.nodes[nodeId];
       if (!prev) return state;
@@ -280,7 +330,7 @@ export function nodeReducers(state, event) {
       });
     }
 
-    case 'node.layout.rotate': {
+    case NodeMutationTypes.LAYOUT_ROTATE: {
       const { nodeId, rotation } = payload;
       const prev = graph.nodes[nodeId];
       if (!prev) return state;

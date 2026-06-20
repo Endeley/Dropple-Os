@@ -121,3 +121,29 @@ test('node.layout.bulk width and height survive layout pass for authored contain
     assert.equal(next.document.layout.computed.node1.width, 240);
     assert.equal(next.document.layout.computed.node1.height, 180);
 });
+
+test('uiux workspace contract allows canonical node delete through dispatcher', async () => {
+    const dispatcher = createEventDispatcher({ headless: true, workspaceId: 'uiux' });
+
+    await dispatcher.dispatch({
+        type: EventTypes.WORKSPACE_SET_ACTIVE,
+        payload: {
+            workspaceDef: getWorkspaceDefinition('uiux'),
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.NODE_CREATE,
+        payload: {
+            node: createNode('node-delete-me', { x: 40, y: 50, width: 160, height: 120 }),
+        },
+    });
+
+    await dispatcher.dispatch({
+        type: EventTypes.NODE_DELETE,
+        payload: { id: 'node-delete-me' },
+    });
+
+    const next = dispatcher.getState();
+    assert.equal(getNodes(next)['node-delete-me'], undefined);
+});

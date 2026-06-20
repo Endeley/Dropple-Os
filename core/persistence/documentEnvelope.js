@@ -21,6 +21,7 @@ export const CANONICAL_DOCUMENT_SLICES = Object.freeze([
     'tokens',
     'variables',
     'vectors',
+    'world',
 ]);
 
 export function createCanonicalDocumentEnvelope({
@@ -116,6 +117,11 @@ export function createCanonicalDocumentEnvelope({
         },
         exports: {
             targets: [],
+        },
+        world: {
+            history: {
+                firstRememberedArtifact: null,
+            },
         },
     };
 }

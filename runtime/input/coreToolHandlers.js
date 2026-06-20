@@ -1,7 +1,10 @@
 import { EventTypes } from '@/core/events/eventTypes.js';
+import { NodeMutationTypes } from '@/core/events/nodeMutationTypes.js';
 import { getNodes } from '@/runtime/document/documentAdapter.js';
 import { hitTestPoint } from '@/runtime/hitTest/index.js';
 import { computeDragDelta } from '@/runtime/interaction/dragEngine.js';
+import { computeGroupMoveUpdates } from '@/runtime/interaction/groupMoveEngine.js';
+import { resolveSelectableGroupTarget } from '@/runtime/grouping/resolveSelectableGroupTarget.js';
 import { computeRotationDelta } from '@/runtime/interaction/rotationEngine.js';
 import { resolveBoundsSelection } from '@/runtime/selection/selectBounds.js';
 import { registerToolHandler, unregisterToolHandler } from '@/runtime/tools/toolController.js';
@@ -81,10 +84,26 @@ function getNodeRect(node, runtimeState) {
     return null;
 }
 
+function getNodeMoveOrigin(node) {
+    if (!node) return null;
+
+    const layout = node.layout ?? {};
+    const transform = node.transform ?? {};
+
+    const x = layout.x ?? node.x ?? transform.x ?? null;
+    const y = layout.y ?? node.y ?? transform.y ?? null;
+
+    if (!Number.isFinite(x) || !Number.isFinite(y)) {
+        return null;
+    }
+
+    return { x, y };
+}
+
 function resolvePrimaryHit(runtimeState, worldPoint, _event, targetNodeId) {
     const nodesById = getToolNodes(runtimeState);
     if (targetNodeId && nodesById[targetNodeId]) {
-        return nodesById[targetNodeId];
+        return nodesById[resolveSelectableGroupTarget(nodesById, targetNodeId)] ?? nodesById[targetNodeId];
     }
 
     if (!worldPoint) return null;
@@ -95,14 +114,17 @@ function resolvePrimaryHit(runtimeState, worldPoint, _event, targetNodeId) {
         y: worldPoint.y,
     });
 
-    return hit?.id ? nodesById[hit.id] ?? hit : null;
+    if (!hit?.id) return null;
+
+    const resolvedId = resolveSelectableGroupTarget(nodesById, hit.id);
+    return nodesById[resolvedId] ?? nodesById[hit.id] ?? hit;
 }
 
 function dispatchLayoutBulk(dispatcher, updates) {
     if (!dispatcher?.dispatch || !Array.isArray(updates) || updates.length === 0) return;
 
     dispatcher.dispatch({
-        type: 'node.layout.bulk',
+        type: NodeMutationTypes.LAYOUT_BULK,
         payload: {
             updates,
         },
@@ -136,7 +158,14 @@ function buildOriginMap(nodeIds, nodesById, runtimeState) {
     const origin = {};
 
     nodeIds.forEach((nodeId) => {
-        const rect = getNodeRect(nodesById[nodeId], runtimeState);
+        const node = nodesById[nodeId];
+        const authoredOrigin = getNodeMoveOrigin(node);
+        if (authoredOrigin) {
+            origin[nodeId] = authoredOrigin;
+            return;
+        }
+
+        const rect = getNodeRect(node, runtimeState);
         if (!rect) return;
         origin[nodeId] = {
             x: rect.x,
@@ -145,6 +174,64 @@ function buildOriginMap(nodeIds, nodesById, runtimeState) {
     });
 
     return origin;
+}
+
+function collectNodeDescendants(nodesById, nodeId, result = []) {
+    const node = nodesById?.[nodeId];
+    const childIds = Array.isArray(node?.children) ? node.children : [];
+
+    childIds.forEach((childId) => {
+        if (result.includes(childId)) return;
+        result.push(childId);
+        collectNodeDescendants(nodesById, childId, result);
+    });
+
+    return result;
+}
+
+function buildGroupDragDescriptor(groupId, nodesById, runtimeState) {
+    const groupNode = nodesById?.[groupId] ?? null;
+    if (!groupNode || groupNode.type !== 'group') {
+        return null;
+    }
+
+    const bounds = getNodeRect(groupNode, runtimeState);
+    if (!bounds) {
+        return null;
+    }
+
+    const childIds = collectNodeDescendants(nodesById, groupId, []);
+    const nodeIds = [groupId, ...childIds];
+    const members = {};
+
+    nodeIds.forEach((nodeId) => {
+        const rect = getNodeRect(nodesById[nodeId], runtimeState);
+        if (!rect) return;
+
+        members[nodeId] = {
+            originBounds: rect,
+            offsetFromGroupOrigin: {
+                x: rect.x - bounds.x,
+                y: rect.y - bounds.y,
+            },
+            centerOffsetFromGroupCenter: {
+                x: rect.x + rect.width / 2 - (bounds.x + bounds.width / 2),
+                y: rect.y + rect.height / 2 - (bounds.y + bounds.height / 2),
+            },
+            rotation: nodesById[nodeId]?.layout?.rotation ?? 0,
+        };
+    });
+
+    return {
+        active: true,
+        nodeIds,
+        bounds,
+        center: bounds.center ?? {
+            x: bounds.x + bounds.width / 2,
+            y: bounds.y + bounds.height / 2,
+        },
+        members,
+    };
 }
 
 function remapCopiedNode(node, idMap) {
@@ -226,21 +313,35 @@ function dispatchMoveDragStart({
 
     const nodesById = getToolNodes(runtimeState);
     const currentSelection = resolveCurrentSelection(runtimeState);
-    let nodeIds = resolveNextMoveSelection({
+    const selectionIds = resolveNextMoveSelection({
         additive,
         currentSelection,
         hitNodeId,
     });
 
-    if (!nodeIds.length) return false;
+    if (!selectionIds.length) return false;
 
     dispatcher.dispatch({
         type: EventTypes.SELECTION_SET,
         payload: {
-            ids: nodeIds,
+            ids: selectionIds,
             primary: hitNodeId,
         },
     });
+
+    let nodeIds = selectionIds;
+    let group = null;
+
+    if (selectionIds.length === 1) {
+        group = buildGroupDragDescriptor(selectionIds[0], nodesById, runtimeState);
+        if (group?.nodeIds?.length) {
+            nodeIds = group.nodeIds;
+        }
+    } else if (selectionIds.length > 1) {
+        group = {
+            nodeIds: selectionIds,
+        };
+    }
 
     const origin = buildOriginMap(nodeIds, nodesById, runtimeState);
     const payload = {
@@ -254,10 +355,8 @@ function dispatchMoveDragStart({
         },
     };
 
-    if (nodeIds.length > 1) {
-        payload.group = {
-            nodeIds,
-        };
+    if (group) {
+        payload.group = group;
     }
 
     dispatcher.dispatch({
@@ -305,6 +404,18 @@ function buildMoveUpdates(nodeIds, origin, delta) {
             };
         })
         .filter(Boolean);
+}
+
+function buildResolvedMoveUpdates(drag, delta) {
+    if (drag?.group?.members && drag?.group?.bounds) {
+        return computeGroupMoveUpdates(drag.group, delta).map((update) => ({
+            id: update.nodeId,
+            x: update.x,
+            y: update.y,
+        }));
+    }
+
+    return buildMoveUpdates(drag?.nodeIds ?? [], drag?.origin ?? null, delta);
 }
 
 function moveToolHandler(input, context) {
@@ -367,7 +478,8 @@ function moveToolHandler(input, context) {
                 currentPointer: worldPoint,
             };
             const delta = computeDragDelta(promotedDrag, {
-                runtime: runtimeState,
+                nodeLookup: getToolNodes(runtimeState),
+                computedTransforms: runtimeState?.scene?.computed?.transforms ?? null,
                 axisLock: isAxisLockRequested(input),
             });
 
@@ -382,7 +494,14 @@ function moveToolHandler(input, context) {
 
             dispatchLayoutBulk(
                 dispatcher,
-                buildMoveUpdates(promotedNodeIds, promotedOrigin, delta),
+                buildResolvedMoveUpdates(
+                    {
+                        ...promotedDrag,
+                        nodeIds: promotedNodeIds,
+                        origin: promotedOrigin,
+                    },
+                    delta,
+                ),
             );
 
             return { handled: true };
@@ -406,7 +525,8 @@ function moveToolHandler(input, context) {
             currentPointer: worldPoint,
         };
         const delta = computeDragDelta(nextDrag, {
-            runtime: runtimeState,
+            nodeLookup: getToolNodes(runtimeState),
+            computedTransforms: runtimeState?.scene?.computed?.transforms ?? null,
             axisLock: isAxisLockRequested(input),
         });
 
@@ -421,13 +541,37 @@ function moveToolHandler(input, context) {
 
         dispatchLayoutBulk(
             dispatcher,
-            buildMoveUpdates(drag.nodeIds ?? [], drag.origin ?? null, delta),
+            buildResolvedMoveUpdates(drag, delta),
         );
 
         return { handled: true };
     }
 
     if (input.type === 'pointerup' || input.type === 'pointercancel') {
+        const nextDrag = {
+            ...drag,
+            currentPointer: worldPoint,
+        };
+        const delta = computeDragDelta(nextDrag, {
+            nodeLookup: getToolNodes(runtimeState),
+            computedTransforms: runtimeState?.scene?.computed?.transforms ?? null,
+            axisLock: isAxisLockRequested(input),
+        });
+
+        dispatcher.dispatch({
+            type: EventTypes.DRAG_UPDATE,
+            payload: {
+                pointer: worldPoint,
+                guides: delta.guides ?? [],
+                interactionTransforms: delta.interactionTransforms ?? null,
+            },
+        });
+
+        dispatchLayoutBulk(
+            dispatcher,
+            buildResolvedMoveUpdates(drag, delta),
+        );
+
         dispatcher.dispatch({ type: EventTypes.DRAG_END });
         return { handled: true };
     }
@@ -584,7 +728,7 @@ function rotateToolHandler(input, context) {
 
         if (drag.nodeIds?.[0] && Number.isFinite(nextRotation?.angle)) {
             dispatcher.dispatch({
-                type: 'node.layout.rotate',
+                type: NodeMutationTypes.LAYOUT_ROTATE,
                 payload: {
                     id: drag.nodeIds[0],
                     angle: nextRotation.angle,

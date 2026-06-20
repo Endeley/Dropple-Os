@@ -35,7 +35,13 @@ export default function NodeLayer() {
                 const isHovered = hoveredId === node.id;
 
                 return (
-                    <div key={node.id} className={`node-wrapper ${isHovered ? 'is-hovered' : ''}`} onPointerEnter={() => handleEnter(node.id)} onPointerLeave={handleLeave}>
+                    <div
+                        key={node.id}
+                        className={`node-wrapper ${isHovered ? 'is-hovered' : ''}`}
+                        data-node-id={node.id}
+                        data-pointer-role='node-wrapper'
+                        onPointerEnter={() => handleEnter(node.id)}
+                        onPointerLeave={handleLeave}>
                         <NodeRenderer node={node} />
                     </div>
                 );

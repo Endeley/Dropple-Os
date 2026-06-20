@@ -25,6 +25,7 @@ import { useCapabilityLifecycle } from '@/ui/workspace/useCapabilityLifecycle.js
 import { useInterpretedToolProviderLifecycle } from '@/ui/workspace/useInterpretedToolProviderLifecycle.js';
 import { useWorkspaceNavigation } from '@/ui/workspace/shared/useWorkspaceNavigation.js';
 import { openTemplatePublishDialog } from '@/ui/bridges/templatePublishRuntimeFacade.js';
+import { NodeMutationTypes } from '@/core/events/nodeMutationTypes.js';
 import {
     createArtifactPersistenceSnapshot,
     createEnvironmentArtifact,
@@ -34,7 +35,15 @@ import {
 /**
  * Stable event types (no reallocation)
  */
-const AUTO_LAYOUT_EVENTS = new Set(['node.layout.setAutoLayout', 'node.layout.clearAutoLayout', 'node.layout.bulk', 'node.layout.rotate', 'node.create', 'node.delete', 'node.children.reorder']);
+const AUTO_LAYOUT_EVENTS = new Set([
+    NodeMutationTypes.LAYOUT_SET_AUTO_LAYOUT,
+    NodeMutationTypes.LAYOUT_CLEAR_AUTO_LAYOUT,
+    NodeMutationTypes.LAYOUT_BULK,
+    NodeMutationTypes.LAYOUT_ROTATE,
+    'node.create',
+    'node.delete',
+    NodeMutationTypes.CHILDREN_REORDER,
+]);
 
 export function EditorWorkspaceShell({
     modeId,

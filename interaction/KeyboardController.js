@@ -1,5 +1,9 @@
 import { enforceAuthority } from '../runtime/guards/authorityGuard.js';
 
+// Legacy interaction stack.
+// WorldShell / Create > UI routes through ui/workspace/root/DispatcherProvider/Bridges/RuntimeBridgesRoot.jsx
+// and canonical core event types in core/events/eventTypes.js instead of this controller.
+
 export class KeyboardController {
   constructor({ shell, interactions, messageBus }) {
     this.shell = shell;

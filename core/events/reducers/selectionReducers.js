@@ -31,7 +31,22 @@ function finalizeSelection(selection) {
 export function selectionReducer(runtime, event) {
   const selection = ensureSelection(runtime.selection);
 
-  switch (event.type) {
+    switch (event.type) {
+    case EventTypes.NODE_WRAP: {
+      const wrapperId = event?.payload?.wrapperNode?.id ?? null;
+      if (!wrapperId) {
+        return runtime;
+      }
+
+      return {
+        ...runtime,
+        selection: finalizeSelection({
+          ids: new Set([wrapperId]),
+          primary: wrapperId,
+        }),
+      };
+    }
+
     case EventTypes.SELECTION_SET: {
       const ids = new Set(event?.payload?.ids ?? []);
       const primary = event?.payload?.primary ?? null;
@@ -103,6 +118,28 @@ export function selectionReducer(runtime, event) {
           next.add(id);
         }
       }
+
+      const primary = next.has(selection.primary)
+        ? selection.primary
+        : next.values().next().value ?? null;
+
+      return {
+        ...runtime,
+        selection: finalizeSelection({
+          ids: next,
+          primary,
+        }),
+      };
+    }
+
+    case EventTypes.NODE_DELETE: {
+      const id = event?.payload?.id ?? null;
+      if (!id || !selection.ids.has(id)) {
+        return runtime;
+      }
+
+      const next = new Set(selection.ids);
+      next.delete(id);
 
       const primary = next.has(selection.primary)
         ? selection.primary

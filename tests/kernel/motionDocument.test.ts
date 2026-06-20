@@ -13,11 +13,16 @@ test('motion events write truth into document.motion through the dispatcher', as
         type: EventTypes.WORKSPACE_SET_ACTIVE,
         payload: {
             workspaceDef: {
-                id: 'graphic',
+                id: 'uiux',
+                allowedEventTypes: [
+                    EventTypes.MOTION_CLIP_CREATE,
+                    EventTypes.MOTION_KEYFRAME_ADD,
+                ],
                 policy: {
-                    mutation: 'allow',
-                    capabilities: ['node:create', 'keyframe:create'],
+                    mutation: 'open',
+                    capabilities: ['timeline:edit', 'keyframe:create'],
                 },
+                timeline: { readOnly: false },
             },
         },
     });

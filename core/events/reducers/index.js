@@ -141,7 +141,7 @@ export function rootReducer(state, event) {
     allowedRuntimeSlices: ['workspace'],
   });
   next = applyOwnedReducer(next, event, nodeReducers, 'nodeReducers', {
-    allowedDocumentSlices: ['sceneGraph', 'layout'],
+    allowedDocumentSlices: ['sceneGraph', 'layout', 'world'],
     allowedRuntimeSlices: [],
   });
   next = applyOwnedReducer(next, event, nodeStructureReducers, 'nodeStructureReducers', {

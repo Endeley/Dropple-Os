@@ -1,5 +1,6 @@
 'use client';
 
+import { NodeMutationTypes } from '@/core/events/nodeMutationTypes.js';
 import { Control, Input } from '@/ui/Control';
 
 function AspectRatioControl({ node, emit, readOnly = false }) {
@@ -11,7 +12,7 @@ function AspectRatioControl({ node, emit, readOnly = false }) {
     if (readOnly) return;
     if (!locked) {
       emit({
-        type: 'node.layout.setConstraint',
+        type: NodeMutationTypes.LAYOUT_SET_CONSTRAINT,
         payload: {
           nodeId: node.id,
           constraint: {
@@ -21,7 +22,7 @@ function AspectRatioControl({ node, emit, readOnly = false }) {
       });
     } else {
       emit({
-        type: 'node.layout.clearConstraint',
+        type: NodeMutationTypes.LAYOUT_CLEAR_CONSTRAINT,
         payload: {
           nodeId: node.id,
           key: 'aspectRatio',
@@ -49,7 +50,7 @@ export default function LayoutInspector({ node, emit, readOnly = false }) {
   function updateLayout(patch) {
     if (readOnly) return;
     emit({
-      type: 'node.layout.update',
+      type: NodeMutationTypes.LAYOUT_UPDATE,
       payload: {
         nodeId: node.id,
         layout: patch,

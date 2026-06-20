@@ -10,6 +10,8 @@ export function useGroupShortcuts({
   emit,
   getState,
   workspaceId = 'graphic',
+  dispatcher = null,
+  modeId = null,
 }) {
   useEffect(() => {
     if (!enabled) return;
@@ -31,7 +33,8 @@ export function useGroupShortcuts({
           if (!mod || input.key.toLowerCase() !== 'g') return null;
 
           e.preventDefault();
-          runCommandIntent(input.modifiers.shift ? 'ungroup' : 'group');
+          const commandId = input.modifiers.shift ? 'ungroup' : 'group';
+          runCommandIntent(commandId, { nodeIds: selectedIds });
           return { handled: true };
         },
       });
@@ -39,5 +42,5 @@ export function useGroupShortcuts({
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [enabled, selectedIds, emit, getState, workspaceId]);
+  }, [dispatcher, enabled, getState, modeId, selectedIds, emit, workspaceId]);
 }

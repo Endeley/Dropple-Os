@@ -35,7 +35,7 @@ export const uiuxWorkspace = {
       Canonical UIUX authoring panel stack
       Activation truth owns exposure.
     */
-    panels: ['NodeHeaderPanel', 'LayoutInspector', 'AutoLayoutPanel', 'ContentPanel', 'SemanticsPanel', 'MotionPanel', 'CanvasSurfacePanel', 'UXValidationPanel', 'UXSuggestionsPanel', 'UXRiskImpactPanel', 'UXEventListPanel', 'CertifiedTemplatesPanel', 'ExportPreviewPanel'],
+    panels: ['SelectionActionsPanel', 'NodeHeaderPanel', 'LayoutInspector', 'AutoLayoutPanel', 'AppearancePanel', 'ContentPanel', 'SemanticsPanel', 'MotionPanel', 'CanvasSurfacePanel', 'UXValidationPanel', 'UXSuggestionsPanel', 'UXRiskImpactPanel', 'UXEventListPanel', 'CertifiedTemplatesPanel', 'ExportPreviewPanel'],
 
     activeDomains: ['canvas', 'state', 'motion'],
 
@@ -59,6 +59,8 @@ export const uiuxWorkspace = {
     },
 
     allowedEventTypes: [
+        EventTypes.NODE_WRAP,
+        EventTypes.NODE_UNWRAP,
         EventTypes.ALIGN_NODES,
         EventTypes.DISTRIBUTE_NODES,
         EventTypes.VECTOR_CREATE,
@@ -67,6 +69,9 @@ export const uiuxWorkspace = {
         EventTypes.CLOCK_SEEK,
         EventTypes.CLOCK_PLAY,
         EventTypes.CLOCK_PAUSE,
+        EventTypes.MOTION_CLIP_CREATE,
+        EventTypes.MOTION_CLIP_UPDATE,
+        EventTypes.MOTION_CLIP_DELETE,
         EventTypes.ANIMATION_KEYFRAME_CREATE,
         EventTypes.ANIMATION_KEYFRAME_UPDATE,
         EventTypes.ANIMATION_KEYFRAME_DELETE,

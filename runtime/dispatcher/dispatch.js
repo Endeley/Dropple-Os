@@ -153,6 +153,34 @@ function normalizeSceneState(scene) {
     };
 }
 
+function pruneAnimatedPreviewNodesForRuntime(runtimeState) {
+    const animated = useAnimatedRuntimeStore.getState?.() ?? {};
+    const previewNodes = animated?.previewNodes ?? {};
+    const runtimeNodes = runtimeState?.document?.sceneGraph?.nodes ?? {};
+
+    if (!previewNodes || Object.keys(previewNodes).length === 0) {
+        return;
+    }
+
+    const nextPreviewNodes = Object.fromEntries(
+        Object.entries(previewNodes).filter(([nodeId]) => Boolean(runtimeNodes[nodeId])),
+    );
+
+    if (Object.keys(nextPreviewNodes).length === Object.keys(previewNodes).length) {
+        return;
+    }
+
+    useAnimatedRuntimeStore.setState(
+        {
+            previewNodes: nextPreviewNodes,
+            cameraTransform: Object.keys(nextPreviewNodes).length > 0
+                ? animated?.cameraTransform ?? null
+                : null,
+        },
+        false,
+    );
+}
+
 function normalizeRuntimeMirrors(state) {
     const sceneGraph = getSceneGraph(state);
 
@@ -558,6 +586,7 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
     function commit(prevState, nextState, { animate = true, event = null } = {}) {
         const committedState = appendCommittedEvent(prevState, normalizeRuntimeMirrors(nextState), event);
         __setRuntimeStateInternal(committedState, 'dispatcher');
+        pruneAnimatedPreviewNodesForRuntime(committedState);
         syncRuntimeToZustand(committedState, { uxAudit: uxAuditLog.snapshot() });
         return committedState;
     }

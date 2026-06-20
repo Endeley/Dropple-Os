@@ -3,6 +3,7 @@ import {
   VIEWPORT_PAN,
   VIEWPORT_ZOOM,
 } from '../viewportEvents.js';
+import { EventTypes } from '../eventTypes.js';
 import { clampZoom } from '@/core/viewport/cameraPolicy.js';
 
 export function viewportReducer(state, event) {
@@ -10,7 +11,8 @@ export function viewportReducer(state, event) {
   const vp = workspace.viewport || { x: 0, y: 0, scale: 1 };
 
   switch (event.type) {
-    case VIEWPORT_SET: {
+    case VIEWPORT_SET:
+    case EventTypes.WORKSPACE_SET_VIEWPORT: {
       const next = { ...vp, ...(event.payload || {}) };
       if (typeof next.scale === 'number') {
         next.scale = clampZoom(next.scale);

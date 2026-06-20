@@ -2,6 +2,10 @@
 import { createNode } from '@/core/nodes/createNode';
 import { normalizeNodeShape } from '../state/normalizeNodeShape.js';
 
+// Legacy design reducer stack.
+// Active WorldShell / Create > UI mutations flow through the runtime dispatcher
+// and core/events/reducers/* using canonical slash event types.
+
 export function nodeLifecycleReducer(state, event) {
   const next = structuredClone(state);
 

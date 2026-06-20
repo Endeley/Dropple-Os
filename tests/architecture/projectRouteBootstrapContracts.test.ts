@@ -20,10 +20,10 @@ test('workspace route smoke suite keeps project route bootstrap coverage for sin
         smokeSpec,
         /project perspective route bootstrap composes multiple blueprints deterministically/,
     );
-    assert.match(smokeSpec, /\/workspace\/create\?blueprint=bp\.startup\.v1&bootstrap=1/);
+    assert.match(smokeSpec, /\/workspace\/build\?blueprint=bp\.startup\.v1&bootstrap=1&entry=application/);
     assert.match(
         smokeSpec,
-        /\/workspace\/create\?blueprints=bp\.startup\.v1,bp\.logistics\.v1&bootstrap=1/,
+        /\/workspace\/build\?entry=application&blueprints=bp\.startup\.v1,bp\.logistics\.v1&bootstrap=1/,
     );
 });
 

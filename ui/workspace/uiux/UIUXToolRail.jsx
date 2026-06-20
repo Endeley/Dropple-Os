@@ -1,12 +1,14 @@
 'use client';
 
 import '@/ui/styles/uiux.css';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useWorkspaceViewState } from '@/runtime/projection';
 import { useToolStore } from '@/ui/state/useToolStore.js';
 import { getVisibleToolsForWorkspace, TOOL_DEFINITION_BY_ID } from '@/ui/tools/toolDefinitions.js';
 import { canvasBus } from '@/ui/eventBus/canvasBus.js';
 import { INTENTS } from '@/core/intents/intentTypes.js';
+import { viewportIntent } from '@/ui/viewport/viewportIntent.js';
+import { resolveProjectHomeViewport } from '@/runtime/workspaces/projectSubstrateNavigation.js';
 
 const TOOL_ICONS = {
     select: <path d='M5 3l14 7-7 2-2 7-5-16z' />,
@@ -47,6 +49,7 @@ function ToolButton({ tool, active, onSelect }) {
 
 export function UIUXToolRail() {
     const workspaceId = useWorkspaceViewState((s) => s.definitionId ?? s.modeId ?? s.id) || 'uiux';
+    const viewport = useWorkspaceViewState((s) => s.viewport ?? { x: 0, y: 0, scale: 1 });
 
     const activeTool = useToolStore((s) => s.activeTool);
     const runtimeTools = useToolStore((s) => s.visibleTools);
@@ -81,6 +84,34 @@ export function UIUXToolRail() {
         return Array.from(groups.entries()).filter(([, list]) => list.length > 0);
     }, [tools]);
 
+    const handleReturnHome = useCallback(() => {
+        if (typeof document === 'undefined') return;
+
+        const host = document.querySelector('[data-testid="canvas-host"]');
+        if (!host) return;
+
+        const rect = host.getBoundingClientRect();
+        if (!Number.isFinite(rect.width) || !Number.isFinite(rect.height) || rect.width <= 0 || rect.height <= 0) {
+            return;
+        }
+
+        const nextViewport = resolveProjectHomeViewport({
+            workspaceId,
+            hostRect: {
+                width: rect.width,
+                height: rect.height,
+            },
+            scale: viewport?.scale ?? 1,
+            viewport,
+        });
+
+        if (!nextViewport) return;
+
+        viewportIntent({
+            viewport: nextViewport,
+        });
+    }, [viewport, workspaceId]);
+
     return (
         <aside className='uiux-toolrail'>
             <div className='toolrail-section-title'>Tools</div>
@@ -108,12 +139,19 @@ export function UIUXToolRail() {
             ))}
 
             <div className='toolrail-footer'>
-                <button type='button' className='tool-button utility-tool'>
+                <button
+                    type='button'
+                    className='tool-button utility-tool'
+                    data-testid='uiux-return-home'
+                    aria-label='Return Home'
+                    title='Return Home'
+                    onClick={handleReturnHome}>
                     <svg viewBox='0 0 24 24' className='tool-icon'>
-                        <circle cx='12' cy='12' r='2' />
+                        <circle cx='12' cy='12' r='1.75' />
                         <path d='M12 4v3M12 17v3M4 12h3M17 12h3' />
+                        <circle cx='12' cy='12' r='7.5' fill='none' />
                     </svg>
-                    <span className='tool-tooltip'>Utilities</span>
+                    <span className='tool-tooltip'>Return Home</span>
                 </button>
             </div>
         </aside>

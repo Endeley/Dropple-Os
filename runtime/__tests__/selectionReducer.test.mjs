@@ -1,25 +1,56 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
 import { selectionReducer } from '@/core/events/reducers/selectionReducers.js';
 import { EventTypes } from '@/core/events/eventTypes.js';
 
-let state = { selection: { ids: new Set(), primary: null } };
+function createSelectionState(ids = [], primary = null) {
+    return {
+        selection: {
+            ids: new Set(ids),
+            primary,
+        },
+    };
+}
 
-state = selectionReducer(state, {
-  type: EventTypes.SELECTION_SET,
-  payload: { ids: ['a'], primary: 'a' },
+test('selection reducer clears a deleted selected artifact from runtime selection', () => {
+    const state = createSelectionState(['frame-a', 'frame-b'], 'frame-a');
+
+    const next = selectionReducer(state, {
+        type: EventTypes.NODE_DELETE,
+        payload: { id: 'frame-a' },
+    });
+
+    assert.equal(next.selection.ids.has('frame-a'), false);
+    assert.equal(next.selection.ids.has('frame-b'), true);
+    assert.equal(next.selection.primary, 'frame-b');
 });
 
-console.log('SET:', state.selection.ids.has('a'));
+test('selection reducer ignores deletion of an unselected artifact', () => {
+    const state = createSelectionState(['frame-a'], 'frame-a');
 
-state = selectionReducer(state, {
-  type: EventTypes.SELECTION_ADD,
-  payload: { id: 'b' },
+    const next = selectionReducer(state, {
+        type: EventTypes.NODE_DELETE,
+        payload: { id: 'frame-z' },
+    });
+
+    assert.equal(next, state);
 });
 
-console.log('ADD:', state.selection.ids.has('b'));
+test('selection reducer promotes group wrapper on node wrap', () => {
+    const state = createSelectionState(['frame-a', 'frame-b'], 'frame-a');
 
-state = selectionReducer(state, {
-  type: EventTypes.SELECTION_REMOVE,
-  payload: { id: 'a' },
+    const next = selectionReducer(state, {
+        type: EventTypes.NODE_WRAP,
+        payload: {
+            nodeIds: ['frame-a', 'frame-b'],
+            wrapperNode: {
+                id: 'group-1',
+                type: 'group',
+            },
+        },
+    });
+
+    assert.deepEqual(Array.from(next.selection.ids), ['group-1']);
+    assert.equal(next.selection.primary, 'group-1');
 });
-
-console.log('REMOVE:', !state.selection.ids.has('a'));

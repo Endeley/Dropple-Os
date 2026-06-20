@@ -73,6 +73,7 @@ function NodeRendererImpl({ node }) {
     return (
         <div
             data-node-id={node.id}
+            data-pointer-role='node'
             className={`node-renderer ${isSelected ? 'is-selected' : ''} ${isPrimary ? 'is-primary' : ''}`}
             style={{
                 position: 'absolute',

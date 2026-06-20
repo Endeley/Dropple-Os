@@ -406,6 +406,123 @@ test('select tool click on a node selects on pointerup when no drag threshold is
     assert.equal(dispatched[1]?.type, EventTypes.DRAG_END);
 });
 
+test('select tool pointerdown on a grouped child normalizes pending selection to the group wrapper', () => {
+    const dispatched = [];
+    const dispatcher = {
+        dispatch(event) {
+            dispatched.push(event);
+        },
+    };
+
+    const result = selectToolHandler(
+        {
+            type: 'pointerdown',
+            event: {},
+            worldPoint: { x: 10, y: 10 },
+            targetNodeId: 'child-a',
+        },
+        {
+            tool: 'select',
+            dispatcher,
+            state: {
+                viewNodes: {
+                    'group-1': {
+                        id: 'group-1',
+                        type: 'group',
+                        parentId: null,
+                        children: ['child-a', 'child-b'],
+                        layout: { x: 0, y: 0, width: 100, height: 100 },
+                    },
+                    'child-a': {
+                        id: 'child-a',
+                        type: 'frame',
+                        parentId: 'group-1',
+                        layout: { x: 0, y: 0, width: 50, height: 50 },
+                    },
+                    'child-b': {
+                        id: 'child-b',
+                        type: 'frame',
+                        parentId: 'group-1',
+                        layout: { x: 50, y: 0, width: 50, height: 50 },
+                    },
+                },
+                selection: { ids: [] },
+                interaction: { drag: null },
+            },
+        },
+    );
+
+    assert.deepEqual(result, { handled: true });
+    assert.equal(dispatched.length, 1);
+    assert.equal(dispatched[0]?.type, EventTypes.DRAG_START);
+    assert.equal(dispatched[0]?.payload?.type, 'pending-select');
+    assert.equal(dispatched[0]?.payload?.meta?.hitNodeId, 'group-1');
+});
+
+test('select tool pointerup reselects the group wrapper after deselect when clicking a grouped child', () => {
+    const dispatched = [];
+    const dispatcher = {
+        dispatch(event) {
+            dispatched.push(event);
+        },
+    };
+
+    const result = selectToolHandler(
+        {
+            type: 'pointerup',
+            event: {},
+            worldPoint: { x: 10, y: 10 },
+        },
+        {
+            tool: 'select',
+            dispatcher,
+            state: {
+                viewNodes: {
+                    'group-1': {
+                        id: 'group-1',
+                        type: 'group',
+                        parentId: null,
+                        children: ['child-a', 'child-b'],
+                        layout: { x: 0, y: 0, width: 100, height: 100 },
+                    },
+                    'child-a': {
+                        id: 'child-a',
+                        type: 'frame',
+                        parentId: 'group-1',
+                        layout: { x: 0, y: 0, width: 50, height: 50 },
+                    },
+                    'child-b': {
+                        id: 'child-b',
+                        type: 'frame',
+                        parentId: 'group-1',
+                        layout: { x: 50, y: 0, width: 50, height: 50 },
+                    },
+                },
+                selection: { ids: [] },
+                interaction: {
+                    drag: {
+                        active: true,
+                        type: 'pending-select',
+                        startPointer: { x: 10, y: 10 },
+                        currentPointer: { x: 10, y: 10 },
+                        meta: {
+                            additive: false,
+                            hitNodeId: 'group-1',
+                        },
+                    },
+                },
+            },
+        },
+    );
+
+    assert.deepEqual(result, { handled: true });
+    assert.equal(dispatched.length, 2);
+    assert.equal(dispatched[0]?.type, EventTypes.SELECTION_SET);
+    assert.deepEqual(dispatched[0]?.payload?.ids, ['group-1']);
+    assert.equal(dispatched[0]?.payload?.primary, 'group-1');
+    assert.equal(dispatched[1]?.type, EventTypes.DRAG_END);
+});
+
 test('select tool drag from an unselected node resolves to marquee after threshold', () => {
     const dispatched = [];
     const dispatcher = {
@@ -492,8 +609,10 @@ test('select tool pointerup delegates active move drags to move handler and ends
     );
 
     assert.deepEqual(result, { handled: true });
-    assert.equal(dispatched.length, 1);
-    assert.equal(dispatched[0]?.type, EventTypes.DRAG_END);
+    assert.equal(dispatched.length, 3);
+    assert.equal(dispatched[0]?.type, EventTypes.DRAG_UPDATE);
+    assert.equal(dispatched[1]?.type, 'node.layout.bulk');
+    assert.equal(dispatched[2]?.type, EventTypes.DRAG_END);
 });
 
 test('resize tool pointerdown starts canonical resize drag with handle metadata', () => {
