@@ -9,7 +9,7 @@ import {
     timelineIntentKeyframeCreate,
 } from '@/ui/timeline/timelineIntent.js';
 import { motionIntentKeyframeDelete, motionIntentKeyframeUpdate } from '@/ui/motion/motionIntent.js';
-import { hasTimelineRelevance } from './timelineRelevance.js';
+import { hasTimelineRelevance } from '@/runtime/timeline/timelineRelevance.js';
 
 function getTimelineDuration(document, timeline) {
     const timelineDuration = Number(timeline?.timelines?.default?.duration ?? 0);

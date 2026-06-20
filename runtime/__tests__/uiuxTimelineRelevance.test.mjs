@@ -5,7 +5,7 @@ import {
     getSelectedNodeMotionClipCount,
     hasTimelineRelevance,
     isTimeAuthoringTool,
-} from '@/ui/workspace/uiux/timelineRelevance.js';
+} from '@/runtime/timeline/timelineRelevance.js';
 
 test('static selected frame does not activate timeline relevance', () => {
     assert.equal(

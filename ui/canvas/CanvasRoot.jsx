@@ -12,7 +12,7 @@ import CanvasGhostLayer from '@/ui/canvas/CanvasGhostLayer.jsx';
 import SelectionContextMenu from '@/ui/canvas/SelectionContextMenu.jsx';
 import { CanvasDebugOverlay } from '@/ui/canvas/CanvasDebugOverlay.jsx';
 import { dispatchNodeDeleteSelection } from '@/ui/canvas/deleteSelection.js';
-import { resolveSelectionContextMenuModel } from '@/ui/canvas/contextMenuModel.js';
+import { resolveSelectionContextMenuModel } from '@/runtime/grouping/contextMenuModel.js';
 
 import { CanvasProvider } from '@/ui/canvas/CanvasContext.jsx';
 import { CanvasSurface } from '@/ui/canvas/surface/CanvasSurface.jsx';

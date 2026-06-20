@@ -24,7 +24,7 @@ import { useGroupShortcuts } from '@/ui/keyboard/useGroupShortcuts.js';
 import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
 import { dispatchNodeDeleteSelection } from '@/ui/canvas/deleteSelection.js';
 import { runCommandIntent } from '@/ui/bridges/runtimeCommandFacade.js';
-import { hasTimelineRelevance } from './timelineRelevance.js';
+import { hasTimelineRelevance } from '@/runtime/timeline/timelineRelevance.js';
 import { historyIntentUndo, historyIntentRedo } from '@/ui/history/historyIntent.js';
 import { canvasBus } from '@/ui/eventBus/canvasBus.js';
 import { INTENTS } from '@/core/intents/intentTypes.js';

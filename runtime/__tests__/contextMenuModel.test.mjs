@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { resolveSelectionContextMenuModel } from '@/ui/canvas/contextMenuModel.js';
+import { resolveSelectionContextMenuModel } from '@/runtime/grouping/contextMenuModel.js';
 
 test('empty target does not open selection context menu', () => {
     const model = resolveSelectionContextMenuModel({
