@@ -2,6 +2,20 @@ import { test, expect } from '@playwright/test';
 import { expectSingleVisibleCanvasHost, visibleCanvasHost } from './helpers/canvasHost.js';
 
 async function gotoNewWorkspace(page) {
+  await page.goto('/workspace/new', { waitUntil: 'domcontentloaded' });
+  await page.evaluate(() => {
+    const keys = Object.keys(window.localStorage);
+    for (const key of keys) {
+      if (
+        key === 'dropple.document.snapshot' ||
+        key === 'dropple.activeDocument' ||
+        key === 'dropple.documents' ||
+        key.startsWith('dropple.document.')
+      ) {
+        window.localStorage.removeItem(key);
+      }
+    }
+  });
   await page.goto('/workspace/new', { waitUntil: 'networkidle' });
   await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();
   await expectSingleVisibleCanvasHost(page);
