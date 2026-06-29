@@ -19,6 +19,12 @@ import { CanvasSurface } from '@/ui/canvas/surface/CanvasSurface.jsx';
 import HomeLandmark from '@/ui/canvas/HomeLandmark.jsx';
 import FirstFrameAffordance from '@/ui/canvas/FirstFrameAffordance.jsx';
 import { WorldOriginMarker } from '@/ui/canvas/WorldOriginMarker.jsx';
+import { UIUXEmptyWorldOverlay } from '@/ui/workspace/uiux/UIUXEmptyWorldOverlay.jsx';
+import { GraphicEmptyWorldOverlay } from '@/ui/workspace/graphic/GraphicEmptyWorldOverlay.jsx';
+import { GraphicFirstExpressionOverlay } from '@/ui/workspace/graphic/GraphicFirstExpressionOverlay.jsx';
+import { GraphicVocabularyOverlay } from '@/ui/workspace/graphic/GraphicVocabularyOverlay.jsx';
+import { GraphicRefinementOverlay } from '@/ui/workspace/graphic/GraphicRefinementOverlay.jsx';
+import { GraphicDeliveryOverlay } from '@/ui/workspace/graphic/GraphicDeliveryOverlay.jsx';
 
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { getZoomTier } from '@/runtime/canvas/zoomTiers.js';
@@ -105,9 +111,10 @@ function clampContextMenuPosition({
     };
 }
 
-export default function CanvasRoot({ workspaceId = null }) {
+export default function CanvasRoot({ workspaceId = null, modeId = null }) {
     const hostRef = useRef(null);
     const [hostRect, setHostRect] = useState(null);
+    const [dismissedFirstExpressionNodeId, setDismissedFirstExpressionNodeId] = useState(null);
     const [contextMenu, setContextMenu] = useState({
         open: false,
         x: 0,
@@ -124,7 +131,7 @@ export default function CanvasRoot({ workspaceId = null }) {
     const dispatcher = useDispatcher();
 
     const viewState = useWorkspaceViewState((state) => state) ?? {};
-    const activeModeId = viewState.modeId ?? viewState.id ?? workspaceId ?? 'uiux';
+    const activeModeId = modeId ?? viewState.modeId ?? viewState.id ?? workspaceId ?? 'uiux';
     const viewport = viewState.viewport ?? { x: 0, y: 0, scale: 1 };
     const canvasSurface = viewState.canvasSurface ?? { type: 'smooth', snap: false };
     const nodesById = useWorkspaceVisualState((state) => state?.nodes ?? {});
@@ -132,7 +139,8 @@ export default function CanvasRoot({ workspaceId = null }) {
     const document = useWorkspaceProjectionState((state) => state?.document ?? null);
     const selection = useWorkspaceVisualState((state) => state?.selection ?? { ids: [], primary: null, count: 0 });
     const nodeCount = useWorkspaceVisualState((state) => Object.keys(state?.nodes ?? {}).length);
-    const worldHistory = useWorkspaceVisualState((state) => state?.document?.world?.history ?? null);
+    const selectedNode = selection?.primary ? nodesById?.[selection.primary] ?? null : null;
+    const worldHistory = useWorkspaceProjectionState((state) => state?.document?.world?.history ?? null);
     const projectHasHistory = useMemo(
         () => hasProjectHistory({ workspaceId, nodeCount, worldHistory }),
         [workspaceId, nodeCount, worldHistory],
@@ -340,6 +348,12 @@ export default function CanvasRoot({ workspaceId = null }) {
         setContextMenu((current) => ({ ...current, open: false, nodeId: null }));
     }, [contextMenu.nodeId, contextMenu.open, nodesById]);
 
+    useEffect(() => {
+        if (!dismissedFirstExpressionNodeId) return;
+        if (selectedNode?.id === dismissedFirstExpressionNodeId) return;
+        setDismissedFirstExpressionNodeId(null);
+    }, [dismissedFirstExpressionNodeId, selectedNode?.id]);
+
     const closeContextMenu = useCallback((_reason = 'unknown') => {
         setContextMenu((current) => ({ ...current, open: false, nodeId: null }));
     }, []);
@@ -470,6 +484,7 @@ export default function CanvasRoot({ workspaceId = null }) {
                 worldOffset={{ x: 0, y: 0 }}
                 cameraTransform={null}
                 background={<CanvasSurface surface={canvasSurface} viewport={viewport} />}
+                overlayPointerEvents='auto'
                 overlay={
                     <>
                         <SelectionContextMenu
@@ -501,6 +516,44 @@ export default function CanvasRoot({ workspaceId = null }) {
                                 onToggle={() => setDebugVisible(false)}
                             />
                         ) : null}
+                        <UIUXEmptyWorldOverlay
+                            workspaceId={workspaceId}
+                            modeId={activeModeId}
+                            nodeCount={nodeCount}
+                            worldHistory={worldHistory}
+                        />
+                        <GraphicEmptyWorldOverlay
+                            workspaceId={workspaceId}
+                            modeId={activeModeId}
+                            nodeCount={nodeCount}
+                        />
+                        <GraphicFirstExpressionOverlay
+                            workspaceId={workspaceId}
+                            modeId={activeModeId}
+                            nodeCount={nodeCount}
+                            selectedNode={selectedNode}
+                            dismissedNodeId={dismissedFirstExpressionNodeId}
+                            onDismiss={setDismissedFirstExpressionNodeId}
+                        />
+                        <GraphicVocabularyOverlay
+                            workspaceId={workspaceId}
+                            modeId={activeModeId}
+                            selectedNode={selectedNode}
+                            nodesById={nodesById}
+                            firstExpressionDismissedNodeId={dismissedFirstExpressionNodeId}
+                        />
+                        <GraphicRefinementOverlay
+                            workspaceId={workspaceId}
+                            modeId={activeModeId}
+                            selectedNode={selectedNode}
+                            nodesById={nodesById}
+                        />
+                        <GraphicDeliveryOverlay
+                            workspaceId={workspaceId}
+                            modeId={activeModeId}
+                            selectedNode={selectedNode}
+                            nodesById={nodesById}
+                        />
                     </>
                 }
                 onPointerDown={interactions.onPointerDown}

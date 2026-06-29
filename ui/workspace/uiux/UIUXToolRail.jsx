@@ -9,6 +9,7 @@ import { canvasBus } from '@/ui/eventBus/canvasBus.js';
 import { INTENTS } from '@/core/intents/intentTypes.js';
 import { viewportIntent } from '@/ui/viewport/viewportIntent.js';
 import { resolveProjectHomeViewport } from '@/runtime/workspaces/projectSubstrateNavigation.js';
+import { getUIUXCreationEntries } from './uiuxLanguageDictionary.js';
 
 const TOOL_ICONS = {
     select: <path d='M5 3l14 7-7 2-2 7-5-16z' />,
@@ -69,10 +70,20 @@ export function UIUXToolRail() {
         return getVisibleToolsForWorkspace({ workspaceId, modeId: workspaceId });
     }, [runtimeToolDefinitions, runtimeTools, workspaceId]);
 
+    const creationEntries = useMemo(
+        () => getUIUXCreationEntries({ availableToolIds: tools.map((tool) => tool.id) }),
+        [tools],
+    );
+
+    const nonCreationTools = useMemo(
+        () => tools.filter((tool) => !creationEntries.some((entry) => entry.creation.toolId === tool.id)),
+        [creationEntries, tools],
+    );
+
     const grouped = useMemo(() => {
         const groups = new Map();
 
-        tools.forEach((tool) => {
+        nonCreationTools.forEach((tool) => {
             if (!tool?.id) return;
             const groupId = tool.group || 'other';
             if (!groups.has(groupId)) {
@@ -82,7 +93,7 @@ export function UIUXToolRail() {
         });
 
         return Array.from(groups.entries()).filter(([, list]) => list.length > 0);
-    }, [tools]);
+    }, [nonCreationTools]);
 
     const handleReturnHome = useCallback(() => {
         if (typeof document === 'undefined') return;
@@ -114,7 +125,33 @@ export function UIUXToolRail() {
 
     return (
         <aside className='uiux-toolrail'>
-            <div className='toolrail-section-title'>Tools</div>
+            <div className='toolrail-section-title'>Create</div>
+
+            <div className='tool-group'>
+                <div className='tool-group-label'>digital product design</div>
+                <div className='tool-group-stack'>
+                    {creationEntries.map((entry) => (
+                        <ToolButton
+                            key={entry.id}
+                            tool={{
+                                id: entry.creation.toolId,
+                                label: entry.creation.railLabel || entry.label,
+                                capabilityTags: entry.capabilityDomains,
+                                intentTopics: [entry.parentGrammar, entry.concept].filter(Boolean),
+                            }}
+                            active={activeTool === entry.creation.toolId}
+                            onSelect={() =>
+                                canvasBus.emit(INTENTS.TOOL_SET_ACTIVE, {
+                                    toolId: entry.creation.toolId,
+                                    workspaceId,
+                                })
+                            }
+                        />
+                    ))}
+                </div>
+            </div>
+
+            {grouped.length > 0 ? <div className='toolrail-section-title'>Utilities</div> : null}
 
             {grouped.map(([groupId, groupTools]) => (
                 <div className='tool-group' key={groupId}>

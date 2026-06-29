@@ -118,6 +118,7 @@ function ReadOnlyRuntimeCanvasAdapter() {
 
 export function WorkspaceCanvasRoot({
     workspaceId = null,
+    modeId = null,
     events = null,
     cursor = null,
     readOnly = false,
@@ -156,7 +157,7 @@ export function WorkspaceCanvasRoot({
     }
 
     if (!hasReplaySource) {
-        return <CanvasRoot workspaceId={workspaceId} />;
+        return <CanvasRoot workspaceId={workspaceId} modeId={modeId} />;
     }
 
     return (

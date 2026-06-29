@@ -40,27 +40,27 @@ function normalizeHostRect(hostRect = null) {
     return Object.freeze({ width, height });
 }
 
-export function isCreateUiWorld({ workspaceId = null, modeId = null } = {}) {
+function isCreateWorldNavigationGeographyContext({ workspaceId = null, modeId = null } = {}) {
     return workspaceId === 'uiux' || modeId === 'uiux';
 }
 
-export function hasProjectHistory({
+function hasCreateWorldProjectHistory({
     workspaceId = null,
     modeId = null,
     nodeCount = 0,
     worldHistory = null,
 } = {}) {
-    if (!isCreateUiWorld({ workspaceId, modeId })) return false;
+    if (!isCreateWorldNavigationGeographyContext({ workspaceId, modeId })) return false;
     if (worldHistory?.firstRememberedArtifact?.nodeId) return true;
     return Number(nodeCount) > 0;
 }
 
-export function resolveFirstRememberedArtifact({
+function resolveCreateWorldFirstRememberedArtifact({
     workspaceId = null,
     modeId = null,
     worldHistory = null,
 } = {}) {
-    if (!isCreateUiWorld({ workspaceId, modeId })) return null;
+    if (!isCreateWorldNavigationGeographyContext({ workspaceId, modeId })) return null;
     const entry = worldHistory?.firstRememberedArtifact ?? null;
     if (!entry?.nodeId) return null;
     return Object.freeze({
@@ -78,23 +78,23 @@ export function resolveFirstRememberedArtifact({
     });
 }
 
-export function resolveProjectOrigin({ workspaceId = null, modeId = null } = {}) {
-    if (!isCreateUiWorld({ workspaceId, modeId })) {
+function resolveCreateWorldOrigin({ workspaceId = null, modeId = null } = {}) {
+    if (!isCreateWorldNavigationGeographyContext({ workspaceId, modeId })) {
         return normalizePoint(DEFAULT_POINT);
     }
 
     return normalizePoint(DEFAULT_POINT);
 }
 
-export function resolveProjectHome({ workspaceId = null, modeId = null } = {}) {
-    if (!isCreateUiWorld({ workspaceId, modeId })) {
+function resolveCreateWorldHome({ workspaceId = null, modeId = null } = {}) {
+    if (!isCreateWorldNavigationGeographyContext({ workspaceId, modeId })) {
         return normalizePoint(DEFAULT_POINT);
     }
 
     return normalizePoint(DEFAULT_POINT);
 }
 
-export function resolveCurrentFocus({
+function resolveCreateWorldCurrentFocus({
     workspaceId = null,
     modeId = null,
     viewport = null,
@@ -102,7 +102,7 @@ export function resolveCurrentFocus({
     fallback = null,
 } = {}) {
     const normalizedFallback =
-        normalizePoint(fallback ?? resolveProjectHome({ workspaceId, modeId }));
+        normalizePoint(fallback ?? resolveCreateWorldHome({ workspaceId, modeId }));
     const normalizedHostRect = normalizeHostRect(hostRect);
     const scale = finiteOr(viewport?.scale, DEFAULT_HOME_SCALE);
 
@@ -116,7 +116,7 @@ export function resolveCurrentFocus({
     });
 }
 
-export function resolveProjectHomeViewport({
+function resolveCreateWorldHomeViewport({
     workspaceId = null,
     modeId = null,
     hostRect = null,
@@ -128,7 +128,7 @@ export function resolveProjectHomeViewport({
     if (!normalizedHostRect) return null;
 
     const normalizedHome = normalizePoint(
-        home ?? resolveProjectHome({ workspaceId, modeId }),
+        home ?? resolveCreateWorldHome({ workspaceId, modeId }),
     );
     const safeScale = Math.max(0.05, finiteOr(scale, DEFAULT_HOME_SCALE));
 
@@ -142,7 +142,7 @@ export function resolveProjectHomeViewport({
     });
 }
 
-export function resolveArtifactFocusViewport({
+function resolveCreateWorldArtifactFocusViewport({
     bounds = null,
     hostRect = null,
     viewport = null,
@@ -169,7 +169,7 @@ export function resolveArtifactFocusViewport({
     });
 }
 
-export function shouldInitializeProjectHomeViewport({
+function shouldInitializeCreateWorldHomeViewport({
     workspaceId = null,
     modeId = null,
     viewport = null,
@@ -177,8 +177,8 @@ export function shouldInitializeProjectHomeViewport({
     nodeCount = 0,
     worldHistory = null,
 } = {}) {
-    if (!isCreateUiWorld({ workspaceId, modeId })) return false;
-    if (hasProjectHistory({ workspaceId, modeId, nodeCount, worldHistory })) return false;
+    if (!isCreateWorldNavigationGeographyContext({ workspaceId, modeId })) return false;
+    if (hasCreateWorldProjectHistory({ workspaceId, modeId, nodeCount, worldHistory })) return false;
     if (!normalizeHostRect(hostRect)) return false;
 
     const currentX = finiteOr(viewport?.x, 0);
@@ -188,7 +188,7 @@ export function shouldInitializeProjectHomeViewport({
     return currentX === 0 && currentY === 0 && currentScale === DEFAULT_HOME_SCALE;
 }
 
-export function resolveFirstFrameBounds({
+function resolveCreateWorldFirstArtifactBounds({
     workspaceId = null,
     modeId = null,
     nodeCount = 0,
@@ -198,11 +198,11 @@ export function resolveFirstFrameBounds({
     anchor = DEFAULT_FIRST_FRAME_HOME_ANCHOR,
     offset = null,
 } = {}) {
-    if (!isCreateUiWorld({ workspaceId, modeId })) return null;
-    if (hasProjectHistory({ workspaceId, modeId, nodeCount, worldHistory })) return null;
+    if (!isCreateWorldNavigationGeographyContext({ workspaceId, modeId })) return null;
+    if (hasCreateWorldProjectHistory({ workspaceId, modeId, nodeCount, worldHistory })) return null;
 
     const normalizedHome = normalizePoint(
-        home ?? resolveProjectHome({ workspaceId, modeId }),
+        home ?? resolveCreateWorldHome({ workspaceId, modeId }),
     );
     const normalizedSize = normalizeSize(size);
     const normalizedAnchor = normalizePoint(anchor ?? DEFAULT_FIRST_FRAME_HOME_ANCHOR);
@@ -214,4 +214,57 @@ export function resolveFirstFrameBounds({
         width: normalizedSize.width,
         height: normalizedSize.height,
     });
+}
+
+export const createWorldNavigationGeographyPolicy = Object.freeze({
+    isNavigationGeographyContext: isCreateWorldNavigationGeographyContext,
+    hasProjectHistory: hasCreateWorldProjectHistory,
+    resolveFirstRememberedArtifact: resolveCreateWorldFirstRememberedArtifact,
+    resolveOrigin: resolveCreateWorldOrigin,
+    resolveHome: resolveCreateWorldHome,
+    resolveCurrentFocus: resolveCreateWorldCurrentFocus,
+    resolveHomeViewport: resolveCreateWorldHomeViewport,
+    resolveArtifactFocusViewport: resolveCreateWorldArtifactFocusViewport,
+    shouldInitializeHomeViewport: shouldInitializeCreateWorldHomeViewport,
+    resolveFirstArtifactBounds: resolveCreateWorldFirstArtifactBounds,
+});
+
+export function isCreateUiWorld(args = {}) {
+    return createWorldNavigationGeographyPolicy.isNavigationGeographyContext(args);
+}
+
+export function hasProjectHistory(args = {}) {
+    return createWorldNavigationGeographyPolicy.hasProjectHistory(args);
+}
+
+export function resolveFirstRememberedArtifact(args = {}) {
+    return createWorldNavigationGeographyPolicy.resolveFirstRememberedArtifact(args);
+}
+
+export function resolveProjectOrigin(args = {}) {
+    return createWorldNavigationGeographyPolicy.resolveOrigin(args);
+}
+
+export function resolveProjectHome(args = {}) {
+    return createWorldNavigationGeographyPolicy.resolveHome(args);
+}
+
+export function resolveCurrentFocus(args = {}) {
+    return createWorldNavigationGeographyPolicy.resolveCurrentFocus(args);
+}
+
+export function resolveProjectHomeViewport(args = {}) {
+    return createWorldNavigationGeographyPolicy.resolveHomeViewport(args);
+}
+
+export function resolveArtifactFocusViewport(args = {}) {
+    return createWorldNavigationGeographyPolicy.resolveArtifactFocusViewport(args);
+}
+
+export function shouldInitializeProjectHomeViewport(args = {}) {
+    return createWorldNavigationGeographyPolicy.shouldInitializeHomeViewport(args);
+}
+
+export function resolveFirstFrameBounds(args = {}) {
+    return createWorldNavigationGeographyPolicy.resolveFirstArtifactBounds(args);
 }

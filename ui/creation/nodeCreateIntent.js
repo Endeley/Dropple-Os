@@ -109,12 +109,21 @@ export function nodeCreateIntent(payload) {
     const normalized = {
         id: payload.id ?? null,
         type,
+        name: payload.name ?? null,
         parentId: payload.parentId ?? null,
         bounds,
         position: { x: bounds.x, y: bounds.y },
         props: normalizeProps(payload.props, type),
         style: payload.style ? { ...payload.style } : {},
         content: payload.content ?? null,
+        metadata:
+            payload.metadata && typeof payload.metadata === 'object' && !Array.isArray(payload.metadata)
+                ? { ...payload.metadata }
+                : undefined,
+        meta:
+            payload.meta && typeof payload.meta === 'object' && !Array.isArray(payload.meta)
+                ? { ...payload.meta }
+                : undefined,
     };
 
     canvasBus.emit('intent.node.create', normalized);

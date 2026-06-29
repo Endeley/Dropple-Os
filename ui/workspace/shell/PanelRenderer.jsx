@@ -43,7 +43,7 @@ function resolvePanelTab(panelId) {
 
 function resolveInspectSections({ panelIds = [], extras = [], hasSelection = false }) {
     const structure = panelIds.filter((panelId) =>
-        ['SelectionActionsPanel', 'NodeHeaderPanel'].includes(panelId),
+        ['SelectionActionsPanel', 'UIUXLanguageProjectionPanel', 'NodeHeaderPanel'].includes(panelId),
     );
     const layout = hasSelection
         ? panelIds.filter((panelId) => ['LayoutInspector', 'AutoLayoutPanel'].includes(panelId))
@@ -83,7 +83,7 @@ function resolveSurfaceSections(panelIds = []) {
     ].filter((section) => section.panelIds.length > 0);
 }
 
-export function PanelRenderer({ workspaceId, node, emit, extraPanels = [] }) {
+export function PanelRenderer({ workspaceId, node, emit, extraPanels = [], panelPropsById = null }) {
     const activation = getWorkspaceActivation(workspaceId);
 
     if (!activation) {
@@ -159,9 +159,13 @@ export function PanelRenderer({ workspaceId, node, emit, extraPanels = [] }) {
         if (!entry?.component) return null;
 
         const PanelComponent = entry.component;
+        const extraProps =
+            panelPropsById && typeof panelPropsById === 'object' && !Array.isArray(panelPropsById)
+                ? panelPropsById[panelId] ?? null
+                : null;
         return (
             <div className='inspector-panel-card' key={panelId}>
-                <PanelComponent node={node} emit={emit} />
+                <PanelComponent node={node} emit={emit} {...(extraProps ?? {})} />
             </div>
         );
     }

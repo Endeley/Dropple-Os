@@ -16,6 +16,35 @@ async function activateTool(page, toolId) {
   }
 }
 
+async function ensureNodeSelected(page, node) {
+  const nodeId = await node.getAttribute('data-node-id');
+  expect(nodeId).toBeTruthy();
+
+  await activateTool(page, 'select');
+
+  const primarySelection = page.locator(
+    `[data-selection-primary="true"][data-selection-node-id="${nodeId}"]`
+  );
+  const selectionAlreadyMatches =
+    (await primarySelection.count()) > 0 &&
+    (await page.getByTestId('selection-outline').count()) === 1;
+
+  if (!selectionAlreadyMatches) {
+    await node.click({ force: true });
+  }
+
+  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  await expect(primarySelection).toHaveCount(1);
+  return nodeId;
+}
+
+async function clearSelectionFromCanvas(page) {
+  await page.evaluate(() => {
+    globalThis.__droppleDispatcher?.dispatch?.({ type: 'SELECTION_CLEAR' });
+  });
+  await expect(page.getByTestId('selection-outline')).toHaveCount(0);
+}
+
 async function dragOnCanvas(page, from, to) {
   const canvas = visibleCanvasHost(page);
   const box = await canvas.boundingBox();
@@ -398,14 +427,82 @@ async function dragResizeHandle(page, locator, delta) {
     throw new Error('Resize handle did not render');
   }
 
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(
-    box.x + box.width / 2 + delta.x,
-    box.y + box.height / 2 + delta.y,
-    { steps: 10 }
+  const startX = box.x + box.width / 2;
+  const startY = box.y + box.height / 2;
+  const endX = startX + delta.x;
+  const endY = startY + delta.y;
+
+  await locator.dispatchEvent('pointerdown', {
+    pointerId: 1,
+    pointerType: 'mouse',
+    isPrimary: true,
+    bubbles: true,
+    cancelable: true,
+    button: 0,
+    buttons: 1,
+    clientX: startX,
+    clientY: startY,
+  });
+
+  await page.evaluate(
+    async ({ startX, startY, endX, endY }) => {
+      const steps = 10;
+      for (let index = 1; index <= steps; index += 1) {
+        const progress = index / steps;
+        const clientX = startX + (endX - startX) * progress;
+        const clientY = startY + (endY - startY) * progress;
+
+        window.dispatchEvent(
+          new PointerEvent('pointermove', {
+            pointerId: 1,
+            pointerType: 'mouse',
+            isPrimary: true,
+            bubbles: true,
+            cancelable: true,
+            buttons: 1,
+            clientX,
+            clientY,
+          })
+        );
+        window.dispatchEvent(
+          new MouseEvent('mousemove', {
+            bubbles: true,
+            cancelable: true,
+            buttons: 1,
+            clientX,
+            clientY,
+          })
+        );
+
+        await new Promise((resolve) => window.requestAnimationFrame(() => resolve()));
+      }
+
+      window.dispatchEvent(
+        new PointerEvent('pointerup', {
+          pointerId: 1,
+          pointerType: 'mouse',
+          isPrimary: true,
+          bubbles: true,
+          cancelable: true,
+          button: 0,
+          buttons: 0,
+          clientX: endX,
+          clientY: endY,
+        })
+      );
+      window.dispatchEvent(
+        new MouseEvent('mouseup', {
+          bubbles: true,
+          cancelable: true,
+          button: 0,
+          buttons: 0,
+          clientX: endX,
+          clientY: endY,
+        })
+      );
+    },
+    { startX, startY, endX, endY }
   );
-  await page.mouse.up();
 }
 
 async function waitForMoved(locator, before, minimumDelta) {
@@ -547,9 +644,7 @@ test('workspace new can create and drag a single selected node', async ({ page }
   const node = visibleNodeLocator(page);
   await expect(node).toBeVisible();
 
-  await activateTool(page, 'select');
-  await node.click();
-  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  await ensureNodeSelected(page, node);
 
   const before = await node.boundingBox();
   expect(before).not.toBeNull();
@@ -822,8 +917,7 @@ test('workspace new single-node resize updates bounds and persists', async ({ pa
   const node = visibleNodeLocator(page);
   await expect(node).toBeVisible();
 
-  await activateTool(page, 'select');
-  await node.click();
+  await ensureNodeSelected(page, node);
 
   const resizeHandle = page.getByTestId('resize-handle').first();
   await expect(resizeHandle).toBeVisible();
@@ -843,9 +937,7 @@ test('workspace new deterministic create-select-drag-resize roundtrip preserves 
   const node = visibleNodeLocator(page);
   await expect(node).toBeVisible();
 
-  await activateTool(page, 'select');
-  await node.click({ force: true });
-  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  await ensureNodeSelected(page, node);
 
   const selectedNodeId = await node.getAttribute('data-node-id');
   expect(selectedNodeId).toBeTruthy();
@@ -888,8 +980,7 @@ test('workspace new inspector projects capability domains for a selected frame',
   const node = visibleNodeLocator(page);
   await expect(node).toBeVisible();
 
-  await activateTool(page, 'select');
-  await node.click({ force: true });
+  await ensureNodeSelected(page, node);
 
   await expect(page.getByTestId('inspector-shell')).toBeVisible();
   await expect(page.getByTestId('inspector-context-summary')).toContainText('Context: selection');
@@ -907,12 +998,15 @@ test('workspace new inspector projects capability domains for a selected frame',
 test('workspace new create menu projects existing uiux creation capabilities', async ({ page }) => {
   await gotoNewWorkspace(page);
 
-  await page.getByRole('button', { name: 'Create' }).click();
+  await page
+    .getByTestId('uiux-topbar-authoring-group')
+    .getByRole('button', { name: 'Create' })
+    .click();
   await expect(page.getByRole('menuitem', { name: 'Frame' })).toBeVisible();
   await expect(page.getByRole('menuitem', { name: 'Text' })).toBeVisible();
   await expect(page.getByRole('menuitem', { name: 'Image' })).toBeVisible();
-  await expect(page.getByRole('menuitem', { name: 'Shape' })).toBeVisible();
-  await expect(page.getByRole('menuitem', { name: 'Path' })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: 'Shape' })).toHaveCount(0);
+  await expect(page.getByRole('menuitem', { name: 'Path' })).toHaveCount(0);
 });
 
 test('workspace new keyboard nudge and shift-nudge move selected node with preserved identity', async ({ page }) => {
@@ -2803,6 +2897,7 @@ test('workspace new keyboard nudge is inert with no selection and while focus is
     }, selectedNodeId);
 
   // No selection: nudge must be inert.
+  await clearSelectionFromCanvas(page);
   const noSelectionStart = await readLayout();
   expect(noSelectionStart).toBeTruthy();
   await page.keyboard.press('ArrowRight');
@@ -2811,9 +2906,7 @@ test('workspace new keyboard nudge is inert with no selection and while focus is
   expect(noSelectionEnd).toEqual(noSelectionStart);
 
   // With selection established.
-  await activateTool(page, 'select');
-  await node.click({ force: true });
-  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  await ensureNodeSelected(page, node);
   const selectedStart = await readLayout();
   expect(selectedStart).toBeTruthy();
 
@@ -2868,9 +2961,7 @@ test('workspace new keyboard nudges preserve finite positive canonical layout bo
   const node = visibleNodeLocator(page);
   await expect(node).toBeVisible();
 
-  await activateTool(page, 'select');
-  await node.click({ force: true });
-  await expect(page.getByTestId('selection-outline')).toHaveCount(1);
+  await ensureNodeSelected(page, node);
   const selectedNodeId = await node.getAttribute('data-node-id');
   expect(selectedNodeId).toBeTruthy();
 

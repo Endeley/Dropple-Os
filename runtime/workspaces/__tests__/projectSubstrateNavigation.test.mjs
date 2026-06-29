@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+    createWorldNavigationGeographyPolicy,
     hasProjectHistory,
     isCreateUiWorld,
     resolveArtifactFocusViewport,
@@ -13,6 +14,57 @@ import {
     resolveProjectOrigin,
     shouldInitializeProjectHomeViewport,
 } from '@/runtime/workspaces/projectSubstrateNavigation.js';
+
+test('Create World navigation/geography policy preserves the existing substrate behavior surface', () => {
+    assert.equal(
+        createWorldNavigationGeographyPolicy.isNavigationGeographyContext({
+            workspaceId: 'uiux',
+        }),
+        isCreateUiWorld({ workspaceId: 'uiux' }),
+    );
+
+    assert.equal(
+        createWorldNavigationGeographyPolicy.hasProjectHistory({
+            workspaceId: 'uiux',
+            nodeCount: 1,
+        }),
+        hasProjectHistory({
+            workspaceId: 'uiux',
+            nodeCount: 1,
+        }),
+    );
+
+    assert.deepEqual(
+        createWorldNavigationGeographyPolicy.resolveHome({
+            workspaceId: 'uiux',
+        }),
+        resolveProjectHome({ workspaceId: 'uiux' }),
+    );
+
+    assert.deepEqual(
+        createWorldNavigationGeographyPolicy.resolveHomeViewport({
+            workspaceId: 'uiux',
+            hostRect: { width: 1280, height: 720 },
+            scale: 1,
+        }),
+        resolveProjectHomeViewport({
+            workspaceId: 'uiux',
+            hostRect: { width: 1280, height: 720 },
+            scale: 1,
+        }),
+    );
+
+    assert.deepEqual(
+        createWorldNavigationGeographyPolicy.resolveFirstArtifactBounds({
+            workspaceId: 'uiux',
+            nodeCount: 0,
+        }),
+        resolveFirstFrameBounds({
+            workspaceId: 'uiux',
+            nodeCount: 0,
+        }),
+    );
+});
 
 test('project history begins when Create > UI world contains work', () => {
     assert.equal(

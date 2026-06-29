@@ -1,10 +1,10 @@
 import { mkdir, open, rm } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
-import os from 'node:os';
 import path from 'node:path';
 
-const DIST_DIR = process.env.E2E_NEXT_DIST_DIR || path.join(os.tmpdir(), 'dropple-next-e2e');
-const LOCK_FILE = path.join(path.dirname(DIST_DIR), 'dropple-next-e2e.build.lock');
+const DIST_DIR = process.env.E2E_NEXT_DIST_DIR || '.next-e2e';
+const DIST_DIR_ABS = path.resolve(process.cwd(), DIST_DIR);
+const LOCK_FILE = path.join(path.dirname(DIST_DIR_ABS), 'dropple-next-e2e.build.lock');
 const LOCK_RETRY_MS = 150;
 const LOCK_TIMEOUT_MS = 120_000;
 
@@ -31,8 +31,8 @@ async function acquireLock() {
 }
 
 async function cleanDistDir() {
-  await mkdir(path.dirname(DIST_DIR), { recursive: true });
-  await rm(DIST_DIR, {
+  await mkdir(path.dirname(DIST_DIR_ABS), { recursive: true });
+  await rm(DIST_DIR_ABS, {
     recursive: true,
     force: true,
     maxRetries: 8,

@@ -11,6 +11,7 @@ import { ExportPreviewPanel } from '@/ui/inspector/ExportPreviewPanel.jsx';
 import { InspectorPanel } from '@/ui/panels/InspectorPanel.jsx';
 import { CanvasSurfacePanel } from '@/ui/workspace/ux/panels/CanvasSurfacePanel.jsx';
 import { CertifiedTemplatesPanel } from '@/ui/workspace/ux/panels/CertifiedTemplatesPanel.jsx';
+import { UIUXLanguageProjectionPanel } from '@/ui/workspace/uiux/UIUXLanguageProjectionPanel.jsx';
 
 /* --- dormant uiux panels now promoted --- */
 
@@ -37,6 +38,11 @@ export const PanelRegistry = {
     SelectionActionsPanel: {
         id: 'SelectionActionsPanel',
         component: SelectionActionsPanel,
+    },
+
+    UIUXLanguageProjectionPanel: {
+        id: 'UIUXLanguageProjectionPanel',
+        component: UIUXLanguageProjectionPanel,
     },
 
     LayoutInspector: {

@@ -44,6 +44,17 @@ function buildSceneGraphDocument(baseSceneGraph) {
                 parentId: parentById[node.id] ?? null,
                 layout,
             }),
+            name: node?.name ?? null,
+            metadata:
+                node?.metadata && typeof node.metadata === 'object' && !Array.isArray(node.metadata)
+                    ? { ...node.metadata }
+                    : undefined,
+            meta:
+                node?.meta && typeof node.meta === 'object' && !Array.isArray(node.meta)
+                    ? { ...node.meta }
+                    : node?.metadata && typeof node.metadata === 'object' && !Array.isArray(node.metadata)
+                      ? { ...node.metadata }
+                      : undefined,
             children: [...(baseSceneGraph?.tree?.[node.id] ?? [])],
             opacity: node?.opacity ?? 1,
             channels: node?.channels ?? {},
@@ -105,7 +116,41 @@ function buildRuntimeSnapshotFromSeed(seed) {
 }
 
 export function buildRuntimeSnapshotFromCertifiedTemplate(template) {
-    return isSeedTemplate(template)
+    const snapshot = isSeedTemplate(template)
         ? buildRuntimeSnapshotFromSeed(template)
         : buildRuntimeSnapshotFromTemplateGraph(template?.graph);
+
+    const templateMetadata =
+        template?.metadata && typeof template.metadata === 'object' && !Array.isArray(template.metadata)
+            ? template.metadata
+            : {};
+    const templateScenario =
+        templateMetadata.scenario ??
+        templateMetadata.creativeScenario ??
+        null;
+
+    if (snapshot?.document && typeof snapshot.document === 'object') {
+        snapshot.document = {
+            ...snapshot.document,
+            meta: {
+                ...(snapshot.document.meta ?? {}),
+                template: {
+                    id: template?.id ?? null,
+                    name: templateMetadata.name ?? null,
+                    scenario: templateScenario,
+                },
+                ...(templateMetadata.projectContext &&
+                typeof templateMetadata.projectContext === 'object' &&
+                !Array.isArray(templateMetadata.projectContext)
+                    ? {
+                          projectContext: {
+                              ...templateMetadata.projectContext,
+                          },
+                      }
+                    : {}),
+            },
+        };
+    }
+
+    return snapshot;
 }

@@ -16,6 +16,7 @@ const CanvasHost = forwardRef(function CanvasHost(
         background = null,
         children,
         overlay = null,
+        overlayPointerEvents = 'none',
         viewport,
         worldOffset,
         cameraTransform,
@@ -130,7 +131,7 @@ const CanvasHost = forwardRef(function CanvasHost(
                         position: 'absolute',
                         inset: 0,
                         overflow: 'visible',
-                        pointerEvents: 'none',
+                        pointerEvents: overlayPointerEvents,
                     }}>
                     {overlay}
                 </div>

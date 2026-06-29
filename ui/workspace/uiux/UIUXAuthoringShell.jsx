@@ -1,7 +1,7 @@
 'use client';
 
 import '@/ui/styles/uiux.css';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { UIUXTopBar } from './UIUXTopBar.jsx';
 import { UIUXToolRail } from './UIUXToolRail.jsx';
@@ -34,6 +34,7 @@ import {
     getMotionClipsForNode,
     removeMotionClipsFromNode,
 } from '@/ui/motion/motionClipActions.js';
+import { getVisibleToolsForWorkspace } from '@/ui/tools/toolDefinitions.js';
 import {
     resolveDesignWorkspaceContext,
     buildDesignPublishModePayload,
@@ -41,6 +42,17 @@ import {
     DesignWorkspaceStrip,
 } from '@/ui/workspace/design/DesignShellPrimitives.jsx';
 import { resolveProjectHomeViewport } from '@/runtime/workspaces/projectSubstrateNavigation.js';
+import { getUIUXCreationEntries } from './uiuxLanguageDictionary.js';
+import {
+    UIUX_SCENARIO_OPTIONS,
+    resolveUIUXScenarioProvision,
+} from './uiuxScenarioProvision.js';
+
+const SCENARIO_SELECTION_STORAGE_PREFIX = 'dropple.uiux.scenario-selection';
+
+function buildScenarioSelectionStorageKey(documentId) {
+    return `${SCENARIO_SELECTION_STORAGE_PREFIX}:${documentId || 'unknown'}`;
+}
 
 export function UIUXAuthoringShell({
     profile = 'uiux-authoring',
@@ -53,13 +65,6 @@ export function UIUXAuthoringShell({
     initialCursorIndex = -1,
     initialDocumentId = null,
 }) {
-    const createItems = [
-        { toolId: 'frame', label: 'Frame' },
-        { toolId: 'text', label: 'Text' },
-        { toolId: 'image', label: 'Image' },
-        { toolId: 'shape', label: 'Shape' },
-        { toolId: 'path', label: 'Path' },
-    ];
     const emit = useCallback((event) => nodeUpdateIntent(event), []);
     const [documentId, setDocumentId] = useState(null);
     const [documentName, setDocumentName] = useState('Untitled');
@@ -87,7 +92,24 @@ export function UIUXAuthoringShell({
     const selectedIds = useWorkspaceVisualState((s) => s.selection?.ids || []);
     const activeTool = useWorkspaceProjectionState((s) => s.tools?.activeTool ?? null);
     const workspaceDocument = useWorkspaceProjectionState((s) => s.document ?? null);
+    const visibleTools = useWorkspaceProjectionState((s) => s.tools?.visibleTools ?? []);
     const viewport = useWorkspaceViewState((s) => s.viewport ?? { x: 0, y: 0, scale: 1 });
+    const runtimeDocumentId = workspaceDocument?.meta?.id ?? initialDocumentId ?? null;
+    const [explicitScenarioSelections, setExplicitScenarioSelections] = useState({});
+    const createItems = useMemo(() => {
+        const availableToolIds =
+            Array.isArray(visibleTools) && visibleTools.length > 0
+                ? visibleTools
+                : getVisibleToolsForWorkspace({
+                      workspaceId: resolvedModeId,
+                      modeId: resolvedModeId,
+                  }).map((tool) => tool.id);
+
+        return getUIUXCreationEntries({ availableToolIds }).map((entry) => ({
+                toolId: entry.creation.toolId,
+                label: entry.creation.railLabel || entry.label,
+            }));
+    }, [resolvedModeId, visibleTools]);
 
     const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
     const node = selectedId ? nodes[selectedId] : null;
@@ -105,6 +127,48 @@ export function UIUXAuthoringShell({
     const showInspector = hasInspectableContext;
     const showTimeline = hasTimeAuthoringContext;
     const showStatusStrip = selectionCount > 0 || (showTimeline && node?.id);
+
+    useEffect(() => {
+        if (typeof window === 'undefined' || !runtimeDocumentId) return;
+
+        try {
+            const raw = window.localStorage.getItem(buildScenarioSelectionStorageKey(runtimeDocumentId));
+            if (!raw) {
+                setExplicitScenarioSelections({});
+                return;
+            }
+
+            const parsed = JSON.parse(raw);
+            setExplicitScenarioSelections(parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {});
+        } catch {
+            setExplicitScenarioSelections({});
+        }
+    }, [runtimeDocumentId]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined' || !runtimeDocumentId) return;
+
+        try {
+            window.localStorage.setItem(
+                buildScenarioSelectionStorageKey(runtimeDocumentId),
+                JSON.stringify(explicitScenarioSelections ?? {}),
+            );
+        } catch {
+            // fail closed: non-explicit providers continue to work
+        }
+    }, [explicitScenarioSelections, runtimeDocumentId]);
+
+    const explicitScenarioForSelection = selectedId ? explicitScenarioSelections[selectedId] ?? null : null;
+    const resolvedScenarioProvision = useMemo(
+        () =>
+            resolveUIUXScenarioProvision({
+                explicitScenario: explicitScenarioForSelection,
+                node,
+                document: workspaceDocument,
+                workspaceContext,
+            }),
+        [explicitScenarioForSelection, node, workspaceContext, workspaceDocument],
+    );
 
     useKeyboardNudge({
         enabled: true,
@@ -205,6 +269,36 @@ export function UIUXAuthoringShell({
     const handleRemoveMotion = useCallback(() => {
         removeMotionClipsFromNode(dispatcher.dispatch, node?.id ?? null, selectedNodeClips);
     }, [dispatcher.dispatch, node?.id, selectedNodeClips]);
+
+    const handleScenarioSelectionChange = useCallback(
+        (scenario) => {
+            if (!selectedId) return;
+
+            setExplicitScenarioSelections((current) => {
+                const next = { ...(current ?? {}) };
+                if (scenario) {
+                    next[selectedId] = scenario;
+                } else {
+                    delete next[selectedId];
+                }
+                return next;
+            });
+        },
+        [selectedId],
+    );
+
+    const languagePanelProps = useMemo(
+        () => ({
+            UIUXLanguageProjectionPanel: {
+                document: workspaceDocument,
+                workspaceContext,
+                scenarioProvision: resolvedScenarioProvision,
+                scenarioOptions: UIUX_SCENARIO_OPTIONS,
+                onScenarioChange: handleScenarioSelectionChange,
+            },
+        }),
+        [handleScenarioSelectionChange, resolvedScenarioProvision, workspaceContext, workspaceDocument],
+    );
 
     const handleReturnHome = useCallback(() => {
         if (typeof window === 'undefined') return;
@@ -312,6 +406,7 @@ export function UIUXAuthoringShell({
                                     node={node}
                                     emit={emit}
                                     extraPanels={[]}
+                                    panelPropsById={languagePanelProps}
                                 />
                             </aside>
                         ) : null}

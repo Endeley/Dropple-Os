@@ -35,7 +35,7 @@ export const uiuxWorkspace = {
       Canonical UIUX authoring panel stack
       Activation truth owns exposure.
     */
-    panels: ['SelectionActionsPanel', 'NodeHeaderPanel', 'LayoutInspector', 'AutoLayoutPanel', 'AppearancePanel', 'ContentPanel', 'SemanticsPanel', 'MotionPanel', 'CanvasSurfacePanel', 'UXValidationPanel', 'UXSuggestionsPanel', 'UXRiskImpactPanel', 'UXEventListPanel', 'CertifiedTemplatesPanel', 'ExportPreviewPanel'],
+    panels: ['SelectionActionsPanel', 'UIUXLanguageProjectionPanel', 'NodeHeaderPanel', 'LayoutInspector', 'AutoLayoutPanel', 'AppearancePanel', 'ContentPanel', 'SemanticsPanel', 'MotionPanel', 'CanvasSurfacePanel', 'UXValidationPanel', 'UXSuggestionsPanel', 'UXRiskImpactPanel', 'UXEventListPanel', 'CertifiedTemplatesPanel', 'ExportPreviewPanel'],
 
     activeDomains: ['canvas', 'state', 'motion'],
 

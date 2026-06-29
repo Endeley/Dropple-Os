@@ -21,9 +21,12 @@ export function createNodeCreateEvent(intent) {
         bounds,
         position,
         parentId = null,
+        name = null,
         props = {},
         style = {},
         content = null,
+        metadata = undefined,
+        meta = undefined,
     } = intent;
 
     const sourceLayout = bounds || {
@@ -66,6 +69,22 @@ export function createNodeCreateEvent(intent) {
             layout,
         }),
     );
+
+    if (typeof name === 'string' && name.trim().length > 0) {
+        node.name = name.trim();
+    }
+
+    const normalizedMetadata =
+        metadata && typeof metadata === 'object' && !Array.isArray(metadata)
+            ? { ...metadata }
+            : meta && typeof meta === 'object' && !Array.isArray(meta)
+              ? { ...meta }
+              : null;
+
+    if (normalizedMetadata) {
+        node.metadata = normalizedMetadata;
+        node.meta = { ...normalizedMetadata };
+    }
 
     return {
         event: {

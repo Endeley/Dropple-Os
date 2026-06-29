@@ -216,21 +216,27 @@ function EditorWorkspaceLayoutInner({
     }, [workspaceId, toolModeId, overlayId]);
 
     useEffect(() => {
+        const snapshotsEqual = (left, right) =>
+            (left?.sessionId ?? null) === (right?.sessionId ?? null) &&
+            (left?.participantCount ?? 0) === (right?.participantCount ?? 0) &&
+            (left?.releaseTrustHash ?? null) === (right?.releaseTrustHash ?? null);
+
         const readStatus = () => {
             try {
                 const snapshot = readOsWorkspaceShellSurfaceModel();
-                setShellStatus({
+                const nextStatus = {
                     sessionId: snapshot?.sessionId ?? null,
                     participantCount: Array.isArray(snapshot?.participantIds) ? snapshot.participantIds.length : 0,
                     releaseTrustHash: snapshot?.releaseTrustHash ?? null,
-                });
+                };
+                setShellStatus((current) => (snapshotsEqual(current, nextStatus) ? current : nextStatus));
             } catch {
-                setShellStatus(null);
+                setShellStatus((current) => (current == null ? current : null));
             }
         };
 
         readStatus();
-        const timer = setInterval(readStatus, 500);
+        const timer = setInterval(readStatus, 5000);
         return () => clearInterval(timer);
     }, []);
 
@@ -319,7 +325,7 @@ function EditorWorkspaceLayoutInner({
                 <LeftPanel panels={adapter.panels?.left} events={events} cursor={cursor} workspaceId={workspaceId} />
 
                 <div className='workspace-canvas-cell'>
-                    <WorkspaceCanvasRoot workspaceId={workspaceId} />
+                    <WorkspaceCanvasRoot workspaceId={workspaceId} modeId={adapter?.id ?? null} />
 
                     {showCapabilityPanels && (
                         <div className='workspace-capability-panels'>

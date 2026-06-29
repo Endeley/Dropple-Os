@@ -120,3 +120,29 @@ test('nodeCreateIntent does not reapply first-frame home placement once project 
         height: 100,
     });
 });
+
+test('nodeCreateIntent preserves creation metadata and naming for lawful first-page scenario creation', () => {
+    resetRuntimeStore();
+
+    const received = [];
+    const handler = (payload) => received.push(payload);
+    canvasBus.on('intent.node.create', handler);
+
+    try {
+        nodeCreateIntent({
+            type: 'frame',
+            name: 'Landing Page',
+            metadata: {
+                scenario: 'landingPage',
+            },
+        });
+    } finally {
+        canvasBus.off('intent.node.create', handler);
+    }
+
+    assert.equal(received.length, 1);
+    assert.equal(received[0]?.name, 'Landing Page');
+    assert.deepEqual(received[0]?.metadata, {
+        scenario: 'landingPage',
+    });
+});
