@@ -26,6 +26,8 @@ import { clearPluginAPI, getRegisteredTools } from '@/platform/plugins/pluginAPI
 import { clearPluginHost, startPluginHost } from '@/platform/plugins/pluginHost.js';
 import { clearPluginRegistry } from '@/platform/plugins/pluginRegistry.js';
 
+const SHARED_AUTHORING_TOOL_BASELINE = Object.freeze(['select', 'move', 'resize']);
+
 function resetCapabilityPlatform() {
     clearCapabilityRegistry();
     clearWorkspacePolicies();
@@ -189,4 +191,18 @@ test('platform workspace registry resolves canonical workspace definitions', () 
     assert.equal(animationDefinition.id, 'animation');
     assert.equal(Array.isArray(workspaceList), true);
     assert.equal(workspaceList.length > 0, true);
+});
+
+test('graphic and uiux inherit the shared activation tool baseline without changing activation contracts', () => {
+    const graphicDefinition = getWorkspaceDefinition('graphic');
+    const uiuxDefinition = getWorkspaceDefinition('uiux');
+    const graphicActivation = resolveWorkspaceActivationContract('graphic');
+    const uiuxActivation = resolveWorkspaceActivationContract('uiux');
+
+    for (const toolId of SHARED_AUTHORING_TOOL_BASELINE) {
+        assert.equal(graphicDefinition.tools.includes(toolId), true);
+        assert.equal(uiuxDefinition.tools.includes(toolId), true);
+        assert.equal(graphicActivation.tools.has(toolId), true);
+        assert.equal(uiuxActivation.tools.has(toolId), true);
+    }
 });

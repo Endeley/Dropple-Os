@@ -1,5 +1,6 @@
 // workspaces/registry/graphicWorkspace.js
 import { EventTypes } from '@/core/events/eventTypes.js';
+import { SHARED_AUTHORING_TOOL_BASELINE } from './sharedActivationBaseline.js';
 
 export const graphicWorkspace = {
     id: 'graphic',
@@ -7,7 +8,7 @@ export const graphicWorkspace = {
     status: 'active',
 
     engines: ['nodeTree', 'layout', 'vector'],
-    tools: ['select', 'move', 'resize', 'text', 'shape', 'image'],
+    tools: [...SHARED_AUTHORING_TOOL_BASELINE, 'text', 'shape', 'image'],
     panels: [
         'NodeHeaderPanel',
         'LayoutInspector',

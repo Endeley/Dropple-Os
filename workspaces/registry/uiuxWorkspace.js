@@ -1,6 +1,7 @@
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { createTimelineCapability } from './timelineCapability.js';
 import { DefaultCanvasPolicy } from '@/core/contracts/CanvasPolicy.js';
+import { SHARED_AUTHORING_TOOL_BASELINE } from './sharedActivationBaseline.js';
 
 export const uiuxWorkspace = {
     id: 'uiux',
@@ -29,7 +30,7 @@ export const uiuxWorkspace = {
 
     engines: ['nodeTree', 'layout', 'constraints', 'autoLayout', 'vector'],
 
-    tools: ['select', 'move', 'resize', 'text', 'image', 'frame', 'shape', 'path'],
+    tools: [...SHARED_AUTHORING_TOOL_BASELINE, 'text', 'image', 'frame', 'shape', 'path'],
 
     /*
       Canonical UIUX authoring panel stack
