@@ -1,6 +1,6 @@
 // workspaces/registry/graphicWorkspace.js
 import { EventTypes } from '@/core/events/eventTypes.js';
-import { SHARED_AUTHORING_TOOL_BASELINE } from './sharedActivationBaseline.js';
+import { SHARED_AUTHORING_TOOL_BASELINE } from '@/platform/capabilities/sharedActivationBaseline.js';
 
 export const graphicWorkspace = {
     id: 'graphic',

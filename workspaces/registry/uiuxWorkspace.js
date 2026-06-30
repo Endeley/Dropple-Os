@@ -1,7 +1,7 @@
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { createTimelineCapability } from './timelineCapability.js';
 import { DefaultCanvasPolicy } from '@/core/contracts/CanvasPolicy.js';
-import { SHARED_AUTHORING_TOOL_BASELINE } from './sharedActivationBaseline.js';
+import { SHARED_AUTHORING_TOOL_BASELINE } from '@/platform/capabilities/sharedActivationBaseline.js';
 
 export const uiuxWorkspace = {
     id: 'uiux',
