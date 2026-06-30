@@ -123,6 +123,7 @@ export function WorkspaceCanvasRoot({
     cursor = null,
     readOnly = false,
     runtimeReadOnly = false,
+    projectionSlots = null,
 }) {
     useEffect(() => {
         if (!workspaceId) return;
@@ -157,7 +158,7 @@ export function WorkspaceCanvasRoot({
     }
 
     if (!hasReplaySource) {
-        return <CanvasRoot workspaceId={workspaceId} modeId={modeId} />;
+        return <CanvasRoot workspaceId={workspaceId} modeId={modeId} projectionSlots={projectionSlots} />;
     }
 
     return (

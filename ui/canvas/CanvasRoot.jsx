@@ -19,7 +19,6 @@ import { CanvasSurface } from '@/ui/canvas/surface/CanvasSurface.jsx';
 import HomeLandmark from '@/ui/canvas/HomeLandmark.jsx';
 import FirstFrameAffordance from '@/ui/canvas/FirstFrameAffordance.jsx';
 import { WorldOriginMarker } from '@/ui/canvas/WorldOriginMarker.jsx';
-import { UIUXEmptyWorldOverlay } from '@/ui/workspace/uiux/UIUXEmptyWorldOverlay.jsx';
 import { GraphicEmptyWorldOverlay } from '@/ui/workspace/graphic/GraphicEmptyWorldOverlay.jsx';
 import { GraphicFirstExpressionOverlay } from '@/ui/workspace/graphic/GraphicFirstExpressionOverlay.jsx';
 import { GraphicVocabularyOverlay } from '@/ui/workspace/graphic/GraphicVocabularyOverlay.jsx';
@@ -111,7 +110,7 @@ function clampContextMenuPosition({
     };
 }
 
-export default function CanvasRoot({ workspaceId = null, modeId = null }) {
+export default function CanvasRoot({ workspaceId = null, modeId = null, projectionSlots = null }) {
     const hostRef = useRef(null);
     const [hostRect, setHostRect] = useState(null);
     const [dismissedFirstExpressionNodeId, setDismissedFirstExpressionNodeId] = useState(null);
@@ -475,6 +474,15 @@ export default function CanvasRoot({ workspaceId = null, modeId = null }) {
         if (!nodeId) return;
         removeMotionClipsFromNode(dispatcher?.dispatch, nodeId, getMotionClipsForNode(document, nodeId));
     }, [contextMenu.actionIds, dispatcher, document]);
+    const emptyWorldProjection =
+        typeof projectionSlots?.emptyWorld === 'function'
+            ? projectionSlots.emptyWorld({
+                  workspaceId,
+                  modeId: activeModeId,
+                  nodeCount,
+                  worldHistory,
+              })
+            : projectionSlots?.emptyWorld ?? null;
 
     return (
         <CanvasProvider value={contextValue}>
@@ -516,12 +524,7 @@ export default function CanvasRoot({ workspaceId = null, modeId = null }) {
                                 onToggle={() => setDebugVisible(false)}
                             />
                         ) : null}
-                        <UIUXEmptyWorldOverlay
-                            workspaceId={workspaceId}
-                            modeId={activeModeId}
-                            nodeCount={nodeCount}
-                            worldHistory={worldHistory}
-                        />
+                        {emptyWorldProjection}
                         <GraphicEmptyWorldOverlay
                             workspaceId={workspaceId}
                             modeId={activeModeId}
