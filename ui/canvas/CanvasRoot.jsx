@@ -19,7 +19,6 @@ import { CanvasSurface } from '@/ui/canvas/surface/CanvasSurface.jsx';
 import HomeLandmark from '@/ui/canvas/HomeLandmark.jsx';
 import FirstFrameAffordance from '@/ui/canvas/FirstFrameAffordance.jsx';
 import { WorldOriginMarker } from '@/ui/canvas/WorldOriginMarker.jsx';
-import { GraphicEmptyWorldOverlay } from '@/ui/workspace/graphic/GraphicEmptyWorldOverlay.jsx';
 import { GraphicFirstExpressionOverlay } from '@/ui/workspace/graphic/GraphicFirstExpressionOverlay.jsx';
 import { GraphicVocabularyOverlay } from '@/ui/workspace/graphic/GraphicVocabularyOverlay.jsx';
 import { GraphicRefinementOverlay } from '@/ui/workspace/graphic/GraphicRefinementOverlay.jsx';
@@ -525,11 +524,6 @@ export default function CanvasRoot({ workspaceId = null, modeId = null, projecti
                             />
                         ) : null}
                         {emptyWorldProjection}
-                        <GraphicEmptyWorldOverlay
-                            workspaceId={workspaceId}
-                            modeId={activeModeId}
-                            nodeCount={nodeCount}
-                        />
                         <GraphicFirstExpressionOverlay
                             workspaceId={workspaceId}
                             modeId={activeModeId}

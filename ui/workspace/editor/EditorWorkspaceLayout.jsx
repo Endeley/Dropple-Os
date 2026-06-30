@@ -43,6 +43,7 @@ import { ModeSwitcher } from '@/ui/workspace/shared/ModeSwitcher.jsx';
 import { useDispatcher } from '@/ui/workspace/DispatcherContext.jsx';
 import { dispatchOsWorkspaceShellIntent } from '@/ui/bridges/osSurfaceIntentBridge.js';
 import { readOsWorkspaceShellSurfaceModel } from '@/ui/bridges/osSurfaceReadBridge.js';
+import { buildGraphicProjectionSlots } from '@/ui/workspace/graphic/graphicProjectionSlots.js';
 
 function formatShellLabel(value) {
     if (typeof value !== 'string') return value;
@@ -138,6 +139,12 @@ function EditorWorkspaceLayoutInner({
         (isSystemGovernanceSurface || isBuildOverlaySurface) &&
         Array.isArray(capabilitySurfacePanels) &&
         capabilitySurfacePanels.length > 0;
+    const projectionSlots = useMemo(() => {
+        if (adapter?.id === 'graphic') {
+            return buildGraphicProjectionSlots();
+        }
+        return null;
+    }, [adapter?.id]);
 
     const getState = useCallback(() => {
         return getDesignStateAtCursor({
@@ -325,7 +332,11 @@ function EditorWorkspaceLayoutInner({
                 <LeftPanel panels={adapter.panels?.left} events={events} cursor={cursor} workspaceId={workspaceId} />
 
                 <div className='workspace-canvas-cell'>
-                    <WorkspaceCanvasRoot workspaceId={workspaceId} modeId={adapter?.id ?? null} />
+                    <WorkspaceCanvasRoot
+                        workspaceId={workspaceId}
+                        modeId={adapter?.id ?? null}
+                        projectionSlots={projectionSlots}
+                    />
 
                     {showCapabilityPanels && (
                         <div className='workspace-capability-panels'>

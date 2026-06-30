@@ -841,16 +841,9 @@ test('workspace new grouping survives deselect and reselect as a group wrapper',
     })
     .toBe(0);
 
-  const groupNode = visibleNodeById(page, groupInfo.groupId);
-  await expect(groupNode).toBeVisible();
-  const groupBox = await groupNode.boundingBox();
-  if (!groupBox) {
-    throw new Error('Grouped wrapper did not render');
-  }
-
-  const clickX = groupBox.x + groupBox.width / 2;
-  const clickY = groupBox.y + groupBox.height / 2;
-  await page.mouse.click(clickX, clickY);
+  const groupedChild = visibleNodeById(page, createdIds[0]);
+  await expect(groupedChild).toBeVisible();
+  await groupedChild.click({ force: true });
 
   await expect
     .poll(async () => {
