@@ -19,7 +19,6 @@ import { CanvasSurface } from '@/ui/canvas/surface/CanvasSurface.jsx';
 import HomeLandmark from '@/ui/canvas/HomeLandmark.jsx';
 import FirstFrameAffordance from '@/ui/canvas/FirstFrameAffordance.jsx';
 import { WorldOriginMarker } from '@/ui/canvas/WorldOriginMarker.jsx';
-import { GraphicFirstExpressionOverlay } from '@/ui/workspace/graphic/GraphicFirstExpressionOverlay.jsx';
 import { GraphicVocabularyOverlay } from '@/ui/workspace/graphic/GraphicVocabularyOverlay.jsx';
 import { GraphicRefinementOverlay } from '@/ui/workspace/graphic/GraphicRefinementOverlay.jsx';
 import { GraphicDeliveryOverlay } from '@/ui/workspace/graphic/GraphicDeliveryOverlay.jsx';
@@ -482,6 +481,17 @@ export default function CanvasRoot({ workspaceId = null, modeId = null, projecti
                   worldHistory,
               })
             : projectionSlots?.emptyWorld ?? null;
+    const firstExpressionProjection =
+        typeof projectionSlots?.firstExpression === 'function'
+            ? projectionSlots.firstExpression({
+                  workspaceId,
+                  modeId: activeModeId,
+                  nodeCount,
+                  selectedNode,
+                  dismissedNodeId: dismissedFirstExpressionNodeId,
+                  onDismiss: setDismissedFirstExpressionNodeId,
+              })
+            : projectionSlots?.firstExpression ?? null;
 
     return (
         <CanvasProvider value={contextValue}>
@@ -524,14 +534,7 @@ export default function CanvasRoot({ workspaceId = null, modeId = null, projecti
                             />
                         ) : null}
                         {emptyWorldProjection}
-                        <GraphicFirstExpressionOverlay
-                            workspaceId={workspaceId}
-                            modeId={activeModeId}
-                            nodeCount={nodeCount}
-                            selectedNode={selectedNode}
-                            dismissedNodeId={dismissedFirstExpressionNodeId}
-                            onDismiss={setDismissedFirstExpressionNodeId}
-                        />
+                        {firstExpressionProjection}
                         <GraphicVocabularyOverlay
                             workspaceId={workspaceId}
                             modeId={activeModeId}

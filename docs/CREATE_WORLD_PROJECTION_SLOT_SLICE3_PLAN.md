@@ -212,3 +212,37 @@ If reviewed and accepted, this document earns:
 For:
 
 `GraphicFirstExpression only`
+
+## Implementation Result
+
+Status:
+
+`Implemented`
+
+Outcome:
+
+- `CanvasRoot` now exposes and resolves a `firstExpression` projection slot
+- direct `GraphicFirstExpressionOverlay` mounting was removed from `CanvasRoot`
+- Graphic now fills the `firstExpression` slot from `graphicProjectionSlots.js`
+- `GraphicVocabulary`, `GraphicRefinement`, and `GraphicDelivery` remained untouched
+- runtime and dispatcher authority remained untouched
+
+## Validation Result
+
+Status:
+
+`Validated`
+
+Validation completed:
+
+- focused Graphic unit tests
+- focused Graphic first-expression e2e flow
+- architecture test gate
+- release operator surfaces gate
+
+Observed result:
+
+- first-expression behavior remained identical
+- vocabulary handoff remained identical
+- no runtime authority changes were required
+- `CanvasRoot` now knows less about Graphic
