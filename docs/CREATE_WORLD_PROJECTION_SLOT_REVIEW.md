@@ -17,16 +17,20 @@ This review exists to prevent projection-slot work from spreading faster than th
 
 ## Evidence Reviewed
 
-Reviewed implementation slice:
+Reviewed implementation slices:
 
 - `Projection Slot Slice 1`
   - `UIUX Empty World`
+- `Projection Slot Slice 2`
+  - `Graphic Empty World`
 
 Reviewed files:
 
 - [CanvasRoot.jsx](/Users/endeleykonboye/Desktop/dropple-os/dropple/ui/canvas/CanvasRoot.jsx:1)
 - [WorkspaceCanvasRoot.jsx](/Users/endeleykonboye/Desktop/dropple-os/dropple/ui/workspace/WorkspaceCanvasRoot.jsx:1)
 - [UIUXCanvasStage.jsx](/Users/endeleykonboye/Desktop/dropple-os/dropple/ui/workspace/uiux/UIUXCanvasStage.jsx:1)
+- [graphicProjectionSlots.js](/Users/endeleykonboye/Desktop/dropple-os/dropple/ui/workspace/graphic/graphicProjectionSlots.js:1)
+- [EditorWorkspaceLayout.jsx](/Users/endeleykonboye/Desktop/dropple-os/dropple/ui/workspace/editor/EditorWorkspaceLayout.jsx:1)
 
 Reviewed validation sources:
 
@@ -41,8 +45,9 @@ Observed result:
 - architectural ownership improved
 - no runtime authority moved
 - no consumer contract changed
+- the same slot family now works across two languages
 
-## Slice 1 Recap
+## Slice Recap
 
 Before Slice 1:
 
@@ -60,7 +65,18 @@ After Slice 1:
 `UIUXCanvasStage`
 `-> fills emptyWorld slot`
 
-This is a real dependency-direction correction.
+After Slice 2:
+
+`CanvasRoot`
+`-> still exposes emptyWorld slot`
+
+`EditorWorkspaceLayout`
+`-> provides Graphic emptyWorld slot`
+
+`graphicProjectionSlots`
+`-> fills emptyWorld slot for Graphic`
+
+This is a real dependency-direction correction across two languages.
 
 The shared world now owns the projection mount surface.
 The language now owns the content that fills that surface.
@@ -96,6 +112,7 @@ Observation:
 - `CanvasRoot` gained one slot-aware branch for `emptyWorld`
 - `WorkspaceCanvasRoot` became a pass-through for projection slots
 - `UIUXCanvasStage` now declares the slot filler
+- `EditorWorkspaceLayout` now declares the Graphic slot filler source
 
 Assessment:
 
@@ -123,6 +140,7 @@ Evidence:
 
 - focused unit tests passed
 - focused Playwright empty-world flows passed
+- full Playwright smoke suite passed after Slice 2 stabilization
 - architecture gate passed
 - release operator surfaces gate passed
 
@@ -147,7 +165,7 @@ It corrected a specific ownership violation:
 
 `shared world importing language projection`
 
-The abstraction is justified because it changes dependency direction without changing behavior.
+The abstraction is justified because it changes dependency direction without changing behavior, and that value now survives across both UIUX and Graphic.
 
 That is architectural value, not cosmetic value.
 
@@ -159,11 +177,12 @@ Verdict:
 
 What is proven:
 
-- the pattern works for one `emptyWorld` projection in one language
+- the pattern works for `emptyWorld` in `UIUX`
+- the pattern works for `emptyWorld` in `Graphic`
+- the pattern survives same-family reuse across two languages
 
 What is not yet proven:
 
-- that it works for another language in the same family
 - that it works for different projection families such as:
   - first expression
   - vocabulary
@@ -176,26 +195,12 @@ This means the pattern should not yet be treated as universally validated.
 
 Candidates reviewed:
 
-- `GraphicEmptyWorld`
 - `GraphicFirstExpression`
 - `GraphicVocabulary`
 - `GraphicRefinement`
 - `GraphicDelivery`
 
 Assessment:
-
-### Graphic Empty World
-
-Risk:
-
-`Low`
-
-Why:
-
-- same projection family
-- same world surface type
-- already behaviorally validated
-- does not introduce a new projection category
 
 ### Graphic First Expression
 
@@ -243,7 +248,7 @@ Why:
 
 Conclusion:
 
-`GraphicEmptyWorld` is the only clearly lawful next candidate.
+No additional projection slot candidate is yet clearly lawful without opening a new slot family.
 
 ## Reusability Boundary
 
@@ -257,7 +262,7 @@ It does not yet support:
 
 That means the pattern is proven for:
 
-- `emptyWorld`
+- `emptyWorld` across `UIUX` and `Graphic`
 
 It is not yet proven for:
 
@@ -272,14 +277,14 @@ Do not proceed directly to a different projection family.
 
 Recommended next move:
 
-`Projection Slot Slice 2`
-`-> GraphicEmptyWorld only`
+`Stop implementation`
+`-> review whether a second slot family has earned planning`
 
 Reason:
 
-This tests whether the slot pattern survives a second language while holding the projection family constant.
+The slot pattern has now survived a second language while holding the projection family constant.
 
-That is the correct next evidence step.
+The correct next step is to plan, not implement, the lowest-risk candidate in a new slot family only if the ownership value remains clear.
 
 ## Verdict
 
@@ -306,13 +311,17 @@ Current state:
   - validated
   - frozen
 
+- `Projection Slot Slice 2`
+  - implemented
+  - validated
+  - frozen
+
 Next:
 
-- `Projection Slot Slice 2`
-  - `GraphicEmptyWorld` only
+- determine whether any second slot family has earned a cleanup plan
 
 Then:
 
-- review again
+- create a plan before implementation
 
 Only after that should the project consider a different slot family.
