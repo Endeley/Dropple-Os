@@ -20,6 +20,6 @@
 
 import { RuntimeBridgesRoot } from './RuntimeBridgesRoot.jsx';
 
-export function WorkspaceBridgesRoot() {
-    return <RuntimeBridgesRoot />;
+export function WorkspaceBridgesRoot({ dispatcher = null }) {
+    return <RuntimeBridgesRoot dispatcher={dispatcher} />;
 }

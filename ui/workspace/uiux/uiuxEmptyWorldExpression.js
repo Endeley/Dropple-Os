@@ -82,11 +82,11 @@ export function buildUIUXEmptyWorldCreateIntent(starterId = 'blankPage', options
                   scenario,
               })
             : undefined,
-        metadata: scenario
-            ? Object.freeze({
-                  scenario,
-              })
-            : undefined,
+        metadata: Object.freeze({
+            uiuxStarterId: starter.id,
+            uiuxFirstExpression: true,
+            ...(scenario ? { scenario } : {}),
+        }),
     });
 }
 

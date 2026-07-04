@@ -25,7 +25,7 @@ import { GraphicDeliveryOverlay } from '@/ui/workspace/graphic/GraphicDeliveryOv
 
 import { EventTypes } from '@/core/events/eventTypes.js';
 import { getZoomTier } from '@/runtime/canvas/zoomTiers.js';
-import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
+import { RuntimeDispatchRelay } from '@/runtime/boundary/RuntimeDispatchRelay.jsx';
 import {
     useWorkspaceProjectionState,
     useWorkspaceViewState,
@@ -109,6 +109,26 @@ function clampContextMenuPosition({
 }
 
 export default function CanvasRoot({ workspaceId = null, modeId = null, projectionSlots = null }) {
+    return (
+        <RuntimeDispatchRelay>
+            {(dispatcher) => (
+                <CanvasRootContent
+                    dispatcher={dispatcher}
+                    workspaceId={workspaceId}
+                    modeId={modeId}
+                    projectionSlots={projectionSlots}
+                />
+            )}
+        </RuntimeDispatchRelay>
+    );
+}
+
+function CanvasRootContent({
+    workspaceId = null,
+    modeId = null,
+    projectionSlots = null,
+    dispatcher = null,
+}) {
     const hostRef = useRef(null);
     const [hostRect, setHostRect] = useState(null);
     const [dismissedFirstExpressionNodeId, setDismissedFirstExpressionNodeId] = useState(null);
@@ -125,18 +145,22 @@ export default function CanvasRoot({ workspaceId = null, modeId = null, projecti
     });
     const [debugVisible, setDebugVisible] = useState(false);
     const [debugCursor, setDebugCursor] = useState(null);
-    const dispatcher = useDispatcher();
+    const dispatchEvent = dispatcher?.dispatch ?? null;
 
     const viewState = useWorkspaceViewState((state) => state) ?? {};
     const activeModeId = modeId ?? viewState.modeId ?? viewState.id ?? workspaceId ?? 'uiux';
     const viewport = viewState.viewport ?? { x: 0, y: 0, scale: 1 };
     const canvasSurface = viewState.canvasSurface ?? { type: 'smooth', snap: false };
     const nodesById = useWorkspaceVisualState((state) => state?.nodes ?? {});
+    const documentNodesById =
+        useWorkspaceProjectionState((state) => state?.document?.sceneGraph?.nodes ?? state?.nodes ?? {}) ?? {};
     const runtimeDrag = useWorkspaceProjectionState((state) => state?.interaction?.drag ?? null);
     const document = useWorkspaceProjectionState((state) => state?.document ?? null);
     const selection = useWorkspaceVisualState((state) => state?.selection ?? { ids: [], primary: null, count: 0 });
     const nodeCount = useWorkspaceVisualState((state) => Object.keys(state?.nodes ?? {}).length);
-    const selectedNode = selection?.primary ? nodesById?.[selection.primary] ?? null : null;
+    const selectedNode = selection?.primary
+        ? documentNodesById?.[selection.primary] ?? nodesById?.[selection.primary] ?? null
+        : null;
     const worldHistory = useWorkspaceProjectionState((state) => state?.document?.world?.history ?? null);
     const projectHasHistory = useMemo(
         () => hasProjectHistory({ workspaceId, nodeCount, worldHistory }),
@@ -324,13 +348,13 @@ export default function CanvasRoot({ workspaceId = null, modeId = null, projecti
 
         if (!nextViewport) return;
 
-        if (typeof dispatcher?.dispatch !== 'function') return;
+        if (typeof dispatchEvent !== 'function') return;
 
-        dispatcher.dispatch({
+        dispatchEvent({
             type: EventTypes.WORKSPACE_SET_VIEWPORT,
             payload: nextViewport,
         });
-    }, [dispatcher, hostRect, nodeCount, projectHome, viewport, workspaceId, worldHistory]);
+    }, [dispatchEvent, hostRect, nodeCount, projectHome, viewport, workspaceId, worldHistory]);
 
     useEffect(() => {
         if (!contextMenu.open) return;
@@ -383,8 +407,8 @@ export default function CanvasRoot({ workspaceId = null, modeId = null, projecti
         (event) => {
             event.preventDefault();
 
-            if (typeof dispatcher?.dispatch === 'function') {
-                dispatcher.dispatch({ type: EventTypes.DRAG_END });
+            if (typeof dispatchEvent === 'function') {
+                dispatchEvent({ type: EventTypes.DRAG_END });
             }
 
             const host = hostRef.current;
@@ -450,28 +474,28 @@ export default function CanvasRoot({ workspaceId = null, modeId = null, projecti
                 canRemoveMotion: model.canRemoveMotion,
             });
         },
-        [closeContextMenu, dispatcher, document, nodesById, selectionIds],
+        [closeContextMenu, dispatchEvent, document, nodesById, selectionIds],
     );
 
     const handleDeleteSelection = useCallback(() => {
-        if (typeof dispatcher?.dispatch !== 'function') return;
+        if (typeof dispatchEvent !== 'function') return;
 
         dispatchNodeDeleteSelection({
             ids: contextMenu.actionIds,
-            dispatchEvent: dispatcher.dispatch,
+            dispatchEvent,
         });
-    }, [contextMenu.actionIds, dispatcher]);
+    }, [contextMenu.actionIds, dispatchEvent]);
 
     const handleAttachMotion = useCallback(() => {
         const nodeId = contextMenu.actionIds[0] ?? null;
-        attachMotionClipToNode(dispatcher?.dispatch, nodeId);
-    }, [contextMenu.actionIds, dispatcher]);
+        attachMotionClipToNode(dispatchEvent, nodeId);
+    }, [contextMenu.actionIds, dispatchEvent]);
 
     const handleRemoveMotion = useCallback(() => {
         const nodeId = contextMenu.actionIds[0] ?? null;
         if (!nodeId) return;
-        removeMotionClipsFromNode(dispatcher?.dispatch, nodeId, getMotionClipsForNode(document, nodeId));
-    }, [contextMenu.actionIds, dispatcher, document]);
+        removeMotionClipsFromNode(dispatchEvent, nodeId, getMotionClipsForNode(document, nodeId));
+    }, [contextMenu.actionIds, dispatchEvent, document]);
     const emptyWorldProjection =
         typeof projectionSlots?.emptyWorld === 'function'
             ? projectionSlots.emptyWorld({
@@ -487,6 +511,7 @@ export default function CanvasRoot({ workspaceId = null, modeId = null, projecti
                   workspaceId,
                   modeId: activeModeId,
                   nodeCount,
+                  nodesById,
                   selectedNode,
                   dismissedNodeId: dismissedFirstExpressionNodeId,
                   onDismiss: setDismissedFirstExpressionNodeId,

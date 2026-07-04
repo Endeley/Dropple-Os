@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { canvasBus } from '@/ui/eventBus/canvasBus.js';
 import { nodeCreateIntent } from '@/ui/creation/nodeCreateIntent.js';
 import {
@@ -75,15 +75,48 @@ export function UIUXEmptyWorldOverlay({
     nodeCount = 0,
     worldHistory = null,
 }) {
-    const visible = shouldShowUIUXEmptyWorld({
+    const emptyWorldVisible = shouldShowUIUXEmptyWorld({
         workspaceId,
         modeId,
         nodeCount,
         worldHistory,
     });
     const starters = useMemo(() => getUIUXEmptyWorldStarters(), []);
+    const [selectedStarterId, setSelectedStarterId] = useState(null);
+    const [isArrivalActive, setIsArrivalActive] = useState(false);
+    const arrivalTimeoutRef = useRef(null);
+    const selectedStarter = useMemo(
+        () => starters.find((starter) => starter.id === selectedStarterId) ?? null,
+        [selectedStarterId, starters],
+    );
+
+    useEffect(() => {
+        return () => {
+            if (arrivalTimeoutRef.current != null) {
+                window.clearTimeout(arrivalTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        if (emptyWorldVisible || !selectedStarterId) return;
+        if (isArrivalActive) return;
+
+        setIsArrivalActive(true);
+        arrivalTimeoutRef.current = window.setTimeout(() => {
+            setIsArrivalActive(false);
+            setSelectedStarterId(null);
+            arrivalTimeoutRef.current = null;
+        }, 900);
+    }, [emptyWorldVisible, isArrivalActive, selectedStarterId]);
 
     const handleCreate = useCallback((starterId) => {
+        if (arrivalTimeoutRef.current != null) {
+            window.clearTimeout(arrivalTimeoutRef.current);
+            arrivalTimeoutRef.current = null;
+        }
+        setSelectedStarterId(starterId);
+        setIsArrivalActive(false);
         const activation = buildUIUXEmptyWorldStarterActivation(starterId);
         nodeCreateIntent(activation.createIntent);
         if (activation.selectionIntent) {
@@ -95,63 +128,104 @@ export function UIUXEmptyWorldOverlay({
         event.stopPropagation();
     }, []);
 
-    if (!visible) return null;
+    if (!emptyWorldVisible && !isArrivalActive) return null;
+
+    const worldState = isArrivalActive ? 'arriving' : 'empty';
 
     return (
-        <div className='uiux-empty-world' data-testid='uiux-empty-world' data-world-state='empty'>
+        <div
+            className='uiux-empty-world'
+            data-testid='uiux-empty-world'
+            data-world-state={worldState}>
             <div className='uiux-empty-world__center'>
                 <OrbitBadge />
                 <div className='uiux-empty-world__copy'>
                     <h1 data-testid='uiux-empty-world-title'>
-                        Design an <span>Application</span>
+                        {isArrivalActive ? (
+                            <>
+                                Your <span>{selectedStarter?.title ?? 'Page'}</span> is arriving
+                            </>
+                        ) : (
+                            <>
+                                Design an <span>Application</span>
+                            </>
+                        )}
                     </h1>
-                    <p className='uiux-empty-world__subtitle'>Everything starts with a Page.</p>
+                    <p className='uiux-empty-world__subtitle'>
+                        {isArrivalActive ? 'The world is responding to your direction.' : 'Everything starts with a Page.'}
+                    </p>
                     <p className='uiux-empty-world__supporting'>
-                        Choose a starting point or create a blank Page.
+                        {isArrivalActive
+                            ? 'Stay with the same world while your first project takes shape.'
+                            : 'Choose a starting point or create a blank Page.'}
                     </p>
                 </div>
 
-                <div className='uiux-empty-world__cards' data-testid='uiux-empty-world-cards'>
-                    {starters.map((starter) => (
-                        <button
-                            key={starter.id}
-                            type='button'
-                            className={`uiux-empty-world__card is-${starter.accent}`}
-                            data-testid={`uiux-empty-world-card-${starter.id}`}
-                            onPointerDown={stopCanvasPropagation}
-                            onClick={(event) => {
-                                stopCanvasPropagation(event);
-                                handleCreate(starter.id);
-                            }}>
-                            <div className='uiux-empty-world__card-icon'>
-                                <StarterGlyph starter={starter} />
+                {isArrivalActive ? (
+                    <div
+                        className='uiux-empty-world__arrival'
+                        data-testid='uiux-creative-arrival'
+                        aria-live='polite'>
+                        <div className={`uiux-empty-world__arrival-chip is-${selectedStarter?.accent ?? 'violet'}`}>
+                            <StarterGlyph starter={selectedStarter ?? starters[0]} />
+                            <div className='uiux-empty-world__arrival-copy'>
+                                <strong>{selectedStarter?.label ?? 'Blank Page'}</strong>
+                                <span>Your decision is becoming the first place your Application can live.</span>
                             </div>
-                            <div className='uiux-empty-world__card-title'>{starter.label}</div>
-                            <div className='uiux-empty-world__card-description'>{starter.description}</div>
-                        </button>
-                    ))}
-                </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className='uiux-empty-world__cards' data-testid='uiux-empty-world-cards'>
+                        {starters.map((starter) => (
+                            <button
+                                key={starter.id}
+                                type='button'
+                                className={`uiux-empty-world__card is-${starter.accent}`}
+                                data-testid={`uiux-empty-world-card-${starter.id}`}
+                                onPointerDown={stopCanvasPropagation}
+                                onClick={(event) => {
+                                    stopCanvasPropagation(event);
+                                    handleCreate(starter.id);
+                                }}>
+                                <div className='uiux-empty-world__card-icon'>
+                                    <StarterGlyph starter={starter} />
+                                </div>
+                                <div className='uiux-empty-world__card-title'>{starter.label}</div>
+                                <div className='uiux-empty-world__card-description'>{starter.description}</div>
+                            </button>
+                        ))}
+                    </div>
+                )}
 
-                <p className='uiux-empty-world__guidance' data-testid='uiux-empty-world-guidance'>
-                    <span className='uiux-empty-world__guidance-mark'>✦</span>
-                    These are suggestions. You can change direction anytime.
-                </p>
+                {isArrivalActive ? (
+                    <p className='uiux-empty-world__guidance' data-testid='uiux-empty-world-guidance'>
+                        <span className='uiux-empty-world__guidance-mark'>✦</span>
+                        Guidance is yielding to your project.
+                    </p>
+                ) : (
+                    <p className='uiux-empty-world__guidance' data-testid='uiux-empty-world-guidance'>
+                        <span className='uiux-empty-world__guidance-mark'>✦</span>
+                        These are suggestions. You can change direction anytime.
+                    </p>
+                )}
 
-                <button
-                    type='button'
-                    className='uiux-empty-world__intro'
-                    data-testid='uiux-empty-world-intro'
-                    aria-label='New to Dropple? See how it works in 90 seconds.'
-                    onPointerDown={stopCanvasPropagation}
-                    onClick={stopCanvasPropagation}>
-                    <span className='uiux-empty-world__intro-play' aria-hidden='true'>
-                        ▶
-                    </span>
-                    <span>
-                        <strong>New to Dropple?</strong>
-                        <small>See how it works in 90 seconds.</small>
-                    </span>
-                </button>
+                {!isArrivalActive ? (
+                    <button
+                        type='button'
+                        className='uiux-empty-world__intro'
+                        data-testid='uiux-empty-world-intro'
+                        aria-label='New to Dropple? See how it works in 90 seconds.'
+                        onPointerDown={stopCanvasPropagation}
+                        onClick={stopCanvasPropagation}>
+                        <span className='uiux-empty-world__intro-play' aria-hidden='true'>
+                            ▶
+                        </span>
+                        <span>
+                            <strong>New to Dropple?</strong>
+                            <small>See how it works in 90 seconds.</small>
+                        </span>
+                    </button>
+                ) : null}
             </div>
         </div>
     );

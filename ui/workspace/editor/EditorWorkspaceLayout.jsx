@@ -40,10 +40,10 @@ import { getNodes } from '@/runtime/document/documentAdapter.js';
 import { UIUXToolRail } from '@/ui/workspace/ux/UIUXToolRail.jsx';
 import { WorkspaceSwitcher } from '@/ui/workspace/shared/WorkspaceSwitcher.jsx';
 import { ModeSwitcher } from '@/ui/workspace/shared/ModeSwitcher.jsx';
-import { useDispatcher } from '@/ui/workspace/DispatcherContext.jsx';
 import { dispatchOsWorkspaceShellIntent } from '@/ui/bridges/osSurfaceIntentBridge.js';
 import { readOsWorkspaceShellSurfaceModel } from '@/ui/bridges/osSurfaceReadBridge.js';
 import { buildGraphicProjectionSlots } from '@/ui/workspace/graphic/graphicProjectionSlots.js';
+import { buildUIUXProjectionSlots } from '@/ui/workspace/uiux/uiuxProjectionSlots.js';
 
 function formatShellLabel(value) {
     if (typeof value !== 'string') return value;
@@ -59,6 +59,7 @@ function formatShellLabel(value) {
 }
 
 function EditorWorkspaceLayoutInner({
+    dispatcher = null,
     adapter,
     workspaceContext,
     projectPerspectiveContext,
@@ -103,7 +104,6 @@ function EditorWorkspaceLayoutInner({
     presence,
     capabilitySurfacePanels = [],
 }) {
-    const dispatcher = useDispatcher();
     const [shellStatus, setShellStatus] = useState(null);
     const { selectedIds, setSelection } = useSelection();
 
@@ -142,6 +142,9 @@ function EditorWorkspaceLayoutInner({
     const projectionSlots = useMemo(() => {
         if (adapter?.id === 'graphic') {
             return buildGraphicProjectionSlots();
+        }
+        if (adapter?.id === 'uiux') {
+            return buildUIUXProjectionSlots();
         }
         return null;
     }, [adapter?.id]);

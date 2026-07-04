@@ -1,8 +1,6 @@
 'use client';
 
 import { useLayoutEffect } from 'react';
-import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
-
 import { registerWorkspaceBridge } from '@/ui/bridges/workspaceBridge.js';
 import { registerViewportBridge } from '@/ui/bridges/viewportBridge.js';
 import { registerCanvasSurfaceBridge } from '@/ui/bridges/canvasSurfaceBridge.js';
@@ -28,9 +26,7 @@ import {
   unregisterDefaultGraphToolHandlers,
 } from '@/ui/bridges/toolHandlerRegistrationFacade.js';
 
-export function RuntimeBridgesRoot() {
-  const dispatcher = useDispatcher();
-
+export function RuntimeBridgesRoot({ dispatcher = null }) {
   useLayoutEffect(() => {
     if (!dispatcher?.dispatch) return;
 

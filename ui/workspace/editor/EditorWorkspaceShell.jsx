@@ -49,6 +49,7 @@ export function EditorWorkspaceShell({
     modeId,
     workspaceContext: providedWorkspaceContext = null,
     projectPerspectiveContext = null,
+    dispatcher = null,
     showWorkspaceNavigation = true,
     educationRole = 'teacher',
     educationInitialLocked = true,
@@ -241,6 +242,7 @@ export function EditorWorkspaceShell({
     const workspace = (
         <EditorWorkspaceLayout
             adapter={adapter}
+            dispatcher={dispatcher}
             workspaceContext={workspaceContext}
             projectPerspectiveContext={projectPerspectiveContext}
             showWorkspaceNavigation={showWorkspaceNavigation}

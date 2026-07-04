@@ -28,8 +28,30 @@ test('uiux empty world disappears after the first page is created through the ca
 
   await page.getByTestId('uiux-empty-world-card-blankPage').click();
 
+  await expect(emptyWorld).toHaveAttribute('data-world-state', 'arriving');
+  await expect(page.getByTestId('uiux-creative-arrival')).toContainText('Blank Page');
+  await expect(page.getByTestId('uiux-empty-world-guidance')).toContainText('Guidance is yielding to your project.');
   await expect(emptyWorld).toHaveCount(0);
   await expect(page.getByTestId('canvas-host')).toHaveAttribute('data-project-history-state', 'worked');
+});
+
+test('uiux empty world keeps world continuity while the chosen direction arrives', async ({ page }) => {
+  const response = await page.goto('/workspace/create', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'create route should respond successfully').toBeTruthy();
+  const emptyWorld = page.getByTestId('uiux-empty-world');
+  await expect(emptyWorld).toBeVisible();
+  await expect(emptyWorld).toHaveAttribute('data-world-state', 'empty');
+
+  await page.getByTestId('uiux-empty-world-card-landingPage').click();
+
+  await expect(emptyWorld).toHaveAttribute('data-world-state', 'arriving');
+  await expect(page.getByTestId('uiux-empty-world-title')).toContainText('Your Landing Page is arriving');
+  await expect(page.locator('body')).toContainText('The world is responding to your direction.');
+  await expect(page.getByTestId('canvas-host')).toHaveAttribute('data-project-history-state', 'worked');
+  await expect(emptyWorld).toHaveCount(0);
 });
 
 test('uiux empty world blank page creation selects the page and reveals semantic projection', async ({ page }) => {
@@ -40,6 +62,10 @@ test('uiux empty world blank page creation selects the page and reveals semantic
   expect(response?.ok(), 'create route should respond successfully').toBeTruthy();
   await page.getByTestId('uiux-empty-world-card-blankPage').click();
 
+  await expect(page.getByTestId('uiux-first-expression')).toBeVisible();
+  await expect(page.getByTestId('uiux-first-expression-title')).toContainText('Blank Page');
+  await expect(page.getByTestId('uiux-first-expression-meaning')).toContainText('first real presence can exist');
+  await expect(page.getByTestId('uiux-first-expression-owner')).toContainText('because your direction crossed into existence');
   await expect(page.getByTestId('inspector-shell')).toBeVisible();
   await expect(page.getByTestId('inspector-context-summary')).toContainText('Context: selection');
   await expect(page.locator('[data-testid="inspector-shell"]')).toContainText('Page');
@@ -97,6 +123,8 @@ for (const scenario of [
     expect(response?.ok(), 'create route should respond successfully').toBeTruthy();
     await page.getByTestId(`uiux-empty-world-card-${scenario.cardId}`).click();
 
+    await expect(page.getByTestId('uiux-first-expression')).toBeVisible();
+    await expect(page.getByTestId('uiux-first-expression-title')).toContainText(scenario.title);
     const inspector = page.getByTestId('inspector-shell');
     await expect(inspector).toBeVisible();
     await expect(inspector).toContainText('Page');

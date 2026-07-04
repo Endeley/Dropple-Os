@@ -2,17 +2,10 @@
 
 import { useEffect } from 'react';
 import { registerSessionBindings } from '@/ui/interaction/sessionBinding.js';
-import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
 
-export function WorkspaceSessionsRoot({ modeId = null }) {
-  const dispatcher = useDispatcher();
-
+export function WorkspaceSessionsRoot({ dispatcher = null, modeId = null }) {
   useEffect(() => {
-    let cleanup = null;
-
-    if (dispatcher?.dispatch) {
-      cleanup = registerSessionBindings(dispatcher);
-    }
+    const cleanup = dispatcher?.dispatch ? registerSessionBindings(dispatcher) : null;
 
     return () => {
       cleanup?.();

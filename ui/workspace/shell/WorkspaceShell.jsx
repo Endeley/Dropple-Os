@@ -29,6 +29,7 @@ export function WorkspaceShell({
     modeId = null,
     workspaceContext = null,
     projectPerspectiveContext = null,
+    dispatcher = null,
     ...shellProps
 }) {
     const activeMode = workspaceContext?.mode || modeId;
@@ -72,6 +73,7 @@ export function WorkspaceShell({
                 workspaceContext={workspaceContext}
                 projectPerspectiveContext={projectPerspectiveContext}
                 showWorkspaceNavigation={!projectPerspectiveContext}
+                dispatcher={dispatcher}
                 {...shellProps}
             />
         );

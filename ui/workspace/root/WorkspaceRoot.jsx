@@ -6,6 +6,7 @@ import { WorkspaceSessionsRoot } from './DispatcherProvider/Sessions/WorkspaceSe
 import { WorkspaceBridgesRoot } from './DispatcherProvider/Bridges/WorkspaceBridgesRoot.jsx';
 import { SelectionProvider } from '@/ui/workspace/shared/SelectionContext';
 import { WorkspaceShell } from '@/ui/workspace/shell/WorkspaceShell.jsx';
+import { RuntimeDispatchRelay } from '@/runtime/boundary/RuntimeDispatchRelay.jsx';
 
 /**
  * WorkspaceRoot
@@ -71,17 +72,22 @@ export function WorkspaceRoot({
                         </div>
                     )}
                     {children ?? (
-                        <>
-                            <WorkspaceBridgesRoot />
-                            <WorkspaceSessionsRoot modeId={modeId ?? workspace?.id ?? null} />
-                            <WorkspaceUIRoot />
-                            <WorkspaceShell
-                                workspace={workspace}
-                                modeId={modeId}
-                                workspaceContext={workspaceContext}
-                                {...(shellProps || {})}
-                            />
-                        </>
+                        <RuntimeDispatchRelay>
+                            {(dispatcher) => (
+                                <>
+                                    <WorkspaceBridgesRoot dispatcher={dispatcher} />
+                                    <WorkspaceSessionsRoot dispatcher={dispatcher} modeId={modeId ?? workspace?.id ?? null} />
+                                    <WorkspaceUIRoot />
+                                    <WorkspaceShell
+                                        workspace={workspace}
+                                        modeId={modeId}
+                                        workspaceContext={workspaceContext}
+                                        dispatcher={dispatcher}
+                                        {...(shellProps || {})}
+                                    />
+                                </>
+                            )}
+                        </RuntimeDispatchRelay>
                     )}
                 </div>
             </SelectionProvider>

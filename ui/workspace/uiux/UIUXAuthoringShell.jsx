@@ -21,7 +21,7 @@ import { UIUXTransitionTimelinePanel } from './UIUXTransitionTimelinePanel.jsx';
 import { useKeyboardNudge } from '@/ui/keyboard/useKeyboardNudge';
 import { useAlignmentShortcuts } from '@/ui/keyboard/useAlignmentShortcuts';
 import { useGroupShortcuts } from '@/ui/keyboard/useGroupShortcuts.js';
-import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
+import { RuntimeDispatchRelay } from '@/runtime/boundary/RuntimeDispatchRelay.jsx';
 import { dispatchNodeDeleteSelection } from '@/ui/canvas/deleteSelection.js';
 import { runCommandIntent } from '@/ui/bridges/runtimeCommandFacade.js';
 import { hasTimelineRelevance } from '@/runtime/timeline/timelineRelevance.js';
@@ -55,6 +55,16 @@ function buildScenarioSelectionStorageKey(documentId) {
 }
 
 export function UIUXAuthoringShell({
+    ...props
+}) {
+    return (
+        <RuntimeDispatchRelay>
+            {(dispatcher) => <UIUXAuthoringShellContent dispatcher={dispatcher} {...props} />}
+        </RuntimeDispatchRelay>
+    );
+}
+
+function UIUXAuthoringShellContent({
     profile = 'uiux-authoring',
     modeId = 'uiux',
     workspaceContext = null,
@@ -64,11 +74,11 @@ export function UIUXAuthoringShell({
     initialEvents = [],
     initialCursorIndex = -1,
     initialDocumentId = null,
+    dispatcher = null,
 }) {
     const emit = useCallback((event) => nodeUpdateIntent(event), []);
     const [documentId, setDocumentId] = useState(null);
     const [documentName, setDocumentName] = useState('Untitled');
-    const dispatcher = useDispatcher();
 
     const resolvedDesignContext = resolveDesignWorkspaceContext({ modeId, workspaceContext });
     const resolvedModeId = resolvedDesignContext.modeId;

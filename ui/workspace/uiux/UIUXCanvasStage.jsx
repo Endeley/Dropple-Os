@@ -2,6 +2,7 @@
 
 import { WorkspaceCanvasRoot } from '@/ui/workspace/WorkspaceCanvasRoot.jsx';
 import { UIUXEmptyWorldOverlay } from './UIUXEmptyWorldOverlay.jsx';
+import { UIUXFirstExpressionOverlay } from './UIUXFirstExpressionOverlay.jsx';
 
 export function UIUXCanvasStage({ profile = 'ux-validation', workspaceId = 'uiux' }) {
     return (
@@ -20,6 +21,17 @@ export function UIUXCanvasStage({ profile = 'ux-validation', workspaceId = 'uiux
                             modeId={modeId}
                             nodeCount={nodeCount}
                             worldHistory={worldHistory}
+                        />
+                    ),
+                    firstExpression: ({ workspaceId: activeWorkspaceId, modeId, nodeCount, nodesById, selectedNode, dismissedNodeId, onDismiss }) => (
+                        <UIUXFirstExpressionOverlay
+                            workspaceId={activeWorkspaceId}
+                            modeId={modeId}
+                            nodeCount={nodeCount}
+                            nodesById={nodesById}
+                            selectedNode={selectedNode}
+                            dismissedNodeId={dismissedNodeId}
+                            onDismiss={onDismiss}
                         />
                     ),
                 }}
