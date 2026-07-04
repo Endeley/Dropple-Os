@@ -2,6 +2,8 @@
 
 import { useRuntimeStore } from '@/runtime/stores/useRuntimeStore.js';
 
+const identitySelector = (state) => state;
+
 export const workspaceProjectionStore = {
     getState: () => useRuntimeStore.getState(),
     subscribe: (listener) => useRuntimeStore.subscribe(listener),
@@ -15,6 +17,6 @@ export function getWorkspaceProjectionState() {
  * Canonical UI hook for reads from the projected Zustand mirror.
  * Non-bridge UI should import this from `runtime/projection`, never from the raw store.
  */
-export function useWorkspaceProjectionState(selector = (state) => state) {
+export function useWorkspaceProjectionState(selector = identitySelector) {
     return useRuntimeStore(selector);
 }

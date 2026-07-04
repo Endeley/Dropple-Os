@@ -77,6 +77,10 @@ const TOP_CONTROLS_SAFE_HEIGHT = 88;
 const LEFT_DOCK_SAFE_WIDTH = 92;
 const RIGHT_DOCK_SAFE_WIDTH = 320;
 const BOTTOM_DOCK_SAFE_HEIGHT = 140;
+const EMPTY_MAP = Object.freeze({});
+const EMPTY_SELECTION = Object.freeze({ ids: [], primary: null, count: 0 });
+const DEFAULT_VIEWPORT = Object.freeze({ x: 0, y: 0, scale: 1 });
+const DEFAULT_CANVAS_SURFACE = Object.freeze({ type: 'smooth', snap: false });
 
 function clampContextMenuPosition({
     x = 0,
@@ -147,16 +151,16 @@ function CanvasRootContent({
     const [debugCursor, setDebugCursor] = useState(null);
     const dispatchEvent = dispatcher?.dispatch ?? null;
 
-    const viewState = useWorkspaceViewState((state) => state) ?? {};
+    const viewState = useWorkspaceViewState((state) => state) ?? EMPTY_MAP;
     const activeModeId = modeId ?? viewState.modeId ?? viewState.id ?? workspaceId ?? 'uiux';
-    const viewport = viewState.viewport ?? { x: 0, y: 0, scale: 1 };
-    const canvasSurface = viewState.canvasSurface ?? { type: 'smooth', snap: false };
-    const nodesById = useWorkspaceVisualState((state) => state?.nodes ?? {});
+    const viewport = viewState.viewport ?? DEFAULT_VIEWPORT;
+    const canvasSurface = viewState.canvasSurface ?? DEFAULT_CANVAS_SURFACE;
+    const nodesById = useWorkspaceVisualState((state) => state?.nodes ?? EMPTY_MAP);
     const documentNodesById =
-        useWorkspaceProjectionState((state) => state?.document?.sceneGraph?.nodes ?? state?.nodes ?? {}) ?? {};
+        useWorkspaceProjectionState((state) => state?.document?.sceneGraph?.nodes ?? state?.nodes ?? EMPTY_MAP) ?? EMPTY_MAP;
     const runtimeDrag = useWorkspaceProjectionState((state) => state?.interaction?.drag ?? null);
     const document = useWorkspaceProjectionState((state) => state?.document ?? null);
-    const selection = useWorkspaceVisualState((state) => state?.selection ?? { ids: [], primary: null, count: 0 });
+    const selection = useWorkspaceVisualState((state) => state?.selection ?? EMPTY_SELECTION);
     const nodeCount = useWorkspaceVisualState((state) => Object.keys(state?.nodes ?? {}).length);
     const selectedNode = selection?.primary
         ? documentNodesById?.[selection.primary] ?? nodesById?.[selection.primary] ?? null
