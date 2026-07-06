@@ -688,6 +688,13 @@ The correct next direction is:
 
 That is the narrowest lawful next layer.
 
+## Related Constitutional Clarifications
+
+- [BLUEPRINT_TEMPLATE_CONSTITUTIONAL_CLARIFICATION.md](/Users/endeleykonboye/Desktop/dropple-os/dropple/docs/BLUEPRINT_TEMPLATE_CONSTITUTIONAL_CLARIFICATION.md:1)
+  Explains the creator-facing and constitutional relationship between
+  `Creative Blueprint`, `BlueprintV1`, and `Certified Template` systems already
+  present in the repository.
+
 ## Summary
 
 Creative Blueprint is the canonical semantic proposal model between resolved

@@ -2,15 +2,44 @@
 
 import { useMemo } from 'react';
 import { useWorkspaceProjectionState } from '@/runtime/projection';
-import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
+import { RuntimeDispatchRelay } from '@/runtime/boundary/RuntimeDispatchRelay.jsx';
 import {
   attachMotionClipToNode,
   getMotionClipsForNode,
   removeMotionClipsFromNode,
 } from '@/ui/motion/motionClipActions.js';
 
+function MotionPanelActions({ clips = [], hasTimelineMotion = false, nodeId = null }) {
+  return (
+    <RuntimeDispatchRelay>
+      {(dispatcher) => (
+        <div className="inspector-row" style={{ justifyContent: 'flex-start', gap: 8 }}>
+          {!hasTimelineMotion ? (
+            <button
+              type="button"
+              className="selection-context-menu__button"
+              data-testid="uiux-motion-attach"
+              onClick={() => attachMotionClipToNode(dispatcher?.dispatch, nodeId)}
+            >
+              Attach Motion
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="selection-context-menu__button is-danger"
+              data-testid="uiux-motion-remove"
+              onClick={() => removeMotionClipsFromNode(dispatcher?.dispatch, nodeId, clips)}
+            >
+              Remove Motion
+            </button>
+          )}
+        </div>
+      )}
+    </RuntimeDispatchRelay>
+  );
+}
+
 export function MotionPanel({ node }) {
-  const dispatcher = useDispatcher();
   const document = useWorkspaceProjectionState((state) => state.document ?? null);
   const clips = useMemo(() => getMotionClipsForNode(document, node?.id ?? null), [document, node?.id]);
   const hasTimelineMotion = clips.length > 0;
@@ -34,27 +63,7 @@ export function MotionPanel({ node }) {
         <span>{clips.length}</span>
       </div>
 
-      <div className="inspector-row" style={{ justifyContent: 'flex-start', gap: 8 }}>
-        {!hasTimelineMotion ? (
-          <button
-            type="button"
-            className="selection-context-menu__button"
-            data-testid="uiux-motion-attach"
-            onClick={() => attachMotionClipToNode(dispatcher?.dispatch, node?.id ?? null)}
-          >
-            Attach Motion
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="selection-context-menu__button is-danger"
-            data-testid="uiux-motion-remove"
-            onClick={() => removeMotionClipsFromNode(dispatcher?.dispatch, node?.id ?? null, clips)}
-          >
-            Remove Motion
-          </button>
-        )}
-      </div>
+      <MotionPanelActions clips={clips} hasTimelineMotion={hasTimelineMotion} nodeId={node?.id ?? null} />
 
       {!motion && !hasTimelineMotion ? (
         <div className="inspector-subtle" style={{ fontSize: 12 }}>

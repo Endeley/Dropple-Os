@@ -60,7 +60,7 @@ function GroupSelectionBox({ bounds }) {
 export default function SelectionLayer() {
     const selection = useCanvasVisualState((s) => s.selection);
     const nodesById = useCanvasVisualState((s) => s.nodes || {});
-    const { zoomTier, readOnly } = useCanvasContext();
+    const { zoomTier, readOnly, immersiveFirstExpression } = useCanvasContext();
 
     const availability = useAvailability({
         readCaps: [Capability.NODE_SELECT],
@@ -71,6 +71,7 @@ export default function SelectionLayer() {
     // ----- GUARDS -----
     if (availability === Availability.HIDDEN) return null;
     if (readOnly) return null;
+    if (immersiveFirstExpression) return null;
     if (zoomTier === 'far' || zoomTier === 'overview') return null;
     if (!Array.isArray(selectionIds) || selectionIds.length === 0) return null;
 

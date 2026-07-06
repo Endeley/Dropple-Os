@@ -48,7 +48,7 @@ function ToolButton({ tool, active, onSelect }) {
     );
 }
 
-export function UIUXToolRail() {
+export function UIUXToolRail({ onActivateTool = null }) {
     const workspaceId = useWorkspaceViewState((s) => s.definitionId ?? s.modeId ?? s.id) || 'uiux';
     const viewport = useWorkspaceViewState((s) => s.viewport ?? { x: 0, y: 0, scale: 1 });
 
@@ -140,12 +140,16 @@ export function UIUXToolRail() {
                                 intentTopics: [entry.parentGrammar, entry.concept].filter(Boolean),
                             }}
                             active={activeTool === entry.creation.toolId}
-                            onSelect={() =>
+                            onSelect={() => {
+                                if (typeof onActivateTool === 'function') {
+                                    onActivateTool(entry.creation.toolId);
+                                    return;
+                                }
                                 canvasBus.emit(INTENTS.TOOL_SET_ACTIVE, {
                                     toolId: entry.creation.toolId,
                                     workspaceId,
-                                })
-                            }
+                                });
+                            }}
                         />
                     ))}
                 </div>
@@ -163,12 +167,16 @@ export function UIUXToolRail() {
                                 key={tool.id}
                                 tool={tool}
                                 active={activeTool === tool.id}
-                                onSelect={() =>
+                                onSelect={() => {
+                                    if (typeof onActivateTool === 'function') {
+                                        onActivateTool(tool.id);
+                                        return;
+                                    }
                                     canvasBus.emit(INTENTS.TOOL_SET_ACTIVE, {
                                         toolId: tool.id,
                                         workspaceId,
-                                    })
-                                }
+                                    });
+                                }}
                             />
                         ))}
                     </div>

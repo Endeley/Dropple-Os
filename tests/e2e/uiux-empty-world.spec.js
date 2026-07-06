@@ -66,6 +66,13 @@ test('uiux empty world blank page creation selects the page and reveals semantic
   await expect(page.getByTestId('uiux-first-expression-title')).toContainText('Blank Page');
   await expect(page.getByTestId('uiux-first-expression-meaning')).toContainText('first real presence can exist');
   await expect(page.getByTestId('uiux-first-expression-owner')).toContainText('because your direction crossed into existence');
+  await expect(page.getByTestId('uiux-world-editor')).toHaveAttribute('data-first-expression-focus', 'true');
+  await expect(page.getByTestId('selection-outline')).toHaveCount(0);
+  await expect(page.getByTestId('inspector-shell')).toHaveCount(0);
+
+  await page.getByTestId('uiux-first-expression-continue').click();
+
+  await expect(page.getByTestId('uiux-world-editor')).toHaveAttribute('data-first-expression-focus', 'false');
   await expect(page.getByTestId('inspector-shell')).toBeVisible();
   await expect(page.getByTestId('inspector-context-summary')).toContainText('Context: selection');
   await expect(page.locator('[data-testid="inspector-shell"]')).toContainText('Page');
@@ -125,6 +132,11 @@ for (const scenario of [
 
     await expect(page.getByTestId('uiux-first-expression')).toBeVisible();
     await expect(page.getByTestId('uiux-first-expression-title')).toContainText(scenario.title);
+    await expect(page.getByTestId('uiux-world-editor')).toHaveAttribute('data-first-expression-focus', 'true');
+    await expect(page.getByTestId('inspector-shell')).toHaveCount(0);
+
+    await page.getByTestId('uiux-first-expression-continue').click();
+
     const inspector = page.getByTestId('inspector-shell');
     await expect(inspector).toBeVisible();
     await expect(inspector).toContainText('Page');

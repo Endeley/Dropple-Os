@@ -112,6 +112,12 @@ Validated
 
 `First Expression -> Project Emergence`
 
+## Governing Artifacts
+
+- [CREATE_WORLD_EXPERIENCE_MODEL.md](/Users/endeleykonboye/Desktop/dropple-os/dropple/docs/CREATE_WORLD_EXPERIENCE_MODEL.md:1)
+- [CREATE_WORLD_TRANSITION_SLICE3_REVIEW.md](/Users/endeleykonboye/Desktop/dropple-os/dropple/docs/CREATE_WORLD_TRANSITION_SLICE3_REVIEW.md:1)
+- [CREATE_WORLD_TRANSITION_VALIDATION_HISTORY.md](/Users/endeleykonboye/Desktop/dropple-os/dropple/docs/CREATE_WORLD_TRANSITION_VALIDATION_HISTORY.md:1)
+
 ## Core Question
 
 How does the creator begin experiencing relationships, structure, and project identity without losing the feeling of one continuous world?
@@ -151,11 +157,13 @@ Living Create World now has two validated implementation slices.
 
 The next step is not implementation by default.
 
-The next step is reviewing whether the transition:
+The next step is creating:
+
+`CREATE_WORLD_TRANSITION_SLICE3_PLAN.md`
+
+for the transition:
 
 `First Expression -> Project Emergence`
-
-has earned planning.
 
 ## Conclusion
 

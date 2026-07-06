@@ -1,10 +1,19 @@
 'use client';
 
+import { useMemo } from 'react';
 import { WorkspaceCanvasRoot } from '@/ui/workspace/WorkspaceCanvasRoot.jsx';
-import { UIUXEmptyWorldOverlay } from './UIUXEmptyWorldOverlay.jsx';
-import { UIUXFirstExpressionOverlay } from './UIUXFirstExpressionOverlay.jsx';
+import { buildUIUXProjectionSlots } from './uiuxProjectionSlots.js';
+import { resolveUIUXDefaultCreateParentId } from './uiuxProjectEmergenceProjection.js';
 
-export function UIUXCanvasStage({ profile = 'ux-validation', workspaceId = 'uiux' }) {
+export function UIUXCanvasStage({
+    profile = 'ux-validation',
+    workspaceId = 'uiux',
+    dismissedFirstExpressionNodeId = null,
+    onDismissFirstExpression = null,
+    immersiveFirstExpression = false,
+}) {
+    const projectionSlots = useMemo(() => buildUIUXProjectionSlots(), []);
+
     return (
         <main
             className='uiux-canvas-stage'
@@ -14,27 +23,11 @@ export function UIUXCanvasStage({ profile = 'ux-validation', workspaceId = 'uiux
             <WorkspaceCanvasRoot
                 workspaceId={workspaceId}
                 profile={profile}
-                projectionSlots={{
-                    emptyWorld: ({ workspaceId: activeWorkspaceId, modeId, nodeCount, worldHistory }) => (
-                        <UIUXEmptyWorldOverlay
-                            workspaceId={activeWorkspaceId}
-                            modeId={modeId}
-                            nodeCount={nodeCount}
-                            worldHistory={worldHistory}
-                        />
-                    ),
-                    firstExpression: ({ workspaceId: activeWorkspaceId, modeId, nodeCount, nodesById, selectedNode, dismissedNodeId, onDismiss }) => (
-                        <UIUXFirstExpressionOverlay
-                            workspaceId={activeWorkspaceId}
-                            modeId={modeId}
-                            nodeCount={nodeCount}
-                            nodesById={nodesById}
-                            selectedNode={selectedNode}
-                            dismissedNodeId={dismissedNodeId}
-                            onDismiss={onDismiss}
-                        />
-                    ),
-                }}
+                projectionSlots={projectionSlots}
+                resolveDefaultCreateParentId={resolveUIUXDefaultCreateParentId}
+                dismissedFirstExpressionNodeId={dismissedFirstExpressionNodeId}
+                onDismissFirstExpression={onDismissFirstExpression}
+                immersiveFirstExpression={immersiveFirstExpression}
             />
         </main>
     );

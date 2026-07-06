@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
+import { RuntimeDispatchRelay } from '@/runtime/boundary/RuntimeDispatchRelay.jsx';
 import { useWorkspaceProjectionState, useWorkspaceVisualState } from '@/runtime/projection';
 import { dispatchNodeDeleteSelection } from '@/ui/canvas/deleteSelection.js';
 import { runCommandIntent } from '@/ui/bridges/runtimeCommandFacade.js';
@@ -25,8 +25,72 @@ function ActionButton({ label, onClick, disabled = false, danger = false, testId
     );
 }
 
+function SelectionActionButtons({
+    canAttachMotion = false,
+    canDelete = false,
+    canGroup = false,
+    canRemoveMotion = false,
+    canUngroup = false,
+    motionClips = [],
+    node = null,
+    normalizedSelectionIds = [],
+    workspaceId = 'uiux',
+}) {
+    return (
+        <RuntimeDispatchRelay>
+            {(dispatcher) => (
+                <>
+                    <ActionButton
+                        label='Delete'
+                        danger={true}
+                        disabled={!canDelete}
+                        testId='inspector-action-delete'
+                        onClick={() =>
+                            dispatchNodeDeleteSelection({
+                                ids: normalizedSelectionIds,
+                                dispatchEvent: dispatcher?.dispatch,
+                            })
+                        }
+                    />
+
+                    {canGroup ? (
+                        <ActionButton
+                            label='Group'
+                            testId='inspector-action-group'
+                            onClick={() => runCommandIntent('group', { nodeIds: normalizedSelectionIds }, { dispatcher, workspaceId })}
+                        />
+                    ) : null}
+
+                    {canUngroup ? (
+                        <ActionButton
+                            label='Ungroup'
+                            testId='inspector-action-ungroup'
+                            onClick={() => runCommandIntent('ungroup', { nodeIds: normalizedSelectionIds }, { dispatcher, workspaceId })}
+                        />
+                    ) : null}
+
+                    {canAttachMotion ? (
+                        <ActionButton
+                            label='Attach Motion'
+                            testId='inspector-action-attach-motion'
+                            onClick={() => attachMotionClipToNode(dispatcher?.dispatch, node?.id ?? null)}
+                        />
+                    ) : null}
+
+                    {canRemoveMotion ? (
+                        <ActionButton
+                            label='Remove Motion'
+                            testId='inspector-action-remove-motion'
+                            onClick={() => removeMotionClipsFromNode(dispatcher?.dispatch, node?.id ?? null, motionClips)}
+                        />
+                    ) : null}
+                </>
+            )}
+        </RuntimeDispatchRelay>
+    );
+}
+
 export function SelectionActionsPanel({ node }) {
-    const dispatcher = useDispatcher();
     const document = useWorkspaceProjectionState((state) => state.document ?? null);
     const workspaceId = useWorkspaceProjectionState((state) => state.definitionId ?? state.modeId ?? state.id ?? 'uiux');
     const selectionIds = useWorkspaceVisualState((state) => state.selection?.ids ?? []);
@@ -53,50 +117,17 @@ export function SelectionActionsPanel({ node }) {
             </div>
 
             <div className='inspector-row' style={{ justifyContent: 'flex-start', gap: 8, flexWrap: 'wrap' }}>
-                <ActionButton
-                    label='Delete'
-                    danger={true}
-                    disabled={!canDelete}
-                    testId='inspector-action-delete'
-                    onClick={() =>
-                        dispatchNodeDeleteSelection({
-                            ids: normalizedSelectionIds,
-                            dispatchEvent: dispatcher.dispatch,
-                        })
-                    }
+                <SelectionActionButtons
+                    canAttachMotion={canAttachMotion}
+                    canDelete={canDelete}
+                    canGroup={canGroup}
+                    canRemoveMotion={canRemoveMotion}
+                    canUngroup={canUngroup}
+                    motionClips={motionClips}
+                    node={node}
+                    normalizedSelectionIds={normalizedSelectionIds}
+                    workspaceId={workspaceId}
                 />
-
-                {canGroup ? (
-                    <ActionButton
-                        label='Group'
-                        testId='inspector-action-group'
-                        onClick={() => runCommandIntent('group', { nodeIds: normalizedSelectionIds }, { dispatcher, workspaceId })}
-                    />
-                ) : null}
-
-                {canUngroup ? (
-                    <ActionButton
-                        label='Ungroup'
-                        testId='inspector-action-ungroup'
-                        onClick={() => runCommandIntent('ungroup', { nodeIds: normalizedSelectionIds }, { dispatcher, workspaceId })}
-                    />
-                ) : null}
-
-                {canAttachMotion ? (
-                    <ActionButton
-                        label='Attach Motion'
-                        testId='inspector-action-attach-motion'
-                        onClick={() => attachMotionClipToNode(dispatcher.dispatch, node?.id ?? null)}
-                    />
-                ) : null}
-
-                {canRemoveMotion ? (
-                    <ActionButton
-                        label='Remove Motion'
-                        testId='inspector-action-remove-motion'
-                        onClick={() => removeMotionClipsFromNode(dispatcher.dispatch, node?.id ?? null, motionClips)}
-                    />
-                ) : null}
             </div>
         </div>
     );

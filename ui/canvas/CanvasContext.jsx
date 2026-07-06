@@ -21,6 +21,7 @@ const CanvasContext = createContext({
     visualStateOverride: null,
     animatedStateOverride: null,
     setCanvasSurface: null,
+    immersiveFirstExpression: false,
 });
 
 export function CanvasProvider({ value, children }) {

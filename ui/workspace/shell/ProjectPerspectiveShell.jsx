@@ -8,7 +8,7 @@ import {
     getProjectPerspectiveDefinition,
     listProjectPerspectiveIds,
 } from '@/platform/workspaces/projectPerspectiveRouter.js';
-import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
+import { RuntimeDispatchRelay } from '@/runtime/boundary/RuntimeDispatchRelay.jsx';
 import {
     applyBlueprintUpgradeFromCatalog,
     createProjectFromBlueprintCatalog,
@@ -209,8 +209,27 @@ export function ProjectPerspectiveShell({
 }) {
     if (!projectPerspectiveContext) return children;
 
+    return (
+        <RuntimeDispatchRelay>
+            {(dispatcher) => (
+                <ProjectPerspectiveShellContent
+                    dispatcher={dispatcher}
+                    projectPerspectiveContext={projectPerspectiveContext}
+                    activeModeId={activeModeId}>
+                    {children}
+                </ProjectPerspectiveShellContent>
+            )}
+        </RuntimeDispatchRelay>
+    );
+}
+
+function ProjectPerspectiveShellContent({
+    projectPerspectiveContext,
+    activeModeId = null,
+    children = null,
+    dispatcher = null,
+}) {
     const router = useRouter();
-    const dispatcher = useDispatcher();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const perspectiveId = projectPerspectiveContext.perspectiveId;

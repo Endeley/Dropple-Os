@@ -85,16 +85,7 @@ function resolveSurfaceSections(panelIds = []) {
 
 export function PanelRenderer({ workspaceId, node, emit, extraPanels = [], panelPropsById = null }) {
     const activation = getWorkspaceActivation(workspaceId);
-
-    if (!activation) {
-        if (process.env.NODE_ENV !== 'production') {
-            console.warn(`[PanelRenderer] No workspace activation found for "${workspaceId}"`);
-        }
-        return null;
-    }
-
-    const panels = Array.isArray(activation.panels) ? activation.panels : [];
-
+    const panels = Array.isArray(activation?.panels) ? activation.panels : [];
     const extras = Array.isArray(extraPanels) ? extraPanels : [];
     const normalizedPanels = useMemo(
         () =>
@@ -154,6 +145,11 @@ export function PanelRenderer({ workspaceId, node, emit, extraPanels = [], panel
     const inspectorSurfaceSource = node ? 'selection' : activeTab === 'library' ? 'library' : activeTab === 'surface' ? 'canvas' : 'context';
     const inspectorContextVisibility = node ? 'expanded' : activeTab === 'inspect' ? 'minimal' : 'supporting';
 
+    useEffect(() => {
+        if (activation || process.env.NODE_ENV === 'production') return;
+        console.warn(`[PanelRenderer] No workspace activation found for "${workspaceId}"`);
+    }, [activation, workspaceId]);
+
     function renderPanel(panelId) {
         const entry = PanelRegistry[panelId];
         if (!entry?.component) return null;
@@ -168,6 +164,10 @@ export function PanelRenderer({ workspaceId, node, emit, extraPanels = [], panel
                 <PanelComponent node={node} emit={emit} {...(extraProps ?? {})} />
             </div>
         );
+    }
+
+    if (!activation) {
+        return null;
     }
 
     return (

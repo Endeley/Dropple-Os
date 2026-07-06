@@ -363,6 +363,7 @@ export function useCanvasInteractions({
                 y: e.clientY,
             });
             const targetNodeId = resolveSelectableGroupTarget(nodesById, rawTargetNodeId);
+            const defaultParentId = typeof getDefaultParentId === 'function' ? getDefaultParentId() : null;
 
             dragStartRef.current = {
                 start: worldPoint,
@@ -378,7 +379,7 @@ export function useCanvasInteractions({
                 hasMoved: false,
             };
 
-            if (toolDef?.createsNode && !targetNodeId) {
+            if (toolDef?.createsNode && (!targetNodeId || (defaultParentId && targetNodeId === defaultParentId))) {
                 createSessionOrdinalRef.current += 1;
                 createSessionRef.current = {
                     sessionId: `${tool}:${createSessionOrdinalRef.current}`,
@@ -407,7 +408,17 @@ export function useCanvasInteractions({
             bindPrimaryPointerSession(e);
             setOverlayDebug(`${tool}:pending`);
         },
-        [bindPrimaryPointerSession, clearPrimaryPointerSession, dispatcher, getActiveToolId, toWorldPoint],
+        [
+            bindPrimaryPointerSession,
+            clearOverlaySession,
+            clearPrimaryPointerSession,
+            dispatcher,
+            getActiveToolId,
+            getDefaultParentId,
+            getNodeCount,
+            resetCreateAndDragState,
+            toWorldPoint,
+        ],
     );
 
     const onPointerMove = useCallback(

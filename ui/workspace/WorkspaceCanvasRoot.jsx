@@ -124,6 +124,10 @@ export function WorkspaceCanvasRoot({
     readOnly = false,
     runtimeReadOnly = false,
     projectionSlots = null,
+    resolveDefaultCreateParentId = null,
+    dismissedFirstExpressionNodeId = null,
+    onDismissFirstExpression = null,
+    immersiveFirstExpression = false,
 }) {
     useEffect(() => {
         if (!workspaceId) return;
@@ -158,7 +162,17 @@ export function WorkspaceCanvasRoot({
     }
 
     if (!hasReplaySource) {
-        return <CanvasRoot workspaceId={workspaceId} modeId={modeId} projectionSlots={projectionSlots} />;
+        return (
+            <CanvasRoot
+                workspaceId={workspaceId}
+                modeId={modeId}
+                projectionSlots={projectionSlots}
+                resolveDefaultCreateParentId={resolveDefaultCreateParentId}
+                dismissedFirstExpressionNodeId={dismissedFirstExpressionNodeId}
+                onDismissFirstExpression={onDismissFirstExpression}
+                immersiveFirstExpression={immersiveFirstExpression}
+            />
+        );
     }
 
     return (

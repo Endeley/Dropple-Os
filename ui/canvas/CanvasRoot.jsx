@@ -112,7 +112,15 @@ function clampContextMenuPosition({
     };
 }
 
-export default function CanvasRoot({ workspaceId = null, modeId = null, projectionSlots = null }) {
+export default function CanvasRoot({
+    workspaceId = null,
+    modeId = null,
+    projectionSlots = null,
+    resolveDefaultCreateParentId = null,
+    dismissedFirstExpressionNodeId = null,
+    onDismissFirstExpression = null,
+    immersiveFirstExpression = false,
+}) {
     return (
         <RuntimeDispatchRelay>
             {(dispatcher) => (
@@ -121,6 +129,10 @@ export default function CanvasRoot({ workspaceId = null, modeId = null, projecti
                     workspaceId={workspaceId}
                     modeId={modeId}
                     projectionSlots={projectionSlots}
+                    resolveDefaultCreateParentId={resolveDefaultCreateParentId}
+                    dismissedFirstExpressionNodeId={dismissedFirstExpressionNodeId}
+                    onDismissFirstExpression={onDismissFirstExpression}
+                    immersiveFirstExpression={immersiveFirstExpression}
                 />
             )}
         </RuntimeDispatchRelay>
@@ -132,10 +144,14 @@ function CanvasRootContent({
     modeId = null,
     projectionSlots = null,
     dispatcher = null,
+    resolveDefaultCreateParentId = null,
+    dismissedFirstExpressionNodeId = null,
+    onDismissFirstExpression = null,
+    immersiveFirstExpression = false,
 }) {
     const hostRef = useRef(null);
     const [hostRect, setHostRect] = useState(null);
-    const [dismissedFirstExpressionNodeId, setDismissedFirstExpressionNodeId] = useState(null);
+    const [internalDismissedFirstExpressionNodeId, setInternalDismissedFirstExpressionNodeId] = useState(null);
     const [contextMenu, setContextMenu] = useState({
         open: false,
         x: 0,
@@ -225,9 +241,36 @@ function CanvasRootContent({
     }, [nodesById, runtimeDrag]);
 
     const activeTool = useToolStore((s) => s.activeTool ?? 'select');
-    const selectionIds = Array.isArray(selection?.ids) ? selection.ids : [];
+    const resolvedDismissedFirstExpressionNodeId =
+        dismissedFirstExpressionNodeId ?? internalDismissedFirstExpressionNodeId;
+    const handleDismissFirstExpression = useCallback(
+        (nodeId) => {
+            if (typeof onDismissFirstExpression === 'function') {
+                onDismissFirstExpression(nodeId);
+                return;
+            }
+            setInternalDismissedFirstExpressionNodeId(nodeId);
+        },
+        [onDismissFirstExpression],
+    );
+    const selectionIds = useMemo(
+        () => (Array.isArray(selection?.ids) ? selection.ids : []),
+        [selection?.ids],
+    );
     // --- world point resolver ---
     const getWorldPointFromEvent = useCallback((event) => resolveWorldPointFromEvent(event, hostRef.current, viewport), [viewport]);
+    const getDefaultCreateParentId = useCallback(() => {
+        if (typeof resolveDefaultCreateParentId !== 'function') return null;
+        return (
+            resolveDefaultCreateParentId({
+                activeToolId: activeTool,
+                selectedNode,
+                nodesById,
+                workspaceId,
+                modeId: activeModeId,
+            }) ?? null
+        );
+    }, [activeModeId, activeTool, nodesById, resolveDefaultCreateParentId, selectedNode, workspaceId]);
 
     // --- interaction system ---
     const interactions = useCanvasInteractions({
@@ -238,10 +281,10 @@ function CanvasRootContent({
                 bounds,
                 hostRect,
                 viewport,
-            }),
+        }),
         getActiveToolId: () => activeTool,
         getWorldPointFromEvent,
-        getDefaultParentId: () => null,
+        getDefaultParentId: getDefaultCreateParentId,
         getNodeCount: () => nodeCount,
     });
 
@@ -269,13 +312,14 @@ function CanvasRootContent({
             animatedStateOverride: null,
 
             setCanvasSurface,
+            immersiveFirstExpression,
 
             onResizeHandlePointerDown: interactions.onResizeHandlePointerDown,
             onResizeHandlePointerMove: interactions.onResizeHandlePointerMove,
             onResizeHandlePointerUp: interactions.onResizeHandlePointerUp,
             onRotateHandlePointerDown: interactions.onRotateHandlePointerDown,
         }),
-        [interactions, setCanvasSurface, zoomTier],
+        [immersiveFirstExpression, interactions, setCanvasSurface, zoomTier],
     );
 
     useEffect(() => {
@@ -330,6 +374,14 @@ function CanvasRootContent({
     }, [currentFocus, firstRememberedArtifact, projectHasHistory, projectHome]);
 
     useEffect(() => {
+        if (dismissedFirstExpressionNodeId != null) return;
+        if (!internalDismissedFirstExpressionNodeId) return;
+        if (!selectedNode?.id) return;
+        if (selectedNode?.id === internalDismissedFirstExpressionNodeId) return;
+        setInternalDismissedFirstExpressionNodeId(null);
+    }, [dismissedFirstExpressionNodeId, internalDismissedFirstExpressionNodeId, selectedNode?.id]);
+
+    useEffect(() => {
         if (
             !shouldInitializeProjectHomeViewport({
                 workspaceId,
@@ -372,12 +424,6 @@ function CanvasRootContent({
 
         setContextMenu((current) => ({ ...current, open: false, nodeId: null }));
     }, [contextMenu.nodeId, contextMenu.open, nodesById]);
-
-    useEffect(() => {
-        if (!dismissedFirstExpressionNodeId) return;
-        if (selectedNode?.id === dismissedFirstExpressionNodeId) return;
-        setDismissedFirstExpressionNodeId(null);
-    }, [dismissedFirstExpressionNodeId, selectedNode?.id]);
 
     const closeContextMenu = useCallback((_reason = 'unknown') => {
         setContextMenu((current) => ({ ...current, open: false, nodeId: null }));
@@ -478,7 +524,7 @@ function CanvasRootContent({
                 canRemoveMotion: model.canRemoveMotion,
             });
         },
-        [closeContextMenu, dispatchEvent, document, nodesById, selectionIds],
+        [closeContextMenu, dispatchEvent, document, nodesById, selection?.primary, selectionIds],
     );
 
     const handleDeleteSelection = useCallback(() => {
@@ -517,10 +563,20 @@ function CanvasRootContent({
                   nodeCount,
                   nodesById,
                   selectedNode,
-                  dismissedNodeId: dismissedFirstExpressionNodeId,
-                  onDismiss: setDismissedFirstExpressionNodeId,
+                  dismissedNodeId: resolvedDismissedFirstExpressionNodeId,
+                  onDismiss: handleDismissFirstExpression,
               })
             : projectionSlots?.firstExpression ?? null;
+    const projectEmergenceProjection =
+        typeof projectionSlots?.projectEmergence === 'function'
+            ? projectionSlots.projectEmergence({
+                  workspaceId,
+                  modeId: activeModeId,
+                  nodeCount,
+                  nodesById,
+                  selectedNode,
+              })
+            : projectionSlots?.projectEmergence ?? null;
 
     return (
         <CanvasProvider value={contextValue}>
@@ -530,7 +586,7 @@ function CanvasRootContent({
                 worldOffset={{ x: 0, y: 0 }}
                 cameraTransform={null}
                 background={<CanvasSurface surface={canvasSurface} viewport={viewport} />}
-                overlayPointerEvents='auto'
+                overlayPointerEvents='none'
                 overlay={
                     <>
                         <SelectionContextMenu
@@ -564,12 +620,13 @@ function CanvasRootContent({
                         ) : null}
                         {emptyWorldProjection}
                         {firstExpressionProjection}
+                        {projectEmergenceProjection}
                         <GraphicVocabularyOverlay
                             workspaceId={workspaceId}
                             modeId={activeModeId}
                             selectedNode={selectedNode}
                             nodesById={nodesById}
-                            firstExpressionDismissedNodeId={dismissedFirstExpressionNodeId}
+                            firstExpressionDismissedNodeId={resolvedDismissedFirstExpressionNodeId}
                         />
                         <GraphicRefinementOverlay
                             workspaceId={workspaceId}

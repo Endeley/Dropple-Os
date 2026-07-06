@@ -1,77 +1,7 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
-import { getUIUXEmptyWorldStarters } from './uiuxEmptyWorldExpression.js';
-
-function normalizeStarterKey(value) {
-    if (typeof value !== 'string') return null;
-    const normalized = value.trim().toLowerCase();
-    return normalized.length > 0 ? normalized : null;
-}
-
-function resolveStarterIdentity(node) {
-    const starters = getUIUXEmptyWorldStarters();
-    const metadataStarterId = normalizeStarterKey(node?.metadata?.uiuxStarterId ?? null);
-    if (metadataStarterId) {
-        const starter = starters.find((entry) => entry.id === metadataStarterId) ?? null;
-        if (starter) return starter;
-    }
-
-    const scenarioKey = normalizeStarterKey(node?.metadata?.scenario ?? node?.props?.scenario ?? null);
-    if (scenarioKey) {
-        const starter = starters.find((entry) => normalizeStarterKey(entry.scenario) === scenarioKey) ?? null;
-        if (starter) return starter;
-    }
-
-    const titleKey = normalizeStarterKey(node?.name ?? null);
-    if (titleKey) {
-        const starter =
-            starters.find(
-                (entry) =>
-                    normalizeStarterKey(entry.title) === titleKey ||
-                    normalizeStarterKey(entry.label) === titleKey,
-            ) ?? null;
-        if (starter) return starter;
-    }
-
-    return null;
-}
-
-function resolveStarterProjection(selectedNode) {
-    const starter = resolveStarterIdentity(selectedNode);
-    const title = starter?.title ?? selectedNode?.name ?? 'Page';
-    const label = starter?.label ?? selectedNode?.name ?? 'Page';
-    const accent = starter?.accent ?? 'violet';
-
-    return {
-        title,
-        label,
-        accent,
-        scenario: starter?.scenario ?? selectedNode?.metadata?.scenario ?? null,
-    };
-}
-
-function isFirstExpressionNode(node) {
-    return (
-        node?.type === 'frame' &&
-        typeof node?.id === 'string' &&
-        node.id.length > 0 &&
-        (node?.metadata?.uiuxFirstExpression === true || resolveStarterIdentity(node) != null)
-    );
-}
-
-function resolveFirstExpressionNode(selectedNode, nodesById, nodeCount) {
-    if (isFirstExpressionNode(selectedNode)) {
-        return selectedNode;
-    }
-
-    const candidates = Object.values(nodesById ?? {}).filter(isFirstExpressionNode);
-    if (candidates.length === 0) return null;
-    if (Number(nodeCount) === 1) {
-        return candidates[0] ?? null;
-    }
-    return candidates[0] ?? null;
-}
+import { resolveUIUXFirstExpressionProjection } from './uiuxFirstExpressionProjection.js';
 
 function resolveMeaningfulExistenceCopy(projection) {
     if (projection.scenario === 'landingPage') {
@@ -98,20 +28,20 @@ export function UIUXFirstExpressionOverlay({
     dismissedNodeId = null,
     onDismiss = null,
 }) {
-    const isUIUX = workspaceId === 'create' || workspaceId === 'uiux' || modeId === 'create' || modeId === 'uiux';
-    const firstExpressionNode = useMemo(
-        () => resolveFirstExpressionNode(selectedNode, nodesById, nodeCount),
-        [nodeCount, nodesById, selectedNode],
+    const firstExpressionState = useMemo(
+        () =>
+            resolveUIUXFirstExpressionProjection({
+                workspaceId,
+                modeId,
+                nodeCount,
+                nodesById,
+                selectedNode,
+                dismissedNodeId,
+            }),
+        [dismissedNodeId, modeId, nodeCount, nodesById, selectedNode, workspaceId],
     );
-    const isFirstExpressionCandidate =
-        isUIUX &&
-        Number(nodeCount) > 0 &&
-        firstExpressionNode?.id &&
-        dismissedNodeId !== firstExpressionNode.id;
-    const projection = useMemo(
-        () => (isFirstExpressionCandidate ? resolveStarterProjection(firstExpressionNode) : null),
-        [firstExpressionNode, isFirstExpressionCandidate],
-    );
+    const firstExpressionNode = firstExpressionState?.node ?? null;
+    const projection = firstExpressionState?.projection ?? null;
     const stopCanvasPropagation = useCallback((event) => {
         event.preventDefault();
         event.stopPropagation();

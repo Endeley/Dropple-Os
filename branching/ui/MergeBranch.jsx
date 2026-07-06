@@ -5,7 +5,7 @@
 import React, { useState } from 'react';
 import { useBranchState } from './useBranchState';
 import { getRuntimeState } from '@/runtime/state/runtimeState';
-import { useDispatcher } from '@/ui/workspace/root/DispatcherProvider/DispatcherContext.jsx';
+import { RuntimeDispatchRelay } from '@/runtime/boundary/RuntimeDispatchRelay.jsx';
 import { resolveBranchMergeArtifacts } from '@/branching/merge/resolveBranchMergeArtifacts.js';
 import { applyMerge } from '@/branching/merge/applyMerge.js';
 
@@ -19,8 +19,15 @@ import { applyMerge } from '@/branching/merge/applyMerge.js';
  * - No auto-conflict resolution
  */
 export default function MergeBranch() {
+    return (
+        <RuntimeDispatchRelay>
+            {(dispatcher) => <MergeBranchContent dispatcher={dispatcher} />}
+        </RuntimeDispatchRelay>
+    );
+}
+
+function MergeBranchContent({ dispatcher = null }) {
     const { currentBranch, branches } = useBranchState();
-    const dispatcher = useDispatcher();
     const [sourceBranchId, setSourceBranchId] = useState('');
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);

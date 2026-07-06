@@ -47,6 +47,7 @@ import {
     UIUX_SCENARIO_OPTIONS,
     resolveUIUXScenarioProvision,
 } from './uiuxScenarioProvision.js';
+import { resolveUIUXFirstExpressionProjection } from './uiuxFirstExpressionProjection.js';
 
 const SCENARIO_SELECTION_STORAGE_PREFIX = 'dropple.uiux.scenario-selection';
 
@@ -79,6 +80,7 @@ function UIUXAuthoringShellContent({
     const emit = useCallback((event) => nodeUpdateIntent(event), []);
     const [documentId, setDocumentId] = useState(null);
     const [documentName, setDocumentName] = useState('Untitled');
+    const [dismissedFirstExpressionNodeId, setDismissedFirstExpressionNodeId] = useState(null);
 
     const resolvedDesignContext = resolveDesignWorkspaceContext({ modeId, workspaceContext });
     const resolvedModeId = resolvedDesignContext.modeId;
@@ -134,9 +136,28 @@ function UIUXAuthoringShellContent({
         activeTool,
     });
     const timelineState = hasTimeAuthoringContext ? 'expanded' : 'compact';
-    const showInspector = hasInspectableContext;
-    const showTimeline = hasTimeAuthoringContext;
-    const showStatusStrip = selectionCount > 0 || (showTimeline && node?.id);
+    const firstExpressionFocusState = useMemo(
+        () =>
+            resolveUIUXFirstExpressionProjection({
+                workspaceId: resolvedWorkspaceId,
+                modeId: resolvedModeId,
+                nodeCount: Object.keys(nodes ?? {}).length,
+                nodesById: nodes,
+                selectedNode: node,
+                dismissedNodeId: dismissedFirstExpressionNodeId,
+            }),
+        [dismissedFirstExpressionNodeId, node, nodes, resolvedModeId, resolvedWorkspaceId],
+    );
+    const isFirstExpressionFocus = Boolean(firstExpressionFocusState?.node?.id);
+    const showInspector = hasInspectableContext && !isFirstExpressionFocus;
+    const showTimeline = hasTimeAuthoringContext && !isFirstExpressionFocus;
+    const showStatusStrip = !isFirstExpressionFocus && (selectionCount > 0 || (showTimeline && node?.id));
+    useEffect(() => {
+        if (!dismissedFirstExpressionNodeId) return;
+        if (!node?.id) return;
+        if (node.id === dismissedFirstExpressionNodeId) return;
+        setDismissedFirstExpressionNodeId(null);
+    }, [dismissedFirstExpressionNodeId, node?.id]);
 
     useEffect(() => {
         if (typeof window === 'undefined' || !runtimeDocumentId) return;
@@ -248,12 +269,15 @@ function UIUXAuthoringShellContent({
     const handleActivateTool = useCallback(
         (toolId) => {
             if (!toolId) return;
+            if (toolId === 'select' && isFirstExpressionFocus && firstExpressionFocusState?.node?.id) {
+                setDismissedFirstExpressionNodeId(firstExpressionFocusState.node.id);
+            }
             canvasBus.emit(INTENTS.TOOL_SET_ACTIVE, {
                 toolId,
                 workspaceId: resolvedModeId,
             });
         },
-        [resolvedModeId],
+        [firstExpressionFocusState?.node?.id, isFirstExpressionFocus, resolvedModeId],
     );
 
     const handleDeleteSelection = useCallback(() => {
@@ -360,7 +384,8 @@ function UIUXAuthoringShellContent({
                 data-workspace={resolvedModeId}
                 data-testid='uiux-world-editor'
                 data-editor-unity='world-based'
-                data-editor-focus={selectionCount > 0 ? 'focused' : 'open'}>
+                data-editor-focus={selectionCount > 0 ? 'focused' : 'open'}
+                data-first-expression-focus={isFirstExpressionFocus ? 'true' : 'false'}>
                 <div
                     className='uiux-main-grid'
                     data-testid='uiux-main-grid'
@@ -404,10 +429,16 @@ function UIUXAuthoringShellContent({
                         </div>
 
                         <aside className='uiux-left-dock' data-testid='uiux-left-dock'>
-                            <UIUXToolRail modeId={resolvedModeId} />
+                            <UIUXToolRail modeId={resolvedModeId} onActivateTool={handleActivateTool} />
                         </aside>
 
-                        <UIUXCanvasStage profile={profile} workspaceId={resolvedModeId} />
+                        <UIUXCanvasStage
+                            profile={profile}
+                            workspaceId={resolvedModeId}
+                            dismissedFirstExpressionNodeId={dismissedFirstExpressionNodeId}
+                            onDismissFirstExpression={setDismissedFirstExpressionNodeId}
+                            immersiveFirstExpression={isFirstExpressionFocus}
+                        />
 
                         {showInspector ? (
                             <aside className='uiux-right-dock' data-testid='uiux-right-dock'>

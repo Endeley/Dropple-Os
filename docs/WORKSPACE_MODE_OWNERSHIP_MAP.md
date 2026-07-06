@@ -271,6 +271,13 @@ These are not workspaces and must not become separate workspace shells:
 - `runtime/projection/`
 - `core/events/`
 
+## Related Constitutional Clarifications
+
+- [BLUEPRINT_TEMPLATE_CONSTITUTIONAL_CLARIFICATION.md](/Users/endeleykonboye/Desktop/dropple-os/dropple/docs/BLUEPRINT_TEMPLATE_CONSTITUTIONAL_CLARIFICATION.md:1)
+  Explains why Blueprint and Template systems remain cross-workspace concepts
+  with different constitutional roles, and why templates should not be
+  collapsed into a separate workspace philosophy.
+
 ## Ownership Rule
 
 New work must land in:

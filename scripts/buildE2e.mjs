@@ -15,7 +15,6 @@ async function sleep(ms) {
 async function acquireLock() {
   await mkdir(path.dirname(LOCK_FILE), { recursive: true });
   const startedAt = Date.now();
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
       const handle = await open(LOCK_FILE, 'wx');
