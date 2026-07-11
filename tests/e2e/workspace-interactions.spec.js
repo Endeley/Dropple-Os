@@ -17,6 +17,35 @@ async function gotoNewWorkspace(page) {
     }
   });
   await page.goto('/workspace/new', { waitUntil: 'networkidle' });
+  const emptyWorld = page.getByTestId('uiux-empty-world');
+  if (await emptyWorld.isVisible().catch(() => false)) {
+    await page.getByTestId('uiux-empty-world-card-blankPage').click();
+    await expect(page.getByTestId('uiux-intent-confirmation')).toBeVisible();
+    await page.getByTestId('uiux-intent-continue').click();
+    await expect(page.getByTestId('uiux-first-expression')).toBeVisible();
+    await page.getByTestId('uiux-first-expression-continue').click();
+    await expect(page.getByTestId('uiux-world-editor')).toHaveAttribute(
+      'data-creative-initiation-focus',
+      'false'
+    );
+    await expect(page.getByTestId('uiux-world-editor')).toHaveAttribute(
+      'data-first-expression-focus',
+      'false'
+    );
+    await page.evaluate(() => {
+      const dispatcher = globalThis.__droppleDispatcher;
+      const state = dispatcher?.getState?.();
+      const nodeIds = Object.keys(state?.document?.sceneGraph?.nodes ?? {});
+      nodeIds.forEach((id) => {
+        dispatcher?.dispatch?.({
+          type: 'node/delete',
+          payload: { id },
+        });
+      });
+      dispatcher?.dispatch?.({ type: 'SELECTION_CLEAR' });
+    });
+    await expect(page.locator('[data-node-id]:visible')).toHaveCount(0);
+  }
   await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();
   await expectSingleVisibleCanvasHost(page);
 }
@@ -3294,7 +3323,7 @@ test('workspace new keyboard nudge remains stable across workspace route transit
 
   await page.goto('/workspace/graphic', { waitUntil: 'networkidle' });
   await expect(visibleCanvasHost(page)).toBeVisible();
-  await page.goto('/workspace/new', { waitUntil: 'networkidle' });
+  await gotoNewWorkspace(page);
   await expect(visibleCanvasHost(page)).toBeVisible();
 
   await createFrame(page, { x: 260, y: 220 }, { x: 400, y: 340 });
@@ -3361,7 +3390,7 @@ test('workspace drag session is cleared across route transition and resumes clea
   // Defensive pointer release in case browser kept button state.
   await page.mouse.up().catch(() => {});
 
-  await page.goto('/workspace/new', { waitUntil: 'networkidle' });
+  await gotoNewWorkspace(page);
   await expect(visibleCanvasHost(page)).toBeVisible();
 
   const dragActiveOnReturn = await page.evaluate(() => {
@@ -3396,8 +3425,7 @@ test('workspace drag session is cleared across route transition and resumes clea
 });
 
 test('workspace canvas host contract keeps exactly one visible host across workspace route transitions', async ({ page }) => {
-  await page.goto('/workspace/new', { waitUntil: 'networkidle' });
-  await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();
+  await gotoNewWorkspace(page);
   await expectSingleVisibleCanvasHost(page);
 
   await page.goto('/workspace/graphic', { waitUntil: 'networkidle' });
@@ -3408,8 +3436,7 @@ test('workspace canvas host contract keeps exactly one visible host across works
   await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();
   await expectSingleVisibleCanvasHost(page);
 
-  await page.goto('/workspace/new', { waitUntil: 'networkidle' });
-  await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();
+  await gotoNewWorkspace(page);
   await expectSingleVisibleCanvasHost(page);
 });
 

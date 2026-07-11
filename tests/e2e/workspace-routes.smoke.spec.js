@@ -4,7 +4,7 @@ import { expectSingleVisibleCanvasHost } from './helpers/canvasHost.js';
 const ROUTES = [
   {
     path: '/',
-    expected: 'Recent Projects',
+    expected: 'The Living World of Creation',
   },
   {
     path: '/marketplace',
@@ -141,20 +141,33 @@ for (const route of ROUTES) {
   });
 }
 
-test('home route exposes project-first entry sections', async ({ page }) => {
+test('home route exposes First World identity and language discovery', async ({ page }) => {
   const response = await page.goto('/', {
     waitUntil: 'networkidle',
   });
 
   expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
-  await expect(page.getByRole('heading', { name: 'Start from Intent' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Recent Projects' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Continue Working' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Recommended Blueprints' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Marketplace' })).toBeVisible();
-  await expect(page.locator('body')).toContainText('Operations');
-  await expect(page.getByRole('link', { name: 'Open Project' })).toBeVisible();
+  await expect(page.getByText('Dropple First World')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'The Living World of Creation' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Explore Languages' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Build' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Collaborate' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Design' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Media' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'System' })).toBeVisible();
+  await expect(page.getByText('Continuity')).toBeVisible();
+  await expect(page.locator('body')).toContainText(
+    'Returning work remains available, but this place is defined by discovery before direction.',
+  );
+  await expect(page.getByRole('link', { name: 'Resume active context' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Browse Marketplace' })).toBeVisible();
+  await expect(page.locator('body')).toContainText(
+    'Marketplace, blueprints, and support systems remain part of Dropple, but they do not define the First World.',
+  );
+  await expect(page.locator('body')).toContainText('UI / UX');
+  await expect(page.locator('body')).toContainText('Application');
+  await expect(page.locator('body')).toContainText('Animation');
+  await expect(page.locator('body')).toContainText('Governance');
 });
 
 test('home route reads recent projects and continue route from persisted local state', async ({ page }) => {
@@ -176,10 +189,41 @@ test('home route reads recent projects and continue route from persisted local s
   expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
   await expect(page.getByRole('link', { name: 'Newest Project' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Older Project' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Open Project' })).toHaveAttribute(
+  await expect(page.getByRole('link', { name: 'Resume active context' })).toHaveAttribute(
     'href',
     '/workspace/new?doc=doc-recent-1',
   );
+});
+
+test('home route exposes canonical language entry links instead of intent and blueprint flows', async ({ page }) => {
+  const response = await page.goto('/', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
+  await expect(page.locator('#build').getByRole('link', { name: 'Start Creating' })).toHaveAttribute(
+    'href',
+    '/workspace/application',
+  );
+  await expect(page.locator('#collaborate').getByRole('link', { name: 'Start Creating' })).toHaveAttribute(
+    'href',
+    '/workspace/review',
+  );
+  await expect(page.locator('#design').getByRole('link', { name: 'Start Creating' })).toHaveAttribute(
+    'href',
+    '/workspace/uiux',
+  );
+  await expect(page.locator('#media').getByRole('link', { name: 'Start Creating' })).toHaveAttribute(
+    'href',
+    '/workspace/animation',
+  );
+  await expect(page.locator('#system').getByRole('link', { name: 'Start Creating' })).toHaveAttribute(
+    'href',
+    '/workspace/components',
+  );
+  await expect(page.locator('body')).not.toContainText('Start from Intent');
+  await expect(page.locator('body')).not.toContainText('Describe what you want to build');
+  await expect(page.locator('body')).not.toContainText('Recommended Blueprints');
 });
 
 test('marketplace route exposes blueprint categories and category filter', async ({ page }) => {
@@ -196,19 +240,6 @@ test('marketplace route exposes blueprint categories and category filter', async
   await expect(page.locator('body')).toContainText('Education');
   await expect(page.locator('body')).toContainText('Operations');
   await expect(page.getByRole('combobox').first()).toContainText('All blueprint categories');
-});
-
-test('home route resolves intent into a certified blueprint recommendation', async ({ page }) => {
-  const response = await page.goto('/', {
-    waitUntil: 'networkidle',
-  });
-
-  expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
-  await page.getByLabel('Describe what you want to build').fill('Build a trucking company');
-  await expect(page.getByRole('link', { name: 'Start with Logistics Blueprint' })).toHaveAttribute(
-    'href',
-    '/workspace/create?blueprint=bp.logistics.v1&bootstrap=1',
-  );
 });
 
 test('viewer smoke mounts canonical canvas without runtime errors', async ({ page }) => {
