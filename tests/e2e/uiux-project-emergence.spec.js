@@ -48,6 +48,8 @@ test('uiux project emergence reveals truthful containment when a child expressio
   await gotoNewWorkspace(page);
 
   await page.getByTestId('uiux-empty-world-card-landingPage').click();
+  await expect(page.getByTestId('uiux-intent-confirmation')).toBeVisible();
+  await page.getByTestId('uiux-intent-continue').click();
   await expect(page.getByTestId('uiux-first-expression')).toBeVisible();
 
   await expect

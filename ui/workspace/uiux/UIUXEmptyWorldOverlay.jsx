@@ -83,6 +83,7 @@ export function UIUXEmptyWorldOverlay({
     });
     const starters = useMemo(() => getUIUXEmptyWorldStarters(), []);
     const [selectedStarterId, setSelectedStarterId] = useState(null);
+    const [isIntentConfirmed, setIsIntentConfirmed] = useState(false);
     const [isArrivalActive, setIsArrivalActive] = useState(false);
     const arrivalTimeoutRef = useRef(null);
     const selectedStarter = useMemo(
@@ -106,23 +107,29 @@ export function UIUXEmptyWorldOverlay({
         arrivalTimeoutRef.current = window.setTimeout(() => {
             setIsArrivalActive(false);
             setSelectedStarterId(null);
+            setIsIntentConfirmed(false);
             arrivalTimeoutRef.current = null;
         }, 900);
     }, [emptyWorldVisible, isArrivalActive, selectedStarterId]);
 
-    const handleCreate = useCallback((starterId) => {
+    const handleSelectStarter = useCallback((starterId) => {
+        setSelectedStarterId(starterId);
+        setIsIntentConfirmed(true);
+    }, []);
+
+    const handleCreate = useCallback(() => {
+        if (!selectedStarterId) return;
         if (arrivalTimeoutRef.current != null) {
             window.clearTimeout(arrivalTimeoutRef.current);
             arrivalTimeoutRef.current = null;
         }
-        setSelectedStarterId(starterId);
         setIsArrivalActive(false);
-        const activation = buildUIUXEmptyWorldStarterActivation(starterId);
+        const activation = buildUIUXEmptyWorldStarterActivation(selectedStarterId);
         nodeCreateIntent(activation.createIntent);
         if (activation.selectionIntent) {
             canvasBus.emit('intent.selection.set', activation.selectionIntent);
         }
-    }, []);
+    }, [selectedStarterId]);
     const stopCanvasPropagation = useCallback((event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -145,19 +152,27 @@ export function UIUXEmptyWorldOverlay({
                             <>
                                 Your <span>{selectedStarter?.title ?? 'Page'}</span> is arriving
                             </>
+                        ) : isIntentConfirmed ? (
+                            selectedStarter?.label ?? 'Something new'
                         ) : (
                             <>
-                                Design an <span>Application</span>
+                                What do you want to <span>bring into existence</span>?
                             </>
                         )}
                     </h1>
                     <p className='uiux-empty-world__subtitle'>
-                        {isArrivalActive ? 'The world is responding to your direction.' : 'Everything starts with a Page.'}
+                        {isArrivalActive
+                            ? 'The world is responding to your direction.'
+                            : isIntentConfirmed
+                              ? 'You have enough direction to begin without thinking like software.'
+                              : 'Begin from intention before deciding how the world should take shape.'}
                     </p>
                     <p className='uiux-empty-world__supporting'>
                         {isArrivalActive
                             ? 'Stay with the same world while your first project takes shape.'
-                            : 'Choose a starting point or create a blank Page.'}
+                            : isIntentConfirmed
+                              ? 'Confirm this direction when it feels true. The world can help you begin from there.'
+                              : 'Choose the direction that feels closest to what you want to make.'}
                     </p>
                 </div>
 
@@ -169,9 +184,51 @@ export function UIUXEmptyWorldOverlay({
                         <div className={`uiux-empty-world__arrival-chip is-${selectedStarter?.accent ?? 'violet'}`}>
                             <StarterGlyph starter={selectedStarter ?? starters[0]} />
                             <div className='uiux-empty-world__arrival-copy'>
-                                <strong>{selectedStarter?.label ?? 'Blank Page'}</strong>
+                                <strong>{selectedStarter?.title ?? 'Blank Page'}</strong>
                                 <span>Your decision is becoming the first place your Application can live.</span>
                             </div>
+                        </div>
+                    </div>
+                ) : isIntentConfirmed ? (
+                    <div
+                        className='uiux-empty-world__confirmation'
+                        data-testid='uiux-intent-confirmation'>
+                        <div className={`uiux-empty-world__confirmation-mark is-${selectedStarter?.accent ?? 'violet'}`}>
+                            <StarterGlyph starter={selectedStarter ?? starters[0]} />
+                        </div>
+                        <div className='uiux-empty-world__confirmation-copy'>
+                            <strong data-testid='uiux-intent-confirmation-title'>
+                                {selectedStarter?.label ?? 'Something new'}
+                            </strong>
+                            <span data-testid='uiux-intent-confirmation-description'>
+                                {selectedStarter?.description ??
+                                    'Start from a direction that already feels meaningful to you.'}
+                            </span>
+                        </div>
+                        <div className='uiux-empty-world__confirmation-actions'>
+                            <button
+                                type='button'
+                                className='uiux-empty-world__secondary'
+                                data-testid='uiux-intent-back'
+                                onPointerDown={stopCanvasPropagation}
+                                onClick={(event) => {
+                                    stopCanvasPropagation(event);
+                                    setSelectedStarterId(null);
+                                    setIsIntentConfirmed(false);
+                                }}>
+                                Choose another direction
+                            </button>
+                            <button
+                                type='button'
+                                className='uiux-empty-world__primary'
+                                data-testid='uiux-intent-continue'
+                                onPointerDown={stopCanvasPropagation}
+                                onClick={(event) => {
+                                    stopCanvasPropagation(event);
+                                    handleCreate();
+                                }}>
+                                Continue this direction
+                            </button>
                         </div>
                     </div>
                 ) : (
@@ -185,7 +242,7 @@ export function UIUXEmptyWorldOverlay({
                                 onPointerDown={stopCanvasPropagation}
                                 onClick={(event) => {
                                     stopCanvasPropagation(event);
-                                    handleCreate(starter.id);
+                                    handleSelectStarter(starter.id);
                                 }}>
                                 <div className='uiux-empty-world__card-icon'>
                                     <StarterGlyph starter={starter} />
@@ -202,14 +259,19 @@ export function UIUXEmptyWorldOverlay({
                         <span className='uiux-empty-world__guidance-mark'>✦</span>
                         Guidance is yielding to your project.
                     </p>
+                ) : isIntentConfirmed ? (
+                    <p className='uiux-empty-world__guidance' data-testid='uiux-empty-world-guidance'>
+                        <span className='uiux-empty-world__guidance-mark'>✦</span>
+                        You are choosing a way to create, not an editor.
+                    </p>
                 ) : (
                     <p className='uiux-empty-world__guidance' data-testid='uiux-empty-world-guidance'>
                         <span className='uiux-empty-world__guidance-mark'>✦</span>
-                        These are suggestions. You can change direction anytime.
+                        Start from the thing you want to bring into the world. You can change direction anytime.
                     </p>
                 )}
 
-                {!isArrivalActive ? (
+                {!isArrivalActive && !isIntentConfirmed ? (
                     <button
                         type='button'
                         className='uiux-empty-world__intro'

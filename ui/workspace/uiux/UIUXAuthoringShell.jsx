@@ -41,7 +41,7 @@ import {
     resolveDesignModeCapabilitySurface,
     DesignWorkspaceStrip,
 } from '@/ui/workspace/design/DesignShellPrimitives.jsx';
-import { resolveProjectHomeViewport } from '@/runtime/workspaces/projectSubstrateNavigation.js';
+import { hasProjectHistory, resolveProjectHomeViewport } from '@/runtime/workspaces/projectSubstrateNavigation.js';
 import { getUIUXCreationEntries } from './uiuxLanguageDictionary.js';
 import {
     UIUX_SCENARIO_OPTIONS,
@@ -106,6 +106,8 @@ function UIUXAuthoringShellContent({
     const workspaceDocument = useWorkspaceProjectionState((s) => s.document ?? null);
     const visibleTools = useWorkspaceProjectionState((s) => s.tools?.visibleTools ?? []);
     const viewport = useWorkspaceViewState((s) => s.viewport ?? { x: 0, y: 0, scale: 1 });
+    const worldHistory = useWorkspaceProjectionState((s) => s.document?.world?.history ?? null);
+    const nodeCount = useMemo(() => Object.keys(nodes ?? {}).length, [nodes]);
     const runtimeDocumentId = workspaceDocument?.meta?.id ?? initialDocumentId ?? null;
     const [explicitScenarioSelections, setExplicitScenarioSelections] = useState({});
     const createItems = useMemo(() => {
@@ -149,6 +151,13 @@ function UIUXAuthoringShellContent({
         [dismissedFirstExpressionNodeId, node, nodes, resolvedModeId, resolvedWorkspaceId],
     );
     const isFirstExpressionFocus = Boolean(firstExpressionFocusState?.node?.id);
+    const isCreativeInitiationFocus =
+        !hasProjectHistory({
+            workspaceId: resolvedWorkspaceId,
+            modeId: resolvedModeId,
+            nodeCount,
+            worldHistory,
+        }) && !isFirstExpressionFocus;
     const showInspector = hasInspectableContext && !isFirstExpressionFocus;
     const showTimeline = hasTimeAuthoringContext && !isFirstExpressionFocus;
     const showStatusStrip = !isFirstExpressionFocus && (selectionCount > 0 || (showTimeline && node?.id));
@@ -385,6 +394,7 @@ function UIUXAuthoringShellContent({
                 data-testid='uiux-world-editor'
                 data-editor-unity='world-based'
                 data-editor-focus={selectionCount > 0 ? 'focused' : 'open'}
+                data-creative-initiation-focus={isCreativeInitiationFocus ? 'true' : 'false'}
                 data-first-expression-focus={isFirstExpressionFocus ? 'true' : 'false'}>
                 <div
                     className='uiux-main-grid'

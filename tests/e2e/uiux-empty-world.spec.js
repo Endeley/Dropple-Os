@@ -7,14 +7,15 @@ test('uiux empty world projects application-first guidance before the first page
 
   expect(response?.ok(), 'create route should respond successfully').toBeTruthy();
   await expect(page.getByTestId('uiux-empty-world')).toBeVisible();
-  await expect(page.getByTestId('uiux-empty-world-title')).toContainText('Design an Application');
-  await expect(page.locator('body')).toContainText('Everything starts with a Page.');
+  await expect(page.getByTestId('uiux-world-editor')).toHaveAttribute('data-creative-initiation-focus', 'true');
+  await expect(page.getByTestId('uiux-empty-world-title')).toContainText('What do you want to bring into existence?');
+  await expect(page.locator('body')).toContainText('Begin from intention before deciding how the world should take shape.');
   await expect(page.getByTestId('uiux-empty-world-card-blankPage')).toBeVisible();
   await expect(page.getByTestId('uiux-empty-world-card-landingPage')).toBeVisible();
   await expect(page.getByTestId('uiux-empty-world-card-dashboard')).toBeVisible();
   await expect(page.getByTestId('uiux-empty-world-card-login')).toBeVisible();
   await expect(page.getByTestId('uiux-empty-world-card-settings')).toBeVisible();
-  await expect(page.getByTestId('uiux-empty-world-guidance')).toContainText('These are suggestions.');
+  await expect(page.getByTestId('uiux-empty-world-guidance')).toContainText('You can change direction anytime.');
 });
 
 test('uiux empty world disappears after the first page is created through the canonical path', async ({ page }) => {
@@ -27,7 +28,10 @@ test('uiux empty world disappears after the first page is created through the ca
   await expect(emptyWorld).toBeVisible();
 
   await page.getByTestId('uiux-empty-world-card-blankPage').click();
+  await expect(page.getByTestId('uiux-intent-confirmation')).toBeVisible();
+  await page.getByTestId('uiux-intent-continue').click();
 
+  await expect(page.getByTestId('uiux-world-editor')).toHaveAttribute('data-creative-initiation-focus', 'false');
   await expect(emptyWorld).toHaveAttribute('data-world-state', 'arriving');
   await expect(page.getByTestId('uiux-creative-arrival')).toContainText('Blank Page');
   await expect(page.getByTestId('uiux-empty-world-guidance')).toContainText('Guidance is yielding to your project.');
@@ -46,7 +50,11 @@ test('uiux empty world keeps world continuity while the chosen direction arrives
   await expect(emptyWorld).toHaveAttribute('data-world-state', 'empty');
 
   await page.getByTestId('uiux-empty-world-card-landingPage').click();
+  await expect(page.getByTestId('uiux-intent-confirmation')).toBeVisible();
+  await expect(page.getByTestId('uiux-intent-confirmation-title')).toContainText('A public-facing experience');
+  await page.getByTestId('uiux-intent-continue').click();
 
+  await expect(page.getByTestId('uiux-world-editor')).toHaveAttribute('data-creative-initiation-focus', 'false');
   await expect(emptyWorld).toHaveAttribute('data-world-state', 'arriving');
   await expect(page.getByTestId('uiux-empty-world-title')).toContainText('Your Landing Page is arriving');
   await expect(page.locator('body')).toContainText('The world is responding to your direction.');
@@ -61,6 +69,8 @@ test('uiux empty world blank page creation selects the page and reveals semantic
 
   expect(response?.ok(), 'create route should respond successfully').toBeTruthy();
   await page.getByTestId('uiux-empty-world-card-blankPage').click();
+  await expect(page.getByTestId('uiux-intent-confirmation')).toBeVisible();
+  await page.getByTestId('uiux-intent-continue').click();
 
   await expect(page.getByTestId('uiux-first-expression')).toBeVisible();
   await expect(page.getByTestId('uiux-first-expression-title')).toContainText('Blank Page');
@@ -129,6 +139,8 @@ for (const scenario of [
 
     expect(response?.ok(), 'create route should respond successfully').toBeTruthy();
     await page.getByTestId(`uiux-empty-world-card-${scenario.cardId}`).click();
+    await expect(page.getByTestId('uiux-intent-confirmation')).toBeVisible();
+    await page.getByTestId('uiux-intent-continue').click();
 
     await expect(page.getByTestId('uiux-first-expression')).toBeVisible();
     await expect(page.getByTestId('uiux-first-expression-title')).toContainText(scenario.title);

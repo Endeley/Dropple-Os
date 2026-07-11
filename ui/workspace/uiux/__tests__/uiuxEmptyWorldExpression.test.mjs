@@ -20,16 +20,22 @@ test('uiux empty world starters stay deterministic and scenario-shaped', () => {
     );
     assert.deepEqual(
         left.map((starter) => starter.label),
-        ['Blank Page', 'Landing Page', 'Dashboard', 'Login Screen', 'Settings Page'],
+        [
+            'Something new',
+            'A public-facing experience',
+            'An operations surface',
+            'An access experience',
+            'A control surface',
+        ],
     );
     assert.deepEqual(
         left.map((starter) => starter.description),
         [
-            'Start from scratch and build anything.',
-            'Create a marketing landing page.',
-            'Build a data dashboard.',
-            'Design an authentication experience.',
-            'Create a settings or preferences page.',
+            'Start from a flexible idea and let the structure appear as you shape it.',
+            'Bring a message, offer, or product story into a focused experience.',
+            'Shape a place where people read signals, monitor activity, and act.',
+            'Design the moment someone enters, verifies identity, or regains access.',
+            'Give people a place to manage preferences, account rules, and system choices.',
         ],
     );
 });
@@ -73,7 +79,10 @@ test('uiux empty world starter intents stay on the canonical frame creation path
         type: 'frame',
         name: 'Blank Page',
         props: undefined,
-        metadata: undefined,
+        metadata: {
+            uiuxStarterId: 'blankPage',
+            uiuxFirstExpression: true,
+        },
     });
 
     assert.deepEqual(buildUIUXEmptyWorldCreateIntent('landingPage'), {
@@ -84,6 +93,8 @@ test('uiux empty world starter intents stay on the canonical frame creation path
             scenario: 'landingPage',
         },
         metadata: {
+            uiuxStarterId: 'landingPage',
+            uiuxFirstExpression: true,
             scenario: 'landingPage',
         },
     });
@@ -96,6 +107,8 @@ test('uiux empty world starter intents stay on the canonical frame creation path
             scenario: 'dashboard',
         },
         metadata: {
+            uiuxStarterId: 'dashboard',
+            uiuxFirstExpression: true,
             scenario: 'dashboard',
         },
     });
@@ -108,6 +121,8 @@ test('uiux empty world starter intents stay on the canonical frame creation path
             scenario: 'login',
         },
         metadata: {
+            uiuxStarterId: 'login',
+            uiuxFirstExpression: true,
             scenario: 'login',
         },
     });
@@ -120,6 +135,8 @@ test('uiux empty world starter intents stay on the canonical frame creation path
             scenario: 'settings',
         },
         metadata: {
+            uiuxStarterId: 'settings',
+            uiuxFirstExpression: true,
             scenario: 'settings',
         },
     });
@@ -138,6 +155,8 @@ test('uiux empty world can activate a newly created page through the canonical s
             scenario: 'landingPage',
         },
         metadata: {
+            uiuxStarterId: 'landingPage',
+            uiuxFirstExpression: true,
             scenario: 'landingPage',
         },
     });

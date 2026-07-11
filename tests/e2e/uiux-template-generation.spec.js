@@ -11,27 +11,18 @@ async function assertReceivesPointerEvents(locator) {
     await locator.click({ trial: true });
 }
 
-async function dragOnCanvas(page, from, to) {
-    const canvas = visibleCanvasHost(page);
-    const box = await canvas.boundingBox();
-
-    if (!box) {
-        throw new Error('Canvas host did not render');
-    }
-
-    await page.mouse.move(box.x + from.x, box.y + from.y);
-    await page.mouse.down();
-    await page.mouse.move(box.x + to.x, box.y + to.y, { steps: 8 });
-    await page.mouse.up();
-}
-
-async function createFrame(page, from, to) {
-    await page.locator('[data-tool-id="frame"]').click();
-    await dragOnCanvas(page, from, to);
-}
-
 function visibleNodes(page) {
     return page.locator('[data-node-id]:visible');
+}
+
+async function beginBlankPageProject(page) {
+    await page.getByTestId('uiux-empty-world-card-blankPage').click();
+    await expect(page.getByTestId('uiux-intent-confirmation')).toBeVisible();
+    await page.getByTestId('uiux-intent-continue').click();
+    await expect(page.getByTestId('uiux-first-expression')).toBeVisible();
+    await page.getByTestId('uiux-first-expression-continue').click();
+    await expect(page.getByTestId('uiux-first-expression')).toHaveCount(0);
+    await expect(visibleNodes(page)).toHaveCount(1);
 }
 
 async function publishMotionTemplate(request, {
@@ -122,10 +113,7 @@ test('uiux authoring roundtrip publishes from the toolbar flow and installs into
     const templateName = `Phase 2 Roundtrip ${Date.now()}`;
 
     await gotoWorkspace(page, '/workspace/new');
-
-    await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
-
-    await expect(visibleNodes(page)).toHaveCount(1);
+    await beginBlankPageProject(page);
 
     const publishButton = page.getByRole('button', { name: 'Publish' });
     await assertReceivesPointerEvents(publishButton);
@@ -271,9 +259,7 @@ test('certified uiux template install preserves motion runtime truth', async ({ 
 
 test('uiux transition timeline can author a motion keyframe through lawful intents', async ({ page }) => {
     await gotoWorkspace(page, '/workspace/new');
-
-    await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
-    await expect(visibleNodes(page)).toHaveCount(1);
+    await beginBlankPageProject(page);
     const createdNodeId = await visibleNodes(page).first().getAttribute('data-node-id');
 
     await expect(page.getByTestId('uiux-bottom-dock')).toHaveCount(0);
