@@ -151,11 +151,14 @@ test('home route exposes First World identity and language discovery', async ({ 
   await expect(page.getByTestId('living-world-host')).toHaveAttribute('data-world-id', 'dropple-first-world');
   await expect(page.getByTestId('living-world-host').getByTestId('world-core')).toHaveCount(1);
   await expect(page.getByTestId('world-core').getByTestId('region-host')).toHaveCount(1);
+  await expect(page.getByTestId('region-host').getByTestId('navigation-framework')).toHaveCount(1);
   await expect(page.getByTestId('world-core')).toHaveAttribute('data-origin-region', 'home');
   await expect(page.getByTestId('region-host')).toHaveAttribute(
     'data-registered-region-ids',
     'home,build,system,design,media,collaborate,education,translation',
   );
+  await expect(page.getByTestId('navigation-framework')).toHaveAttribute('data-default-region', 'home');
+  await expect(page.getByTestId('navigation-framework')).toHaveAttribute('data-active-region', 'home');
   await expect(page.getByText('Dropple First World')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'The Living World of Creation' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Explore Languages' })).toBeVisible();
@@ -233,6 +236,15 @@ test('home route exposes canonical language entry links instead of intent and bl
   await expect(page.locator('body')).not.toContainText('Start from Intent');
   await expect(page.locator('body')).not.toContainText('Describe what you want to build');
   await expect(page.locator('body')).not.toContainText('Recommended Blueprints');
+});
+
+test('home route navigation framework fails closed for invalid region hashes', async ({ page }) => {
+  const response = await page.goto('/#invalid-region', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('navigation-framework')).toHaveAttribute('data-active-region', 'home');
 });
 
 test('marketplace route exposes blueprint categories and category filter', async ({ page }) => {
