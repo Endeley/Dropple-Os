@@ -13,8 +13,11 @@ import { loadRegistry } from '@/infrastructure/persistence/documentRegistry.js';
 import { getActiveDocument } from '@/infrastructure/persistence/activeDocument.js';
 import LivingWorldHost from '@/ui/first-world/LivingWorldHost.jsx';
 import WorldCore from '@/ui/first-world/WorldCore.jsx';
+import RegionHost, { listFirstWorldRegions, listVisibleFirstWorldRegions } from '@/ui/first-world/RegionHost.jsx';
 
-const WORKSPACE_ORDER = Object.freeze(['home', 'build', 'collaborate', 'design', 'media', 'system']);
+const REGION_REGISTRY = listFirstWorldRegions();
+const VISIBLE_REGION_REGISTRY = listVisibleFirstWorldRegions();
+const WORKSPACE_ORDER = Object.freeze(VISIBLE_REGION_REGISTRY.map((region) => region.id));
 
 const WORKSPACE_STORIES = Object.freeze({
     build: Object.freeze({
@@ -83,7 +86,9 @@ const MODE_DESCRIPTIONS = Object.freeze({
 });
 
 function buildWorkspaceSections() {
-    return Object.entries(WORKSPACE_STORIES).map(([workspaceId, story]) => {
+    return VISIBLE_REGION_REGISTRY.filter((region) => region.id !== 'home').map((region) => {
+        const workspaceId = region.id;
+        const story = WORKSPACE_STORIES[workspaceId];
         const workspace = CANONICAL_WORKSPACES[workspaceId];
         const modes = listCanonicalModesForWorkspace(workspaceId).map((mode) =>
             Object.freeze({
@@ -97,6 +102,10 @@ function buildWorkspaceSections() {
 
         return Object.freeze({
             id: workspaceId,
+            regionTitle: region.title,
+            regionPurpose: region.purpose,
+            regionAvailability: region.availability,
+            regionEntryLabel: region.entryLabel,
             workspaceLabel: workspace?.label ?? story.label,
             label: story.label,
             eyebrow: story.eyebrow,
@@ -200,34 +209,35 @@ export default function ProjectHomeClient() {
     return (
         <LivingWorldHost
             activeRegionId={activeSection}
-            regionIds={WORKSPACE_ORDER}
+            regionIds={REGION_REGISTRY.map((region) => region.id)}
             worldId='dropple-first-world'
         >
             <WorldCore worldId='dropple-first-world' originRegionId='home'>
-                <main className={styles.page}>
-                    <div className={styles.pageGlow} aria-hidden='true' />
+                <RegionHost activeRegionId={activeSection} regions={REGION_REGISTRY}>
+                    <main className={styles.page}>
+                        <div className={styles.pageGlow} aria-hidden='true' />
 
-                    <nav className={styles.sideRail} aria-label='First World sections'>
-                        <div className={styles.railLine} aria-hidden='true' />
-                        {WORKSPACE_ORDER.map((sectionId) => {
-                            const label =
-                                sectionId === 'home'
-                                    ? 'Home'
-                                    : WORKSPACE_SECTIONS.find((section) => section.id === sectionId)?.label ?? sectionId;
+                        <nav className={styles.sideRail} aria-label='First World sections'>
+                            <div className={styles.railLine} aria-hidden='true' />
+                            {WORKSPACE_ORDER.map((sectionId) => {
+                                const label =
+                                    sectionId === 'home'
+                                        ? 'Home'
+                                        : WORKSPACE_SECTIONS.find((section) => section.id === sectionId)?.label ?? sectionId;
 
-                            return (
-                                <a
-                                    key={sectionId}
-                                    href={`#${sectionId}`}
-                                    className={styles.railLink}
-                                    data-active={activeSection === sectionId ? 'true' : 'false'}
-                                >
-                                    <span className={styles.railDot} />
-                                    <span className={styles.railLabel}>{label}</span>
-                                </a>
-                            );
-                        })}
-                    </nav>
+                                return (
+                                    <a
+                                        key={sectionId}
+                                        href={`#${sectionId}`}
+                                        className={styles.railLink}
+                                        data-active={activeSection === sectionId ? 'true' : 'false'}
+                                    >
+                                        <span className={styles.railDot} />
+                                        <span className={styles.railLabel}>{label}</span>
+                                    </a>
+                                );
+                            })}
+                        </nav>
 
                     <section
                         id='home'
@@ -338,16 +348,17 @@ export default function ProjectHomeClient() {
                         </section>
                     ))}
 
-                    <footer className={styles.footer}>
-                        <span className={styles.footerCopy}>
-                            Marketplace, blueprints, and support systems remain part of Dropple, but they do
-                            not define the First World.
-                        </span>
-                        <Link href='/marketplace' className={styles.footerLink}>
-                            Browse Marketplace
-                        </Link>
-                    </footer>
-                </main>
+                        <footer className={styles.footer}>
+                            <span className={styles.footerCopy}>
+                                Marketplace, blueprints, and support systems remain part of Dropple, but they do
+                                not define the First World.
+                            </span>
+                            <Link href='/marketplace' className={styles.footerLink}>
+                                Browse Marketplace
+                            </Link>
+                        </footer>
+                    </main>
+                </RegionHost>
             </WorldCore>
         </LivingWorldHost>
     );
