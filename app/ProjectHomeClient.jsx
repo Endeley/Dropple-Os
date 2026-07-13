@@ -11,6 +11,7 @@ import {
 import { buildProjectHomeResumeRoute } from '@/runtime/workspaces/projectHomeResumeRoute.js';
 import { loadRegistry } from '@/infrastructure/persistence/documentRegistry.js';
 import { getActiveDocument } from '@/infrastructure/persistence/activeDocument.js';
+import LivingWorldHost from '@/ui/first-world/LivingWorldHost.jsx';
 
 const WORKSPACE_ORDER = Object.freeze(['home', 'build', 'collaborate', 'design', 'media', 'system']);
 
@@ -196,30 +197,35 @@ export default function ProjectHomeClient() {
     );
 
     return (
-        <main className={styles.page}>
-            <div className={styles.pageGlow} aria-hidden='true' />
+        <LivingWorldHost
+            activeRegionId={activeSection}
+            regionIds={WORKSPACE_ORDER}
+            worldId='dropple-first-world'
+        >
+            <main className={styles.page}>
+                <div className={styles.pageGlow} aria-hidden='true' />
 
-            <nav className={styles.sideRail} aria-label='First World sections'>
-                <div className={styles.railLine} aria-hidden='true' />
-                {WORKSPACE_ORDER.map((sectionId) => {
-                    const label =
-                        sectionId === 'home'
-                            ? 'Home'
-                            : WORKSPACE_SECTIONS.find((section) => section.id === sectionId)?.label ?? sectionId;
+                <nav className={styles.sideRail} aria-label='First World sections'>
+                    <div className={styles.railLine} aria-hidden='true' />
+                    {WORKSPACE_ORDER.map((sectionId) => {
+                        const label =
+                            sectionId === 'home'
+                                ? 'Home'
+                                : WORKSPACE_SECTIONS.find((section) => section.id === sectionId)?.label ?? sectionId;
 
-                    return (
-                        <a
-                            key={sectionId}
-                            href={`#${sectionId}`}
-                            className={styles.railLink}
-                            data-active={activeSection === sectionId ? 'true' : 'false'}
-                        >
-                            <span className={styles.railDot} />
-                            <span className={styles.railLabel}>{label}</span>
-                        </a>
-                    );
-                })}
-            </nav>
+                        return (
+                            <a
+                                key={sectionId}
+                                href={`#${sectionId}`}
+                                className={styles.railLink}
+                                data-active={activeSection === sectionId ? 'true' : 'false'}
+                            >
+                                <span className={styles.railDot} />
+                                <span className={styles.railLabel}>{label}</span>
+                            </a>
+                        );
+                    })}
+                </nav>
 
             <section
                 id='home'
@@ -275,70 +281,71 @@ export default function ProjectHomeClient() {
                 <div className={styles.scrollPrompt}>Scroll to explore</div>
             </section>
 
-            {WORKSPACE_SECTIONS.map((section) => (
-                <section
-                    key={section.id}
-                    id={section.id}
-                    className={styles.section}
-                    data-first-world-section='true'
-                    style={{
-                        '--accent': section.accent,
-                        '--glow': section.glow,
-                    }}
-                >
-                    <div className={styles.sectionInner}>
-                        <div className={styles.workspaceVisual}>
-                            <div className={styles.workspaceAura} />
-                            <div className={styles.workspaceRing} />
-                            <div className={styles.workspaceCard}>
-                                <span className={styles.workspaceCardIcon}>{section.icon}</span>
-                                <span className={styles.workspaceCardLabel}>{section.label}</span>
+                {WORKSPACE_SECTIONS.map((section) => (
+                    <section
+                        key={section.id}
+                        id={section.id}
+                        className={styles.section}
+                        data-first-world-section='true'
+                        style={{
+                            '--accent': section.accent,
+                            '--glow': section.glow,
+                        }}
+                    >
+                        <div className={styles.sectionInner}>
+                            <div className={styles.workspaceVisual}>
+                                <div className={styles.workspaceAura} />
+                                <div className={styles.workspaceRing} />
+                                <div className={styles.workspaceCard}>
+                                    <span className={styles.workspaceCardIcon}>{section.icon}</span>
+                                    <span className={styles.workspaceCardLabel}>{section.label}</span>
+                                </div>
+                                <ParticleField accent={section.accent} prefix={section.id} />
                             </div>
-                            <ParticleField accent={section.accent} prefix={section.id} />
-                        </div>
 
-                        <div className={styles.workspaceCopy}>
-                            <p className={styles.sectionTag}>{section.workspaceLabel}</p>
-                            <h2 className={styles.sectionTitle}>{section.label}</h2>
-                            <p className={styles.sectionEyebrow}>{section.eyebrow}</p>
-                            <p className={styles.sectionDescription}>{section.description}</p>
-                            <div className={styles.modePills}>
-                                {section.modes.map((mode) => (
-                                    <Link key={mode.id} href={mode.href} className={styles.modePill}>
-                                        {mode.label}
+                            <div className={styles.workspaceCopy}>
+                                <p className={styles.sectionTag}>{section.workspaceLabel}</p>
+                                <h2 className={styles.sectionTitle}>{section.label}</h2>
+                                <p className={styles.sectionEyebrow}>{section.eyebrow}</p>
+                                <p className={styles.sectionDescription}>{section.description}</p>
+                                <div className={styles.modePills}>
+                                    {section.modes.map((mode) => (
+                                        <Link key={mode.id} href={mode.href} className={styles.modePill}>
+                                            {mode.label}
+                                        </Link>
+                                    ))}
+                                </div>
+                                <div className={styles.modeDescriptions}>
+                                    {section.modes.map((mode) => (
+                                        <div key={mode.id} className={styles.modeDescriptionCard}>
+                                            <strong>{mode.label}</strong>
+                                            <span>{mode.description}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className={styles.sectionActions}>
+                                    <Link href={section.defaultModeHref} className={styles.primaryButton}>
+                                        Start Creating
                                     </Link>
-                                ))}
-                            </div>
-                            <div className={styles.modeDescriptions}>
-                                {section.modes.map((mode) => (
-                                    <div key={mode.id} className={styles.modeDescriptionCard}>
-                                        <strong>{mode.label}</strong>
-                                        <span>{mode.description}</span>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className={styles.sectionActions}>
-                                <Link href={section.defaultModeHref} className={styles.primaryButton}>
-                                    Start Creating
-                                </Link>
-                                <a href='#home' className={styles.secondaryButton}>
-                                    Return to the First World
-                                </a>
+                                    <a href='#home' className={styles.secondaryButton}>
+                                        Return to the First World
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </section>
-            ))}
+                    </section>
+                ))}
 
-            <footer className={styles.footer}>
-                <span className={styles.footerCopy}>
-                    Marketplace, blueprints, and support systems remain part of Dropple, but they do
-                    not define the First World.
-                </span>
-                <Link href='/marketplace' className={styles.footerLink}>
-                    Browse Marketplace
-                </Link>
-            </footer>
-        </main>
+                <footer className={styles.footer}>
+                    <span className={styles.footerCopy}>
+                        Marketplace, blueprints, and support systems remain part of Dropple, but they do
+                        not define the First World.
+                    </span>
+                    <Link href='/marketplace' className={styles.footerLink}>
+                        Browse Marketplace
+                    </Link>
+                </footer>
+            </main>
+        </LivingWorldHost>
     );
 }
