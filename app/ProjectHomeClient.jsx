@@ -167,6 +167,25 @@ function HeroOrbit() {
     );
 }
 
+function getRegionResponseState(activeRegionId, regionId) {
+    const activeRegionIndex = WORKSPACE_ORDER.indexOf(activeRegionId);
+    const regionIndex = WORKSPACE_ORDER.indexOf(regionId);
+
+    if (activeRegionIndex === -1 || regionIndex === -1) {
+        return 'distant';
+    }
+
+    if (activeRegionId === regionId) {
+        return 'active';
+    }
+
+    if (Math.abs(activeRegionIndex - regionIndex) === 1) {
+        return 'nearby';
+    }
+
+    return 'distant';
+}
+
 export default function ProjectHomeClient() {
     const [recentProjects, setRecentProjects] = useState([]);
     const [activeDocumentId, setActiveDocumentId] = useState(null);
@@ -191,12 +210,13 @@ export default function ProjectHomeClient() {
                 <RegionHost regions={REGION_REGISTRY}>
                     <NavigationFramework regions={REGION_REGISTRY} defaultActiveRegionId='home'>
                         {({ activeRegionId, getRegionHref }) => (
-                            <main className={styles.page}>
+                            <main className={styles.page} data-active-region={activeRegionId}>
                                 <div className={styles.pageGlow} aria-hidden='true' />
 
                                 <nav className={styles.sideRail} aria-label='First World sections'>
                                     <div className={styles.railLine} aria-hidden='true' />
                                     {WORKSPACE_ORDER.map((sectionId) => {
+                                        const responseState = getRegionResponseState(activeRegionId, sectionId);
                                         const label =
                                             sectionId === 'home'
                                                 ? 'Home'
@@ -209,6 +229,7 @@ export default function ProjectHomeClient() {
                                                 href={getRegionHref(sectionId)}
                                                 className={styles.railLink}
                                                 data-active={activeRegionId === sectionId ? 'true' : 'false'}
+                                                data-response-state={responseState}
                                             >
                                                 <span className={styles.railDot} />
                                                 <span className={styles.railLabel}>{label}</span>
@@ -221,6 +242,7 @@ export default function ProjectHomeClient() {
                                     id='home'
                                     className={`${styles.section} ${styles.heroSection}`}
                                     data-first-world-section='true'
+                                    data-response-state={getRegionResponseState(activeRegionId, 'home')}
                                 >
                                     <div className={styles.sectionInner}>
                                         <div className={styles.heroCopy}>
@@ -277,6 +299,7 @@ export default function ProjectHomeClient() {
                                         id={section.id}
                                         className={styles.section}
                                         data-first-world-section='true'
+                                        data-response-state={getRegionResponseState(activeRegionId, section.id)}
                                         style={{
                                             '--accent': section.accent,
                                             '--glow': section.glow,

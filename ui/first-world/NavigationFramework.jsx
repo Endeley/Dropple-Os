@@ -76,6 +76,15 @@ export default function NavigationFramework({
 
         const observer = new IntersectionObserver(
             (entries) => {
+                if (typeof window !== 'undefined' && window.location.hash) {
+                    const hashedRegionId = normalizeRegionId(window.location.hash);
+
+                    if (hashedRegionId && registeredRegionIds.includes(hashedRegionId)) {
+                        setActiveRegionId(hashedRegionId);
+                        return;
+                    }
+                }
+
                 const visibleSection = entries
                     .filter((entry) => entry.isIntersecting)
                     .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];

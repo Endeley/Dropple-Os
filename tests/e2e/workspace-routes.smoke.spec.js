@@ -247,6 +247,18 @@ test('home route navigation framework fails closed for invalid region hashes', a
   await expect(page.getByTestId('navigation-framework')).toHaveAttribute('data-active-region', 'home');
 });
 
+test('home route projects active nearby and distant world response from navigation authority', async ({ page }) => {
+  const response = await page.goto('/#build', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
+  await expect(page.getByTestId('navigation-framework')).toHaveAttribute('data-active-region', 'build');
+  await expect(page.locator('#build')).toHaveAttribute('data-response-state', 'active');
+  await expect(page.locator('#home')).toHaveAttribute('data-response-state', 'nearby');
+  await expect(page.locator('#design')).toHaveAttribute('data-response-state', 'distant');
+});
+
 test('marketplace route exposes blueprint categories and category filter', async ({ page }) => {
   const response = await page.goto('/marketplace', {
     waitUntil: 'networkidle',

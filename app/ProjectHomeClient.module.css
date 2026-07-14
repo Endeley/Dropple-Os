@@ -43,6 +43,7 @@
   align-items: center;
   gap: 12px;
   text-decoration: none;
+  transition: opacity 220ms ease, transform 220ms ease;
 }
 
 .railDot {
@@ -59,6 +60,20 @@
   font-size: 13px;
   color: #94a3b8;
   opacity: 0.8;
+  transition: color 220ms ease, opacity 220ms ease;
+}
+
+.railLink[data-response-state='active'] {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+.railLink[data-response-state='nearby'] {
+  opacity: 0.82;
+}
+
+.railLink[data-response-state='distant'] {
+  opacity: 0.5;
 }
 
 .railLink[data-active='true'] .railDot {
@@ -79,6 +94,10 @@
   align-items: center;
   padding: 40px 56px 40px 128px;
   border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+  transition:
+    opacity 260ms ease,
+    transform 260ms ease,
+    filter 260ms ease;
 }
 
 .section::before {
@@ -89,6 +108,7 @@
     radial-gradient(circle at 60% 40%, var(--glow, rgba(99, 102, 241, 0.18)), transparent 28%),
     linear-gradient(180deg, rgba(15, 23, 42, 0.12), rgba(2, 6, 23, 0.02));
   pointer-events: none;
+  transition: opacity 260ms ease, filter 260ms ease;
 }
 
 .sectionInner {
@@ -110,6 +130,10 @@
 .workspaceCopy {
   display: grid;
   gap: 18px;
+  transition:
+    opacity 260ms ease,
+    transform 260ms ease,
+    filter 260ms ease;
 }
 
 .eyebrow,
@@ -252,6 +276,68 @@
   min-height: 520px;
   display: grid;
   place-items: center;
+  transition:
+    opacity 260ms ease,
+    transform 260ms ease,
+    filter 260ms ease;
+}
+
+.section[data-response-state='active'] {
+  opacity: 1;
+  transform: scale(1);
+  filter: saturate(1.02);
+}
+
+.section[data-response-state='active']::before {
+  opacity: 1;
+}
+
+.section[data-response-state='active'] .heroCopy,
+.section[data-response-state='active'] .workspaceCopy,
+.section[data-response-state='active'] .heroVisual,
+.section[data-response-state='active'] .workspaceVisual {
+  opacity: 1;
+  transform: translateY(0);
+  filter: none;
+}
+
+.section[data-response-state='nearby'] {
+  opacity: 0.82;
+  transform: scale(0.992);
+  filter: saturate(0.94);
+}
+
+.section[data-response-state='nearby']::before {
+  opacity: 0.7;
+}
+
+.section[data-response-state='nearby'] .heroCopy,
+.section[data-response-state='nearby'] .workspaceCopy,
+.section[data-response-state='nearby'] .heroVisual,
+.section[data-response-state='nearby'] .workspaceVisual {
+  opacity: 0.9;
+  transform: translateY(8px);
+  filter: saturate(0.92);
+}
+
+.section[data-response-state='distant'] {
+  opacity: 0.6;
+  transform: scale(0.985);
+  filter: saturate(0.82);
+}
+
+.section[data-response-state='distant']::before {
+  opacity: 0.48;
+  filter: blur(4px);
+}
+
+.section[data-response-state='distant'] .heroCopy,
+.section[data-response-state='distant'] .workspaceCopy,
+.section[data-response-state='distant'] .heroVisual,
+.section[data-response-state='distant'] .workspaceVisual {
+  opacity: 0.72;
+  transform: translateY(14px);
+  filter: saturate(0.84);
 }
 
 .heroPlanet {
