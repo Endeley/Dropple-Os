@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 function normalizeRegionId(regionId) {
     if (typeof regionId !== 'string') {
@@ -43,6 +43,49 @@ export default function NavigationFramework({
     };
 
     const [activeRegionId, setActiveRegionId] = useState(fallbackRegionId);
+    const [travelingRegionId, setTravelingRegionId] = useState(null);
+    const travelResetRef = useRef(null);
+
+    const clearTravelState = () => {
+        if (travelResetRef.current) {
+            window.clearTimeout(travelResetRef.current);
+            travelResetRef.current = null;
+        }
+
+        setTravelingRegionId(null);
+    };
+
+    const requestRegionTravel = (requestedRegionId) => {
+        if (typeof window === 'undefined') {
+            return fallbackRegionId;
+        }
+
+        const resolvedRegionId = resolveRegionId(requestedRegionId);
+        const targetSection = document.getElementById(resolvedRegionId);
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        setActiveRegionId(resolvedRegionId);
+        setTravelingRegionId(resolvedRegionId);
+        window.history.replaceState(null, '', `#${resolvedRegionId}`);
+
+        if (targetSection) {
+            targetSection.scrollIntoView({
+                behavior: prefersReducedMotion ? 'auto' : 'smooth',
+                block: 'start',
+            });
+        }
+
+        if (travelResetRef.current) {
+            window.clearTimeout(travelResetRef.current);
+        }
+
+        travelResetRef.current = window.setTimeout(() => {
+            setTravelingRegionId(null);
+            travelResetRef.current = null;
+        }, prefersReducedMotion ? 0 : 420);
+
+        return resolvedRegionId;
+    };
 
     useEffect(() => {
         setActiveRegionId((currentRegionId) => resolveRegionId(currentRegionId));
@@ -55,6 +98,7 @@ export default function NavigationFramework({
 
         const updateFromHash = () => {
             setActiveRegionId(resolveRegionId(window.location.hash));
+            clearTravelState();
         };
 
         updateFromHash();
@@ -108,13 +152,23 @@ export default function NavigationFramework({
         };
     }, [fallbackRegionId, registeredRegionIds]);
 
+    useEffect(() => {
+        return () => {
+            if (typeof window !== 'undefined' && travelResetRef.current) {
+                window.clearTimeout(travelResetRef.current);
+            }
+        };
+    }, []);
+
     const framework = Object.freeze({
         activeRegionId,
         defaultActiveRegionId: fallbackRegionId,
         registeredRegionIds,
+        travelingRegionId,
         getRegionHref(regionId) {
             return `#${resolveRegionId(regionId)}`;
         },
+        requestRegionTravel,
         resolveRegionId,
     });
 
@@ -124,6 +178,7 @@ export default function NavigationFramework({
             data-active-region={framework.activeRegionId}
             data-default-region={framework.defaultActiveRegionId}
             data-registered-region-ids={framework.registeredRegionIds.join(',')}
+            data-traveling-region={framework.travelingRegionId ?? ''}
             style={{ display: 'contents' }}
         >
             {typeof children === 'function' ? children(framework) : children}

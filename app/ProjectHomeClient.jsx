@@ -209,7 +209,7 @@ export default function ProjectHomeClient() {
             <WorldCore worldId='dropple-first-world' originRegionId='home'>
                 <RegionHost regions={REGION_REGISTRY}>
                     <NavigationFramework regions={REGION_REGISTRY} defaultActiveRegionId='home'>
-                        {({ activeRegionId, getRegionHref }) => (
+                        {({ activeRegionId, getRegionHref, requestRegionTravel, travelingRegionId }) => (
                             <main className={styles.page} data-active-region={activeRegionId}>
                                 <div className={styles.pageGlow} aria-hidden='true' />
 
@@ -230,6 +230,11 @@ export default function ProjectHomeClient() {
                                                 className={styles.railLink}
                                                 data-active={activeRegionId === sectionId ? 'true' : 'false'}
                                                 data-response-state={responseState}
+                                                data-traveling={travelingRegionId === sectionId ? 'true' : 'false'}
+                                                onClick={(event) => {
+                                                    event.preventDefault();
+                                                    requestRegionTravel(sectionId);
+                                                }}
                                             >
                                                 <span className={styles.railDot} />
                                                 <span className={styles.railLabel}>{label}</span>
@@ -254,7 +259,14 @@ export default function ProjectHomeClient() {
                                                 imagination.
                                             </p>
                                             <div className={styles.heroActions}>
-                                                <a href={getRegionHref('build')} className={styles.primaryButton}>
+                                                <a
+                                                    href={getRegionHref('build')}
+                                                    className={styles.primaryButton}
+                                                    onClick={(event) => {
+                                                        event.preventDefault();
+                                                        requestRegionTravel('build');
+                                                    }}
+                                                >
                                                     Explore Languages
                                                 </a>
                                                 <Link href={continueRoute} className={styles.secondaryButton}>
@@ -340,7 +352,14 @@ export default function ProjectHomeClient() {
                                                     <Link href={section.defaultModeHref} className={styles.primaryButton}>
                                                         Start Creating
                                                     </Link>
-                                                    <a href={getRegionHref('home')} className={styles.secondaryButton}>
+                                                    <a
+                                                        href={getRegionHref('home')}
+                                                        className={styles.secondaryButton}
+                                                        onClick={(event) => {
+                                                            event.preventDefault();
+                                                            requestRegionTravel('home');
+                                                        }}
+                                                    >
                                                         Return to the First World
                                                     </a>
                                                 </div>

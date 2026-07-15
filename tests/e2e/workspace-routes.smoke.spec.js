@@ -259,6 +259,21 @@ test('home route projects active nearby and distant world response from navigati
   await expect(page.locator('#design')).toHaveAttribute('data-response-state', 'distant');
 });
 
+test('home route requests region travel through navigation authority instead of raw anchor ownership', async ({ page }) => {
+  const response = await page.goto('/', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
+
+  await page.getByRole('link', { name: 'Explore Languages' }).click();
+
+  await expect(page).toHaveURL(/#build$/);
+  await expect(page.getByTestId('navigation-framework')).toHaveAttribute('data-active-region', 'build');
+  await expect(page.getByTestId('navigation-framework')).toHaveAttribute('data-traveling-region', 'build');
+  await expect(page.locator('#build')).toHaveAttribute('data-response-state', 'active');
+});
+
 test('marketplace route exposes blueprint categories and category filter', async ({ page }) => {
   const response = await page.goto('/marketplace', {
     waitUntil: 'networkidle',
