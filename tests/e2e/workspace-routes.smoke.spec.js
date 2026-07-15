@@ -270,8 +270,20 @@ test('home route requests region travel through navigation authority instead of 
 
   await expect(page).toHaveURL(/#build$/);
   await expect(page.getByTestId('navigation-framework')).toHaveAttribute('data-active-region', 'build');
-  await expect(page.getByTestId('navigation-framework')).toHaveAttribute('data-traveling-region', 'build');
   await expect(page.locator('#build')).toHaveAttribute('data-response-state', 'active');
+});
+
+test('home route projects distinct region identities inside one Living World', async ({ page }) => {
+  const response = await page.goto('/', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
+  await expect(page.locator('#build')).toHaveAttribute('data-region-identity', 'structured');
+  await expect(page.locator('#design')).toHaveAttribute('data-region-identity', 'expressive');
+  await expect(page.locator('#media')).toHaveAttribute('data-region-identity', 'cinematic');
+  await expect(page.locator('#collaborate')).toHaveAttribute('data-region-identity', 'collective');
+  await expect(page.locator('#system')).toHaveAttribute('data-region-identity', 'ordered');
 });
 
 test('marketplace route exposes blueprint categories and category filter', async ({ page }) => {

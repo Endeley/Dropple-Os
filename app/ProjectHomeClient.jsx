@@ -23,6 +23,7 @@ const WORKSPACE_ORDER = Object.freeze(VISIBLE_REGION_REGISTRY.map((region) => re
 const WORKSPACE_STORIES = Object.freeze({
     build: Object.freeze({
         label: 'Build',
+        identity: 'structured',
         eyebrow: 'Languages for systems, logic, and automation.',
         description:
             'Bring software systems and product behavior into form. Model flows, decision structures, operational logic, and machine-assisted work without leaving the living world.',
@@ -32,6 +33,7 @@ const WORKSPACE_STORIES = Object.freeze({
     }),
     collaborate: Object.freeze({
         label: 'Collaborate',
+        identity: 'collective',
         eyebrow: 'Languages for review, production, and shared knowledge.',
         description:
             'Inspect work, guide quality, coordinate delivery, and structure learning. Collaboration is not a side utility here; it is a region of the same world.',
@@ -41,6 +43,7 @@ const WORKSPACE_STORIES = Object.freeze({
     }),
     design: Object.freeze({
         label: 'Design',
+        identity: 'expressive',
         eyebrow: 'Languages for interfaces, graphics, and documents.',
         description:
             'Shape interfaces, visual systems, editorial structure, and expressive artifacts. Move between UI, graphic, and document grammars inside one continuous design region.',
@@ -50,6 +53,7 @@ const WORKSPACE_STORIES = Object.freeze({
     }),
     media: Object.freeze({
         label: 'Media',
+        identity: 'cinematic',
         eyebrow: 'Languages for motion, film, and sound.',
         description:
             'Work with time, sequence, and cinematic rhythm. Enter motion, video, and audio languages as living forms rather than disconnected editors.',
@@ -59,6 +63,7 @@ const WORKSPACE_STORIES = Object.freeze({
     }),
     system: Object.freeze({
         label: 'System',
+        identity: 'ordered',
         eyebrow: 'Languages for foundations, components, and governance.',
         description:
             'Define tokens, reusable components, and operational rules that give the rest of Dropple its structure. This is where durable systems become explicit.',
@@ -109,6 +114,7 @@ function buildWorkspaceSections() {
             regionEntryLabel: region.entryLabel,
             workspaceLabel: workspace?.label ?? story.label,
             label: story.label,
+            identity: story.identity,
             eyebrow: story.eyebrow,
             description: story.description,
             icon: story.icon,
@@ -311,6 +317,8 @@ export default function ProjectHomeClient() {
                                         id={section.id}
                                         className={styles.section}
                                         data-first-world-section='true'
+                                        data-region-id={section.id}
+                                        data-region-identity={section.identity}
                                         data-response-state={getRegionResponseState(activeRegionId, section.id)}
                                         style={{
                                             '--accent': section.accent,

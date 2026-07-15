@@ -164,6 +164,21 @@
   grid-template-columns: minmax(320px, 1.05fr) minmax(380px, 560px);
 }
 
+.section[data-region-id='build'] .sectionInner,
+.section[data-region-id='system'] .sectionInner {
+  grid-template-columns: minmax(420px, 1.12fr) minmax(320px, 0.88fr);
+}
+
+.section[data-region-id='design'] .sectionInner,
+.section[data-region-id='media'] .sectionInner {
+  grid-template-columns: minmax(320px, 0.92fr) minmax(400px, 1.08fr);
+}
+
+.section[data-region-id='design'] .workspaceVisual,
+.section[data-region-id='media'] .workspaceVisual {
+  order: -1;
+}
+
 .heroCopy,
 .workspaceCopy {
   display: grid;
@@ -276,6 +291,15 @@
   background: rgba(7, 11, 24, 0.58);
   display: grid;
   gap: 10px;
+}
+
+.section[data-region-id='collaborate'] .workspaceCopy,
+.section[data-region-id='system'] .workspaceCopy {
+  padding: 28px;
+  border-radius: 28px;
+  background: rgba(7, 11, 24, 0.42);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
 }
 
 .supportLabel {
@@ -470,6 +494,47 @@
   filter: blur(20px);
 }
 
+.section[data-region-id='build'] .workspaceAura {
+  border-radius: 34%;
+  background:
+    radial-gradient(circle at 38% 42%, var(--glow, rgba(59, 130, 246, 0.34)), transparent 42%),
+    linear-gradient(135deg, rgba(59, 130, 246, 0.18), transparent 70%);
+}
+
+.section[data-region-id='design'] .workspaceAura {
+  width: 580px;
+  height: 580px;
+  background:
+    radial-gradient(circle at 42% 38%, var(--glow, rgba(245, 158, 11, 0.34)), transparent 44%),
+    radial-gradient(circle at 64% 60%, rgba(251, 191, 36, 0.16), transparent 36%);
+}
+
+.section[data-region-id='media'] .workspaceAura {
+  width: 640px;
+  height: 420px;
+  border-radius: 44%;
+  background:
+    radial-gradient(circle at 50% 50%, var(--glow, rgba(20, 184, 166, 0.34)), transparent 42%),
+    linear-gradient(90deg, rgba(20, 184, 166, 0.2), transparent 70%);
+}
+
+.section[data-region-id='collaborate'] .workspaceAura {
+  width: 520px;
+  height: 520px;
+  background:
+    radial-gradient(circle at 50% 50%, var(--glow, rgba(168, 85, 247, 0.3)), transparent 48%),
+    radial-gradient(circle at 30% 30%, rgba(196, 181, 253, 0.14), transparent 22%);
+}
+
+.section[data-region-id='system'] .workspaceAura {
+  width: 520px;
+  height: 520px;
+  border-radius: 18%;
+  background:
+    linear-gradient(135deg, rgba(249, 115, 22, 0.18), transparent 68%),
+    radial-gradient(circle at 50% 50%, var(--glow, rgba(249, 115, 22, 0.3)), transparent 50%);
+}
+
 .workspaceCard {
   position: relative;
   width: min(34vw, 360px);
@@ -487,6 +552,54 @@
   place-items: center;
   gap: 12px;
   animation: cardDrift 9s ease-in-out infinite;
+}
+
+.section[data-region-id='build'] .workspaceCard {
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent, #3b82f6) 18%, rgba(15, 23, 42, 0.92)), rgba(7, 11, 24, 0.88)),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.02) 0,
+      rgba(255, 255, 255, 0.02) 1px,
+      transparent 1px,
+      transparent 28px
+    );
+  transform: perspective(1200px) rotateY(-10deg) rotateX(4deg);
+}
+
+.section[data-region-id='design'] .workspaceCard {
+  width: min(38vw, 400px);
+  border-radius: 40px;
+  transform: perspective(1200px) rotateY(-12deg) rotateX(8deg) rotate(-4deg);
+}
+
+.section[data-region-id='media'] .workspaceCard {
+  width: min(42vw, 460px);
+  aspect-ratio: 1.28;
+  border-radius: 30px;
+  transform: perspective(1200px) rotateY(-8deg) rotateX(5deg);
+}
+
+.section[data-region-id='collaborate'] .workspaceCard {
+  width: min(32vw, 340px);
+  border-radius: 999px;
+  aspect-ratio: 1;
+  transform: perspective(1200px) rotateY(-12deg) rotateX(2deg);
+}
+
+.section[data-region-id='system'] .workspaceCard {
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent, #f97316) 14%, rgba(15, 23, 42, 0.92)), rgba(7, 11, 24, 0.9)),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.02) 0,
+      rgba(255, 255, 255, 0.02) 1px,
+      transparent 1px,
+      transparent 24px
+    );
+  transform: perspective(1200px) rotateY(-14deg) rotateX(4deg);
 }
 
 .workspaceCardIcon {
@@ -526,6 +639,15 @@
   gap: 10px;
 }
 
+.section[data-region-id='build'] .modePills,
+.section[data-region-id='system'] .modePills {
+  gap: 8px;
+}
+
+.section[data-region-id='collaborate'] .modePills {
+  gap: 12px;
+}
+
 .modePill {
   padding: 10px 14px;
   border-radius: 999px;
@@ -548,6 +670,30 @@
   background: rgba(6, 10, 20, 0.64);
   display: grid;
   gap: 8px;
+}
+
+.section[data-region-id='build'] .modeDescriptionCard {
+  border-radius: 16px;
+}
+
+.section[data-region-id='design'] .modeDescriptionCard {
+  border-radius: 26px;
+  background: rgba(12, 16, 28, 0.72);
+}
+
+.section[data-region-id='media'] .modeDescriptionCard {
+  background:
+    linear-gradient(180deg, rgba(6, 10, 20, 0.72), rgba(6, 10, 20, 0.58)),
+    rgba(6, 10, 20, 0.64);
+}
+
+.section[data-region-id='collaborate'] .modeDescriptionCard {
+  border-radius: 22px;
+  background: rgba(13, 11, 24, 0.68);
+}
+
+.section[data-region-id='system'] .modeDescriptionCard {
+  border-radius: 14px;
 }
 
 .modeDescriptionCard strong {
