@@ -216,7 +216,11 @@ export default function ProjectHomeClient() {
                 <RegionHost regions={REGION_REGISTRY}>
                     <NavigationFramework regions={REGION_REGISTRY} defaultActiveRegionId='home'>
                         {({ activeRegionId, getRegionHref, requestRegionTravel, travelingRegionId }) => (
-                            <main className={styles.page} data-active-region={activeRegionId}>
+                            <main
+                                className={styles.page}
+                                data-active-region={activeRegionId}
+                                data-world-layout='spatial'
+                            >
                                 <div className={styles.pageGlow} aria-hidden='true' />
 
                                 <nav className={styles.sideRail} aria-label='First World sections'>
@@ -249,132 +253,142 @@ export default function ProjectHomeClient() {
                                     })}
                                 </nav>
 
-                                <section
-                                    id='home'
-                                    className={`${styles.section} ${styles.heroSection}`}
-                                    data-first-world-section='true'
-                                    data-response-state={getRegionResponseState(activeRegionId, 'home')}
-                                >
-                                    <div className={styles.sectionInner}>
-                                        <div className={styles.heroCopy}>
-                                            <p className={styles.eyebrow}>Dropple First World</p>
-                                            <h1 className={styles.heroTitle}>The Living World of Creation</h1>
-                                            <p className={styles.heroBody}>
-                                                Dropple is your creative universe. Choose a language of creation and
-                                                enter a world that matches your vision, your workflow, and your
-                                                imagination.
-                                            </p>
-                                            <div className={styles.heroActions}>
-                                                <a
-                                                    href={getRegionHref('build')}
-                                                    className={styles.primaryButton}
-                                                    onClick={(event) => {
-                                                        event.preventDefault();
-                                                        requestRegionTravel('build');
-                                                    }}
-                                                >
-                                                    Explore Languages
-                                                </a>
-                                                <Link href={continueRoute} className={styles.secondaryButton}>
-                                                    Resume active context
-                                                </Link>
-                                            </div>
-                                            <aside className={styles.supportPanel}>
-                                                <p className={styles.supportLabel}>Continuity</p>
-                                                <p className={styles.supportText}>
-                                                    Returning work remains available, but this place is defined by
-                                                    discovery before direction.
-                                                </p>
-                                                {recentProjects.length === 0 ? (
-                                                    <p className={styles.supportMeta}>No recent projects yet.</p>
-                                                ) : (
-                                                    <div className={styles.recentList}>
-                                                        {recentProjects.slice(0, 3).map((project) => (
-                                                            <Link
-                                                                key={project.id}
-                                                                href={`/workspace/new?doc=${encodeURIComponent(project.id)}`}
-                                                                className={styles.recentProjectLink}
-                                                            >
-                                                                <span>{project.name ?? 'Untitled'}</span>
-                                                                <span className={styles.recentProjectMeta}>
-                                                                    {project.updatedAt ?? project.id}
-                                                                </span>
-                                                            </Link>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </aside>
-                                        </div>
-
-                                        <HeroOrbit />
-                                    </div>
-                                    <div className={styles.scrollPrompt}>Scroll to explore</div>
-                                </section>
-
-                                {WORKSPACE_SECTIONS.map((section) => (
+                                <div className={styles.worldLayout}>
                                     <section
-                                        key={section.id}
-                                        id={section.id}
-                                        className={styles.section}
+                                        id='home'
+                                        className={`${styles.section} ${styles.heroSection} ${styles.worldCoreSection}`}
                                         data-first-world-section='true'
-                                        data-region-id={section.id}
-                                        data-region-identity={section.identity}
-                                        data-response-state={getRegionResponseState(activeRegionId, section.id)}
-                                        style={{
-                                            '--accent': section.accent,
-                                            '--glow': section.glow,
-                                        }}
+                                        data-response-state={getRegionResponseState(activeRegionId, 'home')}
                                     >
                                         <div className={styles.sectionInner}>
-                                            <div className={styles.workspaceVisual}>
-                                                <div className={styles.workspaceAura} />
-                                                <div className={styles.workspaceRing} />
-                                                <div className={styles.workspaceCard}>
-                                                    <span className={styles.workspaceCardIcon}>{section.icon}</span>
-                                                    <span className={styles.workspaceCardLabel}>{section.label}</span>
-                                                </div>
-                                                <ParticleField accent={section.accent} prefix={section.id} />
-                                            </div>
-
-                                            <div className={styles.workspaceCopy}>
-                                                <p className={styles.sectionTag}>{section.workspaceLabel}</p>
-                                                <h2 className={styles.sectionTitle}>{section.label}</h2>
-                                                <p className={styles.sectionEyebrow}>{section.eyebrow}</p>
-                                                <p className={styles.sectionDescription}>{section.description}</p>
-                                                <div className={styles.modePills}>
-                                                    {section.modes.map((mode) => (
-                                                        <Link key={mode.id} href={mode.href} className={styles.modePill}>
-                                                            {mode.label}
-                                                        </Link>
-                                                    ))}
-                                                </div>
-                                                <div className={styles.modeDescriptions}>
-                                                    {section.modes.map((mode) => (
-                                                        <div key={mode.id} className={styles.modeDescriptionCard}>
-                                                            <strong>{mode.label}</strong>
-                                                            <span>{mode.description}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                <div className={styles.sectionActions}>
-                                                    <Link href={section.defaultModeHref} className={styles.primaryButton}>
-                                                        Start Creating
-                                                    </Link>
+                                            <div className={styles.heroCopy}>
+                                                <p className={styles.eyebrow}>Dropple First World</p>
+                                                <h1 className={styles.heroTitle}>The Living World of Creation</h1>
+                                                <p className={styles.heroBody}>
+                                                    Dropple is your creative universe. Choose a language of creation and
+                                                    enter a world that matches your vision, your workflow, and your
+                                                    imagination.
+                                                </p>
+                                                <div className={styles.heroActions}>
                                                     <a
-                                                        href={getRegionHref('home')}
-                                                        className={styles.secondaryButton}
+                                                        href={getRegionHref('build')}
+                                                        className={styles.primaryButton}
                                                         onClick={(event) => {
                                                             event.preventDefault();
-                                                            requestRegionTravel('home');
+                                                            requestRegionTravel('build');
                                                         }}
                                                     >
-                                                        Return to the First World
+                                                        Explore Languages
                                                     </a>
+                                                    <Link href={continueRoute} className={styles.secondaryButton}>
+                                                        Resume active context
+                                                    </Link>
+                                                </div>
+                                                <aside className={styles.supportPanel}>
+                                                    <p className={styles.supportLabel}>Continuity</p>
+                                                    <p className={styles.supportText}>
+                                                        Returning work remains available, but this place is defined by
+                                                        discovery before direction.
+                                                    </p>
+                                                    {recentProjects.length === 0 ? (
+                                                        <p className={styles.supportMeta}>No recent projects yet.</p>
+                                                    ) : (
+                                                        <div className={styles.recentList}>
+                                                            {recentProjects.slice(0, 3).map((project) => (
+                                                                <Link
+                                                                    key={project.id}
+                                                                    href={`/workspace/new?doc=${encodeURIComponent(project.id)}`}
+                                                                    className={styles.recentProjectLink}
+                                                                >
+                                                                    <span>{project.name ?? 'Untitled'}</span>
+                                                                    <span className={styles.recentProjectMeta}>
+                                                                        {project.updatedAt ?? project.id}
+                                                                    </span>
+                                                                </Link>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </aside>
+                                            </div>
+
+                                            <HeroOrbit />
+                                        </div>
+                                        <div className={styles.scrollPrompt}>Travel through the world</div>
+                                    </section>
+                                    {WORKSPACE_SECTIONS.map((section) => (
+                                        <section
+                                            key={section.id}
+                                            id={section.id}
+                                            className={`${styles.section} ${styles.worldRegionSection}`}
+                                            data-first-world-section='true'
+                                            data-region-id={section.id}
+                                            data-region-identity={section.identity}
+                                            data-response-state={getRegionResponseState(activeRegionId, section.id)}
+                                            style={{
+                                                '--accent': section.accent,
+                                                '--glow': section.glow,
+                                            }}
+                                        >
+                                            <div className={styles.sectionInner}>
+                                                <div className={styles.workspaceVisual}>
+                                                    <div className={styles.workspaceAura} />
+                                                    <div className={styles.workspaceRing} />
+                                                    <div className={styles.workspaceCard}>
+                                                        <span className={styles.workspaceCardIcon}>{section.icon}</span>
+                                                        <span className={styles.workspaceCardLabel}>{section.label}</span>
+                                                    </div>
+                                                    <ParticleField accent={section.accent} prefix={section.id} />
+                                                </div>
+
+                                                <div className={styles.workspaceCopy}>
+                                                    <p className={styles.sectionTag}>{section.workspaceLabel}</p>
+                                                    <h2 className={styles.sectionTitle}>{section.label}</h2>
+                                                    <p className={styles.sectionEyebrow}>{section.eyebrow}</p>
+                                                    <div className={styles.regionDetails}>
+                                                        <p className={styles.sectionDescription}>{section.description}</p>
+                                                        <div className={styles.modePills}>
+                                                            {section.modes.map((mode) => (
+                                                                <Link
+                                                                    key={mode.id}
+                                                                    href={mode.href}
+                                                                    className={styles.modePill}
+                                                                >
+                                                                    {mode.label}
+                                                                </Link>
+                                                            ))}
+                                                        </div>
+                                                        <div className={styles.modeDescriptions}>
+                                                            {section.modes.map((mode) => (
+                                                                <div key={mode.id} className={styles.modeDescriptionCard}>
+                                                                    <strong>{mode.label}</strong>
+                                                                    <span>{mode.description}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                        <div className={styles.sectionActions}>
+                                                            <Link
+                                                                href={section.defaultModeHref}
+                                                                className={styles.primaryButton}
+                                                            >
+                                                                Start Creating
+                                                            </Link>
+                                                            <a
+                                                                href={getRegionHref('home')}
+                                                                className={styles.secondaryButton}
+                                                                onClick={(event) => {
+                                                                    event.preventDefault();
+                                                                    requestRegionTravel('home');
+                                                                }}
+                                                            >
+                                                                Return to the First World
+                                                            </a>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </section>
-                                ))}
+                                        </section>
+                                    ))}
+                                </div>
 
                                 <footer className={styles.footer}>
                                     <span className={styles.footerCopy}>

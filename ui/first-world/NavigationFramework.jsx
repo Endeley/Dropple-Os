@@ -45,6 +45,7 @@ export default function NavigationFramework({
     const [activeRegionId, setActiveRegionId] = useState(fallbackRegionId);
     const [travelingRegionId, setTravelingRegionId] = useState(null);
     const travelResetRef = useRef(null);
+    const hasExplicitTravelRef = useRef(false);
 
     const clearTravelState = () => {
         if (travelResetRef.current) {
@@ -64,6 +65,7 @@ export default function NavigationFramework({
         const targetSection = document.getElementById(resolvedRegionId);
         const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+        hasExplicitTravelRef.current = true;
         setActiveRegionId(resolvedRegionId);
         setTravelingRegionId(resolvedRegionId);
         window.history.replaceState(null, '', `#${resolvedRegionId}`);
@@ -97,7 +99,12 @@ export default function NavigationFramework({
         }
 
         const updateFromHash = () => {
-            setActiveRegionId(resolveRegionId(window.location.hash));
+            const normalizedHashRegionId = normalizeRegionId(window.location.hash);
+            const hasRegisteredHash =
+                normalizedHashRegionId && registeredRegionIds.includes(normalizedHashRegionId);
+            const resolvedHashRegionId = resolveRegionId(window.location.hash);
+            hasExplicitTravelRef.current = Boolean(hasRegisteredHash);
+            setActiveRegionId(resolvedHashRegionId);
             clearTravelState();
         };
 
@@ -125,6 +132,20 @@ export default function NavigationFramework({
 
                     if (hashedRegionId && registeredRegionIds.includes(hashedRegionId)) {
                         setActiveRegionId(hashedRegionId);
+                        return;
+                    }
+                }
+
+                if (!hasExplicitTravelRef.current) {
+                    if (typeof window !== 'undefined' && window.scrollY <= 48) {
+                        setActiveRegionId(fallbackRegionId);
+                        return;
+                    }
+
+                    const originSection = entries.find((entry) => entry.target?.id === fallbackRegionId);
+
+                    if (originSection?.isIntersecting) {
+                        setActiveRegionId(fallbackRegionId);
                         return;
                     }
                 }

@@ -147,6 +147,7 @@ test('home route exposes First World identity and language discovery', async ({ 
   });
 
   expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
+  await expect(page.locator('main')).toHaveAttribute('data-world-layout', 'spatial');
   await expect(page.getByTestId('living-world-host')).toHaveCount(1);
   await expect(page.getByTestId('living-world-host')).toHaveAttribute('data-world-id', 'dropple-first-world');
   await expect(page.getByTestId('living-world-host').getByTestId('world-core')).toHaveCount(1);
