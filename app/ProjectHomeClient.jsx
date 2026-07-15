@@ -26,7 +26,10 @@ const WORKSPACE_STORIES = Object.freeze({
         identity: 'structured',
         eyebrow: 'Languages for systems, logic, and automation.',
         description:
-            'Bring software systems and product behavior into form. Model flows, decision structures, operational logic, and machine-assisted work without leaving the living world.',
+            'A structured district for software systems, product behavior, and machine-assisted construction.',
+        landmark: 'Construction Basin',
+        approach: 'Enter when logic needs shape, sequence, or executable structure.',
+        horizon: 'Systems rise here as plans become operable forms.',
         icon: '</>',
         accent: '#3b82f6',
         glow: 'rgba(59, 130, 246, 0.34)',
@@ -36,7 +39,10 @@ const WORKSPACE_STORIES = Object.freeze({
         identity: 'collective',
         eyebrow: 'Languages for review, production, and shared knowledge.',
         description:
-            'Inspect work, guide quality, coordinate delivery, and structure learning. Collaboration is not a side utility here; it is a region of the same world.',
+            'A collective district for review, production readiness, and shared understanding.',
+        landmark: 'Shared Signal Hall',
+        approach: 'Enter when work needs witness, critique, alignment, or teaching.',
+        horizon: 'Voices, feedback, and knowledge remain part of the same world-state.',
         icon: '◉',
         accent: '#a855f7',
         glow: 'rgba(168, 85, 247, 0.34)',
@@ -46,7 +52,10 @@ const WORKSPACE_STORIES = Object.freeze({
         identity: 'expressive',
         eyebrow: 'Languages for interfaces, graphics, and documents.',
         description:
-            'Shape interfaces, visual systems, editorial structure, and expressive artifacts. Move between UI, graphic, and document grammars inside one continuous design region.',
+            'An expressive district for interfaces, graphics, documents, and visual composition.',
+        landmark: 'Expression Terrace',
+        approach: 'Enter when visual language, interface shape, or editorial form must emerge.',
+        horizon: 'Surfaces, symbols, and structure gather into visible meaning.',
         icon: '✦',
         accent: '#f59e0b',
         glow: 'rgba(245, 158, 11, 0.34)',
@@ -56,7 +65,10 @@ const WORKSPACE_STORIES = Object.freeze({
         identity: 'cinematic',
         eyebrow: 'Languages for motion, film, and sound.',
         description:
-            'Work with time, sequence, and cinematic rhythm. Enter motion, video, and audio languages as living forms rather than disconnected editors.',
+            'A cinematic district for motion, film, sound, sequence, and temporal composition.',
+        landmark: 'Time Current',
+        approach: 'Enter when rhythm, sequence, or recorded presence becomes the medium.',
+        horizon: 'Movement and sound travel as one continuous current.',
         icon: '▶',
         accent: '#14b8a6',
         glow: 'rgba(20, 184, 166, 0.34)',
@@ -66,7 +78,10 @@ const WORKSPACE_STORIES = Object.freeze({
         identity: 'ordered',
         eyebrow: 'Languages for foundations, components, and governance.',
         description:
-            'Define tokens, reusable components, and operational rules that give the rest of Dropple its structure. This is where durable systems become explicit.',
+            'An ordered district for foundations, components, governance, and durable operating rules.',
+        landmark: 'Framework Ridge',
+        approach: 'Enter when the world itself needs clearer structure, repeatability, or law.',
+        horizon: 'Reusable primitives and constitutional form become explicit here.',
         icon: '◌',
         accent: '#f97316',
         glow: 'rgba(249, 115, 22, 0.34)',
@@ -117,6 +132,9 @@ function buildWorkspaceSections() {
             identity: story.identity,
             eyebrow: story.eyebrow,
             description: story.description,
+            landmark: story.landmark,
+            approach: story.approach,
+            horizon: story.horizon,
             icon: story.icon,
             accent: story.accent,
             glow: story.glow,
@@ -341,11 +359,27 @@ export default function ProjectHomeClient() {
                                                 </div>
 
                                                 <div className={styles.workspaceCopy}>
-                                                    <p className={styles.sectionTag}>{section.workspaceLabel}</p>
+                                                    <p className={styles.sectionTag}>{section.regionTitle}</p>
                                                     <h2 className={styles.sectionTitle}>{section.label}</h2>
-                                                    <p className={styles.sectionEyebrow}>{section.eyebrow}</p>
+                                                    <p className={styles.sectionEyebrow}>{section.landmark}</p>
                                                     <div className={styles.regionDetails}>
                                                         <p className={styles.sectionDescription}>{section.description}</p>
+                                                        <div className={styles.regionSignals}>
+                                                            <div className={styles.regionSignalCard}>
+                                                                <span className={styles.regionSignalLabel}>Approach</span>
+                                                                <strong>{section.approach}</strong>
+                                                            </div>
+                                                            <div className={styles.regionSignalCard}>
+                                                                <span className={styles.regionSignalLabel}>Horizon</span>
+                                                                <strong>{section.horizon}</strong>
+                                                            </div>
+                                                        </div>
+                                                        <div className={styles.regionEntryFrame}>
+                                                            <span className={styles.regionEntryLabel}>Entry Languages</span>
+                                                            <p className={styles.regionEntryCopy}>
+                                                                {section.eyebrow}
+                                                            </p>
+                                                        </div>
                                                         <div className={styles.modePills}>
                                                             {section.modes.map((mode) => (
                                                                 <Link
@@ -355,14 +389,6 @@ export default function ProjectHomeClient() {
                                                                 >
                                                                     {mode.label}
                                                                 </Link>
-                                                            ))}
-                                                        </div>
-                                                        <div className={styles.modeDescriptions}>
-                                                            {section.modes.map((mode) => (
-                                                                <div key={mode.id} className={styles.modeDescriptionCard}>
-                                                                    <strong>{mode.label}</strong>
-                                                                    <span>{mode.description}</span>
-                                                                </div>
                                                             ))}
                                                         </div>
                                                         <div className={styles.sectionActions}>
