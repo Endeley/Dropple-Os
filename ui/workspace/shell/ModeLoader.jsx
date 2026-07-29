@@ -17,6 +17,7 @@ export function ModeLoader({
     queryPerspective = null,
     queryEntry = null,
     initialEnvironmentDescriptor = null,
+    initialWorkspaceLaunchContext = null,
     initialResolvedTemplateEnvironment = null,
 }) {
     const requestedPerspectiveId = (queryPerspective || mode || '').toLowerCase();
@@ -85,6 +86,7 @@ export function ModeLoader({
             workspaceContext={context}
             shellProps={{
                 projectPerspectiveContext,
+                initialWorkspaceLaunchContext,
                 initialEnvironmentDescriptor,
                 initialResolvedTemplateEnvironment,
             }}

@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useOwnership } from '@/marketplace/useOwnershipStore';
 import { Badge } from '@/ui/controls/ui/badge.jsx';
 import { getArtifactPresentation } from '@/marketplace/artifactPresentation.js';
-import { resolveCanonicalWorkspaceOverlayContext } from '@/platform/workspaces/index.js';
 import { getExportCapabilities } from '@/runtime/export/getExportCapabilities.js';
-import { buildProjectEnvironmentStartRoute } from '@/platform/workspaces/projectStartRoute.js';
+import { buildTemplateDetailLaunchHref } from '@/runtime/workspaces/index.js';
 import {
   ArtifactExportKinds,
   exportArtifact as exportArtifactFacade,
@@ -134,25 +133,11 @@ export default function TemplateDetailPage({ params }) {
 
   function useTemplate() {
     if (!canUseTemplate) return;
-    const overlayContext = resolveCanonicalWorkspaceOverlayContext({
-      workspaceId: template?.workspaceId ?? null,
-      modeId: template?.modeId ?? template?.mode ?? null,
-    });
-
-    if (!lineageRootId || !versionId) {
-      throw new Error('Blueprint is missing lineage identity.');
+    const href = buildTemplateDetailLaunchHref(template);
+    if (href === '/workspace/create') {
+      throw new Error('Template is missing launch identity.');
     }
-
-    router.push(
-      buildProjectEnvironmentStartRoute({
-        perspectiveId: 'create',
-        workspaceId: overlayContext.workspaceId,
-        modeId: overlayContext.canonicalModeId ?? overlayContext.modeId,
-        overlayId: overlayContext.overlayId,
-        lineageRootId,
-        versionId,
-      }),
-    );
+    router.push(href);
   }
 
   function buySelectedLicense() {

@@ -11,6 +11,7 @@ import {
     buildInitialEnvironmentDescriptorFromQuery,
     resolveSeededWorkspace,
 } from '../workspaceEnvironmentBoot.js';
+import { createWorkspaceLaunchContext } from '@/runtime/workspaces/index.js';
 import {
     buildRuntimeSnapshotFromArtifact,
     createEnvironmentArtifact,
@@ -74,11 +75,15 @@ test('workspace/new boot, editor artifact reconstruction, and runtime activation
 
         const descriptor = buildInitialEnvironmentDescriptorFromQuery({
             lineageRootId: publication.seed.lineage.rootId,
-            versionId: publication.seed.lineage.nodeId,
-            workspaceId: 'design',
-            modeId: 'graphic',
             overlayId: 'brand-systems',
-        });
+        }, createWorkspaceLaunchContext({
+            language: 'graphic',
+            template: {
+                id: 'tpl.workspace-boot-parity',
+                versionId: publication.seed.lineage.nodeId,
+            },
+            grammar: 'create',
+        }));
 
         const seeded = resolveSeededWorkspace({
             initialEnvironmentDescriptor: descriptor,
@@ -120,3 +125,30 @@ test('workspace/new boot, editor artifact reconstruction, and runtime activation
             hashRuntimeState(activated.runtimeSnapshot),
         );
     }));
+
+test('workspace/new environment boot consumes launch-context template identity and language ownership instead of query reconstruction', () => {
+    const descriptor = buildInitialEnvironmentDescriptorFromQuery(
+        {
+            lineageRootId: 'root-template-3',
+            overlayId: 'brand-systems',
+            workspaceId: 'legacy-design',
+            modeId: 'legacy-graphic',
+            versionId: 'legacy-version',
+        },
+        createWorkspaceLaunchContext({
+            language: 'graphic',
+            template: {
+                id: 'tpl.design.hero-motion-template',
+                versionId: 'tpl.design.hero-motion-template.v3',
+            },
+            grammar: 'create',
+        }),
+    );
+
+    assert.equal(descriptor.lineage.lineageRootId, 'root-template-3');
+    assert.equal(descriptor.lineage.versionId, 'tpl.design.hero-motion-template.v3');
+    assert.equal(descriptor.environment.modeContext.workspaceId, 'design');
+    assert.equal(descriptor.environment.modeContext.modeId, 'graphic');
+    assert.equal(descriptor.environment.modeContext.overlayId, 'brand-systems');
+    assert.equal(descriptor.metadata.source, 'workspace-new-launch-context');
+});

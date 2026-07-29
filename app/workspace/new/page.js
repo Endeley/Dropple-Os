@@ -8,10 +8,15 @@ import {
   getSearchParam,
   resolveSeededWorkspace,
 } from './workspaceEnvironmentBoot.js';
+import { resolveWorkspaceLaunchContextFromSearchParams } from '@/runtime/workspaces/index.js';
 
 export default async function WorkspaceNewPage({ searchParams = {} }) {
   const resolvedSearchParams = await searchParams;
-  const initialEnvironmentDescriptor = buildInitialEnvironmentDescriptorFromQuery(resolvedSearchParams);
+  const initialWorkspaceLaunchContext = resolveWorkspaceLaunchContextFromSearchParams(resolvedSearchParams);
+  const initialEnvironmentDescriptor = buildInitialEnvironmentDescriptorFromQuery(
+    resolvedSearchParams,
+    initialWorkspaceLaunchContext,
+  );
   const initialDocumentId = getSearchParam(resolvedSearchParams, 'doc');
   const fromTemplate = getSearchParam(resolvedSearchParams, 'fromTemplate');
   const fromLesson = getSearchParam(resolvedSearchParams, 'fromLesson');
@@ -48,6 +53,7 @@ export default async function WorkspaceNewPage({ searchParams = {} }) {
       workspaceContext={workspaceContext}
       shellProps={{
         initialDocumentId,
+        initialWorkspaceLaunchContext,
         initialEnvironmentDescriptor: resolvedInitialEnvironmentDescriptor,
         initialResolvedTemplateEnvironment,
         initialRuntimeSnapshot,

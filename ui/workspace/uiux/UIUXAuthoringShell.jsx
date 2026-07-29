@@ -48,6 +48,7 @@ import {
     resolveUIUXScenarioProvision,
 } from './uiuxScenarioProvision.js';
 import { resolveUIUXFirstExpressionProjection } from './uiuxFirstExpressionProjection.js';
+import { useWorkspaceSession } from '@/ui/workspace/session/WorkspaceSessionContext.jsx';
 
 const SCENARIO_SELECTION_STORAGE_PREFIX = 'dropple.uiux.scenario-selection';
 
@@ -78,6 +79,7 @@ function UIUXAuthoringShellContent({
     dispatcher = null,
 }) {
     const emit = useCallback((event) => nodeUpdateIntent(event), []);
+    const workspaceSession = useWorkspaceSession();
     const [documentId, setDocumentId] = useState(null);
     const [documentName, setDocumentName] = useState('Untitled');
     const [dismissedFirstExpressionNodeId, setDismissedFirstExpressionNodeId] = useState(null);
@@ -387,6 +389,7 @@ function UIUXAuthoringShellContent({
                 workspace='design'
                 mode={resolvedModeId}
             />
+            <div style={{ display: 'none' }} data-workspace-grammar={workspaceSession.grammar ?? ''} />
 
             <div
                 className='uiux-root'

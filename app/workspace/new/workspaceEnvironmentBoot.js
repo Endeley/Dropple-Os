@@ -24,9 +24,37 @@ export function getSearchParam(searchParams, key) {
     return Array.isArray(value) ? value[0] ?? null : value ?? null;
 }
 
-export function buildInitialEnvironmentDescriptorFromQuery(searchParams = {}) {
+function resolveLaunchContextModeContext(launchContext = null) {
+    const launchLanguage =
+        typeof launchContext?.language === 'string' ? launchContext.language.trim() : '';
+    if (!launchLanguage) {
+        return null;
+    }
+
+    const resolvedContext = resolveCanonicalWorkspaceOverlayContext({
+        modeId: launchLanguage,
+    });
+    const resolvedWorkspaceId = resolvedContext?.workspaceId ?? null;
+    const resolvedModeId =
+        resolvedContext?.canonicalModeId ??
+        resolvedContext?.modeId ??
+        launchLanguage ??
+        null;
+
+    if (!resolvedWorkspaceId || !resolvedModeId) {
+        return null;
+    }
+
+    return Object.freeze({
+        workspaceId: resolvedWorkspaceId,
+        modeId: resolvedModeId,
+        overlayId: resolvedContext?.overlayId ?? null,
+    });
+}
+
+export function buildInitialEnvironmentDescriptorFromQuery(searchParams = {}, launchContext = null) {
     const lineageRootId = getSearchParam(searchParams, 'lineageRootId');
-    const versionId = getSearchParam(searchParams, 'versionId');
+    const versionId = launchContext?.template?.versionId ?? null;
 
     if (!lineageRootId && !versionId) {
         return null;
@@ -36,23 +64,14 @@ export function buildInitialEnvironmentDescriptorFromQuery(searchParams = {}) {
         throw new Error('Workspace new requires both lineageRootId and versionId for environment boot.');
     }
 
-    const workspaceId = getSearchParam(searchParams, 'workspaceId');
-    const modeId = getSearchParam(searchParams, 'modeId');
     const overlayId = getSearchParam(searchParams, 'overlayId');
-    const resolvedContext = resolveCanonicalWorkspaceOverlayContext({
-        workspaceId,
-        modeId,
-    });
-    const resolvedWorkspaceId = resolvedContext?.workspaceId ?? workspaceId ?? null;
-    const resolvedModeId =
-        resolvedContext?.canonicalModeId ??
-        resolvedContext?.modeId ??
-        modeId ??
-        null;
+    const resolvedContext = resolveLaunchContextModeContext(launchContext);
+    const resolvedWorkspaceId = resolvedContext?.workspaceId ?? null;
+    const resolvedModeId = resolvedContext?.modeId ?? null;
     const resolvedOverlayId = overlayId ?? resolvedContext?.overlayId ?? null;
 
     if (!resolvedWorkspaceId || !resolvedModeId) {
-        throw new Error('Workspace new environment boot requires workspaceId and modeId.');
+        throw new Error('Workspace new environment boot requires launch-context language ownership.');
     }
 
     return createDerivedEnvironmentDescriptor({
@@ -70,7 +89,7 @@ export function buildInitialEnvironmentDescriptorFromQuery(searchParams = {}) {
             },
         },
         metadata: {
-            source: 'workspace-new-query',
+            source: launchContext ? 'workspace-new-launch-context' : 'workspace-new-query',
         },
     });
 }

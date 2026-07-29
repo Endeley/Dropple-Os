@@ -25,6 +25,7 @@ import { useCapabilityLifecycle } from '@/ui/workspace/useCapabilityLifecycle.js
 import { useInterpretedToolProviderLifecycle } from '@/ui/workspace/useInterpretedToolProviderLifecycle.js';
 import { useWorkspaceNavigation } from '@/ui/workspace/shared/useWorkspaceNavigation.js';
 import { openTemplatePublishDialog } from '@/ui/bridges/templatePublishRuntimeFacade.js';
+import { useWorkspaceSession } from '@/ui/workspace/session/WorkspaceSessionContext.jsx';
 import { NodeMutationTypes } from '@/core/events/nodeMutationTypes.js';
 import {
     createArtifactPersistenceSnapshot,
@@ -71,6 +72,7 @@ export function EditorWorkspaceShell({
      * Workspace + mode resolution
      */
     const workspaceContext = useMemo(() => providedWorkspaceContext ?? resolveWorkspaceContext({ workspace: modeId }), [modeId, providedWorkspaceContext]);
+    const workspaceSession = useWorkspaceSession();
     const overlayContext = useMemo(
         () =>
             resolveCanonicalWorkspaceOverlayContext({

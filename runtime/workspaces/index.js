@@ -10,3 +10,17 @@ export { createDefaultSlice } from './defaultDocumentSlices.js';
 export { bootWorkspaceDocument } from './bootWorkspaceDocument.js';
 export { resolveWorkspaceCapabilities } from './resolveWorkspaceCapabilities.js';
 export { createCapabilityContext } from './createCapabilityContext.js';
+export {
+    WORKSPACE_LAUNCH_CONTEXT_VERSION,
+    createWorkspaceLaunchContext,
+    resolveWorkspaceLaunchContextFromSearchParams,
+    applyWorkspaceLaunchContextToSearchParams,
+} from './workspaceLaunchContext.js';
+export {
+    createHomepageLanguageLaunchContext,
+    buildHomepageLanguageLaunchHref,
+} from './homepageLaunch.js';
+export {
+    createTemplateDetailLaunchContext,
+    buildTemplateDetailLaunchHref,
+} from './templateLaunch.js';
