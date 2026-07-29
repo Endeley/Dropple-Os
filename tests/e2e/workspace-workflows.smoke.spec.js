@@ -124,10 +124,14 @@ test('marketplace blueprint workflow opens certified blueprint details and enter
   const lineage = resolveTemplateLineageIdentity(template);
   expect(workspaceUrl.pathname).toBe('/workspace/create');
   expect(workspaceUrl.searchParams.get('entry')).toBe('uiux');
-  expect(workspaceUrl.searchParams.get('workspaceId')).toBe('design');
-  expect(workspaceUrl.searchParams.get('modeId')).toBe('uiux');
   expect(workspaceUrl.searchParams.get('lineageRootId')).toBe(lineage.lineageRootId);
-  expect(workspaceUrl.searchParams.get('versionId')).toBe(lineage.versionId);
+  expect(workspaceUrl.searchParams.get('workspaceId')).toBe(null);
+  expect(workspaceUrl.searchParams.get('modeId')).toBe(null);
+  expect(workspaceUrl.searchParams.get('versionId')).toBe(null);
+  expect(workspaceUrl.searchParams.get('language')).toBe('uiux');
+  expect(workspaceUrl.searchParams.get('template')).toBe(template.id);
+  expect(workspaceUrl.searchParams.get('templateVersionId')).toBe(lineage.versionId);
+  expect(workspaceUrl.searchParams.get('grammar')).toBe('create');
   await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();
   await expect
     .poll(async () => visibleNodes(page).count())

@@ -24,3 +24,9 @@ export {
     createTemplateDetailLaunchContext,
     buildTemplateDetailLaunchHref,
 } from './templateLaunch.js';
+export {
+    resolveRecentWorkDocument,
+    createRecentWorkLaunchContext,
+    buildRecentWorkLaunchHref,
+    buildStoredRecentWorkLaunchHref,
+} from './recentWorkLaunch.js';

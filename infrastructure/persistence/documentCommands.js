@@ -28,7 +28,13 @@ export function saveLocalDocumentSnapshot({
   });
 
   saveDocumentFile(docId, snapshot);
-  addToRegistry({ id: docId, name, updatedAt: Date.now() });
+  addToRegistry({
+    id: docId,
+    name,
+    workspaceId: metadata?.workspace ?? null,
+    modeId: metadata?.mode ?? null,
+    updatedAt: Date.now(),
+  });
   setActiveDocument(docId);
 
   return { id: docId, snapshot };

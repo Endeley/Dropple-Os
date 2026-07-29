@@ -152,3 +152,20 @@ test('workspace/new environment boot consumes launch-context template identity a
     assert.equal(descriptor.environment.modeContext.overlayId, 'brand-systems');
     assert.equal(descriptor.metadata.source, 'workspace-new-launch-context');
 });
+
+test('workspace/new environment boot preserves legacy query bootstrap when launch context is absent', () => {
+    const descriptor = buildInitialEnvironmentDescriptorFromQuery({
+        lineageRootId: 'root-template-legacy',
+        versionId: 'tpl.legacy.v1',
+        workspaceId: 'design',
+        modeId: 'uiux',
+        overlayId: 'uiux',
+    });
+
+    assert.equal(descriptor.lineage.lineageRootId, 'root-template-legacy');
+    assert.equal(descriptor.lineage.versionId, 'tpl.legacy.v1');
+    assert.equal(descriptor.environment.modeContext.workspaceId, 'design');
+    assert.equal(descriptor.environment.modeContext.modeId, 'uiux');
+    assert.equal(descriptor.environment.modeContext.overlayId, 'uiux');
+    assert.equal(descriptor.metadata.source, 'workspace-new-query');
+});

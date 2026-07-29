@@ -54,7 +54,10 @@ function resolveLaunchContextModeContext(launchContext = null) {
 
 export function buildInitialEnvironmentDescriptorFromQuery(searchParams = {}, launchContext = null) {
     const lineageRootId = getSearchParam(searchParams, 'lineageRootId');
-    const versionId = launchContext?.template?.versionId ?? null;
+    const versionId =
+        launchContext?.template?.versionId ??
+        getSearchParam(searchParams, 'versionId') ??
+        null;
 
     if (!lineageRootId && !versionId) {
         return null;
@@ -66,8 +69,8 @@ export function buildInitialEnvironmentDescriptorFromQuery(searchParams = {}, la
 
     const overlayId = getSearchParam(searchParams, 'overlayId');
     const resolvedContext = resolveLaunchContextModeContext(launchContext);
-    const resolvedWorkspaceId = resolvedContext?.workspaceId ?? null;
-    const resolvedModeId = resolvedContext?.modeId ?? null;
+    const resolvedWorkspaceId = resolvedContext?.workspaceId ?? getSearchParam(searchParams, 'workspaceId') ?? null;
+    const resolvedModeId = resolvedContext?.modeId ?? getSearchParam(searchParams, 'modeId') ?? null;
     const resolvedOverlayId = overlayId ?? resolvedContext?.overlayId ?? null;
 
     if (!resolvedWorkspaceId || !resolvedModeId) {

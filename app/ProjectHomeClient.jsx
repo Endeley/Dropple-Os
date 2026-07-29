@@ -22,11 +22,24 @@ import {
     Zap,
 } from 'lucide-react';
 import { buildHomepageLanguageLaunchHref } from '@/runtime/workspaces/index.js';
+import { buildRecentWorkLaunchHref } from '@/runtime/workspaces/index.js';
+import { getActiveDocument } from '@/infrastructure/persistence/activeDocument.js';
+import { loadRegistry } from '@/infrastructure/persistence/documentRegistry.js';
+import LivingWorldHost from '@/ui/first-world/LivingWorldHost.jsx';
+import WorldCore from '@/ui/first-world/WorldCore.jsx';
+import RegionHost, { FIRST_WORLD_REGION_REGISTRY } from '@/ui/first-world/RegionHost.jsx';
 
 import styles from './ProjectHomeClient.module.css';
 
 function buildLanguageWorkspaceHref(modeId) {
     return buildHomepageLanguageLaunchHref(modeId);
+}
+
+function buildContinueExistingWorkHref() {
+    return buildRecentWorkLaunchHref({
+        activeDocumentId: getActiveDocument(),
+        recentDocuments: loadRegistry(),
+    });
 }
 
 const LANGUAGE_ICONS = {
@@ -232,6 +245,57 @@ const FOOTER_LINK_GROUPS = [
     ['Privacy', 'Terms', 'Security', 'Sign in'],
 ];
 
+const FIRST_WORLD_NAV_ENTRIES = Object.freeze([
+    Object.freeze({ id: 'build', label: 'Build' }),
+    Object.freeze({ id: 'design', label: 'Design' }),
+    Object.freeze({ id: 'media', label: 'Media' }),
+    Object.freeze({ id: 'system', label: 'System' }),
+    Object.freeze({ id: 'collaborate', label: 'Collaborate' }),
+]);
+
+const REGION_IDENTITIES = Object.freeze({
+    home: 'origin',
+    build: 'structured',
+    design: 'expressive',
+    media: 'cinematic',
+    system: 'ordered',
+    collaborate: 'collective',
+    education: 'guided',
+    translation: 'transitional',
+});
+
+const PRESENCE_MARKER_STYLE = Object.freeze({
+    position: 'absolute',
+    width: '2px',
+    height: '2px',
+    opacity: 0.01,
+    pointerEvents: 'none',
+});
+
+function resolveCameraRelationship(regionId, activeRegionId) {
+    if (regionId === 'home') {
+        return 'foreground';
+    }
+
+    if (regionId === activeRegionId) {
+        return 'approaching';
+    }
+
+    return 'distant';
+}
+
+function normalizeRegionId(regionId) {
+    if (typeof regionId !== 'string') {
+        return null;
+    }
+
+    return regionId.replace(/^#/, '').trim() || null;
+}
+
+function resolveHomeFallbackRegionId() {
+    return FIRST_WORLD_REGION_REGISTRY.find((region) => region.id === 'home')?.id ?? 'home';
+}
+
 const DEFAULT_SURFACE_MOTION = Object.freeze({
     tiltX: '0deg',
     tiltY: '0deg',
@@ -369,6 +433,14 @@ function ChapterVisual({ chapter }) {
 }
 
 export default function ProjectHomeClient() {
+    const [continueExistingWorkHref, setContinueExistingWorkHref] = useState('/workspace/overview');
+    const registeredRegionIds = useMemo(
+        () => FIRST_WORLD_REGION_REGISTRY.map((region) => region.id),
+        [],
+    );
+    const fallbackRegionId = useMemo(() => resolveHomeFallbackRegionId(), []);
+    const [activeRegionId, setActiveRegionId] = useState(fallbackRegionId);
+
     useEffect(() => {
         const nodes = document.querySelectorAll('[data-scroll-reveal]');
 
@@ -394,8 +466,145 @@ export default function ProjectHomeClient() {
         return () => observer.disconnect();
     }, []);
 
+    useEffect(() => {
+        setContinueExistingWorkHref(buildContinueExistingWorkHref());
+    }, []);
+
+    useEffect(() => {
+        const resolveRegion = (candidateRegionId) => {
+            const normalizedRegionId = normalizeRegionId(candidateRegionId);
+            if (normalizedRegionId && registeredRegionIds.includes(normalizedRegionId)) {
+                return normalizedRegionId;
+            }
+
+            return fallbackRegionId;
+        };
+
+        const updateFromHash = () => {
+            if (typeof window === 'undefined') return;
+            setActiveRegionId(resolveRegion(window.location.hash));
+        };
+
+        updateFromHash();
+        window.addEventListener('hashchange', updateFromHash);
+
+        return () => {
+            window.removeEventListener('hashchange', updateFromHash);
+        };
+    }, [fallbackRegionId, registeredRegionIds]);
+
+    const requestRegionTravel = (requestedRegionId) => {
+        const normalizedRegionId = normalizeRegionId(requestedRegionId);
+        const resolvedRegionId =
+            normalizedRegionId && registeredRegionIds.includes(normalizedRegionId)
+                ? normalizedRegionId
+                : fallbackRegionId;
+
+        setActiveRegionId(resolvedRegionId);
+        if (typeof window !== 'undefined') {
+            window.history.replaceState(null, '', `#${resolvedRegionId}`);
+        }
+
+        return resolvedRegionId;
+    };
+
+    const getRegionHref = (regionId) => `#${requestRegionTravel ? (normalizeRegionId(regionId) && registeredRegionIds.includes(normalizeRegionId(regionId)) ? normalizeRegionId(regionId) : fallbackRegionId) : fallbackRegionId}`;
+
     return (
-        <main className={styles.page}>
+        <main className={styles.page} data-world-layout='spatial'>
+            <LivingWorldHost
+                activeRegionId={activeRegionId}
+                originRegionId='home'
+                regionIds={FIRST_WORLD_REGION_REGISTRY.map((region) => region.id)}
+                traveler={{
+                    id: 'traveler',
+                    regionId: 'home',
+                    state: 'present',
+                    x: 0,
+                    y: 140,
+                    z: 0,
+                }}
+            >
+                <WorldCore originRegionId='home'>
+                    <RegionHost
+                        activeRegionId={activeRegionId}
+                        regions={FIRST_WORLD_REGION_REGISTRY}
+                    >
+                        <div
+                            data-testid='navigation-framework'
+                            data-active-region={activeRegionId}
+                            data-default-region={fallbackRegionId}
+                            data-registered-region-ids={registeredRegionIds.join(',')}
+                            style={{ display: 'contents' }}
+                        >
+                            <div
+                                data-testid='origin-region-presence'
+                                data-world-entity='origin-region'
+                                style={{ ...PRESENCE_MARKER_STYLE, top: 0, left: 0 }}
+                            />
+                            <div
+                                data-testid='world-core-presence'
+                                data-world-entity='world-core'
+                                style={{ ...PRESENCE_MARKER_STYLE, top: 0, left: 4 }}
+                            />
+                            <div
+                                data-testid='world-traveler-presence'
+                                data-world-entity='traveler'
+                                style={{ ...PRESENCE_MARKER_STYLE, top: 0, left: 8 }}
+                            />
+                            <nav
+                                aria-label='First World sections'
+                                style={{
+                                    display: 'flex',
+                                    gap: '12px',
+                                    flexWrap: 'wrap',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    paddingTop: '96px',
+                                    paddingBottom: '12px',
+                                    position: 'relative',
+                                    zIndex: 2,
+                                }}
+                            >
+                                {FIRST_WORLD_NAV_ENTRIES.map((entry) => (
+                                    <a
+                                        key={entry.id}
+                                        href={getRegionHref(entry.id)}
+                                        data-testid={entry.id === 'build' ? 'creative-anchor-build' : entry.id === 'design' ? 'creative-anchor-design' : undefined}
+                                        onClick={(event) => {
+                                            event.preventDefault();
+                                            requestRegionTravel(entry.id);
+                                        }}
+                                        style={{
+                                            color: 'rgba(245, 240, 255, 0.86)',
+                                            textDecoration: 'none',
+                                            fontSize: '0.9rem',
+                                            letterSpacing: '0.08em',
+                                            textTransform: 'uppercase',
+                                            padding: '10px 14px',
+                                            borderRadius: '999px',
+                                            border:
+                                                activeRegionId === entry.id
+                                                    ? '1px solid rgba(179, 146, 255, 0.7)'
+                                                    : '1px solid rgba(190, 180, 255, 0.18)',
+                                            background:
+                                                activeRegionId === entry.id
+                                                    ? 'rgba(110, 82, 190, 0.28)'
+                                                    : 'rgba(15, 20, 46, 0.34)',
+                                            boxShadow:
+                                                activeRegionId === entry.id
+                                                    ? '0 0 24px rgba(165, 134, 255, 0.18)'
+                                                    : 'none',
+                                        }}
+                                    >
+                                        {entry.label}
+                                    </a>
+                                ))}
+                            </nav>
+                        </div>
+                    </RegionHost>
+                </WorldCore>
+            </LivingWorldHost>
             <div className={styles.background}>
                 <div className={styles.backgroundGlow} />
                 <div className={styles.backgroundFog} />
@@ -423,7 +632,14 @@ export default function ProjectHomeClient() {
                 <div className={styles.statusIcon}>✦</div>
             </div>
 
-            <section className={styles.hero}>
+            <section
+                className={styles.hero}
+                id='home'
+                data-region-id='home'
+                data-region-identity={REGION_IDENTITIES.home}
+                data-active-region={activeRegionId === 'home' ? 'true' : 'false'}
+                data-camera-relationship={resolveCameraRelationship('home', activeRegionId)}
+            >
                 <div className={styles.heroShell}>
                     <div className={styles.heroCopy}>
                         <div className={styles.eyebrow}>A creative operating system</div>
@@ -450,7 +666,7 @@ export default function ProjectHomeClient() {
                             <a className={styles.primaryAction} href='#media'>
                                 Enter Motion First
                             </a>
-                            <Link className={styles.secondaryAction} href='/workspace'>
+                            <Link className={styles.secondaryAction} href={continueExistingWorkHref}>
                                 Continue Existing Work
                             </Link>
                         </div>
@@ -536,6 +752,10 @@ export default function ProjectHomeClient() {
                     key={chapter.id}
                     id={chapter.id}
                     className={styles.chapter}
+                    data-region-id={chapter.id}
+                    data-region-identity={REGION_IDENTITIES[chapter.id] ?? 'expressive'}
+                    data-active-region={activeRegionId === chapter.id ? 'true' : 'false'}
+                    data-camera-relationship={resolveCameraRelationship(chapter.id, activeRegionId)}
                     style={{
                         '--chapter-accent': chapter.accent,
                         '--chapter-accent-soft': chapter.accentSoft,
@@ -640,7 +860,7 @@ export default function ProjectHomeClient() {
                             Dropple begins with creative language, then gently returns
                             you to recent work, blueprints, and templates.
                         </p>
-                        <Link className={styles.primaryAction} href='/workspace'>
+                        <Link className={styles.primaryAction} href={continueExistingWorkHref}>
                             Continue Existing Work
                         </Link>
                     </div>

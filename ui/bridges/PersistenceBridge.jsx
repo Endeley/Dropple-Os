@@ -201,6 +201,10 @@ export function PersistenceBridge({
                     name: documentName,
                     events,
                     cursorIndex,
+                    metadata: {
+                        workspace,
+                        mode,
+                    },
                 });
                 onRecentDocsChange?.(loadRegistry());
             }
