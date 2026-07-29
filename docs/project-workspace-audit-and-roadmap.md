@@ -79,3 +79,26 @@ Start at P0:
 1. `npm run implementation:navigator:project -- --phase P0 --dry-run`
 2. run gates in order.
 3. update roadmap state status only after all gates pass.
+
+## Product Direction Update
+
+The workspace audit established that canonical substrate and routing already
+exist, but it did not yet define the next creator-facing operating system
+milestone.
+
+That direction is now frozen separately in:
+
+- `docs/CREATIVE_SESSION_RESOLUTION_ROADMAP.md`
+
+That roadmap does not replace this audit.
+
+This audit remains focused on workspace substrate and routing truth.
+
+The Creative Session Resolution roadmap defines the next product-facing layer
+that should orchestrate:
+
+- Creative Language
+- Blueprint Category
+- Blueprint
+- Template
+- Workspace launch

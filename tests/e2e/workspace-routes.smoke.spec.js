@@ -4,7 +4,7 @@ import { expectSingleVisibleCanvasHost } from './helpers/canvasHost.js';
 const ROUTES = [
   {
     path: '/',
-    expected: 'The Living World of Creation',
+    expectedActiveRegion: 'home',
   },
   {
     path: '/marketplace',
@@ -122,6 +122,11 @@ for (const route of ROUTES) {
     expect(response?.ok(), `route ${route.path} should respond successfully`).toBeTruthy();
     if (route.expectedToolId) {
       await expect(page.locator(`[data-tool-id="${route.expectedToolId}"]`).first()).toBeVisible();
+    } else if (route.expectedActiveRegion) {
+      await expect(page.getByTestId('navigation-framework')).toHaveAttribute(
+        'data-active-region',
+        route.expectedActiveRegion,
+      );
     } else if (route.expected) {
       await expect(page.locator('body')).toContainText(route.expected);
     }
@@ -141,7 +146,7 @@ for (const route of ROUTES) {
   });
 }
 
-test('home route exposes First World identity and language discovery', async ({ page }) => {
+test('home route exposes First World constitutional authorities and projected regions', async ({ page }) => {
   const response = await page.goto('/', {
     waitUntil: 'networkidle',
   });
@@ -150,93 +155,65 @@ test('home route exposes First World identity and language discovery', async ({ 
   await expect(page.locator('main')).toHaveAttribute('data-world-layout', 'spatial');
   await expect(page.getByTestId('living-world-host')).toHaveCount(1);
   await expect(page.getByTestId('living-world-host')).toHaveAttribute('data-world-id', 'dropple-first-world');
+  await expect(page.getByTestId('living-world-host')).toHaveAttribute('data-origin-region', 'home');
   await expect(page.getByTestId('living-world-host').getByTestId('world-core')).toHaveCount(1);
   await expect(page.getByTestId('world-core').getByTestId('region-host')).toHaveCount(1);
   await expect(page.getByTestId('region-host').getByTestId('navigation-framework')).toHaveCount(1);
   await expect(page.getByTestId('world-core')).toHaveAttribute('data-origin-region', 'home');
+  await expect(page.getByTestId('world-traveler')).toHaveAttribute('data-traveler-id', 'traveler');
+  await expect(page.getByTestId('world-traveler')).toHaveAttribute('data-origin-region', 'home');
+  await expect(page.getByTestId('world-traveler')).toHaveAttribute('data-traveler-region', 'home');
+  await expect(page.getByTestId('world-traveler')).toHaveAttribute('data-traveler-state', 'present');
+  await expect(page.getByTestId('world-traveler')).toHaveAttribute('data-spawn-x', '0');
+  await expect(page.getByTestId('world-traveler')).toHaveAttribute('data-spawn-y', '140');
+  await expect(page.getByTestId('world-traveler')).toHaveAttribute('data-spawn-z', '0');
+  await expect(page.getByTestId('origin-region-presence')).toBeVisible();
+  await expect(page.getByTestId('origin-region-presence')).toHaveAttribute('data-world-entity', 'origin-region');
+  await expect(page.getByTestId('world-core-presence')).toBeVisible();
+  await expect(page.getByTestId('world-core-presence')).toHaveAttribute('data-world-entity', 'world-core');
+  await expect(page.getByTestId('world-traveler-presence')).toBeVisible();
+  await expect(page.getByTestId('world-traveler-presence')).toHaveAttribute('data-world-entity', 'traveler');
+  await expect(page.getByTestId('creative-anchor-build')).toBeVisible();
+  await expect(page.getByTestId('creative-anchor-design')).toBeVisible();
   await expect(page.getByTestId('region-host')).toHaveAttribute(
     'data-registered-region-ids',
     'home,build,system,design,media,collaborate,education,translation',
   );
   await expect(page.getByTestId('navigation-framework')).toHaveAttribute('data-default-region', 'home');
   await expect(page.getByTestId('navigation-framework')).toHaveAttribute('data-active-region', 'home');
-  await expect(page.getByText('Dropple First World')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'The Living World of Creation' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Explore Languages' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Build' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Collaborate' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Design' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Media' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'System' })).toBeVisible();
-  await expect(page.getByText('Continuity')).toBeVisible();
-  await expect(page.locator('body')).toContainText(
-    'Returning work remains available, but this place is defined by discovery before direction.',
-  );
-  await expect(page.getByRole('link', { name: 'Resume active context' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Browse Marketplace' })).toBeVisible();
-  await expect(page.locator('body')).toContainText(
-    'Marketplace, blueprints, and support systems remain part of Dropple, but they do not define the First World.',
-  );
-  await expect(page.locator('body')).toContainText('UI / UX');
-  await expect(page.locator('body')).toContainText('Application');
-  await expect(page.locator('body')).toContainText('Animation');
-  await expect(page.locator('body')).toContainText('Governance');
+  await expect(page.locator('section[data-region-id="home"]')).toHaveCount(1);
+  await expect(page.locator('section[data-region-id="build"]')).toHaveCount(1);
+  await expect(page.locator('section[data-region-id="collaborate"]')).toHaveCount(1);
+  await expect(page.locator('section[data-region-id="design"]')).toHaveCount(1);
+  await expect(page.locator('section[data-region-id="media"]')).toHaveCount(1);
+  await expect(page.locator('section[data-region-id="system"]')).toHaveCount(1);
+  await expect(page.locator('section[data-region-id="home"]')).toHaveAttribute('data-camera-relationship', 'foreground');
 });
 
-test('home route reads recent projects and continue route from persisted local state', async ({ page }) => {
-  await page.addInitScript(() => {
-    window.localStorage.setItem(
-      'dropple.documents',
-      JSON.stringify([
-        { id: 'doc-recent-2', name: 'Older Project', updatedAt: 10 },
-        { id: 'doc-recent-1', name: 'Newest Project', updatedAt: 20 },
-      ]),
+test('home route exposes canonical projected regions through navigation authority', async ({ page }) => {
+  const response = await page.goto('/', {
+    waitUntil: 'networkidle',
+  });
+
+  expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
+  const canonicalEntries = [
+    { id: 'build', identity: 'structured' },
+    { id: 'collaborate', identity: 'collective' },
+    { id: 'design', identity: 'expressive' },
+    { id: 'media', identity: 'cinematic' },
+    { id: 'system', identity: 'ordered' },
+  ];
+
+  for (const entry of canonicalEntries) {
+    await page.locator(`nav[aria-label="First World sections"] a[href="#${entry.id}"]`).click();
+    await expect(page.getByTestId('navigation-framework')).toHaveAttribute('data-active-region', entry.id);
+    const destination = page.locator(`section[data-region-id="${entry.id}"][data-active-region="true"]`);
+    await expect(destination).toHaveAttribute('data-region-identity', entry.identity);
+    await expect(destination).toHaveAttribute(
+      'data-camera-relationship',
+      /^(foreground|approaching|distant|receding)$/,
     );
-    window.localStorage.setItem('dropple.activeDocument', 'doc-recent-1');
-  });
-
-  const response = await page.goto('/', {
-    waitUntil: 'networkidle',
-  });
-
-  expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
-  await expect(page.getByRole('link', { name: 'Newest Project' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Older Project' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Resume active context' })).toHaveAttribute(
-    'href',
-    '/workspace/new?doc=doc-recent-1',
-  );
-});
-
-test('home route exposes canonical language entry links instead of intent and blueprint flows', async ({ page }) => {
-  const response = await page.goto('/', {
-    waitUntil: 'networkidle',
-  });
-
-  expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
-  await expect(page.locator('#build').getByRole('link', { name: 'Start Creating' })).toHaveAttribute(
-    'href',
-    '/workspace/application',
-  );
-  await expect(page.locator('#collaborate').getByRole('link', { name: 'Start Creating' })).toHaveAttribute(
-    'href',
-    '/workspace/review',
-  );
-  await expect(page.locator('#design').getByRole('link', { name: 'Start Creating' })).toHaveAttribute(
-    'href',
-    '/workspace/uiux',
-  );
-  await expect(page.locator('#media').getByRole('link', { name: 'Start Creating' })).toHaveAttribute(
-    'href',
-    '/workspace/animation',
-  );
-  await expect(page.locator('#system').getByRole('link', { name: 'Start Creating' })).toHaveAttribute(
-    'href',
-    '/workspace/components',
-  );
-  await expect(page.locator('body')).not.toContainText('Start from Intent');
-  await expect(page.locator('body')).not.toContainText('Describe what you want to build');
-  await expect(page.locator('body')).not.toContainText('Recommended Blueprints');
+  }
 });
 
 test('home route navigation framework fails closed for invalid region hashes', async ({ page }) => {
@@ -248,16 +225,22 @@ test('home route navigation framework fails closed for invalid region hashes', a
   await expect(page.getByTestId('navigation-framework')).toHaveAttribute('data-active-region', 'home');
 });
 
-test('home route projects active nearby and distant world response from navigation authority', async ({ page }) => {
+test('home route keeps deferred destinations distant until the journey reaches them', async ({ page }) => {
   const response = await page.goto('/#build', {
     waitUntil: 'networkidle',
   });
 
   expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
   await expect(page.getByTestId('navigation-framework')).toHaveAttribute('data-active-region', 'build');
-  await expect(page.locator('#build')).toHaveAttribute('data-response-state', 'active');
-  await expect(page.locator('#home')).toHaveAttribute('data-response-state', 'nearby');
-  await expect(page.locator('#design')).toHaveAttribute('data-response-state', 'distant');
+  await expect(page.locator('section[data-region-id="build"]')).toHaveAttribute('data-active-region', 'true');
+  await expect(page.locator('section[data-region-id="build"]')).toHaveAttribute(
+    'data-camera-relationship',
+    /^(distant|approaching|receding)$/,
+  );
+  await expect(page.locator('section[data-region-id="home"]')).toHaveAttribute(
+    'data-camera-relationship',
+    'foreground',
+  );
 });
 
 test('home route requests region travel through navigation authority instead of raw anchor ownership', async ({ page }) => {
@@ -267,11 +250,11 @@ test('home route requests region travel through navigation authority instead of 
 
   expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
 
-  await page.getByRole('link', { name: 'Explore Languages' }).click();
+  await page.locator('nav[aria-label="First World sections"]').getByRole('link', { name: 'Build' }).click();
 
   await expect(page).toHaveURL(/#build$/);
   await expect(page.getByTestId('navigation-framework')).toHaveAttribute('data-active-region', 'build');
-  await expect(page.locator('#build')).toHaveAttribute('data-response-state', 'active');
+  await expect(page.locator('section[data-region-id="build"]')).toHaveAttribute('data-active-region', 'true');
 });
 
 test('home route projects distinct region identities inside one Living World', async ({ page }) => {
@@ -280,11 +263,11 @@ test('home route projects distinct region identities inside one Living World', a
   });
 
   expect(response?.ok(), 'home route should respond successfully').toBeTruthy();
-  await expect(page.locator('#build')).toHaveAttribute('data-region-identity', 'structured');
-  await expect(page.locator('#design')).toHaveAttribute('data-region-identity', 'expressive');
-  await expect(page.locator('#media')).toHaveAttribute('data-region-identity', 'cinematic');
-  await expect(page.locator('#collaborate')).toHaveAttribute('data-region-identity', 'collective');
-  await expect(page.locator('#system')).toHaveAttribute('data-region-identity', 'ordered');
+  await expect(page.locator('section[data-region-id="build"]')).toHaveAttribute('data-region-identity', 'structured');
+  await expect(page.locator('section[data-region-id="design"]')).toHaveAttribute('data-region-identity', 'expressive');
+  await expect(page.locator('section[data-region-id="media"]')).toHaveAttribute('data-region-identity', 'cinematic');
+  await expect(page.locator('section[data-region-id="collaborate"]')).toHaveAttribute('data-region-identity', 'collective');
+  await expect(page.locator('section[data-region-id="system"]')).toHaveAttribute('data-region-identity', 'ordered');
 });
 
 test('marketplace route exposes blueprint categories and category filter', async ({ page }) => {

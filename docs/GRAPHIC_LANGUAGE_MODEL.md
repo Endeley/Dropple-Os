@@ -136,21 +136,21 @@ This means:
 Graphic should interpret its artifact family like this:
 
 - `Artboard`
-  - root composition surface
+    - root composition surface
 - `Group`
-  - composition relationship holder
+    - composition relationship holder
 - `Shape`
-  - visual form primitive
+    - visual form primitive
 - `Vector`
-  - precision graphic form
+    - precision graphic form
 - `Text`
-  - message, hierarchy, caption, title, wordmark
+    - message, hierarchy, caption, title, wordmark
 - `Image`
-  - supporting asset, background, focal element, masked composition asset
+    - supporting asset, background, focal element, masked composition asset
 - `Style`
-  - color, typography, visual treatment
+    - color, typography, visual treatment
 - `Effect`
-  - depth, emphasis, atmosphere, motion-affecting treatment
+    - depth, emphasis, atmosphere, motion-affecting treatment
 
 The creator should understand not only what an artifact is, but what role it can play.
 

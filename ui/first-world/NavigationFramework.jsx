@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 function normalizeRegionId(regionId) {
     if (typeof regionId !== 'string') {
@@ -43,48 +43,15 @@ export default function NavigationFramework({
     };
 
     const [activeRegionId, setActiveRegionId] = useState(fallbackRegionId);
-    const [travelingRegionId, setTravelingRegionId] = useState(null);
-    const travelResetRef = useRef(null);
-    const hasExplicitTravelRef = useRef(false);
-
-    const clearTravelState = () => {
-        if (travelResetRef.current) {
-            window.clearTimeout(travelResetRef.current);
-            travelResetRef.current = null;
-        }
-
-        setTravelingRegionId(null);
-    };
-
     const requestRegionTravel = (requestedRegionId) => {
         if (typeof window === 'undefined') {
             return fallbackRegionId;
         }
 
         const resolvedRegionId = resolveRegionId(requestedRegionId);
-        const targetSection = document.getElementById(resolvedRegionId);
-        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        hasExplicitTravelRef.current = true;
         setActiveRegionId(resolvedRegionId);
-        setTravelingRegionId(resolvedRegionId);
         window.history.replaceState(null, '', `#${resolvedRegionId}`);
-
-        if (targetSection) {
-            targetSection.scrollIntoView({
-                behavior: prefersReducedMotion ? 'auto' : 'smooth',
-                block: 'start',
-            });
-        }
-
-        if (travelResetRef.current) {
-            window.clearTimeout(travelResetRef.current);
-        }
-
-        travelResetRef.current = window.setTimeout(() => {
-            setTravelingRegionId(null);
-            travelResetRef.current = null;
-        }, prefersReducedMotion ? 0 : 420);
 
         return resolvedRegionId;
     };
@@ -103,9 +70,7 @@ export default function NavigationFramework({
             const hasRegisteredHash =
                 normalizedHashRegionId && registeredRegionIds.includes(normalizedHashRegionId);
             const resolvedHashRegionId = resolveRegionId(window.location.hash);
-            hasExplicitTravelRef.current = Boolean(hasRegisteredHash);
             setActiveRegionId(resolvedHashRegionId);
-            clearTravelState();
         };
 
         updateFromHash();
@@ -116,76 +81,10 @@ export default function NavigationFramework({
         };
     }, [fallbackRegionId, registeredRegionIds]);
 
-    useEffect(() => {
-        const sections = Array.from(document.querySelectorAll('[data-first-world-section]')).filter((section) =>
-            registeredRegionIds.includes(section.id),
-        );
-
-        if (sections.length === 0) {
-            return undefined;
-        }
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (typeof window !== 'undefined' && window.location.hash) {
-                    const hashedRegionId = normalizeRegionId(window.location.hash);
-
-                    if (hashedRegionId && registeredRegionIds.includes(hashedRegionId)) {
-                        setActiveRegionId(hashedRegionId);
-                        return;
-                    }
-                }
-
-                if (!hasExplicitTravelRef.current) {
-                    if (typeof window !== 'undefined' && window.scrollY <= 48) {
-                        setActiveRegionId(fallbackRegionId);
-                        return;
-                    }
-
-                    const originSection = entries.find((entry) => entry.target?.id === fallbackRegionId);
-
-                    if (originSection?.isIntersecting) {
-                        setActiveRegionId(fallbackRegionId);
-                        return;
-                    }
-                }
-
-                const visibleSection = entries
-                    .filter((entry) => entry.isIntersecting)
-                    .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
-
-                if (!visibleSection?.target?.id) {
-                    return;
-                }
-
-                setActiveRegionId(resolveRegionId(visibleSection.target.id));
-            },
-            {
-                rootMargin: '-20% 0px -20% 0px',
-                threshold: [0.25, 0.5, 0.75],
-            },
-        );
-
-        sections.forEach((section) => observer.observe(section));
-
-        return () => {
-            observer.disconnect();
-        };
-    }, [fallbackRegionId, registeredRegionIds]);
-
-    useEffect(() => {
-        return () => {
-            if (typeof window !== 'undefined' && travelResetRef.current) {
-                window.clearTimeout(travelResetRef.current);
-            }
-        };
-    }, []);
-
     const framework = Object.freeze({
         activeRegionId,
         defaultActiveRegionId: fallbackRegionId,
         registeredRegionIds,
-        travelingRegionId,
         getRegionHref(regionId) {
             return `#${resolveRegionId(regionId)}`;
         },
@@ -199,7 +98,6 @@ export default function NavigationFramework({
             data-active-region={framework.activeRegionId}
             data-default-region={framework.defaultActiveRegionId}
             data-registered-region-ids={framework.registeredRegionIds.join(',')}
-            data-traveling-region={framework.travelingRegionId ?? ''}
             style={{ display: 'contents' }}
         >
             {typeof children === 'function' ? children(framework) : children}

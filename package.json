@@ -102,6 +102,7 @@
         "validate:fullstack": "node scripts/validateFullStack.mjs"
     },
     "dependencies": {
+        "@react-three/fiber": "^9.6.1",
         "@stackframe/stack": "^2.8.56",
         "clsx": "^2.1.1",
         "convex": "^1.31.2",
@@ -111,6 +112,7 @@
         "next": "^15.5.9",
         "react": "^19.2.4",
         "react-dom": "^19.2.4",
+        "three": "^0.185.1",
         "uuid": "^11.1.0",
         "zustand": "^5.0.9"
     },

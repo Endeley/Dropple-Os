@@ -1,435 +1,731 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import {
+    AppWindow,
+    AudioLines,
+    CopyPlus,
+    BookOpen,
+    Boxes,
+    DraftingCompass,
+    Clapperboard,
+    Component,
+    FileText,
+    MessageSquareQuote,
+    PenTool,
+    Rocket,
+    ShieldCheck,
+    Sparkles,
+    SwatchBook,
+    Workflow,
+    Zap,
+} from 'lucide-react';
+import { buildHomepageLanguageLaunchHref } from '@/runtime/workspaces/index.js';
 
 import styles from './ProjectHomeClient.module.css';
-import {
-    CANONICAL_WORKSPACES,
-    listCanonicalModesForWorkspace,
-} from '@/platform/workspaces/canonicalRegistry.js';
-import { buildProjectHomeResumeRoute } from '@/runtime/workspaces/projectHomeResumeRoute.js';
-import { loadRegistry } from '@/infrastructure/persistence/documentRegistry.js';
-import { getActiveDocument } from '@/infrastructure/persistence/activeDocument.js';
-import LivingWorldHost from '@/ui/first-world/LivingWorldHost.jsx';
-import WorldCore from '@/ui/first-world/WorldCore.jsx';
-import RegionHost, { listFirstWorldRegions, listVisibleFirstWorldRegions } from '@/ui/first-world/RegionHost.jsx';
-import NavigationFramework from '@/ui/first-world/NavigationFramework.jsx';
 
-const REGION_REGISTRY = listFirstWorldRegions();
-const VISIBLE_REGION_REGISTRY = listVisibleFirstWorldRegions();
-const WORKSPACE_ORDER = Object.freeze(VISIBLE_REGION_REGISTRY.map((region) => region.id));
+function buildLanguageWorkspaceHref(modeId) {
+    return buildHomepageLanguageLaunchHref(modeId);
+}
 
-const WORKSPACE_STORIES = Object.freeze({
-    build: Object.freeze({
-        label: 'Build',
-        identity: 'structured',
-        eyebrow: 'Languages for systems, logic, and automation.',
-        description:
-            'A structured district for software systems, product behavior, and machine-assisted construction.',
-        landmark: 'Construction Basin',
-        approach: 'Enter when logic needs shape, sequence, or executable structure.',
-        horizon: 'Systems rise here as plans become operable forms.',
-        icon: '</>',
-        accent: '#3b82f6',
-        glow: 'rgba(59, 130, 246, 0.34)',
-    }),
-    collaborate: Object.freeze({
-        label: 'Collaborate',
-        identity: 'collective',
-        eyebrow: 'Languages for review, production, and shared knowledge.',
-        description:
-            'A collective district for review, production readiness, and shared understanding.',
-        landmark: 'Shared Signal Hall',
-        approach: 'Enter when work needs witness, critique, alignment, or teaching.',
-        horizon: 'Voices, feedback, and knowledge remain part of the same world-state.',
-        icon: '◉',
-        accent: '#a855f7',
-        glow: 'rgba(168, 85, 247, 0.34)',
-    }),
-    design: Object.freeze({
-        label: 'Design',
-        identity: 'expressive',
-        eyebrow: 'Languages for interfaces, graphics, and documents.',
-        description:
-            'An expressive district for interfaces, graphics, documents, and visual composition.',
-        landmark: 'Expression Terrace',
-        approach: 'Enter when visual language, interface shape, or editorial form must emerge.',
-        horizon: 'Surfaces, symbols, and structure gather into visible meaning.',
-        icon: '✦',
-        accent: '#f59e0b',
-        glow: 'rgba(245, 158, 11, 0.34)',
-    }),
-    media: Object.freeze({
-        label: 'Media',
-        identity: 'cinematic',
-        eyebrow: 'Languages for motion, film, and sound.',
-        description:
-            'A cinematic district for motion, film, sound, sequence, and temporal composition.',
-        landmark: 'Time Current',
-        approach: 'Enter when rhythm, sequence, or recorded presence becomes the medium.',
-        horizon: 'Movement and sound travel as one continuous current.',
-        icon: '▶',
-        accent: '#14b8a6',
-        glow: 'rgba(20, 184, 166, 0.34)',
-    }),
-    system: Object.freeze({
-        label: 'System',
-        identity: 'ordered',
-        eyebrow: 'Languages for foundations, components, and governance.',
-        description:
-            'An ordered district for foundations, components, governance, and durable operating rules.',
-        landmark: 'Framework Ridge',
-        approach: 'Enter when the world itself needs clearer structure, repeatability, or law.',
-        horizon: 'Reusable primitives and constitutional form become explicit here.',
-        icon: '◌',
-        accent: '#f97316',
-        glow: 'rgba(249, 115, 22, 0.34)',
-    }),
+const LANGUAGE_ICONS = {
+    Animation: Sparkles,
+    Video: Clapperboard,
+    Audio: AudioLines,
+    UIUX: AppWindow,
+    Graphic: PenTool,
+    Document: FileText,
+    Application: Boxes,
+    Logic: Workflow,
+    Automation: Zap,
+    Tokens: SwatchBook,
+    Components: Component,
+    Governance: ShieldCheck,
+    Review: MessageSquareQuote,
+    Knowledge: BookOpen,
+    Production: Rocket,
+};
+
+const LANGUAGE_CHAPTERS = [
+    {
+        id: 'media',
+        workspaceLabel: 'Media',
+        eyebrow: 'Motion First',
+        title: 'Create through flow, timing, and momentum.',
+        body: 'Animation, video, and audio begin from sequence. In Dropple, motion is not decoration. It is one of the primary grammars of creation.',
+        serves: 'Serves motion, film, sound, sequence, and temporal expression.',
+        atmosphere: 'Fluid, rhythmic, and alive.',
+        accent: '#9b7dff',
+        accentSoft: 'rgba(155, 125, 255, 0.22)',
+        glow: 'rgba(180, 150, 255, 0.34)',
+        scene: ['Sequence arcs', 'Signal pulses', 'Temporal layers'],
+        languages: [
+            {
+                name: 'Animation',
+                href: buildLanguageWorkspaceHref('animation'),
+                body: 'Create movement, timing, scenes, transitions, and visual rhythm.',
+            },
+            {
+                name: 'Video',
+                href: buildLanguageWorkspaceHref('video'),
+                body: 'Shape moving image, pacing, cuts, continuity, and cinematic flow.',
+            },
+            {
+                name: 'Audio',
+                href: buildLanguageWorkspaceHref('audio'),
+                body: 'Compose sonic structure, voice, sequencing, and listening experience.',
+            },
+        ],
+    },
+    {
+        id: 'design',
+        workspaceLabel: 'Design',
+        eyebrow: 'Design',
+        title: 'Shape interfaces, visuals, and structured expression.',
+        body: 'Design turns intention into visible form. This language family holds UIUX, graphic expression, and document composition inside one operating environment.',
+        serves: 'Serves interfaces, visual communication, and document composition.',
+        atmosphere: 'Clear, composed, and expressive.',
+        accent: '#8cb4ff',
+        accentSoft: 'rgba(140, 180, 255, 0.18)',
+        glow: 'rgba(154, 196, 255, 0.3)',
+        scene: ['Grid fields', 'Typography planes', 'Interface frames'],
+        languages: [
+            {
+                name: 'UIUX',
+                href: buildLanguageWorkspaceHref('uiux'),
+                body: 'Design interfaces, flows, pages, apps, and product structure.',
+            },
+            {
+                name: 'Graphic',
+                href: buildLanguageWorkspaceHref('graphic'),
+                body: 'Create campaigns, visual systems, posters, and brand expression.',
+            },
+            {
+                name: 'Document',
+                href: buildLanguageWorkspaceHref('document'),
+                body: 'Compose presentations, structured pages, and editorial narrative.',
+            },
+        ],
+    },
+    {
+        id: 'build',
+        workspaceLabel: 'Build',
+        eyebrow: 'Build',
+        title: 'Construct systems, logic, and application behavior.',
+        body: 'Build is where behavior becomes real. It is not about opening another tool. It is about entering the grammar of systems, logic, and executable structure.',
+        serves: 'Serves product behavior, system logic, and automation.',
+        atmosphere: 'Structured, connected, and deliberate.',
+        accent: '#83f0d2',
+        accentSoft: 'rgba(131, 240, 210, 0.18)',
+        glow: 'rgba(131, 240, 210, 0.28)',
+        scene: ['Flow maps', 'Logic threads', 'System nodes'],
+        languages: [
+            {
+                name: 'Application',
+                href: buildLanguageWorkspaceHref('application'),
+                body: 'Build product behavior, systems, and interactive application logic.',
+            },
+            {
+                name: 'Logic',
+                href: buildLanguageWorkspaceHref('logic'),
+                body: 'Define states, rules, process, and causal structure.',
+            },
+            {
+                name: 'Automation',
+                href: buildLanguageWorkspaceHref('automation'),
+                body: 'Create triggers, transformations, AI-assisted execution, and repeatable flows.',
+            },
+        ],
+    },
+    {
+        id: 'system',
+        workspaceLabel: 'System',
+        eyebrow: 'System',
+        title: 'Define foundations, components, and operational order.',
+        body: 'System creation is quieter. It holds the reusable laws of the world: tokens, components, and governance that give every other language consistency.',
+        serves: 'Serves reusable foundations, component systems, and governance.',
+        atmosphere: 'Calm, ordered, and foundational.',
+        accent: '#ffbd87',
+        accentSoft: 'rgba(255, 189, 135, 0.18)',
+        glow: 'rgba(255, 189, 135, 0.26)',
+        scene: ['Foundation blocks', 'Reusable modules', 'Governance rails'],
+        languages: [
+            {
+                name: 'Tokens',
+                href: buildLanguageWorkspaceHref('tokens'),
+                body: 'Define scales, themes, variables, and shared visual foundations.',
+            },
+            {
+                name: 'Components',
+                href: buildLanguageWorkspaceHref('components'),
+                body: 'Build reusable interface systems and structured variants.',
+            },
+            {
+                name: 'Governance',
+                href: buildLanguageWorkspaceHref('governance'),
+                body: 'Control standards, rules, versioning, and system integrity.',
+            },
+        ],
+    },
+    {
+        id: 'collaborate',
+        workspaceLabel: 'Collaborate',
+        eyebrow: 'Collaborate',
+        title: 'Review, teach, and move work toward release.',
+        body: 'Creation does not end at authorship. Dropple also holds the grammars of feedback, learning, publishing, and release inside the same living system.',
+        serves: 'Serves feedback, learning, publishing, and release.',
+        atmosphere: 'Open, shared, and directional.',
+        accent: '#f29de3',
+        accentSoft: 'rgba(242, 157, 227, 0.18)',
+        glow: 'rgba(242, 157, 227, 0.28)',
+        scene: ['Shared signals', 'Review threads', 'Release lanes'],
+        languages: [
+            {
+                name: 'Review',
+                href: buildLanguageWorkspaceHref('review'),
+                body: 'Discuss, evaluate, approve, and iterate on work in motion.',
+            },
+            {
+                name: 'Knowledge',
+                href: buildLanguageWorkspaceHref('knowledge'),
+                body: 'Teach, explain, guide, and structure understanding around creation.',
+            },
+            {
+                name: 'Production',
+                href: buildLanguageWorkspaceHref('production'),
+                body: 'Coordinate release, handoff, publishing, and operational readiness.',
+            },
+        ],
+    },
+];
+
+const STARTING_METHODS = [
+    {
+        title: 'Start from Blueprint',
+        body: 'Begin from structure when the work needs foundations before surface.',
+        href: '/marketplace',
+        cta: 'Browse Blueprints',
+        icon: DraftingCompass,
+        accent: '#7fb7ff',
+        accentSoft: 'rgba(127, 183, 255, 0.2)',
+    },
+    {
+        title: 'Start from Template',
+        body: 'Begin from expression when the work needs a faster route into creation.',
+        href: '/marketplace',
+        cta: 'Browse Templates',
+        icon: CopyPlus,
+        accent: '#c792ff',
+        accentSoft: 'rgba(199, 146, 255, 0.22)',
+    },
+];
+
+const TRUST_PILLARS = [
+    'One living world across all creative languages.',
+    'Motion-first experience from entry to creation.',
+    'Language before tools, intention before interface.',
+];
+
+const FOOTER_LINK_GROUPS = [
+    ['About Dropple', 'Blueprints', 'Templates', 'Docs'],
+    ['Privacy', 'Terms', 'Security', 'Sign in'],
+];
+
+const DEFAULT_SURFACE_MOTION = Object.freeze({
+    tiltX: '0deg',
+    tiltY: '0deg',
+    driftX: '0px',
+    driftY: '0px',
+    glowX: '50%',
+    glowY: '50%',
 });
 
-const MODE_DESCRIPTIONS = Object.freeze({
-    uiux: 'Interfaces and product flows.',
-    graphic: 'Visual systems and graphic composition.',
-    document: 'Structured written artifacts.',
-    animation: 'Motion, choreography, and time.',
-    video: 'Filmed and edited media.',
-    audio: 'Spoken and sonic sequences.',
-    application: 'Software systems and product behavior.',
-    logic: 'Flows, rules, and structured reasoning.',
-    automation: 'Repeatable operations and machine-assisted work.',
-    tokens: 'Reusable design primitives.',
-    components: 'Shared component libraries.',
-    governance: 'Rules and constitutional systems.',
-    review: 'Feedback and quality guidance.',
-    production: 'Release and execution readiness.',
-    knowledge: 'Teaching, explanation, and learning.',
-});
+function InteractiveSurface({
+    as: Component = 'div',
+    className = '',
+    style = null,
+    children = null,
+    ...props
+}) {
+    const [motionStyle, setMotionStyle] = useState(DEFAULT_SURFACE_MOTION);
 
-function buildWorkspaceSections() {
-    return VISIBLE_REGION_REGISTRY.filter((region) => region.id !== 'home').map((region) => {
-        const workspaceId = region.id;
-        const story = WORKSPACE_STORIES[workspaceId];
-        const workspace = CANONICAL_WORKSPACES[workspaceId];
-        const modes = listCanonicalModesForWorkspace(workspaceId).map((mode) =>
-            Object.freeze({
-                id: mode.id,
-                label: mode.label,
-                href: `/workspace/${mode.id}`,
-                description:
-                    MODE_DESCRIPTIONS[mode.id] ?? 'Enter this language to continue your creation.',
-            }),
-        );
+    const resolvedStyle = useMemo(
+        () => ({
+            ...(style ?? {}),
+            '--tilt-x': motionStyle.tiltX,
+            '--tilt-y': motionStyle.tiltY,
+            '--drift-x': motionStyle.driftX,
+            '--drift-y': motionStyle.driftY,
+            '--glow-x': motionStyle.glowX,
+            '--glow-y': motionStyle.glowY,
+        }),
+        [motionStyle, style]
+    );
 
-        return Object.freeze({
-            id: workspaceId,
-            regionTitle: region.title,
-            regionPurpose: region.purpose,
-            regionAvailability: region.availability,
-            regionEntryLabel: region.entryLabel,
-            workspaceLabel: workspace?.label ?? story.label,
-            label: story.label,
-            identity: story.identity,
-            eyebrow: story.eyebrow,
-            description: story.description,
-            landmark: story.landmark,
-            approach: story.approach,
-            horizon: story.horizon,
-            icon: story.icon,
-            accent: story.accent,
-            glow: story.glow,
-            defaultModeHref: `/workspace/${workspace?.defaultMode ?? modes[0]?.id ?? 'uiux'}`,
-            modes,
+    function handleMouseMove(event) {
+        const rect = event.currentTarget.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width;
+        const y = (event.clientY - rect.top) / rect.height;
+        const rotateY = (x - 0.5) * 14;
+        const rotateX = (0.5 - y) * 12;
+        const driftX = (x - 0.5) * 10;
+        const driftY = (y - 0.5) * 10;
+
+        setMotionStyle({
+            tiltX: `${rotateX.toFixed(2)}deg`,
+            tiltY: `${rotateY.toFixed(2)}deg`,
+            driftX: `${driftX.toFixed(2)}px`,
+            driftY: `${driftY.toFixed(2)}px`,
+            glowX: `${(x * 100).toFixed(2)}%`,
+            glowY: `${(y * 100).toFixed(2)}%`,
         });
-    });
-}
+    }
 
-const WORKSPACE_SECTIONS = buildWorkspaceSections();
+    function handleMouseLeave() {
+        setMotionStyle(DEFAULT_SURFACE_MOTION);
+    }
 
-function ParticleField({ accent, prefix }) {
     return (
-        <div className={styles.particles} aria-hidden='true'>
-            {[0, 1, 2, 3, 4, 5].map((index) => (
-                <span
-                    key={`${prefix}-${index}`}
-                    className={styles.particle}
-                    style={{
-                        '--accent': accent,
-                        '--delay': `${index * 0.6}s`,
-                        '--x': `${12 + index * 13}%`,
-                        '--y': `${14 + (index % 3) * 26}%`,
-                        '--size': `${8 + (index % 3) * 7}px`,
-                    }}
-                />
-            ))}
-        </div>
+        <Component
+            className={className}
+            style={resolvedStyle}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            {...props}
+        >
+            {children}
+        </Component>
     );
 }
 
-function HeroOrbit() {
+function ChapterVisual({ chapter }) {
     return (
-        <div className={styles.heroVisual} aria-hidden='true'>
-            <div className={styles.heroPlanet} />
-            <div className={styles.heroRing} />
-            {WORKSPACE_SECTIONS.map((section, index) => (
-                <div
-                    key={section.id}
-                    className={styles.heroCard}
-                    style={{
-                        '--accent': section.accent,
-                        '--glow': section.glow,
-                        '--rotation': `${index * 72}deg`,
-                        '--delay': `${index * 0.7}s`,
-                    }}
+        <InteractiveSurface
+            className={`${styles.chapterVisual} ${styles.interactiveSurface}`}
+            style={{
+                '--chapter-accent': chapter.accent,
+                '--chapter-accent-soft': chapter.accentSoft,
+                '--chapter-glow': chapter.glow,
+            }}
+            aria-hidden='true'
+        >
+            <div className={styles.visualAura} />
+            <div className={styles.visualPlaneBack} />
+            <div className={styles.visualPlaneMid} />
+            <div className={styles.visualPlaneFront} />
+            <div className={styles.visualNebula}>
+                <div className={styles.visualNebulaGlow} />
+                <div className={styles.visualNebulaOrb} />
+                <div className={styles.visualNebulaShardA} />
+                <div className={styles.visualNebulaShardB} />
+                <div className={styles.visualNebulaShardC} />
+                <svg
+                    className={styles.visualNebulaLines}
+                    viewBox='0 0 100 100'
+                    preserveAspectRatio='none'
                 >
-                    <span className={styles.heroCardIcon}>{section.icon}</span>
-                    <span>{section.label}</span>
+                    <path d='M 18 50 C 34 18, 66 18, 82 50' />
+                    <path d='M 22 64 C 36 38, 64 38, 78 64' />
+                    <path d='M 26 34 C 44 62, 56 62, 74 34' />
+                </svg>
+                <div className={styles.visualNebulaNodeA} />
+                <div className={styles.visualNebulaNodeB} />
+                <div className={styles.visualNebulaNodeC} />
+            </div>
+            <div className={styles.visualScenePills}>
+                {chapter.scene.map((item) => (
+                    <div key={item} className={styles.visualScenePill}>
+                        {item}
+                    </div>
+                ))}
+            </div>
+            <div className={styles.visualFrameA}>
+                <div className={styles.visualFrameLabel}>FLOW</div>
+                <div className={styles.visualFrameTextList}>
+                    <span>Path memory</span>
+                    <span>Reveal pacing</span>
+                    <span>Route guidance</span>
                 </div>
-            ))}
-            <ParticleField accent='rgba(129, 140, 248, 0.8)' prefix='hero' />
-        </div>
+            </div>
+            <div className={`${styles.visualFrameB} ${styles.visualFrameCentered}`}>
+                <div className={styles.visualFrameLabel}>SIGNAL</div>
+                <div className={`${styles.visualFrameTextList} ${styles.visualFrameTextListCentered}`}>
+                    <span>Orientation cues</span>
+                    <span>Ambient prompts</span>
+                    <span>Arrival cues</span>
+                    <span>District identity</span>
+                </div>
+            </div>
+            <div className={styles.visualFrameC}>
+                <div className={styles.visualFrameLabel}>STATE</div>
+                <div className={styles.visualFrameState}>
+                    <strong>Ready</strong>
+                    <span>World active</span>
+                </div>
+            </div>
+        </InteractiveSurface>
     );
-}
-
-function getRegionResponseState(activeRegionId, regionId) {
-    const activeRegionIndex = WORKSPACE_ORDER.indexOf(activeRegionId);
-    const regionIndex = WORKSPACE_ORDER.indexOf(regionId);
-
-    if (activeRegionIndex === -1 || regionIndex === -1) {
-        return 'distant';
-    }
-
-    if (activeRegionId === regionId) {
-        return 'active';
-    }
-
-    if (Math.abs(activeRegionIndex - regionIndex) === 1) {
-        return 'nearby';
-    }
-
-    return 'distant';
 }
 
 export default function ProjectHomeClient() {
-    const [recentProjects, setRecentProjects] = useState([]);
-    const [activeDocumentId, setActiveDocumentId] = useState(null);
-
     useEffect(() => {
-        setRecentProjects(loadRegistry());
-        setActiveDocumentId(getActiveDocument());
+        const nodes = document.querySelectorAll('[data-scroll-reveal]');
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) {
+                        return;
+                    }
+
+                    entry.target.classList.add(styles.revealed);
+                    observer.unobserve(entry.target);
+                });
+            },
+            {
+                threshold: 0.18,
+                rootMargin: '0px 0px -10% 0px',
+            }
+        );
+
+        nodes.forEach((node) => observer.observe(node));
+
+        return () => observer.disconnect();
     }, []);
 
-    const continueRoute = useMemo(
-        () => buildProjectHomeResumeRoute(activeDocumentId),
-        [activeDocumentId],
-    );
-
     return (
-        <LivingWorldHost
-            activeRegionId='home'
-            regionIds={REGION_REGISTRY.map((region) => region.id)}
-            worldId='dropple-first-world'
-        >
-            <WorldCore worldId='dropple-first-world' originRegionId='home'>
-                <RegionHost regions={REGION_REGISTRY}>
-                    <NavigationFramework regions={REGION_REGISTRY} defaultActiveRegionId='home'>
-                        {({ activeRegionId, getRegionHref, requestRegionTravel, travelingRegionId }) => (
-                            <main
-                                className={styles.page}
-                                data-active-region={activeRegionId}
-                                data-world-layout='spatial'
+        <main className={styles.page}>
+            <div className={styles.background}>
+                <div className={styles.backgroundGlow} />
+                <div className={styles.backgroundFog} />
+                <div className={styles.cloudBandA} />
+                <div className={styles.cloudBandB} />
+                <div className={styles.cloudBandC} />
+                <div className={styles.sparkField} />
+            </div>
+
+            <header className={styles.floatingBrand}>
+                <div className={styles.brandGlow} />
+                <div className={styles.brandMark} />
+                <div className={styles.brandText}>Dropple</div>
+                <div className={styles.brandDivider} />
+                <div className={styles.brandPill}>Creative OS</div>
+            </header>
+
+            <div className={styles.topStatus} aria-hidden='true'>
+                <div className={styles.worldStatus}>
+                    <span className={styles.worldStatusLabel}>World Status</span>
+                    <span className={styles.worldStatusDot} />
+                    <span className={styles.worldStatusValue}>Alive</span>
+                </div>
+                <div className={styles.statusIcon}>◌</div>
+                <div className={styles.statusIcon}>✦</div>
+            </div>
+
+            <section className={styles.hero}>
+                <div className={styles.heroShell}>
+                    <div className={styles.heroCopy}>
+                        <div className={styles.eyebrow}>A creative operating system</div>
+                        <h1
+                            className={`${styles.heroTitle} ${styles.motionHeadline} ${styles.scrollReveal}`}
+                            data-scroll-reveal
+                        >
+                            Begin where creation moves.
+                        </h1>
+                        <p
+                            className={`${styles.heroBody} ${styles.motionCopy} ${styles.scrollReveal}`}
+                            data-scroll-reveal
+                            style={{ '--reveal-delay': '90ms' }}
+                        >
+                            Enter one continuous Dropple world, then choose the
+                            creative language that matches how you want to think,
+                            build, express, and release.
+                        </p>
+                        <div
+                            className={`${styles.heroActions} ${styles.scrollReveal}`}
+                            data-scroll-reveal
+                            style={{ '--reveal-delay': '160ms' }}
+                        >
+                            <a className={styles.primaryAction} href='#media'>
+                                Enter Motion First
+                            </a>
+                            <Link className={styles.secondaryAction} href='/workspace'>
+                                Continue Existing Work
+                            </Link>
+                        </div>
+                        <div
+                            className={`${styles.heroMeta} ${styles.scrollReveal}`}
+                            data-scroll-reveal
+                            style={{ '--reveal-delay': '220ms' }}
+                        >
+                            <span>Motion first</span>
+                            <span>Language organized</span>
+                            <span>One living world</span>
+                        </div>
+                    </div>
+
+                    <InteractiveSurface
+                        className={`${styles.heroVisual} ${styles.interactiveSurface}`}
+                        aria-hidden='true'
+                    >
+                        <div className={styles.heroVisualGlow} />
+                        <div className={styles.heroSurfaceCore}>
+                            <div className={styles.heroSurfaceToolbar}>
+                                <span />
+                                <span />
+                                <span />
+                            </div>
+                            <div className={styles.heroSurfaceButton}>Create Account</div>
+                        </div>
+                        <div className={styles.heroFloatingCardA}>
+                            <div className={styles.heroBadge}>AUTH FLOW</div>
+                            <div className={styles.heroCardTitle}>Welcome Screen</div>
+                            <div className={styles.heroTextList}>
+                                <span>Greeting the creator</span>
+                                <span>Choose a creative language</span>
+                                <span>Move directly into the world</span>
+                            </div>
+                            <div className={styles.heroCardFooter}>
+                                <span>State</span>
+                                <strong>Ready</strong>
+                            </div>
+                        </div>
+                        <div className={styles.heroFloatingCardB}>
+                            <div className={styles.heroBadgeGreen}>PAYMENT FLOW</div>
+                            <div className={styles.heroCardTitle}>Checkout Route</div>
+                            <div className={styles.heroTextList}>
+                                <span>Plan selection</span>
+                                <span>Secure confirmation</span>
+                                <span>Account activation</span>
+                            </div>
+                            <div className={styles.heroCardFooter}>
+                                <span>Branch</span>
+                                <strong>Live</strong>
+                            </div>
+                        </div>
+                        <div className={styles.heroFloatingCardC}>
+                            <div className={styles.heroBadgeWarm}>DATA MODEL</div>
+                            <div className={styles.heroNodeRow}>
+                                <span>User</span>
+                                <span>Project</span>
+                                <span>Team</span>
+                            </div>
+                            <div className={styles.heroModelLegend}>
+                                <span>Entity graph</span>
+                                <strong>Synced</strong>
+                            </div>
+                        </div>
+                        <svg
+                            className={styles.heroConnections}
+                            viewBox='0 0 100 100'
+                            preserveAspectRatio='none'
+                        >
+                            <path d='M 26 26 C 38 30, 44 38, 50 46' />
+                            <path d='M 22 58 C 36 58, 44 58, 50 55' />
+                            <path d='M 51 55 C 61 54, 70 50, 77 47' />
+                            <path d='M 50 46 C 54 38, 58 32, 66 28' />
+                            <path d='M 42 72 C 50 67, 56 67, 64 72' />
+                        </svg>
+                    </InteractiveSurface>
+                </div>
+            </section>
+
+            {LANGUAGE_CHAPTERS.map((chapter, index) => (
+                <section
+                    key={chapter.id}
+                    id={chapter.id}
+                    className={styles.chapter}
+                    style={{
+                        '--chapter-accent': chapter.accent,
+                        '--chapter-accent-soft': chapter.accentSoft,
+                        '--chapter-glow': chapter.glow,
+                    }}
+                >
+                    <div
+                        className={`${styles.chapterShell} ${
+                            index % 2 === 1 ? styles.chapterShellReverse : ''
+                        }`}
+                    >
+                        <div className={styles.chapterCopy}>
+                            <div className={styles.sectionEyebrow}>{chapter.eyebrow}</div>
+                            <h2
+                                className={`${styles.chapterTitle} ${styles.motionHeadline} ${styles.scrollReveal}`}
+                                data-scroll-reveal
                             >
-                                <div className={styles.pageGlow} aria-hidden='true' />
-
-                                <nav className={styles.sideRail} aria-label='First World sections'>
-                                    <div className={styles.railLine} aria-hidden='true' />
-                                    {WORKSPACE_ORDER.map((sectionId) => {
-                                        const responseState = getRegionResponseState(activeRegionId, sectionId);
-                                        const label =
-                                            sectionId === 'home'
-                                                ? 'Home'
-                                                : WORKSPACE_SECTIONS.find((section) => section.id === sectionId)?.label ??
-                                                  sectionId;
-
-                                        return (
-                                            <a
-                                                key={sectionId}
-                                                href={getRegionHref(sectionId)}
-                                                className={styles.railLink}
-                                                data-active={activeRegionId === sectionId ? 'true' : 'false'}
-                                                data-response-state={responseState}
-                                                data-traveling={travelingRegionId === sectionId ? 'true' : 'false'}
-                                                onClick={(event) => {
-                                                    event.preventDefault();
-                                                    requestRegionTravel(sectionId);
-                                                }}
-                                            >
-                                                <span className={styles.railDot} />
-                                                <span className={styles.railLabel}>{label}</span>
-                                            </a>
-                                        );
-                                    })}
-                                </nav>
-
-                                <div className={styles.worldLayout}>
-                                    <section
-                                        id='home'
-                                        className={`${styles.section} ${styles.heroSection} ${styles.worldCoreSection}`}
-                                        data-first-world-section='true'
-                                        data-response-state={getRegionResponseState(activeRegionId, 'home')}
-                                    >
-                                        <div className={styles.sectionInner}>
-                                            <div className={styles.heroCopy}>
-                                                <p className={styles.eyebrow}>Dropple First World</p>
-                                                <h1 className={styles.heroTitle}>The Living World of Creation</h1>
-                                                <p className={styles.heroBody}>
-                                                    Dropple is your creative universe. Choose a language of creation and
-                                                    enter a world that matches your vision, your workflow, and your
-                                                    imagination.
-                                                </p>
-                                                <div className={styles.heroActions}>
-                                                    <a
-                                                        href={getRegionHref('build')}
-                                                        className={styles.primaryButton}
-                                                        onClick={(event) => {
-                                                            event.preventDefault();
-                                                            requestRegionTravel('build');
-                                                        }}
-                                                    >
-                                                        Explore Languages
-                                                    </a>
-                                                    <Link href={continueRoute} className={styles.secondaryButton}>
-                                                        Resume active context
-                                                    </Link>
-                                                </div>
-                                                <aside className={styles.supportPanel}>
-                                                    <p className={styles.supportLabel}>Continuity</p>
-                                                    <p className={styles.supportText}>
-                                                        Returning work remains available, but this place is defined by
-                                                        discovery before direction.
-                                                    </p>
-                                                    {recentProjects.length === 0 ? (
-                                                        <p className={styles.supportMeta}>No recent projects yet.</p>
-                                                    ) : (
-                                                        <div className={styles.recentList}>
-                                                            {recentProjects.slice(0, 3).map((project) => (
-                                                                <Link
-                                                                    key={project.id}
-                                                                    href={`/workspace/new?doc=${encodeURIComponent(project.id)}`}
-                                                                    className={styles.recentProjectLink}
-                                                                >
-                                                                    <span>{project.name ?? 'Untitled'}</span>
-                                                                    <span className={styles.recentProjectMeta}>
-                                                                        {project.updatedAt ?? project.id}
-                                                                    </span>
-                                                                </Link>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </aside>
-                                            </div>
-
-                                            <HeroOrbit />
-                                        </div>
-                                        <div className={styles.scrollPrompt}>Travel through the world</div>
-                                    </section>
-                                    {WORKSPACE_SECTIONS.map((section) => (
-                                        <section
-                                            key={section.id}
-                                            id={section.id}
-                                            className={`${styles.section} ${styles.worldRegionSection}`}
-                                            data-first-world-section='true'
-                                            data-region-id={section.id}
-                                            data-region-identity={section.identity}
-                                            data-response-state={getRegionResponseState(activeRegionId, section.id)}
+                                {chapter.title}
+                            </h2>
+                            <p
+                                className={`${styles.chapterBody} ${styles.motionCopy} ${styles.scrollReveal}`}
+                                data-scroll-reveal
+                                style={{ '--reveal-delay': '90ms' }}
+                            >
+                                {chapter.body}
+                            </p>
+                            <p className={styles.chapterServes}>{chapter.serves}</p>
+                            <div
+                                className={`${styles.chapterAtmosphere} ${styles.motionLabel} ${styles.scrollReveal}`}
+                                data-scroll-reveal
+                                style={{ '--reveal-delay': '140ms' }}
+                            >
+                                {chapter.atmosphere}
+                            </div>
+                            <InteractiveSurface
+                                className={`${styles.languageCardDeck} ${styles.interactiveSurface} ${styles.scrollReveal}`}
+                                data-scroll-reveal
+                                style={{ '--reveal-delay': '180ms' }}
+                            >
+                                <div className={styles.languageDeckHeader}>
+                                    <div className={styles.languageDeckWorkspace}>
+                                        {chapter.workspaceLabel}
+                                    </div>
+                                    <div className={styles.languageDeckSummary}>
+                                        {chapter.serves}
+                                    </div>
+                                </div>
+                                <div className={styles.languageCardGrid}>
+                                    {chapter.languages.map((language, languageIndex) => (
+                                        <InteractiveSurface
+                                            key={language.name}
+                                            as={Link}
+                                            href={language.href}
+                                            className={`${styles.languageCard} ${styles.interactiveSurface}`}
                                             style={{
-                                                '--accent': section.accent,
-                                                '--glow': section.glow,
+                                                '--card-delay': `${languageIndex * 90}ms`,
                                             }}
                                         >
-                                            <div className={styles.sectionInner}>
-                                                <div className={styles.workspaceVisual}>
-                                                    <div className={styles.workspaceAura} />
-                                                    <div className={styles.workspaceRing} />
-                                                    <div className={styles.workspaceCard}>
-                                                        <span className={styles.workspaceCardIcon}>{section.icon}</span>
-                                                        <span className={styles.workspaceCardLabel}>{section.label}</span>
-                                                    </div>
-                                                    <ParticleField accent={section.accent} prefix={section.id} />
-                                                </div>
-
-                                                <div className={styles.workspaceCopy}>
-                                                    <p className={styles.sectionTag}>{section.regionTitle}</p>
-                                                    <h2 className={styles.sectionTitle}>{section.label}</h2>
-                                                    <p className={styles.sectionEyebrow}>{section.landmark}</p>
-                                                    <div className={styles.regionDetails}>
-                                                        <p className={styles.sectionDescription}>{section.description}</p>
-                                                        <div className={styles.regionSignals}>
-                                                            <div className={styles.regionSignalCard}>
-                                                                <span className={styles.regionSignalLabel}>Approach</span>
-                                                                <strong>{section.approach}</strong>
-                                                            </div>
-                                                            <div className={styles.regionSignalCard}>
-                                                                <span className={styles.regionSignalLabel}>Horizon</span>
-                                                                <strong>{section.horizon}</strong>
-                                                            </div>
-                                                        </div>
-                                                        <div className={styles.regionEntryFrame}>
-                                                            <span className={styles.regionEntryLabel}>Entry Languages</span>
-                                                            <p className={styles.regionEntryCopy}>
-                                                                {section.eyebrow}
-                                                            </p>
-                                                        </div>
-                                                        <div className={styles.modePills}>
-                                                            {section.modes.map((mode) => (
-                                                                <Link
-                                                                    key={mode.id}
-                                                                    href={mode.href}
-                                                                    className={styles.modePill}
-                                                                >
-                                                                    {mode.label}
-                                                                </Link>
-                                                            ))}
-                                                        </div>
-                                                        <div className={styles.sectionActions}>
-                                                            <Link
-                                                                href={section.defaultModeHref}
-                                                                className={styles.primaryButton}
-                                                            >
-                                                                Start Creating
-                                                            </Link>
-                                                            <a
-                                                                href={getRegionHref('home')}
-                                                                className={styles.secondaryButton}
-                                                                onClick={(event) => {
-                                                                    event.preventDefault();
-                                                                    requestRegionTravel('home');
-                                                                }}
-                                                            >
-                                                                Return to the First World
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                            <div className={styles.languageIconWrap}>
+                                                {(() => {
+                                                    const Icon = LANGUAGE_ICONS[language.name];
+                                                    return Icon ? (
+                                                        <Icon className={styles.languageIconSvg} strokeWidth={1.8} />
+                                                    ) : (
+                                                        <span className={styles.languageIconCore} />
+                                                    );
+                                                })()}
                                             </div>
-                                        </section>
+                                            <div className={`${styles.languageName} ${styles.motionLabel}`}>
+                                                {language.name}
+                                            </div>
+                                            <p className={styles.languageBody}>{language.body}</p>
+                                            <span className={styles.languageCta}>
+                                                Enter {language.name}
+                                            </span>
+                                        </InteractiveSurface>
                                     ))}
                                 </div>
+                            </InteractiveSurface>
+                        </div>
 
-                                <footer className={styles.footer}>
-                                    <span className={styles.footerCopy}>
-                                        Marketplace, blueprints, and support systems remain part of Dropple, but they do
-                                        not define the First World.
-                                    </span>
-                                    <Link href='/marketplace' className={styles.footerLink}>
-                                        Browse Marketplace
-                                    </Link>
-                                </footer>
-                            </main>
-                        )}
-                    </NavigationFramework>
-                </RegionHost>
-            </WorldCore>
-        </LivingWorldHost>
+                        <ChapterVisual chapter={chapter} />
+                    </div>
+                </section>
+            ))}
+
+            <section className={styles.continueSection}>
+                <div className={styles.continueShell}>
+                    <div className={styles.continueIntro}>
+                        <div className={styles.sectionEyebrow}>Continue Your Work</div>
+                        <h2
+                            className={`${styles.chapterTitle} ${styles.motionHeadline} ${styles.scrollReveal}`}
+                            data-scroll-reveal
+                        >
+                            Return only after the world has shown you how creation is organized.
+                        </h2>
+                        <p
+                            className={`${styles.chapterBody} ${styles.motionCopy} ${styles.scrollReveal}`}
+                            data-scroll-reveal
+                            style={{ '--reveal-delay': '90ms' }}
+                        >
+                            Dropple begins with creative language, then gently returns
+                            you to recent work, blueprints, and templates.
+                        </p>
+                        <Link className={styles.primaryAction} href='/workspace'>
+                            Continue Existing Work
+                        </Link>
+                    </div>
+
+                    <div
+                        className={`${styles.continueStack} ${styles.scrollReveal}`}
+                        data-scroll-reveal
+                        style={{ '--reveal-delay': '160ms' }}
+                    >
+                        <div className={styles.methodGrid}>
+                            {STARTING_METHODS.map((method, index) => (
+                                <InteractiveSurface
+                                    key={method.title}
+                                    as={Link}
+                                    href={method.href}
+                                    className={`${styles.methodCard} ${styles.interactiveSurface}`}
+                                    style={{
+                                        '--card-delay': `${index * 120}ms`,
+                                        '--method-accent': method.accent,
+                                        '--method-accent-soft': method.accentSoft,
+                                    }}
+                                >
+                                    <div className={styles.methodIconWrap}>
+                                        <method.icon
+                                            className={styles.methodIconSvg}
+                                            strokeWidth={1.8}
+                                        />
+                                    </div>
+                                    <div className={styles.methodTitle}>{method.title}</div>
+                                    <p className={styles.methodBody}>{method.body}</p>
+                                    <span className={styles.methodCta}>{method.cta}</span>
+                                </InteractiveSurface>
+                            ))}
+                        </div>
+
+                        <div className={styles.trustSection}>
+                            {TRUST_PILLARS.map((pillar, index) => (
+                                <InteractiveSurface
+                                    key={pillar}
+                                    className={`${styles.trustCard} ${styles.interactiveSurface}`}
+                                    style={{ '--card-delay': `${index * 120}ms` }}
+                                >
+                                    <div className={styles.trustGlyph} />
+                                    <div className={styles.trustIndex}>0{index + 1}</div>
+                                    <p className={styles.trustBody}>{pillar}</p>
+                                </InteractiveSurface>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <footer className={styles.footer}>
+                <div className={styles.footerGlow} />
+                <div className={styles.footerTrustRow}>
+                    {TRUST_PILLARS.map((pillar, index) => (
+                        <div key={pillar} className={styles.footerTrustItem}>
+                            <div className={styles.footerTrustIcon} />
+                            <div>
+                                <div className={styles.footerTrustTitle}>
+                                    {index === 0
+                                        ? 'One living world'
+                                        : index === 1
+                                          ? 'Motion-first thinking'
+                                          : 'Language before tools'}
+                                </div>
+                                <div className={styles.footerTrustCopy}>{pillar}</div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <div className={styles.footerLinksPanel}>
+                    {FOOTER_LINK_GROUPS.map((group) => (
+                        <div key={group[0]} className={styles.footerLinkColumn}>
+                            {group.map((item) => (
+                                <span key={item} className={styles.footerLink}>
+                                    {item}
+                                </span>
+                            ))}
+                        </div>
+                    ))}
+                    <div className={styles.footerCopyright}>© Dropple</div>
+                </div>
+            </footer>
+        </main>
     );
 }
