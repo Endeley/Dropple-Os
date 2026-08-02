@@ -1,3 +1,4 @@
+import { buildBlueprintLaunchHref } from '@/runtime/workspaces/index.js';
 import { resolveCanonicalWorkspaceOverlayContext } from './modeResolution.js';
 
 function asNonEmptyString(value) {
@@ -14,12 +15,10 @@ export function buildProjectBlueprintStartRoute({
     perspectiveId = 'create',
     blueprintId,
 } = {}) {
-    const normalizedPerspectiveId = normalizePerspectiveId(perspectiveId);
-    const normalizedBlueprintId = asNonEmptyString(blueprintId);
-    if (!normalizedBlueprintId) {
-        return `/workspace/${encodeURIComponent(normalizedPerspectiveId)}`;
-    }
-    return `/workspace/${encodeURIComponent(normalizedPerspectiveId)}?blueprint=${encodeURIComponent(normalizedBlueprintId)}&bootstrap=1`;
+    return buildBlueprintLaunchHref({
+        perspectiveId: normalizePerspectiveId(perspectiveId),
+        blueprintId: asNonEmptyString(blueprintId),
+    });
 }
 
 export function buildProjectEnvironmentStartRoute({

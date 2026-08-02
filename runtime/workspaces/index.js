@@ -25,6 +25,10 @@ export {
     buildTemplateDetailLaunchHref,
 } from './templateLaunch.js';
 export {
+    createBlueprintLaunchContext,
+    buildBlueprintLaunchHref,
+} from './blueprintLaunch.js';
+export {
     resolveRecentWorkDocument,
     createRecentWorkLaunchContext,
     buildRecentWorkLaunchHref,

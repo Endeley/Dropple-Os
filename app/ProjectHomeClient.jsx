@@ -217,7 +217,7 @@ const STARTING_METHODS = [
     {
         title: 'Start from Blueprint',
         body: 'Begin from structure when the work needs foundations before surface.',
-        href: '/marketplace',
+        href: '/marketplace?entry=blueprint',
         cta: 'Browse Blueprints',
         icon: DraftingCompass,
         accent: '#7fb7ff',
@@ -226,7 +226,7 @@ const STARTING_METHODS = [
     {
         title: 'Start from Template',
         body: 'Begin from expression when the work needs a faster route into creation.',
-        href: '/marketplace',
+        href: '/marketplace?entry=template',
         cta: 'Browse Templates',
         icon: CopyPlus,
         accent: '#c792ff',
@@ -663,9 +663,9 @@ export default function ProjectHomeClient() {
                             data-scroll-reveal
                             style={{ '--reveal-delay': '160ms' }}
                         >
-                            <a className={styles.primaryAction} href='#media'>
-                                Enter Motion First
-                            </a>
+                            <Link className={styles.primaryAction} href='/marketplace?entry=blueprint'>
+                                Begin Creative Start
+                            </Link>
                             <Link className={styles.secondaryAction} href={continueExistingWorkHref}>
                                 Continue Existing Work
                             </Link>

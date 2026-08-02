@@ -8,7 +8,7 @@ const ROUTES = [
   },
   {
     path: '/marketplace',
-    expected: 'Blueprints',
+    expected: 'Creative Start 1.0',
   },
   {
     path: '/workspace/graphic',
@@ -270,12 +270,15 @@ test('home route projects distinct region identities inside one Living World', a
   await expect(page.locator('section[data-region-id="system"]')).toHaveAttribute('data-region-identity', 'ordered');
 });
 
-test('marketplace route exposes blueprint categories and category filter', async ({ page }) => {
+test('marketplace route exposes creative family first, then blueprint category resolution', async ({ page }) => {
   const response = await page.goto('/marketplace', {
     waitUntil: 'networkidle',
   });
 
   expect(response?.ok(), 'marketplace route should respond successfully').toBeTruthy();
+  await expect(page.locator('body')).toContainText('Creative Start 1.0');
+  await expect(page.locator('body')).toContainText('Resolve your starting point before entering the canvas.');
+  await expect(page.getByRole('heading', { name: 'Creative Families' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Blueprint Categories' })).toBeVisible();
   await expect(page.locator('body')).toContainText('Business');
   await expect(page.locator('body')).toContainText('Creative');
@@ -283,7 +286,9 @@ test('marketplace route exposes blueprint categories and category filter', async
   await expect(page.locator('body')).toContainText('Engineering');
   await expect(page.locator('body')).toContainText('Education');
   await expect(page.locator('body')).toContainText('Operations');
-  await expect(page.getByRole('combobox').first()).toContainText('All blueprint categories');
+  await expect(page.getByRole('combobox').first()).toHaveValue('all');
+  await expect(page.getByRole('combobox').first().locator('option:checked')).toContainText('All creative families');
+  await expect(page.getByRole('combobox').nth(1).locator('option:checked')).toContainText('All blueprint categories');
 });
 
 test('viewer smoke mounts canonical canvas without runtime errors', async ({ page }) => {

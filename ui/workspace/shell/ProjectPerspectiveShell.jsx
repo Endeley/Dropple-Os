@@ -17,6 +17,7 @@ import {
     previewBlueprintUpgradeFromCatalog,
     resolveProjectBlueprintRouteSelection,
 } from '@/ui/bridges/blueprintInstallBridge.js';
+import { useWorkspaceSession } from '@/ui/workspace/session/WorkspaceSessionContext.jsx';
 import { dispatchOsWorkspaceShellIntent } from '@/ui/bridges/osSurfaceIntentBridge.js';
 import { readOsSurfaceSnapshot } from '@/ui/bridges/osSurfaceReadBridge.js';
 import { resolveProjectIdentityFromProjection } from '@/ui/bridges/projectIdentityReadBridge.js';
@@ -229,6 +230,7 @@ function ProjectPerspectiveShellContent({
     children = null,
     dispatcher = null,
 }) {
+    const workspaceSession = useWorkspaceSession();
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -324,9 +326,10 @@ function ProjectPerspectiveShellContent({
         () =>
             resolveProjectBlueprintRouteSelection({
                 searchParams,
+                launchContext: workspaceSession?.launchContext ?? null,
                 installOptions: blueprintOptions,
             }),
-        [searchParams, blueprintOptions],
+        [searchParams, workspaceSession?.launchContext, blueprintOptions],
     );
 
     useEffect(() => {

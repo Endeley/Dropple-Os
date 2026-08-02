@@ -1,7 +1,7 @@
 # Creative Session Resolution Roadmap
 
-Status: CSR 1.1B frozen, CSR 1.1C-A frozen, CSR 1.1C-B Stage 1 frozen, CSR 1.1C-B Stage 2 pending  
-Date: 2026-07-29  
+Status: CSR 1.1B frozen, CSR 1.1C-A frozen, CSR 1.1C-B frozen, CSR 1.1C-C frozen, Launch Producer Contract frozen, Creative Start 1.0 active  
+Date: 2026-07-30  
 Scope: Product-facing operating system entry sequence  
 Authority: Product roadmap artifact, subordinate to constitutional and runtime truth
 
@@ -49,6 +49,22 @@ The engine is relatively mature.
 
 The missing layer is the creator experience.
 
+## Canonical Intent Reference
+
+Intent Architecture:
+
+- `docs/INTENT_ARCHITECTURE.md`
+
+This is the canonical definition of:
+
+- Creative Intent
+- Launch Truth
+- Workspace Consumption
+- Interaction Intent
+
+All new creator-entry, launch-producer, workspace-boot, and runtime-intent work
+must conform to that document.
+
 ## CSR 1.1C-A Freeze Record
 
 Status: Frozen  
@@ -84,13 +100,14 @@ Frozen law:
 `ProjectHomeClient.jsx` must not reconstruct launch semantics inline. Homepage
 language launches must delegate through the canonical homepage producer helper.
 
-## CSR 1.1C-B Stage 1 Freeze Record
+## CSR 1.1C-B Freeze Record
 
 Status: Frozen  
 Date: 2026-07-29  
-Scope: Marketplace Template Detail Launch Producer  
+Scope: Marketplace Template Detail Launch Producer and downstream convergence cleanup  
 
-Marketplace template-detail launch is now a canonical producer slice.
+Marketplace template-detail launch is now a canonical producer slice, and the
+active downstream convergence cleanup is complete.
 
 Frozen authority chain:
 
@@ -113,6 +130,7 @@ Protected files:
 - `runtime/workspaces/templateLaunch.js`
 - `runtime/workspaces/__tests__/templateLaunch.test.mjs`
 - `tests/architecture/templateLaunchAuthority.test.mjs`
+- `docs/CSR_1_1C_B_STAGE2_FIELD_LINEAGE_MAP.md`
 
 Frozen law:
 
@@ -120,11 +138,92 @@ Frozen law:
 semantics inline. Marketplace template-detail launch must delegate through the
 canonical template launch producer helper.
 
-Stage 2 remains pending:
+Stage 2 completed:
 
-- remove downstream producer-owned reconstruction
-- reduce compatibility transport to the minimal frozen set required by the
-  current runtime boot path
+- removed active downstream producer-owned reconstruction for template-owned
+  launch truth
+- reduced compatibility transport to the documented minimal set required by the
+  frozen runtime boot path
+- preserved the frozen `WorkspaceRoot` → `WorkspaceSession` → runtime boot
+  boundary unchanged
+
+## Launch Producer Pattern Review
+
+Status: Frozen constitutional contract  
+Date: 2026-07-29  
+Scope: Architectural review and governance freeze  
+
+The launch-producer pattern is no longer under review.
+
+Its constitutional artifact is now frozen:
+
+- `docs/LAUNCH_PRODUCER_CONTRACT.md`
+
+This contract captures the architectural law demonstrated by the frozen
+Homepage, Template, Blueprint, and Recent Work producer families.
+
+## CSR 1.1C-C Freeze Record
+
+Status: Frozen  
+Date: 2026-07-30  
+Scope: Blueprint Launch Convergence  
+
+Blueprint launch is now a canonical producer slice, and the active downstream
+blueprint convergence cleanup is complete.
+
+Frozen authority chain:
+
+Blueprint Intent  
+↓  
+`createBlueprintLaunchContext(...)`  
+↓  
+`WorkspaceLaunchContext`  
+↓  
+Compatibility transport  
+↓  
+`WorkspaceRoot`  
+↓  
+`WorkspaceSession`  
+↓  
+Workspace Runtime
+
+Protected files:
+
+- `runtime/workspaces/blueprintLaunch.js`
+- `runtime/workspaces/__tests__/blueprintLaunch.test.mjs`
+- `tests/architecture/blueprintLaunchAuthority.test.mjs`
+- `tests/architecture/blueprintLaunchDownstreamAuthority.test.ts`
+- `docs/CSR_1_1C_C_BLUEPRINT_LAUNCH_AUDIT.md`
+- `docs/CSR_1_1C_C_STAGE2_FIELD_LINEAGE_MAP.md`
+
+Frozen law:
+
+Blueprint launch must not reconstruct producer-owned blueprint identity
+downstream once canonical launch truth exists in `WorkspaceLaunchContext`.
+Legacy query transport may remain only as an explicitly bounded compatibility
+fallback for the frozen shell bootstrap path.
+
+Stage 1 completed:
+
+- extracted a canonical Blueprint Launch Producer
+- redirected legacy route-bootstrap launch through producer-owned launch truth
+- emitted canonical blueprint identity, version, and certification into
+  `WorkspaceLaunchContext`
+
+Stage 2 completed:
+
+- moved active shell bootstrap consumption to prefer canonical launch context
+- reduced blueprint query ownership to compatibility-only fallback
+- preserved the frozen `WorkspaceRoot` → `WorkspaceSession` → runtime boot
+  boundary unchanged
+
+Evidence:
+
+- blueprint launch producer tests passing
+- blueprint launch authority guard passing
+- blueprint downstream authority guard passing
+- architecture suite green
+- `npm run validate:app` green
 
 ## Core Decision
 
@@ -386,25 +485,25 @@ CSR 1.1C and later work may not modify:
 Later milestones may only produce a valid Workspace Launch Context and hand it
 to the existing pipeline.
 
-### Milestone 1 — Creative Session Resolution
+### Milestone 1 — Creative Start 1.0
 
-Build the unified:
+Build the first coherent creator-facing entry flow:
 
 Language → Blueprint Category → Blueprint → Template → Workspace
-
-flow.
 
 Requirements:
 
 - reuse the existing blueprint and template infrastructure
-- formalize Workspace Launch Context
-- make entry coherent and creator-facing
+- preserve the frozen launch producer and workspace session boundaries
+- resolve creator intent explicitly before workspace boot
+- pass one complete launch context into the workspace
 
 Implementation framing:
 
 - define resolution states, not UI screens
-- resolve session intent explicitly before workspace boot
-- pass one complete launch context into the workspace
+- begin from existing surfaces before adding new ones
+- treat Creative Start as a producer of creator intent, not a replacement for
+  workspace launch infrastructure
 
 ### Milestone 2 — Blueprint Author Grammar
 

@@ -5,6 +5,7 @@ import {
     buildProjectIntentRecommendationRoute,
     resolveProjectIntentBlueprintRecommendations,
 } from '@/runtime/workspaces/projectIntentBlueprintRecommendation.js';
+import { resolveWorkspaceLaunchContextFromSearchParams } from '@/runtime/workspaces/index.js';
 
 test('project intent blueprint recommendations are deterministic for equivalent logistics intent', () => {
     const input = Object.freeze({
@@ -32,9 +33,25 @@ test('project intent blueprint recommendations fail closed for empty or unsuppor
 });
 
 test('project intent recommendation route bootstraps canonical create perspective', () => {
-    assert.equal(
-        buildProjectIntentRecommendationRoute('bp.logistics.v1'),
-        '/workspace/create?blueprint=bp.logistics.v1&bootstrap=1',
-    );
+    const href = buildProjectIntentRecommendationRoute('bp.logistics.v1');
+    const url = new URL(href, 'https://dropple.test');
+
+    assert.equal(url.pathname, '/workspace/create');
+    assert.equal(url.searchParams.get('bootstrap'), '1');
+    assert.deepEqual(resolveWorkspaceLaunchContextFromSearchParams(url.searchParams), {
+        version: 1,
+        language: null,
+        category: null,
+        blueprint: {
+            id: 'bp.logistics.v1',
+            versionId: 'bp.logistics.v1',
+        },
+        template: null,
+        grammar: null,
+        certification: {
+            blueprint: 'dropple-certified',
+            template: null,
+        },
+    });
     assert.equal(buildProjectIntentRecommendationRoute(' '), '/workspace/create');
 });

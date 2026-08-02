@@ -1,12 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useOwnership } from '@/marketplace/useOwnershipStore';
 import { Badge } from '@/ui/controls/ui/badge.jsx';
 import { getArtifactPresentation } from '@/marketplace/artifactPresentation.js';
 import { getExportCapabilities } from '@/runtime/export/getExportCapabilities.js';
 import { buildTemplateDetailLaunchHref } from '@/runtime/workspaces/index.js';
+import {
+  createMarketplaceResolutionSearchParams,
+  resolveMarketplaceResolutionState,
+} from '@/marketplace/marketplaceResolution.js';
 import {
   ArtifactExportKinds,
   exportArtifact as exportArtifactFacade,
@@ -15,6 +19,8 @@ import { verifyExportArtifact } from '@/runtime/export/verify/verifyExportArtifa
 
 export default function TemplateDetailPage({ params }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const resolutionState = resolveMarketplaceResolutionState(searchParams);
   const [template, setTemplate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,6 +28,7 @@ export default function TemplateDetailPage({ params }) {
   const ownership = useOwnership();
   const user = { id: 'user-local' };
   const [license, setLicense] = useState('personal');
+  const entryIntent = resolutionState.entryIntent;
 
   useEffect(() => {
     let cancelled = false;
@@ -130,6 +137,41 @@ export default function TemplateDetailPage({ params }) {
     template?.versionId ??
     template?.certification?.lineageNodeId ??
     null;
+  const isCommittedArtifact =
+    entryIntent === 'template'
+      ? resolutionState.committed && resolutionState.artifactId === template.id
+      : resolutionState.expressionCommitted && resolutionState.expressionTemplateId === template.id;
+  const inspectionState = isCommittedArtifact
+    ? {
+        label: 'Committed',
+        body:
+          entryIntent === 'template'
+            ? 'This template has been chosen as the starting expression for the session.'
+            : 'This template has been chosen as the expression layer for the committed blueprint.',
+      }
+    : {
+        label: 'Inspecting',
+        body:
+          entryIntent === 'template'
+            ? 'You are inspecting a possible starting expression. Opening this page does not launch the workspace.'
+            : 'You are inspecting a compatible expression for the already-committed blueprint. Opening this page does not launch the workspace.',
+      };
+
+  function buildMarketplaceHref({ committed = false, artifactId = null } = {}) {
+    const resolutionParams = createMarketplaceResolutionSearchParams({
+      entryIntent,
+      query: resolutionState.query,
+      mode: resolutionState.mode,
+      category: resolutionState.category,
+      artifactId,
+      committed,
+      expressionStrategy: resolutionState.expressionStrategy,
+      expressionTemplateId: resolutionState.expressionTemplateId,
+      expressionCommitted: resolutionState.expressionCommitted,
+    });
+    const query = resolutionParams.toString();
+    return query.length > 0 ? `/marketplace?${query}` : '/marketplace';
+  }
 
   function useTemplate() {
     if (!canUseTemplate) return;
@@ -138,6 +180,40 @@ export default function TemplateDetailPage({ params }) {
       throw new Error('Template is missing launch identity.');
     }
     router.push(href);
+  }
+
+  function commitTemplateChoice() {
+    router.push(
+      entryIntent === 'template'
+        ? buildMarketplaceHref({
+            artifactId: template.id,
+            committed: true,
+          })
+        : (() => {
+            const resolutionParams = createMarketplaceResolutionSearchParams({
+              entryIntent,
+              query: resolutionState.query,
+              mode: resolutionState.mode,
+              category: resolutionState.category,
+              artifactId: resolutionState.artifactId,
+              committed: resolutionState.committed,
+              expressionStrategy: 'template',
+              expressionTemplateId: template.id,
+              expressionCommitted: true,
+            });
+            const query = resolutionParams.toString();
+            return query.length > 0 ? `/marketplace?${query}` : '/marketplace';
+          })(),
+    );
+  }
+
+  function returnToMarketplace() {
+    router.push(
+      buildMarketplaceHref({
+        artifactId: resolutionState.artifactId,
+        committed: resolutionState.committed,
+      }),
+    );
   }
 
   function buySelectedLicense() {
@@ -158,14 +234,39 @@ export default function TemplateDetailPage({ params }) {
           data-capability={exportCapabilities.label}
           style={presentation.badgeStyle}
         >
-          {exportCapabilities.label}
+          {entryIntent === 'template' ? 'Template' : 'Expression Template'}
         </Badge>
         <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-          {exportCapabilities.description}
+          {entryIntent === 'template'
+            ? 'Starting expression selected.'
+            : 'Compatible starting expression for committed blueprint.'}
         </div>
       </div>
       <h2>{template.metadata.title}</h2>
       <p style={{ color: 'var(--text-muted)' }}>{template.metadata.description}</p>
+      <div style={{ marginTop: 'var(--space-sm)', fontSize: 12, color: 'var(--text-muted)' }}>
+        {entryIntent === 'template'
+          ? 'This surface is being used as a template choice: how you want the work to begin expressing itself.'
+          : 'This surface is being used as an optional starting expression after the blueprint has already resolved structure.'}
+      </div>
+      <div
+        style={{
+          marginTop: 'var(--space-md)',
+          padding: 'var(--space-3)',
+          border: '1px solid var(--border-default)',
+          borderRadius: 'var(--radius-md)',
+          background: 'var(--surface-1)',
+          display: 'grid',
+          gap: 'var(--space-xs)',
+          maxWidth: 720,
+        }}
+      >
+        <div style={{ fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+          Artifact state
+        </div>
+        <div style={{ fontSize: 16, fontWeight: 600 }}>{inspectionState.label}</div>
+        <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{inspectionState.body}</div>
+      </div>
 
       <div style={{ marginTop: 'var(--space-sm)', fontSize: 12, color: 'var(--text-muted)' }}>
         By {creator.name || 'Unknown'}
@@ -286,23 +387,63 @@ export default function TemplateDetailPage({ params }) {
       ) : null}
 
       {presentation.capabilities.canInstall ? (
-        <button
-          style={{
-            marginTop: 'var(--space-lg)',
-            minWidth: 32,
-            height: 32,
-            padding: '0 var(--space-sm)',
-            border: '1px solid var(--border-default)',
-            borderRadius: 'var(--radius-sm)',
-            background: 'var(--surface-1)',
-            color: 'var(--text-primary)',
-            fontSize: 12,
-          }}
-          onClick={useTemplate}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-sm)', marginTop: 'var(--space-lg)' }}>
+          <button
+            style={{
+              minWidth: 32,
+              height: 32,
+              padding: '0 var(--space-sm)',
+              border: '1px solid var(--border-default)',
+              borderRadius: 'var(--radius-sm)',
+              background: 'var(--surface-1)',
+              color: 'var(--text-primary)',
+              fontSize: 12,
+            }}
+            onClick={returnToMarketplace}
+          >
+            Back to Marketplace
+          </button>
+          <button
+            style={{
+              minWidth: 32,
+              height: 32,
+              padding: '0 var(--space-sm)',
+              border: '1px solid var(--border-default)',
+              borderRadius: 'var(--radius-sm)',
+              background: isCommittedArtifact ? 'rgba(123, 92, 255, 0.14)' : 'var(--surface-1)',
+              color: 'var(--text-primary)',
+              fontSize: 12,
+            }}
+          onClick={commitTemplateChoice}
           disabled={!owned}
         >
-          Start Project
+          {isCommittedArtifact
+            ? entryIntent === 'template'
+              ? 'Template committed'
+              : 'Starting expression committed'
+            : entryIntent === 'template'
+              ? 'Choose this template'
+              : 'Choose this starting expression'}
         </button>
+          {isCommittedArtifact && entryIntent === 'template' ? (
+            <button
+              style={{
+                minWidth: 32,
+                height: 32,
+                padding: '0 var(--space-sm)',
+                border: '1px solid var(--color-primary)',
+                borderRadius: 'var(--radius-sm)',
+                background: 'rgba(123, 92, 255, 0.14)',
+                color: 'var(--text-primary)',
+                fontSize: 12,
+              }}
+              onClick={useTemplate}
+              disabled={!owned}
+            >
+              Launch from template
+            </button>
+          ) : null}
+        </div>
       ) : (
         <div style={{ marginTop: 'var(--space-lg)', fontSize: 12, color: 'var(--text-muted)' }}>
           Final artifacts can be viewed, but not installed into a workspace.

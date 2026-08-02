@@ -51,20 +51,27 @@ export function listBlueprintInstallOptions() {
 
 export function resolveProjectBlueprintRouteSelection({
     searchParams = null,
+    launchContext = null,
     installOptions = listBlueprintInstallOptions(),
 } = {}) {
     const optionsById = new Map(installOptions.map((option) => [String(option.id), option]));
-    const blueprintToken = readQueryField(searchParams, 'blueprint');
-    const blueprintsToken = readQueryField(searchParams, 'blueprints');
     const requestedIds = [];
-    if (typeof blueprintsToken === 'string' && blueprintsToken.trim().length > 0) {
-        for (const id of blueprintsToken.split(',')) {
-            const normalized = normalizeId(id);
+
+    const launchBlueprintId = normalizeId(launchContext?.blueprint?.id);
+    if (launchBlueprintId) {
+        requestedIds.push(launchBlueprintId);
+    } else {
+        const blueprintToken = readQueryField(searchParams, 'blueprint');
+        const blueprintsToken = readQueryField(searchParams, 'blueprints');
+        if (typeof blueprintsToken === 'string' && blueprintsToken.trim().length > 0) {
+            for (const id of blueprintsToken.split(',')) {
+                const normalized = normalizeId(id);
+                if (normalized) requestedIds.push(normalized);
+            }
+        } else {
+            const normalized = normalizeId(blueprintToken);
             if (normalized) requestedIds.push(normalized);
         }
-    } else {
-        const normalized = normalizeId(blueprintToken);
-        if (normalized) requestedIds.push(normalized);
     }
     const dedupedIds = [];
     const seen = new Set();

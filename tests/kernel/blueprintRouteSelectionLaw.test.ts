@@ -23,6 +23,31 @@ test('route blueprint selection resolves deterministic ordered ids from blueprin
     assert.deepEqual(left, right);
 });
 
+test('route blueprint selection prefers canonical launch-context blueprint identity over legacy query transport', () => {
+    const resolved = resolveProjectBlueprintRouteSelection({
+        searchParams: new URLSearchParams('blueprints=bp.startup.v1,bp.logistics.v1&bootstrap=1'),
+        launchContext: Object.freeze({
+            version: 1,
+            language: null,
+            category: null,
+            blueprint: Object.freeze({
+                id: 'bp.logistics.v1',
+                versionId: 'bp.logistics.v1',
+            }),
+            template: null,
+            grammar: null,
+            certification: Object.freeze({
+                blueprint: 'dropple-certified',
+                template: null,
+            }),
+        }),
+        installOptions: INSTALL_OPTIONS_FIXTURE,
+    });
+
+    assert.deepEqual(resolved.blueprintIds, ['bp.logistics.v1']);
+    assert.equal(resolved.autoBootstrap, true);
+});
+
 test('route blueprint selection fails closed for unknown/duplicate ids and absent flags', () => {
     const resolved = resolveProjectBlueprintRouteSelection({
         searchParams: {

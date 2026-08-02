@@ -5,12 +5,29 @@ import {
     buildProjectBlueprintStartRoute,
     buildProjectEnvironmentStartRoute,
 } from '@/platform/workspaces/projectStartRoute.js';
+import { resolveWorkspaceLaunchContextFromSearchParams } from '@/runtime/workspaces/index.js';
 
 test('project blueprint start route bootstraps certified blueprint installs through the project perspective route', () => {
-    assert.equal(
-        buildProjectBlueprintStartRoute({ perspectiveId: 'create', blueprintId: 'bp.logistics.v1' }),
-        '/workspace/create?blueprint=bp.logistics.v1&bootstrap=1',
-    );
+    const href = buildProjectBlueprintStartRoute({ perspectiveId: 'create', blueprintId: 'bp.logistics.v1' });
+    const url = new URL(href, 'https://dropple.test');
+
+    assert.equal(url.pathname, '/workspace/create');
+    assert.equal(url.searchParams.get('bootstrap'), '1');
+    assert.deepEqual(resolveWorkspaceLaunchContextFromSearchParams(url.searchParams), {
+        version: 1,
+        language: null,
+        category: null,
+        blueprint: {
+            id: 'bp.logistics.v1',
+            versionId: 'bp.logistics.v1',
+        },
+        template: null,
+        grammar: null,
+        certification: {
+            blueprint: 'dropple-certified',
+            template: null,
+        },
+    });
 });
 
 test('project environment start route canonicalizes entry context and lineage parameters deterministically', () => {

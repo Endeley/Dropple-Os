@@ -1,4 +1,5 @@
 import { listBlueprintCatalog } from '@/runtime/blueprints/blueprintCatalog.js';
+import { buildBlueprintLaunchHref } from './blueprintLaunch.js';
 
 function asNonEmptyString(value) {
     if (typeof value !== 'string') return null;
@@ -86,6 +87,8 @@ export function resolveProjectIntentBlueprintRecommendations({
 
 export function buildProjectIntentRecommendationRoute(blueprintId) {
     const normalized = asNonEmptyString(blueprintId);
-    if (!normalized) return '/workspace/create';
-    return `/workspace/create?blueprint=${encodeURIComponent(normalized)}&bootstrap=1`;
+    return buildBlueprintLaunchHref({
+        perspectiveId: 'create',
+        blueprintId: normalized,
+    });
 }

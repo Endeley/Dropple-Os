@@ -97,28 +97,43 @@ function resolveTemplateLineageIdentity(template) {
   };
 }
 
-test('marketplace blueprint workflow opens certified blueprint details and enters project create flow', async ({ page, request }) => {
+function resolveTemplateMarketplaceTitle(template) {
+  return (
+    template?.metadata?.title ??
+    template?.metadata?.name ??
+    template?.id ??
+    'Untitled Template'
+  );
+}
+
+test('marketplace template-first workflow commits starting expression and enters project create flow', async ({ page, request }) => {
   const template = await publishMarketplaceFixture(request, {
     title: `Marketplace Flow ${Date.now()}`,
     description: 'Marketplace-certified template flow',
   });
+  const templateTitle = resolveTemplateMarketplaceTitle(template);
   const tracked = attachErrorTracking(page);
 
-  const response = await page.goto('/marketplace', {
+  const response = await page.goto('/marketplace?entry=template', {
     waitUntil: 'networkidle',
   });
 
   expect(response?.ok(), 'marketplace route should respond successfully').toBeTruthy();
-  await expect(page.locator('body')).toContainText('Blueprints');
-  await expect(page.locator('[data-capability="Reproducible"]').first()).toContainText('Reproducible');
-  await page.getByText(template.metadata.name).click();
+  await expect(page.locator('body')).toContainText('Creative Start 1.0');
+  await expect(page.locator('body')).toContainText('Start from expression.');
+  await expect(page.locator('body')).toContainText('Reproducible');
+  await page.getByText(templateTitle).click();
 
-  await expect(page).toHaveURL(new RegExp(`/marketplace/template/${template.id}$`));
-  await expect(page.locator('body')).toContainText(template.metadata.name);
-  await expect(page.locator('[data-capability="Reproducible"]').first()).toContainText('Reproducible');
-  await expect(page.getByRole('button', { name: 'Start Project' })).toBeEnabled();
+  await expect(page).toHaveURL(new RegExp(`/marketplace/template/${template.id}(\\?entry=template)?$`));
+  await expect(page.locator('body')).toContainText(templateTitle);
+  await expect(page.locator('body')).toContainText('Reproducible');
+  await expect(page.getByRole('button', { name: 'Choose this template' })).toBeEnabled();
 
-  await page.getByRole('button', { name: 'Start Project' }).click();
+  await page.getByRole('button', { name: 'Choose this template' }).click();
+  await expect(page).toHaveURL(/\/marketplace\?entry=template/);
+  await expect(page.getByRole('button', { name: 'Continue with Template Producer' })).toBeEnabled();
+
+  await page.getByRole('button', { name: 'Continue with Template Producer' }).click();
   await expect(page).toHaveURL(/\/workspace\/create\?/);
   const workspaceUrl = new URL(page.url());
   const lineage = resolveTemplateLineageIdentity(template);

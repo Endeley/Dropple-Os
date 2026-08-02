@@ -1,8 +1,11 @@
 'use client';
 
 export default function MarketplaceFilterBar({
+  entryIntent = 'blueprint',
   query,
   setQuery,
+  mode,
+  setMode,
   category,
   setCategory,
   level,
@@ -11,6 +14,7 @@ export default function MarketplaceFilterBar({
   setTag,
   artifactKind,
   setArtifactKind,
+  modeOptions = [],
 }) {
   const inputStyle = {
     height: 32,
@@ -32,18 +36,33 @@ export default function MarketplaceFilterBar({
       }}
     >
       <input
-        placeholder="Search blueprints"
+        placeholder={entryIntent === 'template' ? 'Search templates' : 'Search blueprints'}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         style={{ ...inputStyle, flex: '1 1 220px' }}
       />
 
       <select
+        value={mode}
+        onChange={(e) => setMode(e.target.value)}
+        style={inputStyle}
+      >
+        <option value="all">All creative families</option>
+        {modeOptions.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+
+      <select
         value={category}
         onChange={(e) => setCategory(e.target.value)}
         style={inputStyle}
       >
-        <option value="all">All blueprint categories</option>
+        <option value="all">
+          {entryIntent === 'template' ? 'All structural categories' : 'All blueprint categories'}
+        </option>
         <option value="business">Business</option>
         <option value="creative">Creative</option>
         <option value="technology">Technology</option>
