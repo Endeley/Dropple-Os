@@ -110,10 +110,13 @@ jobs:
       - name: Comment on PR with guardrail violations
         if: failure() && steps.guard.outputs.errors
         uses: actions/github-script@v8
+        env:
+          GUARD_ERRORS: ${{ steps.guard.outputs.errors }}
         with:
           script: |
             const pr = context.payload.pull_request;
             const labels = pr.labels.map(l => l.name);
+            const guardErrors = process.env.GUARD_ERRORS || '_Unable to resolve guard errors._';
 
             const files = await github.paginate(
               github.rest.pulls.listFiles,
@@ -198,7 +201,7 @@ jobs:
             ---
 
             ### ❌ What went wrong
-            ${steps.guard.outputs.errors}
+            ${guardErrors}
 
             ---
 
