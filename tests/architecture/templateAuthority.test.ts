@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
     getArchitectureScannerPolicy,
-    shouldIgnoreArchitecturePath,
+    shouldIgnoreArchitectureEntry,
 } from '../../scripts/architectureIgnorePolicy.mjs';
 
 const ROOT = process.cwd();
@@ -14,8 +14,8 @@ const SCANNER_POLICY = getArchitectureScannerPolicy({
 });
 const IGNORE_DIRS = SCANNER_POLICY.ignoreDirs;
 
-function shouldIgnore(relPath) {
-    return shouldIgnoreArchitecturePath(relPath, IGNORE_DIRS);
+function shouldIgnore(relPath, fullPath, entry) {
+    return shouldIgnoreArchitectureEntry({ relPath, fullPath, entry, ignoreDirs: IGNORE_DIRS });
 }
 
 function walk(dir, relBase = '') {
@@ -26,9 +26,8 @@ function walk(dir, relBase = '') {
 
     for (const entry of entries) {
         const relPath = relBase ? `${relBase}/${entry.name}` : entry.name;
-        if (shouldIgnore(relPath)) continue;
-
         const fullPath = path.join(dir, entry.name);
+        if (shouldIgnore(relPath, fullPath, entry)) continue;
         if (entry.isDirectory()) {
             files.push(...walk(fullPath, relPath));
             continue;
