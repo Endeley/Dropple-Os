@@ -50,6 +50,38 @@ async function gotoNewWorkspace(page) {
   await expectSingleVisibleCanvasHost(page);
 }
 
+async function gotoCreateAuthoringWorkspace(page) {
+  await page.goto('/workspace/create', { waitUntil: 'networkidle' });
+
+  await expect(page.getByTestId('uiux-empty-world')).toBeVisible();
+  await page.getByTestId('uiux-empty-world-card-blankPage').click();
+  await expect(page.getByTestId('uiux-intent-confirmation')).toBeVisible();
+  await page.getByTestId('uiux-intent-continue').click();
+
+  await expect(page.getByTestId('uiux-first-expression')).toBeVisible();
+  await expect(page.getByTestId('uiux-world-editor')).toHaveAttribute(
+    'data-first-expression-focus',
+    'true'
+  );
+
+  await page.getByTestId('uiux-first-expression-continue').click();
+
+  await expect(page.getByTestId('uiux-world-editor')).toHaveAttribute(
+    'data-creative-initiation-focus',
+    'false'
+  );
+  await expect(page.getByTestId('uiux-world-editor')).toHaveAttribute(
+    'data-first-expression-focus',
+    'false'
+  );
+  await expect(page.getByTestId('uiux-world-editor')).toHaveAttribute(
+    'data-authoring-ready',
+    'true'
+  );
+  await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();
+  await expectSingleVisibleCanvasHost(page);
+}
+
 async function activateTool(page, toolId) {
   const tool = page.locator(`[data-tool-id="${toolId}"]`).first();
   await tool.click();
@@ -59,7 +91,7 @@ async function activateTool(page, toolId) {
   }
 }
 
-async function ensureNodeSelected(page, node) {
+async function ensureNodeSelected(page, node, options = {}) {
   const nodeId = await node.getAttribute('data-node-id');
   expect(nodeId).toBeTruthy();
 
@@ -73,7 +105,11 @@ async function ensureNodeSelected(page, node) {
     (await page.getByTestId('selection-outline').count()) === 1;
 
   if (!selectionAlreadyMatches) {
-    await node.click({ force: true });
+    if (options.position) {
+      await node.click({ force: true, position: options.position });
+    } else {
+      await node.click({ force: true });
+    }
   }
 
   await expect(page.getByTestId('selection-outline')).toHaveCount(1);
@@ -249,7 +285,7 @@ function visibleNodeLocators(page) {
 }
 
 function visibleNodeById(page, nodeId) {
-  return page.locator(`[data-node-id="${nodeId}"]:visible`).first();
+  return page.locator(`[data-pointer-role="node"][data-node-id="${nodeId}"]:visible`).first();
 }
 
 async function marqueeSelect(page, from, to) {
@@ -1024,11 +1060,367 @@ test('workspace new inspector projects capability domains for a selected frame',
     'Structure',
     'Layout',
     'Appearance',
-    'Content & Semantics',
-    'Motion & Export',
+    'Semantics',
+    'Motion',
+    'Export',
   ]);
+  await expect(page.locator('.inspector-section-header').filter({ hasText: 'Content' })).toHaveCount(0);
   await expect(page.getByTestId('inspector-action-delete')).toBeVisible();
   await expect(page.getByTestId('uiux-motion-attach')).toBeVisible();
+});
+
+test('workspace new selected frame exposes and applies canonical appearance properties through inspector', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoNewWorkspace(page);
+
+  await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+  const node = visibleNodeLocator(page);
+  await expect(node).toBeVisible();
+  const nodeId = await ensureNodeSelected(page, node);
+
+  await expect(page.getByTestId('inspector-shell')).toBeVisible();
+  await expect(page.locator('.inspector-section-header')).toContainText([
+    'Structure',
+    'Layout',
+    'Appearance',
+    'Semantics',
+    'Motion',
+    'Export',
+  ]);
+  const fillPresetSelect = page.getByRole('combobox', { name: 'Fill' });
+  const opacityInput = page.locator('label:has-text("Opacity") input[type="range"]');
+  const strokeSection = page.locator('.inspector-group').filter({ hasText: 'Stroke' });
+  const addStrokeButton = page.getByRole('button', { name: 'Stroke' });
+  const readCursorIndex = async () =>
+    page.evaluate(() => globalThis.__droppleDispatcher?.getState?.()?.cursorIndex ?? -1);
+  const setRangeRatio = async (locator, ratio) => {
+    const targetValue = ratio.toFixed(2);
+    await expect(locator).toBeVisible();
+    await locator.focus();
+    await page.keyboard.press('Home');
+    await expect
+      .poll(async () => locator.inputValue())
+      .toBe('0');
+
+    const increments = Math.round(ratio / 0.01);
+    for (let index = 0; index < increments; index += 1) {
+      await page.keyboard.press('ArrowRight');
+    }
+
+    await expect
+      .poll(async () => Number.parseFloat(await locator.inputValue()).toFixed(2))
+      .toBe(targetValue);
+  };
+
+  await expect(fillPresetSelect).toBeVisible();
+  await expect(opacityInput).toBeVisible();
+  await expect(addStrokeButton).toBeVisible();
+  const cursorBeforeFill = await readCursorIndex();
+  await fillPresetSelect.selectOption('token.color.secondary');
+
+  await expect
+    .poll(async () =>
+      page.evaluate((id) => {
+        const style = globalThis.__droppleDispatcher?.getState?.()?.document?.sceneGraph?.nodes?.[id]?.style ?? null;
+        return style
+          ? {
+              fill: style.fill ?? null,
+              opacity: style.opacity ?? null,
+            }
+          : null;
+      }, nodeId),
+    )
+    .toEqual({
+      fill: 'token.color.secondary',
+      opacity: null,
+    });
+  await expect.poll(readCursorIndex).toBe(cursorBeforeFill + 1);
+
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(page.getByTestId('inspector-shell')).toBeVisible();
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const ids = state?.selection?.ids instanceof Set
+          ? Array.from(state.selection.ids)
+          : Array.isArray(state?.selection?.ids)
+            ? state.selection.ids
+            : [];
+        return {
+          ids,
+          primary: state?.selection?.primary ?? null,
+        };
+      }),
+    )
+    .toEqual({
+      ids: [nodeId],
+      primary: nodeId,
+    });
+  await expect
+    .poll(async () =>
+      page.evaluate((id) => {
+        const style = globalThis.__droppleDispatcher?.getState?.()?.document?.sceneGraph?.nodes?.[id]?.style ?? null;
+        return style
+          ? {
+              fill: style.fill ?? null,
+              opacity: style.opacity ?? null,
+            }
+          : null;
+      }, nodeId),
+    )
+    .toEqual({
+      fill: null,
+      opacity: null,
+    });
+
+  await page.getByRole('button', { name: 'Redo' }).click();
+  await expect(page.getByTestId('inspector-shell')).toBeVisible();
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const ids = state?.selection?.ids instanceof Set
+          ? Array.from(state.selection.ids)
+          : Array.isArray(state?.selection?.ids)
+            ? state.selection.ids
+            : [];
+        return {
+          ids,
+          primary: state?.selection?.primary ?? null,
+        };
+      }),
+    )
+    .toEqual({
+      ids: [nodeId],
+      primary: nodeId,
+    });
+  await expect
+    .poll(async () =>
+      page.evaluate((id) => {
+        const style = globalThis.__droppleDispatcher?.getState?.()?.document?.sceneGraph?.nodes?.[id]?.style ?? null;
+        return style
+          ? {
+              fill: style.fill ?? null,
+              opacity: style.opacity ?? null,
+            }
+          : null;
+      }, nodeId),
+    )
+    .toEqual({
+      fill: 'token.color.secondary',
+      opacity: null,
+    });
+
+  await setRangeRatio(opacityInput, 0.42);
+  await expect
+    .poll(async () =>
+      page.evaluate((id) => {
+        const style = globalThis.__droppleDispatcher?.getState?.()?.document?.sceneGraph?.nodes?.[id]?.style ?? null;
+        return style
+          ? {
+              fill: style.fill ?? null,
+              opacity: style.opacity ?? null,
+            }
+          : null;
+      }, nodeId),
+    )
+    .toEqual({
+      fill: 'token.color.secondary',
+      opacity: 0.42,
+    });
+
+  await addStrokeButton.click();
+
+  const strokeColorInput = page
+    .locator('label')
+    .filter({ hasText: 'Stroke' })
+    .locator('input[type="color"]')
+    .last();
+  const strokeWidthInput = strokeSection.locator('input[type="number"]');
+
+  await expect
+    .poll(async () =>
+      page.evaluate((id) => {
+        const style = globalThis.__droppleDispatcher?.getState?.()?.document?.sceneGraph?.nodes?.[id]?.style ?? null;
+        return style?.stroke ?? null;
+      }, nodeId),
+    )
+    .toEqual({ color: '#000000', width: 1 });
+
+  await expect(strokeColorInput).toBeVisible();
+  await expect(strokeWidthInput).toBeVisible();
+  await strokeColorInput.fill('#ff0000');
+  await expect
+    .poll(async () =>
+      page.evaluate((id) => {
+        const style = globalThis.__droppleDispatcher?.getState?.()?.document?.sceneGraph?.nodes?.[id]?.style ?? null;
+        return style?.stroke ?? null;
+      }, nodeId),
+    )
+    .toEqual({ color: '#ff0000', width: 1 });
+
+  const cursorBeforeStrokeWidth = await readCursorIndex();
+  await strokeWidthInput.fill('3');
+  await strokeWidthInput.blur();
+
+  const canonicalStyle = await page.evaluate((id) => {
+    const state = globalThis.__droppleDispatcher?.getState?.();
+    const style = state?.document?.sceneGraph?.nodes?.[id]?.style ?? null;
+    return style
+      ? {
+          fill: style.fill ?? null,
+          fills: style.fills ?? null,
+          opacity: style.opacity ?? null,
+          stroke: style.stroke ?? null,
+          strokes: style.strokes ?? null,
+        }
+      : null;
+  }, nodeId);
+
+  expect(canonicalStyle).toBeTruthy();
+  expect(canonicalStyle.fill).toBe('token.color.secondary');
+  expect(canonicalStyle.opacity).toBe(0.42);
+  expect(canonicalStyle.stroke).toEqual({ color: '#ff0000', width: 3 });
+  expect(canonicalStyle.fills).toEqual([{ type: 'solid', color: 'token.color.secondary', enabled: true }]);
+  expect(canonicalStyle.strokes).toEqual([{ color: '#ff0000', width: 3, enabled: true }]);
+  await expect.poll(readCursorIndex).toBe(cursorBeforeStrokeWidth + 1);
+
+  const selectedVisual = await node.evaluate((element) => {
+    const computed = getComputedStyle(element);
+    return {
+      backgroundColor: computed.backgroundColor,
+      opacity: computed.opacity,
+      boxShadow: computed.boxShadow,
+    };
+  });
+
+  expect(selectedVisual.backgroundColor).toBe('rgb(99, 102, 241)');
+  expect(Number(selectedVisual.opacity)).toBeCloseTo(0.42, 2);
+  expect(selectedVisual.boxShadow).not.toBe('none');
+
+  await clearSelectionFromCanvas(page);
+  await expect
+    .poll(async () =>
+      visibleNodeById(page, nodeId).evaluate((element) => ({
+        selected: element.classList.contains('is-selected'),
+        primary: element.classList.contains('is-primary'),
+      })),
+    )
+    .toEqual({ selected: false, primary: false });
+  await expect
+    .poll(async () =>
+      visibleNodeById(page, nodeId).evaluate((element) => getComputedStyle(element).borderTopWidth),
+    )
+    .toBe('3px');
+
+  const unselectedVisual = await visibleNodeById(page, nodeId).evaluate((element) => {
+    const computed = getComputedStyle(element);
+    return {
+      borderTopColor: computed.borderTopColor,
+      borderTopWidth: computed.borderTopWidth,
+      backgroundColor: computed.backgroundColor,
+      opacity: computed.opacity,
+    };
+  });
+
+  expect(unselectedVisual.borderTopWidth).toBe('3px');
+  expect(unselectedVisual.borderTopColor).toBe('rgb(255, 0, 0)');
+  expect(unselectedVisual.backgroundColor).toBe('rgb(99, 102, 241)');
+  expect(Number(unselectedVisual.opacity)).toBeCloseTo(0.42, 2);
+
+  await visibleNodeById(page, nodeId).click();
+  await expect(page.getByTestId('inspector-shell')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Undo' }).click();
+
+  await expect(page.getByTestId('inspector-shell')).toBeVisible();
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const ids = state?.selection?.ids instanceof Set
+          ? Array.from(state.selection.ids)
+          : Array.isArray(state?.selection?.ids)
+            ? state.selection.ids
+            : [];
+        return {
+          ids,
+          primary: state?.selection?.primary ?? null,
+        };
+      }),
+    )
+    .toEqual({
+      ids: [nodeId],
+      primary: nodeId,
+    });
+  await expect
+    .poll(async () =>
+      page.evaluate((id) => {
+        const style = globalThis.__droppleDispatcher?.getState?.()?.document?.sceneGraph?.nodes?.[id]?.style ?? null;
+        return style
+          ? {
+              fill: style.fill ?? null,
+              opacity: style.opacity ?? null,
+              stroke: style.stroke ?? null,
+            }
+          : null;
+      }, nodeId),
+    )
+    .toEqual({
+      fill: 'token.color.secondary',
+      opacity: 0.42,
+      stroke: { color: '#ff0000', width: 1 },
+    });
+  await expect
+    .poll(async () =>
+      visibleNodeById(page, nodeId).evaluate((element) => getComputedStyle(element).borderTopWidth),
+    )
+    .toBe('1px');
+
+  await page.getByRole('button', { name: 'Redo' }).click();
+
+  await expect(page.getByTestId('inspector-shell')).toBeVisible();
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const ids = state?.selection?.ids instanceof Set
+          ? Array.from(state.selection.ids)
+          : Array.isArray(state?.selection?.ids)
+            ? state.selection.ids
+            : [];
+        return {
+          ids,
+          primary: state?.selection?.primary ?? null,
+        };
+      }),
+    )
+    .toEqual({
+      ids: [nodeId],
+      primary: nodeId,
+    });
+  await expect
+    .poll(async () =>
+      page.evaluate((id) => {
+        const style = globalThis.__droppleDispatcher?.getState?.()?.document?.sceneGraph?.nodes?.[id]?.style ?? null;
+        return style
+          ? {
+              fill: style.fill ?? null,
+              opacity: style.opacity ?? null,
+              stroke: style.stroke ?? null,
+            }
+          : null;
+      }, nodeId),
+    )
+    .toEqual({
+      fill: 'token.color.secondary',
+      opacity: 0.42,
+      stroke: { color: '#ff0000', width: 3 },
+    });
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
 });
 
 test('workspace new create menu projects existing uiux creation capabilities', async ({ page }) => {
@@ -1040,9 +1432,1365 @@ test('workspace new create menu projects existing uiux creation capabilities', a
     .click();
   await expect(page.getByRole('menuitem', { name: 'Frame' })).toBeVisible();
   await expect(page.getByRole('menuitem', { name: 'Text' })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: 'Shape' })).toBeVisible();
   await expect(page.getByRole('menuitem', { name: 'Image' })).toBeVisible();
-  await expect(page.getByRole('menuitem', { name: 'Shape' })).toHaveCount(0);
   await expect(page.getByRole('menuitem', { name: 'Path' })).toHaveCount(0);
+});
+
+test('workspace new uiux left rail only projects live utility tools and admitted creation tools', async ({ page }) => {
+  await gotoNewWorkspace(page);
+
+  await expect(page.locator('[data-tool-id="select"]').first()).toBeVisible();
+  await expect(page.locator('[data-tool-id="frame"]').first()).toBeVisible();
+  await expect(page.locator('[data-tool-id="text"]').first()).toBeVisible();
+  await expect(page.locator('[data-tool-id="shape"]').first()).toBeVisible();
+  await expect(page.locator('[data-tool-id="image"]').first()).toBeVisible();
+
+  await expect(page.locator('[data-tool-id="move"]')).toHaveCount(0);
+  await expect(page.locator('[data-tool-id="resize"]')).toHaveCount(0);
+  await expect(page.locator('[data-tool-id="path"]')).toHaveCount(0);
+});
+
+test('workspace create first-expression suppresses misleading create-tool interaction until authoring-ready', async ({ page }) => {
+  await page.goto('/workspace/create', { waitUntil: 'networkidle' });
+
+  await expect(page.getByTestId('uiux-empty-world')).toBeVisible();
+  await page.getByTestId('uiux-empty-world-card-blankPage').click();
+  await expect(page.getByTestId('uiux-intent-confirmation')).toBeVisible();
+  await page.getByTestId('uiux-intent-continue').click();
+
+  const worldEditor = page.getByTestId('uiux-world-editor');
+  await expect(worldEditor).toHaveAttribute('data-first-expression-focus', 'true');
+  await expect(worldEditor).toHaveAttribute('data-authoring-ready', 'false');
+
+  for (const toolId of ['frame', 'text', 'shape', 'image']) {
+    const tool = page.locator(`[data-tool-id="${toolId}"]`).first();
+    await expect(tool).toBeVisible();
+    await expect(tool).toHaveAttribute('data-tool-disabled', 'true');
+  }
+
+  await expect(page.locator('[data-tool-id="move"]')).toHaveCount(0);
+  await expect(page.locator('[data-tool-id="resize"]')).toHaveCount(0);
+  await expect(page.locator('[data-tool-id="path"]')).toHaveCount(0);
+  await expect(page.getByTestId('uiux-create-mode-hint')).toHaveCount(0);
+
+  await page.getByTestId('uiux-first-expression-continue').click();
+
+  await expect(worldEditor).toHaveAttribute('data-first-expression-focus', 'false');
+  await expect(worldEditor).toHaveAttribute('data-authoring-ready', 'true');
+
+  for (const toolId of ['frame', 'text', 'shape', 'image']) {
+    const tool = page.locator(`[data-tool-id="${toolId}"]`).first();
+    await expect(tool).toBeVisible();
+    await expect(tool).toHaveAttribute('data-tool-disabled', 'false');
+  }
+});
+
+test('workspace new text shape and image tools create native nodes through the live uiux creator path', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoNewWorkspace(page);
+
+  await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+  await waitForNodeCount(page, 1);
+
+  const frameNode = visibleNodeLocator(page);
+  const frameId = await ensureNodeSelected(page, frameNode);
+  const frameNodeById = visibleNodeById(page, frameId);
+
+  const clickCreateInsideFrame = async (toolId) => {
+    await activateTool(page, toolId);
+    const box = await frameNodeById.boundingBox();
+    if (!box) {
+      throw new Error(`Selected frame did not render for ${toolId} creation`);
+    }
+
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  };
+
+  await clickCreateInsideFrame('text');
+  await waitForNodeCount(page, 2);
+
+  const textInfo = await page.evaluate(() => {
+    const state = globalThis.__droppleDispatcher?.getState?.();
+    const ids = Array.isArray(state?.selection?.ids) ? state.selection.ids : Array.from(state?.selection?.ids ?? []);
+    const primary = state?.selection?.primary ?? null;
+    const node = primary ? state?.document?.sceneGraph?.nodes?.[primary] ?? null : null;
+    return {
+      selectedCount: ids.length,
+      primary,
+      type: node?.type ?? null,
+      parentId: node?.parentId ?? null,
+    };
+  });
+  expect(textInfo.selectedCount).toBe(1);
+  expect(textInfo.type).toBe('text');
+
+  await ensureNodeSelected(page, frameNodeById, { position: { x: 16, y: 16 } });
+  expect(textInfo.parentId).toBe(frameId);
+
+  await clickCreateInsideFrame('shape');
+  await waitForNodeCount(page, 3);
+
+  const shapeInfo = await page.evaluate(() => {
+    const state = globalThis.__droppleDispatcher?.getState?.();
+    const primary = state?.selection?.primary ?? null;
+    const node = primary ? state?.document?.sceneGraph?.nodes?.[primary] ?? null : null;
+    return {
+      type: node?.type ?? null,
+      parentId: node?.parentId ?? null,
+    };
+  });
+  expect(shapeInfo.type).toBe('shape');
+  expect(shapeInfo.parentId).toBe(frameId);
+
+  await ensureNodeSelected(page, frameNodeById, { position: { x: 16, y: 16 } });
+  await clickCreateInsideFrame('image');
+  await waitForNodeCount(page, 4);
+
+  const imageInfo = await page.evaluate(() => {
+    const state = globalThis.__droppleDispatcher?.getState?.();
+    const primary = state?.selection?.primary ?? null;
+    const node = primary ? state?.document?.sceneGraph?.nodes?.[primary] ?? null : null;
+    return {
+      type: node?.type ?? null,
+      parentId: node?.parentId ?? null,
+    };
+  });
+  expect(imageInfo.type).toBe('image');
+  expect(imageInfo.parentId).toBe(frameId);
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
+test('workspace create natural authoring path exposes active create feedback and creates native children inside the selected frame', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoCreateAuthoringWorkspace(page);
+
+  await expect(page.locator('[data-tool-id="move"]')).toHaveCount(0);
+  await expect(page.locator('[data-tool-id="resize"]')).toHaveCount(0);
+  await expect(page.locator('[data-tool-id="path"]')).toHaveCount(0);
+
+  await activateTool(page, 'frame');
+  await expect(page.getByTestId('uiux-world-editor')).toHaveAttribute('data-active-create-tool-id', 'frame');
+  await expect(page.getByTestId('uiux-create-mode-hint')).toContainText(
+    'Frame is active. Click or drag on the canvas to place a new Frame.'
+  );
+
+  const initialNodeCount = await page.locator('[data-node-id]:visible').count();
+  await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+  await waitForNodeCount(page, initialNodeCount + 1);
+
+  const clickCreateInsideFrame = async (toolId, hintText) => {
+    await activateTool(page, toolId);
+    await expect(page.getByTestId('uiux-world-editor')).toHaveAttribute(
+      'data-active-create-tool-id',
+      toolId
+    );
+    await expect(page.getByTestId('uiux-create-mode-hint')).toContainText(hintText);
+    const box = await frameNodeById.boundingBox();
+    if (!box) {
+      throw new Error(`Selected frame did not render for ${toolId} creation`);
+    }
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  };
+
+  const readPrimaryNode = async () =>
+    page.evaluate(() => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const primary = state?.selection?.primary ?? null;
+      const node = primary ? state?.document?.sceneGraph?.nodes?.[primary] ?? null : null;
+      return {
+        primary,
+        type: node?.type ?? null,
+        parentId: node?.parentId ?? null,
+      };
+    });
+
+  await expect
+    .poll(async () => await readPrimaryNode(), {
+      timeout: 10000,
+    })
+    .toMatchObject({
+      primary: expect.any(String),
+    });
+
+  const createdFrameInfo = await readPrimaryNode();
+  const frameId = createdFrameInfo.primary;
+  const frameNodeById = visibleNodeById(page, frameId);
+  await expect(frameNodeById).toBeVisible();
+  await ensureNodeSelected(page, frameNodeById);
+
+  await clickCreateInsideFrame('text', 'Text is active. Click inside a selected Frame to place Text.');
+  await waitForNodeCount(page, initialNodeCount + 2);
+  await expect(page.getByTestId('inspector-shell')).toBeVisible();
+  await expect.poll(readPrimaryNode).toEqual({
+    primary: expect.any(String),
+    type: 'text',
+    parentId: frameId,
+  });
+
+  await ensureNodeSelected(page, frameNodeById, { position: { x: 16, y: 16 } });
+  await clickCreateInsideFrame('shape', 'Shape is active. Click inside a selected Frame to place a Shape.');
+  await waitForNodeCount(page, initialNodeCount + 3);
+  await expect(page.getByTestId('inspector-shell')).toBeVisible();
+  await expect.poll(readPrimaryNode).toEqual({
+    primary: expect.any(String),
+    type: 'shape',
+    parentId: frameId,
+  });
+
+  await ensureNodeSelected(page, frameNodeById, { position: { x: 16, y: 16 } });
+  await clickCreateInsideFrame('image', 'Image is active. Click inside a selected Frame to place an Image.');
+  await waitForNodeCount(page, initialNodeCount + 4);
+  await expect(page.getByTestId('inspector-shell')).toBeVisible();
+  await expect.poll(readPrimaryNode).toEqual({
+    primary: expect.any(String),
+    type: 'image',
+    parentId: frameId,
+  });
+
+  await ensureNodeSelected(page, frameNodeById, { position: { x: 16, y: 16 } });
+  const beforeDrag = await frameNodeById.boundingBox();
+  expect(beforeDrag).not.toBeNull();
+  await dragNode(page, frameNodeById, { x: 80, y: 56 });
+  await waitForMoved(frameNodeById, beforeDrag, { dx: 30, dy: 20 });
+
+  const resizeHandle = page.getByTestId('resize-handle').first();
+  await expect(resizeHandle).toBeVisible();
+  const beforeResize = await frameNodeById.boundingBox();
+  expect(beforeResize).not.toBeNull();
+  await dragResizeHandle(page, resizeHandle, { x: 48, y: 32 });
+  await waitForResized(frameNodeById, beforeResize, { dw: 16, dh: 12 });
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
+test('workspace create moving a frame carries its created uiux descendants with it', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoCreateAuthoringWorkspace(page);
+
+  const initialNodeCount = await page.locator('[data-node-id]:visible').count();
+  await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+  await waitForNodeCount(page, initialNodeCount + 1);
+
+  const readPrimaryNode = async () =>
+    page.evaluate(() => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const primary = state?.selection?.primary ?? null;
+      const node = primary ? state?.document?.sceneGraph?.nodes?.[primary] ?? null : null;
+      return {
+        primary,
+        type: node?.type ?? null,
+        parentId: node?.parentId ?? null,
+      };
+    });
+
+  await expect
+    .poll(async () => await readPrimaryNode(), { timeout: 10000 })
+    .toMatchObject({ primary: expect.any(String) });
+
+  const frameId = (await readPrimaryNode()).primary;
+  const frameNode = visibleNodeById(page, frameId);
+  await expect(frameNode).toBeVisible();
+  await ensureNodeSelected(page, frameNode);
+
+  const clickCreateInsideFrame = async (toolId) => {
+    await activateTool(page, toolId);
+    const box = await frameNode.boundingBox();
+    if (!box) throw new Error(`Selected frame did not render for ${toolId} creation`);
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  };
+
+  await clickCreateInsideFrame('text');
+  await waitForNodeCount(page, initialNodeCount + 2);
+  const textId = (await readPrimaryNode()).primary;
+  expect((await readPrimaryNode()).parentId).toBe(frameId);
+
+  await ensureNodeSelected(page, frameNode, { position: { x: 16, y: 16 } });
+  await clickCreateInsideFrame('shape');
+  await waitForNodeCount(page, initialNodeCount + 3);
+  const shapeId = (await readPrimaryNode()).primary;
+  expect((await readPrimaryNode()).parentId).toBe(frameId);
+
+  await ensureNodeSelected(page, frameNode, { position: { x: 16, y: 16 } });
+  await clickCreateInsideFrame('image');
+  await waitForNodeCount(page, initialNodeCount + 4);
+  const imageId = (await readPrimaryNode()).primary;
+  expect((await readPrimaryNode()).parentId).toBe(frameId);
+
+  const textNode = visibleNodeById(page, textId);
+  const shapeNode = visibleNodeById(page, shapeId);
+  const imageNode = visibleNodeById(page, imageId);
+
+  const beforeFrame = await frameNode.boundingBox();
+  const beforeText = await textNode.boundingBox();
+  const beforeShape = await shapeNode.boundingBox();
+  const beforeImage = await imageNode.boundingBox();
+  expect(beforeFrame).not.toBeNull();
+  expect(beforeText).not.toBeNull();
+  expect(beforeShape).not.toBeNull();
+  expect(beforeImage).not.toBeNull();
+
+  await ensureNodeSelected(page, frameNode, { position: { x: 16, y: 16 } });
+  await dragNode(page, frameNode, { x: 88, y: 64 });
+  await waitForMoved(frameNode, beforeFrame, { dx: 30, dy: 20 });
+  await waitForMoved(textNode, beforeText, { dx: 30, dy: 20 });
+  await waitForMoved(shapeNode, beforeShape, { dx: 30, dy: 20 });
+  await waitForMoved(imageNode, beforeImage, { dx: 30, dy: 20 });
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
+test('workspace create text enters inline canvas editing and commits canonical content through the live uiux route', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoCreateAuthoringWorkspace(page);
+
+  const initialNodeCount = await page.locator('[data-node-id]:visible').count();
+  await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+  await waitForNodeCount(page, initialNodeCount + 1);
+
+  const readPrimaryNode = async () =>
+    page.evaluate(() => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const primary = state?.selection?.primary ?? null;
+      const node = primary ? state?.document?.sceneGraph?.nodes?.[primary] ?? null : null;
+      return {
+        primary,
+        type: node?.type ?? null,
+        parentId: node?.parentId ?? null,
+        content: node?.content ?? null,
+      };
+    });
+
+  await expect
+    .poll(async () => await readPrimaryNode(), { timeout: 10000 })
+    .toMatchObject({ primary: expect.any(String) });
+
+  const frameId = (await readPrimaryNode()).primary;
+  const frameNode = visibleNodeById(page, frameId);
+  await expect(frameNode).toBeVisible();
+  await ensureNodeSelected(page, frameNode);
+
+  await activateTool(page, 'text');
+  const frameBox = await frameNode.boundingBox();
+  if (!frameBox) throw new Error('Selected frame did not render for text creation');
+  await page.mouse.click(frameBox.x + frameBox.width / 2, frameBox.y + frameBox.height / 2);
+  await waitForNodeCount(page, initialNodeCount + 2);
+
+  const inlineEditor = page.getByTestId('inline-text-editor');
+  await expect(inlineEditor).toBeVisible();
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const editor = document.querySelector('[data-testid=\"inline-text-editor\"]');
+        return editor ? document.activeElement === editor : false;
+      }),
+    )
+    .toBe(true);
+  await page.keyboard.type('Hello Dropple');
+
+  await frameNode.click({ force: true, position: { x: 16, y: 16 } });
+  await expect(inlineEditor).toHaveCount(0);
+
+  await expect.poll(readPrimaryNode).toEqual({
+    primary: expect.any(String),
+    type: 'frame',
+    parentId: null,
+    content: null,
+  });
+
+  const textNodeInfo = await expect
+    .poll(async () =>
+      page.evaluate((parentId) => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const nodes = state?.document?.sceneGraph?.nodes ?? {};
+        const entry = Object.values(nodes).find((node) => node?.type === 'text' && node?.parentId === parentId);
+        return entry
+          ? {
+              id: entry.id,
+              parentId: entry.parentId ?? null,
+              content: entry.content ?? null,
+            }
+          : null;
+      }, frameId),
+    )
+    .toEqual({
+      id: expect.any(String),
+      parentId: frameId,
+      content: 'Hello Dropple',
+    })
+    .then(async () =>
+      page.evaluate((parentId) => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const nodes = state?.document?.sceneGraph?.nodes ?? {};
+        const entry = Object.values(nodes).find((node) => node?.type === 'text' && node?.parentId === parentId);
+        return entry
+          ? {
+              id: entry.id,
+              parentId: entry.parentId ?? null,
+              content: entry.content ?? null,
+            }
+          : null;
+      }, frameId),
+    );
+
+  const textNode = visibleNodeById(page, textNodeInfo.id);
+  await expect(textNode).toBeVisible();
+  await textNode.dblclick({ force: true });
+
+  await expect(inlineEditor).toBeVisible();
+  await inlineEditor.selectText();
+  await page.keyboard.type('Hello Dropple OS');
+
+  await frameNode.click({ force: true, position: { x: 18, y: 18 } });
+  await expect(inlineEditor).toHaveCount(0);
+
+  await expect
+    .poll(async () =>
+      page.evaluate((nodeId) => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        return state?.document?.sceneGraph?.nodes?.[nodeId]?.content ?? null;
+      }, textNodeInfo.id),
+    )
+    .toBe('Hello Dropple OS');
+
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect
+    .poll(async () =>
+      page.evaluate((nodeId) => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        return state?.document?.sceneGraph?.nodes?.[nodeId]?.content ?? null;
+      }, textNodeInfo.id),
+    )
+    .toBe('Hello Dropple');
+
+  await page.getByRole('button', { name: 'Redo' }).click();
+  await expect
+    .poll(async () =>
+      page.evaluate((nodeId) => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        return state?.document?.sceneGraph?.nodes?.[nodeId]?.content ?? null;
+      }, textNodeInfo.id),
+    )
+    .toBe('Hello Dropple OS');
+
+  const beforeFrame = await frameNode.boundingBox();
+  const beforeText = await textNode.boundingBox();
+  expect(beforeFrame).not.toBeNull();
+  expect(beforeText).not.toBeNull();
+
+  await ensureNodeSelected(page, frameNode, { position: { x: 16, y: 16 } });
+  await dragNode(page, frameNode, { x: 84, y: 60 });
+  await waitForMoved(frameNode, beforeFrame, { dx: 30, dy: 20 });
+  await waitForMoved(textNode, beforeText, { dx: 30, dy: 20 });
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
+test('workspace uiux text existing-node inline edit remains canonical across reselect cancel undo redo and frame carry', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoCreateAuthoringWorkspace(page);
+
+  const initialNodeCount = await page.locator('[data-node-id]:visible').count();
+  await createFrame(page, { x: 220, y: 180 }, { x: 380, y: 320 });
+  await waitForNodeCount(page, initialNodeCount + 1);
+
+  const readSelectionSnapshot = async () =>
+    page.evaluate(() => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const primary = state?.selection?.primary ?? null;
+      const node = primary ? state?.document?.sceneGraph?.nodes?.[primary] ?? null : null;
+      const ids =
+        state?.selection?.ids instanceof Set
+          ? Array.from(state.selection.ids)
+          : Array.isArray(state?.selection?.ids)
+            ? [...state.selection.ids]
+            : [];
+      return {
+        primary,
+        ids,
+        type: node?.type ?? null,
+        parentId: node?.parentId ?? null,
+        content: node?.content ?? null,
+      };
+    });
+
+  const readTextNodeByParent = async (parentId) =>
+    page.evaluate((resolvedParentId) => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const nodes = Object.values(state?.document?.sceneGraph?.nodes ?? {});
+      const texts = nodes.filter((node) => node?.type === 'text' && node?.parentId === resolvedParentId);
+      const first = texts[0] ?? null;
+      const layout =
+        (first?.id ? state?.document?.layout?.nodes?.[first.id] : null) ??
+        first?.layout ??
+        null;
+      return {
+        count: texts.length,
+        id: first?.id ?? null,
+        parentId: first?.parentId ?? null,
+        content: first?.content ?? null,
+        x: layout?.x ?? null,
+        y: layout?.y ?? null,
+      };
+    }, parentId);
+
+  await expect
+    .poll(async () => await readSelectionSnapshot(), { timeout: 10000 })
+    .toMatchObject({ primary: expect.any(String), type: 'frame' });
+
+  const frameId = (await readSelectionSnapshot()).primary;
+  const frameNode = visibleNodeById(page, frameId);
+  await expect(frameNode).toBeVisible();
+  await ensureNodeSelected(page, frameNode);
+
+  await activateTool(page, 'text');
+  const frameBox = await frameNode.boundingBox();
+  if (!frameBox) throw new Error('Selected frame did not render for text creator closure test');
+  await page.mouse.click(frameBox.x + frameBox.width / 2, frameBox.y + frameBox.height / 2);
+  await waitForNodeCount(page, initialNodeCount + 2);
+
+  const inlineEditor = page.getByTestId('inline-text-editor');
+  await expect(inlineEditor).toBeVisible();
+  await expect
+    .poll(async () => {
+      const selection = await readSelectionSnapshot();
+      return selection.type === 'text' && typeof selection.primary === 'string' ? selection.primary : null;
+    })
+    .toBeTruthy();
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const editor = document.querySelector('[data-testid="inline-text-editor"]');
+        return editor ? document.activeElement === editor : false;
+      }),
+    )
+    .toBe(true);
+
+  await page.keyboard.type('Creator text');
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+Enter' : 'Control+Enter');
+  await expect(inlineEditor).toHaveCount(0);
+
+  const createdTextNode = await expect
+    .poll(async () => await readTextNodeByParent(frameId))
+    .toEqual({
+      count: 1,
+      id: expect.any(String),
+      parentId: frameId,
+      content: 'Creator text',
+      x: expect.any(Number),
+      y: expect.any(Number),
+    })
+    .then(() => readTextNodeByParent(frameId));
+
+  const textNodeId = createdTextNode.id;
+  expect(textNodeId).toBeTruthy();
+
+  await expect.poll(readSelectionSnapshot).toMatchObject({
+    primary: textNodeId,
+    type: 'text',
+    parentId: frameId,
+    content: 'Creator text',
+  });
+
+  const textNode = visibleNodeById(page, textNodeId);
+  await expect(textNode).toBeVisible();
+
+  await clearSelectionFromCanvas(page);
+  await ensureNodeSelected(page, textNode);
+
+  const beforeManualEditBox = await textNode.boundingBox();
+  const beforeManualEditCount = await readTextNodeByParent(frameId);
+  await textNode.dblclick({ force: true });
+
+  await expect(inlineEditor).toBeVisible();
+  await expect(inlineEditor).toHaveValue('Creator text');
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const editor = document.querySelector('[data-testid="inline-text-editor"]');
+        return editor ? document.activeElement === editor : false;
+      }),
+    )
+    .toBe(true);
+  await expect.poll(readSelectionSnapshot).toMatchObject({
+    primary: textNodeId,
+    ids: [textNodeId],
+    type: 'text',
+    parentId: frameId,
+    content: 'Creator text',
+  });
+
+  const duringManualEditCount = await readTextNodeByParent(frameId);
+  expect(duringManualEditCount.count).toBe(beforeManualEditCount.count);
+  expect(duringManualEditCount.id).toBe(textNodeId);
+
+  const duringManualEditBox = await textNode.boundingBox();
+  expect(duringManualEditBox).not.toBeNull();
+  expect(beforeManualEditBox).not.toBeNull();
+  expect(Math.abs((duringManualEditBox?.x ?? 0) - (beforeManualEditBox?.x ?? 0))).toBeLessThan(1);
+  expect(Math.abs((duringManualEditBox?.y ?? 0) - (beforeManualEditBox?.y ?? 0))).toBeLessThan(1);
+
+  const beforeArrowX = await readCanonicalLayoutX(page, textNodeId);
+  await page.keyboard.press('ArrowRight');
+  await page.waitForTimeout(50);
+  expect(await readCanonicalLayoutX(page, textNodeId)).toBe(beforeArrowX);
+  await expect(inlineEditor).toBeVisible();
+
+  await page.keyboard.type(' updated');
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+Enter' : 'Control+Enter');
+  await expect(inlineEditor).toHaveCount(0);
+
+  await expect.poll(readSelectionSnapshot).toMatchObject({
+    primary: textNodeId,
+    type: 'text',
+    parentId: frameId,
+    content: 'Creator text updated',
+  });
+  await expect
+    .poll(async () => await readTextNodeByParent(frameId))
+    .toEqual({
+      count: 1,
+      id: textNodeId,
+      parentId: frameId,
+      content: 'Creator text updated',
+      x: expect.any(Number),
+      y: expect.any(Number),
+    });
+
+  await textNode.dblclick({ force: true });
+  await expect(inlineEditor).toBeVisible();
+  await expect(inlineEditor).toHaveValue('Creator text updated');
+  await page.keyboard.type(' cancelled');
+  await page.keyboard.press('Escape');
+  await expect(inlineEditor).toHaveCount(0);
+
+  await expect.poll(readSelectionSnapshot).toMatchObject({
+    primary: textNodeId,
+    type: 'text',
+    parentId: frameId,
+    content: 'Creator text updated',
+  });
+  await expect
+    .poll(async () => await readTextNodeByParent(frameId))
+    .toEqual({
+      count: 1,
+      id: textNodeId,
+      parentId: frameId,
+      content: 'Creator text updated',
+      x: expect.any(Number),
+      y: expect.any(Number),
+    });
+
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect.poll(readSelectionSnapshot).toMatchObject({
+    primary: textNodeId,
+    type: 'text',
+    parentId: frameId,
+    content: 'Creator text',
+  });
+
+  await page.getByRole('button', { name: 'Redo' }).click();
+  await expect.poll(readSelectionSnapshot).toMatchObject({
+    primary: textNodeId,
+    type: 'text',
+    parentId: frameId,
+    content: 'Creator text updated',
+  });
+
+  const beforeFrameMove = await frameNode.boundingBox();
+  const beforeTextMove = await textNode.boundingBox();
+  expect(beforeFrameMove).not.toBeNull();
+  expect(beforeTextMove).not.toBeNull();
+
+  await ensureNodeSelected(page, frameNode, { position: { x: 16, y: 16 } });
+  await dragNode(page, frameNode, { x: 84, y: 60 });
+  await waitForMoved(frameNode, beforeFrameMove, { dx: 30, dy: 20 });
+  await waitForMoved(textNode, beforeTextMove, { dx: 30, dy: 20 });
+
+  await expect
+    .poll(async () => await readTextNodeByParent(frameId))
+    .toEqual({
+      count: 1,
+      id: textNodeId,
+      parentId: frameId,
+      content: 'Creator text updated',
+      x: expect.any(Number),
+      y: expect.any(Number),
+    });
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
+test('workspace uiux text existing-node inline edit survives reload and reopens canonical content on the same node', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoCreateAuthoringWorkspace(page);
+
+  const frameId = await page.evaluate(() => globalThis.__droppleDispatcher?.getState?.()?.selection?.primary ?? null);
+  expect(frameId).toBeTruthy();
+  const frameNode = visibleNodeById(page, frameId);
+  await ensureNodeSelected(page, frameNode);
+
+  await activateTool(page, 'text');
+  const frameBox = await frameNode.boundingBox();
+  if (!frameBox) throw new Error('Selected frame did not render for reload text edit test');
+  await page.mouse.click(frameBox.x + frameBox.width / 2, frameBox.y + frameBox.height / 2);
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        return Object.values(state?.document?.sceneGraph?.nodes ?? {}).filter((node) => node?.type === 'text').length;
+      }),
+    )
+    .toBe(1);
+
+  const inlineEditor = page.getByTestId('inline-text-editor');
+  await expect(inlineEditor).toBeVisible();
+  await page.keyboard.type('Persisted manual text');
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+Enter' : 'Control+Enter');
+  await expect(inlineEditor).toHaveCount(0);
+
+  const createdTextNode = await page.evaluate((parentId) => {
+    const state = globalThis.__droppleDispatcher?.getState?.();
+    const nodes = Object.values(state?.document?.sceneGraph?.nodes ?? {});
+    const entry = nodes.find((node) => node?.type === 'text' && node?.parentId === parentId);
+    return entry
+      ? {
+          id: entry.id,
+          parentId: entry.parentId ?? null,
+          content: entry.content ?? null,
+        }
+      : null;
+  }, frameId);
+  expect(createdTextNode?.id).toBeTruthy();
+  expect(createdTextNode?.parentId).toBe(frameId);
+  expect(createdTextNode?.content).toBe('Persisted manual text');
+
+  await page.reload({ waitUntil: 'networkidle' });
+  await expectSingleVisibleCanvasHost(page);
+
+  const restoredTextNode = await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const nodes = Object.values(state?.document?.sceneGraph?.nodes ?? {});
+        const entry = nodes.find((node) => node?.type === 'text' && node?.content === 'Persisted manual text');
+        return entry
+          ? {
+              id: entry.id,
+              parentId: entry.parentId ?? null,
+              content: entry.content ?? null,
+            }
+          : null;
+      }),
+    )
+    .toEqual({
+      id: expect.any(String),
+      parentId: frameId,
+      content: 'Persisted manual text',
+    })
+    .then(() =>
+      page.evaluate(() => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const nodes = Object.values(state?.document?.sceneGraph?.nodes ?? {});
+        const entry = nodes.find((node) => node?.type === 'text' && node?.content === 'Persisted manual text');
+        return entry
+          ? {
+              id: entry.id,
+              parentId: entry.parentId ?? null,
+              content: entry.content ?? null,
+            }
+          : null;
+      }),
+    );
+
+  const restoredTextNodeById = visibleNodeById(page, restoredTextNode.id);
+  await expect(restoredTextNodeById).toBeVisible();
+
+  const restoredContent = restoredTextNodeById.getByTestId('text-node-content');
+  await expect(restoredContent).toContainText('Persisted manual text');
+  const restoredBoxBeforeEdit = await restoredTextNodeById.boundingBox();
+  if (!restoredBoxBeforeEdit) throw new Error('Restored text node did not render for reload inline edit');
+  await page.mouse.dblclick(
+    restoredBoxBeforeEdit.x + restoredBoxBeforeEdit.width / 2,
+    restoredBoxBeforeEdit.y + restoredBoxBeforeEdit.height / 2,
+  );
+  await expect(inlineEditor).toBeVisible();
+  await expect(inlineEditor).toHaveValue('Persisted manual text');
+  await expect
+    .poll(async () =>
+      page.evaluate((nodeId) => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        return {
+          primary: state?.selection?.primary ?? null,
+          content: state?.document?.sceneGraph?.nodes?.[nodeId]?.content ?? null,
+        };
+      }, restoredTextNode.id),
+    )
+    .toEqual({
+      primary: restoredTextNode.id,
+      content: 'Persisted manual text',
+    });
+
+  await page.keyboard.type(' reopened');
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+Enter' : 'Control+Enter');
+  await expect(inlineEditor).toHaveCount(0);
+
+  const restoredBoxAfterEdit = await restoredTextNodeById.boundingBox();
+  expect(restoredBoxBeforeEdit).not.toBeNull();
+  expect(restoredBoxAfterEdit).not.toBeNull();
+  expect(Math.abs((restoredBoxAfterEdit?.x ?? 0) - (restoredBoxBeforeEdit?.x ?? 0))).toBeLessThan(1);
+  expect(Math.abs((restoredBoxAfterEdit?.y ?? 0) - (restoredBoxBeforeEdit?.y ?? 0))).toBeLessThan(1);
+
+  await expect
+    .poll(async () =>
+      page.evaluate((nodeId) => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const node = state?.document?.sceneGraph?.nodes?.[nodeId] ?? null;
+        const texts = Object.values(state?.document?.sceneGraph?.nodes ?? {}).filter(
+          (entry) => entry?.type === 'text' && entry?.parentId === node?.parentId,
+        );
+        return {
+          id: node?.id ?? null,
+          parentId: node?.parentId ?? null,
+          content: node?.content ?? null,
+          selectionPrimary: state?.selection?.primary ?? null,
+          siblingTextCount: texts.length,
+        };
+      }, restoredTextNode.id),
+    )
+    .toEqual({
+      id: restoredTextNode.id,
+      parentId: frameId,
+      content: 'Persisted manual text reopened',
+      selectionPrimary: restoredTextNode.id,
+      siblingTextCount: 1,
+    });
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
+test('workspace uiux text create-commit keeps canonical selection ids aligned with the selected text node', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoCreateAuthoringWorkspace(page);
+
+  const initialNodeCount = await page.locator('[data-node-id]:visible').count();
+  await createFrame(page, { x: 220, y: 180 }, { x: 380, y: 320 });
+  await waitForNodeCount(page, initialNodeCount + 1);
+
+  const frameId = await page.evaluate(() => globalThis.__droppleDispatcher?.getState?.()?.selection?.primary ?? null);
+  expect(frameId).toBeTruthy();
+  const frameNode = visibleNodeById(page, frameId);
+  await ensureNodeSelected(page, frameNode);
+
+  await activateTool(page, 'text');
+  const frameBox = await frameNode.boundingBox();
+  if (!frameBox) throw new Error('Selected frame did not render for selection lawfulness test');
+  await page.mouse.click(frameBox.x + frameBox.width / 2, frameBox.y + frameBox.height / 2);
+  await waitForNodeCount(page, initialNodeCount + 2);
+
+  const inlineEditor = page.getByTestId('inline-text-editor');
+  await expect(inlineEditor).toBeVisible();
+  await page.keyboard.type('Selection law');
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+Enter' : 'Control+Enter');
+  await expect(inlineEditor).toHaveCount(0);
+
+  const textNode = await expect
+    .poll(async () =>
+      page.evaluate((parentId) => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const nodes = Object.values(state?.document?.sceneGraph?.nodes ?? {});
+        const entry = nodes.find((node) => node?.type === 'text' && node?.parentId === parentId);
+        return entry
+          ? {
+              id: entry.id,
+              parentId: entry.parentId ?? null,
+              content: entry.content ?? null,
+            }
+          : null;
+      }, frameId),
+    )
+    .toEqual({
+      id: expect.any(String),
+      parentId: frameId,
+      content: 'Selection law',
+    })
+    .then(() =>
+      page.evaluate((parentId) => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const nodes = Object.values(state?.document?.sceneGraph?.nodes ?? {});
+        const entry = nodes.find((node) => node?.type === 'text' && node?.parentId === parentId);
+        return entry
+          ? {
+              id: entry.id,
+              parentId: entry.parentId ?? null,
+              content: entry.content ?? null,
+            }
+          : null;
+      }, frameId),
+    );
+
+  await expect
+    .poll(async () =>
+      page.evaluate((nodeId) => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const ids =
+          state?.selection?.ids instanceof Set
+            ? Array.from(state.selection.ids)
+            : Array.isArray(state?.selection?.ids)
+              ? [...state.selection.ids]
+              : [];
+        return {
+          primary: state?.selection?.primary ?? null,
+          ids,
+          content: state?.document?.sceneGraph?.nodes?.[nodeId]?.content ?? null,
+        };
+      }, textNode.id),
+    )
+    .toEqual({
+      primary: textNode.id,
+      ids: [textNode.id],
+      content: 'Selection law',
+    });
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
+test('workspace uiux text inspector updates live text typography and appearance on the creator route', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoCreateAuthoringWorkspace(page);
+
+  const initialNodeCount = await page.locator('[data-node-id]:visible').count();
+  await createFrame(page, { x: 220, y: 180 }, { x: 360, y: 300 });
+  await waitForNodeCount(page, initialNodeCount + 1);
+
+  const readPrimaryNode = async () =>
+    page.evaluate(() => {
+      const state = globalThis.__droppleDispatcher?.getState?.();
+      const primary = state?.selection?.primary ?? null;
+      const node = primary ? state?.document?.sceneGraph?.nodes?.[primary] ?? null : null;
+      return {
+        primary,
+        type: node?.type ?? null,
+        parentId: node?.parentId ?? null,
+      };
+    });
+
+  await expect
+    .poll(async () => await readPrimaryNode(), { timeout: 10000 })
+    .toMatchObject({ primary: expect.any(String) });
+
+  const frameId = (await readPrimaryNode()).primary;
+  const frameNode = visibleNodeById(page, frameId);
+  await expect(frameNode).toBeVisible();
+  await ensureNodeSelected(page, frameNode);
+
+  await activateTool(page, 'text');
+  const frameBox = await frameNode.boundingBox();
+  if (!frameBox) throw new Error('Selected frame did not render for text styling test');
+  await page.mouse.click(frameBox.x + frameBox.width / 2, frameBox.y + frameBox.height / 2);
+  await waitForNodeCount(page, initialNodeCount + 2);
+
+  const inlineEditor = page.getByTestId('inline-text-editor');
+  await expect(inlineEditor).toBeVisible();
+  await page.keyboard.type('Styled text that can be formatted inside the box');
+  await frameNode.click({ force: true, position: { x: 16, y: 16 } });
+  await expect(inlineEditor).toHaveCount(0);
+
+  const textNodeInfo = await page.evaluate((parentId) => {
+    const state = globalThis.__droppleDispatcher?.getState?.();
+    const nodes = state?.document?.sceneGraph?.nodes ?? {};
+    const entry = Object.values(nodes).find((node) => node?.type === 'text' && node?.parentId === parentId);
+    return entry
+      ? {
+          id: entry.id,
+          parentId: entry.parentId ?? null,
+        }
+      : null;
+  }, frameId);
+  expect(textNodeInfo?.id).toBeTruthy();
+
+  const textNode = visibleNodeById(page, textNodeInfo.id);
+  await expect(textNode).toBeVisible();
+  await ensureNodeSelected(page, textNode);
+
+  const textContent = textNode.getByTestId('text-node-content');
+  await expect(textContent).toBeVisible();
+  await expect(textContent).toContainText('Styled text that can be formatted inside the box');
+
+  await page.getByTestId('text-font-size-input').fill('28');
+  await page.getByTestId('text-font-family-select').selectOption('monospace');
+  await page.getByTestId('text-font-weight-select').selectOption('900');
+  await page.getByTestId('text-font-style-select').selectOption('oblique');
+  await page.getByTestId('text-decoration-select').selectOption('underline');
+  await page.getByTestId('text-transform-select').selectOption('uppercase');
+  await page.getByTestId('text-align-select').selectOption('justify');
+  await page.getByTestId('text-vertical-align-select').selectOption('bottom');
+  await page.getByTestId('text-wrap-select').selectOption('nowrap');
+  await page.getByTestId('text-color-input').fill('#ff0000');
+
+  await expect
+    .poll(async () =>
+      textContent.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          fontFamily: style.fontFamily,
+          fontSize: style.fontSize,
+          fontWeight: style.fontWeight,
+          fontStyle: style.fontStyle,
+          textDecorationLine: style.textDecorationLine,
+          textTransform: style.textTransform,
+          whiteSpace: style.whiteSpace,
+          textAlign: style.textAlign,
+          alignItems: style.alignItems,
+          color: style.color,
+        };
+      }),
+    )
+    .toEqual({
+      fontFamily: 'monospace',
+      fontSize: '28px',
+      fontWeight: '900',
+      fontStyle: 'italic',
+      textDecorationLine: 'underline',
+      textTransform: 'uppercase',
+      whiteSpace: 'pre',
+      textAlign: 'justify',
+      alignItems: 'flex-end',
+      color: 'rgb(255, 0, 0)',
+    });
+
+  await expect
+    .poll(async () =>
+      page.evaluate((nodeId) => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const node = state?.document?.sceneGraph?.nodes?.[nodeId] ?? null;
+        return {
+          fontFamily: node?.style?.fontFamily ?? null,
+          fontSize: node?.style?.fontSize ?? null,
+          fontWeight: node?.style?.fontWeight ?? null,
+          fontStyle: node?.style?.fontStyle ?? null,
+          textDecorationLine: node?.style?.textDecorationLine ?? null,
+          textTransform: node?.style?.textTransform ?? null,
+          fill: node?.style?.fill ?? null,
+          align: node?.props?.content?.align ?? null,
+          verticalAlign: node?.props?.content?.verticalAlign ?? null,
+          wrap: node?.props?.content?.wrap ?? null,
+        };
+      }, textNodeInfo.id),
+    )
+    .toEqual({
+      fontFamily: 'monospace',
+      fontSize: 28,
+      fontWeight: 900,
+      fontStyle: 'oblique',
+      textDecorationLine: 'underline',
+      textTransform: 'uppercase',
+      fill: '#ff0000',
+      align: 'justify',
+      verticalAlign: 'bottom',
+      wrap: false,
+    });
+
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect
+    .poll(async () =>
+      page.evaluate((nodeId) => globalThis.__droppleDispatcher?.getState?.()?.document?.sceneGraph?.nodes?.[nodeId]?.style?.fill ?? null, textNodeInfo.id),
+    )
+    .not.toBe('#ff0000');
+
+  await page.getByRole('button', { name: 'Redo' }).click();
+  await expect
+    .poll(async () =>
+      page.evaluate((nodeId) => globalThis.__droppleDispatcher?.getState?.()?.document?.sceneGraph?.nodes?.[nodeId]?.style?.fill ?? null, textNodeInfo.id),
+    )
+    .toBe('#ff0000');
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
+test('workspace uiux text node supports direct movement and box resize on the creator route', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoCreateAuthoringWorkspace(page);
+
+  const initialNodeCount = await page.locator('[data-node-id]:visible').count();
+  await createFrame(page, { x: 220, y: 180 }, { x: 420, y: 340 });
+  await waitForNodeCount(page, initialNodeCount + 1);
+
+  const frameId = await page.evaluate(() => globalThis.__droppleDispatcher?.getState?.()?.selection?.primary ?? null);
+  expect(frameId).toBeTruthy();
+  const frameNode = visibleNodeById(page, frameId);
+  await ensureNodeSelected(page, frameNode);
+
+  await activateTool(page, 'text');
+  const frameBox = await frameNode.boundingBox();
+  if (!frameBox) throw new Error('Selected frame did not render for text geometry test');
+  await page.mouse.click(frameBox.x + frameBox.width / 2, frameBox.y + frameBox.height / 2);
+  await waitForNodeCount(page, initialNodeCount + 2);
+
+  const inlineEditor = page.getByTestId('inline-text-editor');
+  await expect(inlineEditor).toBeVisible();
+  await page.keyboard.type('Resizable text box');
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+Enter' : 'Control+Enter');
+  await expect(inlineEditor).toHaveCount(0);
+
+  const textNodeId = await page.evaluate((parentId) => {
+    const state = globalThis.__droppleDispatcher?.getState?.();
+    const nodes = state?.document?.sceneGraph?.nodes ?? {};
+    const entry = Object.values(nodes).find((node) => node?.type === 'text' && node?.parentId === parentId);
+    return entry?.id ?? null;
+  }, frameId);
+  expect(textNodeId).toBeTruthy();
+
+  const textNode = visibleNodeById(page, textNodeId);
+  await expect(textNode).toBeVisible();
+  await ensureNodeSelected(page, textNode);
+
+  const beforeMove = await textNode.boundingBox();
+  expect(beforeMove).not.toBeNull();
+  await dragNode(page, textNode, { x: 72, y: 40 });
+  await waitForMoved(textNode, beforeMove, { dx: 20, dy: 12 });
+
+  const resizeHandle = page.getByTestId('resize-handle').first();
+  await expect(resizeHandle).toBeVisible();
+  const beforeResize = await textNode.boundingBox();
+  expect(beforeResize).not.toBeNull();
+  await dragResizeHandle(page, resizeHandle, { x: 48, y: 24 });
+  await waitForResized(textNode, beforeResize, { dw: 16, dh: 8 });
+
+  await expect
+    .poll(async () =>
+      page.evaluate((nodeId) => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const layout =
+          state?.document?.layout?.nodes?.[nodeId] ??
+          state?.document?.sceneGraph?.nodes?.[nodeId]?.layout ??
+          null;
+        return layout
+          ? {
+              width: layout.width ?? null,
+              height: layout.height ?? null,
+            }
+          : null;
+      }, textNodeId),
+    )
+    .toMatchObject({
+      width: expect.any(Number),
+      height: expect.any(Number),
+    });
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
+test('workspace uiux text width mode supports auto width and fixed-width reflow on the creator route', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoCreateAuthoringWorkspace(page);
+
+  const initialNodeCount = await page.locator('[data-node-id]:visible').count();
+  await createFrame(page, { x: 220, y: 180 }, { x: 420, y: 340 });
+  await waitForNodeCount(page, initialNodeCount + 1);
+
+  const frameId = await page.evaluate(() => globalThis.__droppleDispatcher?.getState?.()?.selection?.primary ?? null);
+  expect(frameId).toBeTruthy();
+  const frameNode = visibleNodeById(page, frameId);
+  await ensureNodeSelected(page, frameNode);
+
+  await activateTool(page, 'text');
+  const frameBox = await frameNode.boundingBox();
+  if (!frameBox) throw new Error('Selected frame did not render for text width-mode test');
+  await page.mouse.click(frameBox.x + frameBox.width / 2, frameBox.y + frameBox.height / 2);
+  await waitForNodeCount(page, initialNodeCount + 2);
+
+  const inlineEditor = page.getByTestId('inline-text-editor');
+  await expect(inlineEditor).toBeVisible();
+  await page.keyboard.type('A long line of text that should expand and then reflow when the box becomes fixed width.');
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+Enter' : 'Control+Enter');
+  await expect(inlineEditor).toHaveCount(0);
+
+  const textNodeId = await page.evaluate((parentId) => {
+    const state = globalThis.__droppleDispatcher?.getState?.();
+    const nodes = state?.document?.sceneGraph?.nodes ?? {};
+    const entry = Object.values(nodes).find((node) => node?.type === 'text' && node?.parentId === parentId);
+    return entry?.id ?? null;
+  }, frameId);
+  expect(textNodeId).toBeTruthy();
+
+  await expect(page.locator(`[data-selection-primary="true"][data-selection-node-id="${textNodeId}"]`)).toHaveCount(1);
+  const textNode = visibleNodeById(page, textNodeId);
+
+  await page.getByTestId('text-sizing-mode-select').selectOption('auto-width');
+
+  const autoWidthLayout = await expect
+    .poll(async () =>
+      page.evaluate((nodeId) => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const node = state?.document?.sceneGraph?.nodes?.[nodeId] ?? null;
+        const layout = state?.document?.layout?.nodes?.[nodeId] ?? node?.layout ?? null;
+        return {
+          sizingMode: node?.props?.content?.sizingMode ?? null,
+          wrap: node?.props?.content?.wrap ?? null,
+          width: layout?.width ?? null,
+          height: layout?.height ?? null,
+        };
+      }, textNodeId),
+    )
+    .toMatchObject({
+      sizingMode: 'auto-width',
+      wrap: false,
+      width: expect.any(Number),
+      height: expect.any(Number),
+    })
+    .then(() =>
+      page.evaluate((nodeId) => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const node = state?.document?.sceneGraph?.nodes?.[nodeId] ?? null;
+        const layout = state?.document?.layout?.nodes?.[nodeId] ?? node?.layout ?? null;
+        return {
+          width: layout?.width ?? null,
+          height: layout?.height ?? null,
+        };
+      }, textNodeId),
+    );
+
+  expect(autoWidthLayout.width).toBeGreaterThan(140);
+
+  await page.getByTestId('text-sizing-mode-select').selectOption('fixed-width');
+  await page.getByTestId('text-wrap-select').selectOption('wrap');
+  await page.getByTestId('layout-width-input').fill('140');
+
+  await expect
+    .poll(async () =>
+      page.evaluate((nodeId) => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const node = state?.document?.sceneGraph?.nodes?.[nodeId] ?? null;
+        const layout = state?.document?.layout?.nodes?.[nodeId] ?? node?.layout ?? null;
+        return {
+          sizingMode: node?.props?.content?.sizingMode ?? null,
+          wrap: node?.props?.content?.wrap ?? null,
+          width: layout?.width ?? null,
+          height: layout?.height ?? null,
+        };
+      }, textNodeId),
+    )
+    .toMatchObject({
+      sizingMode: 'fixed-width',
+      wrap: true,
+      width: 140,
+      height: expect.any(Number),
+    });
+
+  await expect
+    .poll(async () =>
+      page.evaluate((nodeId) => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const layout =
+          state?.document?.layout?.nodes?.[nodeId] ??
+          state?.document?.sceneGraph?.nodes?.[nodeId]?.layout ??
+          null;
+        return layout?.height ?? null;
+      }, textNodeId),
+    )
+    .toBeGreaterThan(autoWidthLayout.height);
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
+});
+
+test('workspace uiux text content and styling persist across reload on the creator route', async ({ page }) => {
+  const runtimeErrors = attachRuntimeErrorCollectors(page);
+  await gotoCreateAuthoringWorkspace(page);
+
+  const initialNodeCount = await page.locator('[data-node-id]:visible').count();
+  await createFrame(page, { x: 220, y: 180 }, { x: 420, y: 340 });
+  await waitForNodeCount(page, initialNodeCount + 1);
+
+  const frameId = await page.evaluate(() => globalThis.__droppleDispatcher?.getState?.()?.selection?.primary ?? null);
+  expect(frameId).toBeTruthy();
+  const frameNode = visibleNodeById(page, frameId);
+  await ensureNodeSelected(page, frameNode);
+
+  await activateTool(page, 'text');
+  const frameBox = await frameNode.boundingBox();
+  if (!frameBox) throw new Error('Selected frame did not render for persistence test');
+  await page.mouse.click(frameBox.x + frameBox.width / 2, frameBox.y + frameBox.height / 2);
+  await waitForNodeCount(page, initialNodeCount + 2);
+
+  const inlineEditor = page.getByTestId('inline-text-editor');
+  await expect(inlineEditor).toBeVisible();
+  await page.keyboard.type('Persisted text');
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+Enter' : 'Control+Enter');
+  await expect(inlineEditor).toHaveCount(0);
+
+  const textNodeId = await page.evaluate((parentId) => {
+    const state = globalThis.__droppleDispatcher?.getState?.();
+    const nodes = state?.document?.sceneGraph?.nodes ?? {};
+    const entry = Object.values(nodes).find((node) => node?.type === 'text' && node?.parentId === parentId);
+    return entry?.id ?? null;
+  }, frameId);
+  expect(textNodeId).toBeTruthy();
+
+  const textNode = visibleNodeById(page, textNodeId);
+  await expect(page.locator(`[data-selection-primary="true"][data-selection-node-id="${textNodeId}"]`)).toHaveCount(1);
+
+  await page.getByTestId('text-font-size-input').fill('24');
+  await page.getByTestId('text-font-weight-select').selectOption('600');
+  await page.getByTestId('text-color-input').fill('#ff0000');
+
+  await page.reload({ waitUntil: 'networkidle' });
+  await expectSingleVisibleCanvasHost(page);
+
+  const restoredTextNodeId = await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const nodes = state?.document?.sceneGraph?.nodes ?? {};
+        const entry = Object.values(nodes).find((node) => node?.type === 'text' && node?.content === 'Persisted text');
+        return entry?.id ?? null;
+      }),
+    )
+    .toBeTruthy()
+    .then(() =>
+      page.evaluate(() => {
+        const state = globalThis.__droppleDispatcher?.getState?.();
+        const nodes = state?.document?.sceneGraph?.nodes ?? {};
+        const entry = Object.values(nodes).find((node) => node?.type === 'text' && node?.content === 'Persisted text');
+        return entry?.id ?? null;
+      }),
+    );
+
+  const restoredTextNode = visibleNodeById(page, restoredTextNodeId);
+  await expect(restoredTextNode).toBeVisible();
+  const restoredContent = restoredTextNode.getByTestId('text-node-content');
+  await expect(restoredContent).toContainText('Persisted text');
+
+  await expect
+    .poll(async () =>
+      restoredContent.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          fontSize: style.fontSize,
+          fontWeight: style.fontWeight,
+          color: style.color,
+        };
+      }),
+    )
+    .toEqual({
+      fontSize: '24px',
+      fontWeight: '600',
+      color: 'rgb(255, 0, 0)',
+    });
+
+  expect(runtimeErrors.pageErrors).toEqual([]);
+  expect(runtimeErrors.consoleErrors).toEqual([]);
 });
 
 test('workspace new keyboard nudge and shift-nudge move selected node with preserved identity', async ({ page }) => {
@@ -1188,6 +2936,8 @@ test('workspace new keyboard align-left shortcut is deterministic and undo-redo 
   }
   expect(redoObserved).toBe(true);
 
+  await clearSelectionFromCanvas(page);
+  await expect(page.getByTestId('selection-outline')).toHaveCount(0);
   await first.click({ force: true });
   await expect(page.getByTestId('selection-outline')).toHaveCount(1);
   const beforeSingle = await readLayoutPair();
@@ -1308,6 +3058,8 @@ test('workspace new keyboard distribute-x shortcut is deterministic and undo-red
   }
   expect(redoObserved).toBe(true);
 
+  await clearSelectionFromCanvas(page);
+  await expect(page.getByTestId('selection-outline')).toHaveCount(0);
   await first.click({ force: true });
   await expect(page.getByTestId('selection-outline')).toHaveCount(1);
   const beforeSingle = await readLayoutTriple();
@@ -1428,6 +3180,8 @@ test('workspace new keyboard distribute-y shortcut is deterministic and undo-red
   }
   expect(redoObserved).toBe(true);
 
+  await clearSelectionFromCanvas(page);
+  await expect(page.getByTestId('selection-outline')).toHaveCount(0);
   await first.click({ force: true });
   await expect(page.getByTestId('selection-outline')).toHaveCount(1);
   const beforeSingle = await readLayoutTriple();

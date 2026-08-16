@@ -7,6 +7,21 @@ import { NodeRenderer } from './NodeRenderer.jsx';
 export default function NodeLayer() {
     const nodesMap = useCharacterRenderNodes();
     const [hoveredId, setHoveredId] = useState(null);
+    const resolveDepth = useCallback((nodeId) => {
+        let depth = 0;
+        let currentId = nodeId;
+        const visited = new Set();
+
+        while (currentId && !visited.has(currentId)) {
+            visited.add(currentId);
+            const parentId = nodesMap?.[currentId]?.parentId ?? null;
+            if (!parentId) break;
+            depth += 1;
+            currentId = parentId;
+        }
+
+        return depth;
+    }, [nodesMap]);
 
     // ----- DETERMINISTIC ORDER -----
     const nodes = useMemo(() => {
@@ -17,9 +32,12 @@ export default function NodeLayer() {
 
             if (za !== zb) return za - zb;
 
+            const depthDelta = resolveDepth(a?.id) - resolveDepth(b?.id);
+            if (depthDelta !== 0) return depthDelta;
+
             return String(a.id).localeCompare(String(b.id));
         });
-    }, [nodesMap]);
+    }, [nodesMap, resolveDepth]);
 
     const handleEnter = useCallback((id) => {
         setHoveredId(id);

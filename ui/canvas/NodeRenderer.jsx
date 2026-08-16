@@ -61,12 +61,49 @@ function NodeRendererImpl({ node }) {
 
     // ----- VISUAL STYLE -----
     const fallbackBackground = zoomTier === 'far' ? 'rgba(147,197,253,0.12)' : zoomTier === 'overview' ? 'rgba(147,197,253,0.2)' : '#e0e7ff';
-    const background = fillColor ?? fallbackBackground;
+    const isTextNode = node.type === 'text';
+    const background = isTextNode ? 'transparent' : fillColor ?? fallbackBackground;
+    const contentLabel =
+        isTextNode
+            ? node.content || 'Text'
+            : node.type === 'image'
+              ? node.props?.content?.src || 'Image'
+              : node.id;
+    const textContentProps = node.props?.content ?? {};
+    const textSizingMode = textContentProps.sizingMode === 'auto-width' ? 'auto-width' : 'fixed-width';
+    const textAlign = textContentProps.align ?? 'left';
+    const textVerticalAlign =
+        textContentProps.verticalAlign === 'center' || textContentProps.verticalAlign === 'bottom'
+            ? textContentProps.verticalAlign
+            : 'top';
+    const textWrap = textSizingMode === 'auto-width'
+        ? 'nowrap'
+        : (textContentProps.wrap === false ? 'nowrap' : 'wrap');
+    const textColor = fillColor ?? '#111827';
+    const fontFamily =
+        typeof style.fontFamily === 'string' && style.fontFamily.trim().length > 0
+            ? style.fontFamily
+            : 'sans-serif';
+    const fontSize = Number.isFinite(style.fontSize) ? style.fontSize : 16;
+    const fontWeight = Number.isFinite(style.fontWeight) ? style.fontWeight : 400;
+    const lineHeight = Number.isFinite(style.lineHeight) ? style.lineHeight : 1.4;
+    const letterSpacing = Number.isFinite(style.letterSpacing) ? style.letterSpacing : 0;
+    const fontStyle =
+        style.fontStyle === 'italic' || style.fontStyle === 'oblique' ? style.fontStyle : 'normal';
+    const textDecorationLine =
+        typeof style.textDecorationLine === 'string' && style.textDecorationLine.trim().length > 0
+            ? style.textDecorationLine
+            : 'none';
+    const textTransform =
+        typeof style.textTransform === 'string' && style.textTransform.trim().length > 0
+            ? style.textTransform
+            : 'none';
 
     const baseBorder = rawStroke
         ? `${Number.isFinite(rawStroke.width) ? rawStroke.width : 1}px solid ${strokeColor || '#000000'}`
-        : '1px solid #93c5fd';
-    const border = isPrimary ? '2px solid #3b82f6' : isSelected ? '1px solid #60a5fa' : baseBorder;
+        : isTextNode
+          ? 'none'
+          : '1px solid #93c5fd';
 
     const zIndex = node.zIndex ?? 0;
 
@@ -86,23 +123,71 @@ function NodeRendererImpl({ node }) {
                 zIndex,
 
                 background,
-                border,
+                border: baseBorder,
                 borderRadius: 4,
                 opacity,
 
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                alignItems: isTextNode ? 'stretch' : 'center',
+                justifyContent: isTextNode ? 'flex-start' : 'center',
 
                 fontSize: showFull ? 12 : 10,
                 letterSpacing: showFull ? 0 : 0.3,
 
-                color: '#111827',
+                color: isTextNode ? textColor : '#111827',
                 userSelect: 'none',
                 cursor: 'grab',
                 boxSizing: 'border-box',
             }}>
-            {showLabel ? node.id : null}
+            {showLabel ? (
+                isTextNode ? (
+                    <div
+                        data-testid='text-node-content'
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            alignItems:
+                                textVerticalAlign === 'center'
+                                    ? 'center'
+                                    : textVerticalAlign === 'bottom'
+                                      ? 'flex-end'
+                                      : 'flex-start',
+                            color: textColor,
+                            fontFamily,
+                            fontSize,
+                            fontWeight,
+                            fontStyle,
+                            lineHeight,
+                            letterSpacing,
+                            textAlign,
+                            textDecorationLine,
+                            textTransform,
+                            whiteSpace: textWrap === 'nowrap' ? 'pre' : 'pre-wrap',
+                            wordBreak: textWrap === 'nowrap' ? 'normal' : 'break-word',
+                            justifyContent:
+                                textAlign === 'center'
+                                    ? 'center'
+                                    : textAlign === 'right'
+                                      ? 'flex-end'
+                                      : 'flex-start',
+                            overflow: 'hidden',
+                            pointerEvents: 'none',
+                            boxSizing: 'border-box',
+                        }}>
+                        <span
+                            style={{
+                                display: 'block',
+                                width: textAlign === 'justify' ? '100%' : 'auto',
+                                maxWidth: '100%',
+                            }}>
+                            {contentLabel}
+                        </span>
+                    </div>
+                ) : (
+                    contentLabel
+                )
+            ) : null}
         </div>
     );
 }
@@ -128,5 +213,15 @@ export const NodeRenderer = memo(NodeRendererImpl, (prev, next) => {
         sa.opacity === sb.opacity &&
         JSON.stringify(sa.fills ?? null) === JSON.stringify(sb.fills ?? null) &&
         JSON.stringify(sa.strokes ?? null) === JSON.stringify(sb.strokes ?? null) &&
-        JSON.stringify(sa.stroke ?? null) === JSON.stringify(sb.stroke ?? null);
+        JSON.stringify(sa.stroke ?? null) === JSON.stringify(sb.stroke ?? null) &&
+        sa.fontFamily === sb.fontFamily &&
+        sa.fontSize === sb.fontSize &&
+        sa.fontWeight === sb.fontWeight &&
+        sa.fontStyle === sb.fontStyle &&
+        sa.textDecorationLine === sb.textDecorationLine &&
+        sa.textTransform === sb.textTransform &&
+        sa.lineHeight === sb.lineHeight &&
+        sa.letterSpacing === sb.letterSpacing &&
+        a.content === b.content &&
+        JSON.stringify(a.props?.content ?? null) === JSON.stringify(b.props?.content ?? null);
 });
