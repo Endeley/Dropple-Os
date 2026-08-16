@@ -103,8 +103,24 @@ assert(
 const runtimeState = {};
 const first = runCommit({}, runtimeState);
 assert(first.result?.handled === true, 'first commit should be handled');
-assert(first.dispatched.length === 1, 'first commit should dispatch one event');
-assert(first.dispatched[0].type === EventTypes.NODE_CREATE, 'first commit should dispatch node create');
+assert(first.dispatched.length === 2, 'first commit should dispatch create and selection events');
+assert(first.dispatched[0].type === EventTypes.NODE_CREATE, 'first event should dispatch node create');
+assert(first.dispatched[1].type === EventTypes.SELECTION_SET, 'second event should dispatch selection set');
+
+const createdNodeId = first.dispatched[0]?.payload?.node?.id ?? null;
+assert(typeof createdNodeId === 'string' && createdNodeId.length > 0, 'create event should emit a node id');
+assert(
+  Array.isArray(first.dispatched[1]?.payload?.ids) && first.dispatched[1].payload.ids.length === 1,
+  'selection set should target exactly one created node',
+);
+assert(
+  first.dispatched[1].payload.ids[0] === createdNodeId,
+  'selection set should target the node created by the first event',
+);
+assert(
+  first.dispatched[1]?.payload?.primary === createdNodeId,
+  'selection primary should match the created node id',
+);
 
 let duplicateReason = null;
 try {
@@ -114,5 +130,8 @@ try {
   duplicateReason = readReason(error);
 }
 assert(duplicateReason === 'COMMIT_ALREADY_FINALIZED', 'duplicate commit should be rejected deterministically');
+const ledger = runtimeState.__createCommitLedger;
+assert(ledger instanceof Set, 'runtime ledger should remain deterministic after first commit');
+assert(ledger.size === 1 && ledger.has('frame:1'), 'duplicate commit should not add extra finalized sessions');
 
 console.log('CREATE SESSION COMMIT BRIDGE GUARDS: true');

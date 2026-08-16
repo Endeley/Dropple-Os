@@ -88,6 +88,7 @@ export default function LayoutInspector({ node, emit, readOnly = false }) {
       <div className="inspector-row">
         <Control label="W">
           <Input
+            data-testid="layout-width-input"
             type="number"
             min={1}
             value={safeNumber(layout.width)}
@@ -97,6 +98,7 @@ export default function LayoutInspector({ node, emit, readOnly = false }) {
         </Control>
         <Control label="H">
           <Input
+            data-testid="layout-height-input"
             type="number"
             min={1}
             value={safeNumber(layout.height)}

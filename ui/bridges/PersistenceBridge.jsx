@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useDispatcher } from '@/runtime/boundary/DispatcherContext.jsx';
 import {
     createLocalDocumentSnapshot,
@@ -44,6 +44,14 @@ export function PersistenceBridge({
     const events = usePersistenceBridgeState((s) => s.events);
     const cursorIndex = usePersistenceBridgeState((s) => s.cursorIndex);
     const autosaveTimerRef = useRef(null);
+    const latestSnapshotRef = useRef({
+        events: [],
+        cursorIndex: -1,
+        documentId: null,
+        documentName: 'Untitled',
+        workspace: null,
+        mode: null,
+    });
     const seededInitialSnapshotRef = useRef(false);
     const restoredPersistenceRef = useRef(false);
     const initialResolvedEnvironment = resolveInitialEnvironmentBoot({
@@ -54,6 +62,44 @@ export function PersistenceBridge({
     useEffect(() => {
         onRecentDocsChange?.(loadRegistry());
     }, [onRecentDocsChange]);
+
+    const persistLatestSnapshot = useCallback(() => {
+        if (!enabled) return;
+
+        const latest = latestSnapshotRef.current ?? {};
+        const snapshot = createLocalDocumentSnapshot({
+            events: Array.isArray(latest.events) ? latest.events : [],
+            cursorIndex: Number.isFinite(latest.cursorIndex) ? latest.cursorIndex : -1,
+            metadata: { name: latest.documentName ?? 'Untitled' },
+        });
+
+        saveLocalDocument(snapshot);
+
+        if (latest.documentId) {
+            saveLocalDocumentSnapshot({
+                id: latest.documentId,
+                name: latest.documentName ?? 'Untitled',
+                events: Array.isArray(latest.events) ? latest.events : [],
+                cursorIndex: Number.isFinite(latest.cursorIndex) ? latest.cursorIndex : -1,
+                metadata: {
+                    workspace: latest.workspace ?? null,
+                    mode: latest.mode ?? null,
+                },
+            });
+            onRecentDocsChange?.(loadRegistry());
+        }
+    }, [enabled, onRecentDocsChange]);
+
+    useEffect(() => {
+        latestSnapshotRef.current = {
+            events,
+            cursorIndex,
+            documentId,
+            documentName,
+            workspace,
+            mode,
+        };
+    }, [cursorIndex, documentId, documentName, events, mode, workspace]);
 
     useEffect(() => {
         if (!dispatcher?.hydrateRuntimeState || seededInitialSnapshotRef.current) return;
@@ -184,30 +230,7 @@ export function PersistenceBridge({
         }
 
         autosaveTimerRef.current = setTimeout(() => {
-            const snapshot = createLocalDocumentSnapshot({
-                events,
-                cursorIndex,
-                metadata: { name: documentName },
-            });
-
-            // LOCAL is canonical replay truth.
-            saveLocalDocument(snapshot);
-
-            if (documentId) {
-                // Local per-document snapshots are still local authority,
-                // not a remote persistence tier.
-                saveLocalDocumentSnapshot({
-                    id: documentId,
-                    name: documentName,
-                    events,
-                    cursorIndex,
-                    metadata: {
-                        workspace,
-                        mode,
-                    },
-                });
-                onRecentDocsChange?.(loadRegistry());
-            }
+            persistLatestSnapshot();
         }, 250);
 
         return () => {
@@ -222,8 +245,39 @@ export function PersistenceBridge({
         cursorIndex,
         documentId,
         documentName,
+        mode,
         onRecentDocsChange,
+        persistLatestSnapshot,
+        workspace,
     ]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined' || !enabled) return undefined;
+
+        const flushPendingSnapshot = () => {
+            if (autosaveTimerRef.current) {
+                clearTimeout(autosaveTimerRef.current);
+                autosaveTimerRef.current = null;
+            }
+            persistLatestSnapshot();
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'hidden') {
+                flushPendingSnapshot();
+            }
+        };
+
+        window.addEventListener('beforeunload', flushPendingSnapshot);
+        window.addEventListener('pagehide', flushPendingSnapshot);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            window.removeEventListener('beforeunload', flushPendingSnapshot);
+            window.removeEventListener('pagehide', flushPendingSnapshot);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [enabled, persistLatestSnapshot]);
 
     return null;
 }

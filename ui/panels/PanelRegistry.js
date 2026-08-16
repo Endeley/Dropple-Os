@@ -2,6 +2,7 @@ import { NodeHeaderPanel } from '@/ui/inspector/NodeHeaderPanel.jsx';
 import LayoutInspector from '@/ui/inspector/LayoutInspector.jsx';
 import { AutoLayoutPanel } from '@/ui/inspector/AutoLayoutPanel.jsx';
 import { AppearancePanel } from '@/ui/inspector/AppearancePanel.jsx';
+import { TypographyPanel } from '@/ui/inspector/TypographyPanel.jsx';
 import { ContentPanel } from '@/ui/inspector/ContentPanel.jsx';
 import { SemanticsPanel } from '@/ui/inspector/SemanticsPanel.jsx';
 import { MotionPanel } from '@/ui/inspector/MotionPanel.jsx';
@@ -58,6 +59,11 @@ export const PanelRegistry = {
     AppearancePanel: {
         id: 'AppearancePanel',
         component: AppearancePanel,
+    },
+
+    TypographyPanel: {
+        id: 'TypographyPanel',
+        component: TypographyPanel,
     },
 
     ContentPanel: {

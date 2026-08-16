@@ -31,14 +31,29 @@ const TOOL_ICONS = {
     ),
 };
 const EMPTY_TOOL_DEFINITIONS = Object.freeze({});
+const UIUX_UTILITY_TOOL_IDS = new Set(['select', 'pan', 'zoom', 'fit', 'inspect']);
+const UIUX_CREATE_WORKSPACE_IDS = new Set(['uiux']);
 
-function ToolButton({ tool, active, onSelect }) {
+function ToolButton({ tool, active, disabled = false, onSelect }) {
     const icon = TOOL_ICONS[tool.id];
     const capabilityTags = Array.isArray(tool.capabilityTags) ? tool.capabilityTags.join(',') : '';
     const intentTopics = Array.isArray(tool.intentTopics) ? tool.intentTopics.join(',') : '';
 
     return (
-        <button type='button' data-tool-id={tool.id} data-tool-label={tool.label} data-tool-capability-tags={capabilityTags} data-tool-intent-topics={intentTopics} aria-label={tool.label} title={tool.label} className={`tool-button ${active ? 'is-active' : ''}`} aria-pressed={active} onClick={onSelect}>
+        <button
+            type='button'
+            data-tool-id={tool.id}
+            data-tool-label={tool.label}
+            data-tool-capability-tags={capabilityTags}
+            data-tool-intent-topics={intentTopics}
+            data-tool-disabled={disabled ? 'true' : 'false'}
+            aria-label={tool.label}
+            title={tool.label}
+            className={`tool-button ${active ? 'is-active' : ''} ${disabled ? 'is-disabled' : ''}`}
+            aria-pressed={active}
+            aria-disabled={disabled}
+            disabled={disabled}
+            onClick={disabled ? undefined : onSelect}>
             <svg viewBox='0 0 24 24' className='tool-icon'>
                 {icon || <circle cx='12' cy='12' r='6' />}
             </svg>
@@ -48,9 +63,15 @@ function ToolButton({ tool, active, onSelect }) {
     );
 }
 
-export function UIUXToolRail({ onActivateTool = null }) {
-    const workspaceId = useWorkspaceViewState((s) => s.definitionId ?? s.modeId ?? s.id) || 'uiux';
+export function UIUXToolRail({
+    onActivateTool = null,
+    authoringReady = true,
+    workspaceId: workspaceIdOverride = null,
+    modeId: modeIdOverride = null,
+}) {
+    const projectedWorkspaceId = useWorkspaceViewState((s) => s.definitionId ?? s.modeId ?? s.id) || 'uiux';
     const viewport = useWorkspaceViewState((s) => s.viewport ?? { x: 0, y: 0, scale: 1 });
+    const workspaceId = workspaceIdOverride || modeIdOverride || projectedWorkspaceId;
 
     const activeTool = useToolStore((s) => s.activeTool);
     const runtimeTools = useToolStore((s) => s.visibleTools);
@@ -74,11 +95,32 @@ export function UIUXToolRail({ onActivateTool = null }) {
         () => getUIUXCreationEntries({ availableToolIds: tools.map((tool) => tool.id) }),
         [tools],
     );
+    const isUIUXScopedProjection = UIUX_CREATE_WORKSPACE_IDS.has(modeIdOverride || workspaceId);
 
-    const nonCreationTools = useMemo(
-        () => tools.filter((tool) => !creationEntries.some((entry) => entry.creation.toolId === tool.id)),
-        [creationEntries, tools],
-    );
+    const createTools = useMemo(() => {
+        if (isUIUXScopedProjection) {
+            return creationEntries.map((entry) => ({
+                id: entry.creation.toolId,
+                label: entry.creation.railLabel || entry.label,
+                capabilityTags: entry.capabilityDomains,
+                intentTopics: [entry.parentGrammar, entry.concept].filter(Boolean),
+            }));
+        }
+
+        return tools.filter((tool) => tool?.createsNode === true);
+    }, [creationEntries, isUIUXScopedProjection, tools]);
+
+    const nonCreationTools = useMemo(() => {
+        if (isUIUXScopedProjection) {
+            return tools.filter(
+                (tool) =>
+                    !creationEntries.some((entry) => entry.creation.toolId === tool.id) &&
+                    UIUX_UTILITY_TOOL_IDS.has(tool.id),
+            );
+        }
+
+        return tools.filter((tool) => tool?.createsNode !== true);
+    }, [creationEntries, isUIUXScopedProjection, tools]);
 
     const grouped = useMemo(() => {
         const groups = new Map();
@@ -124,36 +166,36 @@ export function UIUXToolRail({ onActivateTool = null }) {
     }, [viewport, workspaceId]);
 
     return (
-        <aside className='uiux-toolrail'>
-            <div className='toolrail-section-title'>Create</div>
+        <aside className='uiux-toolrail' data-authoring-ready={authoringReady ? 'true' : 'false'}>
+            {createTools.length > 0 ? <div className='toolrail-section-title'>Create</div> : null}
 
-            <div className='tool-group'>
-                <div className='tool-group-label'>digital product design</div>
-                <div className='tool-group-stack'>
-                    {creationEntries.map((entry) => (
-                        <ToolButton
-                            key={entry.id}
-                            tool={{
-                                id: entry.creation.toolId,
-                                label: entry.creation.railLabel || entry.label,
-                                capabilityTags: entry.capabilityDomains,
-                                intentTopics: [entry.parentGrammar, entry.concept].filter(Boolean),
-                            }}
-                            active={activeTool === entry.creation.toolId}
-                            onSelect={() => {
-                                if (typeof onActivateTool === 'function') {
-                                    onActivateTool(entry.creation.toolId);
-                                    return;
-                                }
-                                canvasBus.emit(INTENTS.TOOL_SET_ACTIVE, {
-                                    toolId: entry.creation.toolId,
-                                    workspaceId,
-                                });
-                            }}
-                        />
-                    ))}
+            {createTools.length > 0 ? (
+                <div className='tool-group'>
+                    <div className='tool-group-label'>
+                        {isUIUXScopedProjection ? 'digital product design' : 'create'}
+                    </div>
+                    <div className='tool-group-stack'>
+                        {createTools.map((tool) => (
+                            <ToolButton
+                                key={tool.id}
+                                tool={tool}
+                                active={activeTool === tool.id}
+                                disabled={isUIUXScopedProjection && !authoringReady}
+                                onSelect={() => {
+                                    if (typeof onActivateTool === 'function') {
+                                        onActivateTool(tool.id);
+                                        return;
+                                    }
+                                    canvasBus.emit(INTENTS.TOOL_SET_ACTIVE, {
+                                        toolId: tool.id,
+                                        workspaceId,
+                                    });
+                                }}
+                            />
+                        ))}
+                    </div>
                 </div>
-            </div>
+            ) : null}
 
             {grouped.length > 0 ? <div className='toolrail-section-title'>Utilities</div> : null}
 

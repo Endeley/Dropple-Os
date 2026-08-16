@@ -1,5 +1,6 @@
 // workspaces/registry/graphicWorkspace.js
 import { EventTypes } from '@/core/events/eventTypes.js';
+import { NodeMutationTypes } from '@/core/events/nodeMutationTypes.js';
 import { SHARED_AUTHORING_TOOL_BASELINE } from '@/platform/capabilities/sharedActivationBaseline.js';
 
 export const graphicWorkspace = {
@@ -13,6 +14,8 @@ export const graphicWorkspace = {
         'NodeHeaderPanel',
         'LayoutInspector',
         'AutoLayoutPanel',
+        'TypographyPanel',
+        'AppearancePanel',
         'ContentPanel',
         'SemanticsPanel',
         'ExportPreviewPanel',
@@ -58,6 +61,11 @@ export const graphicWorkspace = {
         'node.layout.clearConstraint',
         'node.layout.setAutoLayout',
         'node.layout.clearAutoLayout',
+        'node.style.update',
+        NodeMutationTypes.CONTENT_UPDATE,
+        NodeMutationTypes.TEXT_CONTENT_UPDATE,
+        NodeMutationTypes.IMAGE_SOURCE_UPDATE,
+        NodeMutationTypes.PROPS_UPDATE,
         'layout.node.patch',
         'layout.container.set',
         'layout.container.remove',

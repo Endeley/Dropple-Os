@@ -189,26 +189,30 @@ function collectNodeDescendants(nodesById, nodeId, result = []) {
     return result;
 }
 
-function buildGroupDragDescriptor(groupId, nodesById, runtimeState) {
-    const groupNode = nodesById?.[groupId] ?? null;
-    if (!groupNode || groupNode.type !== 'group') {
+function buildStructuralDragDescriptor(nodeId, nodesById, runtimeState) {
+    const parentNode = nodesById?.[nodeId] ?? null;
+    if (!parentNode) {
         return null;
     }
 
-    const bounds = getNodeRect(groupNode, runtimeState);
+    const childIds = collectNodeDescendants(nodesById, nodeId, []);
+    if (!childIds.length) {
+        return null;
+    }
+
+    const bounds = getNodeRect(parentNode, runtimeState);
     if (!bounds) {
         return null;
     }
 
-    const childIds = collectNodeDescendants(nodesById, groupId, []);
-    const nodeIds = [groupId, ...childIds];
+    const nodeIds = [nodeId, ...childIds];
     const members = {};
 
-    nodeIds.forEach((nodeId) => {
-        const rect = getNodeRect(nodesById[nodeId], runtimeState);
+    nodeIds.forEach((memberNodeId) => {
+        const rect = getNodeRect(nodesById[memberNodeId], runtimeState);
         if (!rect) return;
 
-        members[nodeId] = {
+        members[memberNodeId] = {
             originBounds: rect,
             offsetFromGroupOrigin: {
                 x: rect.x - bounds.x,
@@ -218,7 +222,7 @@ function buildGroupDragDescriptor(groupId, nodesById, runtimeState) {
                 x: rect.x + rect.width / 2 - (bounds.x + bounds.width / 2),
                 y: rect.y + rect.height / 2 - (bounds.y + bounds.height / 2),
             },
-            rotation: nodesById[nodeId]?.layout?.rotation ?? 0,
+            rotation: nodesById[memberNodeId]?.layout?.rotation ?? 0,
         };
     });
 
@@ -333,7 +337,7 @@ function dispatchMoveDragStart({
     let group = null;
 
     if (selectionIds.length === 1) {
-        group = buildGroupDragDescriptor(selectionIds[0], nodesById, runtimeState);
+        group = buildStructuralDragDescriptor(selectionIds[0], nodesById, runtimeState);
         if (group?.nodeIds?.length) {
             nodeIds = group.nodeIds;
         }
@@ -982,7 +986,21 @@ function createNodeToolHandler(nodeType) {
         ledger.add(sessionId);
 
         dispatcher.dispatch(result.event);
-        return { handled: true };
+        const createdNodeId = result.event?.payload?.node?.id ?? null;
+        if (createdNodeId) {
+            dispatcher.dispatch({
+                type: EventTypes.SELECTION_SET,
+                payload: {
+                    ids: [createdNodeId],
+                    primary: createdNodeId,
+                },
+            });
+        }
+        return {
+            handled: true,
+            createdNodeId,
+            createdNodeType: result.event?.payload?.node?.type ?? input.nodeType ?? nodeType,
+        };
     };
 }
 
