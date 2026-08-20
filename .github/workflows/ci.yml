@@ -294,6 +294,7 @@ jobs:
     permissions:
       contents: read
       actions: read
+      issues: write
 
     steps:
       - name: Checkout repo
@@ -344,7 +345,7 @@ jobs:
           }
 
           set +e
-          RUN_ID_QUERY="$(gh api \
+          RUN_ID_QUERY="$(gh api -X GET \
             "repos/${{ github.repository }}/actions/workflows/${WORKFLOW_FILE}/runs" \
             -f branch=main \
             -f status=success \
