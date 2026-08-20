@@ -3,7 +3,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
     getArchitectureIgnoreDirs,
-    shouldIgnoreArchitecturePath,
+    shouldIgnoreArchitectureEntry,
 } from './architectureIgnorePolicy.mjs';
 
 const ROOT = process.cwd();
@@ -22,8 +22,8 @@ const TOKEN_TABLE_ALLOWLIST = new Set([
     'ui/bridges/tokenCssBridge.js',
 ]);
 
-function shouldIgnore(relPath) {
-    return shouldIgnoreArchitecturePath(relPath, IGNORE_DIRS);
+function shouldIgnore(relPath, fullPath, entry) {
+    return shouldIgnoreArchitectureEntry({ relPath, fullPath, entry, ignoreDirs: IGNORE_DIRS });
 }
 
 function walk(dir, relBase = '') {
@@ -33,9 +33,8 @@ function walk(dir, relBase = '') {
     const files = [];
     for (const entry of entries) {
         const relPath = relBase ? `${relBase}/${entry.name}` : entry.name;
-        if (shouldIgnore(relPath)) continue;
-
         const fullPath = path.join(dir, entry.name);
+        if (shouldIgnore(relPath, fullPath, entry)) continue;
         if (entry.isDirectory()) {
             files.push(...walk(fullPath, relPath));
             continue;

@@ -4,8 +4,8 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   getArchitectureScannerPolicy,
+  shouldIgnoreArchitectureEntry,
   shouldIgnoreArchitectureFile,
-  shouldIgnoreArchitecturePath,
 } from "../../scripts/architectureIgnorePolicy.mjs";
 
 const ROOT = process.cwd();
@@ -14,10 +14,15 @@ const SCANNER_POLICY = getArchitectureScannerPolicy({
   scannerId: "dispatcherOwnershipTest",
 });
 
-function shouldIgnore(relPath) {
+function shouldIgnore(relPath, fullPath, entry) {
   const normalized = relPath.replaceAll("\\", "/");
   if (shouldIgnoreArchitectureFile(normalized, SCANNER_POLICY.ignoreFiles)) return true;
-  return shouldIgnoreArchitecturePath(normalized, SCANNER_POLICY.ignoreDirs);
+  return shouldIgnoreArchitectureEntry({
+    relPath: normalized,
+    fullPath,
+    entry,
+    ignoreDirs: SCANNER_POLICY.ignoreDirs,
+  });
 }
 
 function walk(dir, relBase = "") {
@@ -25,8 +30,8 @@ function walk(dir, relBase = "") {
   const files = [];
   for (const entry of entries) {
     const relPath = relBase ? `${relBase}/${entry.name}` : entry.name;
-    if (shouldIgnore(relPath)) continue;
     const fullPath = path.join(dir, entry.name);
+    if (shouldIgnore(relPath, fullPath, entry)) continue;
     if (entry.isDirectory()) {
       files.push(...walk(fullPath, relPath));
       continue;

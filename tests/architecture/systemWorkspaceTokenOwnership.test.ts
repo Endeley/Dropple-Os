@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
     getArchitectureIgnoreDirs,
-    shouldIgnoreArchitecturePath,
+    shouldIgnoreArchitectureEntry,
 } from '../../scripts/architectureIgnorePolicy.mjs';
 
 import { assertReducerOwnership } from '@/core/events/reducerOwnership.js';
@@ -37,8 +37,8 @@ const TOKEN_DOCUMENT_ALLOWLIST = new Set([
     'runtime/__tests__/tokenReviewWorkflow.test.mjs',
 ]);
 
-function shouldIgnore(relPath) {
-    return shouldIgnoreArchitecturePath(relPath, IGNORE_DIRS);
+function shouldIgnore(relPath, fullPath, entry) {
+    return shouldIgnoreArchitectureEntry({ relPath, fullPath, entry, ignoreDirs: IGNORE_DIRS });
 }
 
 function walk(dir, relBase = '') {
@@ -47,9 +47,8 @@ function walk(dir, relBase = '') {
 
     for (const entry of entries) {
         const relPath = relBase ? `${relBase}/${entry.name}` : entry.name;
-        if (shouldIgnore(relPath)) continue;
-
         const fullPath = path.join(dir, entry.name);
+        if (shouldIgnore(relPath, fullPath, entry)) continue;
         if (entry.isDirectory()) {
             files.push(...walk(fullPath, relPath));
             continue;

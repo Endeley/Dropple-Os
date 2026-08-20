@@ -39,6 +39,7 @@ function normalizeStroke(stroke) {
 export function AppearancePanel({ node, emit, readOnly = false }) {
     if (!node) return null;
 
+    const isText = node.type === 'text';
     const style = node?.style || {};
     const fills = Array.isArray(style.fills) ? style.fills : [];
     const rawPrimaryFill = fills.find((entry) => entry?.enabled !== false)?.color ?? style.fill;
@@ -109,21 +110,24 @@ export function AppearancePanel({ node, emit, readOnly = false }) {
 
     return (
         <div className="inspector-group">
-            <Control label='Fill'>
-                <Select
-                    value={fillPreset}
-                    onChange={(e) => handleFillPresetChange(e.target.value)}
-                    disabled={readOnly}>
-                    {FILL_PRESET_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>
-                            {option.label}
-                        </option>
-                    ))}
-                </Select>
-            </Control>
+            {!isText ? (
+                <Control label='Fill'>
+                    <Select
+                        value={fillPreset}
+                        onChange={(e) => handleFillPresetChange(e.target.value)}
+                        disabled={readOnly}>
+                        {FILL_PRESET_OPTIONS.map((option) => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </Select>
+                </Control>
+            ) : null}
 
-            <Control label='Fill Color'>
+            <Control label={isText ? 'Text Color' : 'Fill Color'}>
                 <Input
+                    data-testid={isText ? 'text-color-input' : undefined}
                     type='color'
                     value={primaryFill}
                     onChange={(e) => updateFill(e.target.value)}
@@ -133,6 +137,7 @@ export function AppearancePanel({ node, emit, readOnly = false }) {
 
             <Control label='Opacity'>
                 <Input
+                    data-testid={isText ? 'text-opacity-input' : undefined}
                     type='range'
                     min={0}
                     max={1}
@@ -143,50 +148,52 @@ export function AppearancePanel({ node, emit, readOnly = false }) {
                 />
             </Control>
 
-            <Control label='Stroke'>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
-                    <button
-                        className="inspector-button"
-                        type='button'
-                        onClick={() => updateStroke(primaryStroke ? null : { color: '#000000', width: 1, enabled: true })}
-                        disabled={readOnly}
-                        style={{
-                            fontSize: 13,
-                            opacity: readOnly ? 0.5 : 1,
-                        }}>
-                        {primaryStroke ? 'Remove' : 'Add'}
-                    </button>
+            {!isText ? (
+                <Control label='Stroke'>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
+                        <button
+                            className="inspector-button"
+                            type='button'
+                            onClick={() => updateStroke(primaryStroke ? null : { color: '#000000', width: 1, enabled: true })}
+                            disabled={readOnly}
+                            style={{
+                                fontSize: 13,
+                                opacity: readOnly ? 0.5 : 1,
+                            }}>
+                            {primaryStroke ? 'Remove' : 'Add'}
+                        </button>
 
-                    {primaryStroke && (
-                        <>
-                            <Input
-                                type='color'
-                                value={primaryStroke.color}
-                                onChange={(e) =>
-                                    updateStroke({
-                                        ...primaryStroke,
-                                        color: e.target.value,
-                                    })
-                                }
-                                disabled={readOnly}
-                            />
-                            <Input
-                                type='number'
-                                min={0}
-                                step={1}
-                                value={primaryStroke.width}
-                                onChange={(e) =>
-                                    updateStroke({
-                                        ...primaryStroke,
-                                        width: Number(e.target.value),
-                                    })
-                                }
-                                disabled={readOnly}
-                            />
-                        </>
-                    )}
-                </div>
-            </Control>
+                        {primaryStroke && (
+                            <>
+                                <Input
+                                    type='color'
+                                    value={primaryStroke.color}
+                                    onChange={(e) =>
+                                        updateStroke({
+                                            ...primaryStroke,
+                                            color: e.target.value,
+                                        })
+                                    }
+                                    disabled={readOnly}
+                                />
+                                <Input
+                                    type='number'
+                                    min={0}
+                                    step={1}
+                                    value={primaryStroke.width}
+                                    onChange={(e) =>
+                                        updateStroke({
+                                            ...primaryStroke,
+                                            width: Number(e.target.value),
+                                        })
+                                    }
+                                    disabled={readOnly}
+                                />
+                            </>
+                        )}
+                    </div>
+                </Control>
+            ) : null}
         </div>
     );
 }

@@ -4,6 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { PanelRegistry } from '@/ui/panels/PanelRegistry';
 import { getWorkspaceActivation } from '@/ui/bridges/workspaceActivationFacade.js';
+import { useWorkspaceProjectionState } from '@/runtime/projection';
+import { getMotionClipsForNode } from '@/ui/motion/motionClipActions.js';
+import { resolveInspectSections } from './panelComposition.js';
 
 function PanelSection({ title, children }) {
     return (
@@ -41,36 +44,6 @@ function resolvePanelTab(panelId) {
     return 'inspect';
 }
 
-function resolveInspectSections({ panelIds = [], extras = [], hasSelection = false }) {
-    const structure = panelIds.filter((panelId) =>
-        ['SelectionActionsPanel', 'UIUXLanguageProjectionPanel', 'NodeHeaderPanel'].includes(panelId),
-    );
-    const layout = hasSelection
-        ? panelIds.filter((panelId) => ['LayoutInspector', 'AutoLayoutPanel'].includes(panelId))
-        : [];
-    const appearance = hasSelection
-        ? panelIds.filter((panelId) => ['AppearancePanel'].includes(panelId))
-        : [];
-    const content = hasSelection
-        ? panelIds.filter((panelId) => ['ContentPanel', 'SemanticsPanel'].includes(panelId))
-        : [];
-    const motion = hasSelection
-        ? panelIds.filter((panelId) => ['MotionPanel', 'ExportPreviewPanel'].includes(panelId))
-        : [];
-
-    if (extras.length > 0) {
-        motion.push('__extras__');
-    }
-
-    return [
-        Object.freeze({ id: 'structure', title: 'Structure', panelIds: hasSelection ? structure : [] }),
-        Object.freeze({ id: 'layout', title: 'Layout', panelIds: layout }),
-        Object.freeze({ id: 'appearance', title: 'Appearance', panelIds: appearance }),
-        Object.freeze({ id: 'content', title: 'Content & Semantics', panelIds: content }),
-        Object.freeze({ id: 'motion', title: 'Motion & Export', panelIds: motion }),
-    ].filter((section) => section.panelIds.length > 0);
-}
-
 function resolveSurfaceSections(panelIds = []) {
     const canvas = panelIds.filter((panelId) => panelId === 'CanvasSurfacePanel');
     const guidance = panelIds.filter((panelId) =>
@@ -85,8 +58,10 @@ function resolveSurfaceSections(panelIds = []) {
 
 export function PanelRenderer({ workspaceId, node, emit, extraPanels = [], panelPropsById = null }) {
     const activation = getWorkspaceActivation(workspaceId);
+    const document = useWorkspaceProjectionState((state) => state.document ?? null);
     const panels = Array.isArray(activation?.panels) ? activation.panels : [];
     const extras = Array.isArray(extraPanels) ? extraPanels : [];
+    const attachedMotionCount = useMemo(() => getMotionClipsForNode(document, node?.id ?? null).length, [document, node?.id]);
     const normalizedPanels = useMemo(
         () =>
             panels.filter((panelId) => {
@@ -129,9 +104,11 @@ export function PanelRenderer({ workspaceId, node, emit, extraPanels = [], panel
             resolveInspectSections({
                 panelIds: normalizedPanels.filter((panelId) => resolvePanelTab(panelId) === 'inspect'),
                 extras,
-                hasSelection: Boolean(node),
+                node,
+                workspaceId,
+                hasAttachedMotion: attachedMotionCount > 0,
             }),
-        [normalizedPanels, extras, node],
+        [normalizedPanels, extras, node, workspaceId, attachedMotionCount],
     );
     const surfaceSections = useMemo(
         () => resolveSurfaceSections(normalizedPanels.filter((panelId) => resolvePanelTab(panelId) === 'surface')),

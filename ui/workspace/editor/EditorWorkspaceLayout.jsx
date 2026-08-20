@@ -330,7 +330,12 @@ function EditorWorkspaceLayoutInner({
             {/* Main workspace */}
             <div className='workspace-main'>
                 {/* Tool rail (correct ownership now) */}
-                {showToolRail && <UIUXToolRail />}
+                {showToolRail && (
+                    <UIUXToolRail
+                        workspaceId={workspaceContext?.workspaceId ?? workspaceId}
+                        modeId={toolModeId ?? adapter?.id ?? workspaceContext?.modeId ?? workspaceId}
+                    />
+                )}
 
                 <LeftPanel panels={adapter.panels?.left} events={events} cursor={cursor} workspaceId={workspaceId} />
 
@@ -355,7 +360,7 @@ function EditorWorkspaceLayoutInner({
                     )}
                 </div>
 
-                <RightPanel panels={adapter.panels?.right} events={events} cursor={cursor} emit={emit} capabilities={adapter?.capabilities} rubric={reviewRubric} reviewCriteria={reviewSubmission?.review?.criteria} onReviewCriteriaChange={onReviewCriteriaChange} submissionId={reviewSubmission?.id} documentId={documentId} readOnly={readOnly} />
+                <RightPanel panels={adapter.panels?.right} events={events} cursor={cursor} emit={emit} capabilities={adapter?.capabilities} rubric={reviewRubric} reviewCriteria={reviewSubmission?.review?.criteria} onReviewCriteriaChange={onReviewCriteriaChange} submissionId={reviewSubmission?.id} documentId={documentId} readOnly={readOnly} workspaceId={adapter?.id ?? workspaceId} />
             </div>
 
             <TimelineBar events={events} cursor={cursor} submissionId={reviewSubmission?.id} />

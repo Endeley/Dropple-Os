@@ -48,6 +48,7 @@ export function useCanvasInteractions({
     getWorldPointFromEvent,
     getDefaultParentId,
     getNodeCount,
+    onCreateCommitted = null,
 }) {
     const createSessionRef = useRef(null);
     const createSessionOrdinalRef = useRef(0);
@@ -122,17 +123,37 @@ export function useCanvasInteractions({
     );
 
     const resolveImplicitCreateBounds = useCallback(
-        (nodeType) => {
-            if (nodeType !== 'frame') return null;
+        (nodeType, point = null) => {
+            if (nodeType === 'frame') {
+                const nodeCount = typeof getNodeCount === 'function' ? Number(getNodeCount()) : 0;
+                return (
+                    resolveFirstFrameBounds({
+                        workspaceId,
+                        modeId,
+                        nodeCount,
+                    }) ?? null
+                );
+            }
 
-            const nodeCount = typeof getNodeCount === 'function' ? Number(getNodeCount()) : 0;
-            return (
-                resolveFirstFrameBounds({
-                    workspaceId,
-                    modeId,
-                    nodeCount,
-                }) ?? null
-            );
+            if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) {
+                return null;
+            }
+
+            const sizeByType = {
+                text: { width: 180, height: 44 },
+                shape: { width: 120, height: 120 },
+                image: { width: 160, height: 120 },
+            };
+
+            const size = sizeByType[nodeType];
+            if (!size) return null;
+
+            return {
+                x: point.x,
+                y: point.y,
+                width: size.width,
+                height: size.height,
+            };
         },
         [getNodeCount, modeId, workspaceId],
     );
@@ -388,6 +409,7 @@ export function useCanvasInteractions({
                     start: worldPoint,
                     current: worldPoint,
                     pointerId: e.pointerId,
+                    parentId: defaultParentId,
                     initialNodeCount:
                         typeof getNodeCount === 'function' ? Number(getNodeCount()) : 0,
                 };
@@ -505,9 +527,10 @@ export function useCanvasInteractions({
             }
 
             if (createSessionRef.current) {
-                const { start, current, nodeType, tool, pointerId, sessionId, initialNodeCount = 0 } = createSessionRef.current;
+                const { start, current, nodeType, tool, pointerId, sessionId, parentId: sessionParentId = null, initialNodeCount = 0 } = createSessionRef.current;
                 const width = Math.abs(current.x - start.x);
                 const height = Math.abs(current.y - start.y);
+                let committedCreateResult = null;
                 const pointerMatches = pointerId === e.pointerId;
                 const sessionState = {
                     tool,
@@ -533,7 +556,9 @@ export function useCanvasInteractions({
                         sessionId,
                     });
 
-                    const parentId = typeof getDefaultParentId === 'function' ? getDefaultParentId() : null;
+                    const parentId =
+                        sessionParentId ??
+                        (typeof getDefaultParentId === 'function' ? getDefaultParentId() : null);
                     sessionState.commitAttempted = true;
 
                     const handled = handleInputEvent(
@@ -575,6 +600,16 @@ export function useCanvasInteractions({
                     } else {
                         sessionState.commitResult = 'engine-handled';
                     }
+
+                    if (handled?.createdNodeId) {
+                        committedCreateResult = {
+                            nodeId: handled.createdNodeId,
+                            nodeType: handled.createdNodeType ?? nodeType,
+                            parentId,
+                            bounds,
+                            sessionId,
+                        };
+                    }
                     sessionState.committed = true;
                 };
 
@@ -588,7 +623,7 @@ export function useCanvasInteractions({
                 } else if (!pointerMatches) {
                     sessionState.commitResult = 'pointer-mismatch';
                 } else {
-                    const implicitBounds = resolveImplicitCreateBounds(nodeType);
+                    const implicitBounds = resolveImplicitCreateBounds(nodeType, start);
                     if (implicitBounds) {
                         commitCreateBounds(implicitBounds);
                         sessionState.commitResult = 'home-affordance';
@@ -631,6 +666,10 @@ export function useCanvasInteractions({
                 setCreateSessionDebug(`${tool}:session-closed:${sessionId}`);
                 e.currentTarget.releasePointerCapture?.(e.pointerId);
                 clearPrimaryPointerSession();
+
+                if (committedCreateResult && typeof onCreateCommitted === 'function') {
+                    onCreateCommitted(committedCreateResult);
+                }
                 return;
             }
 
@@ -651,7 +690,7 @@ export function useCanvasInteractions({
 
             e.currentTarget.releasePointerCapture?.(e.pointerId);
         },
-        [clearOverlaySession, clearPrimaryPointerSession, dispatcher, getDefaultParentId, resetCreateAndDragState, resolveFocusViewportForBounds, resolveImplicitCreateBounds, routePointerInput],
+        [clearOverlaySession, clearPrimaryPointerSession, dispatcher, getDefaultParentId, onCreateCommitted, resetCreateAndDragState, resolveFocusViewportForBounds, resolveImplicitCreateBounds, routePointerInput],
     );
 
     const onPointerCancel = useCallback(

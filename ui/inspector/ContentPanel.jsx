@@ -74,6 +74,7 @@ export function ContentPanel({ node, emit, readOnly = false }) {
               <option value="left">Left</option>
               <option value="center">Center</option>
               <option value="right">Right</option>
+              <option value="justify">Justify</option>
             </Select>
           </Control>
         </>

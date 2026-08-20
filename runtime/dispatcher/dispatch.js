@@ -640,6 +640,15 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
                   })
                 : replayedRuntimeState?.document;
 
+        const nextNodesById = getNodes({
+            ...replayedRuntimeState,
+            document: bootedDocument ?? replayedRuntimeState?.document,
+        });
+        const restoredSelection = restoreSurvivingSelection(
+            currentState?.selection ?? initialRuntimeState.selection,
+            nextNodesById,
+        );
+
         return hydrateRuntimeState(
             {
                 ...replayedRuntimeState,
@@ -648,6 +657,7 @@ export function createEventDispatcher({ maxHistory = 100, workspaceId = null, br
                 tools: currentState?.tools ?? initialRuntimeState.tools,
                 playback: currentState?.playback ?? initialRuntimeState.playback,
                 clipboard: currentState?.clipboard ?? initialRuntimeState.clipboard,
+                selection: restoredSelection,
                 interaction: createDefaultInteractionState(),
                 preview: initialRuntimeState.preview,
                 events,
@@ -742,6 +752,27 @@ function appendCommittedEvent(prevState, nextState, event) {
         ...nextState,
         events: nextEvents,
         cursorIndex: nextEvents.length - 1,
+    };
+}
+
+function normalizeSelectionIds(selection) {
+    if (selection?.ids instanceof Set) {
+        return Array.from(selection.ids);
+    }
+    if (Array.isArray(selection?.ids)) {
+        return selection.ids.slice();
+    }
+    return [];
+}
+
+function restoreSurvivingSelection(previousSelection, nodesById) {
+    const existingNodeIds = new Set(Object.keys(nodesById ?? {}));
+    const survivingIds = normalizeSelectionIds(previousSelection).filter((id) => existingNodeIds.has(id));
+    const primary = survivingIds.includes(previousSelection?.primary) ? previousSelection.primary : survivingIds[0] ?? null;
+
+    return {
+        ids: new Set(survivingIds),
+        primary,
     };
 }
 

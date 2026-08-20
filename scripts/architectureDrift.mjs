@@ -1,6 +1,9 @@
 import fs from 'fs';
 import path from 'path';
-import { getArchitectureScannerPolicy } from './architectureIgnorePolicy.mjs';
+import {
+  getArchitectureScannerPolicy,
+  shouldIgnoreArchitectureEntry,
+} from './architectureIgnorePolicy.mjs';
 import { ARCHITECTURE_DRIFT_RULES } from './architectureDriftRules.mjs';
 
 const ROOT = process.cwd();
@@ -10,12 +13,13 @@ const SCANNER_POLICY = getArchitectureScannerPolicy({
 });
 const IGNORE_DIRS = SCANNER_POLICY.ignoreDirs;
 
-function walk(dir, out = []) {
+function walk(dir, relBase = '', out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (IGNORE_DIRS.has(entry.name)) continue;
     const fullPath = path.join(dir, entry.name);
+    const relPath = relBase ? `${relBase}/${entry.name}` : entry.name;
+    if (shouldIgnoreArchitectureEntry({ relPath, fullPath, entry, ignoreDirs: IGNORE_DIRS })) continue;
     if (entry.isDirectory()) {
-      walk(fullPath, out);
+      walk(fullPath, relPath, out);
       continue;
     }
 
@@ -71,7 +75,7 @@ export function findViolations({ rules = ARCHITECTURE_DRIFT_RULES } = {}) {
     for (const root of rule.roots) {
       const rootPath = path.join(ROOT, root);
       if (!fs.existsSync(rootPath)) continue;
-      const files = walk(rootPath);
+      const files = walk(rootPath, root);
 
       for (const file of files) {
         if (Array.isArray(rule.fileMatchers) && rule.fileMatchers.length > 0) {

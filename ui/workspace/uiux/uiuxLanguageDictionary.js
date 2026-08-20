@@ -1,7 +1,7 @@
-const FRAME_CHILDREN = Object.freeze(['section', 'container', 'component', 'text', 'image', 'button']);
-const CONTAINER_CHILDREN = Object.freeze(['section', 'container', 'component', 'text', 'image', 'button']);
-const SECTION_CHILDREN = Object.freeze(['container', 'component', 'text', 'image', 'button']);
-const COMPONENT_CHILDREN = Object.freeze(['container', 'text', 'image', 'button']);
+const FRAME_CHILDREN = Object.freeze(['section', 'container', 'component', 'text', 'shape', 'image', 'button']);
+const CONTAINER_CHILDREN = Object.freeze(['section', 'container', 'component', 'text', 'shape', 'image', 'button']);
+const SECTION_CHILDREN = Object.freeze(['container', 'component', 'text', 'shape', 'image', 'button']);
+const COMPONENT_CHILDREN = Object.freeze(['container', 'text', 'shape', 'image', 'button']);
 
 const FRAME_DEFAULT_MOMENTUM = Object.freeze([
     'Define page purpose',
@@ -178,6 +178,30 @@ export const UIUX_LANGUAGE_DICTIONARY = Object.freeze({
             prompt: 'This Text can become:',
         }),
     }),
+    shape: Object.freeze({
+        id: 'shape',
+        label: 'Shape',
+        concept: 'Visual Primitive',
+        identity: 'Shape',
+        identitySummary: 'A primitive visual element that can become interface structure, emphasis, or support.',
+        meaning: 'It belongs inside a Page, Section, or Component.',
+        belongsTo: 'Page / Section / Component',
+        parentGrammar: 'Element',
+        allowedChildren: Object.freeze([]),
+        capabilityDomains: Object.freeze(['Appearance', 'Layout', 'Motion']),
+        evolvesInto: Object.freeze(['Card base', 'Surface block', 'Divider', 'Icon shape']),
+        nextMeaningfulSteps: Object.freeze(['Adjust size', 'Refine appearance', 'Place inside layout']),
+        creation: Object.freeze({
+            visible: true,
+            order: 25,
+            toolId: 'shape',
+            railLabel: 'Shape',
+        }),
+        projection: Object.freeze({
+            explainBeforeProperties: true,
+            prompt: 'This Shape can become:',
+        }),
+    }),
     image: Object.freeze({
         id: 'image',
         label: 'Image',
@@ -300,7 +324,7 @@ export const UIUX_LANGUAGE_DICTIONARY = Object.freeze({
     }),
 });
 
-export const UIUX_LANGUAGE_ORDER = Object.freeze(['frame', 'text', 'image', 'container', 'button', 'section', 'component']);
+export const UIUX_LANGUAGE_ORDER = Object.freeze(['frame', 'text', 'shape', 'image', 'container', 'button', 'section', 'component']);
 
 export function getUIUXLanguageDefinition(artifactType, options = {}) {
     if (typeof artifactType !== 'string' || artifactType.trim().length === 0) return null;

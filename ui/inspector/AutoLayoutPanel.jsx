@@ -46,7 +46,7 @@ function ReorderList({ parent, emit, readOnly = false }) {
 
 export function AutoLayoutPanel({ node, emit, readOnly = false }) {
   if (!node) return null;
-  const auto = node.layout.autoLayout;
+  const auto = node.layout?.autoLayout ?? null;
 
   if (!node.children?.length) return null;
 

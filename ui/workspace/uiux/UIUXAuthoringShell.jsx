@@ -51,6 +51,15 @@ import { resolveUIUXFirstExpressionProjection } from './uiuxFirstExpressionProje
 import { useWorkspaceSession } from '@/ui/workspace/session/WorkspaceSessionContext.jsx';
 
 const SCENARIO_SELECTION_STORAGE_PREFIX = 'dropple.uiux.scenario-selection';
+const EMPTY_NODE_MAP = Object.freeze({});
+const EMPTY_TOOL_IDS = Object.freeze([]);
+const DEFAULT_VIEWPORT = Object.freeze({ x: 0, y: 0, scale: 1 });
+const UIUX_CREATE_TOOL_HINTS = Object.freeze({
+    frame: 'Frame is active. Click or drag on the canvas to place a new Frame.',
+    text: 'Text is active. Click inside a selected Frame to place Text.',
+    shape: 'Shape is active. Click inside a selected Frame to place a Shape.',
+    image: 'Image is active. Click inside a selected Frame to place an Image.',
+});
 
 function buildScenarioSelectionStorageKey(documentId) {
     return `${SCENARIO_SELECTION_STORAGE_PREFIX}:${documentId || 'unknown'}`;
@@ -106,8 +115,9 @@ function UIUXAuthoringShellContent({
     const selectedIds = useWorkspaceVisualState((s) => s.selection?.ids || []);
     const activeTool = useWorkspaceProjectionState((s) => s.tools?.activeTool ?? null);
     const workspaceDocument = useWorkspaceProjectionState((s) => s.document ?? null);
-    const visibleTools = useWorkspaceProjectionState((s) => s.tools?.visibleTools ?? []);
-    const viewport = useWorkspaceViewState((s) => s.viewport ?? { x: 0, y: 0, scale: 1 });
+    const documentNodes = useWorkspaceProjectionState((s) => s.document?.sceneGraph?.nodes ?? s?.nodes ?? EMPTY_NODE_MAP);
+    const visibleTools = useWorkspaceProjectionState((s) => s.tools?.visibleTools ?? EMPTY_TOOL_IDS);
+    const viewport = useWorkspaceViewState((s) => s.viewport ?? DEFAULT_VIEWPORT);
     const worldHistory = useWorkspaceProjectionState((s) => s.document?.world?.history ?? null);
     const nodeCount = useMemo(() => Object.keys(nodes ?? {}).length, [nodes]);
     const runtimeDocumentId = workspaceDocument?.meta?.id ?? initialDocumentId ?? null;
@@ -128,7 +138,7 @@ function UIUXAuthoringShellContent({
     }, [resolvedModeId, visibleTools]);
 
     const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
-    const node = selectedId ? nodes[selectedId] : null;
+    const node = selectedId ? documentNodes?.[selectedId] ?? nodes?.[selectedId] ?? null : null;
     const selectionCount = selectedIds.length;
     const selectedNodeClips = getMotionClipsForNode(workspaceDocument, node?.id ?? null);
     const hasMotionForSelectedNode = selectedNodeClips.length > 0;
@@ -160,9 +170,11 @@ function UIUXAuthoringShellContent({
             nodeCount,
             worldHistory,
         }) && !isFirstExpressionFocus;
+    const isAuthoringReady = !isCreativeInitiationFocus && !isFirstExpressionFocus;
     const showInspector = hasInspectableContext && !isFirstExpressionFocus;
     const showTimeline = hasTimeAuthoringContext && !isFirstExpressionFocus;
     const showStatusStrip = !isFirstExpressionFocus && (selectionCount > 0 || (showTimeline && node?.id));
+    const activeCreateToolHint = isAuthoringReady ? UIUX_CREATE_TOOL_HINTS[activeTool] ?? null : null;
     useEffect(() => {
         if (!dismissedFirstExpressionNodeId) return;
         if (!node?.id) return;
@@ -398,7 +410,10 @@ function UIUXAuthoringShellContent({
                 data-editor-unity='world-based'
                 data-editor-focus={selectionCount > 0 ? 'focused' : 'open'}
                 data-creative-initiation-focus={isCreativeInitiationFocus ? 'true' : 'false'}
-                data-first-expression-focus={isFirstExpressionFocus ? 'true' : 'false'}>
+                data-first-expression-focus={isFirstExpressionFocus ? 'true' : 'false'}
+                data-authoring-ready={isAuthoringReady ? 'true' : 'false'}
+                data-active-create-tool={activeCreateToolHint ? 'true' : 'false'}
+                data-active-create-tool-id={activeCreateToolHint ? activeTool : ''}>
                 <div
                     className='uiux-main-grid'
                     data-testid='uiux-main-grid'
@@ -442,8 +457,22 @@ function UIUXAuthoringShellContent({
                         </div>
 
                         <aside className='uiux-left-dock' data-testid='uiux-left-dock'>
-                            <UIUXToolRail modeId={resolvedModeId} onActivateTool={handleActivateTool} />
+                            <UIUXToolRail
+                                workspaceId={resolvedWorkspaceId}
+                                modeId={resolvedModeId}
+                                onActivateTool={handleActivateTool}
+                                authoringReady={isAuthoringReady}
+                            />
                         </aside>
+
+                        {activeCreateToolHint ? (
+                            <div
+                                className='uiux-create-mode-hint'
+                                data-testid='uiux-create-mode-hint'
+                                data-tool-id={activeTool}>
+                                {activeCreateToolHint}
+                            </div>
+                        ) : null}
 
                         <UIUXCanvasStage
                             profile={profile}
